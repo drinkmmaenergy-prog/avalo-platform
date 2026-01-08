@@ -1,0 +1,134 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "globalLaunchConfig",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "launchStatus", "order": "ASCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "globalLaunchConfig",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "paymentEnabled", "order": "ASCENDING" },
+        { "fieldPath": "withdrawalsEnabled", "order": "ASCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "globalLaunchConfig",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "kycRequired", "order": "ASCENDING" },
+        { "fieldPath": "launchStatus", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "featureKillSwitches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "globalState", "order": "ASCENDING" },
+        { "fieldPath": "activatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "featureKillSwitches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "globalState", "order": "ASCENDING" },
+        { "fieldPath": "countriesAllowed", "arrayConfig": "CONTAINS" }
+      ]
+    },
+    {
+      "collectionGroup": "countryTrafficLimits",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "countryTrafficMetrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "countryTrafficMetrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "registrationsThisHour", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "emergencyFreezeLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "triggeredAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "emergencyFreezeLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "triggeredAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "legalComplianceSettings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "gdprMode", "order": "ASCENDING" },
+        { "fieldPath": "dsaMode", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "legalComplianceSettings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ageGate", "order": "ASCENDING" },
+        { "fieldPath": "identityValidationRequired", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "paymentSafetyGates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "payoutsBlocked", "order": "ASCENDING" },
+        { "fieldPath": "tokenSalesBlocked", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "paymentSafetyGates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "rolloutStateTransitions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "approvedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "rolloutStateTransitions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "newState", "order": "ASCENDING" },
+        { "fieldPath": "approvedAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

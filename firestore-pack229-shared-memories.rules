@@ -1,0 +1,70 @@
+rules_version = '2';
+
+// PACK 229: Shared Moments Memory Log
+// Firestore Security Rules
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // SHARED MEMORIES - Per conversation pair
+    // ============================================================================
+    
+    match /sharedMemories/{chatId} {
+      // Allow read if user is a participant
+      allow read: if request.auth != null &&
+        resource.data.participantIds.hasAny([request.auth.uid]);
+      
+      // Only system can create/update automatic moments
+      // Users cannot modify auto-generated moments
+      allow create, update: if false;
+      
+      // Subcollection for individual moments
+      match /moments/{momentId} {
+        // Read if participant and memory visibility enabled
+        allow read: if request.auth != null &&
+          get(/databases/$(database)/documents/sharedMemories/$(chatId)).data.participantIds.hasAny([request.auth.uid]) &&
+          (!exists(/databases/$(database)/documents/sharedMemories/$(chatId)/visibility/$(request.auth.uid)) ||
+           get(/databases/$(database)/documents/sharedMemories/$(chatId)/visibility/$(request.auth.uid)).data.enabled == true);
+        
+        // Users can create user-added moments (photos, captions)
+        allow create: if request.auth != null &&
+          get(/databases/$(database)/documents/sharedMemories/$(chatId)).data.participantIds.hasAny([request.auth.uid]) &&
+          request.resource.data.isUserAdded == true &&
+          request.resource.data.userId == request.auth.uid;
+        
+        // Users can only hide moments, not delete or edit auto-generated ones
+        allow update: if request.auth != null &&
+          get(/databases/$(database)/documents/sharedMemories/$(chatId)).data.participantIds.hasAny([request.auth.uid]) &&
+          (
+            // Can hide any moment
+            (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isHidden', 'hiddenBy', 'hiddenAt']) &&
+             request.resource.data.hiddenBy == request.auth.uid) ||
+            // Can delete own user-added moments
+            (resource.data.isUserAdded == true && resource.data.userId == request.auth.uid)
+          );
+        
+        // Users can delete their own user-added moments
+        allow delete: if request.auth != null &&
+          resource.data.isUserAdded == true &&
+          resource.data.userId == request.auth.uid;
+      }
+      
+      // Memory visibility settings per user
+      match /visibility/{userId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // ============================================================================
+    // SHARED MEMORY ANALYTICS (platform-wide stats)
+    // ============================================================================
+    
+    match /sharedMemoryAnalytics/{analyticsId} {
+      allow read: if request.auth != null && 
+        request.auth.token.admin == true;
+      allow write: if false; // Only backend can write
+    }
+  }
+}

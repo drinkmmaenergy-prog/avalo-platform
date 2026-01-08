@@ -1,0 +1,88 @@
+rules_version = '2';
+
+/**
+ * PACK 423 — In-App Ratings, Sentiment & NPS Engine
+ * Firestore Security Rules
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    function isWithin24Hours(timestamp) {
+      return request.time.toMillis() - timestamp < 86400000; // 24 hours
+    }
+    
+    // User Interaction Ratings
+    match /userInteractionRatings/{ratingId} {
+      // Users can only read their own ratings (as rater or target aggregates via CF)
+      allow read: if isAuthenticated() && (
+        resource.data.raterUserId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Only rater can create/update their own rating
+      // Must go through Cloud Function for validation
+      allow create: if false; // All writes via Cloud Functions
+      allow update: if false; // All writes via Cloud Functions
+      allow delete: if false; // No direct deletes
+    }
+    
+    // NPS Survey Responses
+    match /npsSurveys/{surveyId} {
+      // Users can only read their own NPS responses
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // All writes via Cloud Functions only
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // NPS Cooldowns (internal tracking)
+    match /npsCooldowns/{userId} {
+      // Users can read their own cooldown status
+      allow read: if isAuthenticated() && (
+        userId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Only server can write
+      allow write: if false;
+    }
+    
+    // User Rating Summaries (materialized views)
+    match /userRatingSummaries/{userId} {
+      // Anyone can read summaries (aggregated data)
+      allow read: if isAuthenticated();
+      
+      // Only server can write
+      allow write: if false;
+    }
+    
+    // Companion Rating Summaries
+    match /companionRatingSummaries/{companionId} {
+      // Anyone can read companion ratings
+      allow read: if isAuthenticated();
+      
+      // Only server can write
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,146 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Referral Links
+    match /referralLinks/{linkId} {
+      // Anyone can read active links (for tracking)
+      allow read: if resource.data.isActive == true;
+      
+      // Only owner can read their own links
+      allow read: if isOwner(resource.data.inviterId);
+      
+      // Only authenticated users can create links
+      allow create: if isAuthenticated() && request.resource.data.inviterId == request.auth.uid;
+      
+      // Only owner can update their links
+      allow update: if isOwner(resource.data.inviterId);
+      
+      // No deletes (soft delete via isActive flag)
+      allow delete: if false;
+    }
+    
+    // Referral Events
+    match /referralEvents/{eventId} {
+      // Owner can read their own events
+      allow read: if isOwner(resource.data.inviterId);
+      
+      // Anyone can create events (for tracking)
+      allow create: if true;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // Referral Rewards
+    match /referralRewards/{rewardId} {
+      // Only reward owner (inviter) can read
+      allow read: if isOwner(resource.data.inviterId);
+      
+      // Only system can create (via cloud functions)
+      allow create: if false;
+      
+      // Owner can update to claim reward
+      allow update: if isOwner(resource.data.inviterId) && 
+                       resource.data.status == 'earned' &&
+                       request.resource.data.status == 'claimed';
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // Referral Abuse Flags
+    match /referralAbuseFlags/{flagId} {
+      // Only admins can read
+      allow read: if isAdmin();
+      
+      // Only system can create
+      allow create: if false;
+      
+      // Only admins can update (resolve)
+      allow update: if isAdmin();
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // Share Events
+    match /shareEvents/{shareId} {
+      // Owner can read their own shares
+      allow read: if isOwner(resource.data.userId);
+      
+      // Anyone can read active shares (for tracking clicks)
+      allow read: if resource.data.expiresAt.toDate() > request.time;
+      
+      // Authenticated users can create shares
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Only system can update stats
+      allow update: if false;
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // Share Conversion Map
+    match /shareConversionMap/{conversionId} {
+      // Owner of share can read conversions
+      allow read: if isAuthenticated() &&
+                     get(/databases/$(database)/documents/shareEvents/$(resource.data.shareId)).data.userId == request.auth.uid;
+      
+      // Anyone can create conversions (for tracking)
+      allow create: if true;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // Viral Boosts
+    match /viralBoosts/{boostId} {
+      // Owner can read their boosts
+      allow read: if isOwner(resource.data.userId);
+      
+      // Only system can create/update
+      allow create, update: if false;
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // Creator Boost Scores
+    match /creatorBoostScores/{userId} {
+      // Anyone can read (public leaderboard)
+      allow read: if true;
+      
+      // Only system can write
+      allow create, update, delete: if false;
+    }
+    
+    // Creator Invite Performance
+    match /creatorInvitePerformance/{performanceId} {
+      // Owner can read their performance
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow create, update, delete: if false;
+    }
+  }
+}

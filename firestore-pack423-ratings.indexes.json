@@ -1,0 +1,103 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "userInteractionRatings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "targetUserId", "order": "ASCENDING" },
+        { "fieldPath": "interactionType", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userInteractionRatings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "raterUserId", "order": "ASCENDING" },
+        { "fieldPath": "interactionType", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userInteractionRatings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "targetUserId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userInteractionRatings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "targetCompanionId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userInteractionRatings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "interactionId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userInteractionRatings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isReported", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "npsSurveys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "DESCENDING" },
+        { "fieldPath": "score", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "npsSurveys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "npsSurveys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tagProductArea", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "npsSurveys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "segmentAtTime", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "npsSurveys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "score", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "npsCooldowns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "nextEligibleAt", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

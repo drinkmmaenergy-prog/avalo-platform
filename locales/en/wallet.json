@@ -1,0 +1,12 @@
+{
+  "myBalance": "My balance",
+  "buyTokens": "Buy tokens",
+  "payout": "Payout",
+  "transactionHistory": "Transaction history",
+  "addCard": "Add card",
+  "oneTimePurchase": "One-time purchase",
+  "subscription": "Subscription",
+  "paymentSuccess": "Payment successful",
+  "paymentFailed": "Payment failed",
+  "withdrawalRequested": "Withdrawal requested"
+}

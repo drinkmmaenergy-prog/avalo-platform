@@ -1,0 +1,19 @@
+﻿{
+  "expo": {
+    "name": "Avalo",
+    "slug": "avalo",
+    "scheme": "avalo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "userInterfaceStyle": "light",
+    "updates": { "fallbackToCacheTimeout": 0 },
+    "runtimeVersion": { "policy": "sdkVersion" },
+    "sdkVersion": "54.0.0"
+  }
+}

@@ -1,0 +1,382 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // PACK 279: AI Companions Engine - Security Rules
+    // ============================================================================
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(ownerId) {
+      return request.auth.uid == ownerId;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function hasSubscription(tier) {
+      let userData = getUserData();
+      return userData.subscription != null && userData.subscription.tier == tier;
+    }
+    
+    function isVIPOrHigher() {
+      let userData = getUserData();
+      return userData.subscription != null && 
+             (userData.subscription.tier == 'vip' || userData.subscription.tier == 'royal');
+    }
+    
+    function isRoyal() {
+      return hasSubscription('royal');
+    }
+    
+    function isAdult() {
+      let userData = getUserData();
+      return userData.age != null && userData.age >= 18;
+    }
+    
+    function hasVerifiedIdentity() {
+      let userData = getUserData();
+      return userData.identityVerified == true;
+    }
+    
+    // ============================================================================
+    // AI Companions Collection
+    // ============================================================================
+    
+    match /aiCompanions/{companionId} {
+      
+      // Read Rules
+      allow read: if isAuthenticated() && 
+                     resource.data.isActive == true &&
+                     resource.data.verificationStatus == 'approved' &&
+                     (
+                       // Public companions
+                       resource.data.isVisible == true ||
+                       // Owner can always see their own
+                       isOwner(resource.data.ownerId) ||
+                       // Premium companions for Royal users
+                       (resource.data.isPremium == true && isRoyal())
+                     );
+      
+      // Create Rules
+      allow create: if isAuthenticated() &&
+                       isAdult() &&
+                       hasVerifiedIdentity() &&
+                       // User-created companions
+                       request.resource.data.type == 'user' &&
+                       request.resource.data.ownerId == request.auth.uid &&
+                       // Photo validation
+                       request.resource.data.photos is list &&
+                       request.resource.data.photos.size() >= 3 &&
+                       request.resource.data.photos.size() <= 12 &&
+                       // Required fields
+                       request.resource.data.name is string &&
+                       request.resource.data.name.size() > 0 &&
+                       request.resource.data.name.size() <= 50 &&
+                       request.resource.data.description is string &&
+                       request.resource.data.description.size() <= 500 &&
+                       request.resource.data.gender in ['male', 'female', 'nonbinary'] &&
+                       request.resource.data.languages is list &&
+                       request.resource.data.languages.size() > 0 &&
+                       // Personality fields
+                       request.resource.data.stylePreset in ['romantic', 'friendly', 'fun', 'chaotic', 'elegant', 'mysterious', 'adventurous'] &&
+                       request.resource.data.tone in ['soft', 'playful', 'dominant', 'submissive', 'witty', 'caring'] &&
+                       request.resource.data.behaviorTheme in ['romantic', 'friendly', 'flirty', 'supportive', 'mentor', 'companion'] &&
+                       // Pricing validation
+                       request.resource.data.priceTokens is int &&
+                       request.resource.data.priceTokens >= 100 &&
+                       request.resource.data.priceTokens <= 500 &&
+                       // Revenue split for user-created
+                       request.resource.data.creatorSplit == 0.65 &&
+                       request.resource.data.platformSplit == 0.35 &&
+                       // Initial status
+                       request.resource.data.isActive == true &&
+                       request.resource.data.isVisible == true &&
+                       request.resource.data.nsfwStatus == 'pending' &&
+                       request.resource.data.verificationStatus == 'pending' &&
+                       // Initial stats
+                       request.resource.data.totalChats == 0 &&
+                       request.resource.data.totalEarnings == 0 &&
+                       request.resource.data.totalMessages == 0 &&
+                       request.resource.data.viewCount == 0 &&
+                       // Timestamps
+                       request.resource.data.createdAt == request.time &&
+                       request.resource.data.updatedAt == request.time;
+      
+      // Update Rules
+      allow update: if isAuthenticated() &&
+                       isOwner(resource.data.ownerId) &&
+                       // Cannot change these fields
+                       request.resource.data.type == resource.data.type &&
+                       request.resource.data.ownerId == resource.data.ownerId &&
+                       request.resource.data.creatorSplit == resource.data.creatorSplit &&
+                       request.resource.data.platformSplit == resource.data.platformSplit &&
+                       request.resource.data.createdAt == resource.data.createdAt &&
+                       // Only allow updating specific fields
+                       (
+                         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['type', 'ownerId', 'creatorSplit', 'platformSplit', 'createdAt'])
+                       ) &&
+                       // If updating photos, require re-verification
+                       (
+                         request.resource.data.photos == resource.data.photos ||
+                         (request.resource.data.photos.size() >= 3 && 
+                          request.resource.data.photos.size() <= 12 &&
+                          request.resource.data.nsfwStatus == 'pending')
+                       ) &&
+                       // Timestamp update
+                       request.resource.data.updatedAt == request.time;
+      
+      // Delete Rules (soft delete only - set isActive to false)
+      allow delete: if false; // No hard deletes allowed
+      
+      // Stats Updates (system only)
+      allow update: if isAuthenticated() &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalChats', 'totalEarnings', 'totalMessages', 'totalVoiceMinutes', 'viewCount', 'profileViews', 'chatStarts', 'lastChatAt', 'updatedAt', 'averageRating', 'totalRatings']);
+    }
+    
+    // ============================================================================
+    // AI Chat Sessions Collection
+    // ============================================================================
+    
+    match /aiChatSessions/{sessionId} {
+      
+      // Read Rules
+      allow read: if isAuthenticated() &&
+                     (
+                       // User is the chatter
+                       isOwner(resource.data.userId) ||
+                       // Companion owner can view stats (not messages)
+                       (resource.data.companionType == 'user' && isOwner(resource.data.companionOwnerId))
+                     );
+      
+      // Create Rules
+      allow create: if isAuthenticated() &&
+                       isAdult() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.isAI == true &&
+                       request.resource.data.status == 'active' &&
+                       request.resource.data.messagesCount == 0 &&
+                       request.resource.data.tokensSpent == 0 &&
+                       request.resource.data.voiceMinutes == 0 &&
+                       request.resource.data.creatorEarnings == 0 &&
+                       request.resource.data.platformEarnings == 0 &&
+                       request.resource.data.startedAt == request.time &&
+                       request.resource.data.lastMessageAt == request.time &&
+                       // Validate companion exists
+                       exists(/databases/$(database)/documents/aiCompanions/$(request.resource.data.companionId));
+      
+      // Update Rules (for message counts, token spending, etc.)
+      allow update: if isAuthenticated() &&
+                       isOwner(resource.data.userId) &&
+                       // Cannot change core fields
+                       request.resource.data.userId == resource.data.userId &&
+                       request.resource.data.companionId == resource.data.companionId &&
+                       request.resource.data.isAI == resource.data.isAI;
+      
+      // Delete Rules
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+    
+    // ============================================================================
+    // AI Companion Messages Collection
+    // ============================================================================
+    
+    match /aiCompanionMessages/{messageId} {
+      
+      // Read Rules
+      allow read: if isAuthenticated() &&
+                     // Get session to check ownership
+                     exists(/databases/$(database)/documents/aiChatSessions/$(resource.data.sessionId)) &&
+                     (
+                       // User owns the chat session
+                       get(/databases/$(database)/documents/aiChatSessions/$(resource.data.sessionId)).data.userId == request.auth.uid ||
+                       // Companion owner (stats only, content filtered)
+                       (get(/databases/$(database)/documents/aiChatSessions/$(resource.data.sessionId)).data.companionType == 'user' &&
+                        get(/databases/$(database)/documents/aiChatSessions/$(resource.data.sessionId)).data.companionOwnerId == request.auth.uid)
+                     );
+      
+      // Create Rules (user messages only, AI messages created by system)
+      allow create: if isAuthenticated() &&
+                       request.resource.data.sender == 'user' &&
+                       // Validate session exists and user owns it
+                       exists(/databases/$(database)/documents/aiChatSessions/$(request.resource.data.sessionId)) &&
+                       get(/databases/$(database)/documents/aiChatSessions/$(request.resource.data.sessionId)).data.userId == request.auth.uid &&
+                       get(/databases/$(database)/documents/aiChatSessions/$(request.resource.data.sessionId)).data.status == 'active' &&
+                       // Message content validation
+                       request.resource.data.content is string &&
+                       request.resource.data.content.size() > 0 &&
+                       request.resource.data.content.size() <= 2000 &&
+                       request.resource.data.type in ['text', 'voice'] &&
+                       // Timestamps
+                       request.resource.data.createdAt == request.time;
+      
+      // Update Rules (for read receipts)
+      allow update: if isAuthenticated() &&
+                       exists(/databases/$(database)/documents/aiChatSessions/$(resource.data.sessionId)) &&
+                       get(/databases/$(database)/documents/aiChatSessions/$(resource.data.sessionId)).data.userId == request.auth.uid &&
+                       // Only allow updating read status
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt']);
+      
+      // Delete Rules
+      allow delete: if false; // Messages cannot be deleted (audit trail)
+    }
+    
+    // ============================================================================
+    // AI Companion Earnings Collection
+    // ============================================================================
+    
+    match /aiCompanionEarnings/{earningId} {
+      
+      // Read Rules
+      allow read: if isAuthenticated() &&
+                     (
+                       // Companion owner can view their earnings
+                       isOwner(resource.data.companionOwnerId) ||
+                       // User who paid can view their spending
+                       isOwner(resource.data.userId)
+                     );
+      
+      // Create Rules (system only)
+      allow create: if false; // Only cloud functions can create earnings
+      
+      // Update Rules (system only for status changes)
+      allow update: if false; // Only cloud functions can update
+      
+      // Delete Rules
+      allow delete: if false; // Earnings cannot be deleted (audit trail)
+    }
+    
+    // ============================================================================
+    // AI Companion Reviews Collection
+    // ============================================================================
+    
+    match /aiCompanionReviews/{reviewId} {
+      
+      // Read Rules
+      allow read: if isAuthenticated();
+      
+      // Create Rules
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.rating >= 1 &&
+                       request.resource.data.rating <= 5 &&
+                       request.resource.data.comment is string &&
+                       request.resource.data.comment.size() <= 500 &&
+                       // Must have chatted with companion
+                       exists(/databases/$(database)/documents/aiChatSessions/$(request.resource.data.sessionId)) &&
+                       get(/databases/$(database)/documents/aiChatSessions/$(request.resource.data.sessionId)).data.userId == request.auth.uid &&
+                       get(/databases/$(database)/documents/aiChatSessions/$(request.resource.data.sessionId)).data.companionId == request.resource.data.companionId &&
+                       get(/databases/$(database)/documents/aiChatSessions/$(request.resource.data.sessionId)).data.status == 'ended' &&
+                       // Timestamps
+                       request.resource.data.createdAt == request.time;
+      
+      // Update Rules (owner can edit their review)
+      allow update: if isAuthenticated() &&
+                       isOwner(resource.data.userId) &&
+                       // Cannot change core fields
+                       request.resource.data.userId == resource.data.userId &&
+                       request.resource.data.companionId == resource.data.companionId &&
+                       request.resource.data.sessionId == resource.data.sessionId &&
+                       request.resource.data.createdAt == resource.data.createdAt &&
+                       // Only rating and comment can be updated
+                       request.resource.data.rating >= 1 &&
+                       request.resource.data.rating <= 5 &&
+                       request.resource.data.updatedAt == request.time;
+      
+      // Delete Rules
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+    
+    // ============================================================================
+    // AI Companion Settings Collection (User Preferences)
+    // ============================================================================
+    
+    match /users/{userId}/aiSettings/preferences {
+      
+      // Read Rules
+      allow read: if isAuthenticated() && isOwner(userId);
+      
+      // Create/Update Rules
+      allow write: if isAuthenticated() &&
+                      isOwner(userId) &&
+                      request.resource.data.hideAICompanions is bool &&
+                      request.resource.data.hideAIFromFeed is bool &&
+                      request.resource.data.allowAIRecommendations is bool;
+    }
+    
+    // ============================================================================
+    // AI Safety Reports Collection
+    // ============================================================================
+    
+    match /aiSafetyReports/{reportId} {
+      
+      // Read Rules (admin only)
+      allow read: if false;
+      
+      // Create Rules
+      allow create: if isAuthenticated() &&
+                       request.resource.data.reporterId == request.auth.uid &&
+                       request.resource.data.reason is string &&
+                       request.resource.data.reason.size() > 0 &&
+                       request.resource.data.companionId is string &&
+                       request.resource.data.status == 'pending' &&
+                       request.resource.data.createdAt == request.time;
+      
+      // Update/Delete Rules (admin only)
+      allow update, delete: if false;
+    }
+    
+    // ============================================================================
+    // AI Companion Analytics Collection (System Only)
+    // ============================================================================
+    
+    match /aiCompanionAnalytics/{companionId}/metrics/{metricId} {
+      
+      // Read Rules (owner only)
+      allow read: if isAuthenticated() &&
+                     exists(/databases/$(database)/documents/aiCompanions/$(companionId)) &&
+                     get(/databases/$(database)/documents/aiCompanions/$(companionId)).data.ownerId == request.auth.uid;
+      
+      // Write Rules (system only)
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // AI Voice Call Sessions Collection
+    // ============================================================================
+    
+    match /aiVoiceCallSessions/{callId} {
+      
+      // Read Rules
+      allow read: if isAuthenticated() &&
+                     (
+                       isOwner(resource.data.userId) ||
+                       (resource.data.companionType == 'user' && isOwner(resource.data.companionOwnerId))
+                     );
+      
+      // Create Rules
+      allow create: if isAuthenticated() &&
+                       isAdult() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status == 'active' &&
+                       request.resource.data.duration == 0 &&
+                       request.resource.data.tokensSpent == 0 &&
+                       request.resource.data.startedAt == request.time;
+      
+      // Update Rules
+      allow update: if isAuthenticated() &&
+                       isOwner(resource.data.userId) &&
+                       // Core fields cannot change
+                       request.resource.data.userId == resource.data.userId &&
+                       request.resource.data.companionId == resource.data.companionId;
+      
+      // Delete Rules
+      allow delete: if false; // Keep for billing history
+    }
+  }
+}

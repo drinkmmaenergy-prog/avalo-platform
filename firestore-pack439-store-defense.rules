@@ -1,0 +1,128 @@
+/**
+ * PACK 439 - App Store Trust, Ratings & Review Shield
+ * Firestore Security Rules
+ * 
+ * Collections:
+ * - appStoreReviews
+ * - classifiedReviews
+ * - storeTrustScores
+ * - velocitySnapshots
+ * - velocityAlerts
+ * - threatAssessments
+ * - mitigationActions
+ * - reviewInsights
+ * - storeMetrics
+ * - manualReviewQueue
+ * 
+ * Status: ACTIVE
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isExecutive() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'executive'];
+    }
+    
+    function isSystemService() {
+      return request.auth != null && request.auth.token.system_service == true;
+    }
+
+    // App Store Reviews - System write, Admin/Executive read
+    match /appStoreReviews/{reviewId} {
+      allow read: if isExecutive() || isSystemService();
+      allow write: if isSystemService();
+    }
+
+    // Classified Reviews - System write, team members can read their categories
+    match /classifiedReviews/{reviewId} {
+      allow read: if isExecutive() || isSystemService() ||
+                     (request.auth != null && 
+                      resource.data.assignedTeam == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.team);
+      allow write: if isSystemService();
+      allow update: if isAdmin(); // Allow admins to update manual review decisions
+    }
+
+    // Store Trust Scores - Read-only for executives, system write
+    match /storeTrustScores/{scoreId} {
+      allow read: if isExecutive() || isSystemService();
+      allow write: if isSystemService();
+    }
+    
+    match /storeTrustScoreHistory/{historyId} {
+      allow read: if isExecutive() || isSystemService();
+      allow create: if isSystemService();
+    }
+
+    // Velocity Snapshots - Read-only for executives, system write
+    match /velocitySnapshots/{snapshotId} {
+      allow read: if isExecutive() || isSystemService();
+      allow create: if isSystemService();
+    }
+
+    // Velocity Alerts - Read for executives, write for system, update for admins (acknowledge)
+    match /velocityAlerts/{alertId} {
+      allow read: if isExecutive() || isSystemService();
+      allow create: if isSystemService();
+      allow update: if isAdmin() && 
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acknowledged', 'acknowledgedAt']);
+    }
+
+    // Threat Assessments - Read-only for executives, system write
+    match /threatAssessments/{assessmentId} {
+      allow read: if isExecutive() || isSystemService();
+      allow create: if isSystemService();
+    }
+
+    // Mitigation Actions - Read for executives, system write, admin can revert
+    match /mitigationActions/{actionId} {
+      allow read: if isExecutive() || isSystemService();
+      allow create: if isSystemService();
+      allow update: if isAdmin() || isSystemService();
+    }
+
+    // Review Insights - Read for team members and executives, system write
+    match /reviewInsights/{insightId} {
+      allow read: if request.auth != null;
+      allow create: if isSystemService();
+    }
+
+    // Store Metrics - Read for authenticated users, system write
+    match /storeMetrics/{metricId} {
+      allow read: if request.auth != null;
+      allow write: if isSystemService();
+    }
+
+    // Manual Review Queue - Team members see their assigned items, admins see all
+    match /manualReviewQueue/{queueId} {
+      allow read: if isAdmin() || 
+                     (request.auth != null && 
+                      (resource.data.assignedTo == request.auth.uid ||
+                       resource.data.status == 'pending'));
+      allow create: if isSystemService();
+      allow update: if isAdmin() || 
+                       (request.auth != null && resource.data.assignedTo == request.auth.uid);
+    }
+
+    // Feature Flags - For mitigation control
+    match /featureFlags/{flagId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin() || isSystemService();
+    }
+
+    // Config - PACK 439 configuration
+    match /config/{configId} {
+      allow read: if isExecutive() || isSystemService();
+      allow write: if isAdmin();
+    }
+  }
+}

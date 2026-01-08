@@ -1,0 +1,76 @@
+// PACK 249 - AI Chat Shield for NSFW & Sexting Risk Management
+// Firestore Security Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isChatParticipant(chatId) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/chats/$(chatId)) &&
+        get(/databases/$(database)/documents/chats/$(chatId)).data.participants.hasAny([request.auth.uid]);
+    }
+    
+    // NSFW Consents - users can only read/write their own consents
+    match /nsfw_consents/{consentId} {
+      allow read: if isAuthenticated() && 
+        consentId.matches('^.*_' + request.auth.uid + '$');
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.isAdult == true &&
+        request.resource.data.acceptedTerms == true;
+      
+      allow update, delete: if false; // Consents cannot be modified or deleted
+    }
+    
+    // NSFW Safe Zones - readable by chat participants, writable by system
+    match /nsfw_safe_zones/{chatId} {
+      allow read: if isChatParticipant(chatId);
+      
+      allow create: if isAuthenticated() && 
+        isChatParticipant(chatId) &&
+        request.resource.data.participantIds.hasAny([request.auth.uid]);
+      
+      allow update: if isAuthenticated() && 
+        isChatParticipant(chatId) &&
+        (
+          // User can update their own consent record
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'consentRecords',
+            'bothConsented',
+            'activatedAt'
+          ])
+        );
+      
+      allow delete: if false; // Safe zones cannot be deleted
+    }
+    
+    // NSFW Detections - only moderators can read
+    match /nsfw_detections/{detectionId} {
+      allow read: if false; // Only backend/moderators via admin SDK
+      allow write: if false; // Only backend via Cloud Functions
+    }
+    
+    // NSFW User Risk Scores - users can read their own, moderators read all
+    match /nsfw_user_risk_scores/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false; // Only backend via Cloud Functions
+    }
+    
+    // NSFW Chat Metadata - readable by chat participants
+    match /nsfw_chat_metadata/{chatId} {
+      allow read: if isChatParticipant(chatId);
+      allow write: if false; // Only backend via Cloud Functions
+    }
+  }
+}

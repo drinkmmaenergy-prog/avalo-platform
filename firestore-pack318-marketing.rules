@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isInvestor() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'investor' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+    
+    // PACK 318: Pre-signup collection
+    // Public can create, only Cloud Functions can update/delete
+    match /preSignup/{preSignupId} {
+      allow create: if true; // Public can create from marketing site
+      allow read: if isAuthenticated() && (
+        resource.data.email == request.auth.token.email || // User can read their own
+        isAdmin()
+      );
+      allow update, delete: if false; // Only via Cloud Functions
+    }
+    
+    // PACK 318: Investor metrics daily collection
+    // Read-only for investors and admins, write via Cloud Functions only
+    match /investorMetricsDaily/{date} {
+      allow read: if isInvestor();
+      allow write: if false; // Only via Cloud Functions
+    }
+  }
+}

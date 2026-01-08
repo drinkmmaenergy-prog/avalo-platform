@@ -1,0 +1,190 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 347: GROWTH ENGINE SECURITY RULES
+    // ========================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ========================================================================
+    // REFERRALS COLLECTION
+    // ========================================================================
+    
+    // referrals/{refId}
+    match /referrals/{refId} {
+      // Allow referrer to create and read their own referrals
+      allow create: if isAuthenticated() && 
+        request.resource.data.referrerId == request.auth.uid &&
+        request.resource.data.status == 'sent';
+      
+      // Allow referrer to read their referrals
+      allow read: if isAuthenticated() && 
+        resource.data.referrerId == request.auth.uid;
+      
+      // Allow system/functions to update (via backend only)
+      allow update: if false; // Only via Cloud Functions
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // REFERRAL STATS COLLECTION
+    // ========================================================================
+    
+    // referral_stats/{userId}
+    match /referral_stats/{userId} {
+      // Users can read their own stats
+      allow read: if isOwner(userId);
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // VIRAL INVITES COLLECTION
+    // ========================================================================
+    
+    // viral_invites/{inviteId}
+    match /viral_invites/{inviteId} {
+      // Anyone can read (for tracking purposes)
+      allow read: if true;
+      
+      // Creators can create invites
+      allow create: if isAuthenticated() && 
+        request.resource.data.creatorId == request.auth.uid;
+      
+      // Only Cloud Functions can update
+      allow update: if false;
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // VIRAL STATS COLLECTION
+    // ========================================================================
+    
+    // viral_stats/{creatorId}
+    match /viral_stats/{creatorId} {
+      // Creators can read their own stats
+      allow read: if isOwner(creatorId) || isAdmin();
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PROMOTION SCORES COLLECTION
+    // ========================================================================
+    
+    // promotion_scores/{creatorId}
+    match /promotion_scores/{creatorId} {
+      // Anyone can read (for discovery/ranking)
+      allow read: if true;
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 347 BOOSTS COLLECTION
+    // ========================================================================
+    
+    // pack347_boosts/{boostId}
+    match /pack347_boosts/{boostId} {
+      // Users can read their own boosts
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Users can create their own boosts (via function)
+      allow create: if false; // Only via Cloud Functions for token billing
+      
+      // Only Cloud Functions can update
+      allow update: if false;
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // VIRAL SHARES COLLECTION
+    // ========================================================================
+    
+    // viral_shares/{shareId}
+    match /viral_shares/{shareId} {
+      // Anyone can read (for tracking)
+      allow read: if true;
+      
+      // Creators can create shares
+      allow create: if isAuthenticated() && 
+        request.resource.data.creatorId == request.auth.uid;
+      
+      // Only Cloud Functions can update
+      allow update: if false;
+      
+      // Creators can delete their own shares
+      allow delete: if isAuthenticated() && 
+        resource.data.creatorId == request.auth.uid;
+    }
+    
+    // ========================================================================
+    // VIRAL SHARE STATS COLLECTION
+    // ========================================================================
+    
+    // viral_share_stats/{creatorId}
+    match /viral_share_stats/{creatorId} {
+      // Creators can read their own stats
+      allow read: if isOwner(creatorId) || isAdmin();
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // ABUSE PREVENTION: RATE LIMITS
+    // ========================================================================
+    
+    // These rules are enforced at the application layer (Cloud Functions)
+    // - Max 50 referral invites per day per user
+    // - Max 10 boost activations per day per creator
+    // - Shadow throttling on spam suspicion
+    // - AI anti-bot invite filtering
+    
+  }
+}
+
+/**
+ * PACK 347: Growth Engine Security Rules
+ * 
+ * Collections:
+ * - referrals: User referral tracking
+ * - referral_stats: Aggregated referral statistics
+ * - viral_invites: Creator viral loop tracking
+ * - viral_stats: Creator viral performance
+ * - promotion_scores: Creator ranking scores
+ * - pack347_boosts: Boost product purchases
+ * - viral_shares: Share tracking
+ * - viral_share_stats: Share performance stats
+ * 
+ * Security:
+ * - Creators can read their own data
+ * - Most writes restricted to Cloud Functions
+ * - Public read access for tracking/discovery features
+ * - Admin-only access for analytics
+ * - Rate limiting enforced at application layer
+ */

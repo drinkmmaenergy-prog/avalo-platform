@@ -1,0 +1,59 @@
+/**
+ * PACK 241: Unlockable Chemistry Badges
+ * 
+ * Firestore Security Rules for chemistry badges
+ * Cosmetic achievements earned through paid interactions
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Chemistry Badges - stored per match
+    // Format: matches/{matchId}/chemistryBadges/{matchId}
+    match /matches/{matchId}/chemistryBadges/{badgeDocId} {
+      // Users can read their own match badges
+      allow read: if isAuthenticated() && (
+        exists(/databases/$(database)/documents/matches/$(matchId)) &&
+        (
+          get(/databases/$(database)/documents/matches/$(matchId)).data.user1Id == request.auth.uid ||
+          get(/databases/$(database)/documents/matches/$(matchId)).data.user2Id == request.auth.uid
+        )
+      ) || isAdmin();
+      
+      // Only Cloud Functions can write badges (automatic unlock)
+      allow write: if false;
+    }
+    
+    // Badge unlock events log
+    match /badgeUnlockEvents/{eventId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // Badge visibility settings - per user
+    match /users/{userId}/badgeSettings/{settingsId} {
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Users can update their own badge visibility settings
+      allow write: if isOwner(userId) && 
+        request.resource.data.keys().hasOnly(['showPublic', 'updatedAt']) &&
+        request.resource.data.showPublic is bool;
+    }
+  }
+}

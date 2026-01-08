@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json.schemastore.org/web-performance-budget.json",
+  "budget": [
+    {
+      "resourceSizes": [
+        {
+          "resourceType": "script",
+          "budget": 300
+        },
+        {
+          "resourceType": "stylesheet",
+          "budget": 50
+        },
+        {
+          "resourceType": "image",
+          "budget": 200
+        },
+        {
+          "resourceType": "media",
+          "budget": 500
+        },
+        {
+          "resourceType": "font",
+          "budget": 100
+        },
+        {
+          "resourceType": "document",
+          "budget": 50
+        },
+        {
+          "resourceType": "total",
+          "budget": 1000
+        }
+      ],
+      "timings": [
+        {
+          "metric": "largest-contentful-paint",
+          "budget": 2500
+        },
+        {
+          "metric": "first-contentful-paint",
+          "budget": 1500
+        },
+        {
+          "metric": "cumulative-layout-shift",
+          "budget": 0.1
+        },
+        {
+          "metric": "total-blocking-time",
+          "budget": 300
+        },
+        {
+          "metric": "speed-index",
+          "budget": 3000
+        },
+        {
+          "metric": "interactive",
+          "budget": 3500
+        }
+      ]
+    }
+  ],
+  "routes": {
+    "/": {
+      "description": "Homepage - Initial load target < 2.5s LCP",
+      "budgets": {
+        "lcp": 2500,
+        "fcp": 1500,
+        "cls": 0.1,
+        "totalJs": 300,
+        "totalCss": 50
+      }
+    },
+    "/feed": {
+      "description": "Feed page - Content discovery",
+      "budgets": {
+        "lcp": 2500,
+        "fcp": 1800,
+        "cls": 0.1,
+        "totalJs": 350,
+        "totalCss": 50
+      }
+    },
+    "/messages": {
+      "description": "Chat interface",
+      "budgets": {
+        "lcp": 2000,
+        "fcp": 1500,
+        "cls": 0.05,
+        "totalJs": 300,
+        "totalCss": 40
+      }
+    },
+    "/events": {
+      "description": "Events discovery",
+      "budgets": {
+        "lcp": 2500,
+        "fcp": 1800,
+        "cls": 0.1,
+        "totalJs": 300,
+        "totalCss": 50
+      }
+    }
+  },
+  "targets": {
+    "mobile4G": {
+      "network": "4G",
+      "cpu": "4x slowdown",
+      "description": "Mid-tier mobile on 4G network"
+    },
+    "desktop": {
+      "network": "broadband",
+      "cpu": "1x",
+      "description": "Desktop with broadband"
+    }
+  }
+}

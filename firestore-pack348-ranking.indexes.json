@@ -1,0 +1,68 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "userRankingScores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "finalDiscoveryScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRankingScores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "finalFeedScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRankingScores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "finalSwipeScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRankingScores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "finalAiScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRankingScores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "abTestGroup", "order": "ASCENDING" },
+        { "fieldPath": "calculatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "logs",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tests",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "enabled", "order": "ASCENDING" },
+        { "fieldPath": "endDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tests",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "enabled", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

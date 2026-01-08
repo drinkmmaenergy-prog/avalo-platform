@@ -1,0 +1,75 @@
+// PACK 147 — Refund & Dispute Resolution System
+// Firestore Security Rules
+
+// Escrow Wallets
+match /escrow_wallets/{escrowId} {
+  // Users can read their own escrows (as payer or recipient)
+  allow read: if request.auth != null && (
+    resource.data.payerId == request.auth.uid ||
+    resource.data.recipientId == request.auth.uid
+  );
+  
+  // Only backend functions can create/update escrows
+  allow write: if false;
+}
+
+// Refund Requests
+match /refund_requests/{refundId} {
+  // Users can read refunds they're involved in
+  allow read: if request.auth != null && (
+    resource.data.requesterId == request.auth.uid ||
+    resource.data.recipientId == request.auth.uid
+  );
+  
+  // Users can create refund requests (validated by backend)
+  allow create: if request.auth != null &&
+    request.resource.data.requesterId == request.auth.uid;
+  
+  // Only backend can update/delete
+  allow update, delete: if false;
+}
+
+// Dispute Cases
+match /dispute_cases/{caseId} {
+  // Users can read disputes they're involved in
+  allow read: if request.auth != null && (
+    resource.data.disputantId == request.auth.uid ||
+    resource.data.defendantId == request.auth.uid
+  );
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Dispute Evidence
+match /dispute_evidence/{evidenceId} {
+  // Evidence is readable through parent dispute case permissions
+  allow read: if request.auth != null;
+  
+  // Users can submit evidence for their own disputes
+  allow create: if request.auth != null &&
+    request.resource.data.submittedBy == request.auth.uid;
+  
+  // Only backend can update/delete
+  allow update, delete: if false;
+}
+
+// Fraud Detection Records
+match /fraud_detection_records/{recordId} {
+  // Users can read their own fraud records
+  allow read: if request.auth != null &&
+    resource.data.userId == request.auth.uid;
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Reputation Impact Records (PACK 140 integration)
+match /reputation_impact_records/{impactId} {
+  // Users can read their own reputation impacts
+  allow read: if request.auth != null &&
+    resource.data.userId == request.auth.uid;
+  
+  // Only backend can write
+  allow write: if false;
+}

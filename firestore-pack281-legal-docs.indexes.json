@@ -1,0 +1,28 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "legalDocuments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "required", "order": "ASCENDING" },
+        { "fieldPath": "version", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "legalDocuments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "effectiveAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "legalAcceptances",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

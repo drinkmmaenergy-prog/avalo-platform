@@ -1,0 +1,148 @@
+🇬🇧 ENGLISH VERSION
+Avalo QA & Test Plan (v1)
+1. Objective
+
+Ensure Avalo’s mobile and web platforms operate reliably, securely, and in compliance with design, legal, and financial requirements.
+
+2. Test Environments
+Environment	URL / Config	Notes
+Local	localhost:8080 + Firebase Emulator	For developers
+Staging	staging.avalo.app	Pre-production
+Production	avalo.app	Live environment
+Mobile	Expo Go + Android Emulator + iOS Simulator	For device testing
+3. Test Categories
+3.1 Functional Testing
+Module	Scope
+Auth	Email, Google, Phone OTP, Apple, Facebook, Instagram
+Profile	Create/Edit/Delete, visibility toggles, Royal Club logic
+Discovery	Swipe, likes, filters, GPS distance accuracy
+Chat	Free vs paid logic, token deduction, message expiry
+Calendar	Bookings, refunds, timezones, notifications
+Feed	Posts, comments, ad injection, media upload
+Wallet	Token balance, purchase flow, payout sync
+AI Companions	Prompt handling, chat stability
+Ads	Frequency, click tracking, removal for VIP
+i18n	Language detection, text rendering in 30+ locales
+3.2 Security Testing
+Area	Method	Expected Result
+Authentication	Brute-force / token replay	Lockout after 5 attempts
+Firestore Rules	Emulator test	Unauthorized writes blocked
+Cloud Functions	Role validation	Only admin roles accepted
+Data in transit	HTTPS check	TLS 1.3 enforced
+Sensitive data	Static scan	No plaintext secrets
+3.3 Payment Testing
+Case	Steps	Expected Result
+Buy token pack	Stripe test card	Correct balance update
+Refund (earner no-show)	Trigger via admin	Full refund (minus Avalo fee)
+Subscription cancel	Stripe webhook	Access removed immediately
+Crypto purchase	Sandbox payment	Token wallet credited
+Double charge	Duplicate event	Prevented by idempotency key
+3.4 Moderation Testing
+Type	Action	Expected
+AI Keyword Block	“escort” in chat	Message deleted, warning shown
+Image Scan	NSFW photo	Blocked upload
+Manual Report	User A reports B	Ticket created
+Appeal Flow	Appeal form submit	Case reopened, review logged
+3.5 Performance Testing
+Scenario	Tool	Goal
+10k concurrent users	Locust / k6	<2s response time
+File upload	Firebase Storage	99.9% success rate
+Chat load	WebSocket / Realtime DB	No disconnects at 1k sessions
+3.6 Localization Testing
+
+Verify UI text across PL, EN, ES, DE, FR.
+
+Test fallback to EN when translation missing.
+
+Verify RTL rendering for Arabic.
+
+3.7 Legal & Compliance Testing
+
+Verify all disclaimers visible (Calendar, ToS).
+
+Confirm data export/delete works via user request.
+
+Simulate underage attempt → access denied.
+
+Confirm consent dialog for ads (GDPR).
+
+4. Automation Coverage
+Layer	Tool	Purpose
+Unit Tests	Jest	Components, utils, reducers
+E2E	Detox (mobile), Cypress (web)	Critical flows
+Integration	Firebase Emulator Suite	Functions, Auth, Firestore
+Load	k6 / Locust	Backend performance
+Visual	Percy	UI regression
+5. Regression Strategy
+
+Run full test suite on each major release.
+
+GitHub Actions CI triggers tests automatically on PR merge.
+
+Failed builds block deployment.
+
+6. Bug Reporting
+Field	Description
+ID	Unique bug code
+Severity	Critical / High / Medium / Low
+Steps to Reproduce	Exact sequence
+Expected Result	Correct behavior
+Actual Result	Observed issue
+Screenshot / Log	Attached evidence
+Assigned To	Developer or QA
+Status	Open / In Progress / Fixed / Verified
+7. Acceptance Criteria
+
+All critical and high bugs resolved.
+
+100% test pass for authentication, chat, and payments.
+
+No major UI or crash bugs.
+
+Performance <2s latency under 10k users.
+
+8. Reporting
+
+Weekly QA report generated automatically:
+
+Summary of tests executed
+
+Open vs closed bugs
+
+Crash-free rate
+
+App version coverage
+
+🇵🇱 POLSKA WERSJA
+Plan Testów Avalo (v1)
+1. Cel
+
+Zapewnienie stabilności, bezpieczeństwa i zgodności aplikacji Avalo z wymaganiami prawnymi i technicznymi.
+
+2. Środowiska testowe
+
+Lokalne, staging, produkcja, mobilne (Android/iOS).
+
+3. Kategorie testów
+
+Funkcjonalne (rejestracja, czat, kalendarz, feed, tokeny)
+
+Bezpieczeństwa (uwierzytelnianie, RODO, dane)
+
+Płatności (Stripe, zwroty, subskrypcje)
+
+Moderacja (AI + manualna)
+
+Wydajność i lokalizacja
+
+4. Automatyzacja
+
+Jest, Detox, Cypress, k6, Firebase Emulator.
+
+5. Kryteria akceptacji
+
+Brak błędów krytycznych, poprawność płatności, pełna stabilność.
+
+6. Raportowanie
+
+Cotygodniowe raporty QA z listą błędów, wersjami i wynikami testów.

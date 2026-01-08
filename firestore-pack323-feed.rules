@@ -1,0 +1,199 @@
+rules_version = '2';
+
+/**
+ * PACK 323 - Feed Core Engine Security Rules
+ * Posts, Reels, Stories, Likes, Views, Comments
+ * 
+ * CRITICAL: Zero wallet operations, zero tokenomics
+ * Pure social content layer only
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidTimestamp(value) {
+      return value is timestamp;
+    }
+    
+    // ============================================================================
+    // FEED POSTS
+    // ============================================================================
+    
+    match /feedPosts/{postId} {
+      // Anyone can read public posts
+      allow read: if isAuthenticated() && 
+                     resource.data.visibility == "PUBLIC" &&
+                     resource.data.isDeleted == false;
+      
+      // Read own posts even if deleted
+      allow read: if isAuthenticated() && 
+                     resource.data.ownerUserId == request.auth.uid;
+      
+      // Create post (via Cloud Function only in production)
+      allow create: if isAuthenticated() && 
+                       request.resource.data.ownerUserId == request.auth.uid &&
+                       request.resource.data.isDeleted == false &&
+                       request.resource.data.keys().hasAll(['ownerUserId', 'caption', 'createdAt', 'visibility', 'allowComments']) &&
+                       request.resource.data.mediaUrls is list &&
+                       request.resource.data.mediaUrls.size() <= 10;
+      
+      // Update own post (limited fields)
+      allow update: if isOwner(resource.data.ownerUserId) &&
+                       request.resource.data.ownerUserId == resource.data.ownerUserId &&
+                       request.resource.data.createdAt == resource.data.createdAt;
+      
+      // Delete own post (soft delete)
+      allow delete: if isOwner(resource.data.ownerUserId);
+    }
+    
+    // ============================================================================
+    // FEED REELS
+    // ============================================================================
+    
+    match /feedReels/{reelId} {
+      // Anyone can read public reels
+      allow read: if isAuthenticated() && 
+                     resource.data.visibility == "PUBLIC" &&
+                     resource.data.isDeleted == false;
+      
+      // Read own reels
+      allow read: if isAuthenticated() && 
+                     resource.data.ownerUserId == request.auth.uid;
+      
+      // Create reel (via Cloud Function only in production)
+      allow create: if isAuthenticated() && 
+                       request.resource.data.ownerUserId == request.auth.uid &&
+                       request.resource.data.isDeleted == false &&
+                       request.resource.data.keys().hasAll(['ownerUserId', 'videoUrl', 'createdAt', 'visibility']) &&
+                       request.resource.data.durationSec > 0 &&
+                       request.resource.data.durationSec <= 180; // Max 3 minutes
+      
+      // Update own reel (limited fields)
+      allow update: if isOwner(resource.data.ownerUserId) &&
+                       request.resource.data.ownerUserId == resource.data.ownerUserId &&
+                       request.resource.data.createdAt == resource.data.createdAt;
+      
+      // Delete own reel
+      allow delete: if isOwner(resource.data.ownerUserId);
+    }
+    
+    // ============================================================================
+    // FEED STORIES
+    // ============================================================================
+    
+    match /feedStories/{storyId} {
+      // Read active stories only
+      allow read: if isAuthenticated() && 
+                     resource.data.isDeleted == false &&
+                     resource.data.expiresAt > request.time;
+      
+      // Read own stories (even if expired)
+      allow read: if isAuthenticated() && 
+                     resource.data.ownerUserId == request.auth.uid;
+      
+      // Create story (via Cloud Function only in production)
+      allow create: if isAuthenticated() && 
+                       request.resource.data.ownerUserId == request.auth.uid &&
+                       request.resource.data.isDeleted == false &&
+                       request.resource.data.keys().hasAll(['ownerUserId', 'mediaUrl', 'createdAt', 'expiresAt']) &&
+                       request.resource.data.expiresAt > request.resource.data.createdAt;
+      
+      // Cannot update stories
+      allow update: if false;
+      
+      // Delete own story
+      allow delete: if isOwner(resource.data.ownerUserId);
+    }
+    
+    // ============================================================================
+    // FEED LIKES
+    // ============================================================================
+    
+    match /feedLikes/{likeId} {
+      // Read own likes
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Create like (via Cloud Function recommended)
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'contentId', 'contentType', 'createdAt']);
+      
+      // Cannot update likes
+      allow update: if false;
+      
+      // Delete own like (unlike)
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // ============================================================================
+    // FEED VIEWS
+    // ============================================================================
+    
+    match /feedViews/{viewId} {
+      // Read own views
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Create view (via Cloud Function recommended)
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'contentId', 'contentType', 'createdAt']);
+      
+      // Cannot update or delete views
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // FEED COMMENTS
+    // ============================================================================
+    
+    match /feedComments/{commentId} {
+      // Read comments on public content
+      allow read: if isAuthenticated();
+      
+      // Create comment (via Cloud Function recommended)
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'contentId', 'contentType', 'text', 'createdAt']) &&
+                       request.resource.data.text.size() > 0 &&
+                       request.resource.data.text.size() <= 2000 &&
+                       request.resource.data.isDeleted == false;
+      
+      // Update own comment (soft delete only)
+      allow update: if isOwner(resource.data.userId) &&
+                       request.resource.data.userId == resource.data.userId &&
+                       request.resource.data.contentId == resource.data.contentId &&
+                       request.resource.data.createdAt == resource.data.createdAt;
+      
+      // Delete own comment
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    // ============================================================================
+    // FEED AGGREGATES (counters)
+    // ============================================================================
+    
+    match /feedAggregates/{aggregateId} {
+      // Anyone can read counters
+      allow read: if isAuthenticated();
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+  }
+}

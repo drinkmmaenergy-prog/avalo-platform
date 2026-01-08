@@ -1,0 +1,52 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "reputationProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "riskLabel", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reputationProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "reputationScore", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reputationProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "safetySignalRisk", "order": "DESCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reputationProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "manualReview", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reputationProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "limitedMode", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reputationProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "totalSafetyIncidents", "order": "DESCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    }
+  ]
+}

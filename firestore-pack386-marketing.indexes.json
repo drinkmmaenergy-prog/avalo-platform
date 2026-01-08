@@ -1,0 +1,269 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "marketingCampaigns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketingCampaigns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "platform", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketingCampaigns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "metrics.roi", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencerProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "metrics.totalRevenue", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencerProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tier", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencerCampaigns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencerCampaigns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "acquisitionAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "installDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "acquisitionAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "campaignId", "order": "ASCENDING" },
+        { "fieldPath": "hasTokenPurchase", "order": "ASCENDING" },
+        { "fieldPath": "installDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "acquisitionAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "installDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "acquisitionAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "hasChurned", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "acquisitionAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "source", "order": "ASCENDING" },
+        { "fieldPath": "installDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "acquisitionAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "deviceInfo.ipAddress", "order": "ASCENDING" },
+        { "fieldPath": "installDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "acquisitionAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "deviceInfo.deviceId", "order": "ASCENDING" },
+        { "fieldPath": "installDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "acquisitionAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "blocked", "order": "ASCENDING" },
+        { "fieldPath": "installDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencerAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "hasChurned", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencerAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewPrompts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "trigger", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewPrompts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "completed", "order": "ASCENDING" },
+        { "fieldPath": "completedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewPrompts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "shown", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketingFraudSignals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "severity", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketingFraudSignals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "source", "order": "ASCENDING" },
+        { "fieldPath": "sourceId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketingFraudSignals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "severity", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketingBudgets",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "ASCENDING" },
+        { "fieldPath": "geo", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketingBudgets",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "attributionBlocklist",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sourceType", "order": "ASCENDING" },
+        { "fieldPath": "sourceId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "churnEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "source", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "churnEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "campaignId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "churnEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "fraudAlerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "fraudAlerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "severity", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adminAlerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

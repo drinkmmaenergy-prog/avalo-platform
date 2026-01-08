@@ -1,0 +1,169 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==================================================================
+    // PACK 390 - GLOBAL PAYMENTS & BANKING COMPLIANCE
+    // ==================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isFinanceTeam() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get('finance', false) == true;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function hasKYCLevel(level) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('kycLevel', 0) >= level;
+    }
+    
+    // FX Rates - Public read, system write only
+    match /fxRates/{rateId} {
+      allow read: if true;
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Global Payout Rules - Admin read, system write
+    match /globalPayoutRules/{ruleId} {
+      allow read: if isAdmin() || isFinanceTeam();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Fiat Ledgers - User can read own, finance team can read all
+    match /fiatLedgers/{ledgerId} {
+      allow read: if isOwner(resource.data.userId) || isFinanceTeam() || isAdmin();
+      allow create: if false; // Only Cloud Functions can create
+      allow update: if false; // Only Cloud Functions can update
+      allow delete: if false; // Never delete ledger entries
+    }
+    
+    // Bank Transfers - User can read own, finance team can read all
+    match /bankTransfers/{transferId} {
+      allow read: if isOwner(resource.data.userId) || isFinanceTeam() || isAdmin();
+      allow create: if isAuthenticated() && 
+                       isOwner(request.resource.data.userId) &&
+                       hasKYCLevel(2) &&
+                       request.resource.data.status == 'pending';
+      allow update: if false; // Only Cloud Functions can update status
+      allow delete: if false; // Never delete transfer records
+    }
+    
+    // KYC Documents - User can read/write own, compliance team can read all
+    match /kycDocuments/{docId} {
+      allow read: if isOwner(resource.data.userId) || isFinanceTeam() || isAdmin();
+      allow create: if isAuthenticated() && 
+                       isOwner(request.resource.data.userId);
+      allow update: if isOwner(resource.data.userId) && 
+                       resource.data.status == 'pending';
+      allow delete: if false; // Never delete KYC documents
+    }
+    
+    // AML Scans - Compliance team only
+    match /amlScans/{scanId} {
+      allow read: if isFinanceTeam() || isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // AML Alerts - Compliance team only
+    match /amlAlerts/{alertId} {
+      allow read: if isFinanceTeam() || isAdmin();
+      allow update: if (isFinanceTeam() || isAdmin()) && 
+                       request.resource.data.keys().hasOnly(['status', 'reviewedBy', 'reviewedAt', 'resolution', 'notes']);
+      allow create, delete: if false; // Only Cloud Functions can create
+    }
+    
+    // Tax Reports - User can read own, finance team can read all
+    match /taxReports/{reportId} {
+      allow read: if isOwner(resource.data.userId) || isFinanceTeam() || isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // VAT Statements - Finance team only
+    match /vatStatements/{statementId} {
+      allow read: if isFinanceTeam() || isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Country Revenue Breakdown - Finance team only
+    match /countryRevenueBreakdown/{breakdownId} {
+      allow read: if isFinanceTeam() || isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Market Status - Public read, admin write
+    match /marketStatus/{countryCode} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Payout Requests - User can read/create own, finance team can read all
+    match /payoutRequests/{requestId} {
+      allow read: if isOwner(resource.data.userId) || isFinanceTeam() || isAdmin();
+      allow create: if isAuthenticated() && 
+                       isOwner(request.resource.data.userId) &&
+                       hasKYCLevel(2) &&
+                       request.resource.data.status == 'pending' &&
+                       request.resource.data.amount >= 1000;
+      allow update: if false; // Only Cloud Functions can update
+      allow delete: if false; // Never delete payout requests
+    }
+    
+    // Financial Audit Logs - Finance team only
+    match /financialAuditLogs/{logId} {
+      allow read: if isFinanceTeam() || isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Currency Conversions - User can read own, system writes
+    match /currencyConversions/{conversionId} {
+      allow read: if isOwner(resource.data.userId) || isFinanceTeam() || isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Banking Compliance Reports - Compliance team only
+    match /bankingComplianceReports/{reportId} {
+      allow read: if isFinanceTeam() || isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Chargeback Records - Finance team only
+    match /chargebackRecords/{recordId} {
+      allow read: if isFinanceTeam() || isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Token Circulation Stats - Public read, system write
+    match /tokenCirculationStats/{statId} {
+      allow read: if true;
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Platform Fees - Finance team only
+    match /platformFees/{feeId} {
+      allow read: if isFinanceTeam() || isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Event Settlements - Event owner can read, system writes
+    match /eventSettlements/{settlementId} {
+      allow read: if isOwner(resource.data.creatorId) || isFinanceTeam() || isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+  }
+}

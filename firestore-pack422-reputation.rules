@@ -1,0 +1,62 @@
+/**
+ * PACK 422 — Global Trust, Reputation & Moderation Intelligence (Tier-2)
+ * 
+ * Security rules for reputationProfiles collection.
+ * Users can NEVER read their own reputation profile.
+ * Only server & admin roles can access.
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/adminRoles/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/adminRoles/$(request.auth.uid)).data.role in ['SUPER_ADMIN', 'SAFETY_ADMIN', 'MODERATOR'];
+    }
+    
+    function isServerRequest() {
+      // Server requests have elevated privileges via service account
+      return request.auth != null && request.auth.token.admin == true;
+    }
+    
+    // Reputation Profiles — PACK 422
+    match /reputationProfiles/{userId} {
+      // Users can NEVER read their own reputation profile
+      allow read: if false;
+      
+      // Only admin and server can read
+      allow get: if isAdmin() || isServerRequest();
+      allow list: if isAdmin() || isServerRequest();
+      
+      // Only server can create/update
+      allow create: if isServerRequest();
+      allow update: if isServerRequest();
+      
+      // Only super admin can delete (for GDPR compliance)
+      allow delete: if isServerRequest() || 
+                      (isAdmin() && 
+                       get(/databases/$(database)/documents/adminRoles/$(request.auth.uid)).data.role == 'SUPER_ADMIN');
+    }
+    
+    // Reputation History (optional subcollection for audit trail)
+    match /reputationProfiles/{userId}/history/{eventId} {
+      allow read: if isAdmin() || isServerRequest();
+      allow write: if isServerRequest();
+    }
+    
+    // Reputation Admin Overrides (audit trail of manual actions)
+    match /reputationProfiles/{userId}/overrides/{overrideId} {
+      allow read: if isAdmin() || isServerRequest();
+      allow create: if isAdmin() || isServerRequest();
+      allow update: if false; // Immutable once created
+      allow delete: if false; // Never delete audit trails
+    }
+  }
+}

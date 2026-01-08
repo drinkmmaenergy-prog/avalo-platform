@@ -1,0 +1,136 @@
+{
+  "support": {
+    "title": "Wsparcie",
+    "newCase": "Nowe zgłoszenie",
+    "noCases": "Brak zgłoszeń",
+    "noCasesDesc": "Nie utworzyłeś jeszcze żadnych zgłoszeń do wsparcia.",
+    "createNewCase": "Utwórz nowe zgłoszenie",
+    
+    "filters": {
+      "all": "Wszystkie",
+      "open": "Otwarte",
+      "resolved": "Rozwiązane"
+    },
+    
+    "status": {
+      "OPEN": "Otwarte",
+      "ASSIGNED": "Przypisane",
+      "WAITING_FOR_AGENT": "Oczekiwanie na agenta",
+      "WAITING_FOR_USER": "Oczekujemy na Ciebie",
+      "RESOLVED": "Rozwiązane",
+      "CLOSED": "Zamknięte"
+    },
+    
+    "priority": {
+      "CRITICAL": "Krytyczny",
+      "HIGH": "Wysoki",
+      "NORMAL": "Normalny"
+    },
+    
+    "categories": {
+      "TECHNICAL": "Problem techniczny",
+      "BILLING": "Płatności i rozliczenia",
+      "ACCOUNT": "Dostęp do konta",
+      "CONTENT": "Problemy z treścią",
+      "SAFETY": "Bezpieczeństwo",
+      "LEGAL": "Sprawy prawne",
+      "FEATURE_REQUEST": "Propozycja funkcji",
+      "OTHER": "Inne"
+    },
+    
+    "chat": {
+      "typeMessage": "Wpisz wiadomość...",
+      "send": "Wyślij",
+      "supportAgent": "Agent wsparcia",
+      "caseClosed": "To zgłoszenie zostało zamknięte",
+      "caseResolved": "Zgłoszenie rozwiązane",
+      "reopen": "Otwórz ponownie",
+      "reopenConfirm": "Czy chcesz ponownie otworzyć to zgłoszenie?",
+      "reopenSuccess": "Zgłoszenie zostało ponownie otwarte",
+      "cannotSendClosed": "To zgłoszenie zostało zamknięte. Nie możesz wysyłać nowych wiadomości."
+    },
+    
+    "newCase": {
+      "title": "Nowe zgłoszenie",
+      "subject": "Temat",
+      "subjectPlaceholder": "Krótki opis problemu",
+      "category": "Kategoria",
+      "description": "Opis",
+      "descriptionPlaceholder": "Opisz szczegółowo swój problem...",
+      "required": "Wymagane",
+      "subjectRequired": "Wprowadź temat zgłoszenia",
+      "messageRequired": "Opisz swój problem",
+      "categoryRequired": "Wybierz kategorię",
+      "createButton": "Utwórz zgłoszenie",
+      "successTitle": "Sukces",
+      "successMessage": "Twoje zgłoszenie zostało utworzone. Nasz zespół wkrótce odpowie.",
+      "errorTitle": "Błąd",
+      "errorMessage": "Nie udało się utworzyć zgłoszenia. Spróbuj ponownie.",
+      "infoMessage": "Nasz zespół wsparcia zazwyczaj odpowiada w ciągu 24 godzin. W pilnych sprawach oznacz jako wysoki priorytet.",
+      "charCount": "{count}/{max}"
+    },
+    
+    "time": {
+      "justNow": "Właśnie teraz",
+      "minutesAgo": "{count} min temu",
+      "hoursAgo": "{count}godz temu",
+      "daysAgo": "{count}d temu",
+      "yesterday": "Wczoraj",
+      "updated": "Zaktualizowano {time}"
+    },
+    
+    "errors": {
+      "caseNotFound": "Nie znaleziono zgłoszenia",
+      "unauthorized": "Nie masz dostępu do tego zgłoszenia",
+      "sendFailed": "Nie udało się wysłać wiadomości. Spróbuj ponownie.",
+      "reopenFailed": "Nie udało się ponownie otworzyć zgłoszenia. Spróbuj ponownie.",
+      "rateLimitExceeded": "Osiągnąłeś maksymalną liczbę zgłoszeń. Poczekaj przed utworzeniem kolejnych."
+    },
+    
+    "notifications": {
+      "agentReplied": "Agent wsparcia odpowiedział",
+      "needsInfo": "Wsparcie potrzebuje więcej informacji",
+      "caseResolved": "Twoje zgłoszenie zostało rozwiązane",
+      "caseAssigned": "Twoje zgłoszenie zostało przypisane do agenta"
+    },
+    
+    "crisisResources": {
+      "PL": {
+        "message": "Jeśli potrzebujesz pomocy, zadzwoń na Telefon Zaufania: 116 123.",
+        "hotline": "116 123",
+        "website": "https://www.telefonzaufania.org"
+      },
+      "DEFAULT": {
+        "message": "Jeśli znajdujesz się w kryzysie, skontaktuj się z lokalnymi służbami ratunkowymi lub odwiedź findahelpline.com w celu znalezienia zasobów w Twoim regionie.",
+        "hotline": "Lokalne służby ratunkowe",
+        "website": "https://findahelpline.com"
+      }
+    },
+    
+    "agent": {
+      "title": "Konsola wsparcia",
+      "assignedCases": "Przypisane zgłoszenia",
+      "unassignedCases": "Nieprzypisane zgłoszenia",
+      "assignToMe": "Przypisz do mnie",
+      "markWaiting": "Oznacz jako oczekujące na użytkownika",
+      "resolveCase": "Rozwiąż zgłoszenie",
+      "changePriority": "Zmień priorytet",
+      "changeCategory": "Zmień kategorię",
+      "addTags": "Dodaj tagi",
+      "internalNote": "Notatka wewnętrzna",
+      "sendMessage": "Wyślij wiadomość",
+      "caseDetails": "Szczegóły zgłoszenia",
+      "userInfo": "Informacje o użytkowniku",
+      "caseHistory": "Historia zgłoszenia",
+      "resolution": {
+        "title": "Rozwiąż zgłoszenie",
+        "category": "Kategoria rozwiązania",
+        "notes": "Notatki rozwiązania",
+        "FIXED": "Problem naprawiony",
+        "EXPLAINED": "Problem wyjaśniony",
+        "NO_ACTION_NEEDED": "Nie wymaga działania",
+        "ESCALATED": "Eskalowane"
+      }
+    }
+  }
+}

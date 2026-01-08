@@ -1,0 +1,256 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'superadmin'];
+    }
+    
+    function isSuperAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isNotContained() {
+      return !get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('securityLock', false);
+    }
+    
+    // PACK 389: Secure Sessions
+    match /secureSessions/{userId} {
+      allow read: if isOwner(userId) && isNotContained();
+      allow write: if isOwner(userId) && isNotContained();
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // PACK 389: Trusted Devices
+    match /trustedDevices/{deviceKey} {
+      allow read: if isAuthenticated() && 
+                     deviceKey.split('_')[0] == request.auth.uid &&
+                     isNotContained();
+      allow create: if isAuthenticated() && 
+                       deviceKey.split('_')[0] == request.auth.uid &&
+                       isNotContained();
+      allow update: if isAuthenticated() && 
+                       deviceKey.split('_')[0] == request.auth.uid &&
+                       isNotContained();
+      allow delete: if isAdmin();
+    }
+    
+    // PACK 389: Zero Trust Logs (Admin read-only)
+    match /zeroTrustLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // System writes only
+    }
+    
+    // PACK 389: Session Logs (Admin read-only)
+    match /sessionLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // System writes only
+    }
+    
+    // PACK 389: Threat Signals (Admin read-only)
+    match /threatSignals/{signalId} {
+      allow read: if isAdmin();
+      allow write: if false; // System writes only
+    }
+    
+    // PACK 389: Security Alerts (Admin only)
+    match /securityAlerts/{alertId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin(); // Can be manually created
+      allow update: if isAdmin(); // Can update status
+      allow delete: if isSuperAdmin();
+    }
+    
+    // PACK 389: Containment Actions (Admin read-only, System writes)
+    match /containmentActions/{actionId} {
+      allow read: if isAdmin();
+      allow write: if false; // System writes only
+    }
+    
+    // PACK 389: Containment Lifts (Admins can create to lift containment)
+    match /containmentLifts/{liftId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+    
+    // PACK 389: System Containment Events (Admin read-only)
+    match /systemContainmentEvents/{eventId} {
+      allow read: if isAdmin();
+      allow write: if false; // System writes only
+    }
+    
+    // PACK 389: IP Blacklist (Admin management)
+    match /ipBlacklist/{ipHash} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // PACK 389: IP Intelligence (Admin read-only)
+    match /ipIntelligence/{ipHash} {
+      allow read: if isAdmin();
+      allow write: if false; // System writes only
+    }
+    
+    // PACK 389: User IP History (Admin read-only)
+    match /userIPHistory/{historyId} {
+      allow read: if isAdmin();
+      allow write: if false; // System writes only
+    }
+    
+    // PACK 389: Rate Limits (System managed)
+    match /rateLimits/{limitKey} {
+      allow read: if isAdmin();
+      allow write: if false; // System writes only
+    }
+    
+    // PACK 389: User Behavior Baseline (System managed)
+    match /userBehaviorBaseline/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false; // System writes only
+    }
+    
+    // PACK 389: PR Alerts (Admin and PR team)
+    match /prAlerts/{alertId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin(); // Can be manually created
+      allow update: if isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+    
+    // PACK 389: Legal Compliance Flags (Admin and Legal team)
+    match /legalComplianceFlags/{flagId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+    
+    // PACK 389: Admin Alerts (Admin only)
+    match /adminAlerts/{alertId} {
+      allow read: if isAdmin();
+      allow update: if isAdmin(); // Can update status
+      allow delete: if isSuperAdmin();
+      allow create: if false; // System writes only
+    }
+    
+    // PACK 389: Security Simulations (Superadmin only)
+    match /securitySimulations/{simulationId} {
+      allow read: if isSuperAdmin();
+      allow write: if false; // System writes only
+    }
+    
+    // PACK 389: Auth Attempts (System writes, admin reads)
+    match /authAttempts/{attemptId} {
+      allow read: if isAdmin();
+      allow write: if false; // System writes only
+    }
+    
+    // PACK 389: API Calls Log (System writes, admin reads)
+    match /apiCalls/{callId} {
+      allow read: if isAdmin();
+      allow write: if false; // System writes only
+    }
+    
+    // Enhanced user document security
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow update: if isOwner(userId) && isNotContained() && 
+                       // Prevent users from modifying security fields
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(['securityStatus', 'containmentLevel', 'securityLock', 
+                                  'role', 'riskScore', 'accountStatus']);
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if isSuperAdmin();
+    }
+    
+    // Enhanced wallet security with freeze checks
+    match /wallets/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow update: if isOwner(userId) && isNotContained() &&
+                       // Check wallet not frozen
+                       !get(/databases/$(database)/documents/wallets/$(userId)).data.get('frozen', false) &&
+                       // Prevent users from unfreezing their own wallet
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(['frozen', 'freezeReason', 'frozenBy']);
+      allow create: if isOwner(userId);
+    }
+    
+    // Enhanced AI Companion security
+    match /aiCompanions/{companionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isNotContained() &&
+                       // Rate limit check: max 20 companions
+                       get(/databases/$(database)/documents/users/$(request.auth.uid))
+                         .data.get('aiCompanionCount', 0) < 20;
+      allow update: if isAuthenticated() && 
+                       resource.data.creatorId == request.auth.uid &&
+                       isNotContained() &&
+                       // Cannot unfreeze
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(['frozen', 'freezeReason']);
+      allow delete: if resource.data.creatorId == request.auth.uid || isAdmin();
+    }
+    
+    // Enhanced meeting security
+    match /meetings/{meetingId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isNotContained();
+      allow update: if isAuthenticated() && 
+                       (resource.data.hostId == request.auth.uid ||
+                        resource.data.participantIds.hasAny([request.auth.uid])) &&
+                       isNotContained();
+      allow delete: if resource.data.hostId == request.auth.uid || isAdmin();
+    }
+    
+    // Enhanced support ticket security
+    match /supportTickets/{ticketId} {
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated(); // Anyone can create tickets
+      allow update: if isAdmin(); // Only admins can update
+      allow delete: if isSuperAdmin();
+    }
+    
+    // Store listings with suspension checks
+    match /storeListings/{listingId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isNotContained() &&
+                       !get(/databases/$(database)/documents/users/$(request.auth.uid))
+                         .data.get('storeSuspended', false);
+      allow update: if isAuthenticated() &&
+                       resource.data.sellerId == request.auth.uid &&
+                       isNotContained() &&
+                       !get(/databases/$(database)/documents/users/$(request.auth.uid))
+                         .data.get('storeSuspended', false);
+      allow delete: if resource.data.sellerId == request.auth.uid || isAdmin();
+    }
+    
+    // Store reviews with rate limiting
+    match /storeReviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isNotContained();
+      allow update: if resource.data.userId == request.auth.uid && isNotContained();
+      allow delete: if resource.data.userId == request.auth.uid || isAdmin();
+    }
+    
+    // Wallet transactions (read-only for users, system writes)
+    match /walletTransactions/{transactionId} {
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false; // System writes only
+    }
+  }
+}

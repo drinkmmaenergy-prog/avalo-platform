@@ -1,0 +1,193 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "ai_memories",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "characterId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_memories",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_memories",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_memories",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "characterId", "order": "ASCENDING" },
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "lastAccessedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_growth_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "characterId", "order": "ASCENDING" },
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_growth_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "characterId", "order": "ASCENDING" },
+        { "fieldPath": "isSafe", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_memory_expirations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "scheduledFor", "order": "ASCENDING" },
+        { "fieldPath": "processed", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_memory_expirations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "scheduledFor", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_user_preferences",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "characterId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_user_preferences",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_lore_updates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "characterId", "order": "ASCENDING" },
+        { "fieldPath": "season", "order": "ASCENDING" },
+        { "fieldPath": "releasedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_lore_updates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "updateType", "order": "ASCENDING" },
+        { "fieldPath": "releasedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_lore_updates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "characterId", "order": "ASCENDING" },
+        { "fieldPath": "isSafe", "order": "ASCENDING" },
+        { "fieldPath": "releasedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_dependency_signals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "characterId", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_dependency_signals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "riskLevel", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_dependency_signals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "resolved", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_stability_sessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "characterId", "order": "ASCENDING" },
+        { "fieldPath": "startedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_stability_sessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "startedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_growth_metrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "characterId", "order": "ASCENDING" },
+        { "fieldPath": "metricType", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_growth_metrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "characterId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_memory_permissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "characterId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_memory_permissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

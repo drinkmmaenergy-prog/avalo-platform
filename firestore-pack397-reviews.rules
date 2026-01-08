@@ -1,0 +1,225 @@
+rules_version = '2';
+
+/**
+ * PACK 397 — App Store Defense & Reputation Security Rules
+ * 
+ * Server-write only for critical reputation data
+ * Admin RBAC for trust console
+ * Full audit logging integration
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // HELPER FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isTrustAdmin() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'trust_admin'
+      );
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // STORE REVIEWS (Raw Import Data)
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /store_reviews_raw/{reviewId} {
+      // Server-write only (via Cloud Functions)
+      allow read: if isTrustAdmin();
+      allow write: if false; // Only backend can write
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // VERIFIED REVIEWS (User-Generated)
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /verified_reviews/{reviewId} {
+      // Users can read approved reviews
+      allow read: if resource.data.approved == true;
+      
+      // Admins can read all reviews
+      allow read: if isTrustAdmin();
+      
+      // Users can create their own reviews (via Cloud Function)
+      allow create: if false; // Must use Cloud Function for verification
+      
+      // Only admins can update (approve/moderate)
+      allow update: if isTrustAdmin() && (
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['approved', 'featuredInMarketing', 'moderatedAt', 'moderatedBy'])
+      );
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // REVIEW ANOMALIES
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /review_anomalies/{anomalyId} {
+      // Trust admins can read/update
+      allow read: if isTrustAdmin();
+      allow update: if isTrustAdmin() && (
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'actions', 'assignedTo', 'resolvedAt', 
+                    'appealSubmitted', 'appealStatus', 'endTime'])
+      );
+      
+      // Server-write only for creation
+      allow create: if false;
+      allow delete: if false;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // REPUTATION SCORES (User Scores)
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /reputation_scores/{userId} {
+      // Users can read their own score
+      allow read: if isOwner(userId);
+      
+      // Admins can read all scores
+      allow read: if isTrustAdmin();
+      
+      // Server-write only
+      allow write: if false;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // APP VERSION SCORES
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /app_version_scores/{versionId} {
+      // All authenticated users can read version scores
+      allow read: if isAuthenticated();
+      
+      // Server-write only
+      allow write: if false;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // REVIEW STATS & AGGREGATES
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /review_stats/{statId} {
+      // Public read for aggregate stats
+      allow read: if isAuthenticated();
+      
+      // Server-write only
+      allow write: if false;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // TRUST EVENTS (Audit Trail)
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /trust_events/{eventId} {
+      // Trust admins only
+      allow read: if isTrustAdmin();
+      
+      // Server-write only
+      allow write: if false;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // APPEAL LOGS
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /appeal_logs/{appealId} {
+      // Trust admins only
+      allow read: if isTrustAdmin();
+      
+      // Trust admins can update appeal status
+      allow update: if isTrustAdmin() && (
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'response', 'resolvedAt', 'reviewedBy'])
+      );
+      
+      // Server-write for creation
+      allow create: if false;
+      allow delete: if false;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // REVIEW REQUESTS (Recovery System)
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /review_requests/{requestId} {
+      // Users can see their own requests
+      allow read: if isOwner(resource.data.userId);
+      
+      // Admins can see all
+      allow read: if isTrustAdmin();
+      
+      // Server-write only
+      allow write: if false;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // REVIEW SOURCES (External Platform Mappings)
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /review_sources/{sourceId} {
+      // Admins only
+      allow read: if isTrustAdmin();
+      allow write: if false;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // REVIEW TRUST SCORES (ML-Generated Scores)
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /review_trust_scores/{scoreId} {
+      // Admins only
+      allow read: if isTrustAdmin();
+      allow write: if false;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // USER STORE MAPPINGS (Store ID to Avalo User)
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /user_store_mappings/{mappingId} {
+      // Users can read their own mapping
+      allow read: if isOwner(resource.data.userId);
+      
+      // Admins can read all
+      allow read: if isTrustAdmin();
+      
+      // Server-write only
+      allow write: if false;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // DEVICE FINGERPRINTS (For Review Matching)
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    match /device_fingerprints/{fingerprintId} {
+      // Users can read their own fingerprints
+      allow read: if isOwner(resource.data.userId);
+      
+      // Admins can read all
+      allow read: if isTrustAdmin();
+      
+      // Server-write only
+      allow write: if false;
+    }
+  }
+}

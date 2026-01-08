@@ -1,0 +1,18 @@
+{
+  "unknownError": "Nieznany błąd",
+  "networkError": "Błąd sieci",
+  "serviceUnavailable": "Usługa niedostępna",
+  "tryAgainLater": "Spróbuj ponownie później",
+  "sessionExpired": "Sesja wygasła",
+  "accessDenied": "Dostęp zabroniony",
+  "invalidInput": "Nieprawidłowe dane wejściowe",
+  "missingFields": "Brakujące pola",
+  "uploadFailed": "Przesyłanie nie powiodło się",
+  "featureUnavailable": "Funkcja niedostępna",
+  "rateLimited": {
+    "generic": "Wykonujesz tę akcję zbyt często. Poczekaj chwilę i spróbuj ponownie.",
+    "chat": "Wysyłasz wiadomości zbyt szybko. Zwolnij proszę.",
+    "support": "Osiągnąłeś limit zgłoszeń do pomocy. Spróbuj ponownie później.",
+    "auth": "Zbyt wiele prób. Poczekaj chwilę i spróbuj ponownie."
+  }
+}

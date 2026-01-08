@@ -1,0 +1,98 @@
+/**
+ * PACK 83 — Creator Payout Requests & Compliance Layer
+ * Firestore Security Rules for Payout System
+ * 
+ * CRITICAL SECURITY RULES:
+ * - Users can only manage their own payout methods
+ * - Users can only read their own payout requests
+ * - Status updates are backend-only (no client writes to status, reviewerId, etc.)
+ * - creator_balances remain read-only for all clients
+ * - Token locks are handled atomically by Cloud Functions only
+ */
+
+// ============================================================================
+// PAYOUT METHODS
+// ============================================================================
+
+match /payout_methods/{methodId} {
+  // Users can read only their own payout methods
+  allow read: if request.auth != null 
+    && request.auth.uid == resource.data.userId;
+  
+  // Users can create their own payout methods
+  allow create: if request.auth != null
+    && request.auth.uid == request.resource.data.userId
+    && request.resource.data.keys().hasAll(['userId', 'type', 'displayName', 'currency', 'details', 'isDefault', 'createdAt', 'updatedAt'])
+    && request.resource.data.type in ['BANK_TRANSFER', 'WISE', 'STRIPE_CONNECT']
+    && request.resource.data.currency in ['EUR', 'USD', 'GBP', 'PLN']
+    && request.resource.data.userId is string
+    && request.resource.data.displayName is string
+    && request.resource.data.displayName.size() >= 3
+    && request.resource.data.displayName.size() <= 100
+    && request.resource.data.details is map
+    && request.resource.data.isDefault is bool
+    && request.resource.data.createdAt is timestamp
+    && request.resource.data.updatedAt is timestamp;
+  
+  // Users can update only their own payout methods
+  // Can only update: displayName, details, isDefault, updatedAt
+  allow update: if request.auth != null
+    && request.auth.uid == resource.data.userId
+    && request.auth.uid == request.resource.data.userId
+    && request.resource.data.type == resource.data.type
+    && request.resource.data.currency == resource.data.currency
+    && request.resource.data.createdAt == resource.data.createdAt
+    && request.resource.data.updatedAt is timestamp;
+  
+  // Users can delete only their own payout methods
+  allow delete: if request.auth != null
+    && request.auth.uid == resource.data.userId;
+}
+
+// ============================================================================
+// PAYOUT REQUESTS
+// ============================================================================
+
+match /payout_requests/{requestId} {
+  // Users can read only their own payout requests
+  allow read: if request.auth != null 
+    && request.auth.uid == resource.data.userId;
+  
+  // Creation is allowed via Cloud Functions only (handled in backend)
+  // Direct client creation is blocked to ensure atomic token locking
+  allow create: if false;
+  
+  // Users CANNOT update payout requests directly
+  // All status changes must go through Cloud Functions
+  allow update: if false;
+  
+  // Users CANNOT delete payout requests
+  // Requests are permanent records for compliance
+  allow delete: if false;
+}
+
+// ============================================================================
+// CREATOR BALANCES (from PACK 81)
+// ============================================================================
+
+match /creator_balances/{userId} {
+  // Users can read only their own balance
+  allow read: if request.auth != null 
+    && request.auth.uid == userId;
+  
+  // NO direct writes allowed - all balance updates via Cloud Functions only
+  allow create, update, delete: if false;
+}
+
+// ============================================================================
+// PAYOUT CONFIG (if stored in Firestore)
+// ============================================================================
+
+match /payout_config/{configId} {
+  // Anyone (including unauthenticated) can read payout config
+  // This is public, read-only configuration
+  allow read: if true;
+  
+  // Only backend/admin can write config
+  allow create, update, delete: if false;
+}

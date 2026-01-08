@@ -1,0 +1,329 @@
+/**
+ * PACK 193 — REVISED v2 — Permission-Driven Sexuality System
+ * Safe, Consensual, App-Store-Compliant Adult Content Framework
+ * 
+ * Collections:
+ * - sexuality_consent_preferences (user 18+ consent settings)
+ * - sexy_mode_sessions (mutual consent between users)
+ * - sexy_content (content shared in sexy mode)
+ * - consent_audit_logs (safety & moderation tracking)
+ * - content_moderation_flags (automated moderation)
+ * - sexy_mode_violations (policy violation tracking)
+ * 
+ * Core Principle: "We don't police attraction — we protect consent."
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isAdult(userId) {
+      // Must have verified 18+ age
+      return exists(/databases/$(database)/documents/user_age_verification/$(userId))
+        && get(/databases/$(database)/documents/user_age_verification/$(userId)).data.isVerified18Plus == true
+        && get(/databases/$(database)/documents/user_age_verification/$(userId)).data.verificationStatus == 'approved';
+    }
+    
+    function hasConsentEnabled(userId) {
+      // User has explicitly enabled 18+ consent toggle
+      return exists(/databases/$(database)/documents/sexuality_consent_preferences/$(userId))
+        && get(/databases/$(database)/documents/sexuality_consent_preferences/$(userId)).data.consentEnabled == true
+        && get(/databases/$(database)/documents/sexuality_consent_preferences/$(userId)).data.isActive == true;
+    }
+    
+    function hasMutualConsent(userId1, userId2) {
+      // Both users have active sexy mode session
+      let sessionId1 = userId1 < userId2 ? userId1 + '_' + userId2 : userId2 + '_' + userId1;
+      return exists(/databases/$(database)/documents/sexy_mode_sessions/$(sessionId1))
+        && get(/databases/$(database)/documents/sexy_mode_sessions/$(sessionId1)).data.isActive == true
+        && get(/databases/$(database)/documents/sexy_mode_sessions/$(sessionId1)).data.user1Consent == true
+        && get(/databases/$(database)/documents/sexy_mode_sessions/$(sessionId1)).data.user2Consent == true
+        && get(/databases/$(database)/documents/sexy_mode_sessions/$(sessionId1)).data.expiresAt > request.time;
+    }
+    
+    function isAllowedContentType(contentType) {
+      // Safe, consensual content types
+      return contentType in ['text_flirty', 'text_sexy', 'photo_bikini', 'photo_lingerie', 
+                             'photo_sensual', 'selfie_sexy', 'emoji_flirty', 'compliment'];
+    }
+    
+    function isProhibitedContent(content) {
+      // Blocked content patterns
+      return content.keys().hasAny(['pornography', 'explicitSexAct', 'escorting', 
+                                    'monetaryService', 'minorReference', 'childCoded',
+                                    'publicGroupSexual', 'explicitVideo', 'liveWebcam'])
+        || (content.keys().hasAny(['contentType']) 
+            && content.contentType in ['porn', 'explicit_sex', 'escort_offer', 'minor_content']);
+    }
+
+    // ============================================
+    // SEXUALITY CONSENT PREFERENCES
+    // User-level 18+ consent toggle
+    // ============================================
+    
+    match /sexuality_consent_preferences/{userId} {
+      // User can read own preferences
+      allow read: if isAuthenticated()
+        && isOwner(userId);
+      
+      // User can enable consent (must be verified adult)
+      allow create: if isAuthenticated()
+        && isOwner(userId)
+        && isAdult(userId)
+        && request.resource.data.consentEnabled == true
+        && request.resource.data.userId == userId
+        && request.resource.data.isActive == true
+        && request.resource.data.enabledAt == request.time
+        && !isProhibitedContent(request.resource.data);
+      
+      // User can update/disable consent anytime
+      allow update: if isAuthenticated()
+        && isOwner(userId)
+        && request.resource.data.userId == userId
+        && !isProhibitedContent(request.resource.data);
+      
+      // Users cannot delete (audit trail)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // SEXY MODE SESSIONS
+    // Mutual consent between two users
+    // ============================================
+    
+    match /sexy_mode_sessions/{sessionId} {
+      // Participants can read their session
+      allow read: if isAuthenticated()
+        && (isOwner(resource.data.user1Id) || isOwner(resource.data.user2Id));
+      
+      // Either participant can initiate (requires both to be adults with consent enabled)
+      allow create: if isAuthenticated()
+        && sessionId == (request.resource.data.user1Id < request.resource.data.user2Id 
+                         ? request.resource.data.user1Id + '_' + request.resource.data.user2Id
+                         : request.resource.data.user2Id + '_' + request.resource.data.user1Id)
+        && (isOwner(request.resource.data.user1Id) || isOwner(request.resource.data.user2Id))
+        && isAdult(request.resource.data.user1Id)
+        && isAdult(request.resource.data.user2Id)
+        && hasConsentEnabled(request.resource.data.user1Id)
+        && hasConsentEnabled(request.resource.data.user2Id)
+        && request.resource.data.isActive == true
+        && request.resource.data.requiresMutualConsent == true
+        && request.resource.data.canBeDisabledAnytime == true
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.expiresAt > request.time;
+      
+      // Either participant can update (toggle consent or disable)
+      allow update: if isAuthenticated()
+        && (isOwner(resource.data.user1Id) || isOwner(resource.data.user2Id))
+        && request.resource.data.user1Id == resource.data.user1Id
+        && request.resource.data.user2Id == resource.data.user2Id
+        && request.resource.data.requiresMutualConsent == true
+        && request.resource.data.canBeDisabledAnytime == true;
+      
+      // Cannot delete (audit trail)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // SEXY CONTENT
+    // Content shared in sexy mode with mutual consent
+    // ============================================
+    
+    match /sexy_content/{contentId} {
+      // Only participants with active mutual consent can read
+      allow read: if isAuthenticated()
+        && (isOwner(resource.data.senderId) || isOwner(resource.data.receiverId))
+        && hasMutualConsent(resource.data.senderId, resource.data.receiverId);
+      
+      // Can create if mutual consent exists and content is allowed
+      allow create: if isAuthenticated()
+        && isOwner(request.resource.data.senderId)
+        && isAdult(request.resource.data.senderId)
+        && isAdult(request.resource.data.receiverId)
+        && hasMutualConsent(request.resource.data.senderId, request.resource.data.receiverId)
+        && isAllowedContentType(request.resource.data.contentType)
+        && !isProhibitedContent(request.resource.data)
+        && request.resource.data.isPrivateOneOnOne == true
+        && request.resource.data.isPublicGroup == false
+        && request.resource.data.requiresAgeVerification == true
+        && request.resource.data.createdAt == request.time;
+      
+      // Cannot update content (immutable)
+      allow update: if false;
+      
+      // Sender can delete own content
+      allow delete: if isAuthenticated()
+        && isOwner(resource.data.senderId);
+    }
+
+    // ============================================
+    // CONSENT AUDIT LOGS
+    // Safety tracking for moderation
+    // ============================================
+    
+    match /consent_audit_logs/{logId} {
+      // Only system/moderators can read (via Cloud Functions)
+      allow read: if false;
+      
+      // Logged via Cloud Function only (automatic tracking)
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ============================================
+    // CONTENT MODERATION FLAGS
+    // Automated safety checks
+    // ============================================
+    
+    match /content_moderation_flags/{flagId} {
+      // Only moderators can read (via Cloud Functions)
+      allow read: if false;
+      
+      // Flagged via Cloud Function only (AI moderation)
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ============================================
+    // SEXY MODE VIOLATIONS
+    // Track policy violations
+    // ============================================
+    
+    match /sexy_mode_violations/{violationId} {
+      // User can read their own violations
+      allow read: if isAuthenticated()
+        && isOwner(resource.data.userId);
+      
+      // Logged via Cloud Function only
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ============================================
+    // USER AGE VERIFICATION
+    // Required for 18+ content access
+    // ============================================
+    
+    match /user_age_verification/{userId} {
+      // User can read own verification status
+      allow read: if isAuthenticated()
+        && isOwner(userId);
+      
+      // Managed via Cloud Function only (ID verification)
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ============================================
+    // CONTENT REPORTS
+    // User safety reporting system
+    // ============================================
+    
+    match /sexy_content_reports/{reportId} {
+      // Reporter can read their own reports
+      allow read: if isAuthenticated()
+        && isOwner(resource.data.reporterId);
+      
+      // Any user can report content they received
+      allow create: if isAuthenticated()
+        && isOwner(request.resource.data.reporterId)
+        && request.resource.data.reportType in ['inappropriate', 'harassment', 'non_consensual', 
+                                                  'prohibited_content', 'minor_safety', 'other']
+        && request.resource.data.createdAt == request.time;
+      
+      // Cannot update reports
+      allow update: if false;
+      
+      // Cannot delete reports (audit trail)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // SAFETY: PROHIBITED COLLECTIONS
+    // Explicitly block dangerous patterns
+    // ============================================
+    
+    // Block pornography/explicit content
+    match /pornography/{doc=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /explicit_content/{doc=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    // Block escorting/monetary services
+    match /escorting_services/{doc=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /paid_sexual_services/{doc=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    // Block minor-related content
+    match /minor_content/{doc=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    // Block public group sexual content
+    match /group_sexual_content/{doc=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /public_sexy_groups/{doc=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // ============================================
+    // CONVERSATION SAFETY DOWNGRADE
+    // When sexy mode disabled, conversation reverts to PG
+    // ============================================
+    
+    match /conversation_safety_mode/{conversationId} {
+      // Participants can read safety mode
+      allow read: if isAuthenticated();
+      
+      // Updated via Cloud Function when consent changes
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ============================================
+    // SESSION EXPIRATION TRACKING
+    // Auto-expire consent sessions for safety
+    // ============================================
+    
+    match /session_expirations/{sessionId} {
+      // Managed via Cloud Function only
+      allow read: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}

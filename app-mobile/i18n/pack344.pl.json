@@ -1,0 +1,29 @@
+{
+  "pack344": {
+    "aiHelp": "AI Pomoc",
+    "aiCoach": "AI Coach",
+    "messageSuggestions": "Sugestie AI",
+    "generatingSuggestions": "Generowanie sugestii...",
+    "failedToGenerate": "Nie udało się wygenerować sugestii",
+    "tapToInsert": "Wybierz sugestię, aby ją wstawić do wiadomości",
+    "spamWarningTitle": "Spersonalizuj Wiadomość",
+    "spamWarningMessage": "Wielu użytkowników otrzymuje tę samą wiadomość. Spersonalizowane wiadomości działają lepiej.",
+    "getAiSuggestion": "Uzyskaj sugestię AI",
+    "profileTips": "Ulepsz Swój Profil",
+    "discoveryTips": "Jak Rozpocząć Rozmowę",
+    "analyzingProfile": "Analizowanie profilu...",
+    "aiGeneratedDisclaimer": "💡 Porady są generowane przez AI i mogą wymagać dostosowania",
+    "tonePlayful": "Zabawny",
+    "tonePolite": "Uprzejmy",
+    "toneConfident": "Pewny siebie",
+    "toneCurious": "Ciekawski",
+    "improveChances": "Popraw Swoje Szanse",
+    "recommendedImprovements": "Zalecane Ulepszenia",
+    "aiSuggestionsUnavailable": "Sugestie AI są tymczasowo niedostępne. Spróbuj ponownie później.",
+    "dailyLimitReached": "Osiągnięto dzienny limit sugestii. Spróbuj ponownie jutro.",
+    "spamDetected": "Ta wiadomość wydaje się być wysłana do wielu osób. Spersonalizuj ją, aby uzyskać lepsze wyniki.",
+    "editMessage": "Edytuj Wiadomość",
+    "continueAnyway": "Kontynuuj Mimo To",
+    "close": "Zamknij"
+  }
+}

@@ -1,0 +1,268 @@
+rules_version = '2';
+
+// PACK 450 — Long-Term Platform Sustainability & Technical Debt Governance
+// Firestore Security Rules for Technical Debt Registry, Architecture Drift, Cost-Value Analysis, and Platform Health
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isTechnicalLead() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'technical_lead', 'architect'];
+    }
+    
+    function isOwner(ownerId) {
+      return isAuthenticated() && request.auth.uid == ownerId;
+    }
+    
+    // Technical Debt Registry
+    match /technical_debt/{debtId} {
+      // Read: authenticated users can read technical debt entries
+      allow read: if isAuthenticated();
+      
+      // Create: authenticated users can register technical debt
+      allow create: if isAuthenticated() &&
+                      request.resource.data.owner == request.auth.uid &&
+                      request.resource.data.createdAt == request.time &&
+                      request.resource.data.status in ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'ACCEPTED'];
+      
+      // Update: owner or technical lead can update
+      allow update: if (isOwner(resource.data.owner) || isTechnicalLead()) &&
+                      request.resource.data.updatedAt == request.time;
+      
+      // Delete: only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // Technical Debt Metrics (module-level aggregations)
+    match /technical_debt_metrics/{module} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: only system (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // Technical Debt Audit Trail
+    match /technical_debt_audit/{auditId} {
+      // Read: technical leads and admins
+      allow read: if isTechnicalLead();
+      
+      // Write: only system
+      allow write: if false;
+    }
+    
+    // Architecture Violations
+    match /architecture_violations/{violationId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Create: only system (automatic detection)
+      allow create: if false;
+      
+      // Update: technical leads can acknowledge/resolve
+      allow update: if isTechnicalLead() &&
+                      (
+                        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acknowledged', 'acknowledgedBy', 'acknowledgedAt'])) ||
+                        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['resolvedAt', 'resolvedBy', 'technicalDebtId']))
+                      );
+      
+      // Delete: only admins
+      allow delete: if isAdmin();
+    }
+    
+    // Architecture Rules
+    match /architecture_rules/{ruleId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: only technical leads and architects
+      allow write: if isTechnicalLead();
+    }
+    
+    // Architecture Snapshots
+    match /architecture_snapshots/{snapshotId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: only system
+      allow write: if false;
+    }
+    
+    // Cost-Value Analysis
+    match /cost_value_analysis/{module} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: only system
+      allow write: if false;
+    }
+    
+    // Cost-Value Summary
+    match /cost_value_summary/{summaryId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: only system
+      allow write: if false;
+    }
+    
+    // Module Costs
+    match /module_costs/{moduleId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: admins and system
+      allow write: if isAdmin();
+    }
+    
+    // Module Cost History
+    match /module_costs_history/{historyId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: only system
+      allow write: if false;
+    }
+    
+    // Module Value
+    match /module_value/{moduleId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: admins and system
+      allow write: if isAdmin();
+    }
+    
+    // Module Value History
+    match /module_value_history/{historyId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: only system
+      allow write: if false;
+    }
+    
+    // Refactor & Decommission Pipeline
+    match /refactor_pipeline/{pipelineId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Create: authenticated users can propose
+      allow create: if isAuthenticated() &&
+                      request.resource.data.stage == 'PROPOSED' &&
+                      request.resource.data.status == 'active';
+      
+      // Update: technical leads for approvals, owner for updates
+      allow update: if isTechnicalLead() || isOwner(resource.data.proposedBy);
+      
+      // Delete: only admins can cancel/delete
+      allow delete: if isAdmin();
+    }
+    
+    // Pipeline Audit Trail
+    match /refactor_pipeline_audit/{auditId} {
+      // Read: technical leads
+      allow read: if isTechnicalLead();
+      
+      // Write: only system
+      allow write: if false;
+    }
+    
+    // Decommission Alerts
+    match /decommission_alerts/{alertId} {
+      // Read: technical leads and admins
+      allow read: if isTechnicalLead();
+      
+      // Update: technical leads can mark as reviewed
+      allow update: if isTechnicalLead() &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reviewed', 'reviewedBy', 'reviewedAt']);
+      
+      // Create/Delete: only system
+      allow create: if false;
+      allow delete: if false;
+    }
+    
+    // Modules Registry
+    match /modules/{moduleId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: technical leads and admins
+      allow write: if isTechnicalLead();
+    }
+    
+    // Module Dependencies
+    match /module_dependencies/{dependencyId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: technical leads
+      allow write: if isTechnicalLead();
+    }
+    
+    // Platform Health Scores
+    match /platform_health_scores/{scoreId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: only system (automated calculation)
+      allow write: if false;
+    }
+    
+    // Observability Metrics (referenced by health score)
+    match /observability_metrics/{metricId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: only system
+      allow write: if false;
+    }
+    
+    // Performance Metrics (referenced by health score)
+    match /performance_metrics/{metricId} {
+      // Read: authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: only system
+      allow write: if false;
+    }
+    
+    // Security Vulnerabilities (referenced by health score)
+    match /security_vulnerabilities/{vulnId} {
+      // Read: technical leads and admins
+      allow read: if isTechnicalLead();
+      
+      // Write: security team and admins
+      allow write: if isAdmin();
+    }
+    
+    // Compliance Issues (referenced by health score)
+    match /compliance_issues/{issueId} {
+      // Read: technical leads and admins
+      allow read: if isTechnicalLead();
+      
+      // Write: compliance team and admins
+      allow write: if isAdmin();
+    }
+    
+    // Notifications (for alerts and updates)
+    match /notifications/{notificationId} {
+      // Read: authenticated users (own notifications)
+      allow read: if isAuthenticated();
+      
+      // Write: only system
+      allow write: if false;
+    }
+  }
+}

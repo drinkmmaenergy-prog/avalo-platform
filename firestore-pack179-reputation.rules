@@ -1,0 +1,124 @@
+rules_version = '2';
+
+// PACK 179 — Reputation & Risk Transparency Center
+// Public Trust Without Shaming · Positive Achievements Only · Zero Punitive Public Labels
+
+// Helper functions
+function isAuthenticated() {
+  return request.auth != null;
+}
+
+function isOwner(userId) {
+  return isAuthenticated() && request.auth.uid == userId;
+}
+
+function isAdmin() {
+  return isAuthenticated() && 
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+}
+
+function isModerator() {
+  return isAuthenticated() && 
+    (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'moderator');
+}
+
+// Validates that badge data contains no forbidden fields
+function isSafeBadgeData(data) {
+  return !data.keys().hasAny([
+    'safetyScore', 'safety_score', 'riskLevel', 'risk_level',
+    'suspensionHistory', 'suspension_history', 'moderationHistory', 'moderation_history',
+    'spendingAmount', 'spending_amount', 'earningsAmount', 'earnings_amount',
+    'abuseCase', 'abuse_case', 'fraudCase', 'fraud_case',
+    'attractiveness', 'popularity', 'ranking', 'rating'
+  ]);
+}
+
+// Validates achievement milestone data
+function isSafeMilestoneData(data) {
+  return !data.keys().hasAny([
+    'safetyScore', 'safety_score', 'privateData', 'private_data',
+    'disciplinaryAction', 'disciplinary_action'
+  ]);
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Reputation Badges - Public read for owner's badges only, write via Cloud Functions
+    match /reputation_badges/{badgeId} {
+      allow read: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || 
+         resource.data.userId == request.resource.id);
+      allow create: if false; // Only via Cloud Functions
+      allow update: if false; // Only via Cloud Functions  
+      allow delete: if false; // Only via Cloud Functions (fraud removal)
+    }
+    
+    // Achievement Milestones - User can read their own, public partial read for verified users
+    match /achievement_milestones/{milestoneId} {
+      allow read: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || 
+         (resource.data.isPublic == true && resource.data.verified == true));
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // Reputation Display Settings - User can read/update their own
+    match /reputation_display_settings/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isAuthenticated() && 
+        request.resource.id == request.auth.uid &&
+        isSafeBadgeData(request.resource.data);
+      allow update: if isOwner(userId) &&
+        isSafeBadgeData(request.resource.data) &&
+        // Users can only modify specific display preference fields
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['displayBadges', 'displayMilestones', 'displayAchievements', 
+                   'badgeOrder', 'updatedAt', 'privacyLevel']);
+      allow delete: if isOwner(userId);
+    }
+    
+    // Public Reputation View - Read-only aggregated public reputation data
+    match /public_reputation/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only via Cloud Functions (aggregated from badges/milestones)
+    }
+    
+    // Product Reviews - Users can read all, create their own
+    match /product_reviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.targetType == 'product' && // NOT 'person'
+        !request.resource.data.keys().hasAny(['attractiveness', 'personRating']);
+      allow update: if isOwner(resource.data.userId) &&
+        // Users can only edit their review text and rating
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['reviewText', 'rating', 'updatedAt']);
+      allow delete: if isOwner(resource.data.userId) || isModerator();
+    }
+    
+    // FORBIDDEN COLLECTIONS - These must NEVER be publicly readable
+    // Safety scores, moderation history, and risk data are private
+    match /safety_scores/{userId} {
+      allow read: if isOwner(userId); // From PACK 159
+      allow write: if false;
+    }
+    
+    match /safety_events/{eventId} {
+      allow read: if isOwner(resource.data.userId) || isModerator(); // From PACK 159
+      allow write: if false;
+    }
+    
+    match /safety_interventions/{interventionId} {
+      allow read: if isOwner(resource.data.userId) || isModerator(); // From PACK 159
+      allow write: if false;
+    }
+    
+    // Reputation Audit Log - Admin only (fraud detection)
+    match /reputation_audit_log/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only via Cloud Functions
+    }
+  }
+}

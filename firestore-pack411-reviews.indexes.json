@@ -1,0 +1,154 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "storeReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store", "order": "ASCENDING" },
+        { "fieldPath": "country", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tags", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "appVersion", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "linkedUserId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "linkedRiskCaseId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReputationSnapshots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReputationSnapshots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store", "order": "ASCENDING" },
+        { "fieldPath": "country", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReputationSnapshots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "appVersion", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReputationSnapshots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "suspectedBrigadeScore", "order": "DESCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ratingPromptLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "promptedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ratingPromptLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "appVersion", "order": "ASCENDING" },
+        { "fieldPath": "promptedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ratingPromptLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "appVersion", "order": "ASCENDING" },
+        { "fieldPath": "promptedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewBrigadeAlerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewBrigadeAlerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "severity", "order": "DESCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewBrigadeAlerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "affectedStore", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

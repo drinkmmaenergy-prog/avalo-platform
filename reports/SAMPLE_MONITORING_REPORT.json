@@ -1,0 +1,62 @@
+{
+  "timestamp": "2024-11-05T20:30:00.000Z",
+  "metrics": {
+    "totalChecks": 150,
+    "successfulChecks": 148,
+    "failedChecks": 2,
+    "uptime": 98.67,
+    "avgResponseTime": 845.23,
+    "consecutiveFailures": 0,
+    "consecutiveSlowResponses": 0,
+    "has5xxErrors": false,
+    "lastRollback": null
+  },
+  "currentCheck": [
+    {
+      "endpoint": "Production Website",
+      "url": "https://avalo-c8c46.web.app",
+      "success": true,
+      "statusCode": 200,
+      "responseTime": 523,
+      "timestamp": "2024-11-05T20:30:00.000Z"
+    },
+    {
+      "endpoint": "Health Check Endpoint",
+      "url": "https://europe-west3-avalo-c8c46.cloudfunctions.net/ping",
+      "success": true,
+      "statusCode": 200,
+      "responseTime": 156,
+      "timestamp": "2024-11-05T20:30:01.000Z"
+    },
+    {
+      "endpoint": "System Info API",
+      "url": "https://europe-west3-avalo-c8c46.cloudfunctions.net/getSystemInfo",
+      "success": true,
+      "statusCode": 200,
+      "responseTime": 445,
+      "timestamp": "2024-11-05T20:30:02.000Z"
+    },
+    {
+      "endpoint": "Exchange Rates API",
+      "url": "https://europe-west3-avalo-c8c46.cloudfunctions.net/getExchangeRatesV1",
+      "success": true,
+      "statusCode": 200,
+      "responseTime": 678,
+      "timestamp": "2024-11-05T20:30:03.000Z"
+    },
+    {
+      "endpoint": "Purchase Tokens API",
+      "url": "https://europe-west3-avalo-c8c46.cloudfunctions.net/purchaseTokensV2",
+      "success": true,
+      "statusCode": 400,
+      "responseTime": 234,
+      "timestamp": "2024-11-05T20:30:04.000Z"
+    }
+  ],
+  "memory": {
+    "heapUsed": 45.23,
+    "heapTotal": 128.00,
+    "external": 2.15,
+    "rss": 156.45
+  }
+}

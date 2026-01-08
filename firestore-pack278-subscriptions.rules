@@ -1,0 +1,97 @@
+rules_version = '2';
+
+/**
+ * PACK 278 — Subscription Engine Security Rules
+ * 
+ * Controls access to subscription data for VIP and Royal tiers
+ * 
+ * Collections:
+ * - subscriptions/{userId}
+ * - subscriptionHistory/{historyId}
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    /**
+     * Helper functions
+     */
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    /**
+     * Subscriptions Collection
+     * 
+     * Users can READ their own subscription data
+     * Only Cloud Functions (admin) can WRITE subscription data
+     */
+    match /subscriptions/{userId} {
+      // Users can read their own subscription
+      allow read: if isOwner(userId);
+      
+      // Only Cloud Functions/admins can write subscription data
+      // This prevents client-side subscription fraud
+      allow write: if isAdmin();
+      
+      // Explicitly deny all client writes
+      allow create, update, delete: if false;
+    }
+    
+    /**
+     * Subscription History Collection
+     * 
+     * Tracks subscription changes over time
+     * Read-only for users, write-only for Cloud Functions
+     */
+    match /subscriptionHistory/{historyId} {
+      // Users can read their own history
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only Cloud Functions can write history
+      allow write: if isAdmin();
+    }
+    
+    /**
+     * Subscription Configuration
+     * 
+     * Contains pricing and tier definitions
+     * Read by all, write by admin only
+     */
+    match /config/subscriptions {
+      // Anyone can read subscription tiers and pricing
+      allow read: if true;
+      
+      // Only admins can update subscription config
+      allow write: if isAdmin();
+    }
+    
+    /**
+     * User Profile - Subscription Fields
+     * 
+     * Users can read subscription status from their profile
+     * Only Cloud Functions can update subscription-related fields
+     */
+    match /users/{userId} {
+      // Users can read their subscription fields in profile
+      allow read: if isOwner(userId);
+      
+      // Prevent direct updates to subscription fields
+      // These must be updated via Cloud Functions
+      allow update: if isOwner(userId) && 
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(['subscriptionTier', 'subscriptionActive', 
+                                 'subscriptionRenewalDate', 'vipStatus', 'royalStatus']);
+    }
+  }
+}

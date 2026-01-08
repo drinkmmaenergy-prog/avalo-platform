@@ -1,0 +1,195 @@
+/**
+ * PACK 157 — Avalo Offline Business Verification & Physical Venue Partnerships
+ * Firestore Security Rules
+ * 
+ * Collections:
+ * - business_partners
+ * - venue_profiles
+ * - venue_events
+ * - venue_attendance
+ * - venue_safety_cases
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    function isAgeVerified() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.ageVerified == true &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.age >= 18;
+    }
+    
+    function isPartnerOwner(partnerId) {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/business_partners/$(partnerId)).data.ownerUserId == request.auth.uid;
+    }
+    
+    // ========================================================================
+    // BUSINESS PARTNERS
+    // ========================================================================
+    
+    match /business_partners/{partnerId} {
+      // Read: Owner, admins, or public approved partners
+      allow read: if isUser(resource.data.ownerUserId) ||
+                     isAdmin() ||
+                     (resource.data.status == 'APPROVED' && resource.data.isActive == true);
+      
+      // Create: Authenticated, age-verified users only
+      allow create: if isAuthenticated() &&
+                       isAgeVerified() &&
+                       request.resource.data.ownerUserId == request.auth.uid &&
+                       request.resource.data.status == 'PENDING' &&
+                       request.resource.data.violationCount == 0;
+      
+      // Update: Owner can update basic info, admins can update status
+      allow update: if (isUser(resource.data.ownerUserId) &&
+                        // Owners cannot change status, verification, or violation count
+                        request.resource.data.status == resource.data.status &&
+                        request.resource.data.verificationLevel == resource.data.verificationLevel &&
+                        request.resource.data.violationCount == resource.data.violationCount &&
+                        request.resource.data.canHostEvents == resource.data.canHostEvents) ||
+                       isAdmin();
+      
+      // Delete: Admins only
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // VENUE PROFILES
+    // ========================================================================
+    
+    match /venue_profiles/{venueId} {
+      // Read: Anyone can read active venues, owner and admins can read all
+      allow read: if resource.data.isActive == true ||
+                     isPartnerOwner(resource.data.partnerId) ||
+                     isAdmin();
+      
+      // Create: Business partner owner only
+      allow create: if isAuthenticated() &&
+                       isPartnerOwner(request.resource.data.partnerId) &&
+                       // Partner must be approved
+                       get(/databases/$(database)/documents/business_partners/$(request.resource.data.partnerId)).data.status == 'APPROVED' &&
+                       get(/databases/$(database)/documents/business_partners/$(request.resource.data.partnerId)).data.canHostEvents == true;
+      
+      // Update: Partner owner and admins
+      allow update: if isPartnerOwner(resource.data.partnerId) || isAdmin();
+      
+      // Delete: Admins only
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // VENUE EVENTS
+    // ========================================================================
+    
+    match /venue_events/{eventId} {
+      // Read: Anyone can read active upcoming events, participants can read their events
+      allow read: if (resource.data.isActive == true && resource.data.status == 'UPCOMING') ||
+                     isPartnerOwner(resource.data.partnerId) ||
+                     resource.data.createdBy == request.auth.uid ||
+                     exists(/databases/$(database)/documents/venue_attendance/$(request.auth.uid + '_' + eventId)) ||
+                     isAdmin();
+      
+      // Create: Partner owner or authorized creator only
+      allow create: if isAuthenticated() &&
+                       isAgeVerified() &&
+                       (isPartnerOwner(request.resource.data.partnerId) ||
+                        request.resource.data.createdBy == request.auth.uid) &&
+                       // Partner must be approved and able to host
+                       get(/databases/$(database)/documents/business_partners/$(request.resource.data.partnerId)).data.status == 'APPROVED' &&
+                       get(/databases/$(database)/documents/business_partners/$(request.resource.data.partnerId)).data.canHostEvents == true &&
+                       // Venue must be active
+                       get(/databases/$(database)/documents/venue_profiles/$(request.resource.data.venueId)).data.isActive == true &&
+                       // Event must be in the future
+                       request.resource.data.startTime > request.time &&
+                       // Risk level cannot be BLOCKED
+                       request.resource.data.riskLevel != 'BLOCKED';
+      
+      // Update: Event creator, partner owner, or admins
+      allow update: if isUser(resource.data.createdBy) ||
+                       isPartnerOwner(resource.data.partnerId) ||
+                       isAdmin();
+      
+      // Delete: Admins only
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // VENUE ATTENDANCE
+    // ========================================================================
+    
+    match /venue_attendance/{attendanceId} {
+      // Read: Attendee, event creator, partner owner, or admins
+      allow read: if isUser(resource.data.userId) ||
+                     isUser(get(/databases/$(database)/documents/venue_events/$(resource.data.eventId)).data.createdBy) ||
+                     isPartnerOwner(get(/databases/$(database)/documents/venue_events/$(resource.data.eventId)).data.partnerId) ||
+                     isAdmin();
+      
+      // Create: Authenticated users registering for events
+      allow create: if isAuthenticated() &&
+                       isAgeVerified() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.registrationStatus == 'CONFIRMED' &&
+                       request.resource.data.checkedIn == false &&
+                       // Event exists and is upcoming
+                       exists(/databases/$(database)/documents/venue_events/$(request.resource.data.eventId)) &&
+                       get(/databases/$(database)/documents/venue_events/$(request.resource.data.eventId)).data.status == 'UPCOMING' &&
+                       // User passed risk check
+                       request.resource.data.riskCheckPassed == true;
+      
+      // Update: User can check in, admins can update
+      allow update: if (isUser(resource.data.userId) &&
+                        // Users can only update check-in status
+                        request.resource.data.userId == resource.data.userId &&
+                        request.resource.data.eventId == resource.data.eventId) ||
+                       isAdmin();
+      
+      // Delete: Admins only
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // VENUE SAFETY CASES
+    // ========================================================================
+    
+    match /venue_safety_cases/{caseId} {
+      // Read: Reporter, partner owner, or admins
+      allow read: if isUser(resource.data.reportedBy) ||
+                     isPartnerOwner(resource.data.partnerId) ||
+                     isAdmin();
+      
+      // Create: Authenticated users can report violations
+      allow create: if isAuthenticated() &&
+                       isAgeVerified() &&
+                       (request.resource.data.reportedBy == request.auth.uid ||
+                        request.resource.data.reportedByType == 'SYSTEM') &&
+                       request.resource.data.status == 'OPEN' &&
+                       // Partner must exist
+                       exists(/databases/$(database)/documents/business_partners/$(request.resource.data.partnerId));
+      
+      // Update: Admins only (for status changes and resolutions)
+      allow update: if isAdmin();
+      
+      // Delete: Admins only
+      allow delete: if isAdmin();
+    }
+  }
+}

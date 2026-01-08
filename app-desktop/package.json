@@ -1,0 +1,88 @@
+{
+  "name": "avalo-desktop",
+  "version": "1.0.0",
+  "description": "Avalo Desktop App - High-productivity creator and moderator tools",
+  "main": "dist/electron/main.js",
+  "author": "Avalo",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:electron\" \"npm run dev:web\"",
+    "dev:electron": "cross-env NODE_ENV=development electron-vite dev",
+    "dev:web": "cd ../app-web && npm run dev",
+    "build": "npm run build:web && npm run build:electron",
+    "build:web": "cd ../app-web && npm run build",
+    "build:electron": "electron-vite build",
+    "package": "npm run build && electron-builder",
+    "package:win": "npm run build && electron-builder --win",
+    "package:mac": "npm run build && electron-builder --mac",
+    "package:linux": "npm run build && electron-builder --linux",
+    "start": "electron dist/electron/main.js",
+    "lint": "eslint src --ext .ts,.tsx",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "electron-updater": "6.1.7",
+    "electron-store": "8.1.0",
+    "uuid": "9.0.1",
+    "date-fns": "3.0.6",
+    "nanoid": "5.0.4"
+  },
+  "devDependencies": {
+    "electron": "28.1.0",
+    "electron-builder": "24.9.1",
+    "electron-vite": "2.0.0",
+    "typescript": "5.3.3",
+    "@types/node": "20.11.5",
+    "@types/uuid": "9.0.7",
+    "eslint": "8.56.0",
+    "@typescript-eslint/eslint-plugin": "6.19.0",
+    "@typescript-eslint/parser": "6.19.0",
+    "concurrently": "8.2.2",
+    "cross-env": "7.0.3"
+  },
+  "build": {
+    "appId": "com.avalo.desktop",
+    "productName": "Avalo",
+    "copyright": "Copyright © 2025 Avalo",
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.social-networking",
+      "target": ["dmg", "zip"],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "win": {
+      "target": ["nsis", "portable"],
+      "certificateSubjectName": "Avalo",
+      "publisherName": "Avalo"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Network",
+      "maintainer": "Avalo <support@avalo.com>"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "publish": {
+      "provider": "generic",
+      "url": "https://updates.avalo.com"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

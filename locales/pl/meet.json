@@ -1,0 +1,13 @@
+{
+  "realMeet": "Spotkanie w rzeczywistości",
+  "socialMeet": "Spotkanie towarzyskie",
+  "bookNow": "Zarezerwuj teraz",
+  "pricePerMeet": "Cena za spotkanie",
+  "hostRules": "Zasady gospodarza",
+  "scheduleMeet": "Zaplanuj spotkanie",
+  "bookingSuccess": "Rezerwacja potwierdzona",
+  "bookingCancelled": "Rezerwacja anulowana",
+  "hostNoShow": "Gospodarz nie pojawił się",
+  "guestNoShow": "Gość nie pojawił się",
+  "confirmCompleted": "Potwierdź zakończenie"
+}

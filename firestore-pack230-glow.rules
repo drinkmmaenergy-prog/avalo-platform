@@ -1,0 +1,117 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isParticipant(participantIds) {
+      return isAuthenticated() && request.auth.uid in participantIds;
+    }
+    
+    // Post-Meeting Feedbacks
+    match /postMeetingFeedbacks/{feedbackId} {
+      // Users can read their own feedback
+      allow read: if isAuthenticated() && 
+                    (isUser(resource.data.userId) || isUser(resource.data.partnerId));
+      
+      // Users can create feedback for themselves only once per booking
+      allow create: if isAuthenticated() && 
+                      isUser(request.resource.data.userId) &&
+                      request.resource.data.submittedAt == request.time;
+      
+      // No updates or deletes - feedback is immutable
+      allow update, delete: if false;
+    }
+    
+    // Post-Meeting Glow States
+    match /postMeetingGlowStates/{glowId} {
+      // Participants can read their glow state
+      allow read: if isAuthenticated() && 
+                    isParticipant(resource.data.participantIds);
+      
+      // Only backend can create/update glow states
+      allow write: if false;
+    }
+    
+    // Glow Action Suggestions
+    match /glowActionSuggestions/{suggestionId} {
+      // Users can read their own suggestions
+      allow read: if isAuthenticated() && isUser(resource.data.userId);
+      
+      // Users can update to dismiss their suggestions
+      allow update: if isAuthenticated() && 
+                      isUser(resource.data.userId) &&
+                      request.resource.data.dismissed == true &&
+                      request.resource.data.userId == resource.data.userId;
+      
+      // Only backend can create
+      allow create, delete: if false;
+    }
+    
+    // Event Glow States
+    match /eventGlowStates/{eventGlowId} {
+      // Users can read their own event glow
+      allow read: if isAuthenticated() && isUser(resource.data.userId);
+      
+      // Users can create their own event feedback
+      allow create: if isAuthenticated() && 
+                      isUser(request.resource.data.userId) &&
+                      request.resource.data.createdAt == request.time;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // Selfie Mismatch Cases
+    match /selfieMismatchCases/{caseId} {
+      // Reporter and reported user can read
+      allow read: if isAuthenticated() && 
+                    (isUser(resource.data.reporterId) || isUser(resource.data.reportedUserId));
+      
+      // Only reporter can create
+      allow create: if isAuthenticated() && 
+                      isUser(request.resource.data.reporterId) &&
+                      request.resource.data.createdAt == request.time &&
+                      request.resource.data.status == 'pending';
+      
+      // Only backend/moderators can update
+      allow update, delete: if false;
+    }
+    
+    // Confidence Boost Cards (from PACK 222 integration)
+    match /confidence_boost_cards/{cardId} {
+      // Users can read their own cards
+      allow read: if isAuthenticated() && isUser(resource.data.userId);
+      
+      // Users can mark cards as shown
+      allow update: if isAuthenticated() && 
+                      isUser(resource.data.userId) &&
+                      request.resource.data.shownAt != null;
+      
+      // Only backend can create/delete
+      allow create, delete: if false;
+    }
+    
+    // Chemistry Restart Suggestions (from PACK 222 integration)
+    match /chemistry_restart_suggestions/{suggestionId} {
+      // Users can read their own suggestions
+      allow read: if isAuthenticated() && isUser(resource.data.userId);
+      
+      // Users can update to track interactions
+      allow update: if isAuthenticated() && 
+                      isUser(resource.data.userId) &&
+                      request.resource.data.userId == resource.data.userId;
+      
+      // Only backend can create/delete
+      allow create, delete: if false;
+    }
+  }
+}

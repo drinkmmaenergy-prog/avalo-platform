@@ -1,0 +1,109 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "profileSearchIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "age", "order": "ASCENDING" },
+        { "fieldPath": "banned", "order": "ASCENDING" },
+        { "fieldPath": "incognito", "order": "ASCENDING" },
+        { "fieldPath": "popularityScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "profileSearchIndex",
+      "queryScope": "COLLECTION", 
+      "fields": [
+        { "fieldPath": "age", "order": "ASCENDING" },
+        { "fieldPath": "gender", "order": "ASCENDING" },
+        { "fieldPath": "banned", "order": "ASCENDING" },
+        { "fieldPath": "lastActiveAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "profileSearchIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "age", "order": "ASCENDING" },
+        { "fieldPath": "isVerified", "order": "ASCENDING" },
+        { "fieldPath": "banned", "order": "ASCENDING" },
+        { "fieldPath": "recentActivityScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "profileSearchIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "banned", "order": "ASCENDING" },
+        { "fieldPath": "shadowBanned", "order": "ASCENDING" },
+        { "fieldPath": "incognito", "order": "ASCENDING" },
+        { "fieldPath": "riskScore", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "profileSearchIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "country", "order": "ASCENDING" },
+        { "fieldPath": "age", "order": "ASCENDING" },
+        { "fieldPath": "banned", "order": "ASCENDING" },
+        { "fieldPath": "lastActiveAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "profileSearchIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "orientation", "order": "ASCENDING" },
+        { "fieldPath": "age", "order": "ASCENDING" },
+        { "fieldPath": "banned", "order": "ASCENDING" },
+        { "fieldPath": "popularityScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "profileSearchIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "earnOn", "order": "ASCENDING" },
+        { "fieldPath": "age", "order": "ASCENDING" },
+        { "fieldPath": "banned", "order": "ASCENDING" },
+        { "fieldPath": "recentActivityScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "profileSearchIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "royalBadge", "order": "ASCENDING" },
+        { "fieldPath": "vipBadge", "order": "ASCENDING" },
+        { "fieldPath": "influencerBadge", "order": "ASCENDING" },
+        { "fieldPath": "popularityScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "profileSearchIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "displayName", "order": "ASCENDING" },
+        { "fieldPath": "banned", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "discoveryAnalytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "searchQueryLog",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "DESCENDING" },
+        { "fieldPath": "resultsCount", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

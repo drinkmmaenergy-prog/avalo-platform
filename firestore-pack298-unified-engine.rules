@@ -1,0 +1,125 @@
+rules_version = '2';
+
+// PACK 298A — Unified Swipe, Discovery & Feed Engine
+// Security rules for swipe limits, discovery, and feed systems
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions (should be imported from main rules)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'super_admin']);
+    }
+    
+    // === SWIPE SYSTEM ===
+    
+    // User swipe state (tracks daily limits, regeneration)
+    match /swipe_state/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if false; // Only backend writes
+    }
+    
+    // Swipe history (for analytics and duplicate prevention)
+    match /swipe_history/{userId}/swipes/{swipeId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update, delete: if false; // Immutable once created
+    }
+    
+    // Swipe pool (candidates visible to user)
+    match /swipe_pool/{userId}/candidates/{candidateId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if false; // Only backend writes
+    }
+    
+    // === DISCOVERY SYSTEM ===
+    
+    // Discovery profiles (grid view - 100% free for all)
+    match /discovery_profiles/{profileId} {
+      allow read: if isAuthenticated(); // Anyone can browse
+      allow write: if false; // Only backend writes
+    }
+    
+    // Discovery interactions (likes, profile visits - always free)
+    match /discovery_interactions/{userId}/interactions/{interactionId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update, delete: if false;
+    }
+    
+    // === LOW-POPULARITY TRACKING ===
+    
+    // Low-popularity status and boosts
+    match /popularity_status/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow write: if false; // Only backend writes
+    }
+    
+    // Popularity metrics (for boost calculation)
+    match /popularity_metrics/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if false; // Only backend writes
+    }
+    
+    // === FEED SYSTEM ===
+    
+    // Feed items (photos, videos, stories, reels)
+    match /feed_items/{itemId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(request.resource.data.authorId);
+      allow update: if isAuthenticated() && isOwner(resource.data.authorId);
+      allow delete: if isAuthenticated() && (isOwner(resource.data.authorId) || isAdmin());
+    }
+    
+    // Feed rankings (personalized for each user)
+    match /feed_rankings/{userId}/items/{itemId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if false; // Only backend writes
+    }
+    
+    // Feed engagement (likes, views, shares)
+    match /feed_engagement/{userId}/engaged/{engagementId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isAuthenticated() && isOwner(userId);
+      allow delete: if false;
+    }
+    
+    // === SAFETY & MODERATION ===
+    
+    // Content safety scores (S1/S2/S3 ratings)
+    match /content_safety/{contentId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin(); // Moderators only
+    }
+    
+    // Safety violations and blocks
+    match /safety_violations/{violationId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend writes
+    }
+    
+    // User safety flags
+    match /user_safety/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow write: if isAdmin();
+    }
+    
+    // === REAL-TIME SYNC ===
+    
+    // Sync state for mobile/web coordination
+    match /sync_state/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && isOwner(userId);
+    }
+  }
+}

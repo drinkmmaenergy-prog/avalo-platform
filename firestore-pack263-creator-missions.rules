@@ -1,0 +1,165 @@
+// ============================================================================
+// PACK 263 — CREATOR MISSIONS (DAILY + WEEKLY QUESTS)
+// Firestore Security Rules for Mission System
+// ============================================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isCreatorModeEnabled() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.creatorMode.enabled == true;
+    }
+    
+    // ========================================================================
+    // CREATOR MISSIONS (DAILY + WEEKLY + SEASONAL)
+    // ========================================================================
+    
+    // Creator mission profiles (tracks available missions and slots)
+    match /creatorMissions/{creatorId} {
+      // Only creator can read their missions
+      allow read: if isOwner(creatorId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // Active missions (currently assigned to creator)
+    match /creatorMissions/{creatorId}/activeMissions/{missionId} {
+      // Only creator can read their active missions
+      allow read: if isOwner(creatorId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // Completed missions archive
+    match /creatorMissions/{creatorId}/completedMissions/{missionId} {
+      // Only creator can read their completed missions
+      allow read: if isOwner(creatorId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MISSION PROGRESS TRACKING
+    // ========================================================================
+    
+    // Individual mission progress (real-time tracking)
+    match /missionProgress/{creatorId}/missions/{missionId} {
+      // Only creator can read their mission progress
+      allow read: if isOwner(creatorId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MISSION STREAKS
+    // ========================================================================
+    
+    // Streak tracking for daily/weekly completion bonuses
+    match /missionStreaks/{creatorId} {
+      // Only creator can read their streaks
+      allow read: if isOwner(creatorId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MISSION TEMPLATES (GLOBAL)
+    // ========================================================================
+    
+    // Available mission templates (admin managed)
+    match /missionTemplates/{templateId} {
+      // All creators can read mission templates
+      allow read: if isAuthenticated() && isCreatorModeEnabled();
+      
+      // No client writes - admin only
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MISSION ACTIVITY LOG
+    // ========================================================================
+    
+    // Activity log for mission completion tracking
+    match /missionActivityLog/{creatorId}/activities/{activityId} {
+      // Only creator can read their activity log
+      allow read: if isOwner(creatorId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MISSION NOTIFICATIONS
+    // ========================================================================
+    
+    // Pending mission notifications
+    match /missionNotifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isAuthenticated() && 
+                     resource.data.creatorId == request.auth.uid;
+      
+      // Users can mark notifications as read
+      allow update: if isAuthenticated() && 
+                       resource.data.creatorId == request.auth.uid &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      
+      // No other writes
+      allow create, delete: if false;
+    }
+    
+    // ========================================================================
+    // MISSION SLOTS (LEVEL-BASED)
+    // ========================================================================
+    
+    // Mission slot configuration per creator level
+    match /missionSlots/{creatorId} {
+      // Only creator can read their slot configuration
+      allow read: if isOwner(creatorId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // SEASONAL MISSIONS (FUTURE SCAFFOLD)
+    // ========================================================================
+    
+    // Seasonal mission campaigns (30-day events)
+    match /seasonalMissions/{seasonId} {
+      // All creators can read active seasonal missions
+      allow read: if isAuthenticated() && isCreatorModeEnabled();
+      
+      // No client writes - admin only
+      allow write: if false;
+    }
+    
+    // Creator participation in seasonal missions
+    match /seasonalMissions/{seasonId}/participants/{creatorId} {
+      // Only creator can read their participation
+      allow read: if isOwner(creatorId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+  }
+}

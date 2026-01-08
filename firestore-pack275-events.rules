@@ -1,0 +1,222 @@
+// PACK 275: Events Engine (Tickets, 80/20, QR, Refunds, Mismatch, Safety)
+// Firestore Security Rules for Event Ticketing System
+//
+// KEY FEATURES:
+// - 80/20 revenue split (Organizer/Avalo)
+// - QR code check-in with selfie verification
+// - Full refund on organizer cancellation
+// - No refund on participant cancellation
+// - Mismatch refund (appearance doesn't match)
+// - 70% check-in threshold for payout
+// - Safety hooks integration
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function userId() {
+      return request.auth.uid;
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(userId())) &&
+        get(/databases/$(database)/documents/users/$(userId())).data.role in ['ADMIN', 'MODERATOR'];
+    }
+    
+    function isEventOrganizer(eventId) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/events/$(eventId)) &&
+        get(/databases/$(database)/documents/events/$(eventId)).data.organizerId == userId();
+    }
+    
+    function hasTicket(eventId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/eventTickets/$(userId())_$(eventId));
+    }
+    
+    function isValidEventStatus(status) {
+      return status in ['PUBLISHED', 'CANCELLED', 'COMPLETED'];
+    }
+    
+    function isValidTicketStatus(status) {
+      return status in [
+        'PURCHASED',
+        'CANCELLED_BY_PARTICIPANT',
+        'CANCELLED_BY_ORGANIZER',
+        'REFUNDED_MISMATCH',
+        'COMPLETED',
+        'NO_SHOW',
+        'COMPLETED_GOODWILL'
+      ];
+    }
+    
+    // ============================================================================
+    // EVENTS COLLECTION
+    // ============================================================================
+    
+    match /events/{eventId} {
+      // Read rules - public for discovery
+      allow read: if isAuthenticated();
+      
+      // Create rules
+      allow create: if isAuthenticated() &&
+        // Must be the organizer
+        request.resource.data.organizerId == userId() &&
+        // Valid event ID
+        request.resource.data.eventId == eventId &&
+        // Valid status
+        isValidEventStatus(request.resource.data.status) &&
+        // Title constraints
+        request.resource.data.title.size() >= 5 &&
+        request.resource.data.title.size() <= 200 &&
+        // Description constraints
+        request.resource.data.description.size() >= 20 &&
+        request.resource.data.description.size() <= 5000 &&
+        // Time validation
+        request.resource.data.startTime is string &&
+        request.resource.data.endTime is string &&
+        // Capacity validation
+        request.resource.data.maxParticipants >= 1 &&
+        request.resource.data.maxParticipants <= 10000 &&
+        // Price validation
+        request.resource.data.priceTokens >= 0 &&
+        request.resource.data.priceTokens <= 100000 &&
+        // Currency must be TOKENS
+        request.resource.data.currency == 'TOKENS' &&
+        // Initial stats
+        request.resource.data.stats.ticketsSold == 0 &&
+        request.resource.data.stats.checkIns == 0 &&
+        // Safety requirements
+        request.resource.data.safety.requireSelfieCheck is bool &&
+        request.resource.data.safety.allowPanicMode is bool &&
+        // Timestamps
+        request.resource.data.timestamps.createdAt == request.time.toMillis() &&
+        request.resource.data.timestamps.updatedAt == request.time.toMillis();
+      
+      // Update rules
+      allow update: if isAuthenticated() && (
+        // Organizer can update their event
+        (resource.data.organizerId == userId() &&
+         // Cannot change organizer or event ID
+         request.resource.data.organizerId == resource.data.organizerId &&
+         request.resource.data.eventId == resource.data.eventId &&
+         // Cannot change status from COMPLETED or CANCELLED (except stats)
+         (resource.data.status not in ['COMPLETED', 'CANCELLED'] ||
+          (request.resource.data.keys().hasOnly(['stats', 'timestamps']) ||
+           isModerator()))) ||
+        // Moderators can update anything
+        isModerator()
+      ) &&
+        // Must update timestamp
+        request.resource.data.timestamps.updatedAt == request.time.toMillis();
+      
+      // Delete not allowed (use status CANCELLED)
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // EVENT TICKETS COLLECTION
+    // ============================================================================
+    
+    match /eventTickets/{ticketId} {
+      // Read rules
+      allow read: if isAuthenticated() && (
+        // User can read their own tickets
+        resource.data.participantId == userId() ||
+        // Organizer can read tickets for their event
+        isEventOrganizer(resource.data.eventId) ||
+        // Moderators can read all
+        isModerator()
+      );
+      
+      // Create/Update/Delete via Cloud Functions only for payment atomicity
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // MISMATCH REPORTS COLLECTION
+    // ============================================================================
+    
+    match /mismatchReports/{reportId} {
+      // Read rules
+      allow read: if isAuthenticated() && (
+        // Organizer who reported
+        resource.data.reportedBy == userId() ||
+        // Participant who was reported
+        resource.data.participantId == userId() ||
+        // Moderators
+        isModerator()
+      );
+      
+      // Create via Cloud Function only (triggers refund)
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // EVENT COMPLETION ANALYSIS COLLECTION
+    // ============================================================================
+    
+    match /eventCompletionAnalysis/{eventId} {
+      // Read rules
+      allow read: if isAuthenticated() && (
+        // Event organizer
+        isEventOrganizer(eventId) ||
+        // Moderators
+        isModerator()
+      );
+      
+      // Computed via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // ORGANIZER PAYOUTS COLLECTION
+    // ============================================================================
+    
+    match /organizerPayouts/{payoutId} {
+      // Read rules
+      allow read: if isAuthenticated() && (
+        // Organizer can read their payouts
+        resource.data.organizerId == userId() ||
+        // Moderators
+        isModerator()
+      );
+      
+      // Managed via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // SAFETY EVENT HOOKS COLLECTION (for integration with Safety packs)
+    // ============================================================================
+    
+    match /safetyEventHooks/{hookId} {
+      // Only moderators and Safety system can read
+      allow read: if isModerator();
+      
+      // Created via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // EVENT DISCOVERY CACHE (for Feed/Discovery)
+    // ============================================================================
+    
+    match /eventDiscoveryCache/{cacheId} {
+      // Public read for discovery
+      allow read: if isAuthenticated();
+      
+      // Managed via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+  }
+}

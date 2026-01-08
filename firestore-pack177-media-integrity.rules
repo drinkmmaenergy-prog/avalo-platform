@@ -1,0 +1,226 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['moderator', 'admin'];
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Media Integrity Cases - Uploader and moderators can read
+    match /media_integrity_cases/{caseId} {
+      allow read: if isAuthenticated() && (
+        resource.data.uploaderId == request.auth.uid ||
+        resource.data.victimIds has request.auth.uid ||
+        isModerator()
+      );
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Synthetic Media Flags - Detection records
+    match /synthetic_media_flags/{flagId} {
+      allow read: if isAuthenticated() && (
+        resource.data.uploaderId == request.auth.uid ||
+        isModerator()
+      );
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Deepfake Attempts - Blocked upload attempts
+    match /deepfake_attempts/{attemptId} {
+      allow read: if isAuthenticated() && (
+        resource.data.uploaderId == request.auth.uid ||
+        isModerator()
+      );
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Media Watermarks - Covert ownership tracking
+    match /media_watermarks/{watermarkId} {
+      // Only moderators can read watermarks
+      allow read: if isModerator();
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Consent Verifications - Upload consent records
+    match /consent_verifications/{verificationId} {
+      allow read: if isAuthenticated() && (
+        resource.data.uploaderId == request.auth.uid ||
+        isModerator()
+      );
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Consent Requests - Pending consent confirmations
+    match /consent_requests/{requestId} {
+      allow read: if isAuthenticated() && resource.data.uploaderId == request.auth.uid;
+      
+      // Users can create consent requests
+      allow create: if isAuthenticated() && 
+                      request.resource.data.uploaderId == request.auth.uid;
+      
+      // Users can update their own requests
+      allow update: if isAuthenticated() && resource.data.uploaderId == request.auth.uid;
+      
+      allow delete: if false;
+    }
+
+    // Blocked Consent Claims - Invalid ownership claims
+    match /blocked_consent_claims/{claimId} {
+      allow read: if isAuthenticated() && (
+        resource.data.uploaderId == request.auth.uid ||
+        isModerator()
+      );
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Media Integrity Appeals - Users can appeal blocks
+    match /media_integrity_appeals/{appealId} {
+      allow create: if isAuthenticated() && 
+                      request.resource.data.uploaderId == request.auth.uid &&
+                      request.resource.data.createdAt == request.time;
+      
+      allow read: if isAuthenticated() && (
+        resource.data.uploaderId == request.auth.uid ||
+        isModerator()
+      );
+      
+      allow update: if isModerator();
+      allow delete: if false;
+    }
+
+    // Victim Identity Shields - Privacy protection records
+    match /victim_identity_shields/{shieldId} {
+      allow read: if isAuthenticated() && (
+        resource.data.victimId == request.auth.uid ||
+        isModerator()
+      );
+      
+      // Victims can create their own shield
+      allow create: if isAuthenticated() && 
+                      request.resource.data.victimId == request.auth.uid;
+      
+      // Victims can update their shield settings
+      allow update: if isAuthenticated() && resource.data.victimId == request.auth.uid;
+      
+      allow delete: if false;
+    }
+
+    // Media Integrity Statistics - Aggregated metrics
+    match /media_integrity_statistics/{statId} {
+      allow read: if isModerator();
+      allow write: if false;
+    }
+
+    // Blocked Upload Attempts - Content prevention logs
+    match /blocked_upload_attempts/{attemptId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isModerator()
+      );
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Media Integrity Reports - User-submitted reports
+    match /media_integrity_reports/{reportId} {
+      allow create: if isAuthenticated() && 
+                      request.resource.data.reportedBy == request.auth.uid &&
+                      request.resource.data.timestamp == request.time;
+      
+      allow read: if isAuthenticated() && (
+        resource.data.reportedBy == request.auth.uid ||
+        resource.data.targetUserId == request.auth.uid ||
+        isModerator()
+      );
+      
+      allow update: if isModerator();
+      allow delete: if false;
+    }
+
+    // Face Detection Records - Privacy-sensitive data
+    match /face_detection_records/{recordId} {
+      // Only moderators can read face detection data
+      allow read: if isModerator();
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Synthetic Media Training Data - ML model updates
+    match /synthetic_media_training/{dataId} {
+      // Only admins can access training data
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Media Hash Registry - Duplicate detection
+    match /media_hash_registry/{hashId} {
+      // Only moderators can read hash registry
+      allow read: if isModerator();
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Deepfake Detection Logs - Technical audit trail
+    match /deepfake_detection_logs/{logId} {
+      allow read: if isModerator();
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Victim Notifications - Alert system
+    match /victim_notifications/{notificationId} {
+      allow read: if isAuthenticated() && resource.data.victimId == request.auth.uid;
+      
+      // Victims can mark notifications as read
+      allow update: if isAuthenticated() && 
+                      resource.data.victimId == request.auth.uid &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      
+      // Only Cloud Functions can create/delete
+      allow create, delete: if false;
+    }
+
+    // Legal Evidence Vault - Court-ready evidence
+    match /legal_evidence_vault/{evidenceId} {
+      // Only moderators and victim can read
+      allow read: if isAuthenticated() && (
+        resource.data.victimId == request.auth.uid ||
+        isModerator()
+      );
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,153 @@
+// PACK 360 - Localization Firestore Security Rules
+// Covers language preferences, currency, regional UX, cultural safety, and legal documents
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // User Language Preferences
+    match /user-language-preferences/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Translation Phrases (read-only for users, admin can edit)
+    match /translation-phrases/{phraseId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Currency Rates (read-only for all, system updates)
+    match /currency-rates/{currency} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // User Currency Preferences
+    match /user-currency-preferences/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Regional Pricing Adjustments (admin only)
+    match /regional-pricing-adjustments/{currency} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Token Packages (read for all, admin can edit)
+    match /token-packages/{packageId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Regional UX Rules (read for all, admin can edit)
+    match /regional-ux-overrides/{country} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // User UX Configuration
+    match /user-ux-config/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) || isAdmin();
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Cultural Safety Profiles (read for all, admin can edit)
+    match /cultural-safety-overrides/{country} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Content Moderation Logs (owner and admin can read)
+    match /content-moderation-logs/{logId} {
+      allow read: if isAdmin() || 
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+    
+    // User Content (with moderation status)
+    match /user-content/{contentId} {
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || 
+                      resource.data.moderationStatus == 'approved' ||
+                      isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isOwner(resource.data.userId) || isAdmin();
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // Legal Documents (read for all authenticated, admin can write)
+    match /legal-documents/{documentId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // User Legal Acceptances
+    match /user-legal-acceptances/{acceptanceId} {
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Legal Update Notifications
+    match /legal-update-notifications/{notificationId} {
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isAdmin();
+    }
+    
+    // System Configuration (admin only write, read for authenticated)
+    match /system/{configDoc} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Localization Configuration
+    match /system/localization-config {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Currency Configuration
+    match /system/currency-config {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Translation Cache
+    match /system/translation-cache {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Token Configuration
+    match /system/token-config {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

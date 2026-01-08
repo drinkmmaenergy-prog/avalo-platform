@@ -1,0 +1,195 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['moderator', 'admin'];
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Extortion Cases - Victim and moderators can read, only system can write
+    match /extortion_cases/{caseId} {
+      allow read: if isAuthenticated() && (
+        resource.data.victimId == request.auth.uid ||
+        resource.data.reportedBy == request.auth.uid ||
+        isModerator()
+      );
+      
+      // Only Cloud Functions can create/update cases
+      allow write: if false;
+    }
+
+    // Blackmail Messages - Evidence storage (read-only for victims)
+    match /blackmail_messages/{messageId} {
+      allow read: if isAuthenticated() && (
+        resource.data.victimId == request.auth.uid ||
+        resource.data.reportedBy == request.auth.uid ||
+        isModerator()
+      );
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Revenge Attempts - Tracking blocked attempts
+    match /revenge_attempts/{attemptId} {
+      allow read: if isAuthenticated() && (
+        resource.data.victimId == request.auth.uid ||
+        isModerator()
+      );
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Safety Vault Records - Highly restricted, encrypted evidence
+    match /safety_vault_records/{recordId} {
+      // Only the victim can read their own vault
+      allow read: if isAuthenticated() && resource.data.victimId == request.auth.uid;
+      
+      // Moderators can request access only through audit-logged functions
+      allow read: if isModerator() && resource.data.moderatorAccessGranted == true;
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Extortion Reports - Users can create, moderators can read
+    match /extortion_reports/{reportId} {
+      allow create: if isAuthenticated() && 
+                      request.resource.data.reportedBy == request.auth.uid &&
+                      request.resource.data.timestamp == request.time;
+      
+      allow read: if isAuthenticated() && (
+        resource.data.reportedBy == request.auth.uid ||
+        resource.data.victimId == request.auth.uid ||
+        isModerator()
+      );
+      
+      allow update: if isModerator();
+      allow delete: if false;
+    }
+
+    // Case Appeals - Accused can create appeal, moderators can update
+    match /case_appeals/{appealId} {
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.timestamp == request.time;
+      
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isModerator()
+      );
+      
+      allow update: if isModerator();
+      allow delete: if false;
+    }
+
+    // Extortion Patterns - ML detection patterns (read-only)
+    match /extortion_patterns/{patternId} {
+      allow read: if isModerator();
+      allow write: if false;
+    }
+
+    // Enforcement Actions - Audit trail
+    match /enforcement_actions/{actionId} {
+      allow read: if isAuthenticated() && (
+        resource.data.targetUserId == request.auth.uid ||
+        isModerator()
+      );
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Recovery Requests - Victims can create, system processes
+    match /recovery_requests/{requestId} {
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.timestamp == request.time;
+      
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Only Cloud Functions can update
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // Legal Export Requests - Encrypted data for law enforcement
+    match /legal_export_requests/{requestId} {
+      allow create: if isAuthenticated() && 
+                      request.resource.data.requestedBy == request.auth.uid;
+      
+      allow read: if isAuthenticated() && (
+        resource.data.requestedBy == request.auth.uid ||
+        isAdmin()
+      );
+      
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // Blocked Upload Attempts - Revenge content prevention
+    match /blocked_upload_attempts/{attemptId} {
+      allow read: if isModerator();
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // Extortion Statistics - Aggregated metrics
+    match /extortion_statistics/{statId} {
+      allow read: if isModerator();
+      allow write: if false;
+    }
+
+    // Safety Vault Keys - Encrypted key storage (ultra-restricted)
+    match /safety_vault_keys/{keyId} {
+      // Only the victim's authenticated session can read
+      allow read: if isAuthenticated() && 
+                    resource.data.userId == request.auth.uid &&
+                    request.time < resource.data.expiresAt;
+      
+      // Only Cloud Functions can manage keys
+      allow write: if false;
+    }
+
+    // Emotional Blackmail Patterns - AI detection
+    match /emotional_blackmail_patterns/{patternId} {
+      allow read: if isModerator();
+      allow write: if false;
+    }
+
+    // Multi-Account Extortion Rings - Coordinated attack detection
+    match /extortion_rings/{ringId} {
+      allow read: if isModerator();
+      allow write: if false;
+    }
+
+    // Victim Safety Records - Privacy metadata
+    match /victim_safety_records/{recordId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid;
+      
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      allow delete: if false;
+    }
+  }
+}

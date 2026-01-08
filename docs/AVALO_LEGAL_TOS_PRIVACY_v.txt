@@ -1,0 +1,256 @@
+🇬🇧 ENGLISH VERSION
+Avalo Terms of Service & Privacy Policy (v1)
+
+Last updated: October 2025
+
+1. Introduction
+
+Avalo is a social and dating platform operated by Avalo Technologies, enabling verified adult users (18+) to connect, chat, and earn through legitimate interactions using virtual in-app tokens.
+
+By creating an account or using Avalo, you agree to these Terms and our Privacy Policy.
+
+2. Eligibility
+
+You must be 18 years or older.
+
+You must pass account verification (live selfie, ID, or bank microcharge).
+
+By using Avalo, you represent that all information you provide is truthful.
+
+3. User Responsibilities
+
+You are solely responsible for your conduct and communications.
+
+Avalo does not guarantee any meeting, connection, or outcome.
+
+Any illegal, sexual, or exploitative use of the platform is strictly prohibited.
+
+4. Prohibited Use
+
+Users are strictly forbidden to:
+
+Offer or request sexual services for tokens, money, or compensation.
+
+Use code words like “GFE”, “escort”, “full service”, “roses”, “allowance”.
+
+Arrange meetings for sexual exchange or adult content creation.
+
+Use the platform to promote escort agencies or sex work.
+
+Violations lead to permanent account suspension and forfeiture of tokens.
+
+5. Calendar & Meetings
+
+The Calendar feature exists solely to arrange legitimate social meetings (coffee, dinner, sports, cultural activities).
+It cannot be used for prostitution, escorting, or paid intimacy.
+
+Refunds:
+
+If earner cancels or fails to appear → full refund to booker.
+
+If booker cancels ≥24h before → 50% refund.
+
+Avalo fee (20%) is non-refundable.
+
+6. Tokens & Payments
+
+Tokens are virtual credits without real-money value.
+
+1 token = 0.20 PLN settlement reference.
+
+Tokens cannot be traded, transferred, or withdrawn outside the app.
+
+Platform fees are non-refundable.
+
+Purchases processed via Stripe, PayPal, or regional providers.
+
+7. Refund Policy
+
+Refunds are granted only for:
+
+Technical errors (duplicate payment)
+
+Calendar no-shows
+
+Canceled bookings by earners
+
+Avalo fees remain non-refundable in all cases.
+
+8. Royal Club & Instagram Integration
+
+Users with verified Instagram (≥1000 followers) or high earnings automatically join Royal Club.
+
+Royal members receive bonus chat rates and analytics tools.
+
+9. AI Companions
+
+Avalo provides AI-powered virtual companions.
+AI chats are for entertainment only.
+Avalo does not guarantee accuracy or emotional outcomes from AI conversations.
+
+10. Privacy Policy Summary
+
+Avalo collects limited data to operate and secure your account:
+
+Name, email, selfie, verification data
+
+Chat and transaction logs
+
+Location (for discovery and calendar)
+
+Instagram username and followers (if linked)
+
+We never sell your data to third parties.
+Data is processed in accordance with GDPR and stored in EU (europe-west3).
+
+You may request account deletion or data export at any time.
+
+11. Law Enforcement Cooperation
+
+Avalo cooperates fully with law enforcement to investigate illegal activity, including human trafficking, prostitution, or child exploitation.
+
+12. Liability
+
+Avalo is not responsible for user interactions, meetings, or offline consequences.
+All meetings are at your own discretion and risk.
+
+13. Termination
+
+Avalo may suspend or terminate your account for:
+
+Violations of these Terms
+
+Fraudulent activity
+
+Unsafe behavior toward others
+
+14. Jurisdiction
+
+These Terms are governed by the laws of the European Union.
+Disputes shall be handled under EU consumer regulations.
+
+15. Contact
+
+Email: legal@avalo.app
+
+🇵🇱 POLSKA WERSJA
+Regulamin i Polityka Prywatności Avalo (v1)
+
+Aktualizacja: październik 2025
+
+1. Wprowadzenie
+
+Avalo to platforma społeczno-randkowa umożliwiająca dorosłym użytkownikom (18+) poznawanie ludzi, czatowanie oraz zarabianie poprzez legalne interakcje przy użyciu wirtualnych tokenów.
+
+Korzystając z aplikacji, akceptujesz niniejszy Regulamin i Politykę Prywatności.
+
+2. Wymagania
+
+Użytkownik musi mieć ukończone 18 lat.
+
+Wymagana jest weryfikacja konta (selfie, dowód, mikropłatność 0 PLN).
+
+Dane podane podczas rejestracji muszą być prawdziwe.
+
+3. Odpowiedzialność użytkownika
+
+Użytkownik ponosi pełną odpowiedzialność za swoje zachowanie.
+
+Avalo nie gwarantuje żadnego spotkania ani relacji.
+
+Zabronione jest używanie aplikacji w celach seksualnych lub nielegalnych.
+
+4. Zakazy
+
+Zabronione jest:
+
+Oferowanie lub przyjmowanie zapłaty za usługi seksualne.
+
+Używanie kodów: „GFE”, „escort”, „full service”, „roses”, „allowance”.
+
+Umawianie spotkań w celu kontaktów seksualnych.
+
+Promowanie agencji towarzyskich.
+
+Naruszenie skutkuje trwałym banem i utratą tokenów.
+
+5. Kalendarz
+
+Funkcja Kalendarza służy wyłącznie do organizacji spotkań towarzyskich (kawa, kolacja, sport, kultura).
+Nie może być używana do prostytucji ani płatnych kontaktów.
+
+Zasady zwrotów:
+
+Nieobecność osoby zarabiającej → pełny zwrot.
+
+Anulowanie przez klienta ≥24h → 50% zwrot.
+
+Prowizja Avalo (20%) nie podlega zwrotowi.
+
+6. Tokeny i płatności
+
+Tokeny są wirtualnym środkiem w aplikacji.
+
+1 token = 0,20 PLN jako przelicznik referencyjny.
+
+Tokeny nie mają wartości realnej poza aplikacją.
+
+Prowizje Avalo są bezzwrotne.
+
+Płatności obsługiwane przez Stripe, PayPal i operatorów lokalnych.
+
+7. Zwroty
+
+Zwroty przysługują wyłącznie w przypadku:
+
+Błędu technicznego (podwójna płatność),
+
+Braku pojawienia się osoby zarabiającej,
+
+Anulowania przez osobę zarabiającą.
+
+8. Royal Club i Instagram
+
+Użytkowniczki z kontem IG (≥1000 obserwujących) lub wysokimi zarobkami otrzymują status Royal.
+
+Royal otrzymują lepsze przeliczniki tokenów i dostęp do statystyk.
+
+9. AI Companions
+
+Wirtualni asystenci AI są jedynie formą rozrywki.
+Avalo nie odpowiada za ich treści ani wpływ emocjonalny.
+
+10. Polityka Prywatności
+
+Gromadzimy dane wyłącznie w zakresie niezbędnym do działania aplikacji:
+
+Imię, email, selfie, dane weryfikacyjne
+
+Logi czatu i transakcji
+
+Lokalizacja (GPS)
+
+Nazwa użytkownika IG i liczba obserwujących
+
+Dane nie są sprzedawane ani udostępniane bez zgody.
+Zgodność z RODO.
+
+11. Współpraca z organami ścigania
+
+Avalo współpracuje z policją i prokuraturą w przypadku nadużyć.
+
+12. Odpowiedzialność
+
+Avalo nie ponosi odpowiedzialności za spotkania i decyzje użytkowników.
+
+13. Zawieszenie konta
+
+Avalo może zawiesić lub usunąć konto w przypadku naruszeń lub oszustw.
+
+14. Prawo właściwe
+
+Prawo Unii Europejskiej. Spory rozstrzygane zgodnie z regulacjami UE.
+
+15. Kontakt
+
+Email: legal@avalo.app

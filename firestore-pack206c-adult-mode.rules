@@ -1,0 +1,84 @@
+rules_version = '2';
+
+// PACK 206c — Adult Mode Settings Rules
+// Consent-based romantic & sexual conversation system
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Adult Mode Settings Collection
+    match /adult_mode_settings/{chatId} {
+      
+      // Helper function to check if user is verified 18+
+      function isVerified18Plus(userId) {
+        let userDoc = get(/databases/$(database)/documents/users/$(userId));
+        return userDoc.data.ageVerified == true && 
+               userDoc.data.age >= 18;
+      }
+      
+      // Helper function to check if user is a participant in the chat
+      function isChatParticipant(userId) {
+        let chatDoc = get(/databases/$(database)/documents/chats/$(chatId));
+        return userId in chatDoc.data.participants;
+      }
+      
+      // Allow read if user is a chat participant
+      allow read: if request.auth != null &&
+                     isChatParticipant(request.auth.uid);
+      
+      // Allow create if:
+      // - User is authenticated
+      // - User is 18+ verified
+      // - User is a chat participant
+      // - Document structure is valid
+      allow create: if request.auth != null &&
+                       isVerified18Plus(request.auth.uid) &&
+                       isChatParticipant(request.auth.uid) &&
+                       request.resource.data.keys().hasAll(['chatId', 'user1Id', 'user1Enabled', 'user1Timestamp', 'user2Id', 'user2Enabled', 'user2Timestamp', 'bothEnabled', 'createdAt']) &&
+                       request.resource.data.chatId == chatId &&
+                       (request.resource.data.user1Id == request.auth.uid || request.resource.data.user2Id == request.auth.uid);
+      
+      // Allow update if:
+      // - User is authenticated
+      // - User is 18+ verified
+      // - User is a chat participant
+      // - User can only update their own enabled/timestamp fields
+      allow update: if request.auth != null &&
+                       isVerified18Plus(request.auth.uid) &&
+                       isChatParticipant(request.auth.uid) &&
+                       (
+                         // User 1 can only update their own fields
+                         (request.auth.uid == resource.data.user1Id && 
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['user1Enabled', 'user1Timestamp', 'bothEnabled', 'updatedAt'])) ||
+                         // User 2 can only update their own fields
+                         (request.auth.uid == resource.data.user2Id && 
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['user2Enabled', 'user2Timestamp', 'bothEnabled', 'updatedAt']))
+                       );
+      
+      // No delete allowed - only disable via update
+      allow delete: if false;
+    }
+    
+    // Adult Mode Logs Collection (for audit trail)
+    match /adult_mode_logs/{logId} {
+      // Only backend can write logs
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    // Adult Mode Reports Collection
+    match /adult_mode_reports/{reportId} {
+      // Users can create reports
+      allow create: if request.auth != null &&
+                       request.resource.data.reporterId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['reporterId', 'chatId', 'reportedUserId', 'reason', 'description', 'timestamp', 'status']);
+      
+      // Users can read their own reports
+      allow read: if request.auth != null &&
+                     resource.data.reporterId == request.auth.uid;
+      
+      // No updates or deletes by users
+      allow update, delete: if false;
+    }
+  }
+}

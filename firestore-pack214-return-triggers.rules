@@ -1,0 +1,115 @@
+rules_version = '2';
+
+// PACK 214 - Return Trigger Engine Firestore Rules
+// Smart re-engagement without desperation or spam
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ============================================
+    // RETURN TRIGGER SETTINGS
+    // ============================================
+    match /return_trigger_settings/{userId} {
+      // Users can read their own settings
+      allow read: if isOwner(userId);
+      
+      // Users can update their own settings (limited fields)
+      allow update: if isOwner(userId) && 
+                    request.resource.data.diff(resource.data).affectedKeys()
+                      .hasOnly(['enabled', 'doNotDisturb', 'updatedAt']);
+      
+      // Only system can create settings
+      allow create: if false;
+      
+      // Users cannot delete their settings
+      allow delete: if false;
+    }
+    
+    // ============================================
+    // RETURN TRIGGER EVENTS
+    // ============================================
+    match /return_trigger_events/{eventId} {
+      // Users can read events targeting them
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only system can create/update/delete events
+      allow write: if false;
+    }
+    
+    // ============================================
+    // TRIGGER COOLDOWNS
+    // ============================================
+    match /trigger_cooldowns/{cooldownId} {
+      // Users can read their own cooldowns
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only system can manage cooldowns
+      allow write: if false;
+    }
+    
+    // ============================================
+    // RETURN TRIGGER STATS
+    // ============================================
+    match /return_trigger_stats/{userId} {
+      // Users can read their own stats
+      allow read: if isOwner(userId);
+      
+      // Only system can update stats
+      allow write: if false;
+    }
+    
+    // ============================================
+    // USER BREAK TRACKING
+    // ============================================
+    match /user_break_tracking/{userId} {
+      // Users can read their own break tracking
+      allow read: if isOwner(userId);
+      
+      // Only system can manage break tracking
+      allow write: if false;
+    }
+    
+    // ============================================
+    // COLD START TRACKING
+    // ============================================
+    match /cold_start_tracking/{trackingId} {
+      // Users can read their own cold-start tracking
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only system can manage tracking
+      allow write: if false;
+    }
+    
+    // ============================================
+    // ADMIN ACCESS (for monitoring/debugging)
+    // ============================================
+    match /return_trigger_settings/{userId} {
+      allow read: if isAdmin();
+    }
+    
+    match /return_trigger_events/{eventId} {
+      allow read: if isAdmin();
+    }
+    
+    match /return_trigger_stats/{userId} {
+      allow read: if isAdmin();
+    }
+  }
+}

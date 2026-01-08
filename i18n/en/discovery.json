@@ -1,0 +1,12 @@
+{
+  "discovery": {
+    "startChat": "Start Chat",
+    "viewProfile": "View profile",
+    "highRisk": "This profile has been reported by other users",
+    "royalBadge": "Royal Member",
+    "loading": "Loading profiles...",
+    "errorLoading": "Failed to load profiles",
+    "empty": "No profiles to show",
+    "title": "Discovery"
+  }
+}

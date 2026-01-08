@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 255 — AI MATCHMAKER ENGINE — SECURITY RULES
+    // ========================================================================
+    
+    // Helper functions
+    function isAuth() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return request.auth.token.admin == true;
+    }
+    
+    // ========================================================================
+    // BEHAVIORAL SIGNALS
+    // ========================================================================
+    
+    // Behavioral signals - write by owner, read by system only
+    match /pack255_behavior_signals/{signalId} {
+      // Users can create their own signals
+      allow create: if isAuth() 
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.timestamp is timestamp
+        && request.resource.data.type is string
+        && request.resource.data.targetUserId is string;
+      
+      // Only system/admin can read signals (privacy protection)
+      allow read: if isAdmin();
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // BEHAVIOR PROFILES
+    // ========================================================================
+    
+    // User behavior profiles - read by owner, write by system
+    match /pack255_behavior_profiles/{userId} {
+      // Users can read their own profile
+      allow read: if isAuth() && isOwner(userId);
+      
+      // Only system can write (via Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // LEARNED PREFERENCES
+    // ========================================================================
+    
+    // Learned preferences - read by owner, write by system
+    match /pack255_learned_preferences/{userId} {
+      // Users can read their own preferences
+      allow read: if isAuth() && isOwner(userId);
+      
+      // Only system can write (via Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // SWIPE HEATING STATES
+    // ========================================================================
+    
+    // Swipe heating states - read by owner, write by system
+    match /pack255_swipe_heating/{heatingId} {
+      // Users can read their own heating state
+      allow read: if isAuth() 
+        && resource.data.userId == request.auth.uid;
+      
+      // Only system can write (via Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // ADMIN COLLECTIONS (for monitoring/analytics)
+    // ========================================================================
+    
+    // Match engine metrics - admin only
+    match /pack255_engine_metrics/{metricId} {
+      allow read: if isAdmin();
+      allow write: if false; // System only
+    }
+    
+    // A/B test variants - admin only
+    match /pack255_ab_variants/{variantId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

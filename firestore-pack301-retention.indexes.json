@@ -1,0 +1,118 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "userRetention",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "segment", "order": "ASCENDING" },
+        { "fieldPath": "lastActiveAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRetention",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "segment", "order": "ASCENDING" },
+        { "fieldPath": "riskOfChurn", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRetention",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "onboardingCompleted", "order": "ASCENDING" },
+        { "fieldPath": "onboardingStage", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRetention",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "winBackSequenceStarted", "order": "ASCENDING" },
+        { "fieldPath": "winBackSequenceStep", "order": "ASCENDING" },
+        { "fieldPath": "winBackSequenceLastSent", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRetention",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "riskOfChurn", "order": "DESCENDING" },
+        { "fieldPath": "segment", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "retentionEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "retentionEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "retentionEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "segment", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "retentionMetrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "nudgeHistory",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "sentAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "retentionAnalytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRetention",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lastActiveAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRetention",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "segment", "order": "ASCENDING" },
+        { "fieldPath": "winBackSequenceStarted", "order": "ASCENDING" },
+        { "fieldPath": "winBackSequenceLastSent", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRetention",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "onboardingCompleted", "order": "ASCENDING" },
+        { "fieldPath": "lastActiveAt", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

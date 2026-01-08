@@ -1,0 +1,101 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "storeReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "platform", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "rating", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "riskScore", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "verifiedUser", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewThreats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewThreats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "threatType", "order": "ASCENDING" },
+        { "fieldPath": "severity", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewSignals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "signalType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "asoMetrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "platform", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "asoMetrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "metricType", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "requestedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "trustSignals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "signalType", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reputationMetrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "platform", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

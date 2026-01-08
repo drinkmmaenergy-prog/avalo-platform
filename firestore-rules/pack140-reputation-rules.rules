@@ -1,0 +1,60 @@
+// ============================================================================
+// PACK 140 — Reputation System 2.0 Security Rules
+// ============================================================================
+
+// Reputation Scores Collection
+// Users can read their own score, admins/moderators can read any
+match /reputation_scores/{userId} {
+  allow read: if request.auth != null && 
+    (request.auth.uid == userId || 
+     isAdmin() || 
+     isModerator());
+  allow write: if false; // Only backend can write
+}
+
+// Reputation Events Collection
+// Only backend and admins can access
+match /reputation_events/{eventId} {
+  allow read: if request.auth != null && 
+    (isAdmin() || isModerator());
+  allow write: if false; // Only backend can write
+}
+
+// Reputation History Collection
+// Users can read their own history
+match /reputation_history/{entryId} {
+  allow read: if request.auth != null && 
+    (resource.data.userId == request.auth.uid || 
+     isAdmin() || 
+     isModerator());
+  allow write: if false; // Only backend can write
+}
+
+// Reputation Protection Collection
+// Only backend and admins can access
+match /reputation_protection/{userId} {
+  allow read: if request.auth != null && 
+    (request.auth.uid == userId || 
+     isAdmin());
+  allow write: if false; // Only backend can write
+}
+
+// Reputation Recovery Collection
+// Users can read their own recovery progress
+match /reputation_recovery/{recoveryId} {
+  allow read: if request.auth != null && 
+    resource.data.userId == request.auth.uid;
+  allow write: if false; // Only backend can write
+}
+
+// Helper functions
+function isAdmin() {
+  return request.auth != null && 
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+}
+
+function isModerator() {
+  return request.auth != null && 
+    (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isModerator == true ||
+     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true);
+}

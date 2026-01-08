@@ -1,0 +1,29 @@
+{
+  "reservation": {
+    "title": "Reservations",
+    "availability": {
+      "title": "Meeting availability",
+      "price": "Price per meeting",
+      "meetingMode": "Meeting mode",
+      "locationHint": "Location or call details"
+    },
+    "book": {
+      "title": "Book a meeting",
+      "slotLabel": "Select a time slot",
+      "price": "Price: {tokens} tokens"
+    },
+    "status": {
+      "PENDING_PAYMENT": "Awaiting payment",
+      "CONFIRMED": "Confirmed",
+      "CANCELLED": "Cancelled",
+      "NO_SHOW_CREATOR": "Creator did not show up",
+      "NO_SHOW_CLIENT": "Client did not show up",
+      "COMPLETED": "Completed",
+      "IN_DISPUTE": "In dispute"
+    },
+    "confirmMeeting": "Confirm meeting took place",
+    "markNoShow": "Mark other user as no-show",
+    "openDispute": "Open dispute",
+    "tokensLocked": "Tokens locked in escrow"
+  }
+}

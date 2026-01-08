@@ -1,0 +1,75 @@
+{
+  "userControl": {
+    "title": "Privacy & Control",
+    "loading": "Loading settings...",
+    "errorLoading": "Failed to load settings",
+    "errorLoadingProfile": "Failed to load profile",
+    "errorSaving": "Failed to save settings",
+    "section": {
+      "visibility": "Visibility",
+      "incognito": "Incognito Mode",
+      "passport": "Passport & Location",
+      "contacts": "Contact Preferences",
+      "marketing": "Ads & Marketing",
+      "support": "Support & Help"
+    },
+    "visibility": {
+      "profileVisible": "Profile visible",
+      "showInDiscovery": "Show me in Discovery",
+      "showInMarketplace": "Show me in Marketplace",
+      "showOnlineStatus": "Show online status",
+      "showLastSeen": "Show last seen time"
+    },
+    "incognito": {
+      "enabled": "Enable incognito mode",
+      "hideFromRecentlyViewed": "Hide from recently viewed lists",
+      "hideFromWhoViewedMe": "Hide from 'who viewed me'",
+      "hideFromNearby": "Hide from nearby users"
+    },
+    "passport": {
+      "virtualLocation": "Use virtual location",
+      "country": "Virtual country",
+      "city": "Virtual city"
+    },
+    "contacts": {
+      "allowMessagesFrom": "Who can message you",
+      "selectPreference": "Select who can message you",
+      "anyone": "Anyone",
+      "matchesOnly": "Matches only",
+      "fansOnly": "Fans only",
+      "none": "None",
+      "allowColdPaidMessages": "Allow unsolicited paid messages"
+    },
+    "marketing": {
+      "allowInAppPromotions": "Allow in-app promotions",
+      "allowEmailMarketing": "Receive marketing emails",
+      "allowPushMarketing": "Receive marketing push notifications"
+    },
+    "support": {
+      "openHelpCenter": "Open Help Center"
+    }
+  },
+  "support": {
+    "title": "Support & Help Center",
+    "subtitle": "Get help, view policies, and manage disputes",
+    "loading": "Loading support center...",
+    "quickActions": "Quick Actions",
+    "faq": "FAQ & Help Center",
+    "faqDescription": "Find answers to common questions",
+    "contactSupport": "Contact Support",
+    "contactDescription": "Send us an email for assistance",
+    "emailUs": "Email us at",
+    "policies": "Policies & Terms",
+    "policiesDescription": "View terms, privacy, and community guidelines",
+    "disputesAndReports": "Disputes & Reports",
+    "viewDisputes": "View Disputes",
+    "disputesDescription": "Manage payment, booking, and content disputes",
+    "reportContent": "Report Content",
+    "reportDescription": "Report inappropriate content or behavior",
+    "infoText": "For urgent safety concerns, please contact your local authorities immediately.",
+    "emailLabel": "Support Email:",
+    "mustBeLoggedIn": "Must be logged in",
+    "cannotOpenUrl": "Cannot open URL",
+    "errorOpeningUrl": "Failed to open URL"
+  }
+}

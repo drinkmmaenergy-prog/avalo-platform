@@ -1,0 +1,76 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // PACK 246 - Contract Enforcement Collections
+    // ============================================================================
+    
+    // Contract Audit Logs - Admin read-only
+    match /contractAuditLogs/{auditId} {
+      // Only system (via cloud functions) can write
+      allow write: if false;
+      
+      // Only admins can read audit logs
+      allow read: if request.auth != null && 
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Contract Stats - Admin read-only, system write
+    match /contractStats/{statsId} {
+      // Only system (via cloud functions) can write
+      allow write: if false;
+      
+      // Only admins can read stats
+      allow read: if request.auth != null && 
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Suspicious Anomalies - Admin read/write
+    match /suspiciousAnomalies/{anomalyId} {
+      // Only system (via cloud functions) can create
+      allow create: if false;
+      
+      // Admins can read and update (to resolve)
+      allow read, update: if request.auth != null && 
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // Audit Reports (Nightly & Weekly) - Admin read-only
+    match /auditReports/{reportId} {
+      // Only system (via cloud functions) can write
+      allow write: if false;
+      
+      // Only admins can read reports
+      allow read: if request.auth != null && 
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    match /weeklyAuditReports/{reportId} {
+      // Only system (via cloud functions) can write
+      allow write: if false;
+      
+      // Only admins can read reports
+      allow read: if request.auth != null && 
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Admin Notifications - Admin read/write
+    match /adminNotifications/{notificationId} {
+      // Only system (via cloud functions) can create
+      allow create: if false;
+      
+      // Admins can read and update (mark as read)
+      allow read, update: if request.auth != null && 
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      
+      // Admins can delete old notifications
+      allow delete: if request.auth != null && 
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+  }
+}

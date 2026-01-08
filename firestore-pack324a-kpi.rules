@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 324A — KPI COLLECTIONS (READ-ONLY, ADMIN ACCESS ONLY)
+    // ========================================================================
+    
+    // Helper: Check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true);
+    }
+    
+    // Platform KPI Daily
+    // Admin read-only access
+    match /platformKpiDaily/{date} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Platform KPI Hourly
+    // Admin read-only access
+    match /platformKpiHourly/{docId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Creator KPI Daily
+    // Admin read-only access
+    match /creatorKpiDaily/{docId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Safety KPI Daily
+    // Admin read-only access
+    match /safetyKpiDaily/{date} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+  }
+}

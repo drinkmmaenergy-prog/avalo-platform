@@ -1,0 +1,100 @@
+Write-Host "=== AVALO MONOREPO AUTO-FIX START ==="
+
+$root  = "C:\Users\Drink\avaloapp"
+$mobile = "$root\app-mobile"
+$web    = "$root\app-web"
+$shared = "$root\shared"
+$sdk    = "$root\sdk"
+$func   = "$root\functions"
+
+# 1. Naprawa pnpm-workspace.yaml
+Write-Host "`n-- Rewriting pnpm-workspace.yaml ..."
+$workspaceContent = @"
+packages:
+  - "app-mobile"
+  - "app-web"
+  - "functions"
+  - "sdk"
+  - "shared"
+"@
+Set-Content -Path "$root\pnpm-workspace.yaml" -Encoding UTF8 -Value $workspaceContent
+Write-Host "OK"
+
+
+# 2. Usuwanie node_modules
+Write-Host "`n-- Removing node_modules safely ..."
+
+$paths = @(
+    "$root\node_modules",
+    "$mobile\node_modules",
+    "$web\node_modules",
+    "$shared\node_modules",
+    "$sdk\node_modules",
+    "$func\node_modules"
+)
+
+foreach ($p in $paths) {
+    if (Test-Path $p) {
+        Write-Host "Deleting $p ..."
+        Remove-Item -Recurse -Force $p
+    }
+}
+
+# 3. Czyszczenie Expo cache
+Write-Host "`n-- Cleaning Expo caches ..."
+$expoPaths = @(
+    "$mobile\.expo",
+    "$mobile\.expo-shared",
+    "$mobile\.cache",
+    "$mobile\android"
+)
+
+foreach ($p in $expoPaths) {
+    if (Test-Path $p) {
+        Write-Host "Deleting $p ..."
+        Remove-Item -Recurse -Force $p
+    }
+}
+
+# 4. Usuwanie lockfile
+Write-Host "`n-- Removing pnpm-lock.yaml ..."
+if (Test-Path "$root\pnpm-lock.yaml") {
+    Remove-Item -Force "$root\pnpm-lock.yaml"
+}
+
+# 5. Dodanie brakującej expo-build-properties
+Write-Host "`n-- Ensuring expo-build-properties is set correctly ..."
+
+$pkgMobile = "$mobile\package.json"
+$json = Get-Content -Raw $pkgMobile | ConvertFrom-Json
+
+if (-not $json.dependencies.'expo-build-properties') {
+    $json.dependencies | Add-Member -NotePropertyName 'expo-build-properties' -NotePropertyValue '1.0.9'
+} else {
+    $json.dependencies.'expo-build-properties' = '1.0.9'
+}
+
+$json | ConvertTo-Json -Depth 50 | Set-Content -Path $pkgMobile -Encoding UTF8
+Write-Host "OK"
+
+
+# 6. Instalacja
+Write-Host "`n-- Running pnpm install (root) ..."
+cd $root
+pnpm install --no-frozen-lockfile
+
+Write-Host "`n-- Installing app-mobile deps ..."
+pnpm -F app-mobile install --no-frozen-lockfile
+
+
+# 7. Expo: instalacja natywnych zależności
+Write-Host "`n-- Installing required Expo native modules ..."
+cd $mobile
+npx expo install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context
+
+
+# 8. Gotowe
+Write-Host "`n=== AUTO-FIX COMPLETE ✅ ==="
+Write-Host "Uruchom aplikację:"
+Write-Host "cd app-mobile"
+Write-Host "npx expo start --clear"

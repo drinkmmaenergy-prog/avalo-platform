@@ -1,0 +1,177 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny([role]);
+    }
+    
+    function isAdmin() {
+      return hasRole('admin') || hasRole('super_admin');
+    }
+    
+    function isModerator() {
+      return hasRole('moderator') || isAdmin();
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+      
+      // Private user data
+      match /private/{document=**} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+      
+      // User wallet
+      match /wallet/{document=**} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if false; // Only server-side writes
+      }
+    }
+    
+    // Profiles collection
+    match /profiles/{profileId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(profileId);
+      allow update: if isOwner(profileId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Posts collection
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isOwner(resource.data.authorId) || isAdmin();
+      allow delete: if isOwner(resource.data.authorId) || isAdmin();
+    }
+    
+    // Chats collection
+    match /chats/{chatId} {
+      allow read: if isAuthenticated() && 
+                     request.auth.uid in resource.data.participants;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+                       request.auth.uid in resource.data.participants;
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && 
+                       request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isAuthenticated() && 
+                         request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow update: if isOwner(resource.data.senderId) || isModerator();
+        allow delete: if isOwner(resource.data.senderId) || isModerator();
+      }
+    }
+    
+    // Transactions collection (read-only for users)
+    match /transactions/{txId} {
+      allow read: if isAuthenticated() && 
+                     (isOwner(resource.data.uid) || isAdmin());
+      allow write: if false; // Only server-side writes
+    }
+    
+    // Notifications collection
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && isOwner(resource.data.userId);
+      allow write: if false; // Only server-side writes
+    }
+    
+    // Moderation reports
+    match /reports/{reportId} {
+      allow read: if isModerator();
+      allow create: if isAuthenticated();
+      allow update: if isModerator();
+      allow delete: if isAdmin();
+    }
+    
+    // Creator shops
+    match /shops/{shopId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isOwner(resource.data.creatorId) || isAdmin();
+      allow delete: if isOwner(resource.data.creatorId) || isAdmin();
+      
+      // Shop items
+      match /items/{itemId} {
+        allow read: if isAuthenticated();
+        allow write: if isOwner(get(/databases/$(database)/documents/shops/$(shopId)).data.creatorId) || isAdmin();
+      }
+    }
+    
+    // Live rooms
+    match /rooms/{roomId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isOwner(resource.data.hostId) || isAdmin();
+      allow delete: if isOwner(resource.data.hostId) || isAdmin();
+    }
+    
+    // Analytics (admin only)
+    match /analytics/{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // PACK 97: Creator Analytics Collections (read-only for owners)
+    match /creator_analytics_daily/{docId} {
+      allow read: if isAuthenticated() &&
+                     isOwner(resource.data.creatorId);
+      allow write: if false; // Only backend writes
+      
+      // Payers subcollection (internal tracking)
+      match /payers/{payerId} {
+        allow read, write: if false; // Backend only
+      }
+    }
+    
+    match /content_analytics_daily/{docId} {
+      allow read: if isAuthenticated() &&
+                     isOwner(resource.data.userId);
+      allow write: if false; // Only backend writes
+    }
+    
+    match /creator_analytics_snapshot/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if false; // Only backend writes
+    }
+    
+    // Creator balances (read-only for owners)
+    match /creator_balances/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if false; // Only backend writes
+    }
+    
+    // Earnings ledger (read-only for creators)
+    match /earnings_ledger/{entryId} {
+      allow read: if isAuthenticated() &&
+                     isOwner(resource.data.creatorId);
+      allow write: if false; // Only backend writes
+    }
+    
+    // System configuration (admin only)
+    match /config/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

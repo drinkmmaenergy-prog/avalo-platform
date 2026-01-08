@@ -1,0 +1,14 @@
+CMake Warning in CMakeLists.txt:
+  The object file directory
+
+    C:/Users/Drink/avaloapp/app-mobile/node_modules/.pnpm/expo-modules-core@3.0.29_re_b3867649d0595256a6cdfd2ca6d16091/node_modules/expo-modules-core/android/.cxx/Debug/4x6f5271/armeabi-v7a/CMakeFiles/expo-modules-core.dir/./
+
+  has 221 characters.  The maximum full path to an object file is 250
+  characters (see CMAKE_OBJECT_PATH_MAX).  Object file
+
+    C_/Users/Drink/avaloapp/app-mobile/node_modules/.pnpm/expo-modules-core@3.0.29_re_b3867649d0595256a6cdfd2ca6d16091/node_modules/expo-modules-core/common/cpp/ObjectDeallocator.cpp.o
+
+  cannot be safely placed under this directory.  The build may not work
+  correctly.
+
+

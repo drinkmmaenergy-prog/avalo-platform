@@ -1,0 +1,109 @@
+{
+  "onboarding": {
+    "welcome": {
+      "title": "Welcome to Avalo",
+      "subtitle": "Let's set up your profile to attract the right connections"
+    },
+    "day1": {
+      "title": "Magnetic Profile",
+      "subtitle": "Create a profile that attracts the right connections",
+      "step1": "Add at least 3 high-quality photos of yourself",
+      "step2": "Write a one-sentence profile vibe",
+      "step3": "Choose what attracts you in others (max 2)",
+      "progress": {
+        "photos": "{{count}} / 3 photos uploaded",
+        "bio": "At least 40 characters",
+        "bioCompleted": "Bio completed",
+        "preferences": "Select your preferences",
+        "preferencesCompleted": "Preferences selected"
+      },
+      "actions": {
+        "uploadPhotos": "Upload Photos",
+        "writeBio": "Write Bio",
+        "setPreferences": "Set Preferences"
+      },
+      "completion": {
+        "title": "Great job!",
+        "text": "You're almost there — one last step to unlock more chemistry."
+      }
+    },
+    "day2": {
+      "title": "Start the Spark",
+      "subtitle": "Begin meaningful interactions with others",
+      "step1": "Like 6 profiles you find attractive",
+      "step2": "Reply to one person who liked you",
+      "step3": "Send one first message to someone you're interested in",
+      "progress": {
+        "likes": "{{count}} / 6 likes sent",
+        "reply": "Check your likes",
+        "replyCompleted": "Reply sent",
+        "message": "Start a conversation",
+        "messageCompleted": "Message sent"
+      },
+      "actions": {
+        "browseProfiles": "Browse Profiles",
+        "viewLikes": "View Likes",
+        "viewMatches": "View Matches"
+      },
+      "completion": {
+        "title": "Amazing progress!",
+        "text": "You're doing great — your profile becomes more visible as you complete missions."
+      }
+    },
+    "day3": {
+      "title": "Heat Up the Connection",
+      "subtitle": "Take your connections to the next level",
+      "step1": "Start your first chat",
+      "step2": "Watch 3 Stories from people you find attractive",
+      "step3": "Add your first availability to the calendar (optional)",
+      "step4": "Save one event or add to wishlist (optional)",
+      "progress": {
+        "chat": "Begin a conversation",
+        "chatCompleted": "Chat started",
+        "stories": "{{count}} / 3 stories watched",
+        "availability": "Optional — can skip",
+        "availabilityCompleted": "Availability added",
+        "event": "Optional — can skip",
+        "eventCompleted": "Event saved"
+      },
+      "actions": {
+        "openChat": "Open Chat",
+        "viewStories": "View Stories",
+        "addAvailability": "Add Availability",
+        "browseEvents": "Browse Events",
+        "skip": "Skip"
+      },
+      "completion": {
+        "title": "You're ready!",
+        "text": "Explore freely, flirt freely, and enjoy meeting new people — safely and confidently."
+      }
+    },
+    "completion": {
+      "title": "You're Ready!",
+      "subtitle": "Explore freely, flirt freely, and enjoy meeting new people — safely and confidently.",
+      "benefits": {
+        "profile": {
+          "title": "Your Profile Shines",
+          "text": "Increased visibility to potential matches"
+        },
+        "connect": {
+          "title": "Ready to Connect",
+          "text": "Start meaningful conversations right away"
+        },
+        "safe": {
+          "title": "Safe & Confident",
+          "text": "All safety features and tools enabled"
+        }
+      },
+      "action": "Enter Avalo"
+    },
+    "common": {
+      "continue": "Continue to Day {{day}}",
+      "dayLabel": "DAY {{day}}",
+      "finalStep": "DAY 3 — FINAL STEP",
+      "optional": "OPTIONAL",
+      "completed": "Completed",
+      "inProgress": "In Progress"
+    }
+  }
+}

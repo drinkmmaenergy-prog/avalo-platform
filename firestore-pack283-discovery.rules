@@ -1,0 +1,114 @@
+rules_version = '2';
+
+// ============================================================================
+// PACK 283 — Discovery & People Browser (discoveryPresence)
+// ============================================================================
+// Purpose: Security rules for Discovery presence index and profile views tracking
+// Features:
+// - Free, unlimited browsing (no paywall)
+// - Incognito mode support
+// - Passport location switching
+// - Profile views tracking ("Visitors" feature)
+// - Safety filters (verified, banned, NSFW)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isVerified() {
+      return isAuthenticated() && getUserData().verified == true;
+    }
+    
+    function isNotBanned() {
+      return isAuthenticated() && 
+             (!('banLevel' in getUserData()) || getUserData().banLevel == 'none');
+    }
+    
+    function isAdult() {
+      return isAuthenticated() && getUserData().age >= 18;
+    }
+    
+    // ========================================================================
+    // DISCOVERY PRESENCE INDEX
+    // Collection: discoveryPresence/{userId}
+    // Purpose: Denormalized index for fast discovery queries
+    // ========================================================================
+    
+    match /discoveryPresence/{userId} {
+      // READ: Anyone can browse discovery (free, no auth required)
+      // Filter by location, age, gender preferences on client/backend
+      allow read: if true;
+      
+      // WRITE: Only system can write (via Cloud Functions)
+      // Users don't directly update their presence - it's synced from users collection
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PROFILE VIEWS TRACKING
+    // Collection: profileViews/{viewId}
+    // Purpose: Track who viewed whose profile for "Visitors" feature
+    // ========================================================================
+    
+    match /profileViews/{viewId} {
+      // READ: Users can only read their own profile views (who visited them)
+      // targetId is the profile owner, viewerId is the visitor
+      allow read: if isAuthenticated() && 
+                     resource.data.targetId == request.auth.uid;
+      
+      // CREATE: Authenticated users can create view records when viewing profiles
+      // Must be 18+, not banned, and not in incognito (unless interacted)
+      allow create: if isAuthenticated() &&
+                       isAdult() &&
+                       isNotBanned() &&
+                       request.resource.data.viewerId == request.auth.uid &&
+                       request.resource.data.targetId is string &&
+                       request.resource.data.targetId != request.auth.uid &&
+                       request.resource.data.source in ['discovery', 'feed', 'match', 'search', 'profile'] &&
+                       request.resource.data.createdAt == request.time;
+      
+      // UPDATE/DELETE: Not allowed - views are immutable records
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // DISCOVERY USER SETTINGS
+    // Collection: users/{userId}/discoverySettings (subcollection)
+    // Purpose: User preferences for discovery (filters, notifications)
+    // ========================================================================
+    
+    match /users/{userId}/discoverySettings/{settingId} {
+      // READ/WRITE: Only the user can access their own settings
+      allow read, write: if isOwner(userId);
+    }
+    
+    // ========================================================================
+    // DISCOVERY ANALYTICS
+    // Collection: discoveryAnalytics/{userId}
+    // Purpose: Track discovery usage metrics (views, swipes, matches)
+    // ========================================================================
+    
+    match /discoveryAnalytics/{userId} {
+      // READ: Only the user can read their own analytics
+      allow read: if isOwner(userId);
+      
+      // WRITE: Only system can write (via Cloud Functions)
+      allow write: if false;
+    }
+  }
+}

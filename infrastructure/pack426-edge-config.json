@@ -1,0 +1,356 @@
+{
+  "$schema": "./pack426-edge-config.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-01T00:00:00.000Z",
+  "description": "PACK 426 Edge Configuration for Multi-Region Infrastructure",
+  
+  "regions": {
+    "EU": {
+      "code": "EU",
+      "name": "Europe",
+      "priority": 1,
+      "enabled": true,
+      "firestore": {
+        "location": "europe-west1",
+        "endpoint": "https://firestore.googleapis.com/v1/projects/avalo-prod/databases/(default)"
+      },
+      "cdn": {
+        "primary": "https://cdn-eu.avalo.app",
+        "fallback": "https://eu.cdn.avalo.app"
+      },
+      "ai": {
+        "endpoint": "https://ai-eu.avalo.app",
+        "model": "gpt-4.5-turbo",
+        "tokenLimit": 1000000
+      },
+      "storage": {
+        "profiles": "avalo-profiles-eu",
+        "feed": "avalo-feed-eu",
+        "chat": "avalo-chat-eu"
+      },
+      "countries": [
+        "DE", "FR", "GB", "IT", "ES", "PL", "NL", "BE", "AT", "CH",
+        "SE", "NO", "DK", "FI", "IE", "PT", "GR", "CZ", "RO", "HU",
+        "SK", "BG", "HR", "SI", "LT", "LV", "EE", "CY", "MT", "LU",
+        "IS", "AL", "BA", "ME", "MK", "RS", "UA", "BY", "MD"
+      ],
+      "timezone": "Europe/Brussels",
+      "supportHours": {
+        "start": "08:00",
+        "end": "22:00",
+        "timezone": "Europe/Brussels"
+      }
+    },
+    "US": {
+      "code": "US",
+      "name": "Americas",
+      "priority": 1,
+      "enabled": true,
+      "firestore": {
+        "location": "us-central1",
+        "endpoint": "https://firestore.googleapis.com/v1/projects/avalo-prod/databases/(default)"
+      },
+      "cdn": {
+        "primary": "https://cdn-us.avalo.app",
+        "fallback": "https://us.cdn.avalo.app"
+      },
+      "ai": {
+        "endpoint": "https://ai-us.avalo.app",
+        "model": "gpt-4.5-turbo",
+        "tokenLimit": 1000000
+      },
+      "storage": {
+        "profiles": "avalo-profiles-us",
+        "feed": "avalo-feed-us",
+        "chat": "avalo-chat-us"
+      },
+      "countries": [
+        "US", "CA", "MX", "BR", "AR", "CL", "CO", "PE", "VE",
+        "EC", "BO", "PY", "UY", "GT", "CR", "PA", "DO", "HN",
+        "CU", "JM", "TT", "BS", "BB", "NI", "SV", "BZ", "SR", "GY"
+      ],
+      "timezone": "America/Chicago",
+      "supportHours": {
+        "start": "08:00",
+        "end": "22:00",
+        "timezone": "America/Chicago"
+      }
+    },
+    "APAC": {
+      "code": "APAC",
+      "name": "Asia-Pacific",
+      "priority": 2,
+      "enabled": true,
+      "firestore": {
+        "location": "asia-south1",
+        "endpoint": "https://firestore.googleapis.com/v1/projects/avalo-prod/databases/(default)"
+      },
+      "cdn": {
+        "primary": "https://cdn-apac.avalo.app",
+        "fallback": "https://apac.cdn.avalo.app"
+      },
+      "ai": {
+        "endpoint": "https://ai-apac.avalo.app",
+        "model": "gpt-4.5-turbo",
+        "tokenLimit": 500000
+      },
+      "storage": {
+        "profiles": "avalo-profiles-apac",
+        "feed": "avalo-feed-apac",
+        "chat": "avalo-chat-apac"
+      },
+      "countries": [
+        "IN", "CN", "JP", "KR", "AU", "NZ", "SG", "TH", "ID", "PH",
+        "VN", "MY", "PK", "BD", "TW", "HK", "LK", "MM", "KH", "LA",
+        "MO", "MN", "NP", "BT", "MV", "AF", "KZ", "UZ", "TJ", "KG"
+      ],
+      "timezone": "Asia/Kolkata",
+      "supportHours": {
+        "start": "09:00",
+        "end": "21:00",
+        "timezone": "Asia/Kolkata"
+      }
+    }
+  },
+
+  "launchWaves": {
+    "description": "Progressive rollout schedule by market (from PACK 425)",
+    "waves": [
+      {
+        "wave": 1,
+        "name": "Tier 1 Markets",
+        "markets": ["US", "GB", "DE", "FR", "CA", "AU"],
+        "startDate": "2026-01-15",
+        "features": ["full"],
+        "supportLevel": "premium"
+      },
+      {
+        "wave": 2,
+        "name": "Tier 2 Europe",
+        "markets": ["ES", "IT", "NL", "PL", "SE", "NO", "DK", "FI"],
+        "startDate": "2026-02-01",
+        "features": ["full"],
+        "supportLevel": "standard"
+      },
+      {
+        "wave": 3,
+        "name": "Tier 2 Asia-Pacific",
+        "markets": ["JP", "KR", "SG", "IN", "NZ", "HK"],
+        "startDate": "2026-02-15",
+        "features": ["full"],
+        "supportLevel": "standard"
+      },
+      {
+        "wave": 4,
+        "name": "Latin America",
+        "markets": ["BR", "MX", "AR", "CL", "CO"],
+        "startDate": "2026-03-01",
+        "features": ["core"],
+        "supportLevel": "community"
+      },
+      {
+        "wave": 5,
+        "name": "MENA & Eastern Europe",
+        "markets": ["AE", "SA", "TR", "ZA", "RU", "UA", "RO"],
+        "startDate": "2026-04-01",
+        "features": ["core"],
+        "supportLevel": "community"
+      }
+    ]
+  },
+
+  "cdnConfiguration": {
+    "provider": "cloudflare",
+    "zones": {
+      "global": "cdn.avalo.app",
+      "eu": "cdn-eu.avalo.app",
+      "us": "cdn-us.avalo.app",
+      "apac": "cdn-apac.avalo.app"
+    },
+    "caching": {
+      "profiles": {
+        "ttl": 604800,
+        "variants": ["thumbnail", "medium", "large"],
+        "formats": ["webp", "jpeg"]
+      },
+      "feed": {
+        "ttl": 120,
+        "variants": ["thumbnail", "standard", "highres"],
+        "formats": ["webp", "jpeg"]
+      },
+      "stories": {
+        "ttl": 86400,
+        "variants": ["standard"],
+        "formats": ["webp", "jpeg"]
+      },
+      "aiAvatars": {
+        "ttl": 7776000,
+        "variants": ["small", "medium", "large"],
+        "formats": ["webp", "png"]
+      }
+    },
+    "optimization": {
+      "compression": true,
+      "minify": true,
+      "lazyLoad": true,
+      "preload": {
+        "feed": 5,
+        "swipe": 3
+      }
+    },
+    "geoRestrictions": {
+      "enabled": true,
+      "blacklist": [],
+      "whitelist": []
+    }
+  },
+
+  "featureFlags": {
+    "multiRegionRouting": true,
+    "cdnOptimization": true,
+    "aiRegionalDispatch": true,
+    "adaptiveThrottling": true,
+    "automaticFailover": true,
+    "regionalCaching": true,
+    "geoFencing": false,
+    "predictiveScaling": false
+  },
+
+  "rateLimits": {
+    "global": {
+      "chat": { "limit": 100, "window": 60000 },
+      "swipe": { "limit": 50, "window": 60000 },
+      "ai": { "limit": 20, "window": 3600000 },
+      "upload": { "limit": 20, "window": 3600000 }
+    },
+    "tierMultipliers": {
+      "free": 1.0,
+      "premium": 2.0,
+      "vip": 5.0
+    }
+  },
+
+  "failover": {
+    "enabled": true,
+    "autoFailover": true,
+    "healthCheckInterval": 30000,
+    "unhealthyThreshold": 3,
+    "fallbackChains": {
+      "EU": ["US", "APAC"],
+      "US": ["EU", "APAC"],
+      "APAC": ["EU", "US"]
+    },
+    "gracefulDegradation": {
+      "enabled": true,
+      "levels": [
+        {
+          "level": 0,
+          "name": "Full Operations",
+          "features": "all"
+        },
+        {
+          "level": 1,
+          "name": "Performance Mode",
+          "features": ["chat", "swipe", "profile", "feed", "ai"]
+        },
+        {
+          "level": 2,
+          "name": "Survival Mode",
+          "features": ["chat", "swipe", "profile"]
+        },
+        {
+          "level": 3,
+          "name": "Emergency Mode",
+          "features": ["profile-view-only"]
+        }
+      ]
+    }
+  },
+
+  "monitoring": {
+    "enabled": true,
+    "dashboards": ["regional-latency", "throughput", "ai-usage", "cdn-performance"],
+    "alerts": {
+      "slack": {
+        "enabled": true,
+        "channel": "#infrastructure-alerts"
+      },
+      "pagerduty": {
+        "enabled": true,
+        "severity": ["critical", "high"]
+      },
+      "email": {
+        "enabled": true,
+        "recipients": ["ops@avalo.app"]
+      }
+    },
+    "metrics": {
+      "retentionDays": 90,
+      "aggregationInterval": 60000
+    }
+  },
+
+  "security": {
+    "ddosProtection": true,
+    "rateLimit": true,
+    "ipBlocking": true,
+    "geoBlocking": false,
+    "tlsVersion": "1.3",
+    "hsts": true,
+    "csp": {
+      "enabled": true,
+      "directives": {
+        "default-src": ["'self'"],
+        "img-src": ["'self'", "https://cdn.avalo.app", "https://*.cloudfront.net"],
+        "media-src": ["'self'", "https://cdn.avalo.app"],
+        "connect-src": ["'self'", "https://api.avalo.app"]
+      }
+    }
+  },
+
+  "performance": {
+    "targetLatency": {
+      "chat": 350,
+      "swipe": 200,
+      "feed": 800,
+      "ai": 3000
+    },
+    "autoscaling": {
+      "enabled": true,
+      "minInstances": 2,
+      "maxInstances": 50,
+      "targetCPU": 75,
+      "targetMemory": 80
+    }
+  },
+
+  "compliance": {
+    "gdpr": {
+      "enabled": true,
+      "dataResidency": {
+        "EU": "europe-west1"
+      }
+    },
+    "ccpa": {
+      "enabled": true
+    },
+    "coppa": {
+      "enabled": true,
+      "ageVerificationRequired": true
+    }
+  },
+
+  "backup": {
+    "frequency": "daily",
+    "retention": 30,
+    "crossRegionReplication": true,
+    "pointInTimeRecovery": true
+  },
+
+  "metadata": {
+    "owner": "Infrastructure Team",
+    "contact": "ops@avalo.app",
+    "documentation": "https://docs.avalo.app/pack426",
+    "changelog": "https://github.com/avalo/infrastructure/blob/main/CHANGELOG.md"
+  }
+}

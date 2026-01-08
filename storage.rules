@@ -1,0 +1,153 @@
+rules_version = '2';
+
+// PACK 306 — Storage Rules for Identity Verification
+// Controls access to selfie videos and verification data
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ============================================================================
+    // VERIFICATION BUCKET (gs://avalo-verify/)
+    // Restricted access - verification selfies and photos
+    // ============================================================================
+    
+    match /avalo-verify/{userId}/{filename} {
+      // Read: User can read their own files, admins can read any
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Write: User can write their own files during verification
+      allow create: if isOwner(userId) && 
+                       request.resource.size < 50 * 1024 * 1024 && // Max 50MB
+                       (request.resource.contentType.matches('video/.*') ||
+                        request.resource.contentType.matches('image/.*'));
+      
+      // Update/Delete: Only backend (Cloud Functions)
+      allow update, delete: if false;
+    }
+    
+    // ============================================================================
+    // VERIFICATION EMBEDDINGS (gs://avalo-verify/embeddings/)
+    // Highly restricted - face embeddings data
+    // ============================================================================
+    
+    match /avalo-verify/embeddings/{userId}/{filename} {
+      // Read: Admins only
+      allow read: if isAdmin();
+      
+      // Write: Backend only (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // VERIFICATION REVIEW QUEUE (gs://avalo-verify/review/)
+    // For flagged submissions requiring manual review
+    // ============================================================================
+    
+    match /avalo-verify/review/{reviewId}/{filename} {
+      // Read: Admins only
+      allow read: if isAdmin();
+      
+      // Write: Backend only
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // ARCHIVED VERIFICATION DATA (gs://avalo-verify/archive/)
+    // Long-term retention for legal compliance
+    // ============================================================================
+    
+    match /avalo-verify/archive/{year}/{month}/{userId}/{filename} {
+      // Read: Admins only
+      allow read: if isAdmin();
+      
+      // Write: Backend only
+      allow write: if false;
+      
+      // Delete: Never (legal retention)
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // PROFILE PHOTOS (gs://avalo-c8c46.appspot.com/users/)
+    // Public profile photos (after verification)
+    // ============================================================================
+    
+    match /users/{userId}/photos/{photoId} {
+      // Read: Public after verification
+      allow read: if true;
+      
+      // Write: Only owner and only if verified
+      allow create: if isOwner(userId) &&
+                       firestore.get(/databases/(default)/documents/users/$(userId)/verification/status).data.status == 'VERIFIED' &&
+                       request.resource.size < 10 * 1024 * 1024 && // Max 10MB
+                       request.resource.contentType.matches('image/.*');
+      
+      // Update: Only owner
+      allow update: if isOwner(userId);
+      
+      // Delete: Only owner or admin
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // ============================================================================
+    // MEETING VERIFICATION SELFIES (gs://avalo-verify/meetings/)
+    // Selfies taken during meetings for identity confirmation
+    // ============================================================================
+    
+    match /avalo-verify/meetings/{meetingId}/{userId}/{filename} {
+      // Read: Meeting participants or admins
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Write: Meeting participant
+      allow create: if isOwner(userId) &&
+                       request.resource.size < 5 * 1024 * 1024 && // Max 5MB
+                       request.resource.contentType.matches('image/.*');
+      
+      // Update/Delete: Backend only
+      allow update, delete: if false;
+    }
+    
+    // ============================================================================
+    // AUDIT EXPORTS (gs://avalo-verify/audits/)
+    // Verification audit trail exports for regulators
+    // ============================================================================
+    
+    match /avalo-verify/audits/{year}/{filename} {
+      // Read: Admins only
+      allow read: if isAdmin();
+      
+      // Write: Backend only
+      allow write: if false;
+      
+      // Delete: Never (legal retention)
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // GENERAL STORAGE BUCKET (gs://avalo-c8c46.appspot.com/)
+    // Default rules for other content
+    // ============================================================================
+    
+    match /{allPaths=**} {
+      // Default: deny all unless explicitly allowed above
+      allow read, write: if false;
+    }
+  }
+}

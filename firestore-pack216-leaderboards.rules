@@ -1,0 +1,199 @@
+// PACK 216: Creator Competition Engine
+// Firestore Security Rules for Leaderboards & Weekly Rankings
+//
+// DESIGN PRINCIPLES:
+// - Multiple competition categories (not just earnings)
+// - Weekly & monthly rankings
+// - Visibility-based rewards only (no token rewards)
+// - No pay-to-win mechanics
+// - Ego-safe design (no shaming, only positive messaging)
+// - No public comparison between users
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function userId() {
+      return request.auth.uid;
+    }
+    
+    function isModerator() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(userId())).data.role in ['ADMIN', 'MODERATOR'];
+    }
+    
+    // ============================================================================
+    // LEADERBOARD RANKINGS COLLECTION
+    // Main collection for weekly/monthly rankings by category
+    // ============================================================================
+    
+    match /leaderboard_rankings/{rankingId} {
+      // Read rules: users can only see their own ranking or top performers
+      // Format: {category}_{period}_{region}_{gender}_{userId}
+      allow read: if isAuthenticated() && (
+        // User can read their own ranking
+        resource.data.userId == userId() ||
+        // Top 10 rankings are public (for motivation)
+        resource.data.rank <= 10 ||
+        // Moderators can read all
+        isModerator()
+      );
+      
+      // Rankings computed via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // LEADERBOARD STATS COLLECTION
+    // Aggregated statistics for each category/period
+    // ============================================================================
+    
+    match /leaderboard_stats/{statId} {
+      // Read rules: stats are public for transparency
+      // Format: {category}_{period}_{region}
+      allow read: if isAuthenticated();
+      
+      // Stats computed via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // USER LEADERBOARD HISTORY
+    // Personal ranking history for each user
+    // ============================================================================
+    
+    match /users/{userId}/leaderboard_history/{historyId} {
+      // Users can only read their own history
+      allow read: if isAuthenticated() && userId == userId();
+      
+      // History managed via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // VISIBILITY REWARDS COLLECTION
+    // Active visibility rewards for users
+    // ============================================================================
+    
+    match /visibility_rewards/{rewardId} {
+      // Read rules: users can read their own active rewards
+      // Format: {userId}_{rewardType}
+      allow read: if isAuthenticated() && (
+        resource.data.userId == userId() ||
+        isModerator()
+      );
+      
+      // Rewards issued via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // LEADERBOARD BADGES COLLECTION
+    // Active badges for ranked users
+    // ============================================================================
+    
+    match /leaderboard_badges/{badgeId} {
+      // Badges are public (display on profile)
+      // Format: {userId}_{category}
+      allow read: if isAuthenticated();
+      
+      // Badges managed via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // WEEKLY METRICS AGGREGATION
+    // Raw metrics collected for leaderboard computation
+    // ============================================================================
+    
+    match /weekly_metrics/{metricId} {
+      // Metrics are private (only system and moderators)
+      allow read: if isModerator();
+      
+      // Metrics computed via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // MONTHLY SUMMARIES COLLECTION
+    // Published monthly summaries (1st of each month)
+    // ============================================================================
+    
+    match /monthly_summaries/{summaryId} {
+      // Summaries are public
+      // Format: {year}_{month}_{category}
+      allow read: if isAuthenticated();
+      
+      // Summaries published via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // COMPETITION CATEGORIES METADATA
+    // Configuration for each competition category
+    // ============================================================================
+    
+    match /competition_categories/{categoryId} {
+      // Categories are public (for transparency)
+      allow read: if isAuthenticated();
+      
+      // Categories managed by admins only
+      allow write: if isModerator();
+    }
+    
+    // ============================================================================
+    // USER COMPETITION OPT-OUT
+    // Users can opt-out of leaderboard participation
+    // ============================================================================
+    
+    match /users/{userId}/competition_settings/preferences {
+      // Users can read/write their own preferences
+      allow read, write: if isAuthenticated() && userId == userId();
+    }
+    
+    // ============================================================================
+    // REGIONAL LEADERBOARDS
+    // Location-specific rankings
+    // ============================================================================
+    
+    match /regional_leaderboards/{regionId} {
+      // Regional rankings readable by users in that region
+      allow read: if isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(userId())).data.region == resource.data.region ||
+        isModerator()
+      );
+      
+      // Regional rankings computed via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // LEADERBOARD NOTIFICATIONS
+    // Ego-safe positive notifications for ranking changes
+    // ============================================================================
+    
+    match /users/{userId}/leaderboard_notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isAuthenticated() && userId == userId();
+      
+      // Notifications sent via Cloud Functions only
+      allow create: if false;
+      
+      // Users can mark as read
+      allow update: if isAuthenticated() && 
+        userId == userId() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      
+      // Users can delete their notifications
+      allow delete: if isAuthenticated() && userId == userId();
+    }
+  }
+}

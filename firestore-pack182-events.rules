@@ -1,0 +1,393 @@
+// PACK 182: Avalo Pro Event Host Suite
+// Firestore Security Rules for Professional Event System
+//
+// CRITICAL SAFETY ENFORCEMENT:
+// - Zero tolerance for romantic/NSFW/escort events
+// - Location privacy until ticket purchase
+// - No algorithm manipulation
+// - Token payments only (65/35 split)
+// - Background check integration
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Get user ID
+    function userId() {
+      return request.auth.uid;
+    }
+    
+    // Check if user is creator/host
+    function isCreator() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(userId())).data.earnFromChat == true ||
+        get(/databases/$(database)/documents/users/$(userId())).data.isCreator == true
+      );
+    }
+    
+    // Check if user is event host
+    function isEventHost(eventId) {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/pro_events/$(eventId)).data.hostUserId == userId();
+    }
+    
+    // Check if user is co-host
+    function isCoHost(eventId) {
+      let event = get(/databases/$(database)/documents/pro_events/$(eventId)).data;
+      return isAuthenticated() && 
+        event.coHosts != null &&
+        userId() in event.coHosts.map(c => c.userId);
+    }
+    
+    // Check if user has purchased ticket
+    function hasTicket(eventId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/event_tickets/$(eventId)_$(userId()));
+    }
+    
+    // Check if text contains blocked keywords (basic check - full validation in Cloud Functions)
+    function containsBlockedKeywords(text) {
+      let keywords = [
+        'date', 'dating', 'romance', 'flirt', 'girlfriend', 'boyfriend',
+        'escort', 'intimacy', 'sexy', 'adult', 'nsfw'
+      ];
+      let lowerText = text.lower();
+      return keywords.hasAny([lowerText.matches('.*' + keyword + '.*')]);
+    }
+    
+    // Validate event category
+    function isValidCategory(category) {
+      return category in [
+        'FITNESS', 'BUSINESS', 'CREATIVE', 
+        'TRAVEL', 'LIFESTYLE', 'ENTERTAINMENT'
+      ];
+    }
+    
+    // Validate event format
+    function isValidFormat(format) {
+      return format in ['IN_PERSON', 'ONLINE', 'HYBRID'];
+    }
+    
+    // Validate event status
+    function isValidStatus(status) {
+      return status in ['DRAFT', 'SCHEDULED', 'LIVE', 'COMPLETED', 'CANCELLED'];
+    }
+    
+    // Check if user has moderation permissions
+    function isModerator() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(userId())).data.role in ['ADMIN', 'MODERATOR'];
+    }
+    
+    // ============================================================================
+    // PRO EVENTS COLLECTION
+    // ============================================================================
+    
+    match /pro_events/{eventId} {
+      // Read rules
+      allow read: if isAuthenticated() && (
+        // Public fields readable by all
+        resource == null ||
+        // Full access for host, co-hosts, and moderators
+        resource.data.hostUserId == userId() ||
+        isCoHost(eventId) ||
+        isModerator() ||
+        // Location hidden for non-ticket holders
+        !hasTicket(eventId)
+      );
+      
+      // Create rules
+      allow create: if isAuthenticated() && 
+        isCreator() &&
+        // Host must be creator
+        request.resource.data.hostUserId == userId() &&
+        // Valid category (safe only)
+        isValidCategory(request.resource.data.category) &&
+        // Valid format
+        isValidFormat(request.resource.data.format) &&
+        // Valid status
+        isValidStatus(request.resource.data.status) &&
+        // Title and description required
+        request.resource.data.title.size() >= 5 &&
+        request.resource.data.title.size() <= 100 &&
+        request.resource.data.description.size() >= 20 &&
+        request.resource.data.description.size() <= 5000 &&
+        // Basic safety check (full check in Cloud Functions)
+        !containsBlockedKeywords(request.resource.data.title) &&
+        !containsBlockedKeywords(request.resource.data.description) &&
+        // Timing constraints
+        request.resource.data.startTime > request.time &&
+        request.resource.data.endTime > request.resource.data.startTime &&
+        // Capacity constraints
+        request.resource.data.capacity >= 1 &&
+        request.resource.data.capacity <= 10000 &&
+        // Initial attendee count must be 0
+        request.resource.data.attendeeCount == 0 &&
+        request.resource.data.waitlistCount == 0 &&
+        // Ticket types must have valid pricing
+        request.resource.data.ticketTypes.size() > 0 &&
+        request.resource.data.ticketTypes.hasAll(['priceTokens']) &&
+        // Safety rules required
+        request.resource.data.safetyRules.size() > 0 &&
+        // Required metadata
+        request.resource.data.keys().hasAll([
+          'eventId', 'hostUserId', 'hostName', 'title', 'description',
+          'category', 'format', 'startTime', 'endTime', 'timezone',
+          'ticketTypes', 'capacity', 'attendeeCount', 'waitlistCount',
+          'region', 'requiresApproval', 'safetyRules', 'status',
+          'isActive', 'tags', 'createdAt', 'updatedAt'
+        ]);
+      
+      // Update rules
+      allow update: if isAuthenticated() && (
+        // Host can update
+        resource.data.hostUserId == userId() ||
+        // Co-hosts with permissions
+        (isCoHost(eventId) && 
+         resource.data.coHosts[userId()].permissions.canEditSchedule == true) ||
+        // Moderators can update
+        isModerator()
+      ) &&
+        // Cannot change host
+        request.resource.data.hostUserId == resource.data.hostUserId &&
+        // Cannot change eventId
+        request.resource.data.eventId == resource.data.eventId &&
+        // Cannot change to invalid category
+        isValidCategory(request.resource.data.category) &&
+        // Cannot change to invalid status
+        isValidStatus(request.resource.data.status) &&
+        // Cannot modify completed/cancelled events (except by moderators)
+        (resource.data.status not in ['COMPLETED', 'CANCELLED'] || isModerator()) &&
+        // Safety check on updates
+        !containsBlockedKeywords(request.resource.data.title) &&
+        !containsBlockedKeywords(request.resource.data.description) &&
+        // Update timestamp must be set
+        request.resource.data.updatedAt == request.time;
+      
+      // Delete not allowed (use status change to CANCELLED)
+      allow delete: if false;
+      
+      // ============================================================================
+      // EVENT SCHEDULE SUBCOLLECTION
+      // ============================================================================
+      
+      match /schedule/{blockId} {
+        allow read: if isAuthenticated() && (
+          hasTicket(eventId) ||
+          isEventHost(eventId) ||
+          isCoHost(eventId) ||
+          isModerator()
+        );
+        
+        allow write: if isAuthenticated() && (
+          isEventHost(eventId) ||
+          (isCoHost(eventId) && 
+           get(/databases/$(database)/documents/pro_events/$(eventId)).data
+             .coHosts[userId()].permissions.canEditSchedule == true) ||
+          isModerator()
+        );
+      }
+      
+      // ============================================================================
+      // EVENT MATERIALS SUBCOLLECTION
+      // ============================================================================
+      
+      match /materials/{materialId} {
+        allow read: if isAuthenticated() && (
+          hasTicket(eventId) ||
+          isEventHost(eventId) ||
+          isCoHost(eventId) ||
+          isModerator()
+        );
+        
+        allow write: if isAuthenticated() && (
+          isEventHost(eventId) ||
+          isCoHost(eventId) ||
+          isModerator()
+        ) &&
+          // Material must have required fields
+          request.resource.data.keys().hasAll([
+            'materialId', 'title', 'type', 'fileUrl', 'availableAt', 'uploadedAt'
+          ]) &&
+          // Valid material type
+          request.resource.data.type in ['PDF', 'VIDEO', 'AUDIO', 'LINK', 'FILE'];
+      }
+    }
+    
+    // ============================================================================
+    // EVENT TICKETS COLLECTION
+    // ============================================================================
+    
+    match /event_tickets/{ticketId} {
+      // Read rules
+      allow read: if isAuthenticated() && (
+        // User can read their own tickets
+        resource.data.userId == userId() ||
+        // Host can read all tickets for their event
+        get(/databases/$(database)/documents/pro_events/$(resource.data.eventId)).data.hostUserId == userId() ||
+        // Co-hosts with permissions
+        (isCoHost(resource.data.eventId) &&
+         get(/databases/$(database)/documents/pro_events/$(resource.data.eventId)).data
+           .coHosts[userId()].permissions.canManageAttendees == true) ||
+        // Moderators
+        isModerator()
+      );
+      
+      // Create rules (tickets created via Cloud Functions only)
+      allow create: if false;
+      
+      // Update rules (only status changes via Cloud Functions)
+      allow update: if false;
+      
+      // Delete not allowed
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // EVENT WAITLIST COLLECTION
+    // ============================================================================
+    
+    match /event_waitlist/{waitlistId} {
+      // Read rules
+      allow read: if isAuthenticated() && (
+        // User can read their own waitlist entries
+        resource.data.userId == userId() ||
+        // Host can read waitlist
+        get(/databases/$(database)/documents/pro_events/$(resource.data.eventId)).data.hostUserId == userId() ||
+        // Co-hosts with permissions
+        (isCoHost(resource.data.eventId) &&
+         get(/databases/$(database)/documents/pro_events/$(resource.data.eventId)).data
+           .coHosts[userId()].permissions.canManageAttendees == true) ||
+        // Moderators
+        isModerator()
+      );
+      
+      // Waitlist managed via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // EVENT FEEDBACK COLLECTION
+    // ============================================================================
+    
+    match /event_feedback/{feedbackId} {
+      // Read rules
+      allow read: if isAuthenticated() && (
+        // User can read their own feedback
+        resource.data.userId == userId() ||
+        // Host can read feedback for their events
+        get(/databases/$(database)/documents/pro_events/$(resource.data.eventId)).data.hostUserId == userId() ||
+        // Moderators can read all feedback
+        isModerator()
+      );
+      
+      // Create rules
+      allow create: if isAuthenticated() &&
+        // User must have attended the event
+        hasTicket(request.resource.data.eventId) &&
+        // Feedback is from the authenticated user
+        request.resource.data.userId == userId() &&
+        // Event must be completed
+        get(/databases/$(database)/documents/pro_events/$(request.resource.data.eventId)).data.status == 'COMPLETED' &&
+        // Valid ratings (1-5)
+        request.resource.data.overallRating >= 1 && request.resource.data.overallRating <= 5 &&
+        request.resource.data.contentQuality >= 1 && request.resource.data.contentQuality <= 5 &&
+        request.resource.data.hostPerformance >= 1 && request.resource.data.hostPerformance <= 5 &&
+        // Safety checks are boolean
+        request.resource.data.feltSafe is bool &&
+        request.resource.data.matchedDescription is bool &&
+        request.resource.data.wouldRecommend is bool &&
+        request.resource.data.reportConcern is bool &&
+        // Required fields
+        request.resource.data.keys().hasAll([
+          'feedbackId', 'eventId', 'userId', 'overallRating',
+          'contentQuality', 'hostPerformance', 'feltSafe',
+          'matchedDescription', 'wouldRecommend', 'reportConcern', 'submittedAt'
+        ]);
+      
+      // Update not allowed (feedback is immutable)
+      allow update, delete: if false;
+    }
+    
+    // ============================================================================
+    // EVENT CERTIFICATES COLLECTION
+    // ============================================================================
+    
+    match /event_certificates/{certificateId} {
+      // Read rules
+      allow read: if isAuthenticated() && (
+        // User can read their own certificates
+        resource.data.userId == userId() ||
+        // Public verification (with verificationCode)
+        (request.query.verificationCode == resource.data.verificationCode)
+      );
+      
+      // Certificates issued via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // EVENT GALLERY COLLECTION
+    // ============================================================================
+    
+    match /event_gallery/{galleryId} {
+      // Read rules (public for attendees)
+      allow read: if isAuthenticated() && (
+        hasTicket(resource.data.eventId) ||
+        isEventHost(resource.data.eventId) ||
+        isCoHost(resource.data.eventId) ||
+        isModerator()
+      );
+      
+      // Gallery managed via Cloud Functions (with moderation)
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // EVENT SAFETY LOGS COLLECTION (MODERATOR ONLY)
+    // ============================================================================
+    
+    match /event_safety_logs/{logId} {
+      // Only moderators can read safety logs
+      allow read: if isModerator();
+      
+      // Safety logs created via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // EVENT ANALYTICS COLLECTION
+    // ============================================================================
+    
+    match /event_analytics/{eventId} {
+      // Read rules
+      allow read: if isAuthenticated() && (
+        // Host can read analytics for their events
+        get(/databases/$(database)/documents/pro_events/$(eventId)).data.hostUserId == userId() ||
+        // Moderators can read all analytics
+        isModerator()
+      );
+      
+      // Analytics computed via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // BLOCKED EVENT PATTERNS (ADMIN ONLY)
+    // ============================================================================
+    
+    match /blocked_event_patterns/{patternId} {
+      // Only admins can manage blocked patterns
+      allow read, write: if isModerator();
+    }
+  }
+}

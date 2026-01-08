@@ -1,0 +1,96 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "attraction_signals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "lastInteractionAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "attraction_signals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "targetUserId", "order": "ASCENDING" },
+        { "fieldPath": "lastInteractionAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "match_priority_scores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "viewerId", "order": "ASCENDING" },
+        { "fieldPath": "effectiveScore", "order": "DESCENDING" },
+        { "fieldPath": "calculatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "match_priority_scores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "viewerId", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "user_economic_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "earnOnChat", "order": "ASCENDING" },
+        { "fieldPath": "totalEarnings", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "user_economic_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isRoyal", "order": "ASCENDING" },
+        { "fieldPath": "purchaseFrequency", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "active_boosts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "active_boosts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "user_match_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "priorityTier", "order": "ASCENDING" },
+        { "fieldPath": "lastActiveAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "match_priority_diagnostics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "viewerId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "earnings_synergy_cache",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "viewerId", "order": "ASCENDING" },
+        { "fieldPath": "score", "order": "DESCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

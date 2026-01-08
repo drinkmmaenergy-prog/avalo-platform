@@ -1,0 +1,24 @@
+{
+  "name": "avalo-integration-tests",
+  "version": "1.0.0",
+  "description": "Comprehensive Firebase integration test suite for Avalo",
+  "main": "index.ts",
+  "scripts": {
+    "test": "ts-node index.ts",
+    "test:build": "tsc && node index.js",
+    "test:quick": "ts-node index.ts --quick",
+    "build": "tsc"
+  },
+  "keywords": [
+    "firebase",
+    "integration-test",
+    "avalo"
+  ],
+  "author": "Avalo Team",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.6.0"
+  }
+}

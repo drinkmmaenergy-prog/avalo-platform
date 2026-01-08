@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 158 — Legal Evidence Vault Security Rules
+    // 
+    // STRICT ACCESS CONTROL:
+    // - Only authorized admins can access vaults
+    // - Users can only request their own evidence exports
+    // - No public read access
+    // - All writes require admin privileges
+    // ========================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admin_users/$(request.auth.uid));
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admin_users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/admin_users/$(request.auth.uid)).data.roles.hasAny(['MODERATOR', 'ADMIN']);
+    }
+    
+    function isLegalTeam() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admin_users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/admin_users/$(request.auth.uid)).data.roles.hasAny(['COMPLIANCE', 'ADMIN']);
+    }
+    
+    // ========================================================================
+    // LEGAL EVIDENCE VAULTS - Admin/Legal Team Only
+    // ========================================================================
+    match /legal_evidence_vaults/{vaultId} {
+      // Only legal team and admins can read vaults
+      allow read: if isLegalTeam() || isAdmin();
+      
+      // Only system (Cloud Functions) can create vaults
+      allow create: if false;
+      
+      // Only admins can update vaults
+      allow update: if isAdmin();
+      
+      // Only admins can delete vaults (should be rare, prefer auto-expiry)
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // LEGAL EXPORT REQUESTS
+    // ========================================================================
+    match /legal_export_requests/{requestId} {
+      // Users can read their own export requests
+      // Legal team and admins can read all requests
+      allow read: if isAuthenticated() && (
+        resource.data.requestedBy == request.auth.uid ||
+        isLegalTeam() ||
+        isAdmin()
+      );
+      
+      // Users can create export requests (via Cloud Functions)
+      // But direct writes are blocked - must use Cloud Function
+      allow create: if false;
+      
+      // Only legal team and admins can update (approve/reject)
+      allow update: if isLegalTeam() || isAdmin();
+      
+      // No one can delete export requests (audit trail)
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // LEGAL HOLD CASES - Admin Only
+    // ========================================================================
+    match /legal_hold_cases/{caseId} {
+      // Only legal team and admins can read
+      allow read: if isLegalTeam() || isAdmin();
+      
+      // Only admins can create/update
+      allow create, update: if isAdmin();
+      
+      // No deletion (audit trail)
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // VAULT ACCESS LOGS - Admin Only
+    // ========================================================================
+    match /vault_access_logs/{logId} {
+      // Only admins can read access logs
+      allow read: if isAdmin();
+      
+      // No direct writes (only via Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // VAULT ENCRYPTION KEYS - System Only
+    // ========================================================================
+    match /_vault_encryption_keys/{keyId} {
+      // Absolutely no access - system internal only
+      allow read, write: if false;
+    }
+  }
+}

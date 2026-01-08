@@ -1,0 +1,91 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // PACK 258 — BUYER / SUPPORTER ANALYTICS
+    // Private analytics for users who spend tokens
+    // No public leaderboards - all data is private to the supporter
+    // ============================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isServerRequest() {
+      return request.auth.token.serverRequest == true;
+    }
+    
+    // Supporter Analytics - PRIVATE to each user
+    match /supporterAnalytics/{userId} {
+      // Only the user can read their own analytics
+      allow read: if isOwner(userId);
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // Fan Levels - Per-creator supporter progression (L1-L6)
+    match /fanLevels/{levelId} {
+      // Users can read their own fan levels with any creator
+      allow read: if isAuthenticated() && 
+                     resource.data.supporterId == request.auth.uid;
+      
+      // Creators can read fan levels for their supporters (for inbox prioritization)
+      allow read: if isAuthenticated() && 
+                     resource.data.creatorId == request.auth.uid;
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // Supporter Notifications - Emotional triggers for engagement
+    match /supporterNotifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Users can mark their notifications as read
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['read', 'readAt']);
+      
+      // Only Cloud Functions can create
+      allow create: if false;
+      allow delete: if false;
+    }
+    
+    // Retention Triggers - Track when retention messages were sent
+    match /retentionTriggers/{triggerId} {
+      // Only readable by Cloud Functions
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    // Creator Supporter Stats - Aggregate data for creators
+    match /creatorSupporterStats/{creatorId} {
+      // Creators can read their own supporter statistics
+      allow read: if isOwner(creatorId);
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // Supporter Spending History - Detailed transaction log
+    match /supporterSpendingHistory/{historyId} {
+      // Users can read their own spending history
+      allow read: if isAuthenticated() && 
+                     resource.data.supporterId == request.auth.uid;
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+  }
+}

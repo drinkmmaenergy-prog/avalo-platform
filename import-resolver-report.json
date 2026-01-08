@@ -1,0 +1,110 @@
+{
+  "timestamp": "2025-11-11T14:47:39.503Z",
+  "filesScanned": 165,
+  "importsFixed": 0,
+  "brokenImports": 19,
+  "errors": [],
+  "fixes": {
+    "aliasesApplied": 0,
+    "brokenFixed": 0,
+    "relativeFallbacks": 0
+  },
+  "brokenImportsList": [
+    {
+      "file": "app-mobile\\App.tsx",
+      "import": "./src/navigation/AppNavigator",
+      "reason": "File not found"
+    },
+    {
+      "file": "app-mobile\\App.tsx",
+      "import": "@react-navigation/native",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\types.ts",
+      "import": "./config.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\seedAICompanions.ts",
+      "import": "./types.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\secretManager.ts",
+      "import": "@google-cloud/secret-manager",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\scheduled.ts",
+      "import": "./types.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\scheduled.ts",
+      "import": "./config.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\pubsub.pipelines.ts",
+      "import": "@google-cloud/pubsub",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\presence.ts",
+      "import": "./realtimeEngine.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\payments.ts",
+      "import": "./types.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\payments.ts",
+      "import": "./config.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\moderation.ts",
+      "import": "./heuristics.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\chats.ts",
+      "import": "./types.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\chats.ts",
+      "import": "./config.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\calendar.ts",
+      "import": "./types.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\calendar.ts",
+      "import": "./config.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\analyticsExport.ts",
+      "import": "@google-cloud/bigquery",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\aiCompanions.ts",
+      "import": "./types.js",
+      "reason": "File not found"
+    },
+    {
+      "file": "functions\\src\\aiCompanions.test.ts",
+      "import": "./types.js",
+      "reason": "File not found"
+    }
+  ],
+  "details": []
+}

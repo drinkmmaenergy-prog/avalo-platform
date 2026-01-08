@@ -1,0 +1,21 @@
+{
+  "notifications": {
+    "title": "Powiadomienia",
+    "empty": "Nie masz jeszcze żadnych powiadomień.",
+    "markAllRead": "Oznacz wszystkie jako przeczytane",
+    "settings": {
+      "title": "Ustawienia powiadomień",
+      "push": "Powiadomienia push",
+      "email": "Powiadomienia e-mail",
+      "inApp": "Powiadomienia w aplikacji",
+      "newMessages": "Nowe wiadomości",
+      "aiCompanions": "AI Companions",
+      "mediaUnlocks": "Płatne media i odblokowania",
+      "streaksRoyal": "Serie i Royal",
+      "earnings": "Zarobki i wypłaty",
+      "quietHours": "Tryb ciszy",
+      "quietHoursFrom": "Od",
+      "quietHoursTo": "Do"
+    }
+  }
+}

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Launch Control Panel - Avalo Admin</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+    }
+
+    .panels-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .panel h2 {
+      color: #333;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-normal { background: #10b981; color: white; }
+    .status-elevated { background: #f59e0b; color: white; }
+    .status-high { background: #ef4444; color: white; }
+    .status-critical { background: #dc2626; color: white; }
+    .status-active { background: #3b82f6; color: white; }
+    .status-inactive { background: #6b7280; color: white; }
+
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .metric:last-child {
+      border-bottom: none;
+    }
+
+    .metric-label {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .metric-value {
+      color: #333;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex: 1;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .phase-selector {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .phase-option {
+      padding: 15px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .phase-option:hover {
+      border-color: #667eea;
+    }
+
+    .phase-option.active {
+      border-color: #667eea;
+      background: #f0f4ff;
+    }
+
+    .phase-option-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .phase-option-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .map-container {
+      width: 100%;
+      height: 400px;
+      background: #f9fafb;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .country-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .country-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .country-item:hover {
+      background: #f9fafb;
+    }
+
+    .country-name {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .country-code {
+      font-size: 12px;
+      color: #666;
+      margin-left: 8px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: #f9fafb;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .stat-card-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .stat-card-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .chart-placeholder {
+      width: 100%;
+      height: 200px;
+      background: #f9fafb;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      margin-top: 15px;
+    }
+
+    .alert {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert-warning {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #92400e;
+    }
+
+    .alert-error {
+      background: #fee2e2;
+      border: 1px solid #ef4444;
+      color: #991b1b;
+    }
+
+    .alert-success {
+      background: #d1fae5;
+      border: 1px solid #10b981;
+      color: #065f46;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+    .traffic-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    .traffic-normal { background: #10b981; }
+    .traffic-elevated { background: #f59e0b; }
+    .traffic-high { background: #ef4444; }
+    .traffic-critical { background: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🚀 Launch Control Panel</h1>
+      <p>Monitor and control Avalo's global launch orchestration</p>
+    </div>
+
+    <!-- Main Panels Grid -->
+    <div class="panels-grid">
+      
+      <!-- Global Phase Control -->
+      <div class="panel">
+        <h2>🌍 Global Launch Phase</h2>
+        <div class="metric">
+          <span class="metric-label">Current Phase</span>
+          <span class="metric-value">
+            <span class="status-badge status-active" id="currentPhase">SOFT_LAUNCH</span>
+          </span>
+        </div>
+        
+        <div class="phase-selector">
+          <div class="phase-option" onclick="selectPhase('INTERNAL')">
+            <div class="phase-option-label">Phase 0</div>
+            <div class="phase-option-name">Internal</div>
+          </div>
+          <div class="phase-option" onclick="selectPhase('BETA')">
+            <div class="phase-option-label">Phase 1</div>
+            <div class="phase-option-name">Beta</div>
+          </div>
+          <div class="phase-option active" onclick="selectPhase('SOFT_LAUNCH')">
+            <div class="phase-option-label">Phase 2</div>
+            <div class="phase-option-name">Soft Launch</div>
+          </div>
+          <div class="phase-option" onclick="selectPhase('REGIONAL_SCALE')">
+            <div class="phase-option-label">Phase 3</div>
+            <div class="phase-option-name">Regional</div>
+          </div>
+          <div class="phase-option" onclick="selectPhase('GLOBAL_PUBLIC')">
+            <div class="phase-option-label">Phase 4</div>
+            <div class="phase-option-name">Global</div>
+          </div>
+        </div>
+        
+        <div class="action-buttons">
+          <button class="btn btn-primary" onclick="applyPhase()">Apply Phase Change</button>
+        </div>
+      </div>
+
+      <!-- Traffic Load Monitor -->
+      <div class="panel">
+        <h2>📊 Traffic Protection</h2>
+        <div class="metric">
+          <span class="metric-label">Protection Level</span>
+          <span class="metric-value">
+            <span class="status-badge status-normal" id="trafficLevel">NORMAL</span>
+            <span class="traffic-indicator traffic-normal" id="trafficIndicator"></span>
+          </span>
+        </div>
+        
+        <div class="metric">
+          <span class="metric-label">Active Users</span>
+          <span class="metric-value" id="activeUsers">12,456</span>
+        </div>
+        
+        <div class="metric">
+          <span class="metric-label">Error Rate</span>
+          <span class="metric-value" id="errorRate">0.8/min</span>
+        </div>
+        
+        <div class="metric">
+          <span class="metric-label">CPU Load</span>
+          <span class="metric-value" id="cpuLoad">45%</span>
+        </div>
+        
+        <div class="action-buttons">
+          <button class="btn btn-primary" onclick="setTrafficLevel('ELEVATED')">Set Elevated</button>
+          <button class="btn btn-danger" onclick="setTrafficLevel('CRITICAL')">Emergency</button>
+        </div>
+      </div>
+
+      <!-- Market Activation Map -->
+      <div class="panel" style="grid-column: span 2;">
+        <h2>🗺️ Market Activation Status</h2>
+        <div class="map-container">
+          🗺️ Interactive map would render here
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-label">Active Markets</div>
+            <div class="stat-card-value" id="activeMarkets">15</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Preparing Markets</div>
+            <div class="stat-card-value" id="preparingMarkets">8</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Suspended Markets</div>
+            <div class="stat-card-value" id="suspendedMarkets">2</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Total Revenue</div>
+            <div class="stat-card-value">$2.4M</div>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-success" onclick="activateMarket()">Activate New Market</button>
+          <button class="btn btn-primary" onclick="viewMarketDetails()">View Details</button>
+        </div>
+      </div>
+
+      <!-- Referral Health -->
+      <div class="panel">
+        <h2>🔗 Referral System</h2>
+        <div class="metric">
+          <span class="metric-label">Total Referrals (24h)</span>
+          <span class="metric-value" id="totalReferrals">1,234</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Verified Referrals</span>
+          <span class="metric-value" id="verifiedReferrals">1,098</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Fraud Blocked</span>
+          <span class="metric-value" style="color: #ef4444;" id="fraudBlocked">136</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Rewards Paid</span>
+          <span class="metric-value" id="rewardsPaid">$24,560</span>
+        </div>
+        <div class="chart-placeholder">Referral trend chart</div>
+      </div>
+
+      <!-- Ambassador Performance -->
+      <div class="panel">
+        <h2>⭐ Ambassador Program</h2>
+        <div class="metric">
+          <span class="metric-label">Active Ambassadors</span>
+          <span class="metric-value" id="activeAmbassadors">47</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Global Tier</span>
+          <span class="metric-value" id="globalAmbassadors">5</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Regional Tier</span>
+          <span class="metric-value" id="regionalAmbassadors">18</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Local Tier</span>
+          <span class="metric-value" id="localAmbassadors">24</span>
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-primary" onclick="viewLeaderboard()">View Leaderboard</button>
+          <button class="btn btn-success" onclick="assignAmbassador()">Assign New</button>
+        </div>
+      </div>
+
+      <!-- Revenue vs Fraud Curve -->
+      <div class="panel" style="grid-column: span 2;">
+        <h2>💰 Revenue & Fraud Analytics</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-label">Revenue (24h)</div>
+            <div class="stat-card-value">$84.2K</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Fraud Prevented</div>
+            <div class="stat-card-value">$12.8K</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Payout Requests</div>
+            <div class="stat-card-value">156</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Pending Review</div>
+            <div class="stat-card-value" style="color: #f59e0b;">23</div>
+          </div>
+        </div>
+        <div class="chart-placeholder">Revenue vs Fraud trend chart</div>
+      </div>
+
+    </div>
+
+    <!-- Alerts Section -->
+    <div class="panel">
+      <h2>🚨 Active Alerts</h2>
+      <div id="alertsContainer">
+        <div class="alert alert-warning">
+          <span>⚠️</span>
+          <span>Market US-CA experiencing elevated fraud detection - consider increasing verification thresholds</span>
+        </div>
+        <div class="alert alert-success">
+          <span>✅</span>
+          <span>Market DE-EU successfully activated with full compliance verification</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simulated data updates
+    let selectedPhase = 'SOFT_LAUNCH';
+
+    function selectPhase(phase) {
+      selectedPhase = phase;
+      document.querySelectorAll('.phase-option').forEach(el => el.classList.remove('active'));
+      event.target.closest('.phase-option').classList.add('active');
+    }
+
+    function applyPhase() {
+      if (confirm(`Are you sure you want to change launch phase to ${selectedPhase}?`)) {
+        alert(`Phase changed to ${selectedPhase}`);
+        document.getElementById('currentPhase').textContent = selectedPhase;
+        // In production: call pack385_setLaunchPhase
+      }
+    }
+
+    function setTrafficLevel(level) {
+      if (confirm(`Set traffic protection to ${level}?`)) {
+        alert(`Traffic level set to ${level}`);
+        document.getElementById('trafficLevel').textContent = level;
+        updateTrafficIndicator(level);
+        // In production: call pack385_setTrafficLevel
+      }
+    }
+
+    function updateTrafficIndicator(level) {
+      const indicator = document.getElementById('trafficIndicator');
+      const badge = document.getElementById('trafficLevel').closest('.status-badge');
+      
+      indicator.className = 'traffic-indicator';
+      badge.className = 'status-badge';
+      
+      switch(level) {
+        case 'NORMAL':
+          indicator.classList.add('traffic-normal');
+          badge.classList.add('status-normal');
+          break;
+        case 'ELEVATED':
+          indicator.classList.add('traffic-elevated');
+          badge.classList.add('status-elevated');
+          break;
+        case 'HIGH':
+          indicator.classList.add('traffic-high');
+          badge.classList.add('status-high');
+          break;
+        case 'CRITICAL':
+          indicator.classList.add('traffic-critical');
+          badge.classList.add('status-critical');
+          break;
+      }
+    }
+
+    function activateMarket() {
+      alert('Market activation wizard would open here');
+      // In production: open modal for pack385_activateMarket
+    }
+
+    function viewMarketDetails() {
+      alert('Market details view would open here');
+    }
+
+    function viewLeaderboard() {
+      alert('Ambassador leaderboard would open here');
+      // In production: call pack385_getAmbassadorLeaderboard
+    }
+
+    function assignAmbassador() {
+      alert('Ambassador assignment wizard would open here');
+      // In production: open modal for pack385_assignLaunchAmbassador
+    }
+
+    // Simulated real-time updates
+    function updateMetrics() {
+      // Simulate metric updates
+      const metrics = {
+        activeUsers: Math.floor(Math.random() * 5000) + 10000,
+        errorRate: (Math.random() * 2).toFixed(1),
+        cpuLoad: Math.floor(Math.random() * 50) + 30,
+        totalReferrals: Math.floor(Math.random() * 500) + 1000,
+        verifiedReferrals: Math.floor(Math.random() * 400) + 900,
+        fraudBlocked: Math.floor(Math.random() * 100) + 50
+      };
+
+      document.getElementById('activeUsers').textContent = metrics.activeUsers.toLocaleString();
+      document.getElementById('errorRate').textContent = metrics.errorRate + '/min';
+      document.getElementById('cpuLoad').textContent = metrics.cpuLoad + '%';
+    }
+
+    // Update metrics every 5 seconds
+    setInterval(updateMetrics, 5000);
+
+    // Initial load
+    console.log('Launch Control Panel initialized');
+  </script>
+</body>
+</html>

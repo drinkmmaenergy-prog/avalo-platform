@@ -1,0 +1,29 @@
+// PACK 71 — Fraud Analytics & Payment Anomaly Prediction
+// Firestore Security Rules for fraud_profiles collection
+
+// fraud_profiles/{userId}
+// - Users CANNOT read their own fraud profile (security-sensitive data)
+// - Only backend functions can write
+// - Admins with proper permissions can read via backend
+
+match /fraud_profiles/{userId} {
+  // Users cannot read their own fraud profiles
+  // This is sensitive security data that should not be exposed to end users
+  allow read: if false;
+  
+  // Only backend (via service account) can write
+  allow write: if false;
+}
+
+// fraud_reviews/{reviewId}
+// - Audit trail of admin fraud reviews
+// - Read-only for admins via backend
+// - Writes only via backend
+
+match /fraud_reviews/{reviewId} {
+  // No direct reads allowed
+  allow read: if false;
+  
+  // Only backend can write
+  allow write: if false;
+}

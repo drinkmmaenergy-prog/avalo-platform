@@ -1,0 +1,28 @@
+// ============================================================================
+// PACK 70 - Rate Limiting & Abuse Throttling
+// Firestore Security Rules for rate_limits and rate_limit_config collections
+// ============================================================================
+
+// Rate Limit Counters Collection
+// Only backend can write; no direct client access
+match /rate_limits/{docId} {
+  // Deny all client reads and writes
+  allow read: if false;
+  allow write: if false;
+  
+  // Note: Backend uses Admin SDK which bypasses these rules
+}
+
+// Rate Limit Configuration Collection
+// Only admins can read; no client writes
+match /rate_limit_config/{configId} {
+  // Admin users can read configuration
+  allow read: if request.auth != null && 
+    exists(/databases/$(database)/documents/admin_users/$(request.auth.uid)) &&
+    get(/databases/$(database)/documents/admin_users/$(request.auth.uid)).data.role == 'ADMIN';
+  
+  // No client writes - configuration is managed via Firestore console or backend scripts
+  allow write: if false;
+  
+  // Note: Backend uses Admin SDK which bypasses these rules
+}

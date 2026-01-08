@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ====================================================================
+    // PACK 172: Social Climate Engine Rules
+    // Block Toxic Trends · Zero Political/Religious/Gender Warfare
+    // ====================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'moderator';
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Conflict Trends Collection
+    // Tracks viral conflict-forming narratives and patterns
+    match /conflict_trends/{trendId} {
+      allow read: if isModerator() || isAdmin();
+      allow create: if isAdmin();
+      allow update: if isModerator() || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Conflict Content Cases Collection
+    // Individual content flagged for conflict-forming behavior
+    match /conflict_content_cases/{caseId} {
+      allow read: if isAdmin() || isModerator() || 
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow update: if isAdmin() || isModerator();
+      allow delete: if isAdmin();
+    }
+    
+    // Culture Safety Profiles Collection
+    // User preferences for content filtering and safety settings
+    match /culture_safety_profiles/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+    
+    // Climate Reports Collection
+    // User-generated reports of conflict content
+    match /climate_reports/{reportId} {
+      allow read: if isAdmin() || isModerator() || 
+                     (isAuthenticated() && resource.data.reporterId == request.auth.uid);
+      allow create: if isAuthenticated() && 
+                       request.resource.data.reporterId == request.auth.uid &&
+                       request.resource.data.timestamp == request.time;
+      allow update: if isAdmin() || isModerator();
+      allow delete: if isAdmin();
+    }
+    
+    // Trend Velocity Tracking
+    // Real-time monitoring of content spread velocity
+    match /trend_velocity/{trendId} {
+      allow read: if isModerator() || isAdmin();
+      allow write: if false; // Only system writes
+    }
+    
+    // Content Climate Scores
+    // AI-generated climate scores for content
+    match /content_climate_scores/{contentId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only system writes
+    }
+    
+    // Positive Content Redirects
+    // Alternative positive content suggestions
+    match /positive_redirects/{redirectId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Appeal Cases
+    // Creator appeals for content visibility decisions
+    match /climate_appeals/{appealId} {
+      allow read: if isAdmin() || isModerator() || 
+                     (isAuthenticated() && resource.data.creatorId == request.auth.uid);
+      allow create: if isAuthenticated() && 
+                       request.resource.data.creatorId == request.auth.uid &&
+                       request.resource.data.timestamp == request.time;
+      allow update: if isAdmin() || isModerator();
+      allow delete: if isAdmin();
+    }
+  }
+}

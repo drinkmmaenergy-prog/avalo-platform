@@ -1,0 +1,130 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 250: Paid Media Products
+    // ========================================================================
+    match /paid_media_products/{productId} {
+      // Read: Public products visible to all authenticated users
+      allow read: if request.auth != null && 
+        resource.data.status == 'PUBLISHED';
+      
+      // Read own products (including drafts)
+      allow read: if request.auth != null && 
+        resource.data.creatorId == request.auth.uid;
+      
+      // Create: Only creator for their own products
+      allow create: if request.auth != null &&
+        request.resource.data.creatorId == request.auth.uid &&
+        request.resource.data.priceTokens >= 80 &&
+        request.resource.data.priceTokens <= 1000 &&
+        request.resource.data.productType in ['SINGLE_PHOTO', 'SINGLE_VIDEO', 'ALBUM', 'VIDEO_SERIES', 'STORY_DROP', 'BUNDLE'];
+      
+      // Update: Only creator can update their own products
+      allow update: if request.auth != null &&
+        resource.data.creatorId == request.auth.uid &&
+        request.resource.data.creatorId == resource.data.creatorId; // Cannot change creator
+      
+      // Delete: Only creator or admins
+      allow delete: if request.auth != null && (
+        resource.data.creatorId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+    }
+    
+    // ========================================================================
+    // PACK 250: Media Purchase Transactions
+    // ========================================================================
+    match /media_purchases/{purchaseId} {
+      // Read: Buyer or seller or admins
+      allow read: if request.auth != null && (
+        resource.data.buyerId == request.auth.uid ||
+        resource.data.creatorId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create/Update/Delete: Only server-side (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 250: Purchased Media Access (lifetime access records)
+    // ========================================================================
+    match /purchased_media_access/{accessId} {
+      // Read: Only the buyer who owns this access
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      
+      // Write: Only server-side (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 250: Media Content Validation (perceptual hashes)
+    // ========================================================================
+    match /media_content_hashes/{hashId} {
+      // Read: Only admins and moderators
+      allow read: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true
+      );
+      
+      // Write: Only server-side (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 250: Media Sales Analytics
+    // ========================================================================
+    match /media_sales_analytics/{analyticsId} {
+      // Read: Only the creator or admins
+      allow read: if request.auth != null && (
+        resource.data.creatorId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 250: Creator Media Earnings
+    // ========================================================================
+    match /creator_media_earnings/{earningId} {
+      // Read: Only the creator or admins
+      allow read: if request.auth != null && (
+        resource.data.creatorId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side (Cloud Functions)  
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 250: User Media Discovery Score (for algorithm boosting)
+    // ========================================================================
+    match /user_media_discovery_score/{userId} {
+      // Read: Public (used for ranking)
+      allow read: if request.auth != null;
+      
+      // Write: Only server-side (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 250: Story Drops (24h temporary content)
+    // ========================================================================
+    match /story_drops/{storyId} {
+      // Read: Buyers who purchased or creator
+      allow read: if request.auth != null && (
+        resource.data.creatorId == request.auth.uid ||
+        exists(/databases/$(database)/documents/purchased_media_access/$(request.auth.uid + '_' + storyId))
+      );
+      
+      // Write: Only server-side (Cloud Functions)
+      allow write: if false;
+    }
+  }
+}

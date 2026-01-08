@@ -1,0 +1,57 @@
+{
+  "disputes": {
+    "title": "Spory i zgłoszenia",
+    "empty": "Nie masz żadnych zgłoszonych sporów.",
+    "create": {
+      "title": "Zgłoś problem",
+      "button": "Zgłoś problem",
+      "type": {
+        "payout": "Problem z wypłatą",
+        "earning": "Problem z zarobkami",
+        "reservation": "Problem ze spotkaniem lub rezerwacją",
+        "content": "Nadużycie, oszustwo lub problem z treścią"
+      }
+    },
+    "field": {
+      "title": "Tytuł",
+      "description": "Opisz, co się stało"
+    },
+    "button": {
+      "submit": "Zgłoś spór"
+    },
+    "status": {
+      "OPEN": "Otwarte",
+      "UNDER_REVIEW": "W trakcie analizy",
+      "RESOLVED": "Rozwiązane",
+      "ESCALATED": "Eskaluje",
+      "CLOSED": "Zamknięte"
+    },
+    "type": {
+      "PAYOUT": "Wypłata",
+      "EARNING": "Zarobki",
+      "RESERVATION": "Rezerwacja",
+      "CONTENT": "Treść",
+      "OTHER": "Inne"
+    },
+    "outcome": "Rozwiązanie",
+    "evidenceCount": "{{count}} załączonych dowodów",
+    "evidenceCount_other": "{{count}} załączonych dowodów",
+    "messages": "Wiadomości",
+    "message": {
+      "you": "Ty",
+      "support": "Wsparcie",
+      "system": "System",
+      "placeholder": "Wpisz swoją wiadomość...",
+      "send": "Wyślij"
+    },
+    "error": {
+      "notFound": "Nie znaleziono sporu",
+      "sendMessage": "Nie udało się wysłać wiadomości. Spróbuj ponownie."
+    }
+  },
+  "common": {
+    "loading": "Ładowanie...",
+    "retry": "Ponów",
+    "goBack": "Wróć"
+  }
+}

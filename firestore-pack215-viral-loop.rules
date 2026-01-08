@@ -1,0 +1,185 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // =====================================================
+    // PACK 215: Viral Loop Engine - Security Rules
+    // =====================================================
+    // NO financial rewards - only social/visibility boosts
+    // Prevent gaming/farming of referral system
+    // =====================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidRewardType(rewardType) {
+      return rewardType in ['spotlight', 'priority_matching', 'message_extension', 'fans_zone_badge', 'chemistry_reveal', 'strong_profile_badge', 'attraction_magnet'];
+    }
+    
+    function hasCompletedSelfieVerification(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId)) && 
+             get(/databases/$(database)/documents/users/$(userId)).data.selfieVerified == true;
+    }
+    
+    function isSafetyApproved(userId) {
+      // Check PACK 211 - no rewards for stalker-flagged users
+      let safetyDoc = get(/databases/$(database)/documents/safety_tracking/$(userId));
+      return !safetyDoc.data.keys().hasAny(['stalker_flag', 'harassment_flag']) ||
+             (safetyDoc.data.stalker_flag == false && safetyDoc.data.harassment_flag == false);
+    }
+    
+    // =====================================================
+    // REFERRAL LINKS COLLECTION
+    // =====================================================
+    match /referral_links/{linkId} {
+      allow read: if isAuthenticated();
+      
+      allow create: if isAuthenticated() &&
+        request.resource.data.inviter_id == request.auth.uid &&
+        request.resource.data.keys().hasAll(['inviter_id', 'link_code', 'created_at', 'status']) &&
+        request.resource.data.status == 'active' &&
+        isSafetyApproved(request.auth.uid);
+      
+      allow update: if isOwner(resource.data.inviter_id) &&
+        // Only allow updating stats, not core data
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['inviter_id', 'link_code']);
+      
+      allow delete: if false; // Links cannot be deleted, only deactivated
+    }
+    
+    // =====================================================
+    // REFERRAL TRACKING COLLECTION
+    // =====================================================
+    match /referral_tracking/{trackingId} {
+      allow read: if isAuthenticated() &&
+        (request.auth.uid == resource.data.inviter_id || 
+         request.auth.uid == resource.data.invited_user_id);
+      
+      // Only Cloud Functions can create/update tracking
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // =====================================================
+    // VIRAL REWARDS COLLECTION
+    // =====================================================
+    match /viral_rewards/{rewardId} {
+      allow read: if isAuthenticated() &&
+        request.auth.uid == resource.data.user_id;
+      
+      // Only Cloud Functions can create rewards
+      allow create: if false;
+      
+      allow update: if isOwner(resource.data.user_id) &&
+        // Users can only mark rewards as claimed
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed', 'claimed_at']) &&
+        request.resource.data.claimed == true &&
+        resource.data.claimed == false &&
+        // Verify reward is valid type (no financial rewards)
+        isValidRewardType(resource.data.reward_type);
+      
+      allow delete: if false;
+    }
+    
+    // =====================================================
+    // AUDIENCE IMPORT TRACKING
+    // =====================================================
+    match /audience_imports/{importId} {
+      allow read: if isAuthenticated() &&
+        request.auth.uid == resource.data.creator_id;
+      
+      allow create: if isAuthenticated() &&
+        request.resource.data.creator_id == request.auth.uid &&
+        request.resource.data.keys().hasAll(['creator_id', 'platform', 'created_at', 'status']) &&
+        request.resource.data.platform in ['instagram', 'tiktok', 'telegram', 'snapchat'] &&
+        request.resource.data.status == 'pending';
+      
+      allow update: if isOwner(resource.data.creator_id) &&
+        // Only allow status updates by users
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updated_at']);
+      
+      allow delete: if false;
+    }
+    
+    // =====================================================
+    // SOCIAL PROOF EVENTS
+    // =====================================================
+    match /social_proof_events/{eventId} {
+      allow read: if isAuthenticated() &&
+        request.auth.uid == resource.data.target_user_id;
+      
+      // Only Cloud Functions can create social proof events
+      allow create: if false;
+      
+      allow update: if isOwner(resource.data.target_user_id) &&
+        // Users can only mark as read
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'read_at']) &&
+        request.resource.data.read == true;
+      
+      allow delete: if false;
+    }
+    
+    // =====================================================
+    // VIRAL STATS (Per User)
+    // =====================================================
+    match /viral_stats/{userId} {
+      allow read: if isAuthenticated() &&
+        request.auth.uid == userId;
+      
+      // Only Cloud Functions update stats
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // =====================================================
+    // VIRAL BADGES
+    // =====================================================
+    match /viral_badges/{badgeId} {
+      allow read: if isAuthenticated();
+      
+      allow list: if isAuthenticated() &&
+        request.query.limit <= 50;
+      
+      // Only Cloud Functions can award badges
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // =====================================================
+    // INVITED USER VERIFICATION
+    // =====================================================
+    match /invited_users/{userId} {
+      allow read: if isAuthenticated() &&
+        (request.auth.uid == userId || 
+         resource.data.inviter_id == request.auth.uid);
+      
+      // Created by Cloud Functions during signup
+      allow create: if false;
+      
+      allow update: if isAuthenticated() &&
+        request.auth.uid == userId &&
+        // Only allow selfie verification status update
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['selfie_verified', 'verified_at']) &&
+        request.resource.data.selfie_verified == true;
+      
+      allow delete: if false;
+    }
+    
+    // =====================================================
+    // VIRAL LOOP METRICS (Admin only)
+    // =====================================================
+    match /viral_metrics/{metricId} {
+      allow read: if false; // Admin only via backend
+      allow write: if false; // Cloud Functions only
+    }
+  }
+}

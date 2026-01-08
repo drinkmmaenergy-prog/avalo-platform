@@ -1,0 +1,114 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isCreator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'creator';
+    }
+    
+    function hasKYC() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.kycVerified == true;
+    }
+
+    // Creator Earnings Collection
+    // Structure: /creators/{creatorId}/earnings/{earningId}
+    match /creators/{creatorId}/earnings/{earningId} {
+      // Creators can only read their own earnings
+      allow read: if isOwner(creatorId);
+      // Only backend can write earnings records
+      allow write: if false;
+    }
+
+    // Creator Earnings Summary (aggregated data)
+    // Structure: /creators/{creatorId}/earningSummary/{summaryId}
+    match /creators/{creatorId}/earningSummary/{summaryId} {
+      allow read: if isOwner(creatorId);
+      allow write: if false;
+    }
+
+    // Income Breakdown by Feature
+    // Structure: /creators/{creatorId}/incomeBreakdown/{feature}/{transactionId}
+    match /creators/{creatorId}/incomeBreakdown/{feature}/{transactionId} {
+      allow read: if isOwner(creatorId);
+      allow write: if false;
+    }
+
+    // Analytics Data
+    // Structure: /creators/{creatorId}/analytics/{metric}
+    match /creators/{creatorId}/analytics/{metric} {
+      allow read: if isOwner(creatorId);
+      allow write: if false;
+    }
+
+    // Top Supporters
+    // Structure: /creators/{creatorId}/topSupporters/{supporterId}
+    match /creators/{creatorId}/topSupporters/{supporterId} {
+      allow read: if isOwner(creatorId);
+      allow write: if false;
+    }
+
+    // AI Earning Tips
+    // Structure: /creators/{creatorId}/earningTips/{tipId}
+    match /creators/{creatorId}/earningTips/{tipId} {
+      allow read: if isOwner(creatorId);
+      allow write: if false;
+    }
+
+    // Payout Requests
+    // Structure: /payoutRequests/{requestId}
+    match /payoutRequests/{requestId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.creatorId == request.auth.uid;
+      allow create: if isCreator() && 
+                       hasKYC() &&
+                       request.resource.data.creatorId == request.auth.uid &&
+                       request.resource.data.status == 'pending' &&
+                       request.resource.data.amount >= 20; // Minimum 20 USD
+      allow update: if false; // Only backend can update status
+      allow delete: if false;
+    }
+
+    // Payout Methods (stored payment provider credentials)
+    // Structure: /creators/{creatorId}/payoutMethods/{methodId}
+    match /creators/{creatorId}/payoutMethods/{methodId} {
+      allow read: if isOwner(creatorId);
+      allow create, update: if isOwner(creatorId) && 
+                               hasKYC() &&
+                               request.resource.data.keys().hasAll(['type', 'verified']);
+      allow delete: if isOwner(creatorId);
+    }
+
+    // Token Conversion Rates (public read)
+    // Structure: /config/tokenConversionRates
+    match /config/tokenConversionRates {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // Commission Structure (public read)
+    // Structure: /config/commissionStructure
+    match /config/commissionStructure {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // Earnings Milestones
+    // Structure: /creators/{creatorId}/milestones/{milestoneId}
+    match /creators/{creatorId}/milestones/{milestoneId} {
+      allow read: if isOwner(creatorId);
+      allow write: if false;
+    }
+  }
+}

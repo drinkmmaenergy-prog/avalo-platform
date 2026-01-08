@@ -1,0 +1,223 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(authorId) {
+      return request.auth.uid == authorId;
+    }
+    
+    function isAdult() {
+      return request.auth.token.isAdult == true;
+    }
+    
+    function hasValidProfile() {
+      return request.auth.token.profileComplete == true;
+    }
+    
+    function isModerator() {
+      return request.auth.token.isModerator == true || 
+             request.auth.token.isAdmin == true;
+    }
+    
+    function canViewContent(visibility, authorId) {
+      // PUBLIC: anyone can view
+      if (visibility == 'PUBLIC') {
+        return true;
+      }
+      
+      // FOLLOWERS: check if user follows author
+      if (visibility == 'FOLLOWERS') {
+        return exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + authorId));
+      }
+      
+      // MATCHES_ONLY: check if users are matched
+      if (visibility == 'MATCHES_ONLY') {
+        return exists(/databases/$(database)/documents/matches/$(request.auth.uid + '_' + authorId)) ||
+               exists(/databases/$(database)/documents/matches/$(authorId + '_' + request.auth.uid));
+      }
+      
+      return false;
+    }
+    
+    function isValidContentType(type) {
+      return type in ['PHOTO', 'VIDEO'];
+    }
+    
+    function isValidVisibility(visibility) {
+      return visibility in ['PUBLIC', 'FOLLOWERS', 'MATCHES_ONLY'];
+    }
+    
+    function isValidNSFWFlag(flag) {
+      return flag in ['unknown', 'safe', 'soft', 'erotic', 'blocked'];
+    }
+    
+    // Feed Posts Collection
+    match /feedPosts/{postId} {
+      // Allow read if:
+      // - User is authenticated and adult
+      // - Post is not deleted
+      // - User has permission based on visibility
+      // - NSFW alignment (if user hides NSFW, exclude erotic content)
+      allow read: if isAuthenticated() 
+                  && isAdult()
+                  && resource.data.deleted == false
+                  && canViewContent(resource.data.visibility, resource.data.authorId)
+                  && (
+                    !request.auth.token.hideNSFW 
+                    || resource.data.media[0].nsfwFlag != 'erotic'
+                  );
+      
+      // Allow create if:
+      // - User is authenticated, adult, and has valid profile
+      // - Author is the authenticated user
+      // - Required fields are present and valid
+      // - Media has been moderated (nsfwFlag is not 'blocked')
+      allow create: if isAuthenticated()
+                    && isAdult()
+                    && hasValidProfile()
+                    && request.resource.data.authorId == request.auth.uid
+                    && request.resource.data.type in ['PHOTO', 'VIDEO']
+                    && isValidVisibility(request.resource.data.visibility)
+                    && request.resource.data.media.size() > 0
+                    && request.resource.data.media.size() <= 10
+                    && request.resource.data.media[0].nsfwFlag != 'blocked'
+                    && request.resource.data.deleted == false
+                    && request.resource.data.createdAt is timestamp
+                    && request.resource.data.stats.views == 0
+                    && request.resource.data.stats.likes == 0
+                    && request.resource.data.stats.comments == 0
+                    && request.resource.data.stats.shares == 0;
+      
+      // Allow update if:
+      // - User is the owner (for caption/tags updates)
+      // - Or user is moderator (for moderation actions)
+      allow update: if isAuthenticated()
+                    && (
+                      (isOwner(resource.data.authorId) 
+                       && request.resource.data.authorId == resource.data.authorId
+                       && request.resource.data.createdAt == resource.data.createdAt
+                       && request.resource.data.media == resource.data.media)
+                      || isModerator()
+                    );
+      
+      // Allow delete (soft delete) if:
+      // - User is the owner
+      // - Or user is moderator
+      allow delete: if isAuthenticated()
+                    && (isOwner(resource.data.authorId) || isModerator());
+    }
+    
+    // Stories Collection
+    match /stories/{storyId} {
+      // Allow read if:
+      // - User is authenticated and adult
+      // - Story is not deleted and not expired
+      // - User has permission based on visibility
+      // - NSFW alignment
+      allow read: if isAuthenticated()
+                  && isAdult()
+                  && resource.data.deleted == false
+                  && resource.data.expiresAt > request.time
+                  && canViewContent(resource.data.visibility, resource.data.authorId)
+                  && (
+                    !request.auth.token.hideNSFW 
+                    || resource.data.media.nsfwFlag != 'erotic'
+                  );
+      
+      // Allow create if:
+      // - User is authenticated, adult, and has valid profile
+      // - Author is the authenticated user
+      // - Story expires in future (typically 24h)
+      // - Media has been moderated
+      allow create: if isAuthenticated()
+                    && isAdult()
+                    && hasValidProfile()
+                    && request.resource.data.authorId == request.auth.uid
+                    && isValidVisibility(request.resource.data.visibility)
+                    && request.resource.data.expiresAt > request.time
+                    && request.resource.data.media.nsfwFlag != 'blocked'
+                    && request.resource.data.deleted == false
+                    && request.resource.data.createdAt is timestamp
+                    && request.resource.data.stats.views == 0
+                    && request.resource.data.stats.replies == 0;
+      
+      // Allow update if:
+      // - User is the owner (limited fields)
+      // - Or user is moderator
+      allow update: if isAuthenticated()
+                    && (
+                      (isOwner(resource.data.authorId)
+                       && request.resource.data.authorId == resource.data.authorId
+                       && request.resource.data.createdAt == resource.data.createdAt
+                       && request.resource.data.media == resource.data.media)
+                      || isModerator()
+                    );
+      
+      // Allow delete if:
+      // - User is the owner
+      // - Or user is moderator
+      allow delete: if isAuthenticated()
+                    && (isOwner(resource.data.authorId) || isModerator());
+    }
+    
+    // Reels Collection
+    match /reels/{reelId} {
+      // Allow read if:
+      // - User is authenticated and adult
+      // - Reel is not deleted
+      // - User has permission based on visibility
+      // - NSFW alignment
+      allow read: if isAuthenticated()
+                  && isAdult()
+                  && resource.data.deleted == false
+                  && canViewContent(resource.data.visibility, resource.data.authorId)
+                  && (
+                    !request.auth.token.hideNSFW 
+                    || resource.data.media.nsfwFlag != 'erotic'
+                  );
+      
+      // Allow create if:
+      // - User is authenticated, adult, and has valid profile
+      // - Author is the authenticated user
+      // - Media is video and has been moderated
+      // - Duration is reasonable (e.g., max 180 seconds)
+      allow create: if isAuthenticated()
+                    && isAdult()
+                    && hasValidProfile()
+                    && request.resource.data.authorId == request.auth.uid
+                    && isValidVisibility(request.resource.data.visibility)
+                    && request.resource.data.media.durationSeconds > 0
+                    && request.resource.data.media.durationSeconds <= 180
+                    && request.resource.data.media.nsfwFlag != 'blocked'
+                    && request.resource.data.deleted == false
+                    && request.resource.data.createdAt is timestamp
+                    && request.resource.data.stats.views == 0
+                    && request.resource.data.stats.likes == 0
+                    && request.resource.data.stats.comments == 0
+                    && request.resource.data.stats.shares == 0;
+      
+      // Allow update if:
+      // - User is the owner (for caption/tags updates)
+      // - Or user is moderator
+      allow update: if isAuthenticated()
+                    && (
+                      (isOwner(resource.data.authorId)
+                       && request.resource.data.authorId == resource.data.authorId
+                       && request.resource.data.createdAt == resource.data.createdAt
+                       && request.resource.data.media == resource.data.media)
+                      || isModerator()
+                    );
+      
+      // Allow delete if:
+      // - User is the owner
+      // - Or user is moderator
+      allow delete: if isAuthenticated()
+                    && (isOwner(resource.data.authorId) || isModerator());
+    }
+  }
+}

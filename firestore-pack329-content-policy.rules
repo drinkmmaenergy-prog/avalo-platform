@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ═══════════════════════════════════════════════════════════════════════
+    // PACK 329 — Regional Regulation Toggles & Content Policy Matrix
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    // Content Policies Collection - Global policy matrix
+    match /contentPolicies/{policyId} {
+      // Only admins can write policies
+      allow read: if true; // Public read for all users/systems
+      allow write: if request.auth != null 
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    // Policy Violations - Track content that violated policies
+    match /policyViolations/{violationId} {
+      allow read: if request.auth != null 
+        && (request.auth.uid == resource.data.userId 
+          || request.auth.uid == resource.data.reportedBy
+          || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['ADMIN', 'MODERATOR']));
+      
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasAll(['userId', 'violationType', 'surface', 'region', 'platform', 'timestamp'])
+        && request.resource.data.timestamp == request.time
+        && request.resource.data.userId is string
+        && request.resource.data.violationType in ['EXPLICIT_NUDITY', 'GENITALS_VISIBLE', 'SEX_ACTS', 'MINOR_CONTENT', 'VIOLENCE', 'HATE_SPEECH', 'POLITICAL_CONTENT', 'RELIGIOUS_FLAME', 'ILLEGAL_CONTENT']
+        && request.resource.data.surface in ['PROFILE', 'GALLERY', 'FEED', 'CHAT', 'CALL', 'AI', 'EVENT']
+        && request.resource.data.region in ['EU', 'US', 'ROW']
+        && request.resource.data.platform in ['MOBILE', 'WEB'];
+      
+      allow update: if request.auth != null
+        && (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['ADMIN', 'MODERATOR'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'reviewedBy', 'reviewedAt', 'resolution', 'notes']);
+    }
+    
+    // Content Warnings - Track warnings issued to users
+    match /contentWarnings/{warningId} {
+      allow read: if request.auth != null 
+        && (request.auth.uid == resource.data.userId
+          || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['ADMIN', 'MODERATOR']));
+      
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasAll(['userId', 'warningType', 'surface', 'timestamp'])
+        && request.resource.data.timestamp == request.time
+        && request.resource.data.userId is string
+        && request.resource.data.warningType in ['SOFT_WARNING', 'HARD_WARNING', 'FINAL_WARNING']
+        && request.resource.data.surface in ['PROFILE', 'GALLERY', 'FEED', 'CHAT', 'AI', 'EVENT'];
+    }
+    
+    // User Policy Settings - User preferences within policy bounds
+    match /userPolicySettings/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      allow write: if request.auth != null 
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasAll(['userId', 'region', 'updatedAt'])
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.region in ['EU', 'US', 'ROW'];
+    }
+    
+    // Regional Content Reports - User reports of policy violations
+    match /regionalContentReports/{reportId} {
+      allow read: if request.auth != null 
+        && (request.auth.uid == resource.data.reportedBy
+          || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['ADMIN', 'MODERATOR']));
+      
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasAll(['reportedBy', 'targetUserId', 'contentType', 'violationType', 'timestamp'])
+        && request.resource.data.timestamp == request.time
+        && request.resource.data.reportedBy == request.auth.uid
+        && request.resource.data.contentType in ['PROFILE', 'GALLERY', 'FEED', 'CHAT_MESSAGE', 'CALL', 'AI_CONTENT']
+        && request.resource.data.violationType in ['EXPLICIT_NUDITY', 'MINOR_CONTENT', 'VIOLENCE', 'HATE_SPEECH', 'HARASSMENT', 'ILLEGAL_CONTENT', 'POLITICAL_CONTENT', 'RELIGIOUS_FLAME'];
+    }
+  }
+}

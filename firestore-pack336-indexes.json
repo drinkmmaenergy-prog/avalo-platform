@@ -1,0 +1,181 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "kpiNorthStarSnapshots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "calculatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiDailyGlobal",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "activeUsersDAU", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiDailyGlobal",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "totalRevenuePLN", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiDailyByCountry",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "country", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiDailyByCountry",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "country", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiDailyByCountry",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "revenuePLN", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiCohorts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "cohortId", "order": "ASCENDING" },
+        { "fieldPath": "lastUpdatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiCohorts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "day30Retention", "order": "DESCENDING" },
+        { "fieldPath": "avgLTVPLN", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiUserLifecycle",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "firstSeenAt", "order": "ASCENDING" },
+        { "fieldPath": "lifetimeRevenuePLN", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiUserLifecycle",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "churnedAt", "order": "DESCENDING" },
+        { "fieldPath": "lifetimeRevenuePLN", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiVirality",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "kFactor", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiRevenueStreams",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "totalRevenuePLN", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiExperiments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "startDate", "order": "DESCENDING" },
+        { "fieldPath": "result", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiExperiments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "result", "order": "ASCENDING" },
+        { "fieldPath": "endDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiAlerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiAlerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "severity", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiAlerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "walletTransactions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "walletTransactions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userActivity",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lastActiveAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "referrals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "DESCENDING" },
+        { "fieldPath": "activated", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "investorReports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "generatedAt", "order": "DESCENDING" },
+        { "fieldPath": "periodStart", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

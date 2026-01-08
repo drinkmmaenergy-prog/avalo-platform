@@ -1,0 +1,231 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 210: Safety Sessions (Active Tracking)
+    // ========================================================================
+    match /safety_sessions/{sessionId} {
+      // Read: Only the user being tracked, their trusted contact, or admins
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.trustedContactId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true
+      );
+      
+      // Create: Only for the user themselves when starting a meeting/event
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.status == 'ACTIVE';
+      
+      // Update: User can update their own session, trusted contact can view only,
+      // admins/safety team can update after panic
+      allow update: if request.auth != null && (
+        // User can update their own session
+        (resource.data.userId == request.auth.uid &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+           'status',
+           'endedAt',
+           'batteryLevel',
+           'lastHeartbeat',
+           'safetyCheckResponse'
+         ])) ||
+        // Safety team can update after panic
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true) ||
+        // Admins can update anything
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Delete: Only admins after incident resolution
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // PACK 210: Location Tracking (Live Position Data)
+    // ========================================================================
+    match /location_tracking/{trackingId} {
+      // Read: Only the user being tracked, their trusted contact (if enabled), or safety team
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        (resource.data.trustedContactEnabled == true &&
+         resource.data.trustedContactId == request.auth.uid) ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side (Cloud Functions handle location updates)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 210: Trusted Contacts
+    // ========================================================================
+    match /trusted_contacts/{contactId} {
+      // Read: Only the owner or admins
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Only for own account
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      
+      // Update: Only own trusted contact
+      allow update: if request.auth != null &&
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == request.auth.uid;
+      
+      // Delete: Only own trusted contact
+      allow delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // ========================================================================
+    // PACK 210: Panic Alerts
+    // ========================================================================
+    match /panic_alerts/{alertId} {
+      // Read: Only the user who triggered it, trusted contact, safety team, or admins
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.trustedContactId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Only for own panic alerts
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      
+      // Update: Only safety team or admins (for resolution tracking)
+      allow update: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      ) && (
+        // Can only update resolution fields
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'resolvedBy',
+          'resolvedAt',
+          'resolution',
+          'notes'
+        ])
+      );
+      
+      // Delete: Only admins after full case resolution
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // PACK 210: Safety Check Timers
+    // ========================================================================
+    match /safety_check_timers/{timerId} {
+      // Read: Only the user or safety team
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side (Cloud Functions manage timers)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 210: Panic Alert Notifications (Sent to Trusted Contacts)
+    // ========================================================================
+    match /panic_notifications/{notificationId} {
+      // Read: Only the recipient or safety team
+      allow read: if request.auth != null && (
+        resource.data.recipientId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 210: Safety Event Log (Audit Trail)
+    // ========================================================================
+    match /safety_event_log/{logId} {
+      // Read: Only involved users, safety team, or admins
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.involvedUserIds.hasAny([request.auth.uid]) ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side or safety team
+      allow create: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Update: Only safety team or admins (for case notes)
+      allow update: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Delete: Only admins
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // PACK 210: Enhanced Calendar Bookings (with safety session tracking)
+    // ========================================================================
+    match /calendarBookings/{bookingId} {
+      // Read: Participants or admins
+      allow read: if request.auth != null && (
+        resource.data.bookerId == request.auth.uid ||
+        resource.data.creatorId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Only the booker
+      allow create: if request.auth != null &&
+        request.resource.data.bookerId == request.auth.uid &&
+        request.resource.data.status == 'PENDING';
+      
+      // Update: Participants (for status changes, safety session tracking) or server-side
+      allow update: if request.auth != null && (
+        // Creator can confirm
+        (resource.data.creatorId == request.auth.uid &&
+         resource.data.status == 'PENDING' &&
+         request.resource.data.status == 'CONFIRMED') ||
+        // Either party can verify, cancel, or end with panic
+        (resource.data.bookerId == request.auth.uid || resource.data.creatorId == request.auth.uid) &&
+        (request.resource.data.status in ['COMPLETED', 'CANCELLED', 'COMPLAINT_REFUNDED', 'PANIC_ENDED']) ||
+        // Admins can update anything
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Delete: Only admins
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // PACK 210: Enhanced Event Attendees (with safety session tracking)
+    // ========================================================================
+    match /event_attendees/{attendeeId} {
+      // Read: Attendee, event host, or admins
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.hostUserId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "send": "Wyślij",
+  "typing": "pisze...",
+  "freeMessagesLeft": "Pozostało darmowych wiadomości",
+  "startPaidChat": "Rozpocznij czat premium",
+  "tokensPerMessage": "tokenów za wiadomość",
+  "messageTooShort": "Wiadomość zbyt krótka",
+  "messageLimitReached": "Osiągnięto limit wiadomości",
+  "introMessage": "Rozpocznij ekskluzywną rozmowę",
+  "userIsTyping": "pisze",
+  "chatLocked": "Czat zablokowany",
+  "unlockChat": "Odblokuj czat",
+  "insufficientTokens": "Niewystarczająca liczba tokenów",
+  "ppm": {
+    "uploading": "Przesyłanie…",
+    "uploadFailed": "Przesyłanie nie powiodło się. Spróbujemy ponownie.",
+    "mediaProcessing": "Przetwarzanie mediów…",
+    "unlockMedia": "Odblokuj za {{tokens}} tokenów"
+  }
+}

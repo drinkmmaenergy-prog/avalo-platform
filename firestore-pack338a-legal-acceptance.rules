@@ -1,0 +1,25 @@
+/**
+ * PACK 338a - Legal Compliance Engine
+ * Firestore Security Rules for userLegalAcceptances collection
+ * 
+ * Collection: userLegalAcceptances/{userId}
+ * Purpose: Track mandatory legal document acceptance with versioning
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // USER LEGAL ACCEPTANCES
+    // ========================================================================
+    match /userLegalAcceptances/{userId} {
+      // Users can read their own acceptance record
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only Cloud Function can write acceptance records
+      // Users cannot directly write to bypass mandatory acceptance flow
+      allow write: if false;
+    }
+  }
+}

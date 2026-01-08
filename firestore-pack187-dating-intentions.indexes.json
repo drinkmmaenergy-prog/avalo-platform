@@ -1,0 +1,75 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "dating_intentions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "badges",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "lastUpdated",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "dating_intentions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "badges",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "matchesGenerated",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "dating_intentions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "preferences.allowIntentionFiltering",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastUpdated",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "intention_analytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "periodStart",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "intention_compatibility",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "compatibilityScore",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "calculatedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

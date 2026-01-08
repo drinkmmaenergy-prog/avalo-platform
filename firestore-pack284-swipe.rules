@@ -1,0 +1,171 @@
+rules_version = '2';
+
+// PACK 284 — Swipe Engine Security Rules
+// Covers: swipeProfiles, swipeStats, swipeDecisions, matches
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isBanned(userId) {
+      let user = get(/databases/$(database)/documents/users/$(userId)).data;
+      return user.get('banLevel', 'none') in ['shadow', 'full'];
+    }
+    
+    function isVerified() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('verified', false) == true;
+    }
+    
+    // ========================================
+    // SWIPE PROFILES COLLECTION
+    // ========================================
+    // Read-only denormalized index for swipe queue
+    // Synced automatically via Cloud Function from discoveryPresence/users
+    
+    match /swipeProfiles/{userId} {
+      // Anyone can read (for swipe queue building)
+      // But only non-banned, authenticated users
+      allow read: if isAuthenticated() && !isBanned(request.auth.uid);
+      
+      // Only Cloud Functions can write (via service account)
+      allow write: if false;
+    }
+    
+    // ========================================
+    // SWIPE STATS COLLECTION
+    // ========================================
+    // Per-user daily swipe tracking
+    
+    match /swipeStats/{userId} {
+      // Users can only read their own stats
+      allow read: if isUser(userId);
+      
+      // Users can create their own stats document
+      allow create: if isUser(userId) && 
+                       request.resource.data.userId == userId &&
+                       request.resource.data.swipesUsedToday is number &&
+                       request.resource.data.swipesUsedToday >= 0;
+      
+      // Users can update their own stats
+      // But only increment swipesUsedToday, update timestamps
+      allow update: if isUser(userId) && 
+                       request.resource.data.userId == userId &&
+                       request.resource.data.swipesUsedToday >= resource.data.swipesUsedToday &&
+                       request.resource.data.swipesUsedToday <= 200; // Safety cap
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    // ========================================
+    // SWIPE DECISIONS COLLECTION
+    // ========================================
+    // Records like/dislike decisions
+    // Document ID format: {userId}_{targetId}
+    
+    match /swipeDecisions/{decisionId} {
+      // Users can read their own decisions
+      allow read: if isAuthenticated() && 
+                     decisionId.split('_')[0] == request.auth.uid;
+      
+      // Users can read decisions where they are the target
+      // (for checking mutual likes)
+      allow read: if isAuthenticated() && 
+                     decisionId.split('_')[1] == request.auth.uid;
+      
+      // Users can create decisions
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.targetId is string &&
+                       request.resource.data.targetId != request.auth.uid &&
+                       request.resource.data.decision in ['like', 'dislike'] &&
+                       request.resource.data.createdAt == request.time &&
+                       decisionId == request.auth.uid + '_' + request.resource.data.targetId;
+      
+      // No updates or deletes allowed (decisions are immutable)
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ========================================
+    // MATCHES COLLECTION
+    // ========================================
+    // Match records created when mutual likes occur
+    
+    match /matches/{matchId} {
+      // Users can read matches they're part of
+      allow read: if isAuthenticated() && 
+                     (resource.data.userA == request.auth.uid || 
+                      resource.data.userB == request.auth.uid);
+      
+      // Only Cloud Functions can create matches
+      // (to ensure proper mutual like verification)
+      allow create: if false;
+      
+      // Users can update match status (for blocking)
+      allow update: if isAuthenticated() &&
+                       (resource.data.userA == request.auth.uid || 
+                        resource.data.userB == request.auth.uid) &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']) &&
+                       request.resource.data.status in ['active', 'blocked'];
+      
+      // No deletion allowed (keep match history)
+      allow delete: if false;
+    }
+    
+    // ========================================
+    // MATCH NOTIFICATIONS SUBCOLLECTION
+    // ========================================
+    // Per-user notifications for new matches
+    
+    match /users/{userId}/matchNotifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isUser(userId);
+      
+      // Only Cloud Functions can create notifications
+      allow create: if false;
+      
+      // Users can mark as read
+      allow update: if isUser(userId) &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      
+      // Users can delete their notifications
+      allow delete: if isUser(userId);
+    }
+    
+    // ========================================
+    // SWIPE ANALYTICS (OPTIONAL)
+    // ========================================
+    // Aggregated swipe statistics
+    
+    match /swipeAnalytics/{analyticsId} {
+      // Only admins or Cloud Functions can read/write
+      allow read, write: if false;
+    }
+    
+    // ========================================
+    // SWIPE ABUSE REPORTS
+    // ========================================
+    // Tracking rapid swipes and suspicious patterns
+    
+    match /swipeAbuseReports/{reportId} {
+      // Only admins can read
+      allow read: if false;
+      
+      // Cloud Functions can create reports
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+  }
+}

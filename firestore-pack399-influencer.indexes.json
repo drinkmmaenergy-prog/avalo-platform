@@ -1,0 +1,200 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "influencer_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "totalRevenue", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "totalInstalls", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "country", "order": "ASCENDING" },
+        { "fieldPath": "totalRevenue", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fraudRatio", "order": "DESCENDING" },
+        { "fieldPath": "totalRevenue", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "referralCode", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_campaigns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_campaigns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "startDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_metrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_metrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_metrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "campaignId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creator_funnels",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creator_funnels",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creator_funnels",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "referralCode", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creator_funnels",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isFraud", "order": "ASCENDING" },
+        { "fieldPath": "lifetimeValue", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creator_funnels",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fraudChecked", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "regional_playbooks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countries", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "active", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "regional_playbooks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "region", "order": "ASCENDING" },
+        { "fieldPath": "active", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_payouts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_payouts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_payouts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_commissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_commissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_commissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "influencerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "influencer_commissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "fraudScore", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

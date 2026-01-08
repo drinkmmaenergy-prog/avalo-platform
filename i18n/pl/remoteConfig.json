@@ -1,0 +1,16 @@
+{
+  "settings": {
+    "debug": {
+      "remoteConfig": "Konfiguracja zdalna",
+      "remoteConfigRefresh": "Odśwież konfigurację",
+      "remoteConfigStatus": "Status konfiguracji zdalnej",
+      "remoteConfigLastFetch": "Ostatnio pobrano",
+      "remoteConfigFeatures": "Aktywne funkcje",
+      "remoteConfigExperiments": "Aktywne eksperymenty",
+      "remoteConfigValues": "Wartości konfiguracji",
+      "remoteConfigRefreshing": "Odświeżanie konfiguracji...",
+      "remoteConfigRefreshSuccess": "Konfiguracja odświeżona pomyślnie",
+      "remoteConfigRefreshError": "Nie udało się odświeżyć konfiguracji"
+    }
+  }
+}

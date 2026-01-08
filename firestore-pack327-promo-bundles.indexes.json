@@ -1,0 +1,61 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "promoBundles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "available", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "promoBundles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "available", "order": "ASCENDING" },
+        { "fieldPath": "pricePLN", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "promoBundlePurchases",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "activatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "promoBundlePurchases",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "promoBundlePurchases",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "bundleId", "order": "ASCENDING" },
+        { "fieldPath": "activatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "bundleAnalytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "bundleId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "bundleAnalytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "totalPurchases", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

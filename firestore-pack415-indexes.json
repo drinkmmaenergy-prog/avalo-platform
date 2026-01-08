@@ -1,0 +1,127 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "rateLimits",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "rateLimits",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "blockedUntil", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "rateLimits",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "abuseMode", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "abuseFlags",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "mode", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "abuseFlags",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "manualOverride", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "abuseFlags",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "triggeredAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "deviceFingerprints",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "flagged", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "deviceFingerprints",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "accountsCreated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "deviceFingerprints",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "firstSeen", "order": "ASCENDING" },
+        { "fieldPath": "accountsCreated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "deviceFingerprints",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lastSeen", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "violations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "violations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "source", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "violations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "source", "order": "ASCENDING" },
+        { "fieldPath": "sourceType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "violations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sourceType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "violations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "actionType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "violations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "source", "order": "ASCENDING" },
+        { "fieldPath": "actionType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

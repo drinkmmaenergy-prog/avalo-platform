@@ -1,0 +1,155 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "flags",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "enabled", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "flags",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "killSwitch", "order": "ASCENDING" },
+        { "fieldPath": "enabled", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "switches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "active",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "startAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "active",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "endAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "variants",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "enabled", "order": "ASCENDING" },
+        { "fieldPath": "rolloutPercentage", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "experimentAssignments",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "experimentKey", "order": "ASCENDING" },
+        { "fieldPath": "variantKey", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "experimentAssignments",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "experimentKey", "order": "ASCENDING" },
+        { "fieldPath": "assignedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "exposures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "experimentKey", "order": "ASCENDING" },
+        { "fieldPath": "variantKey", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "exposures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "metrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "experimentKey", "order": "ASCENDING" },
+        { "fieldPath": "variantKey", "order": "ASCENDING" },
+        { "fieldPath": "metricType", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "metrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "experimentKey", "order": "ASCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "experimentKey", "order": "ASCENDING" },
+        { "fieldPath": "variantKey", "order": "ASCENDING" },
+        { "fieldPath": "metricType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "experimentKey", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "crashes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "experimentKey", "order": "ASCENDING" },
+        { "fieldPath": "variantKey", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "autoDisables",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "targetKey", "order": "ASCENDING" },
+        { "fieldPath": "disabledAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "autoDisables",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "reason", "order": "ASCENDING" },
+        { "fieldPath": "disabledAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "autoActivations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "killSwitchKey", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

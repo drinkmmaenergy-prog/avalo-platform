@@ -1,0 +1,94 @@
+{
+  "featureFlags": {
+    "store.defense.enabled": {
+      "enabled": true,
+      "description": "Enable app store review defense engine",
+      "createdAt": "2025-12-23T00:00:00Z",
+      "updatedAt": "2025-12-23T00:00:00Z",
+      "metadata": {
+        "pack": "371",
+        "category": "reputation",
+        "impact": "high"
+      }
+    },
+    "review.ai.responses.enabled": {
+      "enabled": true,
+      "description": "Enable AI-generated safe review responses",
+      "createdAt": "2025-12-23T00:00:00Z",
+      "updatedAt": "2025-12-23T00:00:00Z",
+      "metadata": {
+        "pack": "371",
+        "category": "reputation",
+        "impact": "medium",
+        "requiresApproval": true
+      }
+    },
+    "trust.score.enabled": {
+      "enabled": true,
+      "description": "Enable trust score calculation and ranking",
+      "createdAt": "2025-12-23T00:00:00Z",
+      "updatedAt": "2025-12-23T00:00:00Z",
+      "metadata": {
+        "pack": "371",
+        "category": "reputation",
+        "impact": "high"
+      }
+    },
+    "trust.score.decay.enabled": {
+      "enabled": true,
+      "description": "Enable trust score decay for inactive users",
+      "createdAt": "2025-12-23T00:00:00Z",
+      "updatedAt": "2025-12-23T00:00:00Z",
+      "metadata": {
+        "pack": "371",
+        "category": "reputation",
+        "impact": "medium"
+      }
+    },
+    "review.nudge.enabled": {
+      "enabled": true,
+      "description": "Enable positive review acquisition nudges",
+      "createdAt": "2025-12-23T00:00:00Z",
+      "updatedAt": "2025-12-23T00:00:00Z",
+      "metadata": {
+        "pack": "371",
+        "category": "reputation",
+        "impact": "low"
+      }
+    },
+    "reputation.attack.detection.enabled": {
+      "enabled": true,
+      "description": "Enable fake review and bot attack detection",
+      "createdAt": "2025-12-23T00:00:00Z",
+      "updatedAt": "2025-12-23T00:00:00Z",
+      "metadata": {
+        "pack": "371",
+        "category": "security",
+        "impact": "critical"
+      }
+    },
+    "reputation.attack.auto-report.enabled": {
+      "enabled": false,
+      "description": "Automatically report attacks to App Store/Google Play",
+      "createdAt": "2025-12-23T00:00:00Z",
+      "updatedAt": "2025-12-23T00:00:00Z",
+      "metadata": {
+        "pack": "371",
+        "category": "security",
+        "impact": "high",
+        "requiresApproval": true
+      }
+    },
+    "aso.optimizer.enabled": {
+      "enabled": true,
+      "description": "Enable ASO reputation optimizer dashboard",
+      "createdAt": "2025-12-23T00:00:00Z",
+      "updatedAt": "2025-12-23T00:00:00Z",
+      "metadata": {
+        "pack": "371",
+        "category": "analytics",
+        "impact": "low"
+      }
+    }
+  }
+}

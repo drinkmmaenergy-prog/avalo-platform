@@ -1,0 +1,171 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "stalking_cases",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "victimUserId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "lastActivityAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "stalking_cases",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "stalkerUserId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "lastActivityAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "stalking_cases",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "severity", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "firstDetectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "stalking_behaviors",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "victimUserId", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "stalking_behaviors",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "stalkerUserId", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "stalking_behaviors",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "behaviorType", "order": "ASCENDING" },
+        { "fieldPath": "severity", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "obsession_patterns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "targetUserId", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "obsession_patterns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "observedUserId", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "obsession_patterns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "riskLevel", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "location_safety_violations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "victimUserId", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "location_safety_violations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "violatorUserId", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "blocked_media_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "victimUserId", "order": "ASCENDING" },
+        { "fieldPath": "blockedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "blocked_media_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "requesterId", "order": "ASCENDING" },
+        { "fieldPath": "blockedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "blocked_media_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "requesterId", "order": "ASCENDING" },
+        { "fieldPath": "educationProvided", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "stalking_mitigations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "stalkerUserId", "order": "ASCENDING" },
+        { "fieldPath": "actionType", "order": "ASCENDING" },
+        { "fieldPath": "appliedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "stalking_mitigations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "stalkerUserId", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "victim_help_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "victimUserId", "order": "ASCENDING" },
+        { "fieldPath": "requestedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "victim_help_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "priority", "order": "ASCENDING" },
+        { "fieldPath": "responded", "order": "ASCENDING" },
+        { "fieldPath": "requestedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "location_safety_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "location_safety_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

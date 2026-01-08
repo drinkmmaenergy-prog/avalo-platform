@@ -1,0 +1,113 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // PACK 287: Chat Media Messages
+    // ============================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isParticipant(chatId) {
+      return isAuthenticated() && 
+             request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+    }
+    
+    function isMessageSender(messageData) {
+      return isAuthenticated() && request.auth.uid == messageData.senderId;
+    }
+    
+    function isMessageReceiver(messageData) {
+      return isAuthenticated() && request.auth.uid == messageData.receiverId;
+    }
+    
+    // Chat Media Messages
+    match /chatMessages/{messageId} {
+      // Read: Only chat participants can read messages
+      allow read: if isAuthenticated() && 
+                     (request.auth.uid == resource.data.senderId || 
+                      request.auth.uid == resource.data.receiverId);
+      
+      // Create: Only authenticated users, must be chat participant
+      // Media messages require completed billing before creation
+      allow create: if isAuthenticated() &&
+                       request.auth.uid == request.resource.data.senderId &&
+                       isParticipant(request.resource.data.chatId) &&
+                       request.resource.data.senderId != null &&
+                       request.resource.data.receiverId != null &&
+                       request.resource.data.type in ['text', 'media_photo', 'media_video', 'media_voice'] &&
+                       request.resource.data.createdAt == request.time &&
+                       request.resource.data.deleted == false &&
+                       // Media messages must have media object
+                       (request.resource.data.type == 'text' || 
+                        (request.resource.data.type in ['media_photo', 'media_video', 'media_voice'] &&
+                         request.resource.data.media != null &&
+                         request.resource.data.media.storagePath != null &&
+                         request.resource.data.media.nsfwFlag in ['unknown', 'safe', 'soft', 'erotic', 'blocked'] &&
+                         request.resource.data.billing != null &&
+                         request.resource.data.billing.mode in ['FREE', 'PAID']));
+      
+      // Update: Only sender can mark as deleted, or system can update NSFW flag
+      allow update: if isAuthenticated() &&
+                       (isMessageSender(resource.data) && 
+                        request.resource.data.deleted == true &&
+                        request.resource.data.senderId == resource.data.senderId) ||
+                       // System updates NSFW flag after processing
+                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['media', 'updatedAt']) &&
+                        request.resource.data.media.nsfwFlag in ['safe', 'soft', 'erotic', 'blocked']);
+      
+      // Delete: Not allowed (use soft delete via update)
+      allow delete: if false;
+    }
+    
+    // Message Reports
+    match /messageReports/{reportId} {
+      // Read: Only reporter, moderators, or system
+      allow read: if isAuthenticated() && 
+                     (request.auth.uid == resource.data.reporterId ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true);
+      
+      // Create: Any authenticated user can report
+      allow create: if isAuthenticated() &&
+                       request.auth.uid == request.resource.data.reporterId &&
+                       request.resource.data.messageId != null &&
+                       request.resource.data.reason in ['illegal', 'minor_suspicion', 'explicit_violence', 'hate', 'spam', 'other'] &&
+                       request.resource.data.status == 'pending' &&
+                       request.resource.data.createdAt == request.time;
+      
+      // Update: Only moderators can update status
+      allow update: if isAuthenticated() &&
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true;
+      
+      // Delete: Not allowed
+      allow delete: if false;
+    }
+    
+    // Media Upload Tracking (temporary storage metadata)
+    match /mediaUploads/{uploadId} {
+      // Read: Only uploader
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      
+      // Create: Only authenticated users
+      allow create: if isAuthenticated() &&
+                       request.auth.uid == request.resource.data.userId &&
+                       request.resource.data.status in ['uploading', 'processing', 'completed', 'failed'] &&
+                       request.resource.data.uploadedAt == request.time;
+      
+      // Update: Only uploader or system
+      allow update: if isAuthenticated() &&
+                       (request.auth.uid == resource.data.userId ||
+                        // System updates for processing status
+                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'processedAt', 'error', 'media']));
+      
+      // Delete: Only uploader after 24h or system cleanup
+      allow delete: if isAuthenticated() &&
+                       request.auth.uid == resource.data.userId &&
+                       request.time > resource.data.uploadedAt + duration.value(24, 'h');
+    }
+  }
+}

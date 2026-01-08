@@ -1,0 +1,22 @@
+@echo off
+"C:\\Users\\Drink\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\cmake.exe" ^
+  "-HC:\\Users\\Drink\\avaloapp\\app-mobile\\node_modules\\.pnpm\\react-native-screens@4.18.0_0483037a4a8051ef02fb4fda540273a2\\node_modules\\react-native-screens\\android" ^
+  "-DCMAKE_SYSTEM_NAME=Android" ^
+  "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" ^
+  "-DCMAKE_SYSTEM_VERSION=24" ^
+  "-DANDROID_PLATFORM=android-24" ^
+  "-DANDROID_ABI=arm64-v8a" ^
+  "-DCMAKE_ANDROID_ARCH_ABI=arm64-v8a" ^
+  "-DANDROID_NDK=C:\\Users\\Drink\\AppData\\Local\\Android\\Sdk\\ndk\\27.1.12297006" ^
+  "-DCMAKE_ANDROID_NDK=C:\\Users\\Drink\\AppData\\Local\\Android\\Sdk\\ndk\\27.1.12297006" ^
+  "-DCMAKE_TOOLCHAIN_FILE=C:\\Users\\Drink\\AppData\\Local\\Android\\Sdk\\ndk\\27.1.12297006\\build\\cmake\\android.toolchain.cmake" ^
+  "-DCMAKE_MAKE_PROGRAM=C:\\Users\\Drink\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe" ^
+  "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=C:\\avalo\\.build\\react-native-screens\\intermediates\\cxx\\Debug\\w4g1f5t6\\obj\\arm64-v8a" ^
+  "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=C:\\avalo\\.build\\react-native-screens\\intermediates\\cxx\\Debug\\w4g1f5t6\\obj\\arm64-v8a" ^
+  "-DCMAKE_BUILD_TYPE=Debug" ^
+  "-DCMAKE_FIND_ROOT_PATH=C:\\Users\\Drink\\avaloapp\\app-mobile\\node_modules\\.pnpm\\react-native-screens@4.18.0_0483037a4a8051ef02fb4fda540273a2\\node_modules\\react-native-screens\\android\\.cxx\\Debug\\w4g1f5t6\\prefab\\arm64-v8a\\prefab" ^
+  "-BC:\\Users\\Drink\\avaloapp\\app-mobile\\node_modules\\.pnpm\\react-native-screens@4.18.0_0483037a4a8051ef02fb4fda540273a2\\node_modules\\react-native-screens\\android\\.cxx\\Debug\\w4g1f5t6\\arm64-v8a" ^
+  -GNinja ^
+  "-DANDROID_STL=c++_shared" ^
+  "-DRNS_NEW_ARCH_ENABLED=false" ^
+  "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"

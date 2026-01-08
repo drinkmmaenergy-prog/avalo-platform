@@ -1,0 +1,179 @@
+// ============================================================================
+// PACK 175 — Cyberstalking & Location Safety Defender
+// Firestore Security Rules
+// ============================================================================
+
+// Stalking Cases Collection
+match /stalking_cases/{caseId} {
+  // Victims can read their cases
+  allow read: if request.auth != null && 
+    (resource.data.victimUserId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Stalking Behaviors Collection
+match /stalking_behaviors/{behaviorId} {
+  // Victims can read behaviors targeting them
+  allow read: if request.auth != null && 
+    (resource.data.victimUserId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Obsession Patterns Collection
+match /obsession_patterns/{patternId} {
+  // Targets can read patterns about them
+  allow read: if request.auth != null && 
+    (resource.data.targetUserId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Location Safety Violations Collection
+match /location_safety_violations/{violationId} {
+  // Victims can read violations targeting them
+  allow read: if request.auth != null && 
+    (resource.data.victimUserId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Location Safety Logs Collection
+match /location_safety_logs/{logId} {
+  // Users can read their own logs
+  allow read: if request.auth != null && 
+    (resource.data.userId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Blocked Media Requests Collection
+match /blocked_media_requests/{requestId} {
+  // Victims can read blocked requests targeting them
+  allow read: if request.auth != null && 
+    (resource.data.victimUserId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Stalking Mitigations Collection
+match /stalking_mitigations/{mitigationId} {
+  // Both victims and subject users can read mitigations
+  allow read: if request.auth != null && 
+    (resource.data.victimUserId == request.auth.uid ||
+     resource.data.stalkerUserId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Victim Help Requests Collection
+match /victim_help_requests/{requestId} {
+  // Victims can read their own help requests
+  allow read: if request.auth != null && 
+    (resource.data.victimUserId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Victims can create help requests
+  allow create: if request.auth != null && 
+    request.resource.data.victimUserId == request.auth.uid;
+  
+  // Only backend/moderators can update
+  allow update: if request.auth != null && 
+    request.auth.token.moderator == true;
+  
+  // No deletes
+  allow delete: if false;
+}
+
+// Legal Resources Collection (read-only for users)
+match /legal_resources/{countryCode} {
+  // Public read access
+  allow read: if request.auth != null;
+  
+  // Only admins can write
+  allow write: if request.auth != null && 
+    request.auth.token.admin == true;
+}
+
+// Location Safety Education Collection
+match /location_safety_education/{userId} {
+  // Users can read their own education status
+  allow read: if request.auth != null && 
+    (userId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Media Safety Education Collection
+match /media_safety_education/{userId} {
+  // Users can read their own education status
+  allow read: if request.auth != null && 
+    (userId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Victim Support Logs Collection
+match /victim_support_logs/{logId} {
+  // Users can read their own support logs
+  allow read: if request.auth != null && 
+    (resource.data.victimUserId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Location Share Blocks Collection
+match /location_share_blocks/{blockId} {
+  // Both users can read blocks involving them
+  allow read: if request.auth != null && 
+    (resource.data.userA == request.auth.uid ||
+     resource.data.userB == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Event Blocks Collection (prevent stalker from joining victim's events)
+match /event_blocks/{blockId} {
+  // Both users can read blocks involving them
+  allow read: if request.auth != null && 
+    (resource.data.victimUserId == request.auth.uid ||
+     resource.data.blockedUserId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}
+
+// Discovery Blocks Collection (hide victim from stalker)
+match /discovery_blocks/{blockId} {
+  // Only the protected user can read
+  allow read: if request.auth != null && 
+    (resource.data.userId == request.auth.uid ||
+     request.auth.token.moderator == true);
+  
+  // Only backend can write
+  allow write: if false;
+}

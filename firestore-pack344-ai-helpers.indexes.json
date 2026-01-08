@@ -1,0 +1,37 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "pack344_analytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pack344_analytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pack344_message_patterns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lastSeenAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pack344_suggestion_usage",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "ASCENDING" },
+        { "fieldPath": "count", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

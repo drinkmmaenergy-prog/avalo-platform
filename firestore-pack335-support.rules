@@ -1,0 +1,144 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // PACK 335: User Support System
+    // ============================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid));
+    }
+    
+    function isValidTicketType(type) {
+      return type in [
+        "TECHNICAL",
+        "PAYMENT",
+        "REFUND_DISPUTE",
+        "IDENTITY_VERIFICATION",
+        "SAFETY",
+        "ACCOUNT_ACCESS",
+        "OTHER"
+      ];
+    }
+    
+    function isValidTicketStatus(status) {
+      return status in [
+        "OPEN",
+        "IN_PROGRESS",
+        "RESOLVED",
+        "REJECTED",
+        "CLOSED"
+      ];
+    }
+    
+    function isValidPriority(priority) {
+      return priority in ["LOW", "NORMAL", "HIGH", "CRITICAL"];
+    }
+    
+    function isValidResolutionCode(code) {
+      return code in [
+        "REFUND_GRANTED",
+        "REFUND_PARTIAL",
+        "REFUND_DENIED",
+        "ACCOUNT_UNLOCKED",
+        "ACCOUNT_BANNED",
+        "INFO_PROVIDED",
+        "FORWARDED_TO_KYC",
+        "FORWARDED_TO_FRAUD",
+        "OTHER"
+      ];
+    }
+    
+    // ============================================
+    // supportTickets Collection
+    // ============================================
+    match /supportTickets/{ticketId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.keys().hasAll(['userId', 'type', 'status', 'priority', 'createdAt']) &&
+        isOwner(request.resource.data.userId) &&
+        isValidTicketType(request.resource.data.type) &&
+        isValidTicketStatus(request.resource.data.status) &&
+        isValidPriority(request.resource.data.priority) &&
+        request.resource.data.status == "OPEN" &&
+        request.resource.data.createdAt == request.time;
+      
+      // Users can update their own tickets (add messages, close), admins can update any
+      allow update: if (isOwner(resource.data.userId) && 
+        // Users can only change status to CLOSED and update timestamps
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'type', 'priority', 'resolutionCode', 'resolutionSummary']) &&
+        request.resource.data.updatedAt == request.time)) ||
+        // Admins can change anything
+        isAdmin();
+      
+      // Only admins can delete (soft delete preferred)
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // supportTicketMessages Collection
+    // ============================================
+    match /supportTicketMessages/{messageId} {
+      // Anyone who can read the ticket can read its messages
+      allow read: if isAuthenticated() && (
+        exists(/databases/$(database)/documents/supportTickets/$(resource.data.ticketId)) &&
+        (get(/databases/$(database)/documents/supportTickets/$(resource.data.ticketId)).data.userId == request.auth.uid ||
+         isAdmin())
+      );
+      
+      allow create: if isAuthenticated() &&
+        request.resource.data.keys().hasAll(['ticketId', 'senderType', 'messageText', 'createdAt']) &&
+        request.resource.data.createdAt == request.time &&
+        (
+          // User creating a message on their own ticket
+          (request.resource.data.senderType == "USER" &&
+           request.resource.data.senderUserId == request.auth.uid &&
+           get(/databases/$(database)/documents/supportTickets/$(request.resource.data.ticketId)).data.userId == request.auth.uid) ||
+          // Admin creating a message
+          (request.resource.data.senderType == "AGENT" &&
+           isAdmin() &&
+           request.resource.data.agentId == request.auth.uid) ||
+          // System messages (created by Cloud Functions with admin token)
+          (request.resource.data.senderType == "SYSTEM" && isAdmin())
+        );
+      
+      // Messages cannot be updated or deleted (audit trail)
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ============================================
+    // supportFaqArticles Collection
+    // ============================================
+    match /supportFaqArticles/{articleId} {
+      // Anyone can read published articles
+      allow read: if resource.data.isPublished == true || isAdmin();
+      
+      // Only admins can create/update/delete FAQ articles
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // ============================================
+    // supportSystemSettings Collection
+    // ============================================
+    match /supportSystemSettings/{settingId} {
+      // Anyone can read settings (for validation)
+      allow read: if isAuthenticated();
+      
+      // Only admins can modify settings
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}

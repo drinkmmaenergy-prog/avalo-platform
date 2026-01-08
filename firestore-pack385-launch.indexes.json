@@ -1,0 +1,322 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "referralAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "inviterId", "order": "ASCENDING" },
+        { "fieldPath": "attributedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "referralAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "inviterId", "order": "ASCENDING" },
+        { "fieldPath": "verified", "order": "ASCENDING" },
+        { "fieldPath": "attributedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "referralAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "invitedUserId", "order": "ASCENDING" },
+        { "fieldPath": "attributedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "referralAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "deviceFingerprint", "order": "ASCENDING" },
+        { "fieldPath": "attributedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "referralAttribution",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "inviterId", "order": "ASCENDING" },
+        { "fieldPath": "ipAddress", "order": "ASCENDING" },
+        { "fieldPath": "attributedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "launchAmbassadors",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "performance.engagementScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "launchAmbassadors",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "tier", "order": "ASCENDING" },
+        { "fieldPath": "performance.engagementScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "launchAmbassadors",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "performance.referralsGenerated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "launchAmbassadors",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "performance.revenueGenerated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "discoveryBoosts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "activatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "discoveryBoosts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payoutRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "requestedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payoutRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "requestedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payoutRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "marketCode", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payoutRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "releaseDate", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payoutRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "requestedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payoutBuffers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payoutBuffers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "released", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "lockedTokens",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "lockedUntil", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "lockedTokens",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "unlocked", "order": "ASCENDING" },
+        { "fieldPath": "lockedUntil", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userActivity",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "ASCENDING" },
+        { "fieldPath": "referralsToday", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userActivity",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "ASCENDING" },
+        { "fieldPath": "swipesToday", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "throttleEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "throttleEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "action", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "trafficMetrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketActivation",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "activatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketActivation",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "legalStatus", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "fraudDetection",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" },
+        { "fieldPath": "severity", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "fraudDetection",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "resolved", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "suspiciousActivity",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "alerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "severity", "order": "DESCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "alerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "resolved", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "swipes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aiRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "chatMessages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "senderId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "chats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "participants", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userSessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lastActive", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "errors",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tokenPurchases",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

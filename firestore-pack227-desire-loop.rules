@@ -1,0 +1,143 @@
+rules_version = '2';
+
+// PACK 227: Desire Loop Engine - Firestore Security Rules
+// Perpetual return-cycle system for emotional, romantic, and social motivation
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ========================================================================
+    // DESIRE STATES
+    // Core desire state tracking (0-100 for each driver)
+    // ========================================================================
+    match /desire_states/{userId} {
+      // Read: Own state only or admins
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Create: System creates on first interaction
+      allow create: if isOwner(userId) && 
+        request.resource.data.userId == userId &&
+        request.resource.data.keys().hasAll([
+          'userId', 'curiosity', 'intimacy', 'recognition', 
+          'growth', 'opportunity', 'lastUpdated', 'createdAt'
+        ]);
+      
+      // Update: Only backend can update scores directly
+      // Users can only modify preferences
+      allow update: if false;
+      
+      // Delete: Never delete, only archive
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // DESIRE LOOP TRIGGERS
+    // Active triggers and invitations shown to users
+    // ========================================================================
+    match /desire_loop_triggers/{triggerId} {
+      // Read: User can read their own triggers
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Create: Only backend creates triggers
+      allow create: if false;
+      
+      // Update: Users can dismiss or act on triggers
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['dismissed', 'dismissedAt', 'actioned', 'actionedAt']);
+      
+      // Delete: Only backend cleanup
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // DESIRE STATE HISTORY
+    // Daily snapshots for analytics and trends
+    // ========================================================================
+    match /desire_state_history/{historyId} {
+      // Read: User can read their own history or admins
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Write: Only backend (automated snapshots)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // DESIRE LOOP ANALYTICS
+    // Platform-wide desire loop statistics
+    // ========================================================================
+    match /desire_loop_analytics/{analyticsId} {
+      // Read: Only admins
+      allow read: if isAdmin();
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // DESIRE LOOP SETTINGS
+    // User preferences for desire loop frequency and types
+    // ========================================================================
+    match /users/{userId}/settings/desire_loop {
+      // Read: Own settings only
+      allow read: if isOwner(userId);
+      
+      // Create/Update: User can manage their own settings
+      allow create, update: if isOwner(userId) &&
+        request.resource.data.keys().hasAny([
+          'enabled',
+          'frequency',
+          'enabledDrivers',
+          'quietHoursStart',
+          'quietHoursEnd',
+          'maxTriggersPerDay'
+        ]);
+      
+      // Delete: Can reset to defaults
+      allow delete: if isOwner(userId);
+    }
+    
+    // ========================================================================
+    // DESIRE LOOP COOLDOWNS
+    // Tracks cooldowns for specific trigger types per user
+    // ========================================================================
+    match /desire_loop_cooldowns/{cooldownId} {
+      // Read: User can read their own cooldowns
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Write: Only backend manages cooldowns
+      allow write: if false;
+    }
+  }
+}
+
+// =================================================================
+// INTEGRATION NOTES
+// =================================================================
+// - Desire states integrate with romantic_momentum_states (PACK 224)
+// - Pause triggers during breakup_recovery (PACK 222)
+// - Boost opportunity during destiny_weeks (PACK 223)
+// - Integrate with match_comeback suggestions (PACK 225)
+// - Respect chemistry_lock_in states (PACK 226)
+// - Check safety_incidents before showing intimacy triggers
+// - Respect user notification preferences (PACK 169)

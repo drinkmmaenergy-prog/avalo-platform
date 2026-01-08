@@ -1,0 +1,89 @@
+// PACK 126 — Avalo End-to-End Safety Framework
+// Firestore Security Rules
+//
+// These rules should be merged into your main firestore.rules file
+
+// ============================================================================
+// UNIVERSAL CONSENT PROTOCOL
+// ============================================================================
+
+match /user_consent_records/{recordId} {
+  // Users can read their own consent records
+  allow read: if request.auth != null && 
+    (resource.data.userId == request.auth.uid || 
+     resource.data.counterpartId == request.auth.uid);
+  
+  // Only Cloud Functions can write
+  allow write: if false;
+}
+
+// ============================================================================
+// HARASSMENT SHIELD SYSTEM
+// ============================================================================
+
+match /harassment_shields/{shieldId} {
+  // Users can read shields protecting them (not shields targeting others)
+  allow read: if request.auth != null && 
+    resource.data.userId == request.auth.uid;
+  
+  // Only Cloud Functions can write
+  allow write: if false;
+}
+
+// ============================================================================
+// EVIDENCE VAULTS (Admin-Only) 
+// ============================================================================
+
+match /evidence_vaults/{vaultId} {
+  // Only admins and moderators can read
+  allow read: if request.auth != null && 
+    exists(/databases/$(database)/documents/user_roles/$(request.auth.uid)) &&
+    get(/databases/$(database)/documents/user_roles/$(request.auth.uid)).data.roles.hasAny(['admin', 'moderator']);
+  
+  // Only Cloud Functions can write
+  allow write: if false;
+}
+
+match /vault_keys/{vaultId} {
+  // Absolutely no direct access - Cloud Functions only
+  allow read, write: if false;
+}
+
+// ============================================================================
+// SAFETY AUDIT LOGS
+// ============================================================================
+
+match /safety_audit_logs/{logId} {
+  // Users can read their own safety events
+  allow read: if request.auth != null && 
+    (resource.data.userId == request.auth.uid || 
+     resource.data.affectedUserId == request.auth.uid);
+  
+  // Admins can read all logs
+  allow read: if request.auth != null && 
+    exists(/databases/$(database)/documents/user_roles/$(request.auth.uid)) &&
+    get(/databases/$(database)/documents/user_roles/$(request.auth.uid)).data.roles.hasAny(['admin']);
+  
+  // Only Cloud Functions can write
+  allow write: if false;
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+function isAuthenticated() {
+  return request.auth != null;
+}
+
+function isAdmin() {
+  return isAuthenticated() && 
+    exists(/databases/$(database)/documents/user_roles/$(request.auth.uid)) &&
+    get(/databases/$(database)/documents/user_roles/$(request.auth.uid)).data.roles.hasAny(['admin']);
+}
+
+function isModerator() {
+  return isAuthenticated() && 
+    exists(/databases/$(database)/documents/user_roles/$(request.auth.uid)) &&
+    get(/databases/$(database)/documents/user_roles/$(request.auth.uid)).data.roles.hasAny(['admin', 'moderator']);
+}

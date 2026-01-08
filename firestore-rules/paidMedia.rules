@@ -1,0 +1,268 @@
+/**
+ * PACK 80 — Cross-Chat Media Paywall
+ * Firestore Security Rules for locked photos & videos
+ */
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    /**
+     * Check if user is authenticated
+     */
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    /**
+     * Check if user owns the resource
+     */
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    /**
+     * Check if user is participant in a chat
+     */
+    function isChatParticipant(chatId) {
+      return isAuthenticated() && 
+             request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+    }
+    
+    // ============================================================================
+    // PAID MEDIA MESSAGES COLLECTION
+    // ============================================================================
+    
+    match /paid_media_messages/{mediaId} {
+      /**
+       * List/Query Rules:
+       * - Users can only query media from chats they're part of
+       */
+      allow list: if isAuthenticated() && 
+                     isChatParticipant(resource.data.chatId);
+      
+      /**
+       * Read Rules:
+       * - Sender can always read their own media
+       * - Recipient can read if in the same chat
+       * - Must be chat participant
+       */
+      allow get: if isAuthenticated() && (
+        request.auth.uid == resource.data.senderId ||
+        (request.auth.uid == resource.data.recipientId && 
+         isChatParticipant(resource.data.chatId))
+      );
+      
+      /**
+       * Create Rules:
+       * - Only Cloud Functions can create paid media messages
+       * - Ensures proper validation and transaction integrity
+       */
+      allow create: if false; // Only Cloud Functions
+      
+      /**
+       * Update Rules:
+       * - Only Cloud Functions can update
+       * - Users cannot modify prices or media after creation
+       */
+      allow update: if false; // Only Cloud Functions
+      
+      /**
+       * Delete Rules:
+       * - Only sender can delete their media
+       * - Cloud Functions handle cascade deletion
+       */
+      allow delete: if isOwner(resource.data.senderId);
+    }
+    
+    // ============================================================================
+    // PAID MEDIA UNLOCKS COLLECTION
+    // ============================================================================
+    
+    match /paid_media_unlocks/{unlockId} {
+      /**
+       * List/Query Rules:
+       * - Users can only query their own unlocks
+       */
+      allow list: if isAuthenticated() && 
+                     request.auth.uid == resource.data.userId;
+      
+      /**
+       * Read Rules:
+       * - Users can only read their own unlock records
+       * - Media sender can see who unlocked their content
+       */
+      allow get: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == get(/databases/$(database)/documents/paid_media_messages/$(resource.data.mediaId)).data.senderId
+      );
+      
+      /**
+       * Create Rules:
+       * - Only Cloud Functions can create unlock records
+       * - Ensures payment processing and token deduction
+       */
+      allow create: if false; // Only Cloud Functions
+      
+      /**
+       * Update Rules:
+       * - Unlock records are immutable
+       */
+      allow update: if false;
+      
+      /**
+       * Delete Rules:
+       * - Unlock records cannot be deleted by users
+       * - Only cleanup functions can remove old records
+       */
+      allow delete: if false; // Only Cloud Functions
+    }
+    
+    // ============================================================================
+    // CHAT MESSAGES (PAID MEDIA REFERENCES)
+    // ============================================================================
+    
+    match /chats/{chatId}/messages/{messageId} {
+      /**
+       * Read Rules for Paid Media Messages:
+       * - Both sender and receiver can read the message
+       * - Thumbnail URL is visible to both
+       * - Actual media URL only accessible after unlock
+       */
+      allow get: if isAuthenticated() && 
+                    isChatParticipant(chatId) &&
+                    (request.auth.uid == resource.data.senderId ||
+                     request.auth.uid == resource.data.receiverId);
+      
+      /**
+       * List Rules:
+       * - Can list messages from chats they're part of
+       */
+      allow list: if isAuthenticated() && isChatParticipant(chatId);
+      
+      /**
+       * Create Rules:
+       * - Users can create regular messages
+       * - Paid media messages created via Cloud Function
+       */
+      allow create: if isAuthenticated() && 
+                       isChatParticipant(chatId) &&
+                       request.auth.uid == request.resource.data.senderId &&
+                       // Regular messages allowed, paid media via function
+                       (!request.resource.data.keys().hasAny(['payToUnlock', 'paidMediaId']) ||
+                        request.resource.data.payToUnlock == false);
+      
+      /**
+       * Update Rules:
+       * - Can update message status (delivered, read)
+       * - Cannot modify paid media fields
+       */
+      allow update: if isAuthenticated() &&
+                       isChatParticipant(chatId) &&
+                       request.auth.uid == resource.data.receiverId &&
+                       // Only status fields can be updated
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'delivered', 'read', 'deliveredAt', 'readAt']);
+    }
+    
+    // ============================================================================
+    // TRANSACTIONS (PAID MEDIA UNLOCKS)
+    // ============================================================================
+    
+    match /transactions/{transactionId} {
+      /**
+       * Read Rules:
+       * - User can read transactions they're part of
+       */
+      allow get: if isAuthenticated() && (
+        request.auth.uid == resource.data.senderUid ||
+        request.auth.uid == resource.data.receiverUid
+      );
+      
+      /**
+       * List Rules:
+       * - Can query own transactions
+       */
+      allow list: if isAuthenticated() && (
+        request.auth.uid == resource.data.senderUid ||
+        request.auth.uid == resource.data.receiverUid
+      );
+      
+      /**
+       * Create Rules:
+       * - Only Cloud Functions can create transactions
+       * - Ensures proper token handling and validation
+       */
+      allow create: if false; // Only Cloud Functions
+      
+      /**
+       * Update/Delete Rules:
+       * - Transactions are immutable
+       */
+      allow update, delete: if false;
+    }
+    
+    // ============================================================================
+    // USER BALANCES (TOKEN WALLETS)
+    // ============================================================================
+    
+    match /balances/{userId}/wallet/{walletId} {
+      /**
+       * Read Rules:
+       * - Users can only read their own balance
+       */
+      allow get: if isOwner(userId);
+      
+      /**
+       * List Rules:
+       * - Users can list their own wallet documents
+       */
+      allow list: if isOwner(userId);
+      
+      /**
+       * Create/Update Rules:
+       * - Only Cloud Functions can modify balances
+       * - Prevents direct token manipulation
+       */
+      allow create, update: if false; // Only Cloud Functions
+      
+      /**
+       * Delete Rules:
+       * - Balances cannot be deleted
+       */
+      allow delete: if false;
+    }
+  }
+}
+
+/**
+ * SECURITY NOTES:
+ * 
+ * 1. All financial operations (token deductions, media unlocks) go through Cloud Functions
+ * 2. Users cannot directly create or modify paid media messages
+ * 3. Unlock records are immutable and created only by Cloud Functions
+ * 4. Token balances are read-only from client, modified only by Cloud Functions
+ * 5. Chat participants can see locked media thumbnails but not full content
+ * 6. Media sender can see who unlocked their content
+ * 7. Transactions are immutable audit trail
+ * 
+ * ANTI-ABUSE MEASURES:
+ * 
+ * 1. No self-unlocking (enforced in Cloud Function)
+ * 2. No price manipulation (prices set at creation, immutable)
+ * 3. No free unlocks (all unlocks require payment)
+ * 4. No refunds (transactions are final)
+ * 5. Media deletion only by sender, doesn't affect existing unlocks
+ * 
+ * DATA PRIVACY:
+ * 
+ * 1. Users can only query media from chats they participate in
+ * 2. Unlock records are private (only buyer and seller can see)
+ * 3. Transaction history accessible only to parties involved
+ * 4. Media URLs protected, only accessible after unlock verification
+ */

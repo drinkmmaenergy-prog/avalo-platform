@@ -1,0 +1,84 @@
+/**
+ * PACK 112 — Awards, Gamification & Achievements
+ * Firestore Security Rules
+ * 
+ * Collections:
+ * - achievements_catalog: Achievement definitions (read-only for users)
+ * - user_achievements/{userId}: User progress (owner only)
+ */
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // ACHIEVEMENTS CATALOG
+    // ============================================================================
+    
+    /**
+     * Achievement definitions
+     * - Anyone can read enabled achievements
+     * - Only admins can write (via Cloud Functions)
+     */
+    match /achievements_catalog/{achievementId} {
+      // Public read for enabled achievements
+      allow read: if resource.data.enabled == true;
+      
+      // Admin-only write (should be done via Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // USER ACHIEVEMENTS
+    // ============================================================================
+    
+    /**
+     * User achievement progress
+     * - Users can only read/write their own achievements
+     * - Updates should primarily be done via Cloud Functions
+     */
+    match /user_achievements/{userId} {
+      // User can read their own achievements
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // User can update their own selectedBadges
+      // (other fields should be updated via Cloud Functions)
+      allow update: if request.auth != null 
+                    && request.auth.uid == userId
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                      .hasOnly(['selectedBadges', 'updatedAt'])
+                    && request.resource.data.selectedBadges.size() <= 3;
+      
+      // Create should be done via Cloud Functions
+      allow create: if false;
+      
+      // Delete not allowed
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // ACHIEVEMENT NOTIFICATIONS
+    // ============================================================================
+    
+    /**
+     * Achievement unlock notifications
+     * - Users can read their own notifications
+     * - Created by Cloud Functions only
+     */
+    match /achievement_notifications/{notificationId} {
+      // User can read their own notifications
+      allow read: if request.auth != null 
+                  && request.auth.uid == resource.data.userId;
+      
+      // User can mark as read
+      allow update: if request.auth != null 
+                    && request.auth.uid == resource.data.userId
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                      .hasOnly(['read']);
+      
+      // Only Cloud Functions can create
+      allow create, delete: if false;
+    }
+  }
+}

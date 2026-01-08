@@ -1,0 +1,79 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "nsfw_detections",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "chatId", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "nsfw_detections",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "senderId", "order": "ASCENDING" },
+        { "fieldPath": "riskLevel", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "nsfw_detections",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "riskLevel", "order": "ASCENDING" },
+        { "fieldPath": "requiresCloudAnalysis", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "nsfw_user_risk_scores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "totalScore", "order": "DESCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "nsfw_user_risk_scores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "accountRestricted", "order": "ASCENDING" },
+        { "fieldPath": "totalScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "nsfw_user_risk_scores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "requiresManualReview", "order": "ASCENDING" },
+        { "fieldPath": "totalScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "nsfw_safe_zones",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "bothConsented", "order": "ASCENDING" },
+        { "fieldPath": "activatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "nsfw_chat_metadata",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "flaggedForReview", "order": "ASCENDING" },
+        { "fieldPath": "riskScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "nsfw_chat_metadata",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "nsfwSafeZone", "order": "ASCENDING" },
+        { "fieldPath": "lastContentCheck", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

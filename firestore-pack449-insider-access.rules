@@ -1,0 +1,187 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // PACK 449: Insider Access Control
+    // ============================================
+    
+    // Internal Access Grants
+    match /internal_access_grants/{grantId} {
+      // Only the grant owner and security/executive roles can read
+      allow read: if isInternalUser() && (
+        resource.data.userId == request.auth.uid ||
+        hasInternalRole(['security_analyst', 'executive_cto', 'executive_ceo', 'compliance_officer'])
+      );
+      
+      // Only zero-trust manager can create
+      allow create: if isInternalUser() && hasValidAccessRequest();
+      
+      // Only security or the system can update (for revocation)
+      allow update: if isInternalUser() && (
+        hasInternalRole(['security_analyst', 'executive_cto']) ||
+        isSystemService()
+      );
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    // Privileged Action Requests
+    match /privileged_actions/{actionId} {
+      // Requester and approvers can read
+      allow read: if isInternalUser() && (
+        resource.data.requesterId == request.auth.uid ||
+        canApproveAction(resource.data) ||
+        hasInternalRole(['security_analyst', 'compliance_officer', 'executive_cto', 'executive_ceo'])
+      );
+      
+      // Any internal user can create (but enforcement is on execution)
+      allow create: if isInternalUser() && 
+        request.resource.data.requesterId == request.auth.uid &&
+        request.resource.data.status == 'pending';
+      
+      // Only approvers can update (for approvals/denials)
+      allow update: if isInternalUser() && (
+        canApproveAction(resource.data) ||
+        hasInternalRole(['security_analyst', 'executive_cto', 'executive_ceo'])
+      );
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // Insider Risk Profiles
+    match /insider_risk_profiles/{userId} {
+      // User can read their own profile
+      // Security, compliance, and executives can read all
+      allow read: if isInternalUser() && (
+        userId == request.auth.uid ||
+        hasInternalRole(['security_analyst', 'compliance_officer', 'executive_cto', 'executive_ceo'])
+      );
+      
+      // Only system can write
+      allow write: if isSystemService();
+    }
+    
+    // Emergency Modes
+    match /emergency_modes/{emergencyId} {
+      // All internal users can read (need to know about emergencies)
+      allow read: if isInternalUser();
+      
+      // Only security and executives can create/update
+      allow create, update: if isInternalUser() && 
+        hasInternalRole(['security_analyst', 'executive_cto', 'executive_ceo']);
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // Account Freezes
+    match /account_freezes/{userId} {
+      // User can read their own freeze status
+      // Security and compliance can read all
+      allow read: if isInternalUser() && (
+        userId == request.auth.uid ||
+        hasInternalRole(['security_analyst', 'compliance_officer', 'executive_cto'])
+      );
+      
+      // Only security can write
+      allow write: if isInternalUser() && 
+        hasInternalRole(['security_analyst', 'executive_cto']);
+    }
+    
+    // Region Blocks
+    match /region_blocks/{blockId} {
+      // All internal users can read
+      allow read: if isInternalUser();
+      
+      // Only security and infra can write
+      allow write: if isInternalUser() && 
+        hasInternalRole(['security_analyst', 'engineer_infra', 'executive_cto']);
+    }
+    
+    // Cross-Department Access Requests
+    match /cross_department_requests/{requestId} {
+      // Requester and approvers can read
+      allow read: if isInternalUser() && (
+        resource.data.requesterId == request.auth.uid ||
+        resource.data.approvers.hasAny([request.auth.uid]) ||
+        hasInternalRole(['compliance_officer', 'executive_cto'])
+      );
+      
+      // Any internal user can create to request access
+      allow create: if isInternalUser() && 
+        request.resource.data.requesterId == request.auth.uid;
+      
+      // Department leads and compliance can update
+      allow update: if isInternalUser() && (
+        isDepartmentLead(resource.data.targetDepartment) ||
+        hasInternalRole(['compliance_officer', 'executive_cto'])
+      );
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // ============================================
+    // Helper Functions
+    // ============================================
+    
+    function isInternalUser() {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/internal_users/$(request.auth.uid));
+    }
+    
+    function isSystemService() {
+      return request.auth != null && 
+        request.auth.token.system_service == true;
+    }
+    
+    function hasInternalRole(roles) {
+      return request.auth != null && 
+        get(/databases/$(database)/documents/internal_users/$(request.auth.uid)).data.role in roles;
+    }
+    
+    function getUserRole() {
+      return get(/databases/$(database)/documents/internal_users/$(request.auth.uid)).data.role;
+    }
+    
+    function hasValidAccessRequest() {
+      // Check that the request has required fields
+      return request.resource.data.keys().hasAll([
+        'userId', 'role', 'permissions', 'grantedAt', 'expiresAt', 'context'
+      ]) &&
+      request.resource.data.userId == request.auth.uid &&
+      request.resource.data.revoked == false;
+    }
+    
+    function canApproveAction(actionData) {
+      // Get user's role
+      let userRole = getUserRole();
+      
+      // Check if user's role is in allowed approvers for this action type
+      // This would need to match the approval requirements in the service
+      return (
+        (actionData.type.matches('infrastructure.*') && userRole in ['engineer_infra', 'executive_cto']) ||
+        (actionData.type.matches('database.*') && userRole in ['engineer_backend', 'engineer_infra', 'executive_cto']) ||
+        (actionData.type.matches('financial.*') && userRole in ['finance_controller', 'executive_cfo']) ||
+        (actionData.type.matches('user.*') && userRole in ['support_tier3', 'compliance_officer', 'legal_counsel']) ||
+        (actionData.type.matches('security.*') && userRole in ['security_analyst', 'executive_cto']) ||
+        (actionData.type.matches('access.*') && userRole in ['security_analyst', 'executive_cto'])
+      );
+    }
+    
+    function isDepartmentLead(department) {
+      let userRole = getUserRole();
+      
+      return (
+        (department == 'engineering' && userRole == 'executive_cto') ||
+        (department == 'finance' && userRole == 'executive_cfo') ||
+        (department == 'compliance' && userRole == 'compliance_officer') ||
+        (department == 'security' && userRole == 'security_analyst') ||
+        (department == 'executive' && userRole in ['executive_cto', 'executive_ceo', 'executive_cfo'])
+      );
+    }
+  }
+}

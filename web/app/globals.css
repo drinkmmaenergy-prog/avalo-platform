@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    
+    /* Avalo Reference Gradient Colors */
+    --gradient-start: #FF6B00;
+    --gradient-middle: #FF3C8E;
+    --gradient-end: #7B2EFF;
+    
+    /* Secondary Gradient */
+    --gradient-secondary-start: #FFC14F;
+    --gradient-secondary-middle: #FF5AA5;
+    --gradient-secondary-end: #8B4FFF;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  /* Gradient Classes - Reference Design */
+  .gradient-primary {
+    background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-middle) 40%, var(--gradient-end) 100%);
+  }
+  
+  .gradient-secondary {
+    background: linear-gradient(135deg, var(--gradient-secondary-start) 0%, var(--gradient-secondary-middle) 40%, var(--gradient-secondary-end) 100%);
+  }
+
+  /* Glassmorphism Effect */
+  .glass-effect {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold py-2 px-4 rounded-lg transition-colors;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+  }
+
+  .input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+
+  .badge-danger {
+    @apply bg-red-100 text-red-800;
+  }
+
+  .badge-info {
+    @apply bg-blue-100 text-blue-800;
+  }
+}
+
+@layer utilities {
+  /* Gradient Animation - 40s Loop */
+  @keyframes gradient-shift {
+    0%, 100% {
+      filter: hue-rotate(0deg);
+    }
+    50% {
+      filter: hue-rotate(30deg);
+    }
+  }
+  
+  @keyframes gradient-drift {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-10px) scale(1.05);
+    }
+  }
+  
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .animate-gradient-shift {
+    animation: gradient-shift 40s ease-in-out infinite;
+  }
+  
+  .animate-gradient-drift {
+    animation: gradient-drift 20s ease-in-out infinite;
+  }
+  
+  .animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+  }
+}

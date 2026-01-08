@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 301 - Growth & Retention Engine
+    // Firestore Security Rules for User Retention System
+    // ========================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    // ========================================================================
+    // USER RETENTION PROFILES
+    // Collection: userRetention/{uid}
+    // ========================================================================
+    
+    match /userRetention/{uid} {
+      // Users can read their own retention profile
+      allow read: if isOwner(uid);
+      
+      // Only server can write (Cloud Functions only)
+      // No client writes allowed to prevent manipulation
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // RETENTION EVENTS LOG
+    // Collection: retentionEvents/{eventId}
+    // ========================================================================
+    
+    match /retentionEvents/{eventId} {
+      // Users can read their own retention events
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Only server can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // RETENTION METRICS (analytics)
+    // Collection: retentionMetrics/{date}
+    // ========================================================================
+    
+    match /retentionMetrics/{date} {
+      // Only admins can read metrics
+      allow read: if isAdmin();
+      
+      // Only server can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // RETENTION ANALYTICS (admin dashboard)
+    // Collection: retentionAnalytics/{date}
+    // ========================================================================
+    
+    match /retentionAnalytics/{date} {
+      // Only admins can read analytics
+      allow read: if isAdmin();
+      
+      // Only server can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // NUDGE HISTORY (for rate limiting)
+    // Collection: nudgeHistory/{userId}
+    // ========================================================================
+    
+    match /nudgeHistory/{userId} {
+      // Users can read their own nudge history
+      allow read: if isOwner(userId);
+      
+      // Only server can write
+      allow write: if false;
+    }
+  }
+}

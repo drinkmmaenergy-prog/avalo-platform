@@ -1,0 +1,66 @@
+{
+  "timestamp": "2025-11-05T20:45:36.483Z",
+  "metrics": {
+    "totalChecks": 5,
+    "successfulChecks": 0,
+    "failedChecks": 5,
+    "uptime": 0,
+    "avgResponseTime": 118.6,
+    "consecutiveFailures": 1,
+    "consecutiveSlowResponses": 0,
+    "has5xxErrors": false
+  },
+  "currentCheck": [
+    {
+      "endpoint": "Production Website",
+      "url": "https://avalo-c8c46.web.app",
+      "success": false,
+      "statusCode": 200,
+      "responseTime": 141,
+      "error": "Expected status 200, got 200",
+      "timestamp": "2025-11-05T20:44:54.829Z"
+    },
+    {
+      "endpoint": "Health Check Endpoint",
+      "url": "https://europe-west3-avalo-c8c46.cloudfunctions.net/ping",
+      "success": false,
+      "statusCode": 404,
+      "responseTime": 110,
+      "error": "Expected status 200, got 404",
+      "timestamp": "2025-11-05T20:45:05.267Z"
+    },
+    {
+      "endpoint": "System Info API",
+      "url": "https://europe-west3-avalo-c8c46.cloudfunctions.net/getSystemInfo",
+      "success": false,
+      "statusCode": 404,
+      "responseTime": 101,
+      "error": "Expected status 200, got 404",
+      "timestamp": "2025-11-05T20:45:15.611Z"
+    },
+    {
+      "endpoint": "Exchange Rates API",
+      "url": "https://europe-west3-avalo-c8c46.cloudfunctions.net/getExchangeRatesV1",
+      "success": false,
+      "statusCode": 404,
+      "responseTime": 104,
+      "error": "Expected status 200, got 404",
+      "timestamp": "2025-11-05T20:45:25.940Z"
+    },
+    {
+      "endpoint": "Purchase Tokens API",
+      "url": "https://europe-west3-avalo-c8c46.cloudfunctions.net/purchaseTokensV2",
+      "success": false,
+      "statusCode": 404,
+      "responseTime": 137,
+      "error": "Expected status 400, got 404",
+      "timestamp": "2025-11-05T20:45:36.339Z"
+    }
+  ],
+  "memory": {
+    "heapUsed": 80.32503509521484,
+    "heapTotal": 83.02734375,
+    "external": 6.35462760925293,
+    "rss": 124.1875
+  }
+}

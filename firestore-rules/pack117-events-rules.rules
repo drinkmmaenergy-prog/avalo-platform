@@ -1,0 +1,72 @@
+// ============================================================================
+// PACK 117 — EVENTS, MEETUPS & REAL-WORLD EXPERIENCES
+// Firestore Security Rules
+// ============================================================================
+
+// CRITICAL SAFETY RULES:
+// - Events are SAFE-only (no NSFW, no dating/escort)
+// - All writes via Cloud Functions only
+// - Location privacy enforced
+// - No external payment routing
+
+// ============================================================================
+// EVENTS COLLECTION
+// ============================================================================
+
+match /events/{eventId} {
+  // Anyone can read active events (for discovery)
+  allow read: if resource.data.isActive == true && 
+                 resource.data.status == "UPCOMING";
+  
+  // Only Cloud Functions can write
+  allow write: if false;
+  
+  // Host can read their own events (including inactive)
+  allow get: if request.auth != null && 
+               (resource.data.hostUserId == request.auth.uid || isAdmin());
+}
+
+// ============================================================================
+// EVENT_ATTENDEES COLLECTION
+// ============================================================================
+
+match /event_attendees/{attendeeId} {
+  // Users can read their own attendee records
+  allow read: if request.auth != null && 
+                 resource.data.userId == request.auth.uid;
+  
+  // Event hosts can read their event's attendees
+  allow read: if request.auth != null && 
+                 resource.data.hostUserId == request.auth.uid;
+  
+  // Admins can read all
+  allow read: if isAdmin();
+  
+  // Only Cloud Functions can write
+  allow write: if false;
+}
+
+// ============================================================================
+// EVENT_SAFETY_SURVEYS COLLECTION
+// ============================================================================
+
+match /event_safety_surveys/{surveyId} {
+  // Users can read their own surveys
+  allow read: if request.auth != null && 
+                 resource.data.userId == request.auth.uid;
+  
+  // Admins can read all surveys
+  allow read: if isAdmin();
+  
+  // Only Cloud Functions can write
+  allow write: if false;
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+function isAdmin() {
+  return request.auth != null && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+}

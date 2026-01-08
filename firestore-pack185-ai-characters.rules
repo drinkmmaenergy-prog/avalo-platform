@@ -1,0 +1,113 @@
+rules_version = '2';
+
+// PACK 185 - AI Identity & Lore Generator
+// Firestore Security Rules for AI Character Collections
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isSystem() {
+      return request.auth.token.system == true;
+    }
+    
+    // AI Characters - Read: All authenticated users, Write: System/Admin only
+    match /ai_characters/{characterId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() || isSystem();
+      allow update: if isAdmin() || isSystem();
+      allow delete: if isAdmin();
+    }
+    
+    // AI Lore - Read: All authenticated users, Write: System/Admin only
+    match /ai_lore/{loreId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() || isSystem();
+      allow update: if isAdmin() || isSystem();
+      allow delete: if isAdmin();
+    }
+    
+    // AI Photosets - Read: All authenticated users, Write: System/Admin only
+    match /ai_photosets/{photosetId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() || isSystem();
+      allow update: if isAdmin() || isSystem();
+      allow delete: if isAdmin();
+    }
+    
+    // AI Voices - Read: All authenticated users, Write: System/Admin only
+    match /ai_voices/{voiceProfileId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() || isSystem();
+      allow update: if isAdmin() || isSystem();
+      allow delete: if isAdmin();
+    }
+    
+    // AI Traits - Read: All authenticated users, Write: System/Admin only
+    match /ai_traits/{traitId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() || isSystem();
+      allow update: if isAdmin() || isSystem();
+      allow delete: if isAdmin();
+    }
+    
+    // AI Character Events - Read: Admin only, Write: System only
+    match /ai_character_events/{eventId} {
+      allow read: if isAdmin();
+      allow write: if isSystem();
+    }
+    
+    // User AI Subscriptions - Read/Write: Owner only
+    match /user_ai_subscriptions/{subscriptionId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['userId', 'characterId', 'subscribedAt']) &&
+        exists(/databases/$(database)/documents/ai_characters/$(request.resource.data.characterId));
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // AI Conversation Starters - Read: All authenticated users, Write: System/Admin
+    match /ai_conversation_starters/{starterId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isSystem();
+    }
+    
+    // AI Character Safety Reports - Read: Admin/Reporter, Write: Users
+    match /ai_character_safety_reports/{reportId} {
+      allow read: if isAdmin() || 
+        (isAuthenticated() && resource.data.reporterId == request.auth.uid);
+      allow create: if isAuthenticated() &&
+        request.resource.data.reporterId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['reporterId', 'characterId', 'reason', 'reportedAt']);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // AI Character Analytics - Read: Admin only, Write: System only
+    match /ai_character_analytics/{analyticsId} {
+      allow read: if isAdmin();
+      allow write: if isSystem();
+    }
+    
+    // AI Similarity Scores - Read: Admin only, Write: System only
+    match /ai_similarity_scores/{scoreId} {
+      allow read: if isAdmin();
+      allow write: if isSystem();
+    }
+  }
+}

@@ -1,0 +1,176 @@
+rules_version = '2';
+
+/**
+ * PACK 419 — Abuse Enforcement, Bans & Appeals Consolidation
+ * 
+ * Security rules for enforcement decisions and appeals.
+ * 
+ * Collections:
+ * - enforcementDecisions: All enforcement actions (warnings, bans, restrictions)
+ * - enforcementAppeals: User appeals against enforcement decisions
+ * 
+ * Access Control:
+ * - Users: Read own sanitized enforcement data, create appeals where allowed
+ * - Admins: Full read/write with audit logging (enforced at Cloud Functions level)
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // HELPER FUNCTIONS
+    // ========================================
+    
+    /**
+     * Check if request is authenticated
+     */
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    /**
+     * Check if user is accessing their own data
+     */
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    /**
+     * Check if user has admin role
+     * Relies on custom claims set by PACK 300/300A admin system
+     */
+    function isAdmin() {
+      return isAuthenticated() 
+        && request.auth.token.role != null
+        && (request.auth.token.role == 'admin' 
+            || request.auth.token.role == 'moderator'
+            || request.auth.token.role == 'support');
+    }
+    
+    /**
+     * Check if user has safety team role
+     */
+    function isSafetyTeam() {
+      return isAuthenticated()
+        && request.auth.token.role != null
+        && (request.auth.token.role == 'admin'
+            || request.auth.token.role == 'safety'
+            || request.auth.token.role == 'moderator');
+    }
+    
+    /**
+     * Validate that only allowed fields are being read by users
+     * Users should only see sanitized data
+     */
+    function sanitizedEnforcementFields() {
+      let allowedFields = ['id', 'userId', 'action', 'scopes', 'reasonCode', 
+                           'createdAt', 'expiresAt', 'isAppealable', 'appealId',
+                           'isActive'];
+      return request.resource.data.keys().hasOnly(allowedFields);
+    }
+    
+    // ========================================
+    // ENFORCEMENT DECISIONS
+    // ========================================
+    
+    match /enforcementDecisions/{decisionId} {
+      
+      /**
+       * READ: Users can read their own enforcement decisions (sanitized view)
+       *       Admins can read all enforcement decisions (full data)
+       */
+      allow read: if isAuthenticated() && (
+        // User reading their own decision
+        (resource.data.userId == request.auth.uid)
+        // OR admin/safety team reading any decision
+        || isAdmin()
+        || isSafetyTeam()
+      );
+      
+      /**
+       * CREATE: Only admins and automated systems can create enforcement decisions
+       * In practice, all creates happen via Cloud Functions which bypass these rules
+       * via admin SDK, but we keep this rule for explicit security
+       */
+      allow create: if false; // All creates must go through Cloud Functions
+      
+      /**
+       * UPDATE: Only admins can update enforcement decisions
+       * All updates must be logged via PACK 296 (enforced at Cloud Functions level)
+       */
+      allow update: if false; // All updates must go through Cloud Functions
+      
+      /**
+       * DELETE: No one can delete enforcement decisions (audit trail)
+       */
+      allow delete: if false;
+    }
+    
+    // ========================================
+    // ENFORCEMENT APPEALS
+    // ========================================
+    
+    match /enforcementAppeals/{appealId} {
+      
+      /**
+       * READ: Users can read their own appeals
+       *       Admins can read all appeals
+       */
+      allow read: if isAuthenticated() && (
+        // User reading their own appeal
+        (resource.data.userId == request.auth.uid)
+        // OR admin/safety team reading any appeal
+        || isAdmin()
+        || isSafetyTeam()
+      );
+      
+      /**
+       * CREATE: Users can create appeals for their own enforcement decisions
+       * Validation:
+       * - Must be for their own userId
+       * - Referenced enforcement must be appealable
+       * - No existing open appeal for same enforcement
+       */
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'PENDING'
+        && request.resource.data.userMessage is string
+        && request.resource.data.userMessage.size() > 10
+        && request.resource.data.userMessage.size() <= 2000
+        && request.resource.data.createdAt is number
+        && request.resource.data.updatedAt is number
+        // Additional validation happens in Cloud Functions:
+        // - Check enforcement.isAppealable == true
+        // - Check no duplicate active appeals exist
+        // These require cross-document reads, done server-side
+        ;
+      
+      /**
+       * UPDATE: Only admins can update appeal status
+       * Users cannot modify their appeals after submission
+       */
+      allow update: if false; // All updates must go through Cloud Functions
+      
+      /**
+       * DELETE: No one can delete appeals (audit trail)
+       */
+      allow delete: if false;
+    }
+    
+    // ========================================
+    // ENFORCEMENT STATS (Optional aggregation collection)
+    // ========================================
+    
+    match /enforcementStats/{statId} {
+      /**
+       * READ: Only admins can read stats
+       */
+      allow read: if isAdmin() || isSafetyTeam();
+      
+      /**
+       * WRITE: Only via Cloud Functions (for aggregation)
+       */
+      allow write: if false;
+    }
+  }
+}

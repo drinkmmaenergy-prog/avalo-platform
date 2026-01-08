@@ -1,0 +1,238 @@
+// PACK 202 - Ambassador & Early Access Program Security Rules
+//
+// Professional creator ambassador program with strict anti-NSFW safeguards.
+// No free tokens, no romantic recruitment, no sexualized marketing.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    function isAmbassador(ambassadorId) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/ambassadors/$(ambassadorId)) &&
+             get(/databases/$(database)/documents/ambassadors/$(ambassadorId)).data.userId == request.auth.uid;
+    }
+    
+    // Ambassador Applications
+    match /ambassador_applications/{applicationId} {
+      // Anyone authenticated can create an application for themselves
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.status == 'submitted';
+      
+      // Users can read their own applications
+      allow read: if isAuthenticated() && 
+                    resource.data.userId == request.auth.uid;
+      
+      // Admins can read and update applications
+      allow read, update: if isAdmin();
+      
+      // No one can delete applications
+      allow delete: if false;
+    }
+    
+    // Ambassadors Collection
+    match /ambassadors/{ambassadorId} {
+      // Ambassadors can read their own profile
+      allow read: if isUser(resource.data.userId);
+      
+      // Admins can read all and update
+      allow read, update: if isAdmin();
+      
+      // Created by server-side functions only
+      allow create: if false;
+      
+      // Ambassadors can update specific fields
+      allow update: if isUser(resource.data.userId) &&
+                      request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['academyProgress', 'metadata', 'updatedAt']);
+      
+      // No one can delete
+      allow delete: if false;
+    }
+    
+    // Ambassador Referrals
+    match /ambassador_referrals/{referralId} {
+      // Ambassadors can read their own referrals
+      allow read: if isAuthenticated() && 
+                    resource.data.ambassadorId == request.auth.uid;
+      
+      // Referred users can read their referral record
+      allow read: if isAuthenticated() && 
+                    resource.data.referredUserId == request.auth.uid;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Created and updated by server-side functions only
+      allow create, update, delete: if false;
+    }
+    
+    // Ambassador Revenue Logs
+    match /ambassador_revenue_logs/{logId} {
+      // Ambassadors can read their own revenue logs
+      allow read: if isAuthenticated() && 
+                    resource.data.ambassadorId == request.auth.uid;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Created by server-side functions only
+      allow create, update, delete: if false;
+    }
+    
+    // Ambassador Academy Modules
+    match /ambassador_academy_modules/{moduleId} {
+      // All ambassadors can read published modules
+      allow read: if isAuthenticated() && 
+                    resource.data.published == true &&
+                    exists(/databases/$(database)/documents/ambassadors/$(request.auth.uid));
+      
+      // Admins can read all and manage
+      allow read, write: if isAdmin();
+      
+      // No one else can write
+      allow write: if false;
+    }
+    
+    // Ambassador Progress
+    match /ambassador_progress/{progressId} {
+      // Ambassadors can read and update their own progress
+      allow read: if isUser(resource.data.userId);
+      
+      allow update: if isUser(resource.data.userId) &&
+                      request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['currentLessonId', 'completedLessons', 
+                                  'quizAttempts', 'quizPassed', 'updatedAt']);
+      
+      // Created by server-side functions
+      allow create: if false;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // No one can delete
+      allow delete: if false;
+    }
+    
+    // Ambassador Contracts
+    match /ambassador_contracts/{contractId} {
+      // Users can read their own contracts
+      allow read: if isUser(resource.data.userId);
+      
+      // Users can update to sign their contract
+      allow update: if isUser(resource.data.userId) &&
+                      !resource.data.signed &&
+                      request.resource.data.signed == true &&
+                      request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['signed', 'signedAt', 'signature', 
+                                  'ipAddress', 'status', 'updatedAt']);
+      
+      // Admins can read and update all
+      allow read, update: if isAdmin();
+      
+      // Created and deleted by server functions only
+      allow create, delete: if false;
+    }
+    
+    // Ambassador Reports
+    match /ambassador_reports/{reportId} {
+      // Any authenticated user can create a report
+      allow create: if isAuthenticated() && 
+                      request.resource.data.reportedBy == request.auth.uid &&
+                      request.resource.data.status == 'pending';
+      
+      // Users can read reports they submitted
+      allow read: if isAuthenticated() && 
+                    resource.data.reportedBy == request.auth.uid;
+      
+      // Admins can read and update all reports
+      allow read, update: if isAdmin();
+      
+      // No one can delete reports
+      allow delete: if false;
+    }
+    
+    // Recruitment Messages (screening required)
+    match /recruitment_messages/{messageId} {
+      // Ambassadors can create messages for screening
+      allow create: if isAuthenticated() &&
+                      request.resource.data.ambassadorId == request.auth.uid &&
+                      request.resource.data.status == 'draft';
+      
+      // Ambassadors can read their own messages
+      allow read: if isAuthenticated() && 
+                    resource.data.ambassadorId == request.auth.uid;
+      
+      // Ambassadors can update their own draft messages
+      allow update: if isAuthenticated() && 
+                      resource.data.ambassadorId == request.auth.uid &&
+                      resource.data.status == 'draft' &&
+                      request.resource.data.status == 'screening';
+      
+      // Admins can read and update all
+      allow read, update: if isAdmin();
+      
+      // No one can delete
+      allow delete: if false;
+    }
+    
+    // Ambassador Dashboard Stats
+    match /ambassador_dashboard_stats/{ambassadorId} {
+      // Ambassadors can read their own stats
+      allow read: if isUser(ambassadorId);
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Updated by server-side functions only
+      allow write: if false;
+    }
+    
+    // Admin Notifications (for new applications and reports)
+    match /admin_notifications/{notificationId} {
+      // Only admins can read
+      allow read: if isAdmin();
+      
+      // Admins can mark as read
+      allow update: if isAdmin() &&
+                      request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['read', 'readAt']);
+      
+      // Created by server functions
+      allow create, delete: if false;
+    }
+    
+    // Allowed Recruitment Channels (configuration)
+    match /allowed_recruitment_channels/{channelId} {
+      // All authenticated users can read
+      allow read: if isAuthenticated();
+      
+      // Only admins can write
+      allow write: if isAdmin();
+    }
+    
+    // Forbidden Recruitment Patterns (configuration)
+    match /forbidden_recruitment_patterns/{patternId} {
+      // All authenticated users can read
+      allow read: if isAuthenticated();
+      
+      // Only admins can write
+      allow write: if isAdmin();
+    }
+  }
+}

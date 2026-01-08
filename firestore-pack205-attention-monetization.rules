@@ -1,0 +1,330 @@
+// PACK 205 - Attention & Beauty Monetization Policy Rules
+//
+// ALLOWED & ENCOURAGED:
+// - Earning from attention, flirting, vibe and connection
+// - Paid chat / calls / dates / events / fan engagement
+// - Building a fanbase
+// - Glamour / nightlife / sexy photos (App-Store-safe)
+// - Men paying because they desire someone
+// - Women earning because they are desired
+//
+// BLOCKED (LEGALLY NECESSARY):
+// - Explicit pornography
+// - Escorting / paid sexual services
+// - Trafficking, coercion or exploitation
+// - Minors or minor-coded content
+//
+// TONE: Earning from attractiveness ≠ sex work
+// It is influencer economy + attention economy + dating monetization
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    function isVerifiedCreator(userId) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/verified_creators/$(userId)) &&
+             get(/databases/$(database)/documents/verified_creators/$(userId)).data.status == 'active';
+    }
+    
+    // Attention Monetization Settings
+    match /attention_monetization_settings/{userId} {
+      // Users can read and update their own settings
+      allow read: if isUser(userId);
+      
+      allow create: if isUser(userId) &&
+                      request.resource.data.userId == userId &&
+                      request.resource.data.enabled == false; // Disabled by default, must opt-in
+      
+      allow update: if isUser(userId) &&
+                      request.resource.data.userId == userId;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // No one can delete
+      allow delete: if false;
+    }
+    
+    // Paid Chat Sessions
+    match /paid_chat_sessions/{sessionId} {
+      // Participants can read their sessions
+      allow read: if isAuthenticated() && 
+                    (resource.data.creatorId == request.auth.uid || 
+                     resource.data.fanId == request.auth.uid);
+      
+      // Fans can create paid chat requests
+      allow create: if isAuthenticated() &&
+                      request.resource.data.fanId == request.auth.uid &&
+                      request.resource.data.status == 'requested' &&
+                      request.resource.data.paymentStatus == 'pending';
+      
+      // Creators can accept/decline sessions
+      allow update: if isAuthenticated() &&
+                      resource.data.creatorId == request.auth.uid &&
+                      (request.resource.data.status == 'active' || 
+                       request.resource.data.status == 'declined');
+      
+      // Both parties can end the session
+      allow update: if isAuthenticated() &&
+                      (resource.data.creatorId == request.auth.uid || 
+                       resource.data.fanId == request.auth.uid) &&
+                      request.resource.data.status == 'completed';
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // No one can delete
+      allow delete: if false;
+    }
+    
+    // Paid Call Sessions
+    match /paid_call_sessions/{sessionId} {
+      // Participants can read their sessions
+      allow read: if isAuthenticated() && 
+                    (resource.data.creatorId == request.auth.uid || 
+                     resource.data.fanId == request.auth.uid);
+      
+      // Fans can create paid call requests
+      allow create: if isAuthenticated() &&
+                      request.resource.data.fanId == request.auth.uid &&
+                      request.resource.data.status == 'requested' &&
+                      request.resource.data.paymentStatus == 'pending';
+      
+      // Creators can accept/decline calls
+      allow update: if isAuthenticated() &&
+                      resource.data.creatorId == request.auth.uid &&
+                      (request.resource.data.status == 'active' || 
+                       request.resource.data.status == 'declined');
+      
+      // Both parties can end the call
+      allow update: if isAuthenticated() &&
+                      (resource.data.creatorId == request.auth.uid || 
+                       resource.data.fanId == request.auth.uid) &&
+                      request.resource.data.status == 'completed';
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // No one can delete
+      allow delete: if false;
+    }
+    
+    // Paid Date Requests
+    match /paid_date_requests/{requestId} {
+      // Participants can read their date requests
+      allow read: if isAuthenticated() && 
+                    (resource.data.creatorId == request.auth.uid || 
+                     resource.data.requesterId == request.auth.uid);
+      
+      // Users can create date requests
+      allow create: if isAuthenticated() &&
+                      request.resource.data.requesterId == request.auth.uid &&
+                      request.resource.data.status == 'requested' &&
+                      request.resource.data.paymentStatus == 'escrowed';
+      
+      // Creators can accept/decline/negotiate
+      allow update: if isAuthenticated() &&
+                      resource.data.creatorId == request.auth.uid &&
+                      (request.resource.data.status == 'accepted' || 
+                       request.resource.data.status == 'declined' ||
+                       request.resource.data.status == 'negotiating');
+      
+      // Both parties can confirm completion
+      allow update: if isAuthenticated() &&
+                      (resource.data.creatorId == request.auth.uid || 
+                       resource.data.requesterId == request.auth.uid) &&
+                      request.resource.data.status == 'completed';
+      
+      // Admins can read and update all
+      allow read, update: if isAdmin();
+      
+      // No one can delete
+      allow delete: if false;
+    }
+    
+    // Fan Engagement Events
+    match /fan_engagement_events/{eventId} {
+      // Anyone can read published events
+      allow read: if isAuthenticated() && 
+                    resource.data.published == true;
+      
+      // Creators can create and manage their events
+      allow create: if isAuthenticated() &&
+                      request.resource.data.creatorId == request.auth.uid;
+      
+      allow update: if isAuthenticated() &&
+                      resource.data.creatorId == request.auth.uid;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Creators can delete their unpublished events
+      allow delete: if isAuthenticated() &&
+                      resource.data.creatorId == request.auth.uid &&
+                      resource.data.published == false;
+    }
+    
+    // Fan Engagement Bookings
+    match /fan_engagement_bookings/{bookingId} {
+      // Participants can read their bookings
+      allow read: if isAuthenticated() && 
+                    (resource.data.creatorId == request.auth.uid || 
+                     resource.data.fanId == request.auth.uid);
+      
+      // Fans can create bookings
+      allow create: if isAuthenticated() &&
+                      request.resource.data.fanId == request.auth.uid &&
+                      request.resource.data.status == 'pending' &&
+                      request.resource.data.paymentStatus == 'escrowed';
+      
+      // Creators can confirm bookings
+      allow update: if isAuthenticated() &&
+                      resource.data.creatorId == request.auth.uid &&
+                      request.resource.data.status == 'confirmed';
+      
+      // Both parties can mark as completed
+      allow update: if isAuthenticated() &&
+                      (resource.data.creatorId == request.auth.uid || 
+                       resource.data.fanId == request.auth.uid) &&
+                      request.resource.data.status == 'completed';
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // No one can delete
+      allow delete: if false;
+    }
+    
+    // Fanbase Subscriptions
+    match /fanbase_subscriptions/{subscriptionId} {
+      // Users can read their own subscriptions (as subscriber or creator)
+      allow read: if isAuthenticated() && 
+                    (resource.data.creatorId == request.auth.uid || 
+                     resource.data.subscriberId == request.auth.uid);
+      
+      // Users can create subscriptions
+      allow create: if isAuthenticated() &&
+                      request.resource.data.subscriberId == request.auth.uid &&
+                      request.resource.data.status == 'active' &&
+                      request.resource.data.paymentStatus == 'paid';
+      
+      // System/admin updates only
+      allow update: if isAdmin();
+      
+      // No one can delete (cancellation is a status update)
+      allow delete: if false;
+    }
+    
+    // Creator Earnings Dashboard
+    match /creator_earnings_dashboard/{creatorId} {
+      // Creators can read their own dashboard
+      allow read: if isUser(creatorId);
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Updated by server-side functions only
+      allow write: if false;
+    }
+    
+    // Attention Monetization Transactions
+    match /attention_monetization_transactions/{transactionId} {
+      // Users can read their own transactions
+      allow read: if isAuthenticated() && 
+                    (resource.data.creatorId == request.auth.uid || 
+                     resource.data.payerId == request.auth.uid);
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Created by server-side functions only
+      allow write: if false;
+    }
+    
+    // Content Safety Screening (for photos/videos)
+    match /content_safety_screening/{screeningId} {
+      // Creators can read their own screening results
+      allow read: if isAuthenticated() && 
+                    resource.data.uploadedBy == request.auth.uid;
+      
+      // Admins can read all
+      allow read, update: if isAdmin();
+      
+      // Created by server-side functions only
+      allow create, delete: if false;
+    }
+    
+    // App-Store-Safe Content Guidelines
+    match /content_guidelines/{guidelineId} {
+      // All authenticated users can read guidelines
+      allow read: if isAuthenticated();
+      
+      // Only admins can write
+      allow write: if isAdmin();
+    }
+    
+    // Monetization Violation Reports
+    match /monetization_violation_reports/{reportId} {
+      // Any user can create a report
+      allow create: if isAuthenticated() &&
+                      request.resource.data.reportedBy == request.auth.uid &&
+                      request.resource.data.status == 'pending';
+      
+      // Users can read reports they created
+      allow read: if isAuthenticated() && 
+                    resource.data.reportedBy == request.auth.uid;
+      
+      // Reported users can read reports about them
+      allow read: if isAuthenticated() && 
+                    resource.data.reportedUserId == request.auth.uid;
+      
+      // Admins can read and update all
+      allow read, update: if isAdmin();
+      
+      // No one can delete
+      allow delete: if false;
+    }
+    
+    // Prohibited Content Patterns (AI detection config)
+    match /prohibited_content_patterns/{patternId} {
+      // No public read access
+      allow read: if false;
+      
+      // Only admins can manage
+      allow read, write: if isAdmin();
+    }
+    
+    // Creator Verification for Monetization
+    match /monetization_creator_verifications/{verificationId} {
+      // Creators can create verification requests
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.status == 'submitted';
+      
+      // Users can read their own verification
+      allow read: if isAuthenticated() && 
+                    resource.data.userId == request.auth.uid;
+      
+      // Admins can read and update all
+      allow read, update: if isAdmin();
+      
+      // No one can delete
+      allow delete: if false;
+    }
+  }
+}

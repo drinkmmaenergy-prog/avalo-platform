@@ -1,0 +1,27 @@
+// PACK 93 — GDPR Data Rights & Account Lifecycle - Security Rules
+
+// ============================================================================
+// USER DATA EXPORTS
+// ============================================================================
+
+match /user_data_exports/{exportId} {
+  // Users can only read their own export requests
+  allow read: if request.auth != null 
+    && request.auth.uid == resource.data.userId;
+  
+  // Users cannot directly create/update exports (backend only)
+  allow create, update, delete: if false;
+}
+
+// ============================================================================
+// USER DELETION REQUESTS
+// ============================================================================
+
+match /user_deletion_requests/{deletionId} {
+  // Users can only read their own deletion requests
+  allow read: if request.auth != null 
+    && request.auth.uid == resource.data.userId;
+  
+  // Users cannot directly create/update deletion requests (backend only)
+  allow create, update, delete: if false;
+}

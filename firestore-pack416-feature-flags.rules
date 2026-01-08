@@ -1,0 +1,164 @@
+rules_version = '2';
+
+/**
+ * PACK 416 — Feature Flags Firestore Rules
+ * 
+ * Collection: featureFlags/{featureFlagKey}
+ * 
+ * Security Model:
+ * - READ: Authenticated users, backend functions, admins
+ * - WRITE: Admin roles only (via PACK 296/300A), or Cloud Functions
+ * - DELETE: Admin super-admin only
+ * 
+ * Dependencies:
+ * - PACK 296 (Audit System)
+ * - PACK 300A (Admin Roles)
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper: Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper: Get user document
+    function getUserDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    
+    // Helper: Check if user has admin role
+    function isAdmin() {
+      return isAuthenticated() && 
+             getUserDoc().data.roles != null &&
+             ('admin' in getUserDoc().data.roles || 
+              'super_admin' in getUserDoc().data.roles);
+    }
+    
+    // Helper: Check if user is super admin
+    function isSuperAdmin() {
+      return isAuthenticated() && 
+             getUserDoc().data.roles != null &&
+             'super_admin' in getUserDoc().data.roles;
+    }
+    
+    // Helper: Check if request is from a Cloud Function (server-side)
+    // Cloud Functions run with elevated privileges
+    function isServerRequest() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+    
+    /**
+     * Feature Flags Collection
+     * 
+     * Path: featureFlags/{featureFlagKey}
+     */
+    match /featureFlags/{flagKey} {
+      
+      // READ: Any authenticated user or server can read feature flags
+      // This allows both clients and backend to check feature status
+      allow read: if isAuthenticated() || isServerRequest();
+      
+      // CREATE: Only admins or server functions can create new flags
+      allow create: if (isAdmin() || isServerRequest()) &&
+                      validateFeatureFlagCreate();
+      
+      // UPDATE: Only admins or server functions can update flags
+      // Additional validation ensures critical fields are protected
+      allow update: if (isAdmin() || isServerRequest()) &&
+                      validateFeatureFlagUpdate();
+      
+      // DELETE: Only super admins can delete feature flags
+      // Generally, flags should be disabled, not deleted
+      allow delete: if isSuperAdmin();
+      
+      /**
+       * Validation: Create feature flag
+       */
+      function validateFeatureFlagCreate() {
+        let data = request.resource.data;
+        
+        return data.keys().hasAll(['key', 'enabled', 'env', 'rollout', 'lastUpdatedBy', 'lastUpdatedAt']) &&
+               data.key is string &&
+               data.enabled is bool &&
+               data.env in ['dev', 'staging', 'prod'] &&
+               data.rollout is number &&
+               data.rollout >= 0 &&
+               data.rollout <= 100 &&
+               data.lastUpdatedBy is string &&
+               data.lastUpdatedAt is timestamp &&
+               // Optional fields validation
+               (!data.keys().hasAny(['killSwitchOnly']) || data.killSwitchOnly is bool) &&
+               (!data.keys().hasAny(['notes']) || data.notes is string) &&
+               (!data.keys().hasAny(['countries']) || data.countries is list) &&
+               (!data.keys().hasAny(['requiresVip']) || data.requiresVip is bool) &&
+               (!data.keys().hasAny(['requiresRoyal']) || data.requiresRoyal is bool) &&
+               (!data.keys().hasAny(['requiresCreator']) || data.requiresCreator is bool);
+      }
+      
+      /**
+       * Validation: Update feature flag
+       */
+      function validateFeatureFlagUpdate() {
+        let data = request.resource.data;
+        let existingData = resource.data;
+        
+        return // Core fields must remain
+               data.key == existingData.key &&
+               data.env == existingData.env &&
+               // All required fields present
+               data.keys().hasAll(['key', 'enabled', 'env', 'rollout', 'lastUpdatedBy', 'lastUpdatedAt']) &&
+               // Type validation
+               data.enabled is bool &&
+               data.rollout is number &&
+               data.rollout >= 0 &&
+               data.rollout <= 100 &&
+               data.lastUpdatedBy is string &&
+               data.lastUpdatedAt is timestamp &&
+               // Optional fields validation
+               (!data.keys().hasAny(['killSwitchOnly']) || data.killSwitchOnly is bool) &&
+               (!data.keys().hasAny(['notes']) || data.notes is string) &&
+               (!data.keys().hasAny(['countries']) || data.countries is list) &&
+               (!data.keys().hasAny(['requiresVip']) || data.requiresVip is bool) &&
+               (!data.keys().hasAny(['requiresRoyal']) || data.requiresRoyal is bool) &&
+               (!data.keys().hasAny(['requiresCreator']) || data.requiresCreator is bool);
+      }
+      
+      /**
+       * Audit Log Sub-collection
+       * Track all changes to feature flags
+       * 
+       * Path: featureFlags/{flagKey}/auditLog/{changeId}
+       */
+      match /auditLog/{changeId} {
+        // READ: Admins only
+        allow read: if isAdmin() || isServerRequest();
+        
+        // CREATE: Server functions only (automatically created on flag changes)
+        allow create: if isServerRequest() && validateAuditLogEntry();
+        
+        // UPDATE/DELETE: Never allowed (audit log is immutable)
+        allow update, delete: if false;
+        
+        function validateAuditLogEntry() {
+          let data = request.resource.data;
+          return data.keys().hasAll(['flagKey', 'changedBy', 'changedAt']) &&
+                 data.flagKey is string &&
+                 data.changedBy is string &&
+                 data.changedAt is timestamp;
+        }
+      }
+    }
+    
+    /**
+     * Feature Flag Change Events (for PACK 296 Audit System)
+     * 
+     * Path: auditLogs/{eventId} with type: 'FEATURE_FLAG_CHANGED'
+     */
+    match /auditLogs/{eventId} {
+      // Handled by PACK 296 audit system rules
+      // Feature flag changes are logged here with type='FEATURE_FLAG_CHANGED'
+    }
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "royal_metrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "uniquePaidPartners", "order": "DESCENDING" },
+        { "fieldPath": "periodStart", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "royal_metrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "totalEarnings", "order": "DESCENDING" },
+        { "fieldPath": "periodStart", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "royal_metrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "averageRating", "order": "DESCENDING" },
+        { "fieldPath": "periodStart", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "royal_status",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isRoyal", "order": "ASCENDING" },
+        { "fieldPath": "royalSince", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "royal_status",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isRoyal", "order": "ASCENDING" },
+        { "fieldPath": "decayWarning", "order": "ASCENDING" },
+        { "fieldPath": "royalExpiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "royal_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "startTime", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "royal_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "creatorId", "order": "ASCENDING" },
+        { "fieldPath": "startTime", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "royal_analytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "periodStart", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "royal_progress",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "progressPercentage", "order": "DESCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "royal_decay",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "warningLevel", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

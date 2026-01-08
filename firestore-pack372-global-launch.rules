@@ -1,0 +1,260 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // PACK 372 — GLOBAL LAUNCH ORCHESTRATOR
+    // ============================================
+    
+    // Helper Functions
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isSuperAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin';
+    }
+    
+    function isOpsTeam() {
+      let userData = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return request.auth != null && 
+             (userData.role == 'admin' || userData.role == 'superadmin' || userData.team == 'ops');
+    }
+    
+    // ============================================
+    // 1️⃣ GLOBAL LAUNCH CONFIG
+    // ============================================
+    match /globalLaunchConfig/{countryCode} {
+      // Only admins can read
+      allow read: if isAdmin();
+      
+      // Only super admins can create/update
+      allow create, update: if isSuperAdmin() &&
+        request.resource.data.keys().hasAll([
+          'countryCode',
+          'launchStatus',
+          'enabledFeatures',
+          'paymentEnabled',
+          'withdrawalsEnabled',
+          'adsEnabled',
+          'maxNewUsersPerDay',
+          'kycRequired',
+          'ageVerificationRequired',
+          'lastUpdated'
+        ]) &&
+        request.resource.data.launchStatus in ['locked', 'beta', 'soft', 'public', 'frozen'] &&
+        request.resource.data.countryCode is string &&
+        request.resource.data.enabledFeatures is list &&
+        request.resource.data.paymentEnabled is bool &&
+        request.resource.data.withdrawalsEnabled is bool &&
+        request.resource.data.adsEnabled is bool &&
+        request.resource.data.maxNewUsersPerDay is int &&
+        request.resource.data.kycRequired is bool &&
+        request.resource.data.ageVerificationRequired is bool &&
+        request.resource.data.lastUpdated is timestamp;
+      
+      // Only super admins can delete (rare)
+      allow delete: if isSuperAdmin();
+    }
+    
+    // ============================================
+    // 2️⃣ FEATURE KILL-SWITCHES
+    // ============================================
+    match /featureKillSwitches/{featureKey} {
+      // Ops team and admins can read
+      allow read: if isOpsTeam();
+      
+      // Only super admins can create/update kill switches
+      allow create, update: if isSuperAdmin() &&
+        request.resource.data.keys().hasAll([
+          'featureKey',
+          'globalState',
+          'countriesAllowed',
+          'reason',
+          'activatedBy',
+          'activatedAt'
+        ]) &&
+        request.resource.data.featureKey is string &&
+        request.resource.data.globalState in ['on', 'off', 'restricted'] &&
+        request.resource.data.countriesAllowed is list &&
+        request.resource.data.reason is string &&
+        request.resource.data.activatedBy is string &&
+        request.resource.data.activatedAt is timestamp;
+      
+      // Only super admins can delete
+      allow delete: if isSuperAdmin();
+    }
+    
+    // ============================================
+    // 3️⃣ COUNTRY TRAFFIC LIMITS
+    // ============================================
+    match /countryTrafficLimits/{countryCode} {
+      // Ops team can read
+      allow read: if isOpsTeam();
+      
+      // Admins can create/update traffic limits
+      allow create, update: if isAdmin() &&
+        request.resource.data.keys().hasAll([
+          'countryCode',
+          'maxRegistrationsPerHour',
+          'maxChatSessionsPerMinute',
+          'maxPaymentsPerMinute',
+          'maxPayoutRequestsPerHour',
+          'lastUpdated'
+        ]) &&
+        request.resource.data.countryCode is string &&
+        request.resource.data.maxRegistrationsPerHour is int &&
+        request.resource.data.maxChatSessionsPerMinute is int &&
+        request.resource.data.maxPaymentsPerMinute is int &&
+        request.resource.data.maxPayoutRequestsPerHour is int &&
+        request.resource.data.maxRegistrationsPerHour >= 0 &&
+        request.resource.data.maxChatSessionsPerMinute >= 0 &&
+        request.resource.data.maxPaymentsPerMinute >= 0 &&
+        request.resource.data.maxPayoutRequestsPerHour >= 0 &&
+        request.resource.data.lastUpdated is timestamp;
+      
+      // Only super admins can delete
+      allow delete: if isSuperAdmin();
+    }
+    
+    // ============================================
+    // 4️⃣ COUNTRY TRAFFIC METRICS (Real-time counters)
+    // ============================================
+    match /countryTrafficMetrics/{countryCode} {
+      // Ops team can read
+      allow read: if isOpsTeam();
+      
+      // System can write (via Cloud Functions)
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // ============================================
+    // 5️⃣ EMERGENCY FREEZE LOGS
+    // ============================================
+    match /emergencyFreezeLogs/{logId} {
+      // Ops team can read
+      allow read: if isOpsTeam();
+      
+      // Only super admins can create (freeze events)
+      allow create: if isSuperAdmin() &&
+        request.resource.data.keys().hasAll([
+          'countryCode',
+          'reason',
+          'triggeredBy',
+          'triggeredAt',
+          'disabledFeatures',
+          'status'
+        ]) &&
+        request.resource.data.countryCode is string &&
+        request.resource.data.reason is string &&
+        request.resource.data.triggeredBy is string &&
+        request.resource.data.triggeredAt is timestamp &&
+        request.resource.data.disabledFeatures is list &&
+        request.resource.data.status in ['active', 'resolved'];
+      
+      // Admins can update status
+      allow update: if isAdmin() &&
+        request.resource.data.status in ['active', 'resolved'];
+      
+      // Never delete freeze logs
+      allow delete: if false;
+    }
+    
+    // ============================================
+    // 6️⃣ LEGAL & COMPLIANCE SETTINGS
+    // ============================================
+    match /legalComplianceSettings/{countryCode} {
+      // Admins can read
+      allow read: if isAdmin();
+      
+      // Super admins can create/update
+      allow create, update: if isSuperAdmin() &&
+        request.resource.data.keys().hasAll([
+          'countryCode',
+          'gdprMode',
+          'dsaMode',
+          'ageGate',
+          'identityValidationRequired',
+          'regulatorReportingEnabled',
+          'dataResidencyRequired',
+          'lastUpdated'
+        ]) &&
+        request.resource.data.countryCode is string &&
+        request.resource.data.gdprMode is bool &&
+        request.resource.data.dsaMode is bool &&
+        request.resource.data.ageGate is int &&
+        request.resource.data.ageGate >= 13 && request.resource.data.ageGate <= 21 &&
+        request.resource.data.identityValidationRequired is bool &&
+        request.resource.data.regulatorReportingEnabled is bool &&
+        request.resource.data.dataResidencyRequired is bool &&
+        request.resource.data.lastUpdated is timestamp;
+      
+      // Only super admins can delete
+      allow delete: if isSuperAdmin();
+    }
+    
+    // ============================================
+    // 7️⃣ PAYMENT SAFETY GATES (Per Country)
+    // ============================================
+    match /paymentSafetyGates/{countryCode} {
+      // Ops team can read
+      allow read: if isOpsTeam();
+      
+      // Admins can create/update
+      allow create, update: if isAdmin() &&
+        request.resource.data.keys().hasAll([
+          'countryCode',
+          'payoutsBlocked',
+          'tokenSalesBlocked',
+          'maxDisputeRatioThreshold',
+          'minKycCoverageThreshold',
+          'maxFraudScoreThreshold',
+          'maxRefundRatioThreshold',
+          'lastUpdated'
+        ]) &&
+        request.resource.data.countryCode is string &&
+        request.resource.data.payoutsBlocked is bool &&
+        request.resource.data.tokenSalesBlocked is bool &&
+        request.resource.data.maxDisputeRatioThreshold >= 0 &&
+        request.resource.data.maxDisputeRatioThreshold <= 1 &&
+        request.resource.data.minKycCoverageThreshold >= 0 &&
+        request.resource.data.minKycCoverageThreshold <= 1 &&
+        request.resource.data.maxFraudScoreThreshold >= 0 &&
+        request.resource.data.maxFraudScoreThreshold <= 100 &&
+        request.resource.data.maxRefundRatioThreshold >= 0 &&
+        request.resource.data.maxRefundRatioThreshold <= 1 &&
+        request.resource.data.lastUpdated is timestamp;
+      
+      allow delete: if isSuperAdmin();
+    }
+    
+    // ============================================
+    // 8️⃣ ROLLOUT STATE TRANSITIONS LOG
+    // ============================================
+    match /rolloutStateTransitions/{transitionId} {
+      // Ops team can read
+      allow read: if isOpsTeam();
+      
+      // System creates (via Cloud Functions)
+      allow create: if isAdmin() &&
+        request.resource.data.keys().hasAll([
+          'countryCode',
+          'previousState',
+          'newState',
+          'approvedBy',
+          'approvedAt',
+          'reason'
+        ]) &&
+        request.resource.data.previousState in ['locked', 'beta', 'soft', 'public', 'frozen'] &&
+        request.resource.data.newState in ['locked', 'beta', 'soft', 'public', 'frozen'] &&
+        request.resource.data.approvedBy is string &&
+        request.resource.data.approvedAt is timestamp &&
+        request.resource.data.reason is string;
+      
+      // Never update or delete transition logs
+      allow update, delete: if false;
+    }
+  }
+}

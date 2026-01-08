@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/admin_users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/admin_users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    // Helper function to check if user is legal admin
+    function isLegalAdmin() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/admin_users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/admin_users/$(request.auth.uid)).data.permissions is list &&
+             'LEGAL' in get(/databases/$(database)/documents/admin_users/$(request.auth.uid)).data.permissions;
+    }
+    
+    // Helper function to check if user is ops admin
+    function isOpsAdmin() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/admin_users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/admin_users/$(request.auth.uid)).data.permissions is list &&
+             'OPS' in get(/databases/$(database)/documents/admin_users/$(request.auth.uid)).data.permissions;
+    }
+
+    // ========================================================================
+    // PACK 339 — Disaster Recovery & Legal Crisis Management
+    // ========================================================================
+
+    // Backup Snapshots
+    // Only OPS admins can read backup metadata
+    // System creates via Cloud Functions
+    match /backupSnapshots/{snapshotId} {
+      allow read: if isOpsAdmin();
+      allow write: if false; // Cloud Functions only
+    }
+
+    // Disaster Recovery Plans
+    // OPS admins can read/update
+    // System manages via Cloud Functions
+    match /disasterRecoveryPlans/{planId} {
+      allow read: if isOpsAdmin();
+      allow update: if isOpsAdmin();
+      allow create, delete: if false; // Cloud Functions only
+    }
+
+    // Legal Holds
+    // Legal admins can read all
+    // Creation/deletion via Cloud Functions only
+    // Users can read their own legal hold status (limited fields)
+    match /legalHolds/{holdId} {
+      allow read: if isLegalAdmin() || 
+                     (request.auth != null && 
+                      resource.data.userId == request.auth.uid);
+      allow write: if false; // Cloud Functions only
+    }
+
+    // Regulator Lock States
+    // GLOBAL state - only admins can read
+    // System manages via Cloud Functions
+    match /regulatorLockStates/{stateId} {
+      allow read: if isAdmin();
+      allow write: if false; // Cloud Functions only
+    }
+
+    // Evidence Export Jobs
+    // Only legal admins can read/manage
+    // Creating exports via callable functions
+    match /evidenceExportJobs/{jobId} {
+      allow read: if isLegalAdmin();
+      allow write: if false; // Cloud Functions only
+    }
+
+    // Additional audit collection for legal operations
+    match /regulatorAuditLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Cloud Functions only - immutable logs
+    }
+
+    // Backup metadata (from PACK 100)
+    match /backup_metadata/{backupId} {
+      allow read: if isOpsAdmin();
+      allow write: if false; // Cloud Functions only
+    }
+
+    // Restore metadata (from PACK 100)
+    match /restore_metadata/{restoreId} {
+      allow read: if isOpsAdmin();
+      allow write: if false; // Cloud Functions only
+    }
+  }
+}

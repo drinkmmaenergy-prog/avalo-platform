@@ -1,0 +1,158 @@
+rules_version = '2';
+
+// PACK 377 — Global Public Launch Orchestration Engine
+// Manages phased country rollout, load control, PR coordination, and fraud protection
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // 1️⃣ PHASED COUNTRY ROLLOUT ENGINE
+    // ========================================
+    
+    match /launchPhases/{countryCode} {
+      // Only admins can manage launch phases
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true &&
+        request.resource.data.keys().hasAll(['countryCode', 'phase', 'dailyUserCap', 'dailyPaymentCap', 'dailyCreatorCap', 'status']) &&
+        request.resource.data.phase in ['alpha', 'soft', 'public', 'pause'] &&
+        request.resource.data.status in ['active', 'inactive', 'paused'] &&
+        request.resource.data.dailyUserCap is int &&
+        request.resource.data.dailyPaymentCap is int &&
+        request.resource.data.dailyCreatorCap is int;
+    }
+    
+    // Country capacity counters (daily reset)
+    match /launchCapacity/{countryCode} {
+      allow read: if request.auth != null;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================
+    // 2️⃣ INFRASTRUCTURE LOAD CONTROL
+    // ========================================
+    
+    match /infraMetrics/{metricId} {
+      // Read for monitoring dashboards
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /infraThrottleState/{singleton} {
+      allow read: if request.auth != null;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================
+    // 3️⃣ PR & INFLUENCER LAUNCH COORDINATOR
+    // ========================================
+    
+    match /launchCampaigns/{campaignId} {
+      // Admins and marketing team can manage campaigns
+      allow read: if request.auth != null &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isMarketing == true);
+      
+      allow create: if request.auth != null &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isMarketing == true) &&
+        request.resource.data.keys().hasAll(['influencerId', 'region', 'trafficForecast', 'expectedInstalls', 'creatorInflow', 'conversionBenchmarks', 'status', 'createdAt']) &&
+        request.resource.data.status in ['planning', 'active', 'completed', 'cancelled'];
+      
+      allow update: if request.auth != null &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isMarketing == true);
+    }
+    
+    match /campaignTracking/{trackingId} {
+      allow read: if request.auth != null &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isMarketing == true);
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================
+    // 4️⃣ FRAUD & ATTACK LAUNCH SHIELD
+    // ========================================
+    
+    match /launchThreatAlerts/{alertId} {
+      allow read: if request.auth != null &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isSafety == true);
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /launchFraudPatterns/{patternId} {
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================
+    // 5️⃣ REGION PERFORMANCE DASHBOARD
+    // ========================================
+    
+    match /regionMetrics/{regionId} {
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /regionRiskScores/{regionId} {
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================
+    // 6️⃣ MARKET ENTRY SEQUENCER
+    // ========================================
+    
+    match /marketEntryConfig/{singleton} {
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    match /rolloutSequence/{sequenceId} {
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================
+    // 7️⃣ LAUNCH FEATURE FLAGS
+    // ========================================
+    
+    match /launchFeatureFlags/{flagId} {
+      allow read: if request.auth != null;
+      
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+  }
+}

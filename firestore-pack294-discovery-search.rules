@@ -1,0 +1,49 @@
+rules_version = '2';
+
+/**
+ * PACK 294 - Search & Discovery Filters
+ * Firestore Security Rules for profileSearchIndex collection
+ * 
+ * This collection contains denormalized profile data optimized for search
+ * and discovery. It's read-only for clients and write-only for backend functions.
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Profile Search Index Collection
+    match /profileSearchIndex/{userId} {
+      // All authenticated users can read search index for discovery
+      // Respects safety rules: 18+, no banned/shadowbanned, incognito excluded
+      allow read: if request.auth != null;
+      
+      // Only backend functions can write to search index
+      allow write: if false;
+      
+      // Validation rules when reading (enforced server-side)
+      // - age >= 18 (no minors)
+      // - banned == false
+      // - shadowBanned == false
+      // - riskScore below block threshold
+    }
+    
+    // Discovery Analytics (tracking what users search for)
+    match /discoveryAnalytics/{userId} {
+      // Users can read their own analytics
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only backend can write analytics
+      allow write: if false;
+    }
+    
+    // Search Query Log (for AI learning and optimization)
+    match /searchQueryLog/{queryId} {
+      // Admin only (privacy-sensitive)
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'super_admin']);
+      
+      // Backend writes only
+      allow write: if false;
+    }
+  }
+}

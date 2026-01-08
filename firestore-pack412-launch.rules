@@ -1,0 +1,108 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // PACK 412 — Launch Control Room Rules
+    // ========================================
+    
+    // Helper: Is user an admin?
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    // Helper: Is user a launch controller?
+    function isLaunchController() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/launchControlPermissions/$(request.auth.uid));
+    }
+    
+    // Helper: Can user perform action?
+    function canPerformAction(action) {
+      let permissions = get(/databases/$(database)/documents/launchControlPermissions/$(request.auth.uid)).data;
+      return action in permissions.allowedActions;
+    }
+    
+    // Launch Regions - Region configurations
+    match /launchRegions/{regionId} {
+      // No client writes - only Cloud Functions
+      allow write: if false;
+      
+      // Admins and launch controllers can read all
+      allow read: if isAdmin() || isLaunchController();
+      
+      // Clients can read their own region's config (for feature flags)
+      allow get: if request.auth != null &&
+        resource.data.countries.hasAny([request.auth.token.country]) ||
+        resource.id == request.auth.token.regionId;
+    }
+    
+    // Launch Guardrail Thresholds - Threshold configurations
+    match /launchGuardrailThresholds/{thresholdId} {
+      // No client writes - only Cloud Functions
+      allow write: if false;
+      
+      // Admins and launch controllers can read
+      allow read: if isAdmin() || isLaunchController();
+    }
+    
+    // Launch Guardrail Violations - Violation events
+    match /launchGuardrailViolations/{violationId} {
+      // No client writes - only Cloud Functions
+      allow write: if false;
+      
+      // Admins and launch controllers can read
+      allow read: if isAdmin() || isLaunchController();
+    }
+    
+    // Launch Events - Timeline/audit events
+    match /launchEvents/{eventId} {
+      // No client writes - only Cloud Functions
+      allow write: if false;
+      
+      // Admins and launch controllers can read
+      allow read: if isAdmin() || isLaunchController();
+    }
+    
+    // Launch Region Stats - Statistics snapshots
+    match /launchRegionStats/{statId} {
+      // No client writes - only Cloud Functions
+      allow write: if false;
+      
+      // Admins and launch controllers can read
+      allow read: if isAdmin() || isLaunchController();
+    }
+    
+    // Market Expansion Proposals - AI-generated proposals
+    match /marketExpansionProposals/{proposalId} {
+      // No client writes - only Cloud Functions
+      allow write: if false;
+      
+      // Admins and launch controllers can read
+      allow read: if isAdmin() || isLaunchController();
+    }
+    
+    // Launch Readiness Summaries - Readiness checks
+    match /launchReadinessSummaries/{summaryId} {
+      // No client writes - only Cloud Functions
+      allow write: if false;
+      
+      // Admins and launch controllers can read
+      allow read: if isAdmin() || isLaunchController();
+    }
+    
+    // Launch Control Permissions - ACL for launch controllers
+    match /launchControlPermissions/{userId} {
+      // No client writes - only Cloud Functions
+      allow write: if false;
+      
+      // Users can read their own permissions
+      allow read: if request.auth != null &&
+        request.auth.uid == userId;
+      
+      // Admins can read all permissions
+      allow read: if isAdmin();
+    }
+  }
+}

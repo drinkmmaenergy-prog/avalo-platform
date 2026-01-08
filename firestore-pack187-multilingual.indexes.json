@@ -1,0 +1,94 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "ai_language_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "aiId", "order": "ASCENDING" },
+        { "fieldPath": "primaryLanguage", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_language_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "secondaryLanguages", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_translation_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_translation_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "aiId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_translation_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "safetyCheckPassed", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ai_translation_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "originalLanguage", "order": "ASCENDING" },
+        { "fieldPath": "targetLanguage", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "cultural_safety_flags",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "severity", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "cultural_safety_flags",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "languages", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "severity", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "language_conflict_cases",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "language_conflict_cases",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "aiId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "accent_voice_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "language", "order": "ASCENDING" },
+        { "fieldPath": "region", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

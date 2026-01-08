@@ -1,0 +1,50 @@
+rules_version = '2';
+
+// PACK 311 — AI Companions Marketplace, Ranking & Owner Analytics
+// Firestore Security Rules
+
+// Helper functions
+function isAuthenticated() {
+  return request.auth != null;
+}
+
+function isOwner(userId) {
+  return isAuthenticated() && request.auth.uid == userId;
+}
+
+function isModerator() {
+  return isAuthenticated() && 
+    (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'moderator');
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // AI Avatar Index - read-only for clients, write-only via Cloud Functions
+    match /aiAvatarIndex/{avatarId} {
+      // Anyone authenticated can read ACTIVE avatars with acceptable risk
+      allow read: if isAuthenticated() && 
+        (resource.data.status == 'ACTIVE' && 
+         resource.data.trust.riskLevel != 'CRITICAL') ||
+        isOwner(resource.data.ownerId) ||
+        isModerator();
+      
+      // Only Cloud Functions can write (via admin SDK)
+      allow write: if false;
+    }
+    
+    // Analytics events for marketplace usage
+    match /analytics_events/{eventId} {
+      // Users can create their own events
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      
+      // Only moderators can read analytics
+      allow read: if isModerator();
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+  }
+}

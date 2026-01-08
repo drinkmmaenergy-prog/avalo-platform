@@ -1,0 +1,12 @@
+{
+  "boostYourProfile": "Boost your profile",
+  "basicBoost": "Basic boost",
+  "plusBoost": "Plus boost",
+  "maxBoost": "Max boost",
+  "boostActive": "Boost active",
+  "expiresIn": "Expires in",
+  "chatRetarget": "Chat retargeting",
+  "boostSuccess": "Boost activated",
+  "boostFailed": "Boost failed",
+  "notEnoughTokens": "Insufficient tokens"
+}

@@ -1,0 +1,179 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Brand Profiles - Public read for discovery, restricted write
+    match /brand_profiles/{brandId} {
+      allow read: if true;
+      allow create: if request.auth != null 
+        && request.resource.data.owner_id == request.auth.uid
+        && isValidBrandProfile(request.resource.data)
+        && !hasNSFWContent(request.resource.data);
+      allow update: if request.auth != null 
+        && (resource.data.owner_id == request.auth.uid || isAdmin())
+        && isValidBrandProfile(request.resource.data)
+        && !hasNSFWContent(request.resource.data);
+      allow delete: if request.auth != null 
+        && (resource.data.owner_id == request.auth.uid || isAdmin());
+    }
+    
+    // Brand Collaborations - Private to participants
+    match /brand_collaborations/{collabId} {
+      allow read: if request.auth != null 
+        && (resource.data.brand_id == request.auth.uid 
+            || resource.data.creator_id == request.auth.uid
+            || isAdmin());
+      allow create: if request.auth != null
+        && (request.resource.data.brand_id == request.auth.uid 
+            || request.resource.data.creator_id == request.auth.uid)
+        && isValidCollaboration(request.resource.data)
+        && !hasRomanceContent(request.resource.data);
+      allow update: if request.auth != null
+        && (resource.data.brand_id == request.auth.uid 
+            || resource.data.creator_id == request.auth.uid
+            || isAdmin())
+        && isValidCollaboration(request.resource.data)
+        && !hasRomanceContent(request.resource.data);
+      allow delete: if request.auth != null && isAdmin();
+    }
+    
+    // Brand Products - Public read, restricted write
+    match /brand_products/{productId} {
+      allow read: if resource.data.status == 'active' || 
+        (request.auth != null && (
+          resource.data.brand_id == request.auth.uid ||
+          resource.data.creator_id == request.auth.uid ||
+          isAdmin()
+        ));
+      allow create: if request.auth != null
+        && (request.resource.data.brand_id == request.auth.uid 
+            || request.resource.data.creator_id == request.auth.uid)
+        && isValidProduct(request.resource.data)
+        && !hasNSFWContent(request.resource.data)
+        && !hasRomanceContent(request.resource.data)
+        && isSafeProductCategory(request.resource.data.category);
+      allow update: if request.auth != null
+        && (resource.data.brand_id == request.auth.uid 
+            || resource.data.creator_id == request.auth.uid
+            || isAdmin())
+        && isValidProduct(request.resource.data)
+        && !hasNSFWContent(request.resource.data)
+        && !hasRomanceContent(request.resource.data)
+        && isSafeProductCategory(request.resource.data.category);
+      allow delete: if request.auth != null
+        && (resource.data.brand_id == request.auth.uid || isAdmin());
+    }
+    
+    // Brand Product Purchases - Private to buyer and seller
+    match /brand_product_purchases/{purchaseId} {
+      allow read: if request.auth != null
+        && (resource.data.buyer_id == request.auth.uid
+            || resource.data.brand_id == request.auth.uid
+            || resource.data.creator_id == request.auth.uid
+            || isAdmin());
+      allow create: if request.auth != null
+        && request.resource.data.buyer_id == request.auth.uid
+        && isValidPurchase(request.resource.data);
+      allow update: if request.auth != null
+        && (resource.data.buyer_id == request.auth.uid
+            || resource.data.brand_id == request.auth.uid
+            || resource.data.creator_id == request.auth.uid
+            || isAdmin())
+        && isValidPurchaseUpdate(resource.data, request.resource.data);
+      allow delete: if false;
+    }
+    
+    // Brand Royalties - Private to creator and admin
+    match /brand_royalties/{royaltyId} {
+      allow read: if request.auth != null
+        && (resource.data.creator_id == request.auth.uid || isAdmin());
+      allow create: if false;
+      allow update: if request.auth != null && isAdmin();
+      allow delete: if false;
+    }
+    
+    // Helper Functions
+    function isAdmin() {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/admin_users/$(request.auth.uid));
+    }
+    
+    function isValidBrandProfile(data) {
+      return data.keys().hasAll(['name', 'category', 'description', 'owner_id', 'status', 'created_at'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.category is string && data.category.size() > 0
+        && data.description is string && data.description.size() <= 2000
+        && data.owner_id is string
+        && data.status in ['pending', 'active', 'suspended', 'banned']
+        && data.created_at is timestamp;
+    }
+    
+    function isValidCollaboration(data) {
+      return data.keys().hasAll(['brand_id', 'creator_id', 'type', 'status', 'created_at'])
+        && data.brand_id is string
+        && data.creator_id is string
+        && data.type in ['sponsored_merch_drop', 'licensed_collection', 'creator_owned', 'collab_bundle']
+        && data.status in ['proposed', 'approved', 'active', 'completed', 'cancelled']
+        && data.created_at is timestamp
+        && (!data.keys().hasAny(['terms']) || (data.terms is map && data.terms.size() <= 50));
+    }
+    
+    function isValidProduct(data) {
+      return data.keys().hasAll(['brand_id', 'name', 'category', 'type', 'price_tokens', 'status', 'created_at'])
+        && data.brand_id is string
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && data.category is string
+        && data.type in ['physical', 'digital']
+        && data.price_tokens is int && data.price_tokens > 0 && data.price_tokens <= 1000000
+        && data.status in ['draft', 'active', 'inactive', 'banned']
+        && data.created_at is timestamp;
+    }
+    
+    function isValidPurchase(data) {
+      return data.keys().hasAll(['buyer_id', 'product_id', 'brand_id', 'price_tokens', 'status', 'purchased_at'])
+        && data.buyer_id is string
+        && data.product_id is string
+        && data.brand_id is string
+        && data.price_tokens is int && data.price_tokens > 0
+        && data.status == 'pending'
+        && data.purchased_at is timestamp;
+    }
+    
+    function isValidPurchaseUpdate(oldData, newData) {
+      return newData.status in ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']
+        && (newData.status == oldData.status || isValidStatusTransition(oldData.status, newData.status));
+    }
+    
+    function isValidStatusTransition(oldStatus, newStatus) {
+      return (oldStatus == 'pending' && newStatus in ['processing', 'cancelled'])
+        || (oldStatus == 'processing' && newStatus in ['shipped', 'cancelled'])
+        || (oldStatus == 'shipped' && newStatus in ['delivered', 'refunded'])
+        || (oldStatus == 'delivered' && newStatus == 'refunded');
+    }
+    
+    function isSafeProductCategory(category) {
+      return category in [
+        'physical_merch', 'fitness_wellness', 'beauty', 
+        'education', 'art_creativity', 'tech', 
+        'home_decor', 'tools', 'hobby_kits'
+      ] && category != 'nsfw' && category != 'romance' && category != 'adult';
+    }
+    
+    function hasNSFWContent(data) {
+      let nsfwKeywords = ['lingerie', 'erotic', 'sexy', 'sensual', 'seductive', 
+                          'intimate', 'adult', 'nsfw', 'xxx', 'porn'];
+      let text = (data.name + ' ' + data.description).lower();
+      return nsfwKeywords.hasAny([keyword]) && text.matches('.*' + keyword + '.*');
+    }
+    
+    function hasRomanceContent(data) {
+      let romanceKeywords = ['romance', 'dating', 'girlfriend', 'boyfriend', 
+                             'love', 'affection', 'attention', 'relationship'];
+      let text = (data.keys().hasAny(['name']) ? data.name : '') + ' ' + 
+                 (data.keys().hasAny(['description']) ? data.description : '') + ' ' +
+                 (data.keys().hasAny(['terms']) ? string(data.terms) : '');
+      text = text.lower();
+      return romanceKeywords.hasAny([keyword]) && text.matches('.*' + keyword + '.*');
+    }
+  }
+}

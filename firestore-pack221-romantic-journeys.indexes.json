@@ -1,0 +1,100 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "romantic_journeys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user1Id", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "romantic_journeys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user2Id", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "romantic_journeys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "lastActivityAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "journey_milestones",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "journeyId", "order": "ASCENDING" },
+        { "fieldPath": "unlockedAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "journey_milestones",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user1Id", "order": "ASCENDING" },
+        { "fieldPath": "user2Id", "order": "ASCENDING" },
+        { "fieldPath": "unlockedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "journey_challenge_progress",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "journeyId", "order": "ASCENDING" },
+        { "fieldPath": "challengeId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "journey_challenge_progress",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "journeyId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "startedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "journey_chemistry_thresholds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user1Id", "order": "ASCENDING" },
+        { "fieldPath": "user2Id", "order": "ASCENDING" },
+        { "fieldPath": "thresholdReached", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "journey_chemistry_thresholds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "thresholdReached", "order": "ASCENDING" },
+        { "fieldPath": "offeredAt", "order": "ASCENDING" },
+        { "fieldPath": "reachedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "journey_archives",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user1Id", "order": "ASCENDING" },
+        { "fieldPath": "endedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "journey_archives",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user2Id", "order": "ASCENDING" },
+        { "fieldPath": "endedAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

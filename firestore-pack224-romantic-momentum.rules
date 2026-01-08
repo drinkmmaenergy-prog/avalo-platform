@@ -1,0 +1,133 @@
+rules_version = '2';
+
+// PACK 224: Dynamic Romantic Momentum Engine - Firestore Security Rules
+// Real-time heat system that adjusts visibility based on romantic activity
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // ROMANTIC MOMENTUM STATES
+    // Core momentum score and status for each user (0-100 scale)
+    // ========================================================================
+    match /romantic_momentum_states/{userId} {
+      // Read: Own state only or admins
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Create: System creates on first momentum action
+      allow create: if isOwner(userId) && 
+        request.resource.data.userId == userId &&
+        request.resource.data.score >= 0 &&
+        request.resource.data.score <= 100;
+      
+      // Update: Only backend can update score directly
+      // Users can only see their state, not modify it
+      allow update: if false;
+      
+      // Delete: Never delete, only archive
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // MOMENTUM ACTIONS LOG
+    // Tracks individual momentum-affecting actions for analytics
+    // ========================================================================
+    match /momentum_actions_log/{actionId} {
+      // Read: Only admins for analytics
+      allow read: if isAdmin();
+      
+      // Create: Backend only (Cloud Functions track actions)
+      allow create: if false;
+      
+      // Update/Delete: Never (append-only log)
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // MOMENTUM HISTORY
+    // Daily snapshots of momentum scores for trends
+    // ========================================================================
+    match /momentum_history/{historyId} {
+      // Read: User can read their own history or admins
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Write: Only backend (automated snapshots)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MOMENTUM VIOLATIONS
+    // Tracks abuse attempts (spam, fake calls, etc.)
+    // ========================================================================
+    match /momentum_violations/{violationId} {
+      // Read: Only admins and safety team
+      allow read: if isAdmin();
+      
+      // Write: Only backend detection system
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MOMENTUM BOOST CACHE
+    // Cached momentum boosts for quick matchmaking queries
+    // ========================================================================
+    match /momentum_boost_cache/{userId} {
+      // Read: All authenticated users (for discovery ranking)
+      allow read: if isAuthenticated();
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MOMENTUM VISUAL INDICATORS
+    // User's current visual momentum status (glow, aura, etc.)
+    // ========================================================================
+    match /momentum_visual_indicators/{userId} {
+      // Read: All authenticated users can see visual indicators
+      allow read: if isAuthenticated();
+      
+      // Write: Only backend based on momentum score
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MOMENTUM ANALYTICS
+    // Platform-wide momentum statistics
+    // ========================================================================
+    match /momentum_analytics/{analyticsId} {
+      // Read: Only admins
+      allow read: if isAdmin();
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+  }
+}
+
+// =================================================================
+// INTEGRATION NOTES
+// =================================================================
+// - Momentum states integrate with match_priority_scores (PACK 213)
+// - Momentum boosts affect destiny_user_states rewards (PACK 223)
+// - Momentum considerations during breakup recovery (PACK 222)
+// - Journey milestones increase momentum (PACK 221)
+// - Royal tier gets 1.25x momentum multiplier
+// - Influencer badge gets +10% momentum gain boost

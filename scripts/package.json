@@ -1,0 +1,20 @@
+{
+  "name": "avalo-backend-optimization",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "optimize": "node --loader ts-node/esm backend-optimization.ts",
+    "optimize:legacy": "ts-node backend-optimization.ts",
+    "test": "echo \"No tests configured\""
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}

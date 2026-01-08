@@ -1,0 +1,111 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "kpiAlertRules",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "enabled", "order": "ASCENDING" },
+        { "fieldPath": "severity", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiAlertRules",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "metricId", "order": "ASCENDING" },
+        { "fieldPath": "enabled", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiAlertRules",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "regionId", "order": "ASCENDING" },
+        { "fieldPath": "enabled", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiAlertEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "resolvedAt", "order": "ASCENDING" },
+        { "fieldPath": "triggeredAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiAlertEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "severity", "order": "ASCENDING" },
+        { "fieldPath": "triggeredAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiAlertEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "regionId", "order": "ASCENDING" },
+        { "fieldPath": "resolvedAt", "order": "ASCENDING" },
+        { "fieldPath": "triggeredAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "kpiAlertEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "metricId", "order": "ASCENDING" },
+        { "fieldPath": "triggeredAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "activePanicModes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "deactivatedAt", "order": "ASCENDING" },
+        { "fieldPath": "activatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "activePanicModes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "modeId", "order": "ASCENDING" },
+        { "fieldPath": "deactivatedAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "activePanicModes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "modeId", "order": "ASCENDING" },
+        { "fieldPath": "activatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "panicModeProposals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "proposedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "panicModeProposals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "modeId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "proposedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "systemCommands",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,181 @@
+🇬🇧 ENGLISH VERSION
+Avalo Admin Panel & RBAC Specification (v1)
+1. Purpose
+
+The Avalo Admin Panel is a secure web interface for authorized personnel (admins, moderators, finance, legal) to manage the platform.
+Access is restricted and audited via Firebase Admin SDK with OAuth 2.0 SSO.
+
+2. Roles & Access Levels
+Role	Description	Permissions
+Admin	Full system control	All modules, user management, refunds, bans, reports
+Moderator	Handles content & chat violations	Reports, chat logs, warnings, bans
+Finance	Manages payments and token settlements	Wallets, payouts, refunds
+Legal	Reviews disputes, data requests	Appeals, reports, compliance
+Support	Handles general user issues	Basic profile access, limited chat logs
+
+Each role is assigned via Firestore:
+roles/{uid}: { role: 'admin' | 'moderator' | 'finance' | 'legal' | 'support' }
+
+3. Authentication
+
+Access through admin.avalo.app.
+
+Google OAuth login with whitelisted domains (@avalo.app).
+
+Firebase custom claims for role assignment.
+
+Session expires after 30 minutes idle.
+
+4. Modules Overview
+Module	Purpose	Role Access
+Dashboard	KPIs: Active Users, Revenue, Reports, Ads	Admin, Finance
+Users	Manage profiles, verify accounts	Admin, Moderator
+Chats	Review flagged chat logs	Moderator, Legal
+Reports	Handle abuse and illegal content	Moderator, Legal
+Tokens	Manage token pack pricing, balances	Finance, Admin
+Refunds	Process approved refunds	Finance
+Ads	Manage campaigns, toggle frequency	Admin
+Calendar	Verify disputes on missed meetings	Moderator, Legal
+Logs	View system events	Admin
+Settings	Feature flags, thresholds	Admin
+AI Moderation	Review AI-flagged content	Moderator, Legal
+5. Analytics Dashboard
+
+KPIs displayed in real-time via Firebase Analytics + BigQuery:
+
+Metric	Description
+MAU	Monthly Active Users
+Revenue	Token & Subscription income
+Refund Rate	% of refunded bookings
+Avg Chat Length	Messages per session
+Ad CTR	Ad click-through rate
+Reports	Number of flagged users / day
+
+All data visualized in React using Recharts + Framer Motion.
+
+6. Refund Flow (Admin)
+
+Moderator flags issue.
+
+Finance reviews and approves.
+
+Tokens refunded (minus Avalo fee).
+
+User notified via system message.
+
+Function:
+functions/src/refunds/processRefund.ts
+
+7. Security & Audit
+
+Each admin action logged:
+adminLogs/{actionId}: { user, action, timestamp, ip }
+
+Role escalation requires two-step approval.
+
+Rate limiting on all API endpoints (Cloud Functions).
+
+8. UX Design (Web)
+
+Built with React + Tailwind + Firebase Auth.
+
+Left-side navigation with icons: Dashboard, Users, Chats, Reports, Tokens, Ads, Settings.
+
+Real-time updates via Firestore snapshots.
+
+Light/dark mode.
+
+9. Notifications
+
+Admins receive alerts for:
+
+High refund activity (>3% in 24h)
+
+Spike in banned users
+
+Payment API errors
+
+AI moderation overload
+
+Notifications via email + in-app banner.
+
+10. Data Exports
+
+CSV exports for legal use.
+
+Encrypted ZIP output (AES-256).
+
+Access only for Finance/Legal roles.
+
+11. Compliance
+
+GDPR audit log (who accessed what).
+
+Automatic token redaction for chat logs.
+
+Moderator access limited to textual data only (no images).
+
+🇵🇱 POLSKA WERSJA
+Panel Administratora i System Ról Avalo (v1)
+1. Cel
+
+Panel administratora to bezpieczny interfejs do zarządzania aplikacją Avalo.
+Dostęp mają wyłącznie uprawnione osoby po autoryzacji OAuth.
+
+2. Role i uprawnienia
+Rola	Opis	Uprawnienia
+Admin	Pełna kontrola nad systemem	Wszystkie moduły
+Moderator	Moderacja treści i czatów	Raporty, bany
+Finanse	Obsługa płatności i zwrotów	Portfele, refundacje
+Prawny	Spory, odwołania, RODO	Odwołania, raporty
+Wsparcie	Obsługa techniczna	Ograniczony dostęp
+
+Role przechowywane w Firestore:
+roles/{uid}
+
+3. Uwierzytelnianie
+
+Logowanie tylko przez domenę @avalo.app.
+
+Firebase + Google OAuth.
+
+Sesja wygasa po 30 min bezczynności.
+
+4. Moduły
+
+Dashboard, użytkownicy, czaty, raporty, tokeny, reklamy, kalendarz, logi, ustawienia, moderacja AI.
+
+5. Analizy
+
+Panel pokazuje dane w czasie rzeczywistym (MAU, przychody, refundy).
+Wizualizacja – React, Recharts, Firestore.
+
+6. Zwroty
+
+Proces: zgłoszenie → weryfikacja → akceptacja → powiadomienie użytkownika.
+
+7. Bezpieczeństwo
+
+Wszystkie działania logowane.
+
+Dostęp kontrolowany przez role i zatwierdzany.
+
+Ograniczenie prędkości zapytań (rate limit).
+
+8. Interfejs
+
+Menu boczne, tryb jasny/ciemny, aktualizacje w czasie rzeczywistym.
+
+9. Powiadomienia
+
+Alerty o błędach płatności, nadmiernych zwrotach, blokadach użytkowników.
+
+10. Eksport danych
+
+Eksport CSV (szyfrowany), tylko dla finansów/prawnych.
+
+11. Zgodność
+
+Pełny log zgodny z RODO.
+
+Dostęp moderatora tylko do tekstu (bez zdjęć).

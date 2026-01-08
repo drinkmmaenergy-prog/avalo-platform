@@ -1,0 +1,108 @@
+{
+  "intro": {
+    "title": "Witaj w Avalo",
+    "subtitle": "Dowiedz się, jak korzystać z platformy",
+    "skip": "Pomiń",
+    "next": "Dalej",
+    "get_started": "Rozpocznij",
+    "slide_tokens": "Tokeny",
+    "slide_chats": "Czaty",
+    "slide_calendar": "Kalendarz",
+    "slide_ai": "AI Towarzyszki",
+    "slide_safety": "Bezpieczeństwo"
+  },
+  "tokens": {
+    "title": "Jak działają tokeny",
+    "subtitle": "Avalo używa tokenów jako waluty. 1 token = 0.20 PLN",
+    "how_it_works": "Jak to działa",
+    "buy_tokens": "Kup tokeny",
+    "buy_tokens_desc": "Zakup pakietów tokenów w aplikacji web (30-1000 PLN)",
+    "earn_tokens": "Zarabiaj tokeny",
+    "earn_tokens_desc": "Włącz tryb zarabiania i otrzymuj płatności za czaty i rozmowy",
+    "spend_tokens": "Wydawaj tokeny",
+    "spend_tokens_desc": "Używaj tokenów do wiadomości, połączeń, spotkań i czatów AI",
+    "note": "Twój portfel pokazuje saldo w tokenach. Kwoty PLN tylko w zakupach web."
+  },
+  "chats": {
+    "title": "Ceny czatów",
+    "subtitle": "Uczciwe ceny z darmowymi wiadomościami i przejrzystymi opłatami",
+    "free_messages": "3 darmowe wiadomości",
+    "free_messages_desc": "Każdy czat zaczyna się od 3 darmowych wiadomości na osobę",
+    "deposit": "Depozyt 100 tokenów",
+    "deposit_desc": "Po darmowych: 35% prowizja platformy (35 tokenów bezzwrotne)",
+    "escrow_desc": "65% trafia do escrow (65 tokenów zwrotne)",
+    "per_message": "Za wiadomość",
+    "per_message_desc": "Standard: 11 słów/token • Zarabiający Royal: 7 słów/token",
+    "auto_refund": "Auto-zwrot",
+    "auto_refund_desc": "48h nieaktywności? Niewykorzystane escrow automatycznie zwracane",
+    "fees_non_refundable": "Prowizje platformy (35%) są bezzwrotne we wszystkich przypadkach. Tylko niewykorzystane escrow może być zwrócone."
+  },
+  "calendar": {
+    "title": "Spotkania kalendarzowe",
+    "subtitle": "Rezerwuj spotkania towarzyskie z bezpieczeństwem i przejrzystością",
+    "social_only": "Tylko towarzyskie",
+    "social_only_desc": "Kawa, kolacja, zajęcia publiczne. Usługi escort zabronione.",
+    "escrow_protection": "Ochrona escrow",
+    "escrow_explained": "20% prowizja platformy + 80% w escrow do weryfikacji spotkania",
+    "verification": "Wymagana weryfikacja",
+    "verification_desc": "GPS, kod QR lub selfie do potwierdzenia obecności",
+    "refund_policy": "Polityka zwrotów",
+    "refund_policy_desc": "Anuluj wcześniej: pełny zwrot. Nieobecność: częściowy. Spóźnienie: różnie.",
+    "legal_warning": "Płatność TYLKO za CZAS, nie za usługi. Bez escortu, bez seks-pracy. Naruszenia skutkują permanentnym banem."
+  },
+  "ai": {
+    "title": "AI Towarzyszki",
+    "subtitle": "Rozmawiaj z AI przyjaciółmi - subskrypcja, bez opłat za wiadomości",
+    "subscription_model": "Model subskrypcji",
+    "tier_free": "Darmowy",
+    "tier_free_price": "0 PLN",
+    "tier_free_features": "10 wiadomości/dzień • 3 AI towarzyszki • Tylko SFW",
+    "tier_plus": "Plus",
+    "tier_plus_price": "39 PLN/mies",
+    "tier_plus_features": "Nielimitowane wiadomości • Wszystkie standardowe AI • 2 tokeny/zdjęcie",
+    "tier_intimate": "Intimate",
+    "tier_intimate_price": "79 PLN/mies",
+    "tier_intimate_features": "Nielimitowane + NSFW • Romantyczne treści • 3 tokeny/zdjęcie",
+    "tier_creator": "Creator",
+    "tier_creator_price": "149 PLN/mies",
+    "tier_creator_features": "Twórz własne AI • Dostosuj odpowiedzi • Udostępniaj publicznie",
+    "revenue_note": "100% przychody Avalo - bez dzielenia się z twórcami AI"
+  },
+  "safety": {
+    "title": "Twoje bezpieczeństwo ma znaczenie",
+    "subtitle": "Poważnie traktujemy bezpieczeństwo z wieloma warstwami ochrony",
+    "moderation": "Moderacja treści",
+    "moderation_desc": "AI + przegląd ludzki dla nieodpowiednich treści",
+    "reporting": "Łatwe zgłaszanie",
+    "reporting_desc": "Zgłaszaj użytkowników, wiadomości lub spotkania natychmiast",
+    "fraud_detection": "Wykrywanie oszustw",
+    "fraud_detection_desc": "Automatyczne systemy wykrywają scamy i fałszywe profile",
+    "privacy": "Prywatność danych",
+    "privacy_desc": "Szyfrowane czaty, bezpieczne przechowywanie, zgodność GDPR",
+    "guidelines": "Wytyczne społeczności",
+    "guidelines_desc": "Bądź uprzejmy. Bez nękania, mowy nienawiści czy nielegalnych działań. Prowizje platformy są bezzwrotne. Naruszenia skutkują ostrzeżeniami lub banami.",
+    "support": "Potrzebujesz pomocy? Skontaktuj się ze wsparciem w każdej chwili",
+    "support_email": "support@avalo.app"
+  },
+  "tooltips": {
+    "chat_cost": "Ta akcja kosztuje tokeny",
+    "chat_cost_desc": "Zostaniesz obciążony {{cost}} tokenami za tę wiadomość",
+    "deposit_required": "Wymagany depozyt",
+    "deposit_required_desc": "Zapłać 100 tokenów: 35 prowizja + 65 escrow (zwrotne)",
+    "calendar_booking": "Rezerwacja spotkania",
+    "calendar_booking_desc": "20% prowizja platformy jest bezzwrotna. 80% przetrzymywane do weryfikacji.",
+    "ai_limit": "Dzienny limit",
+    "ai_limit_desc": "Warstwa darmowa: {{remaining}} wiadomości dzisiaj. Ulepsz dla nielimitowanych.",
+    "photo_unlock": "Odblokuj zdjęcie",
+    "photo_unlock_desc": "To będzie kosztować {{cost}} tokenów do trwałego odblokowania"
+  },
+  "pricing": {
+    "notice": "Globalne rozliczenie odbywa się w USD — bez dopłat i przewalutowań",
+    "display_only": "Ceny pokazane w lokalnej walucie jedynie dla wygody"
+  },
+  "personalization": {
+    "recommendedForYou": "Polecane dla Ciebie",
+    "aboutYou": "Co Twoje AI o Tobie wie",
+    "activityLevel": "Twój poziom aktywności: {score}"
+  }
+}

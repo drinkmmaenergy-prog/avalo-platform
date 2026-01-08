@@ -1,0 +1,94 @@
+rules_version = '2';
+
+/**
+ * PACK 420 — Data Rights, Account Lifecycle & GDPR/DSR Engine
+ * Firestore Security Rules for dataRightsRequests collection
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() 
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['SUPER_ADMIN', 'ADMIN', 'MODERATOR'];
+    }
+    
+    function hasValidDataRequestType(type) {
+      return type in ['EXPORT', 'DELETE', 'RESTRICT_PROCESSING'];
+    }
+    
+    function hasValidDataRequestStatus(status) {
+      return status in ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'REJECTED'];
+    }
+    
+    // Data Rights Requests Collection
+    match /dataRightsRequests/{requestId} {
+      
+      // Users can read only their own requests
+      allow read: if isAuthenticated() 
+        && (isOwner(resource.data.userId) || isAdmin());
+      
+      // Users can create requests for themselves only
+      allow create: if isAuthenticated()
+        && isOwner(request.resource.data.userId)
+        && hasValidDataRequestType(request.resource.data.type)
+        && request.resource.data.status == 'PENDING'
+        && request.resource.data.createdAt == request.time.toMillis()
+        && request.resource.data.updatedAt == request.time.toMillis()
+        // Ensure user doesn't set admin-only fields
+        && !('adminNotes' in request.resource.data)
+        && !('processedByAdminId' in request.resource.data)
+        && !('exportDownloadUrl' in request.resource.data)
+        // Additional validation done server-side (rate limits, active delete check)
+        && request.resource.data.userId is string
+        && request.resource.data.type is string;
+      
+      // Users can cancel their own PENDING deletion request
+      allow update: if isAuthenticated()
+        && isOwner(resource.data.userId)
+        && resource.data.type == 'DELETE'
+        && resource.data.status in ['PENDING', 'IN_PROGRESS']
+        && request.resource.data.status == 'REJECTED'
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.type == resource.data.type
+        && request.resource.data.updatedAt == request.time.toMillis()
+        // Can only update status and reason
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'reason']);
+      
+      // Admins have full access to update requests
+      allow update: if isAdmin()
+        && hasValidDataRequestStatus(request.resource.data.status)
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.type == resource.data.type
+        && request.resource.data.updatedAt == request.time.toMillis();
+      
+      // Admins can delete requests (for cleanup/compliance)
+      allow delete: if isAdmin();
+    }
+    
+    // User profiles - add lifecycle fields
+    match /users/{userId} {
+      // Existing rules should be extended to include lifecycle fields
+      // This is a reference for what should be added to existing user rules
+      
+      // Allow users to read their own lifecycle state
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      
+      // Only admins and system can update lifecycle state
+      // Users cannot modify their own lifecycle state
+      allow update: if isAdmin()
+        && request.resource.data.lifecycleState in ['ACTIVE', 'SOFT_FROZEN', 'PENDING_DELETION', 'DELETED']
+        && request.resource.data.lifecycleStateUpdatedAt == request.time.toMillis();
+    }
+  }
+}

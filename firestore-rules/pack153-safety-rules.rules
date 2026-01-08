@@ -1,0 +1,171 @@
+rules_version = '2';
+
+// PACK 153 — Anti-Harassment & Hate-Speech Neural Filter 2.0
+// Security rules for safety-related collections
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && (
+        isAdmin() ||
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'moderator'
+      );
+    }
+    
+    // ========================================================================
+    // SAFETY INCIDENTS
+    // ========================================================================
+    
+    // Users can read their own incidents, admins/moderators can read all
+    match /safety_incidents/{incidentId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isModerator()
+      );
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // HARASSMENT CASES
+    // ========================================================================
+    
+    // Users can read cases where they are victim, admins/moderators can read all
+    match /harassment_cases/{caseId} {
+      allow read: if isAuthenticated() && (
+        resource.data.victimId == request.auth.uid ||
+        isModerator()
+      );
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // BLOCKED MESSAGES
+    // ========================================================================
+    
+    // Users can read their own blocked messages
+    match /blocked_messages/{messageId} {
+      allow read: if isOwner(resource.data.userId);
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // VOICE TRANSCRIPTS (REDACTED)
+    // ========================================================================
+    
+    // Users can read transcripts they participated in, admins can read all
+    match /voice_transcripts_redacted/{transcriptId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid in resource.data.participantIds ||
+        isModerator()
+      );
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // SAFETY STATUS
+    // ========================================================================
+    
+    // Users can read their own safety status
+    match /safety_status/{userId} {
+      allow read: if isOwner(userId) || isModerator();
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // SAFETY EDUCATION TIPS
+    // ========================================================================
+    
+    // Public read for active tips
+    match /safety_education_tips/{tipId} {
+      allow read: if resource.data.active == true;
+      allow write: if isAdmin(); // Only admins can manage tips
+    }
+    
+    // ========================================================================
+    // SAFETY APPEALS
+    // ========================================================================
+    
+    // Users can read their own appeals
+    match /safety_appeals/{appealId} {
+      allow read: if isOwner(resource.data.userId) || isModerator();
+      
+      // Users can create appeals for their own incidents
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasOnly([
+          'appealId', 'userId', 'incidentId', 'reason', 
+          'evidence', 'status', 'appealed', 'submittedAt', 'updatedAt'
+        ]) &&
+        request.resource.data.status == 'PENDING';
+      
+      // Only moderators can update appeals
+      allow update: if isModerator();
+      
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // CONTENT CLASSIFICATION RESULTS
+    // ========================================================================
+    
+    // Admins/moderators only (contains ML analysis)
+    match /content_classification_results/{resultId} {
+      allow read: if isModerator();
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // VOICE ANALYSIS SESSIONS
+    // ========================================================================
+    
+    // Participants can read their session data, moderators can read all
+    match /voice_analysis_sessions/{sessionId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid in resource.data.participants.map(p => p.userId) ||
+        isModerator()
+      );
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // LIVESTREAM MODERATION SESSIONS
+    // ========================================================================
+    
+    // Stream creator and moderators can read
+    match /livestream_moderation_sessions/{sessionId} {
+      allow read: if isAuthenticated() && (
+        resource.data.creatorId == request.auth.uid ||
+        request.auth.uid in resource.data.moderatorIds ||
+        isModerator()
+      );
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // LANGUAGE CONTEXTS
+    // ========================================================================
+    
+    // Admins/moderators only (contains ML analysis)
+    match /language_contexts/{contextId} {
+      allow read: if isModerator();
+      allow write: if false; // Only via Cloud Functions
+    }
+  }
+}

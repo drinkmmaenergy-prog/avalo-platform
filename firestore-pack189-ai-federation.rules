@@ -1,0 +1,158 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+
+    // AI Seeds Collection
+    match /ai_seeds/{seedId} {
+      // Read: Owner or public seeds
+      allow read: if isAuthenticated() && 
+                     (resource.data.ownerId == request.auth.uid || 
+                      resource.data.isPublic == true);
+      
+      // Create: Authenticated users only
+      allow create: if isAuthenticated() &&
+                       request.resource.data.ownerId == request.auth.uid &&
+                       request.resource.data.createdAt == request.time &&
+                       request.resource.data.version == 1 &&
+                       request.resource.data.safetyStatus == 'pending' &&
+                       !('chatHistory' in request.resource.data) &&
+                       !('userLocation' in request.resource.data) &&
+                       !('userIdentity' in request.resource.data) &&
+                       !('personalData' in request.resource.data);
+      
+      // Update: Owner only, cannot change ownerId
+      allow update: if isAuthenticated() &&
+                       resource.data.ownerId == request.auth.uid &&
+                       request.resource.data.ownerId == resource.data.ownerId &&
+                       !('chatHistory' in request.resource.data) &&
+                       !('userLocation' in request.resource.data) &&
+                       !('userIdentity' in request.resource.data) &&
+                       !('personalData' in request.resource.data);
+      
+      // Delete: Owner only
+      allow delete: if isAuthenticated() && 
+                       resource.data.ownerId == request.auth.uid;
+    }
+
+    // AI Seed Metadata Collection
+    match /ai_seed_metadata/{metadataId} {
+      // Read: Authenticated users
+      allow read: if isAuthenticated();
+      
+      // Write: System only (via Cloud Functions)
+      allow write: if false;
+    }
+
+    // AI Seed Ownership Collection
+    match /ai_seed_ownership/{ownershipId} {
+      // Read: Owner of the ownership record
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Create: Via Cloud Functions only (marketplace transactions)
+      allow create: if false;
+      
+      // Update/Delete: Not allowed
+      allow update, delete: if false;
+    }
+
+    // AI Seed Marketplace Collection
+    match /ai_seed_marketplace/{listingId} {
+      // Read: All authenticated users (browse marketplace)
+      allow read: if isAuthenticated() && 
+                     resource.data.status == 'active';
+      
+      // Creator can read their own listings regardless of status
+      allow read: if isAuthenticated() && 
+                     resource.data.creatorId == request.auth.uid;
+      
+      // Create: Authenticated users can list their seeds
+      allow create: if isAuthenticated() &&
+                       request.resource.data.creatorId == request.auth.uid &&
+                       request.resource.data.status == 'pending_review' &&
+                       request.resource.data.createdAt == request.time &&
+                       request.resource.data.safetyVerified == false &&
+                       request.resource.data.type in ['one_time', 'subscription', 'chapter_unlock'] &&
+                       request.resource.data.price >= 0 &&
+                       !('nsfwContent' in request.resource.data) &&
+                       !('youthCoded' in request.resource.data) &&
+                       !('romanticLoyalty' in request.resource.data);
+      
+      // Update: Creator can update their own listings (within constraints)
+      allow update: if isAuthenticated() &&
+                       resource.data.creatorId == request.auth.uid &&
+                       request.resource.data.creatorId == resource.data.creatorId &&
+                       request.resource.data.seedId == resource.data.seedId;
+      
+      // Delete: Creator can delete their listings
+      allow delete: if isAuthenticated() && 
+                       resource.data.creatorId == request.auth.uid;
+    }
+
+    // AI Seed Transactions Collection (purchases)
+    match /ai_seed_transactions/{transactionId} {
+      // Read: Buyer or seller
+      allow read: if isAuthenticated() && 
+                     (resource.data.buyerId == request.auth.uid ||
+                      resource.data.sellerId == request.auth.uid);
+      
+      // Write: Via Cloud Functions only
+      allow write: if false;
+    }
+
+    // AI Seed Co-Creation Collection
+    match /ai_seed_cocreation/{coCreationId} {
+      // Read: Participants only
+      allow read: if isAuthenticated() && 
+                     request.auth.uid in resource.data.participants;
+      
+      // Create: Authenticated users
+      allow create: if isAuthenticated() &&
+                       request.auth.uid in request.resource.data.participants &&
+                       request.resource.data.createdAt == request.time &&
+                       !('romanticExclusivity' in request.resource.data) &&
+                       !('eroticOwnership' in request.resource.data) &&
+                       !('familyDynamics' in request.resource.data) &&
+                       !('dependencyPlay' in request.resource.data);
+      
+      // Update: Participants only
+      allow update: if isAuthenticated() && 
+                       request.auth.uid in resource.data.participants &&
+                       request.resource.data.participants == resource.data.participants;
+      
+      // Delete: Creator only
+      allow delete: if isAuthenticated() && 
+                       resource.data.creatorId == request.auth.uid;
+    }
+
+    // AI Seed Reports Collection (safety reports)
+    match /ai_seed_reports/{reportId} {
+      // Read: Reporter only
+      allow read: if isAuthenticated() && 
+                     resource.data.reporterId == request.auth.uid;
+      
+      // Create: Any authenticated user can report
+      allow create: if isAuthenticated() &&
+                       request.resource.data.reporterId == request.auth.uid &&
+                       request.resource.data.createdAt == request.time &&
+                       request.resource.data.status == 'pending';
+      
+      // Update/Delete: Not allowed (handled by admin)
+      allow update, delete: if false;
+    }
+  }
+}

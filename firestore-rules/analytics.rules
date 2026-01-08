@@ -1,0 +1,67 @@
+/**
+ * PACK 82 — Creator Performance Analytics & Insights Dashboard
+ * Firestore Security Rules for Analytics Collections
+ * 
+ * These rules ensure:
+ * - Creators can only read their own analytics
+ * - All writes must come from Cloud Functions
+ * - No direct client writes allowed
+ */
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // CREATOR ANALYTICS DAILY
+    // Document ID format: ${creatorId}_${YYYYMMDD}
+    // ========================================================================
+    match /creator_analytics_daily/{dailyId} {
+      // Extract creatorId from document ID (format: creatorId_YYYYMMDD)
+      function getCreatorIdFromDaily() {
+        return dailyId.split('_')[0];
+      }
+      
+      // Allow read if user is the creator
+      allow read: if request.auth != null 
+                  && request.auth.uid == getCreatorIdFromDaily();
+      
+      // Only Cloud Functions can write
+      allow create, update, delete: if false;
+    }
+    
+    // ========================================================================
+    // CREATOR ANALYTICS SNAPSHOT
+    // Document ID: creatorId
+    // ========================================================================
+    match /creator_analytics_snapshot/{creatorId} {
+      // Allow read if user is the creator
+      allow read: if request.auth != null 
+                  && request.auth.uid == creatorId;
+      
+      // Only Cloud Functions can write
+      allow create, update, delete: if false;
+    }
+    
+    // ========================================================================
+    // HELPER FUNCTIONS (if needed for future enhancements)
+    // ========================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user owns the resource
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Check if user is admin (for future admin dashboard)
+    function isAdmin() {
+      return request.auth != null 
+             && request.auth.token.role == 'admin';
+    }
+  }
+}

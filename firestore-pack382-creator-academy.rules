@@ -1,0 +1,214 @@
+rules_version = '2';
+
+/**
+ * PACK 382 — Creator Academy & Earnings Optimization
+ * Firestore Security Rules
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isCreator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isCreator == true;
+    }
+
+    // ========================================
+    // CREATOR ACADEMY COURSES
+    // ========================================
+    match /creatorAcademyCourses/{courseId} {
+      // Anyone can read published courses
+      allow read: if resource.data.isPublished == true;
+      
+      // Only admins can create, update, delete courses
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========================================
+    // CREATOR ACADEMY LESSONS
+    // ========================================
+    match /creatorAcademyLessons/{lessonId} {
+      // Can read if enrolled in the course
+      allow read: if isAuthenticated() && (
+        // Check if user is enrolled
+        exists(/databases/$(database)/documents/creatorAcademyProgress/$(request.auth.uid + '_' + resource.data.courseId)) ||
+        isAdmin()
+      );
+      
+      // Only admins can create, update, delete lessons
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========================================
+    // CREATOR ACADEMY PROGRESS
+    // ========================================
+    match /creatorAcademyProgress/{progressId} {
+      // Users can only read their own progress
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      
+      // Users can create their own progress (enrollment)
+      allow create: if isOwner(request.resource.data.userId);
+      
+      // Users can update their own progress
+      allow update: if isOwner(resource.data.userId) && 
+                      // Prevent changing userId
+                      request.resource.data.userId == resource.data.userId &&
+                      // Prevent changing courseId
+                      request.resource.data.courseId == resource.data.courseId;
+      
+      // Only user or admin can delete
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // ========================================
+    // CREATOR ACADEMY CERTIFICATES
+    // ========================================
+    match /creatorAcademyCertificates/{certificateId} {
+      // Users can read their own certificates, or anyone can verify
+      allow read: if true; // Public verification
+      
+      // Only system (via Cloud Functions) can create/update
+      allow create, update: if isAdmin();
+      
+      // Cannot delete certificates
+      allow delete: if false;
+    }
+
+    // ========================================
+    // CREATOR EARNING PROFILES
+    // ========================================
+    match /creatorEarningProfiles/{profileId} {
+      // Creators can read their own profile
+      allow read: if isOwner(profileId) || isAdmin();
+      
+      // Only system (via Cloud Functions) can write
+      allow create, update: if isAdmin();
+      
+      // Cannot delete profiles
+      allow delete: if false;
+    }
+
+    // ========================================
+    // EARNINGS OPTIMIZATIONS
+    // ========================================
+    match /earningsOptimizations/{optimizationId} {
+      // Users can read their own optimizations
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      
+      // Only system can create/update
+      allow create, update: if isAdmin();
+      
+      // Users can update status fields only
+      allow update: if isOwner(resource.data.userId) && 
+                      // Only allow status and timestamp updates
+                      request.resource.data.userId == resource.data.userId &&
+                      request.resource.data.optimizationId == resource.data.optimizationId;
+      
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // ========================================
+    // PRICING RECOMMENDATIONS
+    // ========================================
+    match /pricingRecommendations/{recommendationId} {
+      // Users can read their own recommendations
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      
+      // Only system can create
+      allow create: if isAdmin();
+      
+      // Users cannot modify
+      allow update, delete: if isAdmin();
+    }
+
+    // ========================================
+    // BURNOUT ASSESSMENTS
+    // ========================================
+    match /burnoutAssessments/{assessmentId} {
+      // Users can read their own assessments
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      
+      // Only system can create/update
+      allow create, update: if isAdmin();
+      
+      // Users can mark as resolved
+      allow update: if isOwner(resource.data.userId) && 
+                      !('resolvedAt' in resource.data) &&
+                      'resolvedAt' in request.resource.data;
+      
+      // Cannot delete assessments
+      allow delete: if isAdmin();
+    }
+
+    // ========================================
+    // CREATOR EARNING MISSIONS
+    // ========================================
+    match /creatorEarningMissions/{missionId} {
+      // Users can read their own missions or global missions
+      allow read: if (
+        isAuthenticated() && (
+          resource.data.userId == request.auth.uid ||
+          resource.data.isGlobal == true
+        )
+      ) || isAdmin();
+      
+      // Only system can create/update/delete missions
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========================================
+    // CREATOR BADGES
+    // ========================================
+    match /creatorBadges/{badgeId} {
+      // Anyone can read visible badges
+      allow read: if resource.data.isVisible == true || 
+                    isOwner(resource.data.userId) || 
+                    isAdmin();
+      
+      // Only system can create/update/delete badges
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========================================
+    // REGIONAL ACADEMY CONTENT
+    // ========================================
+    match /regionalAcademyContent/{regionCode} {
+      // Anyone can read regional content
+      allow read: if isAuthenticated();
+      
+      // Only admins can update regional content
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ========================================
+    // CREATOR PRICING
+    // ========================================
+    match /creatorPricing/{userId} {
+      // Public pricing visibility
+      allow read: if true;
+      
+      // Creators can update their own pricing
+      allow update: if isOwner(userId) && isCreator();
+      
+      // Only system can create
+      allow create: if isAdmin() || (isOwner(userId) && isCreator());
+      
+      // Cannot delete pricing
+      allow delete: if isAdmin();
+    }
+  }
+}

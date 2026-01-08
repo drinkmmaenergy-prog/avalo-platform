@@ -1,0 +1,103 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // PACK 262: Creator Levels & Rewards System
+    // ============================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isBackend() {
+      // Only Cloud Functions can write
+      return request.auth.token.admin == true;
+    }
+    
+    // ============================================================================
+    // Creator Level Profiles
+    // ============================================================================
+    match /creatorLevels/{creatorId} {
+      // Read: Only the creator can read their own level data
+      allow read: if isAuthenticated() && isOwner(creatorId);
+      
+      // Write: Only backend functions can write
+      allow write: if false;
+      
+      // Structure validation for security
+      allow create: if isBackend() && 
+        request.resource.data.keys().hasAll([
+          'creatorId', 'level', 'lifetimeTokensEarned', 'lifetimeLP',
+          'currentLP', 'nextLevelLP', 'createdAt', 'lastUpdatedAt'
+        ]) &&
+        request.resource.data.level in ['bronze', 'silver', 'gold', 'platinum', 'diamond'] &&
+        request.resource.data.lifetimeTokensEarned >= 0 &&
+        request.resource.data.lifetimeLP >= 0;
+      
+      allow update: if isBackend();
+    }
+    
+    // ============================================================================
+    // Level Points (LP) Activity Log
+    // ============================================================================
+    match /levelPoints/{creatorId}/activities/{activityId} {
+      // Read: Only the creator can read their LP activity
+      allow read: if isAuthenticated() && isOwner(creatorId);
+      
+      // Write: Only backend can write
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // Level Rewards & Benefits
+    // ============================================================================
+    match /creatorRewards/{creatorId} {
+      // Read: Creator can read their own rewards
+      allow read: if isAuthenticated() && isOwner(creatorId);
+      
+      // Write: Only backend can write
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // Active Boosts & Benefits
+    // ============================================================================
+    match /activeBoosts/{creatorId}/boosts/{boostId} {
+      // Read: Creator can read their active boosts
+      allow read: if isAuthenticated() && isOwner(creatorId);
+      
+      // Write: Only backend can write
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // Level-Up Notifications
+    // ============================================================================
+    match /levelUpNotifications/{notificationId} {
+      // Read: User can read their own notifications
+      allow read: if isAuthenticated() && 
+        request.auth.uid == resource.data.creatorId;
+      
+      // Write: Only backend can write
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // Anti-Abuse Detection Flags
+    // ============================================================================
+    match /creatorAbuseFlags/{creatorId} {
+      // Read: Only backend can read
+      allow read: if false;
+      
+      // Write: Only backend can write
+      allow write: if false;
+    }
+  }
+}

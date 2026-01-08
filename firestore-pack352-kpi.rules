@@ -1,0 +1,213 @@
+rules_version = '2';
+
+/*
+ * PACK 352 — KPI Engine & Monitoring Hub
+ * Firestore Security Rules
+ * 
+ * Collections:
+ * - kpiEvents: Append-only log of all KPI events
+ * - kpiDailyMetrics: Daily aggregated metrics
+ * - creatorDailyMetrics: Per-creator daily metrics
+ * 
+ * Access Control:
+ * - Read: Admin/analytics roles only
+ * - Write: Cloud Functions/server only (no direct client writes)
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // Helper Functions
+    // ========================================================================
+    
+    /**
+     * Check if user has admin role
+     */
+    function isAdmin() {
+      return request.auth != null && 
+             request.auth.token.role == 'admin';
+    }
+    
+    /**
+     * Check if user has analytics role
+     */
+    function hasAnalyticsRole() {
+      return request.auth != null && 
+             (request.auth.token.role == 'admin' || 
+              request.auth.token.role == 'analytics' ||
+              request.auth.token.analyticsAccess == true);
+    }
+    
+    /**
+     * Check if request is from server/Cloud Function
+     * Server requests should have admin SDK or special token claims
+     */
+    function isServerRequest() {
+      return request.auth != null && 
+             (request.auth.token.serverAccess == true ||
+              request.auth.token.cloudFunction == true);
+    }
+    
+    /**
+     * Check if user can view creator-specific data
+     * Admins and analytics can view all, creators can only view their own
+     */
+    function canViewCreatorData(creatorId) {
+      return hasAnalyticsRole() || 
+             (request.auth != null && request.auth.uid == creatorId);
+    }
+    
+    // ========================================================================
+    // KPI Events Collection
+    // ========================================================================
+    
+    /**
+     * kpiEvents: Append-only log of all KPI events
+     * Document ID: auto-generated
+     * 
+     * Read: Admin/analytics only
+     * Write: Server/Cloud Functions only
+     */
+    match /kpiEvents/{eventId} {
+      // Only admin/analytics can read
+      allow read: if hasAnalyticsRole();
+      
+      // Only server can write (create only, no updates/deletes)
+      allow create: if isServerRequest();
+      
+      // No updates or deletes allowed
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // Daily Metrics Collection
+    // ========================================================================
+    
+    /**
+     * kpiDailyMetrics: Daily aggregated platform metrics
+     * Document ID: YYYY-MM-DD
+     * 
+     * Contains: growth, monetization, safety metrics
+     * 
+     * Read: Admin/analytics only
+     * Write: Server/Cloud Functions only
+     */
+    match /kpiDailyMetrics/{date} {
+      // Only admin/analytics can read
+      allow read: if hasAnalyticsRole();
+      
+      // Only server can write
+      allow create, update: if isServerRequest();
+      
+      // No deletes allowed
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // Creator Daily Metrics Collection
+    // ========================================================================
+    
+    /**
+     * creatorDailyMetrics: Per-creator daily performance metrics
+     * Document ID: {creatorId}_{YYYY-MM-DD}
+     * 
+     * Contains: earnings, activity, engagement per creator
+     * 
+     * Read: Admin/analytics + creator themselves
+     * Write: Server/Cloud Functions only
+     */
+    match /creatorDailyMetrics/{creatorDateId} {
+      // Extract creatorId from document ID (format: creatorId_YYYY-MM-DD)
+      // This is a simplified check; actual extraction would need custom claims or metadata
+      
+      // Admin/analytics can read all
+      // Creators can read their own (checked in client; server enforces via document structure)
+      allow read: if hasAnalyticsRole();
+      
+      // Only server can write
+      allow create, update: if isServerRequest();
+      
+      // No deletes allowed
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // KPI Metadata Collection (optional, for dashboard config)
+    // ========================================================================
+    
+    /**
+     * kpiMetadata: Configuration and metadata for KPI dashboards
+     * Document ID: configKey
+     * 
+     * Examples: dataRetentionPolicy, computeSchedule, alertThresholds
+     * 
+     * Read: Admin/analytics
+     * Write: Admin only
+     */
+    match /kpiMetadata/{configKey} {
+      allow read: if hasAnalyticsRole();
+      allow write: if isAdmin();
+    }
+    
+    // ========================================================================
+    // KPI Alerts Collection (optional, for threshold alerts)
+    // ========================================================================
+    
+    /**
+     * kpiAlerts: Automated alerts when metrics cross thresholds
+     * Document ID: auto-generated
+     * 
+     * Read: Admin only
+     * Write: Server/Cloud Functions only
+     */
+    match /kpiAlerts/{alertId} {
+      allow read: if isAdmin();
+      allow create: if isServerRequest();
+      allow update, delete: if isAdmin();
+    }
+  }
+}
+
+/*
+ * NOTES:
+ * 
+ * 1. Client Applications:
+ *    - Mobile/web apps should NOT have direct access to these collections
+ *    - All KPI data access goes through authenticated API endpoints or Cloud Functions
+ * 
+ * 2. Server/Cloud Functions:
+ *    - Use Firebase Admin SDK which bypasses these rules
+ *    - For service accounts, ensure proper token claims are set
+ * 
+ * 3. Creator Access:
+ *    - Creators can view their own performance via API endpoints
+ *    - API layer filters data to show only their own metrics
+ *    - Direct Firestore access is restricted to admin/analytics
+ * 
+ * 4. Analytics Roles:
+ *    - Set custom token claim: { analyticsAccess: true }
+ *    - Or use dedicated 'analytics' role
+ *    - Managed through admin console or user management functions
+ * 
+ * 5. Data Retention:
+ *    - kpiEvents: Consider archiving after 90 days
+ *    - kpiDailyMetrics: Keep indefinitely or per compliance requirements
+ *    - Implement TTL policies via Firebase Extensions or custom cleanup functions
+ * 
+ * 6. Security Considerations:
+ *    - No PII should be stored in context fields
+ *    - User IDs are pseudonymized references
+ *    - All financial data is in tokens, not fiat (no direct money amounts)
+ *    - Geo data is country/region level only, no precise locations (except panic events)
+ * 
+ * 7. Testing:
+ *    - Use Firebase Emulator Suite for testing rules
+ *    - Test with different user roles (admin, analytics, creator, regular user)
+ *    - Verify that direct client writes are blocked
+ * 
+ * 8. Deployment:
+ *    - Deploy with: firebase deploy --only firestore:rules
+ *    - Or include in CI/CD pipeline
+ *    - Test in staging environment first
+ */

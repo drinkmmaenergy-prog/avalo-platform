@@ -1,0 +1,270 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuth() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+    
+    function isVerified() {
+      return isAuth() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verification.age18 == true;
+    }
+    
+    function isAdmin() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    function isSafetyTeam() {
+      return isAuth() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        isAdmin()
+      );
+    }
+    
+    // ============================================================================
+    // PACK 217 — AVALO LIVE ARENA
+    // Real-time social rooms with gifts, queue, and paid 1:1 chat transitions
+    // ============================================================================
+    
+    // Live Arenas (Creator-hosted rooms)
+    match /live_arenas/{arenaId} {
+      // Allow public read of active arenas
+      allow read: if resource.data.status == 'live' || 
+                     resource.data.status == 'scheduled' ||
+                     isOwner(resource.data.hostId);
+      
+      // Only verified 18+ creators with earnOnChat can create arenas
+      allow create: if isVerified() && 
+                       request.resource.data.hostId == request.auth.uid &&
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.earnOnChat == true &&
+                       request.resource.data.status == 'scheduled' &&
+                       request.resource.data.entryType in ['standard', 'spotlight', 'priority'];
+      
+      // Only host can update their own arena
+      allow update: if isOwner(resource.data.hostId) &&
+                       request.resource.data.hostId == resource.data.hostId;
+      
+      // Only host can delete (end) their arena
+      allow delete: if isOwner(resource.data.hostId);
+    }
+    
+    // Arena Viewers (Who's currently in the arena)
+    match /arena_viewers/{viewerId} {
+      allow read: if isAuth();
+      
+      // Users can join arena as viewer
+      allow create: if isAuth() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status == 'active' &&
+                       exists(/databases/$(database)/documents/live_arenas/$(request.resource.data.arenaId));
+      
+      // Users can update their own viewer status
+      allow update: if isOwner(resource.data.userId);
+      
+      // Users can leave (delete their viewer record)
+      allow delete: if isOwner(resource.data.userId) ||
+                       (exists(/databases/$(database)/documents/live_arenas/$(resource.data.arenaId)) &&
+                        get(/databases/$(database)/documents/live_arenas/$(resource.data.arenaId)).data.hostId == request.auth.uid);
+    }
+    
+    // Arena Gifts (Paid gifts sent to host)
+    match /arena_gifts/{giftId} {
+      allow read: if isAuth();
+      
+      // Users can send gifts (must be validated by Cloud Function for payment)
+      allow create: if isAuth() && 
+                       request.resource.data.senderId == request.auth.uid &&
+                       request.resource.data.giftType in ['soft_flirt', 'fire', 'crown', 'royal_token'] &&
+                       request.resource.data.cost > 0 &&
+                       request.resource.data.cost <= 200 &&
+                       exists(/databases/$(database)/documents/live_arenas/$(request.resource.data.arenaId));
+      
+      // No updates or deletes allowed (immutable gift record)
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // Arena Queue (1:1 chat request queue)
+    match /arena_queue/{queueId} {
+      allow read: if isAuth() &&
+                     (isOwner(resource.data.viewerId) ||
+                      isOwner(resource.data.hostId) ||
+                      isAdmin());
+      
+      // Viewers can enter queue
+      allow create: if isAuth() && 
+                       request.resource.data.viewerId == request.auth.uid &&
+                       request.resource.data.status == 'waiting' &&
+                       exists(/databases/$(database)/documents/live_arenas/$(request.resource.data.arenaId));
+      
+      // Host can update queue status (accept/reject)
+      allow update: if isAuth() &&
+                       (isOwner(resource.data.hostId) ||
+                        (isOwner(resource.data.viewerId) && resource.data.status == 'waiting'));
+      
+      // Users can withdraw from queue
+      allow delete: if isOwner(resource.data.viewerId) ||
+                       isOwner(resource.data.hostId) ||
+                       isAdmin();
+    }
+    
+    // Arena Spotlight Entries (15 tokens for 3 min highlight)
+    match /arena_spotlight/{spotlightId} {
+      allow read: if isAuth();
+      
+      // Users can purchase spotlight (validated by Cloud Function)
+      allow create: if isAuth() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.cost == 15 &&
+                       request.resource.data.durationMinutes == 3 &&
+                       exists(/databases/$(database)/documents/live_arenas/$(request.resource.data.arenaId));
+      
+      // No updates allowed
+      allow update: if false;
+      
+      // Only host or admin can remove spotlight
+      allow delete: if isAdmin() ||
+                       (exists(/databases/$(database)/documents/live_arenas/$(resource.data.arenaId)) &&
+                        get(/databases/$(database)/documents/live_arenas/$(resource.data.arenaId)).data.hostId == request.auth.uid);
+    }
+    
+    // Arena Priority Messages (25 tokens for 1 min pin)
+    match /arena_priority_messages/{messageId} {
+      allow read: if isAuth();
+      
+      // Users can send priority messages (validated by Cloud Function)
+      allow create: if isAuth() && 
+                       request.resource.data.senderId == request.auth.uid &&
+                       request.resource.data.cost == 25 &&
+                       request.resource.data.durationMinutes == 1 &&
+                       request.resource.data.message.size() > 0 &&
+                       request.resource.data.message.size() <= 200 &&
+                       exists(/databases/$(database)/documents/live_arenas/$(request.resource.data.arenaId));
+      
+      // No updates allowed
+      allow update: if false;
+      
+      // Host can remove priority messages
+      allow delete: if isAdmin() ||
+                       (exists(/databases/$(database)/documents/live_arenas/$(resource.data.arenaId)) &&
+                        get(/databases/$(database)/documents/live_arenas/$(resource.data.arenaId)).data.hostId == request.auth.uid);
+    }
+    
+    // Arena Chat Messages (Free chat messages)
+    match /arena_chat/{messageId} {
+      allow read: if isAuth();
+      
+      // Users can send chat messages
+      allow create: if isAuth() && 
+                       request.resource.data.senderId == request.auth.uid &&
+                       request.resource.data.message.size() > 0 &&
+                       request.resource.data.message.size() <= 500 &&
+                       exists(/databases/$(database)/documents/live_arenas/$(request.resource.data.arenaId));
+      
+      // No updates allowed
+      allow update: if false;
+      
+      // Host can delete messages
+      allow delete: if isOwner(resource.data.senderId) ||
+                       (exists(/databases/$(database)/documents/live_arenas/$(resource.data.arenaId)) &&
+                        get(/databases/$(database)/documents/live_arenas/$(resource.data.arenaId)).data.hostId == request.auth.uid);
+    }
+    
+    // Arena Sessions (Individual viewer sessions for analytics)
+    match /arena_sessions/{sessionId} {
+      allow read: if isAuth() &&
+                     (isOwner(resource.data.userId) ||
+                      isOwner(resource.data.hostId) ||
+                      isAdmin());
+      
+      // System creates sessions
+      allow create: if false;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // Arena Moderation Actions (Host controls: mute, remove, block)
+    match /arena_moderation/{actionId} {
+      allow read: if isAuth() &&
+                     (isOwner(resource.data.hostId) ||
+                      isOwner(resource.data.targetId) ||
+                      isSafetyTeam());
+      
+      // Host can create moderation actions
+      allow create: if isAuth() &&
+                       request.resource.data.hostId == request.auth.uid &&
+                       request.resource.data.actionType in ['mute', 'remove', 'block', 'unmute'] &&
+                       exists(/databases/$(database)/documents/live_arenas/$(request.resource.data.arenaId)) &&
+                       get(/databases/$(database)/documents/live_arenas/$(request.resource.data.arenaId)).data.hostId == request.auth.uid;
+      
+      // No updates allowed (immutable log)
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // Arena Analytics (Per-arena statistics)
+    match /arena_analytics/{analyticsId} {
+      allow read: if isAuth() &&
+                     (isOwner(resource.data.hostId) ||
+                      isAdmin());
+      
+      // System creates analytics
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Arena Safety Events (Integration with PACK 211/212)
+    match /arena_safety_events/{eventId} {
+      allow read: if isAuth() &&
+                     (isOwner(resource.data.userId) ||
+                      isOwner(resource.data.hostId) ||
+                      isSafetyTeam());
+      
+      // System creates safety events
+      allow create: if false;
+      allow update: if isSafetyTeam();
+      allow delete: if false;
+    }
+    
+    // First Date Reservation Tokens (Optional feature from spec)
+    match /first_date_tokens/{tokenId} {
+      allow read: if isAuth() &&
+                     (isOwner(resource.data.purchasedBy) ||
+                      isOwner(resource.data.creatorId) ||
+                      isAdmin());
+      
+      // Users can purchase date tokens (validated by Cloud Function)
+      allow create: if isAuth() && 
+                       request.resource.data.purchasedBy == request.auth.uid &&
+                       request.resource.data.status == 'active';
+      
+      // Users can update their own tokens (redeem, expire)
+      allow update: if isOwner(resource.data.purchasedBy) ||
+                       isOwner(resource.data.creatorId) ||
+                       isAdmin();
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Arena Transitions (Tracking Arena → 1:1 Chat transitions)
+    match /arena_transitions/{transitionId} {
+      allow read: if isAuth() &&
+                     (isOwner(resource.data.viewerId) ||
+                      isOwner(resource.data.hostId) ||
+                      isAdmin());
+      
+      // System creates transitions
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}

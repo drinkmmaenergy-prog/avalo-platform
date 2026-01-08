@@ -1,0 +1,17 @@
+{
+  "promotions.title": "Promotions",
+  "promotions.myCampaigns": "My campaigns",
+  "promotions.createCampaign": "Create promotion campaign",
+  "promotions.editCampaign": "Edit campaign",
+  "promotions.budget": "Budget (tokens)",
+  "promotions.impressions": "Impressions",
+  "promotions.clicks": "Clicks",
+  "promotions.status.DRAFT": "Draft",
+  "promotions.status.ACTIVE": "Active",
+  "promotions.status.PAUSED": "Paused",
+  "promotions.status.ENDED": "Ended",
+  "promotions.label.sponsored": "Sponsored",
+  "promotions.placement.discovery": "Discovery",
+  "promotions.placement.marketplace": "Marketplace",
+  "promotions.placement.homeCard": "Home screen card"
+}

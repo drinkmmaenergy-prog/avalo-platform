@@ -1,0 +1,82 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "userLTVForecast",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "assignedTier", "order": "ASCENDING" },
+        { "fieldPath": "ltvDay30", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userLTVForecast",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "assignedTier", "order": "ASCENDING" },
+        { "fieldPath": "confidenceScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userLTVForecast",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lastRecalcAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "geoLTVProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "avgLTV", "order": "DESCENDING" },
+        { "fieldPath": "riskIndex", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "geoLTVProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "whaleRatio", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "roasSignals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "adSource", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "roasSignals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "country", "order": "ASCENDING" },
+        { "fieldPath": "trueROAS", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creatorLTVProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "avgUserTier", "order": "DESCENDING" },
+        { "fieldPath": "totalRevenue", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creatorLTVProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "whaleAttractionRate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ltvOverrideHistory",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "overrideAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

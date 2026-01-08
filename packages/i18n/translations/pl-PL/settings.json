@@ -1,0 +1,23 @@
+{
+  "title": "Ustawienia",
+  "language_and_region": "Język i Region",
+  "language": "Język",
+  "region": "Region",
+  "timezone": "Strefa czasowa",
+  "currency_display": "Wyświetlanie waluty",
+  "select_language": "Wybierz język",
+  "select_region": "Wybierz region",
+  "auto_detect": "Wykryj automatycznie",
+  "detected_language": "Wykryto: {{language}}",
+  "detected_region": "Wykryto: {{region}}",
+  "change_language_warning": "Zmiana języka spowoduje przeładowanie aplikacji",
+  "language_changed": "Język został zmieniony",
+  "account": "Konto",
+  "privacy": "Prywatność",
+  "security": "Bezpieczeństwo",
+  "notifications_settings": "Powiadomienia",
+  "appearance": "Wygląd",
+  "about": "O aplikacji",
+  "help": "Pomoc i wsparcie",
+  "logout": "Wyloguj"
+}

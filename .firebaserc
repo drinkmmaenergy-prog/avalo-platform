@@ -1,0 +1,23 @@
+{
+  "projects": {
+    "default": "avalo-c8c46"
+  },
+  "targets": {
+    "avalo-c8c46": {
+      "hosting": {
+        "app": [
+          "avalo-app"
+        ],
+        "web": [
+          "avalo-web"
+        ]
+      }
+    }
+  },
+  "experimental": {
+    "functions": {
+      "skipEnvValidation": true
+    }
+  },
+  "etags": {}
+}

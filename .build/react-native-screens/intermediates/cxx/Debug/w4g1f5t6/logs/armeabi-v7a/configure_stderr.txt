@@ -1,0 +1,14 @@
+CMake Warning in CMakeLists.txt:
+  The object file directory
+
+    C:/Users/Drink/avaloapp/app-mobile/node_modules/.pnpm/react-native-screens@4.18.0_0483037a4a8051ef02fb4fda540273a2/node_modules/react-native-screens/android/.cxx/Debug/w4g1f5t6/armeabi-v7a/CMakeFiles/rnscreens.dir/./
+
+  has 216 characters.  The maximum full path to an object file is 250
+  characters (see CMAKE_OBJECT_PATH_MAX).  Object file
+
+    C_/Users/Drink/avaloapp/app-mobile/node_modules/.pnpm/react-native-screens@4.18.0_0483037a4a8051ef02fb4fda540273a2/node_modules/react-native-screens/cpp/RNScreensTurboModule.cpp.o
+
+  cannot be safely placed under this directory.  The build may not work
+  correctly.
+
+

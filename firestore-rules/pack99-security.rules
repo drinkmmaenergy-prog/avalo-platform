@@ -1,0 +1,44 @@
+// ============================================================================
+// PACK 99 — Feature Flags & Remote Config Security Rules
+// ============================================================================
+
+// Feature Flags Collection
+// - Not readable by clients directly (must use Cloud Functions)
+// - Not writable by clients
+// - Admin-only access via Cloud Functions
+match /feature_flags/{flagId} {
+  // Deny all direct reads
+  allow read: if false;
+  
+  // Deny all direct writes
+  allow write: if false;
+  
+  // All access must go through Cloud Functions with proper admin auth
+}
+
+// Remote Config Parameters Collection
+// - Not readable by clients directly (must use Cloud Functions)
+// - Not writable by clients
+// - Admin-only access via Cloud Functions
+match /remote_config_params/{paramId} {
+  // Deny all direct reads
+  allow read: if false;
+  
+  // Deny all direct writes
+  allow write: if false;
+  
+  // All access must go through Cloud Functions with proper admin auth
+}
+
+// Feature Exposure Events Collection
+// - Write-only for logging (via Cloud Functions)
+// - Read-only for admins (via Cloud Functions)
+match /feature_exposure_events/{exposureId} {
+  // Deny all direct reads
+  allow read: if false;
+  
+  // Deny all direct writes
+  allow write: if false;
+  
+  // All operations must go through Cloud Functions
+}

@@ -1,0 +1,120 @@
+// PACK 446: AI Governance, Explainability & Model Risk Control
+// Firestore Security Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isModelOwner(modelId) {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/ai_model_registry/$(modelId)).data.owner == request.auth.uid;
+    }
+    
+    function hasComplianceRole() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'compliance', 'ai_governance']);
+    }
+    
+    // AI Model Registry - admin and model owners only
+    match /ai_model_registry/{modelId} {
+      allow read: if hasComplianceRole() || isModelOwner(modelId);
+      allow create: if hasComplianceRole();
+      allow update: if isAdmin() || isModelOwner(modelId);
+      allow delete: if isAdmin();
+    }
+    
+    // Decision Explanations - users can view their own, admins can view all
+    match /ai_decision_explanations/{explanationId} {
+      allow read: if isAuthenticated() && (
+        resource.data.decisionContext.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if hasComplianceRole();
+      allow update, delete: if isAdmin();
+    }
+    
+    // Risk Scores - compliance team and admins only
+    match /ai_model_risk_scores/{scoreId} {
+      allow read: if hasComplianceRole();
+      allow create: if hasComplianceRole();
+      allow update, delete: if isAdmin();
+    }
+    
+    // Risk Alerts - compliance team can read and acknowledge
+    match /ai_risk_alerts/{alertId} {
+      allow read: if hasComplianceRole();
+      allow create: if hasComplianceRole();
+      allow update: if hasComplianceRole(); // For acknowledgment
+      allow delete: if isAdmin();
+    }
+    
+    // Kill Switch Rules - admin only
+    match /ai_killswitch_rules/{ruleId} {
+      allow read: if hasComplianceRole();
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Kill Switch Events - compliance team can read, system can create
+    match /ai_killswitch_events/{eventId} {
+      allow read: if hasComplianceRole();
+      allow create: if hasComplianceRole();
+      allow update: if isAdmin(); // For resolution
+      allow delete: if isAdmin();
+    }
+    
+    // Active Models Cache - read by application, write by system
+    match /ai_active_models_cache/{modelId} {
+      allow read: if isAuthenticated();
+      allow write: if hasComplianceRole();
+    }
+    
+    // Compliance Assessments - compliance team only
+    match /ai_compliance_assessments/{assessmentId} {
+      allow read: if hasComplianceRole();
+      allow create, update: if hasComplianceRole();
+      allow delete: if isAdmin();
+    }
+    
+    // Compliance Evidence - compliance team and model owners
+    match /ai_compliance_evidence/{evidenceId} {
+      allow read: if hasComplianceRole() || 
+        (isAuthenticated() && resource.data.modelId != null && 
+         isModelOwner(resource.data.modelId));
+      allow create: if hasComplianceRole() || 
+        (isAuthenticated() && request.resource.data.modelId != null && 
+         isModelOwner(request.resource.data.modelId));
+      allow update: if hasComplianceRole();
+      allow delete: if isAdmin();
+    }
+    
+    // Compliance Requirements - read-only reference data
+    match /ai_compliance_requirements/{requirementId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Inspection Packages - compliance team and regulators
+    match /ai_inspection_packages/{packageId} {
+      allow read: if hasComplianceRole();
+      allow create: if hasComplianceRole();
+      allow update, delete: if isAdmin();
+    }
+    
+    // Audit Logs - read-only for compliance team
+    match /audit_logs/{logId} {
+      allow read: if hasComplianceRole();
+      allow create: if true; // System can always write audit logs
+      allow update, delete: if false; // Never allow modification
+    }
+  }
+}

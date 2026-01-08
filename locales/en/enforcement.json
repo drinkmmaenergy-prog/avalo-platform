@@ -1,0 +1,46 @@
+{
+  "accountSuspended": "Your account is currently suspended. You cannot send messages.",
+  "accountBanned": "Your account has been banned. Please contact support if you believe this is a mistake.",
+  "messagingReadOnly": "Your messaging is temporarily restricted. You cannot send new messages.",
+  "noNewChats": "You cannot start new chats at this time.",
+  "earningDisabled": "Earning from chat is currently disabled on your account.",
+  "hiddenFromDiscovery": "Your profile is hidden from Discovery and Marketplace.",
+  "contactSupport": "Contact support",
+  
+  "accountStatus": {
+    "active": "Your account is active",
+    "softRestricted": "Your account has some limitations",
+    "hardRestricted": "Your account is restricted",
+    "suspended": "Your account has been suspended"
+  },
+  
+  "errors": {
+    "accountRestricted": "Your account is currently restricted. Please contact support if you believe this is a mistake.",
+    "featureLocked": "This feature is currently unavailable on your account.",
+    "accountSuspendedError": "Your account has been suspended. Please contact support.",
+    "permissionDenied": "You do not have permission to perform this action.",
+    "cannotSendMessages": "You cannot send messages at this time.",
+    "cannotSendGifts": "You cannot send gifts at this time.",
+    "cannotSendPaidMedia": "You cannot send paid media at this time.",
+    "cannotPublishStories": "You cannot publish premium stories at this time.",
+    "cannotRequestPayouts": "You cannot request payouts at this time.",
+    "cannotAccessDiscovery": "You cannot access discovery at this time.",
+    "cannotStartCalls": "You cannot start calls at this time.",
+    "cannotSendGeoshare": "You cannot share your location at this time."
+  },
+  
+  "restrictions": {
+    "softLimitActive": "Some features may be limited due to unusual activity.",
+    "hardLimitActive": "Your account is restricted from certain actions.",
+    "temporaryRestriction": "This is a temporary restriction.",
+    "contactSupportForDetails": "Contact support for more details."
+  },
+  
+  "suspendedScreen": {
+    "title": "Account Suspended",
+    "message": "Your account has been suspended and you cannot continue using Avalo at this time.",
+    "submessage": "If you believe this is a mistake, please contact our support team.",
+    "contactButton": "Contact Support",
+    "footer": "For more information, please review our Community Guidelines and Terms of Service."
+  }
+}

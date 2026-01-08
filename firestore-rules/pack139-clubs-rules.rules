@@ -1,0 +1,222 @@
+/**
+ * PACK 139: Avalo Social Clubs & Private Communities
+ * Firestore Security Rules
+ * 
+ * Collections:
+ * - clubs
+ * - club_members
+ * - club_posts
+ * - club_threads
+ * - club_events
+ * - club_moderators
+ */
+
+// ============================================
+// CLUBS COLLECTION
+// ============================================
+
+match /clubs/{clubId} {
+  // Anyone can read public clubs
+  allow read: if request.auth != null
+    && (resource.data.isPublic == true
+        || exists(/databases/$(database)/documents/club_members/$(request.auth.uid + '_' + clubId)));
+  
+  // Verified creators can create clubs
+  allow create: if request.auth != null
+    && request.auth.uid == request.resource.data.ownerId
+    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isCreator == true
+    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.earnFromChat == true
+    // Validate SAFE content
+    && !hasBlockedKeywords(request.resource.data.name)
+    && !hasBlockedKeywords(request.resource.data.description)
+    // Validate category is SAFE
+    && request.resource.data.category in [
+      'FITNESS_TRAINING', 'WELLNESS_MENTAL_HEALTH', 'BOOK_PRODUCTIVITY',
+      'MEDITATION_MINDFULNESS', 'LANGUAGE_EXCHANGE', 'LOCAL_TRAVEL_FOOD',
+      'PHOTOGRAPHY_FILMMAKING', 'MOTORSPORTS_AUTOMOTIVE', 'GAMING',
+      'ENTREPRENEURSHIP_BUSINESS', 'COSMETICS_BEAUTY', 'FASHION'
+    ]
+    // Validate pricing for token-gated clubs
+    && (request.resource.data.accessType != 'TOKEN_GATED' 
+        || (request.resource.data.entryTokens >= 1 && request.resource.data.entryTokens <= 5000))
+    // No visibility advantages
+    && request.resource.data.containsNSFW == false
+    && request.resource.data.containsForbiddenContent == false;
+  
+  // Owner can update own club
+  allow update: if request.auth != null
+    && request.auth.uid == resource.data.ownerId
+    // Cannot change to NSFW content
+    && !hasBlockedKeywords(request.resource.data.name)
+    && !hasBlockedKeywords(request.resource.data.description)
+    // Cannot change pricing after creation
+    && request.resource.data.entryTokens == resource.data.entryTokens
+    && request.resource.data.accessType == resource.data.accessType;
+  
+  // Owner can delete own club
+  allow delete: if request.auth != null
+    && request.auth.uid == resource.data.ownerId;
+}
+
+// ============================================
+// CLUB MEMBERS COLLECTION
+// ============================================
+
+match /club_members/{memberId} {
+  // Member or owner can read membership records
+  allow read: if request.auth != null
+    && (request.auth.uid == resource.data.userId
+        || request.auth.uid == getClubOwner(resource.data.clubId));
+  
+  // Created via Cloud Function only (payment handling)
+  allow create: if false;
+  
+  // Updates via Cloud Function only (role changes, bans)
+  allow update: if false;
+  
+  // Can leave club (via Cloud Function)
+  allow delete: if false;
+}
+
+// ============================================
+// CLUB POSTS COLLECTION
+// ============================================
+
+match /club_posts/{postId} {
+  // Members can read posts in their clubs
+  allow read: if request.auth != null
+    && resource.data.isVisible == true
+    && isMemberOfClub(request.auth.uid, resource.data.clubId);
+  
+  // Created via Cloud Function only (NSFW validation)
+  allow create: if false;
+  
+  // Updates via Cloud Function only (moderation)
+  allow update: if false;
+  
+  // Owner can delete own posts, moderators can delete any
+  allow delete: if request.auth != null
+    && (request.auth.uid == resource.data.userId
+        || isModeratorOfClub(request.auth.uid, resource.data.clubId));
+}
+
+// ============================================
+// CLUB THREADS COLLECTION
+// ============================================
+
+match /club_threads/{threadId} {
+  // Members can read threads in their clubs
+  allow read: if request.auth != null
+    && isMemberOfClub(request.auth.uid, resource.data.clubId);
+  
+  // Members can create threads
+  allow create: if request.auth != null
+    && request.auth.uid == request.resource.data.userId
+    && isMemberOfClub(request.auth.uid, request.resource.data.clubId)
+    && !hasBlockedKeywords(request.resource.data.title)
+    && !hasBlockedKeywords(request.resource.data.content);
+  
+  // Owner can update own threads
+  allow update: if request.auth != null
+    && (request.auth.uid == resource.data.userId
+        || isModeratorOfClub(request.auth.uid, resource.data.clubId));
+  
+  // Owner or moderator can delete threads
+  allow delete: if request.auth != null
+    && (request.auth.uid == resource.data.userId
+        || isModeratorOfClub(request.auth.uid, resource.data.clubId));
+}
+
+// ============================================
+// CLUB EVENTS COLLECTION
+// ============================================
+
+match /club_events/{eventId} {
+  // Members can read events in their clubs
+  allow read: if request.auth != null
+    && isMemberOfClub(request.auth.uid, resource.data.clubId);
+  
+  // Created via Cloud Function only (integrates with PACK 117)
+  allow create: if false;
+  
+  // Updates via Cloud Function only
+  allow update: if false;
+  
+  // Host can delete own events
+  allow delete: if request.auth != null
+    && request.auth.uid == resource.data.hostUserId;
+}
+
+// ============================================
+// CLUB MODERATORS COLLECTION
+// ============================================
+
+match /club_moderators/{moderatorId} {
+  // Anyone in club can see moderators
+  allow read: if request.auth != null
+    && isMemberOfClub(request.auth.uid, resource.data.clubId);
+  
+  // Assigned via Cloud Function only
+  allow create: if false;
+  
+  // Updates via Cloud Function only
+  allow update: if false;
+  
+  // Owner can remove moderators
+  allow delete: if false;
+}
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+function hasBlockedKeywords(text) {
+  let lowerText = text.lower();
+  return lowerText.matches('.*sexy.*')
+    || lowerText.matches('.*seductive.*')
+    || lowerText.matches('.*lingerie.*')
+    || lowerText.matches('.*nude.*')
+    || lowerText.matches('.*naked.*')
+    || lowerText.matches('.*explicit.*')
+    || lowerText.matches('.*nsfw.*')
+    || lowerText.matches('.*adult.*')
+    || lowerText.matches('.*xxx.*')
+    || lowerText.matches('.*porn.*')
+    || lowerText.matches('.*erotic.*')
+    || lowerText.matches('.*dating.*')
+    || lowerText.matches('.*romance.*')
+    || lowerText.matches('.*romantic.*')
+    || lowerText.matches('.*boyfriend.*')
+    || lowerText.matches('.*girlfriend.*')
+    || lowerText.matches('.*sugar.*')
+    || lowerText.matches('.*hottest.*')
+    || lowerText.matches('.*sexiest.*')
+    || lowerText.matches('.*hookup.*')
+    || lowerText.matches('.*flirt.*')
+    || lowerText.matches('.*intimate.*')
+    || lowerText.matches('.*onlyfans.*')
+    || lowerText.matches('.*fansly.*')
+    || lowerText.matches('.*dm me.*')
+    || lowerText.matches('.*whatsapp.*')
+    || lowerText.matches('.*telegram.*')
+    || lowerText.matches('.*private.*chat.*')
+    || lowerText.matches('.*paypal.*')
+    || lowerText.matches('.*venmo.*')
+    || lowerText.matches('.*cashapp.*');
+}
+
+function getClubOwner(clubId) {
+  return get(/databases/$(database)/documents/clubs/$(clubId)).data.ownerId;
+}
+
+function isMemberOfClub(userId, clubId) {
+  return exists(/databases/$(database)/documents/club_members/$(userId + '_' + clubId))
+    && get(/databases/$(database)/documents/club_members/$(userId + '_' + clubId)).data.isActive == true
+    && get(/databases/$(database)/documents/club_members/$(userId + '_' + clubId)).data.isBanned == false;
+}
+
+function isModeratorOfClub(userId, clubId) {
+  return userId == getClubOwner(clubId)
+    || (exists(/databases/$(database)/documents/club_moderators/$(userId + '_' + clubId))
+        && get(/databases/$(database)/documents/club_moderators/$(userId + '_' + clubId)).data.isActive == true);
+}

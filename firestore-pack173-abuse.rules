@@ -1,0 +1,300 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ========================================================================
+    // ABUSE CASES
+    // ========================================================================
+    
+    match /abuse_cases/{caseId} {
+      // Users can read cases where they are the target
+      // Moderators can read all cases
+      allow read: if isAuthenticated() && (
+        resource.data.targetUserId == request.auth.uid ||
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Only system can create cases (via Cloud Functions)
+      allow create: if false;
+      
+      // Only moderators and admins can update cases
+      allow update: if isModerator() || isAdmin();
+      
+      // Only admins can delete cases
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // ABUSE EVENTS
+    // ========================================================================
+    
+    match /abuse_events/{eventId} {
+      // Users can read events where they are the target
+      // Moderators can read all events
+      allow read: if isAuthenticated() && (
+        resource.data.targetUserId == request.auth.uid ||
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Only system can write events
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // ABUSE REPORTS
+    // ========================================================================
+    
+    match /abuse_reports/{reportId} {
+      // Users can read their own reports
+      // Moderators can read all reports
+      allow read: if isAuthenticated() && (
+        resource.data.reportedBy == request.auth.uid ||
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Users can create reports (validated by Cloud Function)
+      allow create: if isAuthenticated() && 
+        request.resource.data.reportedBy == request.auth.uid;
+      
+      // Only moderators can update reports
+      allow update: if isModerator() || isAdmin();
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // COMMENT RAIDS
+    // ========================================================================
+    
+    match /comment_raids/{raidId} {
+      // Target users can read raids against them
+      // Moderators can read all raids
+      allow read: if isAuthenticated() && (
+        resource.data.targetUserId == request.auth.uid ||
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // DEFAMATION REPORTS
+    // ========================================================================
+    
+    match /defamation_reports/{reportId} {
+      // Target and accuser can read
+      // Moderators can read all
+      allow read: if isAuthenticated() && (
+        resource.data.targetUserId == request.auth.uid ||
+        resource.data.accuserUserId == request.auth.uid ||
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Only system and moderators can write
+      allow write: if isModerator() || isAdmin();
+    }
+    
+    // ========================================================================
+    // HARASSMENT SANCTIONS
+    // ========================================================================
+    
+    match /harassment_sanctions/{sanctionId} {
+      // Users can read their own sanctions
+      // Moderators can read all
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Only system and moderators can write
+      allow create: if false;
+      allow update: if isModerator() || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // SANCTION APPEALS
+    // ========================================================================
+    
+    match /sanction_appeals/{appealId} {
+      // Users can read their own appeals
+      // Moderators can read all appeals
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Users can create appeals for their own sanctions
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Only moderators can update (review) appeals
+      allow update: if isModerator() || isAdmin();
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // CREATOR SHIELD SETTINGS
+    // ========================================================================
+    
+    match /creator_shield_settings/{userId} {
+      // Users can read and write their own settings
+      allow read: if isUser(userId);
+      
+      allow create, update: if isUser(userId) && 
+        request.resource.data.userId == userId;
+      
+      // No deletion (only disable)
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // STEALTH MITIGATIONS
+    // ========================================================================
+    
+    match /stealth_mitigations/{mitigationId} {
+      // Target users can read mitigations on content targeting them
+      // Moderators can read all
+      allow read: if isModerator() || isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // VELOCITY THROTTLES
+    // ========================================================================
+    
+    match /velocity_throttles/{throttleId} {
+      // Target users can read throttles protecting them
+      // Moderators can read all
+      allow read: if isAuthenticated() && (
+        resource.data.targetUserId == request.auth.uid ||
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // TRAUMA SAFETY VIOLATIONS
+    // ========================================================================
+    
+    match /trauma_safety_violations/{violationId} {
+      // Victim can read violations against them
+      // Moderators can read all
+      allow read: if isAuthenticated() && (
+        resource.data.victimUserId == request.auth.uid ||
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Only system and moderators can write
+      allow write: if isModerator() || isAdmin();
+    }
+    
+    // ========================================================================
+    // USER MUTES
+    // ========================================================================
+    
+    match /user_mutes/{muteId} {
+      // Users can read their own mutes
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Users can create/delete their own mutes
+      // System can create automatic mutes
+      allow create: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.isAutomatic == true
+      );
+      
+      allow update: if isUser(resource.data.userId);
+      
+      allow delete: if isUser(resource.data.userId) || 
+        isModerator() || 
+        isAdmin();
+    }
+    
+    // ========================================================================
+    // USER ABUSE CASE LINKS
+    // ========================================================================
+    
+    match /user_abuse_case_links/{userId} {
+      // Users can read their own case links
+      allow read: if isUser(userId);
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // COMMENTS WITH ABUSE FLAGS
+    // ========================================================================
+    
+    match /comments/{commentId} {
+      // Read rules depend on stealth hiding
+      allow read: if isAuthenticated() && (
+        // Author can always see their own comments
+        resource.data.authorId == request.auth.uid ||
+        // Others can see if not stealth hidden
+        (resource.data.stealthHidden != true) ||
+        // Moderators can see all
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Standard comment creation with abuse checks
+      allow create: if isAuthenticated() && 
+        request.resource.data.authorId == request.auth.uid &&
+        // Check if user is not restricted
+        !exists(/databases/$(database)/documents/harassment_sanctions/$(request.auth.uid + '_active'));
+      
+      // Users can update their own comments
+      allow update: if isAuthenticated() && (
+        resource.data.authorId == request.auth.uid ||
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Users can delete their own comments
+      allow delete: if isAuthenticated() && (
+        resource.data.authorId == request.auth.uid ||
+        isModerator() ||
+        isAdmin()
+      );
+    }
+  }
+}

@@ -1,0 +1,155 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 209: Refund Transactions
+    // ========================================================================
+    match /refund_transactions/{refundId} {
+      // Read: Only users involved in the transaction or admins
+      allow read: if request.auth != null && (
+        resource.data.payerId == request.auth.uid ||
+        resource.data.earnerId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 209: Voluntary Refunds
+    // ========================================================================
+    match /voluntary_refunds/{refundId} {
+      // Read: Only users involved in the refund or admins
+      allow read: if request.auth != null && (
+        resource.data.issuedBy == request.auth.uid ||
+        resource.data.recipientId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 209: Appearance Complaints
+    // ========================================================================
+    match /appearance_complaints/{complaintId} {
+      // Read: Only complainant, reported user, or admins
+      allow read: if request.auth != null && (
+        resource.data.complainantId == request.auth.uid ||
+        resource.data.reportedUserId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true
+      );
+      
+      // Write: Only server-side (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 209: Trust & Safety Incidents
+    // ========================================================================
+    match /trust_safety_incidents/{incidentId} {
+      // Read: Only the flagged user (limited fields) or admins/moderators
+      allow read: if request.auth != null && (
+        // User can read their own incidents
+        resource.data.userId == request.auth.uid ||
+        // Admins and moderators can read all
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true
+      );
+      
+      // Write: Only admins, moderators, or server-side
+      allow create: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true
+      );
+      
+      // Update: Only admins or moderators (for review actions)
+      allow update: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true
+      ) && (
+        // Can only update review fields
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'reviewedBy',
+          'reviewedAt',
+          'actionTaken',
+          'requiresManualReview'
+        ])
+      );
+      
+      // Delete: Only admins
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // PACK 209: User Trust Profile (for trust score updates)
+    // ========================================================================
+    match /user_trust_profile/{userId} {
+      // Read: Own profile or admins/moderators
+      allow read: if request.auth != null && (
+        userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // PACK 209: Enhanced Calendar Bookings (with complaint fields)
+    // ========================================================================
+    match /calendarBookings/{bookingId} {
+      // Read: Participants or admins
+      allow read: if request.auth != null && (
+        resource.data.bookerId == request.auth.uid ||
+        resource.data.creatorId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Only the booker
+      allow create: if request.auth != null &&
+        request.resource.data.bookerId == request.auth.uid &&
+        request.resource.data.status == 'PENDING';
+      
+      // Update: Participants (for status changes) or server-side
+      allow update: if request.auth != null && (
+        // Creator can confirm
+        (resource.data.creatorId == request.auth.uid &&
+         resource.data.status == 'PENDING' &&
+         request.resource.data.status == 'CONFIRMED') ||
+        // Either party can verify or cancel
+        (resource.data.bookerId == request.auth.uid || resource.data.creatorId == request.auth.uid) &&
+        (request.resource.data.status in ['COMPLETED', 'CANCELLED', 'COMPLAINT_REFUNDED']) ||
+        // Admins can update anything
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Delete: Only admins
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // PACK 209: Enhanced Event Attendees (with voluntary refund fields)
+    // ========================================================================
+    match /event_attendees/{attendeeId} {
+      // Read: Attendee, event host, or admins
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.hostUserId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+  }
+}

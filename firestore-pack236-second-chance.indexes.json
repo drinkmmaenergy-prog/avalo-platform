@@ -1,0 +1,105 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "matches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "secondChance.eligible", "order": "ASCENDING" },
+        { "fieldPath": "lastInteraction", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "matches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "secondChance.eligible", "order": "ASCENDING" },
+        { "fieldPath": "secondChance.reason", "order": "ASCENDING" },
+        { "fieldPath": "lastInteraction", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "matches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId1", "order": "ASCENDING" },
+        { "fieldPath": "secondChance.eligible", "order": "ASCENDING" },
+        { "fieldPath": "secondChance.lastTriggered", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "matches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId2", "order": "ASCENDING" },
+        { "fieldPath": "secondChance.eligible", "order": "ASCENDING" },
+        { "fieldPath": "secondChance.lastTriggered", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "matches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "totalPaidWords", "order": "DESCENDING" },
+        { "fieldPath": "lastInteraction", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "matches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "hasMemoryLog", "order": "ASCENDING" },
+        { "fieldPath": "lastInteraction", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "matches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "hasMeeting", "order": "ASCENDING" },
+        { "fieldPath": "lastInteraction", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "matches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "compatibilityScore", "order": "DESCENDING" },
+        { "fieldPath": "lastInteraction", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "matches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sleepMode", "order": "ASCENDING" },
+        { "fieldPath": "breakupRecovery", "order": "ASCENDING" },
+        { "fieldPath": "lastInteraction", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "matches",
+      "fieldPath": "secondChance.eligible",
+      "indexes": [
+        { "queryScope": "COLLECTION", "order": "ASCENDING" },
+        { "queryScope": "COLLECTION", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "matches",
+      "fieldPath": "secondChance.lastTriggered",
+      "indexes": [
+        { "queryScope": "COLLECTION", "order": "ASCENDING" },
+        { "queryScope": "COLLECTION", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "matches",
+      "fieldPath": "secondChance.reason",
+      "indexes": [
+        { "queryScope": "COLLECTION", "order": "ASCENDING" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+// PACK 76 - Geoshare Sessions Security Rules
+// Rules for temporary real-time location sharing
+
+match /geoshare_sessions/{sessionId} {
+  // Allow participants to read their own session
+  allow read: if request.auth != null && (
+    resource.data.userA == request.auth.uid ||
+    resource.data.userB == request.auth.uid
+  ) && resource.data.expiresAt > request.time;
+
+  // Allow userA to create session only after payment validation
+  allow create: if request.auth != null &&
+    request.resource.data.userA == request.auth.uid &&
+    request.resource.data.status == 'ACTIVE' &&
+    request.resource.data.paidAmount > 0 &&
+    request.resource.data.expiresAt > request.time &&
+    request.resource.data.createdAt == request.time;
+
+  // Allow participants to update location data only
+  allow update: if request.auth != null && (
+    resource.data.userA == request.auth.uid ||
+    resource.data.userB == request.auth.uid
+  ) && (
+    // Only allow location updates, not session data changes
+    request.resource.data.userA == resource.data.userA &&
+    request.resource.data.userB == resource.data.userB &&
+    request.resource.data.paidAmount == resource.data.paidAmount &&
+    request.resource.data.expiresAt == resource.data.expiresAt &&
+    request.resource.data.durationMinutes == resource.data.durationMinutes
+  );
+
+  // Only backend can delete (via TTL or manual termination)
+  allow delete: if false;
+}
+
+// Location updates subcollection
+match /geoshare_sessions/{sessionId}/locations/{locationId} {
+  // Allow participants to write their own location
+  allow create: if request.auth != null &&
+    request.resource.data.userId == request.auth.uid &&
+    request.resource.data.timestamp == request.time;
+
+  // Allow participants to read locations
+  allow read: if request.auth != null && (
+    get(/databases/$(database)/documents/geoshare_sessions/$(sessionId)).data.userA == request.auth.uid ||
+    get(/databases/$(database)/documents/geoshare_sessions/$(sessionId)).data.userB == request.auth.uid
+  );
+
+  // No updates or deletes allowed
+  allow update, delete: if false;
+}

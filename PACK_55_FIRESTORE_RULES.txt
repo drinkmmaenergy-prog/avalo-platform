@@ -1,0 +1,89 @@
+// PACK 55 — Firestore Security Rules
+// Add these rules to your firestore.rules file
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // AGE VERIFICATION
+    // ========================================================================
+    
+    match /age_verification/{userId} {
+      // Users can read their own age verification
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only backend functions can write (via admin SDK)
+      // Users submit via compliance_ageSoftVerify function
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MEDIA SAFETY SCANS
+    // ========================================================================
+    
+    match /media_safety_scans/{mediaId} {
+      // Users can read scan status for their own media
+      allow read: if request.auth != null && 
+                     resource.data.ownerUserId == request.auth.uid;
+      
+      // Only backend functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // AML PROFILES
+    // ========================================================================
+    
+    match /aml_profiles/{userId} {
+      // Users can read their own AML state
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only backend functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // GDPR REQUESTS
+    // ========================================================================
+    
+    match /gdpr_erasure_requests/{requestId} {
+      // Users can read their own requests
+      allow read: if request.auth != null && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only backend functions can write
+      allow write: if false;
+    }
+    
+    match /gdpr_export_requests/{requestId} {
+      // Users can read their own requests
+      allow read: if request.auth != null && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only backend functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // POLICIES
+    // ========================================================================
+    
+    match /policies/{policyId} {
+      // Anyone can read active policies
+      allow read: if resource.data.isActive == true;
+      
+      // Only admins can write (manual policy updates)
+      allow write: if false;
+    }
+    
+    match /policy_acceptances/{acceptanceId} {
+      // Users can read their own acceptances
+      allow read: if request.auth != null && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only backend functions can write
+      allow write: if false;
+    }
+  }
+}

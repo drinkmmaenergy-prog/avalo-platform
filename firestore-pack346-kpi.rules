@@ -1,0 +1,70 @@
+rules_version = '2';
+
+/**
+ * PACK 346 — KPI Engine Firestore Security Rules
+ * Read-only analytics + alerts
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isCreator(creatorId) {
+      return isAuthenticated() && request.auth.uid == creatorId;
+    }
+
+    // System KPI data - Admin read only
+    match /system/kpiRealtime/{document=**} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+
+    // Abuse signals - Admin read, system write
+    match /system/abuseSignals/{document=**} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+
+    // Alerts - Admin read/write (to acknowledge/resolve)
+    match /system/alerts/active/{alertId} {
+      allow read: if isAdmin();
+      allow update: if isAdmin() && 
+                       (request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['acknowledgedAt', 'acknowledgedBy', 'resolvedAt', 'resolvedBy']));
+      allow delete: if isAdmin(); // For resolving
+      allow create: if false; // Only Cloud Functions create
+    }
+
+    match /system/alerts/resolved/{alertId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+
+    // Churn records - Admin read only
+    match /system/churn/records/{userId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+
+    // KPI Thresholds - Admin read/write
+    match /system/kpiThresholds/config/{region} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Creator KPI - Creator can read their own, Admin can read all
+    match /creators/{creatorId}/kpi/current {
+      allow read: if isAdmin() || isCreator(creatorId);
+      allow write: if false; // Only Cloud Functions can write
+    }
+  }
+}

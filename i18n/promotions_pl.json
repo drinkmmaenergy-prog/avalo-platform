@@ -1,0 +1,17 @@
+{
+  "promotions.title": "Promocje",
+  "promotions.myCampaigns": "Moje kampanie",
+  "promotions.createCampaign": "Utwórz kampanię promocyjną",
+  "promotions.editCampaign": "Edytuj kampanię",
+  "promotions.budget": "Budżet (tokeny)",
+  "promotions.impressions": "Wyświetlenia",
+  "promotions.clicks": "Kliknięcia",
+  "promotions.status.DRAFT": "Szkic",
+  "promotions.status.ACTIVE": "Aktywna",
+  "promotions.status.PAUSED": "Wstrzymana",
+  "promotions.status.ENDED": "Zakończona",
+  "promotions.label.sponsored": "Sponsorowane",
+  "promotions.placement.discovery": "Discovery",
+  "promotions.placement.marketplace": "Marketplace",
+  "promotions.placement.homeCard": "Karta na ekranie głównym"
+}

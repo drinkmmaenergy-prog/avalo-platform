@@ -1,0 +1,75 @@
+{
+  "userControl": {
+    "title": "Prywatność i kontrola",
+    "loading": "Ładowanie ustawień...",
+    "errorLoading": "Nie udało się załadować ustawień",
+    "errorLoadingProfile": "Nie udało się załadować profilu",
+    "errorSaving": "Nie udało się zapisać ustawień",
+    "section": {
+      "visibility": "Widoczność",
+      "incognito": "Tryb incognito",
+      "passport": "Passport i lokalizacja",
+      "contacts": "Preferencje kontaktu",
+      "marketing": "Reklamy i marketing",
+      "support": "Pomoc i wsparcie"
+    },
+    "visibility": {
+      "profileVisible": "Profil widoczny",
+      "showInDiscovery": "Pokazuj mnie w Discovery",
+      "showInMarketplace": "Pokazuj mnie w Marketplace",
+      "showOnlineStatus": "Pokazuj status online",
+      "showLastSeen": "Pokazuj czas ostatniej aktywności"
+    },
+    "incognito": {
+      "enabled": "Włącz tryb incognito",
+      "hideFromRecentlyViewed": "Ukryj z list ostatnio oglądanych",
+      "hideFromWhoViewedMe": "Ukryj z 'kto mnie oglądał'",
+      "hideFromNearby": "Ukryj w wynikach w pobliżu"
+    },
+    "passport": {
+      "virtualLocation": "Używaj wirtualnej lokalizacji",
+      "country": "Wirtualny kraj",
+      "city": "Wirtualne miasto"
+    },
+    "contacts": {
+      "allowMessagesFrom": "Kto może do Ciebie pisać",
+      "selectPreference": "Wybierz kto może do Ciebie pisać",
+      "anyone": "Każdy",
+      "matchesOnly": "Tylko dopasowania",
+      "fansOnly": "Tylko fani",
+      "none": "Nikt",
+      "allowColdPaidMessages": "Zezwól na niezamówione płatne wiadomości"
+    },
+    "marketing": {
+      "allowInAppPromotions": "Zezwól na promocje w aplikacji",
+      "allowEmailMarketing": "Otrzymuj e-maile marketingowe",
+      "allowPushMarketing": "Otrzymuj powiadomienia marketingowe"
+    },
+    "support": {
+      "openHelpCenter": "Otwórz Centrum pomocy"
+    }
+  },
+  "support": {
+    "title": "Centrum pomocy i wsparcia",
+    "subtitle": "Uzyskaj pomoc, przeglądaj zasady i zarządzaj sporami",
+    "loading": "Ładowanie centrum pomocy...",
+    "quickActions": "Szybkie akcje",
+    "faq": "FAQ i Centrum pomocy",
+    "faqDescription": "Znajdź odpowiedzi na często zadawane pytania",
+    "contactSupport": "Skontaktuj się z pomocą techniczną",
+    "contactDescription": "Wyślij nam e-mail w celu uzyskania pomocy",
+    "emailUs": "Napisz do nas na",
+    "policies": "Zasady i warunki",
+    "policiesDescription": "Przeglądaj warunki, prywatność i wytyczne społeczności",
+    "disputesAndReports": "Spory i zgłoszenia",
+    "viewDisputes": "Zobacz spory",
+    "disputesDescription": "Zarządzaj sporami dotyczącymi płatności, rezerwacji i treści",
+    "reportContent": "Zgłoś treść",
+    "reportDescription": "Zgłoś nieodpowiednią treść lub zachowanie",
+    "infoText": "W pilnych sprawach dotyczących bezpieczeństwa skontaktuj się natychmiast z lokalnymi władzami.",
+    "emailLabel": "E-mail wsparcia:",
+    "mustBeLoggedIn": "Musisz być zalogowany",
+    "cannotOpenUrl": "Nie można otworzyć adresu URL",
+    "errorOpeningUrl": "Nie udało się otworzyć adresu URL"
+  }
+}

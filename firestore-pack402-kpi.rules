@@ -1,0 +1,63 @@
+// PACK 402 — KPI Monitoring Engine
+// Firestore Security Rules
+//
+// Access:
+// - NO client writes (all writes from Cloud Functions)
+// - Read access: admin roles only
+// - Normal users: DENY
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper: Check if user has admin role
+    function isAdmin() {
+      return request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'super_admin', 'moderator'];
+    }
+
+    // KPI Collections: kpiGrowth, kpiEngagement, kpiRevenue, kpiSafety, kpiSupport
+    
+    match /kpiGrowth/{docId} {
+      // Read: Admin only
+      allow read: if isAdmin();
+      
+      // Write: DENY all client writes (Cloud Functions only)
+      allow write: if false;
+    }
+
+    match /kpiEngagement/{docId} {
+      // Read: Admin only
+      allow read: if isAdmin();
+      
+      // Write: DENY all client writes (Cloud Functions only)
+      allow write: if false;
+    }
+
+    match /kpiRevenue/{docId} {
+      // Read: Admin only
+      allow read: if isAdmin();
+      
+      // Write: DENY all client writes (Cloud Functions only)
+      allow write: if false;
+    }
+
+    match /kpiSafety/{docId} {
+      // Read: Admin only
+      allow read: if isAdmin();
+      
+      // Write: DENY all client writes (Cloud Functions only)
+      allow write: if false;
+    }
+
+    match /kpiSupport/{docId} {
+      // Read: Admin only
+      allow read: if isAdmin();
+      
+      // Write: DENY all client writes (Cloud Functions only)
+      allow write: if false;
+    }
+  }
+}

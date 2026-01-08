@@ -1,0 +1,190 @@
+// ============================================================================
+// PACK 91 — Regional Policy Engine & Content Classification
+// Firestore Security Rules
+// ============================================================================
+//
+// These rules protect regional policy collections and content classification data:
+// - regional_policies: Regional content policy configurations
+// - Content classification fields on existing collections
+//
+// SECURITY PRINCIPLES:
+// 1. Regional policies are read-only for authenticated users (backend writes only)
+// 2. Users can only set content ratings on their own content
+// 3. Only moderators can override content ratings
+// 4. All policy changes are logged via PACK 90
+//
+// ============================================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // REGIONAL POLICIES
+    // ========================================================================
+    // Content policies per region/country
+    // Users can read to understand restrictions, only backend/admin can write
+    
+    match /regional_policies/{policyId} {
+      // Authenticated users can read policies (to show restrictions in UI)
+      allow read: if request.auth != null;
+      
+      // Only backend (Admin SDK) can create/update/delete
+      // In practice, these are managed via admin Cloud Functions
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // PREMIUM STORIES (with content classification)
+    // ========================================================================
+    
+    match /premium_stories/{storyId} {
+      // User can set contentRating when creating their own story
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.creatorId
+        && request.resource.data.contentRating in ['SFW', 'SENSITIVE', 'NSFW_SOFT', 'NSFW_STRONG']
+        && request.resource.data.reviewStatus == 'AUTO_CLASSIFIED';
+      
+      // User can update their own story, but cannot change contentRating after creation
+      // (requires moderator review to change)
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.creatorId
+        && (
+          // If not changing contentRating, allow
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['contentRating', 'reviewStatus'])
+          // If changing contentRating, must be via moderator (handled by Cloud Function)
+          || false
+        );
+      
+      // Read permissions based on content rating and user policy
+      // In practice, this is enforced server-side via Cloud Functions
+      allow read: if request.auth != null;
+    }
+    
+    // ========================================================================
+    // PAID MEDIA MESSAGES (with content classification)
+    // ========================================================================
+    
+    match /paid_media_messages/{messageId} {
+      // User can set contentRating when sending paid media
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.senderId
+        && request.resource.data.contentRating in ['SFW', 'SENSITIVE', 'NSFW_SOFT', 'NSFW_STRONG']
+        && request.resource.data.reviewStatus == 'AUTO_CLASSIFIED';
+      
+      // Cannot update paid media after creation (immutable)
+      allow update: if false;
+      
+      // Read based on chat membership and content policy
+      allow read: if request.auth != null
+        && (
+          request.auth.uid == resource.data.senderId
+          || request.auth.uid == resource.data.recipientId
+        );
+    }
+    
+    // ========================================================================
+    // POSTS (feed content with optional classification)
+    // ========================================================================
+    
+    match /posts/{postId} {
+      // User can set contentRating when creating post
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.authorId
+        && (
+          !('contentRating' in request.resource.data)
+          || request.resource.data.contentRating in ['SFW', 'SENSITIVE', 'NSFW_SOFT', 'NSFW_STRONG']
+        );
+      
+      // User can update own post but not change contentRating
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.authorId
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['contentRating', 'reviewStatus']);
+      
+      // Read based on content policy (enforced server-side)
+      allow read: if request.auth != null;
+    }
+    
+    // ========================================================================
+    // USER PROFILES (with region tracking)
+    // ========================================================================
+    
+    match /users/{userId} {
+      // User can update their own profile.country
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && (
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['profile.country'])
+          || request.resource.data.profile.country is string
+        );
+      
+      // Age verification fields are protected (backend only)
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['dateOfBirth', 'ageVerified']);
+    }
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if user is admin (via custom claims)
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+    
+    // Check if user is moderator
+    function isModerator() {
+      return isAuthenticated() && request.auth.token.moderator == true;
+    }
+    
+    // Check if content rating is valid
+    function isValidContentRating(rating) {
+      return rating in ['SFW', 'SENSITIVE', 'NSFW_SOFT', 'NSFW_STRONG'];
+    }
+  }
+}
+
+// ============================================================================
+// IMPLEMENTATION NOTES
+// ============================================================================
+//
+// 1. Regional policies are readable by all authenticated users
+//    This allows clients to show appropriate warnings/blocks in UI
+//
+// 2. Content ratings are set by creators at upload time
+//    - Must choose from valid ratings
+//    - Initially marked as AUTO_CLASSIFIED
+//    - Cannot be changed by creator after upload
+//
+// 3. Moderators can override content ratings via Cloud Functions
+//    - Changes are logged in PACK 90 audit log
+//    - Status changed to MOD_REVIEWED
+//
+// 4. Access control is primarily enforced server-side
+//    - canUserViewContent() checks before returning content
+//    - Discovery feeds filter based on policy
+//    - Firestore rules provide additional layer of protection
+//
+// 5. Age verification is backend-only
+//    - Users cannot modify their own dateOfBirth
+//    - ageVerified flag is set by backend after verification
+//
+// 6. For production deployment:
+//    - Merge these rules with existing firestore.rules
+//    - Test thoroughly with Firebase emulator
+//    - Deploy with: firebase deploy --only firestore:rules
+//
+// ============================================================================

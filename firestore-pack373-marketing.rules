@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // PACK 373 — MARKETING AUTOMATION
+    // ========================================
+    
+    // ASO Control
+    match /asoControl/{countryCode} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if request.auth != null && 
+                      get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin' &&
+                      request.resource.data.keys().hasAll(['countryCode', 'titleVariants', 'subtitleVariants', 'keywordSets', 'screenshotsVariantSet', 'iconVariant', 'conversionRate', 'lastUpdate']) &&
+                      request.resource.data.titleVariants is list &&
+                      request.resource.data.subtitleVariants is list &&
+                      request.resource.data.keywordSets is list &&
+                      request.resource.data.conversionRate >= 0 &&
+                      request.resource.data.lastUpdate is timestamp;
+    }
+    
+    // Marketing Partners (Influencers & Affiliates)
+    match /marketingPartners/{partnerId} {
+      allow read: if request.auth != null && (
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin' ||
+        request.auth.uid == partnerId
+      );
+      allow create: if request.auth != null && 
+                       get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin' &&
+                       request.resource.data.keys().hasAll(['partnerId', 'type', 'region', 'commissionRate', 'trackingCode', 'status']) &&
+                       request.resource.data.type in ['influencer', 'affiliate', 'agency'] &&
+                       request.resource.data.commissionRate >= 0 && request.resource.data.commissionRate <= 1 &&
+                       request.resource.data.status in ['active', 'pending', 'suspended', 'terminated'];
+      allow update: if request.auth != null && 
+                       get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow delete: if request.auth != null && 
+                       get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Partner Installs Tracking
+    match /marketingPartners/{partnerId}/installs/{installId} {
+      allow read: if request.auth != null && (
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin' ||
+        request.auth.uid == partnerId
+      );
+      allow write: if false; // Only functions can write
+    }
+    
+    // Ad Campaigns
+    match /adCampaigns/{campaignId} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow create: if request.auth != null && 
+                       get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin' &&
+                       request.resource.data.keys().hasAll(['platform', 'country', 'dailyBudget', 'cpi', 'roas', 'ltv', 'status']) &&
+                       request.resource.data.platform in ['meta', 'tiktok', 'google', 'others'] &&
+                       request.resource.data.dailyBudget >= 0 &&
+                       request.resource.data.cpi >= 0 &&
+                       request.resource.data.status in ['active', 'paused', 'completed'];
+      allow update: if request.auth != null && 
+                       get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow delete: if request.auth != null && 
+                       get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Campaign Performance History
+    match /adCampaigns/{campaignId}/performance/{date} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if false; // Only functions can write
+    }
+    
+    // Install Validation
+    match /installValidation/{installId} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if false; // Only functions can write
+    }
+    
+    // Regional Marketing Limits
+    match /regionalMarketingLimits/{countryCode} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if request.auth != null && 
+                      get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin' &&
+                      request.resource.data.keys().hasAll(['countryCode', 'maxMonthlyBudget', 'maxDailyInstalls', 'maxInfluencerPayout', 'autoScalingAllowed']) &&
+                      request.resource.data.maxMonthlyBudget >= 0 &&
+                      request.resource.data.maxDailyInstalls >= 0 &&
+                      request.resource.data.maxInfluencerPayout >= 0 &&
+                      request.resource.data.autoScalingAllowed is bool;
+    }
+    
+    // Marketing Budget Usage Tracking
+    match /marketingBudgetUsage/{countryCode}/daily/{date} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if false; // Only functions can write
+    }
+    
+    match /marketingBudgetUsage/{countryCode}/monthly/{month} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if false; // Only functions can write
+    }
+    
+    // ASO Experiments
+    match /asoExperiments/{experimentId} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if false; // Only functions can write
+    }
+    
+    // Marketing Alerts
+    match /marketingAlerts/{alertId} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if false; // Only functions can write
+    }
+  }
+}

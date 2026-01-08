@@ -1,0 +1,81 @@
+// PACK 118 — Virtual Events / Live Classes Security Rules
+// Zero NSFW Tolerance | Token-Only Access | Full Safety
+
+// ============================================================================
+// VIRTUAL EVENTS COLLECTION
+// ============================================================================
+
+match /virtual_events/{eventId} {
+  // Anyone can read UPCOMING events
+  allow read: if request.auth != null && 
+    resource.data.status == 'UPCOMING';
+  
+  // Enrolled users and host can read IN_PROGRESS or COMPLETED events
+  allow read: if request.auth != null && (
+    resource.data.hostUserId == request.auth.uid ||
+    exists(/databases/$(database)/documents/virtual_event_attendees/$(request.auth.uid + '_' + eventId))
+  );
+  
+  // Only verified creators can create events
+  allow create: if request.auth != null &&
+    request.resource.data.hostUserId == request.auth.uid &&
+    request.resource.data.status == 'UPCOMING' &&
+    request.resource.data.nsfwLevel == 'SAFE' && // MUST BE SAFE
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.earnFromChat == true;
+  
+  // Host can update their own events
+  allow update: if request.auth != null &&
+    resource.data.hostUserId == request.auth.uid &&
+    request.resource.data.nsfwLevel == 'SAFE'; // Cannot change to non-SAFE
+  
+  // No direct deletes
+  allow delete: if false;
+}
+
+// ============================================================================
+// VIRTUAL EVENT ATTENDEES
+// ============================================================================
+
+match /virtual_event_attendees/{attendeeId} {
+  // Users can read their own enrollments
+  allow read: if request.auth != null &&
+    resource.data.userId == request.auth.uid;
+  
+  // Event hosts can read their event's attendees
+  allow read: if request.auth != null && (
+    resource.data.hostUserId == request.auth.uid
+  );
+  
+  // No direct writes (functions only)
+  allow write: if false;
+}
+
+// ============================================================================
+// LIVE SESSIONS (Ephemeral State)
+// ============================================================================
+
+match /live_sessions/{eventId} {
+  // Enrolled users can read
+  allow read: if request.auth != null && (
+    get(/databases/$(database)/documents/virtual_events/$(eventId)).data.hostUserId == request.auth.uid ||
+    exists(/databases/$(database)/documents/virtual_event_attendees/$(request.auth.uid + '_' + eventId))
+  );
+  
+  // No direct writes (functions only)
+  allow write: if false;
+}
+
+// ============================================================================
+// EVENT BANS
+// ============================================================================
+
+match /event_bans/{banId} {
+  // Only host and banned user can read
+  allow read: if request.auth != null && (
+    resource.data.hostUserId == request.auth.uid ||
+    resource.data.bannedUserId == request.auth.uid
+  );
+  
+  // No direct writes (functions only)
+  allow write: if false;
+}

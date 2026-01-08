@@ -1,0 +1,77 @@
+{
+  "timestamp": "2025-11-11T14:47:44.343Z",
+  "filesScanned": 10,
+  "filesFixed": 10,
+  "errors": [],
+  "warnings": [],
+  "fixes": {
+    "defaultExportsAdded": 0,
+    "jsxReturnsFixed": 0,
+    "layoutsValidated": 2,
+    "hooksImportsAdded": 0,
+    "routerStructureFixed": 0,
+    "sdk54ComplianceFixed": 10
+  },
+  "details": [
+    {
+      "file": "app-mobile\\app\\_layout.tsx",
+      "changes": [
+        "Added React import for JSX"
+      ]
+    },
+    {
+      "file": "app-mobile\\app\\index.tsx",
+      "changes": [
+        "Added React import for JSX"
+      ]
+    },
+    {
+      "file": "app-mobile\\app\\auth\\verify.tsx",
+      "changes": [
+        "Added React import for JSX"
+      ]
+    },
+    {
+      "file": "app-mobile\\app\\auth\\register.tsx",
+      "changes": [
+        "Added React import for JSX"
+      ]
+    },
+    {
+      "file": "app-mobile\\app\\auth\\login.tsx",
+      "changes": [
+        "Added React import for JSX"
+      ]
+    },
+    {
+      "file": "app-mobile\\app\\tabs\\_layout.tsx",
+      "changes": [
+        "Added React import for JSX"
+      ]
+    },
+    {
+      "file": "app-mobile\\app\\tabs\\wallet.tsx",
+      "changes": [
+        "Added React import for JSX"
+      ]
+    },
+    {
+      "file": "app-mobile\\app\\tabs\\profile.tsx",
+      "changes": [
+        "Added React import for JSX"
+      ]
+    },
+    {
+      "file": "app-mobile\\app\\tabs\\feed.tsx",
+      "changes": [
+        "Added React import for JSX"
+      ]
+    },
+    {
+      "file": "app-mobile\\app\\tabs\\ai.tsx",
+      "changes": [
+        "Added React import for JSX"
+      ]
+    }
+  ]
+}

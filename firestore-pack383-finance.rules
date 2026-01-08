@@ -1,0 +1,165 @@
+rules_version = '2';
+
+/**
+ * PACK 383 - Global Payment Routing, Compliance & Cross-Border Payout Engine
+ * Firestore Security Rules
+ * 
+ * Collections:
+ * - globalPayoutRoutes
+ * - payoutProviders
+ * - payouts
+ * - userKYCProfiles
+ * - amlScreeningResults
+ * - sanctionsScreeningResults
+ * - taxProfiles
+ * - taxCalculations
+ * - taxReports
+ * - fxRates
+ * - userRiskProfiles
+ * - chargebackRiskProfiles
+ * - userPayoutFreezes
+ * - payoutReserveHolds
+ * - chargebacks
+ * - payoutRoutingLogs
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Global Payout Routes - Admin read/write, users read only
+    match /globalPayoutRoutes/{routeId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Payout Providers - Admin only
+    match /payoutProviders/{providerId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Payouts - Users can read their own, admins can read/write all
+    match /payouts/{payoutId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || (
+        isOwner(resource.data.userId) &&
+        resource.data.status == 'pending' &&
+        request.resource.data.status == 'cancelled'
+      );
+      allow delete: if isAdmin();
+    }
+
+    // KYC Profiles - Users can read/write their own, admins can read/write all
+    match /userKYCProfiles/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // AML Screening Results - Admin and system only
+    match /amlScreeningResults/{resultId} {
+      allow read: if isAdmin() || (
+        isAuthenticated() && 
+        resource.data.userId == request.auth.uid
+      );
+      allow write: if isAdmin();
+    }
+
+    // Sanctions Screening Results - Admin and system only
+    match /sanctionsScreeningResults/{resultId} {
+      allow read: if isAdmin() || (
+        isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        resource.data.status == 'clear'
+      );
+      allow write: if isAdmin();
+    }
+
+    // Tax Profiles - Users can read/write their own, admins can read/write all
+    match /taxProfiles/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Tax Calculations - Users can read their own, system writes
+    match /taxCalculations/{calcId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if isAdmin();
+    }
+
+    // Tax Reports - Users can read their own, admins can read all
+    match /taxReports/{reportId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if isAdmin();
+    }
+
+    // FX Rates - Public read, system write
+    match /fxRates/{rateId} {
+      allow read: if true; // Public rates
+      allow write: if isAdmin();
+    }
+
+    // User Risk Profiles - Admin only (sensitive)
+    match /userRiskProfiles/{userId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Chargeback Risk Profiles - Admin only (sensitive)
+    match /chargebackRiskProfiles/{userId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // User Payout Freezes - Admin only
+    match /userPayoutFreezes/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Payout Reserve Holds - Admin only
+    match /payoutReserveHolds/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Chargebacks - Admin only
+    match /chargebacks/{chargebackId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Payout Routing Logs - Admin only (analytics)
+    match /payoutRoutingLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}

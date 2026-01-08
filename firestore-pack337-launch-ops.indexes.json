@@ -1,0 +1,62 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "geoRolloutCountries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "lastUpdatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketingBudgets",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "lastResetAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adAttributionEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "firstOpenAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adAttributionEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "source", "order": "ASCENDING" },
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "isPayingUser", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adAttributionEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "firstPaymentAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "systemLoadGuards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "emergencyMode", "order": "ASCENDING" },
+        { "fieldPath": "lastUpdatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "loadMetrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "metricType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

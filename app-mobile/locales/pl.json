@@ -1,0 +1,288 @@
+{
+  "security": {
+    "title": "Bezpieczeństwo i logowanie",
+    "errorLoading": "Nie udało się załadować ustawień bezpieczeństwa",
+    "errorUpdating": "Nie udało się zaktualizować ustawień bezpieczeństwa",
+    "twoFactor": {
+      "title": "Uwierzytelnianie dwuskładnikowe (2FA)",
+      "enabled": "2FA jest włączone",
+      "disabled": "2FA jest wyłączone",
+      "enable": "Włącz 2FA",
+      "disable": "Wyłącz 2FA",
+      "disableConfirm": "Czy na pewno chcesz wyłączyć 2FA? To sprawi, że Twoje konto będzie mniej bezpieczne.",
+      "chooseMethod": "Wybierz metodę weryfikacji:",
+      "method": {
+        "sms": "Kod SMS",
+        "email": "Kod e-mail"
+      },
+      "enterCode": "Wpisz kod, który właśnie wysłaliśmy"
+    },
+    "alerts": {
+      "title": "Alerty bezpieczeństwa",
+      "newDevice": "Powiadamiaj o logowaniu na nowym urządzeniu",
+      "newLocation": "Powiadamiaj o logowaniu z nowej lokalizacji",
+      "securityChanges": "Powiadamiaj o zmianach ustawień bezpieczeństwa"
+    },
+    "risk": {
+      "title": "Wrażliwe operacje",
+      "require2faPayout": "Wymagaj 2FA przy wypłatach",
+      "require2faSettings": "Wymagaj 2FA przy zmianie kluczowych ustawień"
+    },
+    "devices": {
+      "title": "Urządzenia i sesje",
+      "trusted": "Zaufane urządzenie",
+      "trustDevice": "Zaufaj urządzeniu",
+      "untrustDevice": "Cofnij zaufanie",
+      "revokeSession": "Wyloguj z tego urządzenia",
+      "revokeConfirm": "Czy na pewno chcesz wylogować się z tego urządzenia?",
+      "revokeSuccess": "Sesja została zakończona",
+      "revokeAll": "Wyloguj z wszystkich innych urządzeń",
+      "revokeAllConfirm": "Czy na pewno chcesz wylogować się ze wszystkich innych urządzeń?",
+      "revokeAllSuccess": "Wszystkie pozostałe sesje zostały zakończone",
+      "noDevices": "Nie znaleziono urządzeń",
+      "lastSeen": "Ostatnio widziane",
+      "location": "Lokalizacja"
+    },
+    "sessions": {
+      "title": "Aktywne sesje",
+      "created": "Utworzona",
+      "lastActive": "Ostatnia aktywność",
+      "noSessions": "Brak aktywnych sesji"
+    }
+  },
+  "common": {
+    "language": "pl",
+    "error": "Błąd",
+    "success": "Sukces",
+    "ok": "OK",
+    "cancel": "Anuluj",
+    "retry": "Spróbuj ponownie",
+    "yes": "Tak",
+    "no": "Nie",
+    "tokens": "tokeny"
+  },
+  "payout": {
+    "title": "Wypłaty",
+    "setupTitle": "Ustawienia wypłat",
+    "setup": {
+      "description": "Skonfiguruj konto wypłat, aby wypłacać zarobki",
+      "required": "Wymagane konto wypłat",
+      "requiredDescription": "Skonfiguruj konto wypłat przed złożeniem dyspozycji wypłaty",
+      "goToSetup": "Skonfiguruj konto wypłat",
+      "success": "Konto wypłat zostało pomyślnie skonfigurowane",
+      "update": "Zaktualizuj konto wypłat",
+      "create": "Utwórz konto wypłat"
+    },
+    "rail": {
+      "label": "Metoda płatności",
+      "select": "Wybierz metodę płatności",
+      "stripe": "Stripe Connect",
+      "wise": "Przelew Wise",
+      "auto": "Automatyczna (zalecana)",
+      "autoDescription": "Automatycznie wybiera najlepszą metodę płatności dla Twojego kraju",
+      "stripeDescription": "Globalne przetwarzanie płatności (najszybsze dla USA/CA/AU)",
+      "wiseDescription": "Międzynarodowe przelewy bankowe (najlepsze dla UE/UK)"
+    },
+    "eligibility": {
+      "notEligible": "Obecnie nie kwalifikujesz się do wypłat.",
+      "reasons": "Powody:"
+    },
+    "earnings": {
+      "title": "Twoje zarobki",
+      "withdrawable": "Tokeny dostępne do wypłaty",
+      "totalEarned": "Łącznie zarobione"
+    },
+    "request": {
+      "title": "Złóż dyspozycję wypłaty",
+      "amountLabel": "Liczba tokenów do wypłaty",
+      "amountPlaceholder": "Wprowadź kwotę",
+      "submit": "Złóż dyspozycję wypłaty",
+      "estimated": "Szacowana kwota",
+      "successMessage": "Złożono dyspozycję wypłaty: {{amount}}"
+    },
+    "history": {
+      "title": "Historia wypłat",
+      "view": "Zobacz historię wypłat",
+      "rail": "Metoda płatności",
+      "tokens": "Tokeny",
+      "requested": "Złożono",
+      "processed": "Przetworzona",
+      "empty": "Brak wypłat",
+      "emptyDescription": "Tutaj pojawią się Twoje dyspozycje wypłat"
+    },
+    "status": {
+      "label": "Status",
+      "PENDING": "Oczekująca",
+      "PROCESSING": "Przetwarzanie",
+      "PAID": "Zrealizowana",
+      "FAILED": "Nieudana",
+      "CANCELLED": "Anulowana"
+    },
+    "account": {
+      "title": "Konto wypłat",
+      "current": "Aktualne konto",
+      "manage": "Zarządzaj kontem"
+    },
+    "country": {
+      "label": "Kraj"
+    },
+    "currency": {
+      "label": "Waluta"
+    },
+    "kyc": {
+      "title": "Weryfikacja tożsamości",
+      "required": "Wymagana weryfikacja KYC",
+      "verified": "Zweryfikowano KYC",
+      "level": "Poziom weryfikacji"
+    },
+    "onboarding": {
+      "openManually": "Proszę dokończyć konfigurację w przeglądarce"
+    },
+    "error": {
+      "loadFailed": "Nie udało się załadować informacji o wypłatach",
+      "setupFailed": "Nie udało się skonfigurować konta wypłat",
+      "requestFailed": "Nie udało się złożyć dyspozycji wypłaty",
+      "invalidAmount": "Proszę wprowadzić prawidłową kwotę",
+      "insufficientTokens": "Nie masz wystarczającej liczby tokenów do wypłaty.",
+      "kycRequired": "Przed wypłatą musisz zweryfikować swoją tożsamość."
+    },
+    "summary": {
+      "description": "Zarządzaj swoimi zarobkami i składaj dyspozycje wypłat"
+    }
+  },
+  "referrals": {
+    "sectionTitle": "Polecenia",
+    "yourCode": "Twój kod polecający",
+    "copyCode": "Kopiuj kod",
+    "shareLink": "Udostępnij link polecający",
+    "stats": {
+      "signups": "Rejestracje z Twojego linku",
+      "activeUsers": "Aktywni użytkownicy (30 dni)",
+      "payers": "Płacący użytkownicy",
+      "tokensFromReferrals": "Tokeny kupione przez Twoje polecenia"
+    },
+    "noProfile": "Brak kodu polecającego",
+    "createCode": "Utwórz kod polecający",
+    "howItWorks": "Jak to działa",
+    "trackingOnly": "Śledź wyniki swoich poleceń - tylko analityka, brak bonusów",
+    "copied": "Kod polecający skopiowany!",
+    "error": {
+      "loadFailed": "Nie udało się załadować danych poleceń",
+      "createFailed": "Nie udało się utworzyć kodu polecającego",
+      "notEligible": "Musisz mieć 18+ lat i być zweryfikowany, aby utworzyć kod polecający"
+    }
+  },
+  "landing": {
+    "invitedBy": "Zaprosił(a) Cię {name}",
+    "downloadApp": "Pobierz aplikację",
+    "openApp": "Otwórz Avalo",
+    "learnMore": "Dowiedz się więcej o Avalo",
+    "appStoreButton": "Pobierz z App Store",
+    "playStoreButton": "Pobierz z Google Play"
+  },
+  "safety": {
+    "relationship": {
+      "low": "Pamiętaj, że możesz działać we własnym tempie.",
+      "medium": "Uważaj, jeśli ktoś próbuje wywierać presję lub wymuszać prywatne informacje.",
+      "high": "Niektóre sygnały mogą świadczyć o manipulacji. Ufaj swojemu instynktowi."
+    },
+    "action": {
+      "tips": "Zasady bezpieczeństwa",
+      "block": "Zablokuj użytkownika",
+      "report": "Zgłoś",
+      "support": "Kontakt z pomocą"
+    },
+    "rating": {
+      "followup": "Jeśli podczas spotkania coś wzbudziło dyskomfort, możesz w każdej chwili zablokować, zgłosić lub skontaktować się z pomocą."
+    }
+  },
+  "geoshare": {
+    "title": "Udostępnianie lokalizacji",
+    "shareLocation": "Udostępnij lokalizację",
+    "stopSharing": "Zatrzymaj udostępnianie",
+    "viewLocation": "Zobacz lokalizację",
+    "active": "Udostępnianie lokalizacji aktywne",
+    "expired": "Udostępnianie lokalizacji wygasło",
+    "notActive": "Brak aktywnego udostępniania lokalizacji",
+    "description": "Udostępnij swoją lokalizację w czasie rzeczywistym tymczasowo",
+    "permissions": {
+      "title": "Wymagane uprawnienia lokalizacji",
+      "message": "Avalo potrzebuje dostępu do Twojej lokalizacji, aby udostępnić ją innym użytkownikom. Jest to wymagane do działania udostępniania lokalizacji.",
+      "foreground": "Uprawnienie dostępu do lokalizacji (podczas korzystania z aplikacji)",
+      "background": "Uprawnienie dostępu do lokalizacji w tle",
+      "grant": "Przyznaj uprawnienia",
+      "denied": "Odmowa dostępu do lokalizacji",
+      "deniedMessage": "Włącz uprawnienia lokalizacji w ustawieniach urządzenia, aby korzystać z udostępniania lokalizacji."
+    },
+    "duration": {
+      "title": "Wybierz czas trwania",
+      "select": "Wybierz, jak długo udostępnić lokalizację",
+      "15min": "15 minut",
+      "30min": "30 minut",
+      "60min": "1 godzina",
+      "remaining": "Pozostały czas",
+      "expired": "Sesja wygasła"
+    },
+    "pricing": {
+      "title": "Udostępnianie lokalizacji",
+      "pricePerMinute": "{{price}} tokenów/minutę",
+      "totalCost": "Całkowity koszt: {{tokens}} tokenów",
+      "duration": "Czas trwania: {{duration}}",
+      "avaloFee": "Opłata platformy (35%): {{fee}} tokenów",
+      "confirm": "Rozpocznij udostępnianie",
+      "insufficientTokens": "Niewystarczająca liczba tokenów",
+      "insufficientMessage": "Potrzebujesz {{required}} tokenów, aby rozpocząć udostępnianie lokalizacji. Masz {{current}} tokenów.",
+      "buyTokens": "Kup tokeny"
+    },
+    "map": {
+      "title": "Mapa lokalizacji",
+      "yourLocation": "Twoja lokalizacja",
+      "partnerLocation": "Lokalizacja {{name}}",
+      "loading": "Ładowanie lokalizacji...",
+      "noLocation": "Lokalizacja niedostępna",
+      "accuracy": "Dokładność: ±{{meters}}m",
+      "lastUpdate": "Ostatnia aktualizacja {{time}}",
+      "refreshing": "Aktualizowanie lokalizacji..."
+    },
+    "session": {
+      "starting": "Rozpoczynanie udostępniania lokalizacji...",
+      "active": "Udostępnianie lokalizacji z {{name}}",
+      "stopping": "Zatrzymywanie udostępniania lokalizacji...",
+      "stopped": "Udostępnianie lokalizacji zatrzymane",
+      "expired": "Sesja udostępniania lokalizacji wygasła",
+      "error": "Nie udało się udostępnić lokalizacji"
+    },
+    "errors": {
+      "permissionDenied": "Odmowa dostępu do lokalizacji",
+      "sessionNotFound": "Nie znaleziono sesji udostępniania lokalizacji",
+      "alreadyActive": "Masz już aktywną sesję udostępniania lokalizacji",
+      "insufficientBalance": "Niewystarczające saldo tokenów",
+      "startFailed": "Nie udało się rozpocząć udostępniania lokalizacji",
+      "stopFailed": "Nie udało się zatrzymać udostępniania lokalizacji",
+      "updateFailed": "Nie udało się zaktualizować lokalizacji",
+      "generic": "Wystąpił błąd z udostępnianiem lokalizacji"
+    },
+    "warnings": {
+      "batteryDrain": "Udostępnianie lokalizacji może szybciej rozładować baterię",
+      "dataUsage": "Udostępnianie lokalizacji wykorzystuje transfer danych w tle",
+      "privacy": "Udostępniaj swoją lokalizację tylko osobom, którym ufasz",
+      "nonRefundable": "Płatności za udostępnianie lokalizacji są bezzwrotne"
+    },
+    "info": {
+      "howItWorks": "Jak to działa",
+      "step1": "1. Wybierz czas trwania i zapłać tokeny",
+      "step2": "2. Twoja lokalizacja aktualizuje się co 10 sekund",
+      "step3": "3. Partner może zobaczyć Twoją lokalizację na mapie",
+      "step4": "4. Sesja kończy się automatycznie po zakończeniu opłaconego czasu",
+      "noHistory": "Historia lokalizacji nie jest przechowywana",
+      "tempOnly": "Lokalizacje są tymczasowe i usuwane po zakończeniu sesji"
+    },
+    "buttons": {
+      "start": "Rozpocznij udostępnianie lokalizacji",
+      "stop": "Zatrzymaj udostępnianie",
+      "extend": "Przedłuż sesję",
+      "viewMap": "Zobacz na mapie",
+      "goToChat": "Przejdź do czatu"
+    }
+  }
+}

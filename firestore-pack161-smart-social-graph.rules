@@ -1,0 +1,230 @@
+/**
+ * PACK 161 — Smart Social Graph Firestore Security Rules
+ * Interest-Driven Discovery Without Matchmaking Bias
+ * 
+ * Collections:
+ * - interest_vectors
+ * - creator_relevance_scores
+ * - discovery_rankings
+ * - shadow_density_counters
+ * - user_discovery_preferences
+ * - flirt_manipulation_flags
+ * - discovery_scores
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true ||
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true);
+    }
+    
+    function isCreator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.creator == true;
+    }
+    
+    // ============================================================================
+    // INTEREST VECTORS (User Behavior Tracking)
+    // ============================================================================
+    
+    match /interest_vectors/{userId} {
+      // Users can read their own interest vector
+      allow read: if isOwner(userId);
+      
+      // Only system (Cloud Functions) can write
+      // Users cannot manipulate their own interest scores
+      allow write: if false;
+      
+      // Admins can read for analytics
+      allow read: if isAdmin();
+    }
+    
+    // ============================================================================
+    // CREATOR RELEVANCE SCORES (Discovery Rankings)
+    // ============================================================================
+    
+    match /creator_relevance_scores/{creatorId} {
+      // Everyone can read (needed for discovery feed)
+      // But only relevant fields are exposed via API
+      allow read: if isAuthenticated();
+      
+      // Creators can read their own score
+      allow get: if isOwner(creatorId);
+      
+      // Only system can write scores
+      // Prevents manipulation of rankings
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // DISCOVERY RANKINGS (Computed Scores)
+    // ============================================================================
+    
+    match /discovery_rankings/{userId} {
+      // Users can read their own rankings
+      allow read: if isOwner(userId);
+      
+      // Only system can write
+      allow write: if false;
+      
+      // Admins can read for auditing
+      allow read: if isAdmin();
+    }
+    
+    // ============================================================================
+    // SHADOW DENSITY COUNTERS (Mega-Creator Prevention)
+    // ============================================================================
+    
+    match /shadow_density_counters/{creatorId} {
+      // Creators can read their own counter (to see impression stats)
+      allow read: if isOwner(creatorId) || isAdmin();
+      
+      // Only system can write
+      // Prevents manipulation of shadow density
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // USER DISCOVERY PREFERENCES (Mode Selection)
+    // ============================================================================
+    
+    match /user_discovery_preferences/{userId} {
+      // Users can read and update their own preferences
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && 
+                       validateDiscoveryPreferences(request.resource.data);
+      allow update: if isOwner(userId) && 
+                       validateDiscoveryPreferences(request.resource.data);
+      allow delete: if false; // Preferences persist
+      
+      // Validate preferences structure
+      function validateDiscoveryPreferences(data) {
+        let validModes = ['PROFESSIONAL', 'SOCIAL_LIFESTYLE', 'ENTERTAINMENT', 'LEARNING', 'LOCAL_EVENTS'];
+        let forbiddenModes = ['ROMANTIC', 'EROTIC', 'DATING', 'MEET_PEOPLE'];
+        
+        return data.userId == userId &&
+               data.currentMode in validModes &&
+               // Ensure no forbidden modes
+               !(data.currentMode in forbiddenModes) &&
+               !('romanticMode' in data) &&
+               !('eroticMode' in data) &&
+               !('meetPeopleMode' in data);
+      }
+    }
+    
+    // ============================================================================
+    // FLIRT MANIPULATION FLAGS (Safety Enforcement)
+    // ============================================================================
+    
+    match /flirt_manipulation_flags/{contentId} {
+      // Creators can read flags on their own content
+      allow read: if isAuthenticated() && 
+                     (resource.data.creatorId == request.auth.uid || isModerator());
+      
+      // Only moderators and system can create flags
+      allow create: if isModerator();
+      allow update: if isModerator();
+      allow delete: if false; // Flags are permanent records
+      
+      // Admins can read all for auditing
+      allow list: if isAdmin();
+    }
+    
+    // ============================================================================
+    // DISCOVERY SCORES (Computed Relevance)
+    // ============================================================================
+    
+    match /discovery_scores/{scoreId} {
+      // Users can read scores computed for them
+      allow read: if isAuthenticated() && 
+                     resource.data.viewerId == request.auth.uid;
+      
+      // Only system can write scores
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // BACKGROUND JOB STATUS (Admin Monitoring)
+    // ============================================================================
+    
+    match /discovery_refresh_jobs/{jobId} {
+      // Only admins can read job status
+      allow read: if isAdmin();
+      allow write: if false; // Only system writes
+    }
+    
+    match /safety_compliance_jobs/{jobId} {
+      // Only admins/moderators can read
+      allow read: if isModerator();
+      allow write: if false;
+    }
+    
+    match /fairness_diversity_audits/{auditId} {
+      // Only admins can read audits
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // SAFETY CASES (From Flirt Detection)
+    // ============================================================================
+    
+    match /safety_cases/{caseId} {
+      // Moderators can read and update cases
+      allow read: if isModerator();
+      allow update: if isModerator() && 
+                       validateSafetyCaseUpdate(request.resource.data);
+      allow create: if isModerator();
+      allow delete: if false; // Cases are permanent records
+      
+      function validateSafetyCaseUpdate(data) {
+        // Can only update status, assignedTo, resolution
+        return data.caseId == resource.data.caseId &&
+               data.contentId == resource.data.contentId &&
+               data.creatorId == resource.data.creatorId;
+      }
+    }
+    
+    // ============================================================================
+    // CONTENT REVIEW QUEUE (Low-Confidence Flags)
+    // ============================================================================
+    
+    match /content_review_queue/{reviewId} {
+      // Moderators can read and update reviews
+      allow read: if isModerator();
+      allow update: if isModerator();
+      allow create: if isModerator();
+      allow delete: if isModerator(); // Can remove after review
+    }
+    
+    // ============================================================================
+    // ANALYTICS & METRICS (Read-Only for Admins)
+    // ============================================================================
+    
+    match /discovery_metrics/{metricId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only system writes
+    }
+  }
+}

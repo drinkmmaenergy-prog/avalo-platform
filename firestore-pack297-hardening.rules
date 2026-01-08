@@ -1,0 +1,51 @@
+rules_version = '2';
+
+/**
+ * PACK 297 - Pre-Launch Hardening
+ * Firestore Security Rules for feature flags, rate limits, and behavior tracking
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Feature Flags - read-only for clients, write for backend only
+    match /featureFlags/{flagKey} {
+      // Allow read for all authenticated users
+      allow read: if request.auth != null;
+      
+      // Only backend (admin) can write
+      allow write: if false; // Managed by backend functions only
+    }
+    
+    // Rate Limits - managed entirely by backend
+    match /rate_limits/{counterId} {
+      allow read, write: if false; // Backend only
+    }
+    
+    // Rate Limit Config - read-only for admins
+    match /rate_limit_config/{configId} {
+      allow read: if request.auth != null 
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      allow write: if false; // Managed by backend only
+    }
+    
+    // User Behavior Stats - users can read their own, backend can write
+    match /userBehaviorStats/{userId} {
+      // Users can read their own stats
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only backend can write
+      allow write: if false; // Managed by backend functions only
+      
+      // Nested recipients tracking
+      match /recipients24h/{recipientId} {
+        allow read, write: if false; // Backend only
+      }
+    }
+    
+    // Health Check Collection (internal use)
+    match /_health_check/{docId} {
+      allow read, write: if false; // Backend only
+    }
+  }
+}

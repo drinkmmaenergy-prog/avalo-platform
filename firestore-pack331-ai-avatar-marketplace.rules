@@ -1,0 +1,124 @@
+rules_version = '2';
+
+// PACK 331 - AI Avatar Template Marketplace
+// Security rules for avatar template creation, sale, and usage
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true
+      );
+    }
+    
+    function isSystem() {
+      return request.auth.token.system == true;
+    }
+    
+    function isVerified18Plus() {
+      let userData = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return userData.verification.age18 == true && 
+             userData.verification.status == 'verified';
+    }
+    
+    // =================================================================
+    // AI AVATAR TEMPLATES COLLECTION
+    // User-created and Avalo Official avatar templates for AI companions
+    // =================================================================
+    match /aiAvatarTemplates/{templateId} {
+      // Read: All authenticated users can browse marketplace
+      allow read: if isAuthenticated();
+      
+      // Create: Verified 18+ users can create templates (pending moderation)
+      allow create: if isAuthenticated() && 
+        isVerified18Plus() &&
+        request.resource.data.keys().hasAll([
+          'ownerUserId', 'name', 'description', 'imageUrl', 
+          'style', 'genderPresentation', 'priceTokens', 
+          'isActive', 'isOfficialAvalo', 'tags', 
+          'createdAt', 'updatedAt'
+        ]) &&
+        // Owner must match authenticated user (unless admin creating official)
+        (request.resource.data.ownerUserId == request.auth.uid || 
+         (isAdmin() && request.resource.data.isOfficialAvalo == true)) &&
+        // Price must be in valid range
+        request.resource.data.priceTokens >= 200 &&
+        request.resource.data.priceTokens <= 2000 &&
+        // New templates start as inactive (pending review)
+        (request.resource.data.isActive == false || isAdmin()) &&
+        // Stats must be initialized to zero
+        request.resource.data.stats.totalPurchases == 0 &&
+        request.resource.data.stats.totalEarningsTokens == 0 &&
+        request.resource.data.stats.totalUsageSessions == 0;
+      
+      // Update: Owner can update their own templates (limited fields)
+      // Moderators/Admins can update any template
+      allow update: if isAuthenticated() && (
+        // Owner can update specific fields only
+        (resource.data.ownerUserId == request.auth.uid &&
+         !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+           'ownerUserId', 'isOfficialAvalo', 'stats', 'createdAt'
+         ])) ||
+        // Moderators can activate/deactivate and update any field
+        isModerator()
+      );
+      
+      // Delete: Only admins can delete templates
+      allow delete: if isAdmin();
+    }
+    
+    // =================================================================
+    // AI AVATAR TEMPLATE PURCHASES COLLECTION
+    // Tracks who bought which templates
+    // =================================================================
+    match /aiAvatarTemplatePurchases/{purchaseId} {
+      // Read: Users can see their own purchases
+      allow read: if isAuthenticated() && (
+        resource.data.buyerUserId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Create: System only (via Cloud Function to ensure payment)
+      allow create: if isSystem() &&
+        request.resource.data.keys().hasAll([
+          'buyerUserId', 'templateId', 'purchasedAt',
+          'priceTokens', 'ownerUserId', 'isOfficialAvalo'
+        ]);
+      
+      // Update/Delete: Never allowed (immutable purchase records)
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // =================================================================
+    // AI COMPANIONS EXTENSION
+    // Add rules for avatarTemplateId field access
+    // =================================================================
+    match /aiCompanions/{companionId} {
+      // Existing rules apply, plus:
+      // Users can only set avatarTemplateId if they own the template
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid && (
+          // Must own the template they're attaching
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['avatarTemplateId']) ||
+          exists(/databases/$(database)/documents/aiAvatarTemplatePurchases/$(request.auth.uid + '_' + request.resource.data.avatarTemplateId))
+        );
+    }
+  }
+}

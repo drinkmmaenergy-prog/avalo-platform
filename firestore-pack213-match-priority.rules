@@ -1,0 +1,177 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 213: Premium Match Priority Engine
+    // Match ranking based on Attraction × Reputation × Earnings × Activity × Interests
+    // ========================================================================
+    
+    // ========================================================================
+    // Attraction Signals (Internal Only)
+    // Tracks user interaction patterns (likes, views, dwell time)
+    // ========================================================================
+    match /attraction_signals/{signalId} {
+      // Read: Only the viewer can see their own signals
+      allow read: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
+      
+      // Write: Only server-side or admins
+      // Users can track their own signals through Cloud Functions
+      allow create, update: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Delete: Only admins
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Match Priority Scores (Internal - Cached)
+    // Calculated scores for quick retrieval
+    // ========================================================================
+    match /match_priority_scores/{scoreId} {
+      // Read: Only the viewer can see scores for their matches
+      allow read: if request.auth != null && 
+        resource.data.viewerId == request.auth.uid;
+      
+      // Write: Only server-side (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // User Economic Profiles (Internal)
+    // Earning/spending patterns for synergy calculation
+    // ========================================================================
+    match /user_economic_profiles/{userId} {
+      // Read: Own profile only (limited fields) or admins
+      allow read: if request.auth != null && (
+        userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Earnings Synergy Cache (Internal)
+    // Cached synergy scores between user pairs
+    // ========================================================================
+    match /earnings_synergy_cache/{pairId} {
+      // Read: Only if you're the viewer in the pair
+      allow read: if request.auth != null && 
+        resource.data.viewerId == request.auth.uid;
+      
+      // Write: Only server-side
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // Active Boosts (Internal)
+    // Time-limited visibility boosts
+    // ========================================================================
+    match /active_boosts/{boostId} {
+      // Read: Only own boosts or admins
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // User Boost Status (Cached)
+    // Current boost status for quick lookup
+    // ========================================================================
+    match /user_boost_status/{userId} {
+      // Read: Own status only or admins
+      allow read: if request.auth != null && (
+        userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // User Match Profiles (Aggregated Profile Data)
+    // Consolidated profile for efficient matching
+    // ========================================================================
+    match /user_match_profiles/{userId} {
+      // Read: Public read for discovery (limited fields)
+      allow read: if request.auth != null;
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Match Priority Diagnostics (Analytics)
+    // Performance and scoring diagnostics
+    // ========================================================================
+    match /match_priority_diagnostics/{diagnosticId} {
+      // Read: Only own diagnostics or admins
+      allow read: if request.auth != null && (
+        resource.data.viewerId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side
+      allow create: if request.auth != null &&
+        request.resource.data.viewerId == request.auth.uid;
+      
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // User Visibility Feedback (Positive Messaging)
+    // Messages shown to users about their visibility
+    // ========================================================================
+    match /user_visibility_feedback/{userId} {
+      // Read: Own feedback only
+      allow read: if request.auth != null && 
+        userId == request.auth.uid;
+      
+      // Write: Only server-side
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // Priority Weight Tests (A/B Testing)
+    // Configuration for testing different weight distributions
+    // ========================================================================
+    match /priority_weight_tests/{testId} {
+      // Read: Public read for active tests
+      allow read: if request.auth != null && 
+        resource.data.isActive == true;
+      
+      // Write: Only admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Helper Functions
+    // ========================================================================
+    
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    function isSafetyTeam() {
+      return request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        isAdmin()
+      );
+    }
+  }
+}

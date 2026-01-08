@@ -1,0 +1,182 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isAdult() {
+      return request.auth.token.isAdult == true;
+    }
+    
+    function isModerator() {
+      return request.auth.token.isModerator == true || 
+             request.auth.token.isAdmin == true;
+    }
+    
+    function contentExists(contentType, contentId) {
+      return exists(/databases/$(database)/documents/$(contentType)/$(contentId));
+    }
+    
+    function isValidTargetType(type) {
+      return type in ['POST', 'REEL', 'STORY'];
+    }
+    
+    function getContentPath(targetType, targetId) {
+      return targetType == 'POST' ? 'feedPosts/' + targetId :
+             targetType == 'REEL' ? 'reels/' + targetId :
+             targetType == 'STORY' ? 'stories/' + targetId : '';
+    }
+    
+    // Feed Likes Collection
+    match /feedLikes/{likeId} {
+      // Allow read if:
+      // - User is authenticated
+      allow read: if isAuthenticated();
+      
+      // Allow create if:
+      // - User is authenticated and adult
+      // - User is the one creating the like
+      // - Target content exists
+      // - User hasn't already liked this content (enforced by unique likeId)
+      allow create: if isAuthenticated()
+                    && isAdult()
+                    && request.resource.data.userId == request.auth.uid
+                    && isValidTargetType(request.resource.data.targetType)
+                    && request.resource.data.createdAt is timestamp
+                    && contentExists(
+                         getContentPath(request.resource.data.targetType, request.resource.data.targetId),
+                         request.resource.data.targetId
+                       );
+      
+      // Allow delete if:
+      // - User is the owner (unlike their own like)
+      // - Or user is moderator
+      allow delete: if isAuthenticated()
+                    && (isOwner(resource.data.userId) || isModerator());
+    }
+    
+    // Feed Comments Collection
+    match /feedComments/{commentId} {
+      // Allow read if:
+      // - User is authenticated
+      // - Comment is not deleted (unless user is moderator)
+      allow read: if isAuthenticated()
+                  && (resource.data.deleted == false || isModerator());
+      
+      // Allow create if:
+      // - User is authenticated and adult
+      // - User is the author
+      // - Target content exists
+      // - Comment text is not empty and reasonable length
+      allow create: if isAuthenticated()
+                    && isAdult()
+                    && request.resource.data.authorId == request.auth.uid
+                    && isValidTargetType(request.resource.data.targetType)
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 1000
+                    && request.resource.data.deleted == false
+                    && request.resource.data.reports == 0
+                    && request.resource.data.createdAt is timestamp
+                    && contentExists(
+                         getContentPath(request.resource.data.targetType, request.resource.data.targetId),
+                         request.resource.data.targetId
+                       );
+      
+      // Allow update if:
+      // - User is the author (can only update text, not other fields)
+      // - Or user is moderator (can soft delete, update reports)
+      allow update: if isAuthenticated()
+                    && (
+                      (isOwner(resource.data.authorId)
+                       && request.resource.data.authorId == resource.data.authorId
+                       && request.resource.data.targetType == resource.data.targetType
+                       && request.resource.data.targetId == resource.data.targetId
+                       && request.resource.data.createdAt == resource.data.createdAt
+                       && request.resource.data.text.size() > 0
+                       && request.resource.data.text.size() <= 1000)
+                      || isModerator()
+                    );
+      
+      // Allow delete if:
+      // - User is the author
+      // - Or user is moderator
+      allow delete: if isAuthenticated()
+                    && (isOwner(resource.data.authorId) || isModerator());
+    }
+    
+    // Feed Views Collection
+    match /feedViews/{viewId} {
+      // Allow read if:
+      // - User is authenticated
+      // - User is viewing their own view record or is moderator
+      allow read: if isAuthenticated()
+                  && (isOwner(resource.data.viewerId) || isModerator());
+      
+      // Allow create if:
+      // - User is authenticated and adult
+      // - User is the viewer
+      // - Target content exists
+      // - View is timestamped
+      allow create: if isAuthenticated()
+                    && isAdult()
+                    && request.resource.data.viewerId == request.auth.uid
+                    && isValidTargetType(request.resource.data.targetType)
+                    && request.resource.data.createdAt is timestamp
+                    && contentExists(
+                         getContentPath(request.resource.data.targetType, request.resource.data.targetId),
+                         request.resource.data.targetId
+                       );
+      
+      // No updates allowed (views are immutable)
+      allow update: if false;
+      
+      // Allow delete only by moderators (for cleanup/privacy)
+      allow delete: if isAuthenticated() && isModerator();
+    }
+    
+    // Content Reports Collection
+    match /contentReports/{reportId} {
+      // Allow read only by moderators
+      allow read: if isAuthenticated() && isModerator();
+      
+      // Allow create if:
+      // - User is authenticated and adult
+      // - User is the reporter
+      // - Target content exists
+      // - Reason is valid
+      allow create: if isAuthenticated()
+                    && isAdult()
+                    && request.resource.data.reporterId == request.auth.uid
+                    && isValidTargetType(request.resource.data.targetType)
+                    && request.resource.data.reason in [
+                         'illegal', 
+                         'minor_suspicion', 
+                         'explicit_sex', 
+                         'hate', 
+                         'spam', 
+                         'harassment',
+                         'fake_profile',
+                         'other'
+                       ]
+                    && request.resource.data.createdAt is timestamp
+                    && request.resource.data.status == 'pending'
+                    && contentExists(
+                         getContentPath(request.resource.data.targetType, request.resource.data.targetId),
+                         request.resource.data.targetId
+                       );
+      
+      // Allow update only by moderators (for resolving reports)
+      allow update: if isAuthenticated() && isModerator();
+      
+      // No deletes allowed (keep audit trail)
+      allow delete: if false;
+    }
+  }
+}

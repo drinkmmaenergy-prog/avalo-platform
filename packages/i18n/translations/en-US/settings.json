@@ -1,0 +1,23 @@
+{
+  "title": "Settings",
+  "language_and_region": "Language & Region",
+  "language": "Language",
+  "region": "Region",
+  "timezone": "Time Zone",
+  "currency_display": "Currency Display",
+  "select_language": "Select Language",
+  "select_region": "Select Region",
+  "auto_detect": "Auto-detect",
+  "detected_language": "Detected: {{language}}",
+  "detected_region": "Detected: {{region}}",
+  "change_language_warning": "Changing language will reload the app",
+  "language_changed": "Language changed successfully",
+  "account": "Account",
+  "privacy": "Privacy",
+  "security": "Security",
+  "notifications_settings": "Notifications",
+  "appearance": "Appearance",
+  "about": "About",
+  "help": "Help & Support",
+  "logout": "Log Out"
+}

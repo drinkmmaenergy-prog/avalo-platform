@@ -1,0 +1,117 @@
+/**
+ * PACK 129 — Tax & Invoicing Security Rules
+ * Firestore security rules for tax profiles, documents, and withholding
+ * 
+ * SECURITY PRINCIPLES:
+ * - All tax collections are READ-ONLY for clients
+ * - Only backend functions can write tax data
+ * - Creators can read their own tax profile and documents
+ * - Admins have additional read access for compliance
+ */
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // TAX PROFILES
+    // ========================================================================
+    
+    /**
+     * Collection: tax_profiles
+     * Creator tax and business entity information
+     */
+    match /tax_profiles/{userId} {
+      // Users can read their own profile
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // All writes restricted to backend only
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // TAX DOCUMENTS
+    // ========================================================================
+    
+    /**
+     * Collection: tax_documents
+     * Generated invoices, statements, and tax certificates
+     */
+    match /tax_documents/{documentId} {
+      // Users can read their own documents
+      allow read: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      
+      // All writes restricted to backend only
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // TAX WITHHOLDING RECORDS
+    // ========================================================================
+    
+    /**
+     * Collection: tax_withholding_records
+     * Records of tax withholding on payouts
+     */
+    match /tax_withholding_records/{recordId} {
+      // Users can read their own withholding records
+      allow read: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      
+      // All writes restricted to backend only
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // REGIONAL TAX RULES
+    // ========================================================================
+    
+    /**
+     * Collection: regional_tax_rules
+     * Tax rules by country/region (extends region_policy_profiles)
+     */
+    match /regional_tax_rules/{regionCode} {
+      // Anyone can read regional tax rules
+      allow read: if true;
+      
+      // All writes restricted to backend only
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // TAX REMITTANCES
+    // ========================================================================
+    
+    /**
+     * Collection: tax_remittances
+     * Platform tax payments to governments
+     */
+    match /tax_remittances/{remittanceId} {
+      // Only admins can read remittance records
+      allow read: if request.auth != null 
+        && request.auth.token.admin == true;
+      
+      // All writes restricted to backend only
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // TAX COMPLIANCE CHECKS
+    // ========================================================================
+    
+    /**
+     * Collection: tax_compliance_checks
+     * Compliance validation results
+     */
+    match /tax_compliance_checks/{userId} {
+      // Users can read their own compliance status
+      allow read: if request.auth != null 
+        && request.auth.uid == userId;
+      
+      // All writes restricted to backend only
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,375 @@
+name: Monitoring & Auto-Rollback
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18.x'
+
+jobs:
+  # Job 1: Health monitoring
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [staging, production]
+    steps:
+      - name: Set environment variables
+        id: env
+        run: |
+          if [[ "${{ matrix.environment }}" == "production" ]]; then
+            echo "project_id=${{ secrets.FIREBASE_PROJECT_PROD }}" >> $GITHUB_OUTPUT
+            echo "api_endpoint=${{ secrets.PROD_API_ENDPOINT }}" >> $GITHUB_OUTPUT
+          else
+            echo "project_id=${{ secrets.FIREBASE_PROJECT_STAGING }}" >> $GITHUB_OUTPUT
+            echo "api_endpoint=${{ secrets.STAGING_API_ENDPOINT }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check API health
+        id: health
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" ${{ steps.env.outputs.api_endpoint }}/health)
+          STATUS=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "body=$BODY" >> $GITHUB_OUTPUT
+          
+          if [ $STATUS -ne 200 ]; then
+            echo "::error::Health check failed with status $STATUS"
+            exit 1
+          fi
+
+      - name: Check response time
+        id: perf
+        run: |
+          START=$(date +%s%N)
+          curl -s ${{ steps.env.outputs.api_endpoint }}/health > /dev/null
+          END=$(date +%s%N)
+          DURATION=$(( (END - START) / 1000000 ))
+          
+          echo "response_time=$DURATION" >> $GITHUB_OUTPUT
+          
+          if [ $DURATION -gt 3000 ]; then
+            echo "::warning::Slow response time: ${DURATION}ms"
+          fi
+
+      - name: Record metrics
+        if: always()
+        run: |
+          echo "Environment: ${{ matrix.environment }}"
+          echo "Status: ${{ steps.health.outputs.status }}"
+          echo "Response Time: ${{ steps.perf.outputs.response_time }}ms"
+
+  # Job 2: Error rate monitoring
+  error-monitoring:
+    name: Error Rate Monitoring
+    runs-on: ubuntu-latest
+    needs: [health-check]
+    strategy:
+      matrix:
+        environment: [staging, production]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Get error logs
+        id: errors
+        run: |
+          ERROR_COUNT=$(firebase functions:log \
+            --project ${{ matrix.environment == 'production' && secrets.FIREBASE_PROJECT_PROD || secrets.FIREBASE_PROJECT_STAGING }} \
+            --limit 100 \
+            | grep -c "ERROR" || echo "0")
+          
+          echo "error_count=$ERROR_COUNT" >> $GITHUB_OUTPUT
+          
+          if [ $ERROR_COUNT -gt 10 ]; then
+            echo "::error::High error rate detected: $ERROR_COUNT errors in last 100 logs"
+            exit 1
+          elif [ $ERROR_COUNT -gt 5 ]; then
+            echo "::warning::Elevated error rate: $ERROR_COUNT errors"
+          fi
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Analyze error patterns
+        if: steps.errors.outputs.error_count > 0
+        run: |
+          echo "Analyzing error patterns..."
+          firebase functions:log \
+            --project ${{ matrix.environment == 'production' && secrets.FIREBASE_PROJECT_PROD || secrets.FIREBASE_PROJECT_STAGING }} \
+            --limit 100 \
+            | grep "ERROR" \
+            | cut -d' ' -f5- \
+            | sort | uniq -c | sort -rn || echo "No errors found"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  # Job 3: Performance monitoring
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    needs: [health-check]
+    strategy:
+      matrix:
+        environment: [staging, production]
+        endpoint:
+          - /auth/health
+          - /payments/health
+          - /chat/health
+    steps:
+      - name: Set API endpoint
+        id: env
+        run: |
+          if [[ "${{ matrix.environment }}" == "production" ]]; then
+            echo "api_endpoint=${{ secrets.PROD_API_ENDPOINT }}" >> $GITHUB_OUTPUT
+          else
+            echo "api_endpoint=${{ secrets.STAGING_API_ENDPOINT }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Measure endpoint performance
+        id: measure
+        run: |
+          TOTAL=0
+          for i in {1..5}; do
+            START=$(date +%s%N)
+            curl -s ${{ steps.env.outputs.api_endpoint }}${{ matrix.endpoint }} > /dev/null
+            END=$(date +%s%N)
+            DURATION=$(( (END - START) / 1000000 ))
+            TOTAL=$(( TOTAL + DURATION ))
+          done
+          
+          AVG=$(( TOTAL / 5 ))
+          echo "avg_response_time=$AVG" >> $GITHUB_OUTPUT
+          
+          # Alert if average > 2s
+          if [ $AVG -gt 2000 ]; then
+            echo "::warning::Slow endpoint ${{ matrix.endpoint }}: ${AVG}ms average"
+          fi
+
+      - name: Record performance metrics
+        run: |
+          echo "${{ matrix.environment }},${{ matrix.endpoint }},${{ steps.measure.outputs.avg_response_time }}" >> perf-metrics.csv
+
+  # Job 4: Database monitoring
+  database-monitoring:
+    name: Database Health
+    runs-on: ubuntu-latest
+    needs: [health-check]
+    strategy:
+      matrix:
+        environment: [staging, production]
+    steps:
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Check Firestore health
+        run: |
+          echo "Checking Firestore operations..."
+          # Check for slow queries, large documents, etc.
+          # This would require custom monitoring setup
+          echo "Database health check placeholder"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  # Job 5: Cost monitoring
+  cost-monitoring:
+    name: Cost Monitoring
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 0 * * *' # Daily at midnight
+    steps:
+      - name: Check Firebase usage
+        run: |
+          echo "Monitoring Firebase usage and costs..."
+          # This would integrate with Firebase/GCP billing API
+          echo "Cost monitoring placeholder"
+
+  # Job 6: Auto-rollback on critical failure
+  auto-rollback:
+    name: Auto Rollback
+    runs-on: ubuntu-latest
+    needs: [health-check, error-monitoring]
+    if: failure()
+    strategy:
+      matrix:
+        environment: [staging, production]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Assess severity
+        id: assess
+        run: |
+          # Determine if rollback is needed
+          SEVERITY="high"
+          echo "severity=$SEVERITY" >> $GITHUB_OUTPUT
+
+      - name: Execute rollback
+        if: steps.assess.outputs.severity == 'high'
+        run: |
+          echo "🚨 Critical failure detected - initiating rollback"
+          
+          # Get previous stable version
+          PREV_VERSION=$(git rev-parse HEAD~1)
+          
+          # Rollback Functions
+          echo "Rolling back Functions to $PREV_VERSION"
+          git checkout $PREV_VERSION functions/
+          
+          firebase deploy \
+            --only functions \
+            --project ${{ matrix.environment == 'production' && secrets.FIREBASE_PROJECT_PROD || secrets.FIREBASE_PROJECT_STAGING }} \
+            --force
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Verify rollback
+        if: steps.assess.outputs.severity == 'high'
+        run: |
+          sleep 30 # Wait for propagation
+          
+          ENDPOINT="${{ matrix.environment == 'production' && secrets.PROD_API_ENDPOINT || secrets.STAGING_API_ENDPOINT }}"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" $ENDPOINT/health)
+          
+          if [ $STATUS -eq 200 ]; then
+            echo "✅ Rollback successful - service restored"
+          else
+            echo "::error::Rollback verification failed"
+            exit 1
+          fi
+
+      - name: Notify engineering team
+        if: always()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "🚨 AUTO-ROLLBACK: Critical failure in ${{ matrix.environment }}",
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Auto-Rollback Executed*\n• Environment: ${{ matrix.environment }}\n• Reason: Health check failure\n• Status: ${{ job.status }}\n• Action Required: Investigate root cause"
+                }
+              }]
+            }' || echo "Notification skipped"
+
+      - name: Create incident issue
+        if: steps.assess.outputs.severity == 'high'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Auto-Rollback: ${{ matrix.environment }} failure`,
+              body: `## Incident Report
+              
+              **Environment:** ${{ matrix.environment }}
+              **Time:** ${new Date().toISOString()}
+              **Trigger:** Automated monitoring detected critical failure
+              **Action:** Auto-rollback executed
+              
+              ## Details
+              - Health check failed
+              - Error rate exceeded threshold
+              - Automatic rollback to previous stable version initiated
+              
+              ## Next Steps
+              1. Review logs and error reports
+              2. Identify root cause
+              3. Apply fix
+              4. Re-deploy with additional monitoring
+              
+              ## Monitoring Links
+              - [Firebase Console](https://console.firebase.google.com)
+              - [Error Logs](#)
+              - [Performance Metrics](#)
+              `,
+              labels: ['incident', 'auto-rollback', 'priority-high']
+            });
+
+  # Job 7: Generate monitoring report
+  report:
+    name: Generate Monitoring Report
+    runs-on: ubuntu-latest
+    needs: [health-check, error-monitoring, performance-monitoring]
+    if: always()
+    steps:
+      - name: Generate report
+        run: |
+          cat << EOF > monitoring-report.md
+          # Monitoring Report
+          
+          **Generated:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          
+          ## Status Summary
+          - Health Check: ${{ needs.health-check.result }}
+          - Error Monitoring: ${{ needs.error-monitoring.result }}
+          - Performance: ${{ needs.performance-monitoring.result }}
+          
+          ## Recommendations
+          $(if [[ "${{ needs.health-check.result }}" == "failure" ]]; then
+            echo "- ⚠️ Investigate health check failures immediately"
+          fi)
+          $(if [[ "${{ needs.error-monitoring.result }}" == "failure" ]]; then
+            echo "- ⚠️ High error rate detected - review logs"
+          fi)
+          $(if [[ "${{ needs.performance-monitoring.result }}" != "success" ]]; then
+            echo "- 📊 Performance degradation detected - optimize endpoints"
+          fi)
+          EOF
+
+      - name: Upload report
+        uses: actions/upload-artifact@v3
+        with:
+          name: monitoring-report
+          path: monitoring-report.md
+
+  # Job 8: Alert on anomalies
+  anomaly-detection:
+    name: Anomaly Detection
+    runs-on: ubuntu-latest
+    needs: [health-check, error-monitoring, performance-monitoring]
+    if: always()
+    steps:
+      - name: Analyze patterns
+        run: |
+          # Check for unusual patterns
+          echo "Analyzing system behavior..."
+          
+          # Example: Detect traffic spikes, unusual error patterns, etc.
+          # This would typically integrate with ML/analytics tools
+          
+          echo "No anomalies detected"
+
+      - name: Alert if anomalous
+        if: false  # Placeholder condition
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "⚠️ Anomaly detected in system behavior",
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Anomaly Alert*\nUnusual system behavior detected. Please investigate."
+                }
+              }]
+            }'

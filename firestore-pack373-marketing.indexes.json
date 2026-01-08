@@ -1,0 +1,131 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "marketingPartners",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "region", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketingPartners",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "commissionRate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "installs",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "partnerId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "installs",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "partnerId", "order": "ASCENDING" },
+        { "fieldPath": "validated", "order": "ASCENDING" },
+        { "fieldPath": "revenue", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adCampaigns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "roas", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adCampaigns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "country", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "roas", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adCampaigns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "platform", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "cpi", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "performance",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "campaignId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "installValidation",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fraudScore", "order": "DESCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "installValidation",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "validated", "order": "ASCENDING" },
+        { "fieldPath": "fraudScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "installValidation",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "campaignId", "order": "ASCENDING" },
+        { "fieldPath": "validated", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "asoExperiments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "startDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "asoExperiments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "conversionLift", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketingAlerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "severity", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "marketingAlerts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "resolved", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

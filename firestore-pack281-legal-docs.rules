@@ -1,0 +1,110 @@
+rules_version = '2';
+
+// PACK 281 - Legal Documents & Consent System
+// Firestore Security Rules for legalDocuments and legalAcceptances collections
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // LEGAL DOCUMENTS COLLECTION
+    // ============================================================================
+    // Structure: legalDocuments/{docId}
+    // Documents: terms, privacy, safety_rules, content_policy, cookie_policy
+    match /legalDocuments/{docId} {
+      
+      // Anyone can read legal documents (public information)
+      allow read: if true;
+      
+      // Only admins can create/update/delete legal documents
+      allow write: if request.auth != null 
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // Validate legal document structure
+      function isValidLegalDoc() {
+        let data = request.resource.data;
+        return data.keys().hasAll(['docId', 'version', 'slug', 'required', 'supportedLanguages', 'texts', 'effectiveAt', 'createdAt', 'updatedAt'])
+          && data.docId is string
+          && data.docId == docId
+          && data.version is int
+          && data.version > 0
+          && data.slug is string
+          && data.required is bool
+          && data.supportedLanguages is list
+          && data.supportedLanguages.size() > 0
+          && data.texts is map
+          && data.texts.keys().hasAll(data.supportedLanguages)
+          && data.effectiveAt is timestamp
+          && data.createdAt is timestamp
+          && data.updatedAt is timestamp;
+      }
+      
+      // Validate text structure for each language
+      function hasValidTexts() {
+        let texts = request.resource.data.texts;
+        return texts.keys().size() > 0
+          && texts.keys().hasAll(['en'])  // English is required
+          && texts.en.keys().hasAll(['title', 'url'])
+          && texts.en.title is string
+          && texts.en.url is string;
+      }
+    }
+    
+    // ============================================================================
+    // LEGAL ACCEPTANCES COLLECTION
+    // ============================================================================
+    // Structure: legalAcceptances/{userId}
+    match /legalAcceptances/{userId} {
+      
+      // Users can only read their own acceptances
+      allow read: if request.auth != null 
+        && request.auth.uid == userId;
+      
+      // Users can only write their own acceptances
+      allow create, update: if request.auth != null 
+        && request.auth.uid == userId
+        && isValidAcceptance();
+      
+      // Admins can read any acceptance record (for audit purposes)
+      allow read: if request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      
+      // No deletion allowed (keep audit trail)
+      allow delete: if false;
+      
+      // Validate acceptance structure
+      function isValidAcceptance() {
+        let data = request.resource.data;
+        return data.keys().hasAll(['userId', 'docs', 'lastUpdated'])
+          && data.userId == userId
+          && data.docs is map
+          && data.lastUpdated is timestamp
+          && validateAcceptanceDocs();
+      }
+      
+      // Validate individual document acceptances
+      function validateAcceptanceDocs() {
+        let docs = request.resource.data.docs;
+        return docs.keys().size() > 0
+          && docs.keys().hasAll(['terms', 'privacy', 'safety_rules'])  // Required docs
+          && allDocsValid(docs);
+      }
+      
+      // Check all document acceptances have required fields
+      function allDocsValid(docs) {
+        return docs.keys().toSet().hasAll(
+          docs.keys().toSet().filter(docId => 
+            docs[docId].keys().hasAll(['version', 'acceptedAt', 'language'])
+            && docs[docId].version is int
+            && docs[docId].version > 0
+            && docs[docId].acceptedAt is timestamp
+            && docs[docId].language is string
+            && docs[docId].language in ['en', 'pl']
+          )
+        );
+      }
+    }
+  }
+}

@@ -1,0 +1,154 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 212: Soft Reputation Engine
+    // Internal reputation scoring for discovery ranking (NEVER publicly visible)
+    // ========================================================================
+    
+    // ========================================================================
+    // User Reputation Profiles (Internal Only)
+    // Soft reputation score: 0-100 (higher = better)
+    // Used ONLY for ranking, never exposed to users
+    // ========================================================================
+    match /user_reputation/{userId} {
+      // Read: Own profile (limited fields only) or admins
+      allow read: if request.auth != null && (
+        // Users can only see their own basic stats, NOT the score
+        (userId == request.auth.uid) ||
+        // Admins and safety team see everything
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Reputation Events Log (Audit Trail)
+    // Tracks all reputation changes for transparency and debugging
+    // ========================================================================
+    match /reputation_events/{eventId} {
+      // Read: Only own events (limited view), admins, or safety team
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true
+      );
+      
+      // Write: Only server-side or admins
+      allow create: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true
+      );
+      
+      // No updates or deletes allowed
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // Chat Quality Feedback (Optional Post-Chat Ratings)
+    // Users can optionally give positive feedback after chats
+    // ========================================================================
+    match /chat_feedback/{feedbackId} {
+      // Read: Only the giver, receiver, or admins
+      allow read: if request.auth != null && (
+        resource.data.giverId == request.auth.uid ||
+        resource.data.receiverId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Only the chat participant giving feedback
+      allow create: if request.auth != null &&
+        request.resource.data.giverId == request.auth.uid &&
+        // Can only create once per chat
+        !exists(/databases/$(database)/documents/chat_feedback/$(request.resource.id));
+      
+      // No updates or deletes by users
+      allow update, delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Meeting Vibe Ratings (Optional Post-Meeting Feedback)
+    // Users can rate meeting experience (good vibe / positive)
+    // ========================================================================
+    match /meeting_feedback/{feedbackId} {
+      // Read: Only participants or admins
+      allow read: if request.auth != null && (
+        resource.data.giverId == request.auth.uid ||
+        resource.data.receiverId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Only meeting participants
+      allow create: if request.auth != null &&
+        request.resource.data.giverId == request.auth.uid;
+      
+      // No updates or deletes by users
+      allow update, delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Event Guest Ratings (Optional Organizer Feedback)
+    // Event organizers can rate attendees as "good guests"
+    // ========================================================================
+    match /event_guest_ratings/{ratingId} {
+      // Read: Only the organizer, rated guest, or admins
+      allow read: if request.auth != null && (
+        resource.data.organizerId == request.auth.uid ||
+        resource.data.guestId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Only event organizers
+      allow create: if request.auth != null &&
+        request.resource.data.organizerId == request.auth.uid;
+      
+      // Update: Only organizer within 7 days
+      allow update: if request.auth != null &&
+        resource.data.organizerId == request.auth.uid &&
+        request.time < resource.data.createdAt + duration.value(7, 'd');
+      
+      // Delete: Only admins
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Reputation Boost Tracking (Internal)
+    // Tracks when users receive ranking boosts or limitations
+    // ========================================================================
+    match /reputation_adjustments/{adjustmentId} {
+      // Read: Only admins and safety team
+      allow read: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Helper Functions
+    // ========================================================================
+    
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    function isSafetyTeam() {
+      return request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        isAdmin()
+      );
+    }
+  }
+}

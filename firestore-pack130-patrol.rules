@@ -1,0 +1,108 @@
+rules_version = '2';
+
+// PACK 130 — Long-Term Patrol AI
+// Firestore Security Rules for Patrol Collections
+// Persistent Behavior Memory · Ban-Evasion Hunter · Self-Learning Safety
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'moderator' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+    
+    // ========================================================================
+    // PATROL_BEHAVIOR_LOG
+    // Persistent memory of user patterns over 36 months
+    // Read: Admin/Moderator only | Write: Cloud Functions only
+    // ========================================================================
+    match /patrol_behavior_log/{logId} {
+      allow read: if isAdmin() || isModerator();
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // PATROL_RISK_PROFILES
+    // Dynamic risk classification for users
+    // Read: Subject user (limited), Admin/Moderator (full) | Write: Cloud Functions only
+    // ========================================================================
+    match /patrol_risk_profiles/{userId} {
+      // Users can see their own risk level (but not details)
+      allow get: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        isAdmin() ||
+        isModerator()
+      );
+      
+      allow list: if isAdmin() || isModerator();
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // PATROL_CASES
+    // Moderation cases created by Patrol AI
+    // Read: Admin/Moderator | Write: Cloud Functions only
+    // ========================================================================
+    match /patrol_cases/{caseId} {
+      allow read: if isAdmin() || isModerator();
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // PATROL_BAN_EVASION_RECORDS
+    // Device fingerprints and evasion attempts
+    // Read: Admin only | Write: Cloud Functions only
+    // ========================================================================
+    match /patrol_ban_evasion_records/{recordId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // PATROL_FEEDBACK_LOOP
+    // Self-learning moderation feedback
+    // Read: Admin only | Write: Cloud Functions only
+    // ========================================================================
+    match /patrol_feedback_loop/{feedbackId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // PATROL_FROZEN_CONVERSATIONS
+    // Conversations frozen pending review
+    // Read: Participants, Admin/Moderator | Write: Cloud Functions only
+    // ========================================================================
+    match /patrol_frozen_conversations/{conversationId} {
+      allow read: if isAuthenticated() && (
+        resource.data.participantIds.hasAny([request.auth.uid]) ||
+        isAdmin() ||
+        isModerator()
+      );
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // ========================================================================
+    // PATROL_CONTENT_FINGERPRINTS
+    // Content similarity hashes for piracy detection
+    // Read: Admin only | Write: Cloud Functions only
+    // ========================================================================
+    match /patrol_content_fingerprints/{fingerprintId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only via Cloud Functions
+    }
+  }
+}

@@ -1,0 +1,174 @@
+rules_version = '2';
+
+// PACK 228: Sleep Mode / Mental Cooldown System - Firestore Security Rules
+// Emotional health break system without losing chemistry or monetization
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ========================================================================
+    // SLEEP MODE STATES
+    // Core sleep mode tracking per user
+    // ========================================================================
+    match /sleep_mode_states/{userId} {
+      // Read: Own state only or admins
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Create: User creates on first activation
+      allow create: if isOwner(userId) && 
+        request.resource.data.userId == userId &&
+        request.resource.data.keys().hasAll([
+          'userId', 'isActive', 'activatedAt', 'createdAt'
+        ]) &&
+        request.resource.data.isActive is bool;
+      
+      // Update: User can activate/deactivate
+      allow update: if isOwner(userId) &&
+        request.resource.data.userId == userId &&
+        // Can only modify specific fields
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['isActive', 'activatedAt', 'deactivatedAt', 'autoEndAt', 'lastPromptShown', 'exitReason']);
+      
+      // Delete: Never delete, only deactivate
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // SLEEP MODE AI SUGGESTIONS
+    // AI-generated suggestions for when user should take a break
+    // ========================================================================
+    match /sleep_mode_suggestions/{suggestionId} {
+      // Read: User can read their own suggestions
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Create: Only backend AI creates suggestions
+      allow create: if false;
+      
+      // Update: Users can dismiss suggestions
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['dismissed', 'dismissedAt', 'actioned', 'actionedAt']);
+      
+      // Delete: Only backend cleanup
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // SLEEP MODE HISTORY
+    // Historical tracking of sleep mode activations
+    // ========================================================================
+    match /sleep_mode_history/{historyId} {
+      // Read: User can read their own history or admins
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Write: Only backend (automated tracking)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // SLEEP MODE ANALYTICS
+    // Platform-wide sleep mode statistics
+    // ========================================================================
+    match /sleep_mode_analytics/{analyticsId} {
+      // Read: Only admins
+      allow read: if isAdmin();
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // SLEEP MODE SETTINGS
+    // User preferences for sleep mode behavior
+    // ========================================================================
+    match /users/{userId}/settings/sleep_mode {
+      // Read: Own settings only
+      allow read: if isOwner(userId);
+      
+      // Create/Update: User can manage their own settings
+      allow create, update: if isOwner(userId) &&
+        (!request.resource.data.keys().hasAny(['autoSuggestEnabled']) ||
+         request.resource.data.autoSuggestEnabled is bool) &&
+        (!request.resource.data.keys().hasAny(['notificationsWhileActive']) ||
+         request.resource.data.notificationsWhileActive is bool) &&
+        (!request.resource.data.keys().hasAny(['autoExitEnabled']) ||
+         request.resource.data.autoExitEnabled is bool);
+      
+      // Delete: Can reset to defaults
+      allow delete: if isOwner(userId);
+    }
+    
+    // ========================================================================
+    // SLEEP MODE AUTO-EXIT TRIGGERS
+    // Tracks activity that should auto-exit sleep mode
+    // ========================================================================
+    match /sleep_mode_exit_triggers/{triggerId} {
+      // Read: User can read their own triggers
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Create: Backend creates on activity detection
+      allow create: if false;
+      
+      // Update: Backend only
+      allow update: if false;
+      
+      // Delete: Backend cleanup after processing
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // PENDING PAYMENTS DURING SLEEP MODE
+    // Tracks paid interactions waiting for user to return
+    // ========================================================================
+    match /sleep_mode_pending_payments/{paymentId} {
+      // Read: Users can read payments directed at them
+      allow read: if isAuthenticated() && (
+        resource.data.recipientUserId == request.auth.uid ||
+        resource.data.senderUserId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Create: Backend creates when paid interaction received during sleep
+      allow create: if false;
+      
+      // Update: Backend processes on sleep mode exit
+      allow update: if false;
+      
+      // Delete: Backend cleanup after processing
+      allow delete: if false;
+    }
+  }
+}
+
+// =================================================================
+// INTEGRATION NOTES
+// =================================================================
+// - Sleep mode pauses romantic_momentum_states (PACK 224)
+// - Integrates with match_comeback suggestions on return (PACK 225)
+// - Respects chemistry_lock_in visual aura (PACK 226)
+// - Coordinates with desire_loop for gentle restart (PACK 227)
+// - All safety systems remain active during sleep mode
+// - Discover visibility is hidden but existing matches preserved
+// - Notifications routed to in-app inbox instead of push
+// - Payment processing is deferred, never lost
+// - No tokenomics modifications during sleep mode

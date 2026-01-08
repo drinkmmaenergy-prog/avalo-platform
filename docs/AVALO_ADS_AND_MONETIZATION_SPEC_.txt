@@ -1,0 +1,193 @@
+🇬🇧 ENGLISH VERSION
+Avalo Ads & Monetization Specification (v1)
+1. Purpose
+
+Avalo uses in-app advertising to monetize free users and increase engagement, without disrupting the paid experience.
+
+2. Ad Platforms
+
+Mobile: Google AdMob SDK
+
+Web: Google Ad Manager / Meta Audience Network
+
+Optional: internal promo banners for token packs or VIP upgrades
+
+3. Placement Overview
+Section	Format	Frequency	Condition
+Feed	Native card	every 5 posts	Free users
+Chat	Banner	every 10 messages	Free Chat Pool only
+Swipe	Interstitial	every 15 swipes	Free users only
+Discovery	Small promo tile	1 per scroll batch	Optional
+Dashboard (Web)	Inline banner	1 per 3 sections	Free users
+4. Targeting & Policy
+
+Ads shown only to non-VIP and non-Royal users.
+
+No personalized ads for minors (18+ only anyway).
+
+Sensitive categories (escort, dating, adult) excluded.
+
+GDPR/CCPA-compliant consent dialog before first ad.
+
+5. User Controls
+
+“Remove ads” → navigates to subscription page (VIP).
+
+Ads can be muted, hidden, or reported as inappropriate.
+
+Frequency cap per session:
+
+Max 1 interstitial / 3 min
+
+Max 10 banners / hour
+
+6. Revenue Split
+
+Ad revenue 100% → Avalo (non-shared).
+
+However, creators may get visibility boosts funded by ad impressions (cross-promotion credit system).
+
+7. Technical Setup
+7.1 Remote Config Flags
+ADS_ENABLED=true
+ADS_IN_CHAT=true
+ADS_IN_FEED=true
+ADS_IN_SWIPE=true
+ADS_MAX_INTERSTITIAL_PER_SESSION=3
+ADS_REFRESH_INTERVAL_SEC=90
+
+7.2 SDK Integration
+
+Mobile:
+
+expo-ads-admob or native AdMob SDK.
+
+Unit IDs stored in .env:
+
+EXPO_PUBLIC_ADMOB_BANNER_ID=ca-app-pub-xxxx/banner
+EXPO_PUBLIC_ADMOB_INTERSTITIAL_ID=ca-app-pub-xxxx/interstitial
+
+
+Web:
+
+Load Ad Manager script asynchronously.
+
+Use <ins class="adsbygoogle"> placement divs between posts.
+
+8. UX Guidelines
+Visual Standards
+Placement	Color/Style	Label
+Feed	Rounded card, small “Sponsored” label	“Sponsored” / „Sponsorowane”
+Chat	Banner below message input	“Ad” / „Reklama”
+Swipe	Full-screen modal	“Ad Break” / „Przerwa reklamowa”
+Translations
+EN	PL
+“Sponsored”	„Sponsorowane”
+“Ad Break — continue swiping”	„Przerwa reklamowa — kontynuuj przesuwanie”
+“Remove ads with VIP plan”	„Usuń reklamy w planie VIP”
+9. Internal Promotions
+
+Avalo can display house ads for:
+
+Token packs (upgrade CTA)
+
+VIP / Royal subscriptions
+
+AI Companions premium tiers
+
+These use same ad slots but internal creatives (no SDK tracking).
+
+10. Performance & Analytics
+
+Impressions, clicks logged via Firebase Analytics.
+
+Event schema:
+
+ad_impression: { type, placement, userTier }
+ad_click: { adId, placement }
+
+
+Revenue aggregated via AdMob dashboard and exported to BigQuery.
+
+11. Compliance
+
+GDPR consent before first ad (AdMob Consent SDK).
+
+AdMob Family Policy checked (though Avalo 18+ only).
+
+No autoplay video/audio ads.
+
+All ads must respect Avalo’s Community Guidelines.
+
+🇵🇱 POLSKA WERSJA
+Specyfikacja Reklam i Monetyzacji Avalo (v1)
+1. Cel
+
+Avalo wykorzystuje reklamy, aby monetyzować konta darmowe i zwiększyć zasięg aplikacji, bez pogarszania doświadczenia użytkowników VIP/Royal.
+
+2. Platformy reklamowe
+
+Mobile: Google AdMob SDK
+
+Web: Google Ad Manager / Meta Audience Network
+
+Dodatkowo: wewnętrzne banery promujące tokeny lub subskrypcje.
+
+3. Miejsca emisji
+Sekcja	Format	Częstotliwość	Warunek
+Feed	Karta natywna	co 5 postów	tylko darmowi
+Czat	Baner dolny	co 10 wiadomości	tylko Free Chat
+Swipe	Pełnoekranowa	co 15 przesunięć	tylko darmowi
+Discovery	Płytka promocyjna	1 na ekran	opcjonalnie
+Dashboard (Web)	Baner inline	co 3 sekcje	darmowi
+4. Polityka i targetowanie
+
+Reklamy wyłącznie dla użytkowników darmowych.
+
+Brak reklam spersonalizowanych (użytkownicy 18+).
+
+Kategoryzacja wg zasad Google Ads – brak treści erotycznych.
+
+5. Kontrola użytkownika
+
+Przycisk „Usuń reklamy” → strona VIP.
+
+Użytkownik może wyciszyć lub ukryć reklamę.
+
+Ograniczenie: maks. 1 interstitial co 3 min, 10 banerów/h.
+
+6. Podział przychodów
+
+100% przychodu reklamowego dla Avalo.
+
+Możliwe kredyty promocyjne dla aktywnych użytkowników.
+
+7. Konfiguracja techniczna
+
+Flagi Remote Config i ID jednostek AdMob (patrz sekcja EN).
+
+8. Wytyczne UX
+
+Każda reklama oznaczona etykietą “Sponsorowane”.
+
+Kolorystyka: neutralna, brak efektów rozpraszających.
+
+Brak dźwięku / autoplay.
+
+9. Promocje wewnętrzne
+
+Avalo wyświetla własne reklamy tokenów, subskrypcji, AI Companions.
+
+10. Analityka
+
+Zliczanie wyświetleń i kliknięć w Firebase Analytics.
+
+Dane eksportowane do BigQuery.
+
+11. Zgodność
+
+Zgoda RODO (SDK AdMob).
+
+Zgodność z polityką reklam 18+.
+
+Brak reklam erotycznych.

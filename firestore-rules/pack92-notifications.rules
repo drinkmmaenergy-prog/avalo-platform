@@ -1,0 +1,66 @@
+/**
+ * PACK 92 — Unified Notification & Messaging Engine
+ * Firestore Security Rules
+ */
+
+// ============================================================================
+// NOTIFICATIONS COLLECTION
+// ============================================================================
+
+match /notifications/{notificationId} {
+  // Users can only read their own notifications
+  allow read: if request.auth != null 
+    && request.auth.uid == resource.data.userId;
+  
+  // Users can only update the 'read' field on their own notifications
+  allow update: if request.auth != null 
+    && request.auth.uid == resource.data.userId
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+  
+  // Only backend can create notifications
+  allow create: if false;
+  
+  // Users cannot delete notifications
+  allow delete: if false;
+}
+
+// ============================================================================
+// USER NOTIFICATION SETTINGS
+// ============================================================================
+
+match /user_notification_settings/{userId} {
+  // Users can only read their own settings
+  allow read: if request.auth != null 
+    && request.auth.uid == userId;
+  
+  // Users can update their own settings
+  allow update, create: if request.auth != null 
+    && request.auth.uid == userId
+    && request.auth.uid == request.resource.data.userId
+    // Ensure mandatory categories cannot be disabled
+    && (request.resource.data.categories.LEGAL == true)
+    && (request.resource.data.categories.SAFETY == true);
+  
+  // Users cannot delete settings
+  allow delete: if false;
+}
+
+// ============================================================================
+// USER DEVICES (PUSH TOKENS)
+// ============================================================================
+
+match /user_devices/{deviceDocId} {
+  // Users can only read their own devices
+  allow read: if request.auth != null 
+    && request.auth.uid == resource.data.userId;
+  
+  // Users can create/update their own devices
+  allow create, update: if request.auth != null 
+    && request.auth.uid == request.resource.data.userId
+    // Ensure document ID follows pattern userId_deviceId
+    && deviceDocId.matches(request.auth.uid + '_.*');
+  
+  // Users can delete their own devices
+  allow delete: if request.auth != null 
+    && request.auth.uid == resource.data.userId;
+}

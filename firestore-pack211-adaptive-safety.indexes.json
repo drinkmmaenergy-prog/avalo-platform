@@ -1,0 +1,192 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "user_risk_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "safetyCategory", "order": "ASCENDING" },
+        { "fieldPath": "riskScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "user_risk_profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "riskScore", "order": "DESCENDING" },
+        { "fieldPath": "lastIncidentDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "booking_attempt_history",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "requesterId", "order": "ASCENDING" },
+        { "fieldPath": "targetId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "booking_attempt_history",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "requesterId", "order": "ASCENDING" },
+        { "fieldPath": "cooldownActive", "order": "ASCENDING" },
+        { "fieldPath": "cooldownUntil", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "booking_attempt_history",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "targetId", "order": "ASCENDING" },
+        { "fieldPath": "rejectionCount", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "booking_attempt_history",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "permanentlyBlocked", "order": "ASCENDING" },
+        { "fieldPath": "lastAttemptDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "swipe_pattern_tracking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "swiperId", "order": "ASCENDING" },
+        { "fieldPath": "targetId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "swipe_pattern_tracking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "swiperId", "order": "ASCENDING" },
+        { "fieldPath": "hiddenUntil", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "swipe_pattern_tracking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "targetId", "order": "ASCENDING" },
+        { "fieldPath": "noMatchCount", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "swipe_pattern_tracking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "permanentlyHidden", "order": "ASCENDING" },
+        { "fieldPath": "lastSwipeDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "location_safety_checks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "bookingId", "order": "ASCENDING" },
+        { "fieldPath": "assessedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "location_safety_checks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventId", "order": "ASCENDING" },
+        { "fieldPath": "assessedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "location_safety_checks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "riskLevel", "order": "ASCENDING" },
+        { "fieldPath": "assessedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "location_safety_checks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "meetingBlocked", "order": "ASCENDING" },
+        { "fieldPath": "assessedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adaptive_safety_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adaptive_safety_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adaptive_safety_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "relatedUserId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adaptive_safety_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adaptive_safety_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "severity", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adaptive_safety_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "requiresReview", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adaptive_safety_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "severity", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adaptive_safety_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "bookingHistoryId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adaptive_safety_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "locationCheckId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

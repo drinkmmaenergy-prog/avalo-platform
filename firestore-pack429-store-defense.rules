@@ -1,0 +1,127 @@
+// PACK 429 — App Store Defense, Reviews, Reputation & Trust Engine
+// Firestore Security Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    function isAdminOrOps() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['ADMIN', 'OPS'];
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ========================================================================
+    // STORE REVIEWS MIRROR
+    // ========================================================================
+    match /storeReviewsMirror/{reviewId} {
+      // Only admins can read reviews
+      allow read: if isAdmin();
+      
+      // Only server/admin can write
+      allow write: if false; // Server-only via Admin SDK
+    }
+    
+    // ========================================================================
+    // STORE DEFENSE EVENTS
+    // ========================================================================
+    match /storeDefenseEvents/{eventId} {
+      // Admins and ops can read
+      allow read: if isAdminOrOps();
+      
+      // Only server can create
+      allow create: if false; // Server-only
+      
+      // Admins can update (to resolve events)
+      allow update: if isAdmin() && 
+        request.resource.data.keys().hasOnly(['resolved', 'resolvedAt', 'resolvedBy', 'updatedAt']) &&
+        request.resource.data.resolved == true;
+      
+      // No delete
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // TRUST SIGNALS
+    // ========================================================================
+    match /trustSignals/global {
+      // Anyone can read public trust score
+      allow read: if true;
+      
+      // Only server can write
+      allow write: if false; // Server-only
+    }
+    
+    // ========================================================================
+    // REVIEW RECOVERY PROMPTS
+    // ========================================================================
+    match /reviewRecoveryPrompts/{promptId} {
+      // Users can read their own prompts
+      allow read: if isOwner(resource.data.userId);
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Only server can create
+      allow create: if false; // Server-only
+      
+      // Users can update their own prompts (mark as prompted/responded)
+      allow update: if isOwner(resource.data.userId) &&
+        request.resource.data.keys().hasOnly([
+          'id', 'userId', 'trigger', 'platform', 'region', 'language',
+          'prompted', 'promptedAt', 'responded', 'respondedAt', 'leftReview',
+          'eligible', 'ineligibilityReasons', 'createdAt', 'updatedAt'
+        ]) &&
+        request.resource.data.userId == resource.data.userId; // Can't change owner
+      
+      // No delete
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // CRISIS MODE
+    // ========================================================================
+    match /crisisMode/global {
+      // Admins and ops can read
+      allow read: if isAdminOrOps();
+      
+      // Only admins can activate/deactivate manually
+      allow write: if isAdmin();
+    }
+    
+    // ========================================================================
+    // ADMIN QUERIES (AGGREGATED DATA)
+    // ========================================================================
+    
+    // Allow admins to query defense events by platform
+    match /storeDefenseEvents/{eventId} {
+      allow list: if isAdminOrOps() && 
+        request.query.limit <= 100;
+    }
+    
+    // Allow admins to query reviews
+    match /storeReviewsMirror/{reviewId} {
+      allow list: if isAdmin() && 
+        request.query.limit <= 100;
+    }
+    
+    // Allow admins to query recovery prompts
+    match /reviewRecoveryPrompts/{promptId} {
+      allow list: if isAdmin() && 
+        request.query.limit <= 100;
+    }
+  }
+}

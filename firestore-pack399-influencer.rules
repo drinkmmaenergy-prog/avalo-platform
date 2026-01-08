@@ -1,0 +1,177 @@
+// PACK 399 — Influencer Wave Engine Security Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/admin_users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/admin_users/$(request.auth.uid)).data.roles.hasAny(['admin', 'influencer_manager', 'finance_manager']);
+    }
+    
+    function isInfluencer(influencerId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/influencer_profiles/$(influencerId)) &&
+        get(/databases/$(database)/documents/influencer_profiles/$(influencerId)).data.userId == request.auth.uid;
+    }
+    
+    // ============================================================================
+    // INFLUENCER PROFILES
+    // ============================================================================
+    
+    match /influencer_profiles/{influencerId} {
+      // Read: Own profile or admin
+      allow read: if isInfluencer(influencerId) || isAdmin();
+      
+      // Create: Any authenticated user can apply
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.state == 'CANDIDATE';
+      
+      // Update: Only admins (state changes) or own profile (minor updates)
+      allow update: if isAdmin() ||
+        (isInfluencer(influencerId) &&
+         request.resource.data.state == resource.data.state &&
+         request.resource.data.userId == resource.data.userId);
+      
+      // Delete: Only admins
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // INFLUENCER CAMPAIGNS
+    // ============================================================================
+    
+    match /influencer_campaigns/{campaignId} {
+      // Read: Associated influencer or admin
+      allow read: if isAdmin() ||
+        (isAuthenticated() &&
+         exists(/databases/$(database)/documents/influencer_profiles/$(resource.data.influencerId)) &&
+         get(/databases/$(database)/documents/influencer_profiles/$(resource.data.influencerId)).data.userId == request.auth.uid);
+      
+      // Create/Update/Delete: Only admins
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // INFLUENCER METRICS
+    // ============================================================================
+    
+    match /influencer_metrics/{metricId} {
+      // Read: Associated influencer or admin
+      allow read: if isAdmin() ||
+        (isAuthenticated() &&
+         exists(/databases/$(database)/documents/influencer_profiles/$(resource.data.influencerId)) &&
+         get(/databases/$(database)/documents/influencer_profiles/$(resource.data.influencerId)).data.userId == request.auth.uid);
+      
+      // Write: Only server-side functions
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // CREATOR FUNNELS
+    // ============================================================================
+    
+    match /creator_funnels/{funnelId} {
+      // Read: Own funnel, associated influencer, or admin
+      allow read: if isAdmin() ||
+        (isAuthenticated() && resource.data.userId == request.auth.uid) ||
+        (isAuthenticated() &&
+         exists(/databases/$(database)/documents/influencer_profiles/$(resource.data.influencerId)) &&
+         get(/databases/$(database)/documents/influencer_profiles/$(resource.data.influencerId)).data.userId == request.auth.uid);
+      
+      // Write: Only server-side functions
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // REGIONAL PLAYBOOKS
+    // ============================================================================
+    
+    match /regional_playbooks/{playbookId} {
+      // Read: Any authenticated user
+      allow read: if isAuthenticated();
+      
+      // Write: Only admins
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // INFLUENCER PAYOUTS
+    // ============================================================================
+    
+    match /influencer_payouts/{payoutId} {
+      // Read: Associated influencer or admin
+      allow read: if isAdmin() ||
+        (isAuthenticated() &&
+         exists(/databases/$(database)/documents/influencer_profiles/$(resource.data.influencerId)) &&
+         get(/databases/$(database)/documents/influencer_profiles/$(resource.data.influencerId)).data.userId == request.auth.uid);
+      
+      // Create/Update: Only admins
+      allow create, update: if isAdmin();
+      
+      // Delete: Never
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // INFLUENCER COMMISSIONS
+    // ============================================================================
+    
+    match /influencer_commissions/{commissionId} {
+      // Read: Associated influencer or admin
+      allow read: if isAdmin() ||
+        (isAuthenticated() &&
+         exists(/databases/$(database)/documents/influencer_profiles/$(resource.data.influencerId)) &&
+         get(/databases/$(database)/documents/influencer_profiles/$(resource.data.influencerId)).data.userId == request.auth.uid);
+      
+      // Write: Only server-side functions
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // COUNTRY MARKETING RULES
+    // ============================================================================
+    
+    match /country_marketing_rules/{ruleId} {
+      // Read: Any authenticated user
+      allow read: if isAuthenticated();
+      
+      // Write: Only admins
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // TRAFFIC SOURCES
+    // ============================================================================
+    
+    match /traffic_sources/{sourceId} {
+      // Read: Any authenticated user
+      allow read: if isAuthenticated();
+      
+      // Write: Only admins
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // LEGAL COMPLIANCE FLAGS
+    // ============================================================================
+    
+    match /legal_compliance_flags/{flagId} {
+      // Read: Any authenticated user
+      allow read: if isAuthenticated();
+      
+      // Write: Only admins
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,208 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "anniversary_status",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "lastChecked", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_status",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "participantIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "lastChecked", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_status",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "nextEligibleEvents.match", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_status",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "nextEligibleEvents.firstChat", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_status",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "nextEligibleEvents.firstCall", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_status",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "nextEligibleEvents.firstMemory", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_status",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "nextEligibleEvents.firstMeeting", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_celebrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "celebrationDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_celebrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "participantIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "celebrationDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_celebrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "anniversaryType", "order": "ASCENDING" },
+        { "fieldPath": "celebrationDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_celebrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "participantIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "anniversaryType", "order": "ASCENDING" },
+        { "fieldPath": "celebrationDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_celebrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "celebrationDate", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_streaks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "streakPoints", "order": "DESCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_streaks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "participantIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "streakPoints", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_streaks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "lastActivityAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_streak_activities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "activityType", "order": "ASCENDING" },
+        { "fieldPath": "activityAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_streak_activities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "withinWindow", "order": "ASCENDING" },
+        { "fieldPath": "activityAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_streak_activities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "participantIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "activityAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_rewards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "rewardType", "order": "ASCENDING" },
+        { "fieldPath": "earnedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_rewards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "participantIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "earnedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_rewards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "coupleId", "order": "ASCENDING" },
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_analytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "totalCelebrations", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_analytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "period", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "anniversary_analytics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "anniversaryType", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

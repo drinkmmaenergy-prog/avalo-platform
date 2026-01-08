@@ -1,0 +1,116 @@
+rules_version = '2';
+
+/**
+ * PACK 314 - Configuration & Feature Flags Security Rules
+ * 
+ * Controls access to:
+ * - Global app configuration
+ * - Feature flags
+ * - Country rollout settings
+ * - Waitlist
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // GLOBAL APP CONFIGURATION
+    // ========================================================================
+    
+    /**
+     * config/global/app/appConfig
+     * READ: Anyone (for feature flags)
+     * WRITE: Admins only
+     */
+    match /config/global/app/{document} {
+      // Public read access for clients to fetch feature flags
+      allow read: if true;
+      
+      // Only SUPERADMIN and PRODUCT roles can write
+      allow write: if request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['SUPERADMIN', 'PRODUCT'];
+    }
+    
+    // ========================================================================
+    // COUNTRY STATISTICS
+    // ========================================================================
+    
+    /**
+     * countryStats/{countryCode}
+     * READ: Admins only
+     * WRITE: System only (via backend)
+     */
+    match /countryStats/{countryCode} {
+      allow read: if request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['ADMIN', 'SUPERADMIN', 'PRODUCT'];
+      
+      // Only backend can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // WAITLIST
+    // ========================================================================
+    
+    /**
+     * waitlist/{entryId}
+     * READ: Admins only
+     * CREATE: Anyone (when country at capacity)
+     * UPDATE/DELETE: Admins only
+     */
+    match /waitlist/{entryId} {
+      // Admins can read all waitlist entries
+      allow read: if request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['ADMIN', 'SUPERADMIN', 'PRODUCT'];
+      
+      // Anyone can add themselves to waitlist
+      allow create: if request.resource.data.keys().hasAll(['email', 'countryCode', 'createdAt', 'status']) &&
+        request.resource.data.status == 'PENDING';
+      
+      // Only admins can update waitlist status
+      allow update: if request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['ADMIN', 'SUPERADMIN'];
+      
+      // Only admins can delete waitlist entries
+      allow delete: if request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['ADMIN', 'SUPERADMIN'];
+    }
+    
+    // ========================================================================
+    // AUDIT LOGS FOR CONFIG CHANGES
+    // ========================================================================
+    
+    /**
+     * auditLogs (config-related)
+     * READ: Admins only
+     * WRITE: System only
+     */
+    match /auditLogs/{logId} {
+      // Read only for admins (defined in main rules)
+      // Write only via backend functions
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // ANALYTICS EVENTS (config context)
+    // ========================================================================
+    
+    /**
+     * analytics_events
+     * READ: System/Admins only
+     * WRITE: System only
+     */
+    match /analytics_events/{eventId} {
+      allow read: if request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['ADMIN', 'SUPERADMIN', 'ANALYST'];
+      
+      allow write: if false;
+    }
+  }
+}

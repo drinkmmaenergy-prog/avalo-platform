@@ -1,0 +1,206 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // PACK 375: CREATOR GROWTH ENGINE
+    // ============================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isCreator(userId) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(userId)) &&
+             get(/databases/$(database)/documents/users/$(userId)).data.isCreator == true;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ============================================
+    // 1. CREATOR BOOSTS
+    // ============================================
+    match /creatorBoosts/{boostId} {
+      // Creators can read their own boosts
+      allow read: if isAuthenticated() && 
+                     (isOwner(resource.data.creatorId) || isAdmin());
+      
+      // Only admins or wallet-verified requests can create boosts
+      allow create: if isAuthenticated() && 
+                       (isAdmin() || 
+                        (isOwner(request.resource.data.creatorId) && 
+                         request.resource.data.source == 'wallet' &&
+                         request.resource.data.status == 'pending'));
+      
+      // Only admins can update boost status
+      allow update: if isAdmin();
+      
+      // Only admins can delete boosts
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // 2. CREATOR FUNNELS (Analytics)
+    // ============================================
+    match /creatorFunnels/{funnelId} {
+      // Creators can read their own funnel data
+      allow read: if isAuthenticated() && 
+                     (isOwner(resource.data.creatorId) || isAdmin());
+      
+      // System can write funnel tracking data
+      allow create: if isAuthenticated() && 
+                       request.resource.data.createdAt == request.time;
+      
+      // System can update funnel stages
+      allow update: if isAuthenticated() && 
+                       request.resource.data.updatedAt == request.time;
+      
+      // Only admins can delete funnel data
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // 3. CREATOR ANALYTICS
+    // ============================================
+    match /creatorAnalytics/{creatorId} {
+      // Creators can read their own analytics
+      allow read: if isAuthenticated() && 
+                     (isOwner(creatorId) || isAdmin());
+      
+      // System can write and update analytics
+      allow create, update: if isAuthenticated();
+      
+      // Only admins can delete analytics
+      allow delete: if isAdmin();
+      
+      // Subcollection: Daily metrics
+      match /daily/{dateId} {
+        allow read: if isAuthenticated() && 
+                       (isOwner(creatorId) || isAdmin());
+        allow create, update: if isAuthenticated();
+        allow delete: if isAdmin();
+      }
+      
+      // Subcollection: Conversion rates
+      match /conversions/{metricId} {
+        allow read: if isAuthenticated() && 
+                       (isOwner(creatorId) || isAdmin());
+        allow create, update: if isAuthenticated();
+        allow delete: if isAdmin();
+      }
+    }
+    
+    // ============================================
+    // 4. CREATOR OPTIMIZATION SUGGESTIONS
+    // ============================================
+    match /creatorOptimizations/{optimizationId} {
+      // Creators can read their own suggestions
+      allow read: if isAuthenticated() && 
+                     (isOwner(resource.data.creatorId) || isAdmin());
+      
+      // System and admins can create suggestions
+      allow create: if isAuthenticated() && 
+                       (isAdmin() || 
+                        request.resource.data.source == 'ai');
+      
+      // Creators can update to mark as read/dismissed
+      allow update: if isAuthenticated() && 
+                       (isOwner(resource.data.creatorId) || isAdmin());
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // 5. CREATOR BOOST HISTORY (Audit Trail)
+    // ============================================
+    match /creatorBoostHistory/{historyId} {
+      // Read-only for creators (their own data) and admins
+      allow read: if isAuthenticated() && 
+                     (isOwner(resource.data.creatorId) || isAdmin());
+      
+      // Only system can write (append-only log)
+      allow create: if isAuthenticated() && 
+                       request.resource.data.timestamp == request.time;
+      
+      // No updates or deletes (immutable audit log)
+      allow update, delete: if false;
+    }
+    
+    // ============================================
+    // 6. CREATOR FEED PRIORITY
+    // ============================================
+    match /creatorFeedPriority/{creatorId} {
+      // Creators can read their own priority settings
+      allow read: if isAuthenticated() && 
+                     (isOwner(creatorId) || isAdmin());
+      
+      // Only system and admins can write priority settings
+      allow create, update: if isAdmin();
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // 7. SUBSCRIBER GROWTH OFFERS
+    // ============================================
+    match /subscriberGrowthOffers/{offerId} {
+      // Users can read active offers
+      allow read: if isAuthenticated() && 
+                     (resource.data.status == 'active' || 
+                      isOwner(resource.data.creatorId) || 
+                      isAdmin());
+      
+      // Creators and admins can create offers
+      allow create: if isAuthenticated() && 
+                       (isCreator(request.resource.data.creatorId) || isAdmin()) &&
+                       request.resource.data.createdAt == request.time;
+      
+      // Creators and admins can update their own offers
+      allow update: if isAuthenticated() && 
+                       (isOwner(resource.data.creatorId) || isAdmin());
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // 8. CREATOR FRAUD SCORES
+    // ============================================
+    match /creatorFraudScores/{creatorId} {
+      // Only admins can read fraud scores
+      allow read: if isAdmin();
+      
+      // Only system can write fraud scores
+      allow create, update: if isAdmin();
+      
+      // No deletes (historical record)
+      allow delete: if false;
+    }
+    
+    // ============================================
+    // 9. FEATURE FLAGS FOR PACK 375
+    // ============================================
+    match /featureFlags/pack375 {
+      // Anyone authenticated can read feature flags
+      allow read: if isAuthenticated();
+      
+      // Only admins can update feature flags
+      allow update: if isAdmin();
+      
+      // No create or delete (single document)
+      allow create, delete: if false;
+    }
+  }
+}

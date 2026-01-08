@@ -1,0 +1,41 @@
+rules_version = '2';
+
+// PACK 242 - Dynamic Chat Pricing Modifier Rules
+// Performance-based pricing for elite creators
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // PACK 242: Dynamic pricing documents - read own, write via Cloud Functions only
+    match /pack242_dynamic_pricing/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false; // Only via Cloud Functions
+      
+      // Price change history - read own history
+      match /history/{historyId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if false; // Only via Cloud Functions
+      }
+    }
+    
+    // PACK 242: Discovery feed adjustments - read by recommendation engine
+    match /pack242_discovery_adjustments/{userId} {
+      allow read: if isAuthenticated(); // Any authenticated user can read (for discovery feed)
+      allow write: if false; // Only via Cloud Functions
+    }
+  }
+}

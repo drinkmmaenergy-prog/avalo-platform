@@ -1,0 +1,70 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===== PACK 371: APP STORE DEFENSE & REPUTATION ENGINE =====
+    
+    // Store Reputation Signals - App Store Reviews
+    match /storeReputationSignals/{signalId} {
+      // Only Cloud Functions can write
+      allow read: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'support', 'moderator']);
+      allow write: if false; // Functions only
+    }
+    
+    // Trust Score - User Level
+    match /trustScore/{userId} {
+      // Users can read their own trust score
+      allow read: if request.auth != null && 
+        (request.auth.uid == userId || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'support']);
+      allow write: if false; // Functions only
+    }
+    
+    // Platform Trust Metrics (singleton)
+    match /platformMetrics/trustMetrics {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'support'];
+      allow write: if false; // Functions only
+    }
+    
+    // Review Nudge History
+    match /reviewNudgeHistory/{userId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid == userId || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'support']);
+      allow write: if false; // Functions only
+    }
+    
+    // Reputation Attack Logs
+    match /reputationAttacks/{attackId} {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'security'];
+      allow write: if false; // Functions only
+    }
+    
+    // ASO Optimizer Configuration
+    match /asoConfig/{configId} {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Review Response Templates
+    match /reviewResponseTemplates/{templateId} {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'support'];
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Sentiment Analysis Cache
+    match /sentimentCache/{cacheId} {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'support'];
+      allow write: if false; // Functions only
+    }
+  }
+}

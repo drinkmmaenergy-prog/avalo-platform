@@ -1,0 +1,97 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "search_index",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isBanned", "order": "ASCENDING" },
+        { "fieldPath": "isExplicit", "order": "ASCENDING" },
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "interestMatchScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "search_index",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isBanned", "order": "ASCENDING" },
+        { "fieldPath": "isExplicit", "order": "ASCENDING" },
+        { "fieldPath": "safetyScore", "order": "DESCENDING" },
+        { "fieldPath": "qualityScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "search_index",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "isBanned", "order": "ASCENDING" },
+        { "fieldPath": "isExplicit", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "search_index",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isBanned", "order": "ASCENDING" },
+        { "fieldPath": "isExplicit", "order": "ASCENDING" },
+        { "fieldPath": "tags", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "qualityScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "search_index",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "region", "order": "ASCENDING" },
+        { "fieldPath": "isBanned", "order": "ASCENDING" },
+        { "fieldPath": "isExplicit", "order": "ASCENDING" },
+        { "fieldPath": "qualityScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "search_index",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "language", "order": "ASCENDING" },
+        { "fieldPath": "isBanned", "order": "ASCENDING" },
+        { "fieldPath": "isExplicit", "order": "ASCENDING" },
+        { "fieldPath": "qualityScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "search_history",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "search_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "search_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "search_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "query", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

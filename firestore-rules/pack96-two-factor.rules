@@ -1,0 +1,97 @@
+/**
+ * PACK 96 - Two-Factor Authentication & Step-Up Verification
+ * Firestore Security Rules
+ * 
+ * SECURITY PRINCIPLES:
+ * - Users can read their own 2FA settings (sanitized)
+ * - Only Cloud Functions can write 2FA data
+ * - Challenges are not directly accessible by clients
+ * - All sensitive operations go through Cloud Functions
+ */
+
+// ============================================================================
+// user_2fa_settings - User's 2FA Configuration
+// ============================================================================
+
+match /user_2fa_settings/{userId} {
+  // Users can read their own 2FA settings
+  allow read: if request.auth != null && request.auth.uid == userId;
+  
+  // Only Cloud Functions can write (no direct client writes)
+  // Users must use twoFactor_enable and twoFactor_disable endpoints
+  allow write: if false;
+}
+
+// ============================================================================
+// user_2fa_challenges - Active Verification Challenges
+// ============================================================================
+
+match /user_2fa_challenges/{challengeId} {
+  // Challenges are completely inaccessible to clients
+  // Only Cloud Functions can read/write challenges
+  // This prevents:
+  // - Viewing OTP codes or hashes
+  // - Manipulating attempt counts
+  // - Bypassing challenge resolution
+  allow read, write: if false;
+}
+
+// ============================================================================
+// user_2fa_events - Audit Trail for 2FA Operations
+// ============================================================================
+
+match /user_2fa_events/{eventId} {
+  // Events are not directly readable by users
+  // They can be accessed via Cloud Functions for user history if needed
+  // This is primarily for internal audit and security monitoring
+  allow read, write: if false;
+}
+
+// ============================================================================
+// ADMIN ACCESS (Optional - uncomment if admin console is implemented)
+// ============================================================================
+
+// match /user_2fa_settings/{userId} {
+//   allow read: if isAdmin();
+// }
+// 
+// match /user_2fa_challenges/{challengeId} {
+//   allow read: if isAdmin();
+// }
+// 
+// match /user_2fa_events/{eventId} {
+//   allow read: if isAdmin();
+// }
+// 
+// function isAdmin() {
+//   return request.auth != null && 
+//          exists(/databases/$(database)/documents/admin_users/$(request.auth.uid));
+// }
+
+// ============================================================================
+// INTEGRATION NOTES
+// ============================================================================
+
+/**
+ * To integrate these rules into your main firestore.rules file:
+ * 
+ * 1. Open firestore.rules
+ * 2. Add the following inside the `match /databases/{database}/documents` block:
+ * 
+ *    // PACK 96: Two-Factor Authentication & Step-Up Verification
+ *    match /user_2fa_settings/{userId} {
+ *      allow read: if request.auth != null && request.auth.uid == userId;
+ *      allow write: if false;
+ *    }
+ *    
+ *    match /user_2fa_challenges/{challengeId} {
+ *      allow read, write: if false;
+ *    }
+ *    
+ *    match /user_2fa_events/{eventId} {
+ *      allow read, write: if false;
+ *    }
+ * 
+ * 3. Deploy rules:
+ *    firebase deploy --only firestore:rules
+ */

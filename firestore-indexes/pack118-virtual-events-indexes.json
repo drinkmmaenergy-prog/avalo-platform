@@ -1,0 +1,87 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "virtual_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "startTime", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "virtual_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "region", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "startTime", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "virtual_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "hostUserId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "virtual_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "hostUserId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "startTime", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "virtual_event_attendees",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "virtual_event_attendees",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventId", "order": "ASCENDING" },
+        { "fieldPath": "userId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "virtual_event_attendees",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "eventStartTime", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "virtual_event_attendees",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "eventStartTime", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "event_bans",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "hostUserId", "order": "ASCENDING" },
+        { "fieldPath": "bannedUserId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "event_bans",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventId", "order": "ASCENDING" },
+        { "fieldPath": "bannedUserId", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

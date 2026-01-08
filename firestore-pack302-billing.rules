@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 302 — UNIFIED TOKEN & SUBSCRIPTION CHECKOUT
+    // Security Rules for Billing Collections
+    // ========================================================================
+    
+    // Helper: Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper: Check if user is accessing their own document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper: Check if user is admin (placeholder - implement with custom claims)
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+    
+    // ========================================================================
+    // WALLETS COLLECTION
+    // ========================================================================
+    // Users can only read their own wallet
+    // Only Cloud Functions can write
+    match /wallets/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // ========================================================================
+    // USER SUBSCRIPTIONS COLLECTION
+    // ========================================================================
+    // Users can only read their own subscription status
+    // Only Cloud Functions can write
+    match /userSubscriptions/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // ========================================================================
+    // WALLET TRANSACTIONS COLLECTION
+    // ========================================================================
+    // Users can only read their own transactions
+    // Only Cloud Functions can write (append-only ledger)
+    match /walletTransactions/{txId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // ========================================================================
+    // BILLING AUDIT LOGS COLLECTION
+    // ========================================================================
+    // Only admins can read
+    // Only Cloud Functions can write (append-only audit log)
+    match /billingAuditLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+  }
+}

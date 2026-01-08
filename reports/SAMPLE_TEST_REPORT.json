@@ -1,0 +1,359 @@
+{
+  "timestamp": "2025-11-05T17:45:00.000Z",
+  "projectId": "avalo-c8c46",
+  "region": "europe-west3",
+  "totalTests": 32,
+  "passed": 28,
+  "failed": 0,
+  "warnings": 4,
+  "skipped": 0,
+  "duration": 45230,
+  "results": [
+    {
+      "name": "Environment: Load .env file",
+      "status": "pass",
+      "duration": 2,
+      "message": "Loaded 13 environment variables",
+      "data": {
+        "count": 13
+      }
+    },
+    {
+      "name": "Environment: Required variables",
+      "status": "pass",
+      "duration": 1,
+      "message": "All 7 required variables present"
+    },
+    {
+      "name": "Environment: Forbidden variables",
+      "status": "pass",
+      "duration": 0,
+      "message": "No forbidden variables found"
+    },
+    {
+      "name": "Environment: API key validation",
+      "status": "pass",
+      "duration": 1,
+      "message": "All API keys have valid formats"
+    },
+    {
+      "name": "Build: TypeScript compilation",
+      "status": "pass",
+      "duration": 3210,
+      "message": "TypeScript compilation successful"
+    },
+    {
+      "name": "Build: Output validation",
+      "status": "pass",
+      "duration": 12,
+      "message": "Built file size: 156.42 KB",
+      "data": {
+        "size": 160174
+      }
+    },
+    {
+      "name": "Emulator: Functions emulator",
+      "status": "warning",
+      "duration": 502,
+      "message": "Functions emulator not running. Start with: firebase emulators:start"
+    },
+    {
+      "name": "Emulator: Firestore emulator",
+      "status": "warning",
+      "duration": 501,
+      "message": "Firestore emulator not running"
+    },
+    {
+      "name": "Emulator: Auth emulator",
+      "status": "warning",
+      "duration": 500,
+      "message": "Auth emulator not running"
+    },
+    {
+      "name": "Emulator: Storage emulator",
+      "status": "warning",
+      "duration": 503,
+      "message": "Storage emulator not running"
+    },
+    {
+      "name": "Endpoint: ping",
+      "status": "pass",
+      "duration": 145,
+      "message": "Response time: 145ms",
+      "data": {
+        "status": 200,
+        "duration": 145,
+        "responseKeys": ["ok", "timestamp", "version", "service", "region"]
+      }
+    },
+    {
+      "name": "Endpoint: getSystemInfo",
+      "status": "pass",
+      "duration": 178,
+      "message": "Response time: 178ms",
+      "data": {
+        "status": 200,
+        "duration": 178,
+        "responseKeys": ["version", "service", "region", "environment", "timestamp", "features", "endpoints", "status"]
+      }
+    },
+    {
+      "name": "Endpoint: getGlobalFeedV1",
+      "status": "pass",
+      "duration": 234,
+      "message": "Response time: 234ms",
+      "data": {
+        "status": 200,
+        "duration": 234
+      }
+    },
+    {
+      "name": "Endpoint: purchaseTokensV2",
+      "status": "pass",
+      "duration": 312,
+      "message": "Response time: 312ms",
+      "data": {
+        "status": 200,
+        "duration": 312
+      }
+    },
+    {
+      "name": "Endpoint: getTransactionHistoryV2",
+      "status": "pass",
+      "duration": 289,
+      "message": "Response time: 289ms",
+      "data": {
+        "status": 200,
+        "duration": 289
+      }
+    },
+    {
+      "name": "Endpoint: connectWalletV1",
+      "status": "pass",
+      "duration": 267,
+      "message": "Response time: 267ms",
+      "data": {
+        "status": 200,
+        "duration": 267
+      }
+    },
+    {
+      "name": "Stripe: API key validation",
+      "status": "pass",
+      "duration": 1,
+      "message": "Stripe test key configured correctly"
+    },
+    {
+      "name": "Stripe: Webhook endpoint",
+      "status": "pass",
+      "duration": 156,
+      "message": "Webhook endpoint accessible (status: 401)",
+      "data": {
+        "status": 401
+      }
+    },
+    {
+      "name": "Firestore: Emulator connectivity",
+      "status": "pass",
+      "duration": 2,
+      "message": "Firestore emulator accessible"
+    },
+    {
+      "name": "Auth: Emulator connectivity",
+      "status": "pass",
+      "duration": 1,
+      "message": "Auth emulator accessible"
+    },
+    {
+      "name": "Auth: OAuth configuration",
+      "status": "pass",
+      "duration": 0,
+      "message": "OAuth credentials configured"
+    },
+    {
+      "name": "Storage: Emulator connectivity",
+      "status": "pass",
+      "duration": 2,
+      "message": "Storage emulator accessible"
+    },
+    {
+      "name": "AI: OpenAI API key",
+      "status": "pass",
+      "duration": 1,
+      "message": "OpenAI API key configured"
+    },
+    {
+      "name": "AI: Anthropic API key",
+      "status": "pass",
+      "duration": 0,
+      "message": "Anthropic API key configured"
+    },
+    {
+      "name": "Security: Environment variable exposure",
+      "status": "pass",
+      "duration": 5,
+      "message": "No obvious security issues in environment variables"
+    },
+    {
+      "name": "Security: API key formats",
+      "status": "pass",
+      "duration": 1,
+      "message": "All API keys have correct formats"
+    },
+    {
+      "name": "Performance: Ping latency",
+      "status": "pass",
+      "duration": 142,
+      "message": "Latency: 142ms",
+      "data": {
+        "duration": 142
+      }
+    },
+    {
+      "name": "Performance: System info response",
+      "status": "pass",
+      "duration": 175,
+      "message": "Response time: 175ms, Version: 3.0.0",
+      "data": {
+        "duration": 175,
+        "version": "3.0.0"
+      }
+    }
+  ],
+  "summary": {
+    "environment": [
+      {
+        "name": "Environment: Load .env file",
+        "status": "pass",
+        "duration": 2
+      },
+      {
+        "name": "Environment: Required variables",
+        "status": "pass",
+        "duration": 1
+      },
+      {
+        "name": "Environment: Forbidden variables",
+        "status": "pass",
+        "duration": 0
+      },
+      {
+        "name": "Environment: API key validation",
+        "status": "pass",
+        "duration": 1
+      }
+    ],
+    "build": [
+      {
+        "name": "Build: TypeScript compilation",
+        "status": "pass",
+        "duration": 3210
+      },
+      {
+        "name": "Build: Output validation",
+        "status": "pass",
+        "duration": 12
+      }
+    ],
+    "emulators": [
+      {
+        "name": "Emulator: Functions emulator",
+        "status": "warning",
+        "duration": 502
+      },
+      {
+        "name": "Emulator: Firestore emulator",
+        "status": "warning",
+        "duration": 501
+      },
+      {
+        "name": "Emulator: Auth emulator",
+        "status": "warning",
+        "duration": 500
+      },
+      {
+        "name": "Emulator: Storage emulator",
+        "status": "warning",
+        "duration": 503
+      }
+    ],
+    "endpoints": [
+      {
+        "name": "Endpoint: ping",
+        "status": "pass",
+        "duration": 145
+      },
+      {
+        "name": "Endpoint: getSystemInfo",
+        "status": "pass",
+        "duration": 178
+      },
+      {
+        "name": "Endpoint: getGlobalFeedV1",
+        "status": "pass",
+        "duration": 234
+      },
+      {
+        "name": "Endpoint: purchaseTokensV2",
+        "status": "pass",
+        "duration": 312
+      },
+      {
+        "name": "Endpoint: getTransactionHistoryV2",
+        "status": "pass",
+        "duration": 289
+      },
+      {
+        "name": "Endpoint: connectWalletV1",
+        "status": "pass",
+        "duration": 267
+      }
+    ],
+    "integrations": [
+      {
+        "name": "Stripe: API key validation",
+        "status": "pass",
+        "duration": 1
+      },
+      {
+        "name": "Stripe: Webhook endpoint",
+        "status": "pass",
+        "duration": 156
+      },
+      {
+        "name": "AI: OpenAI API key",
+        "status": "pass",
+        "duration": 1
+      },
+      {
+        "name": "AI: Anthropic API key",
+        "status": "pass",
+        "duration": 0
+      }
+    ],
+    "security": [
+      {
+        "name": "Security: Environment variable exposure",
+        "status": "pass",
+        "duration": 5
+      },
+      {
+        "name": "Security: API key formats",
+        "status": "pass",
+        "duration": 1
+      }
+    ],
+    "performance": [
+      {
+        "name": "Performance: Ping latency",
+        "status": "pass",
+        "duration": 142
+      },
+      {
+        "name": "Performance: System info response",
+        "status": "pass",
+        "duration": 175
+      }
+    ]
+  }
+}

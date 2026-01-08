@@ -1,0 +1,155 @@
+rules_version = '2';
+
+/**
+ * PACK 304 — Admin Financial Console & Reconciliation
+ * Security rules for financial data access
+ * 
+ * Collections:
+ * - platformFinanceMonthly: Monthly aggregated platform financials
+ * - financeAnomalies: Detected financial inconsistencies
+ * - adminUsers: Admin role definitions (extends PACK 296)
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    /**
+     * Check if user is authenticated
+     */
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    /**
+     * Check if user has FINANCE or SUPERADMIN role
+     */
+    function isFinanceAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role in ['FINANCE', 'SUPERADMIN'];
+    }
+    
+    /**
+     * Check if user is SUPERADMIN
+     */
+    function isSuperAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role == 'SUPERADMIN';
+    }
+    
+    // ========================================================================
+    // PLATFORM FINANCE MONTHLY AGGREGATION
+    // ========================================================================
+    
+    /**
+     * platformFinanceMonthly/{docId}
+     * Monthly aggregated platform financial data
+     * 
+     * Access: Read-only for FINANCE/SUPERADMIN
+     */
+    match /platformFinanceMonthly/{docId} {
+      // Only FINANCE or SUPERADMIN can read
+      allow read: if isFinanceAdmin();
+      
+      // Only system (Cloud Functions) can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // FINANCE ANOMALIES
+    // ========================================================================
+    
+    /**
+     * financeAnomalies/{anomalyId}
+     * Detected financial inconsistencies and anomalies
+     * 
+     * Access: Read for FINANCE/SUPERADMIN, limited write for status updates
+     */
+    match /financeAnomalies/{anomalyId} {
+      // Only FINANCE or SUPERADMIN can read
+      allow read: if isFinanceAdmin();
+      
+      // Only FINANCE or SUPERADMIN can update status/resolution
+      allow update: if isFinanceAdmin() && 
+        // Can only update these fields
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status', 
+          'resolvedByAdminId', 
+          'resolvedAt', 
+          'resolutionNote'
+        ]) &&
+        // Status must be valid
+        request.resource.data.status in ['OPEN', 'UNDER_REVIEW', 'RESOLVED'];
+      
+      // System creates anomalies
+      allow create: if false;
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // ADMIN USERS (extends PACK 296)
+    // ========================================================================
+    
+    /**
+     * adminUsers/{adminId}
+     * Admin role definitions
+     * 
+     * Access: Read for admins, write only by SUPERADMIN
+     */
+    match /adminUsers/{adminId} {
+      // Admins can read their own profile
+      allow read: if isAuthenticated() && request.auth.uid == adminId;
+      
+      // SUPERADMIN can read all admin profiles
+      allow read: if isSuperAdmin();
+      
+      // Only SUPERADMIN can create/update/delete admins
+      allow write: if isSuperAdmin();
+    }
+    
+    // ========================================================================
+    // READ-ONLY ACCESS TO SOURCE DATA
+    // ========================================================================
+    
+    /**
+     * walletTransactions: Read-only for FINANCE admins
+     * Source of truth for all token movements
+     */
+    match /walletTransactions/{txId} {
+      allow read: if isFinanceAdmin();
+      allow write: if false; // Read-only from finance console
+    }
+    
+    /**
+     * wallets: Read-only for FINANCE admins
+     * User wallet balances
+     */
+    match /wallets/{userId} {
+      allow read: if isFinanceAdmin();
+      allow write: if false; // Read-only from finance console
+    }
+    
+    /**
+     * withdrawalRequests: Read-only for FINANCE admins
+     * Payout request history
+     */
+    match /withdrawalRequests/{withdrawalId} {
+      allow read: if isFinanceAdmin();
+      allow write: if false; // Read-only from finance console
+    }
+    
+    /**
+     * creatorEarningsMonthly: Read-only for FINANCE admins
+     * Creator monthly earnings aggregations (PACK 303)
+     */
+    match /creatorEarningsMonthly/{docId} {
+      allow read: if isFinanceAdmin();
+      allow write: if false; // Read-only from finance console
+    }
+  }
+}

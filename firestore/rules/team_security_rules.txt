@@ -1,0 +1,168 @@
+/**
+ * PACK 123 - Team Accounts Security Rules
+ * 
+ * Enforces strict access control for team management
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // TEAM MEMBERSHIPS
+    // ============================================
+    match /team_memberships/{membershipId} {
+      // Owner can read all memberships for their account
+      allow read: if request.auth != null && 
+        resource.data.ownerUserId == request.auth.uid;
+      
+      // Member can read their own membership
+      allow read: if request.auth != null && 
+        resource.data.memberUserId == request.auth.uid;
+      
+      // All writes go through Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================
+    // TEAM ACTIVITY LOG
+    // ============================================
+    match /team_activity_log/{logId} {
+      // Only owner can read activity logs (never team members)
+      allow read: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
+      
+      // All writes go through Cloud Functions only
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================
+    // PROTECTED FINANCIAL DATA
+    // ============================================
+    // Team members CANNOT access:
+    match /creator_earnings/{userId} {
+      // Only account owner
+      allow read: if request.auth != null && 
+        request.auth.uid == userId;
+      allow write: if false; // Function-only
+    }
+    
+    match /payout_requests/{requestId} {
+      // Only account owner
+      allow read: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
+      allow write: if false; // Function-only
+    }
+    
+    match /kyc_verifications/{userId} {
+      // Only account owner
+      allow read: if request.auth != null && 
+        request.auth.uid == userId;
+      allow write: if false; // Function-only
+    }
+    
+    match /payment_methods/{methodId} {
+      // Only account owner
+      allow read: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
+      allow write: if false; // Function-only
+    }
+    
+    // ============================================
+    // CONDITIONAL ACCESS FOR TEAM MEMBERS
+    // ============================================
+    // Helper function to check team membership
+    function isTeamMember(userId) {
+      return exists(/databases/$(database)/documents/team_memberships/$(request.auth.uid))
+        && get(/databases/$(database)/documents/team_memberships/$(request.auth.uid)).data.ownerUserId == userId
+        && get(/databases/$(database)/documents/team_memberships/$(request.auth.uid)).data.status == 'active';
+    }
+    
+    function hasPermission(userId, permission) {
+      let membership = get(/databases/$(database)/documents/team_memberships/$(request.auth.uid));
+      return membership.data.ownerUserId == userId 
+        && membership.data.status == 'active'
+        && permission in membership.data.permissions;
+    }
+    
+    function hasDmAccess(userId) {
+      let membership = get(/databases/$(database)/documents/team_memberships/$(request.auth.uid));
+      return membership.data.ownerUserId == userId 
+        && membership.data.status == 'active'
+        && membership.data.dmAccessGranted == true;
+    }
+    
+    // User profiles - conditional access
+    match /users/{userId} {
+      // Owner or team member with edit_profile permission
+      allow read: if request.auth != null && 
+        (request.auth.uid == userId || hasPermission(userId, 'edit_profile'));
+      
+      // Only specific fields can be edited by team
+      allow update: if request.auth != null && 
+        hasPermission(userId, 'edit_profile') &&
+        // Cannot change financial data
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'stripeAccountId',
+          'payoutMethod',
+          'kycStatus',
+          'balance',
+          'earnings'
+        ]);
+    }
+    
+    // Posts - conditional access
+    match /posts/{postId} {
+      // Read: Owner or team with view access
+      allow read: if request.auth != null;
+      
+      // Create: Owner or team with post_content permission
+      allow create: if request.auth != null && 
+        (request.auth.uid == request.resource.data.userId || 
+         hasPermission(request.resource.data.userId, 'post_content'));
+      
+      // Update/Delete: Owner or team with post_content permission
+      allow update, delete: if request.auth != null && 
+        (request.auth.uid == resource.data.userId || 
+         hasPermission(resource.data.userId, 'post_content'));
+    }
+    
+    // Analytics - read-only for team with permission
+    match /analytics/{userId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid == userId || hasPermission(userId, 'view_analytics'));
+      allow write: if false; // Function-only
+    }
+    
+    // Messages - STRICTLY CONTROLLED
+    match /conversations/{conversationId} {
+      // Can only read if owner OR has explicit DM access
+      allow read: if request.auth != null && 
+        (request.auth.uid in resource.data.participants || 
+         hasDmAccess(resource.data.creatorId));
+      
+      // Cannot bulk export or download
+      allow list: if false;
+      
+      // Only owner can create conversations
+      allow create: if request.auth != null && 
+        request.auth.uid in request.resource.data.participants;
+    }
+    
+    match /conversations/{conversationId}/messages/{messageId} {
+      // Read single message if has DM access
+      allow read: if request.auth != null && 
+        (request.auth.uid == resource.data.senderId || 
+         request.auth.uid == resource.data.recipientId ||
+         hasDmAccess(resource.data.creatorId));
+      
+      // CANNOT list/query messages in bulk
+      allow list: if false;
+      
+      // Can send if has DM access
+      allow create: if request.auth != null && 
+        (request.auth.uid == request.resource.data.senderId ||
+         hasDmAccess(request.resource.data.creatorId));
+    }
+  }
+}

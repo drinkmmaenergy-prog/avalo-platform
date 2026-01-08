@@ -1,0 +1,40 @@
+/**
+ * PACK 50 — Royal Club Firestore Security Rules
+ * Protects Royal Club data and ensures proper access control
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ====================================================================
+    // ROYAL MEMBERSHIPS
+    // ====================================================================
+    // Users can read their own Royal membership state
+    // Only backend can write
+    match /royal_memberships/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Only backend via admin SDK
+    }
+    
+    // ====================================================================
+    // ROYAL SPEND STATS
+    // ====================================================================
+    // Users can read their own spend stats
+    // Only backend can write
+    match /royal_spend_stats/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Only backend via admin SDK
+    }
+    
+    // ====================================================================
+    // ROYAL SUBSCRIPTIONS
+    // ====================================================================
+    // Users can read their own subscription state
+    // Only backend can write (from Stripe webhooks)
+    match /royal_subscriptions/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Only backend via admin SDK
+    }
+  }
+}

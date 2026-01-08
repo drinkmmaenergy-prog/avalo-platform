@@ -1,0 +1,187 @@
+🇬🇧 ENGLISH VERSION
+AVALO Security & Moderation Policy (v1)
+1. Purpose
+
+This policy defines Avalo’s approach to user safety, content moderation, and AI-assisted prevention of illegal or harmful behavior.
+
+2. Account Security
+
+Two-factor authentication (2FA) available via email or SMS.
+
+Login sessions stored as Firebase ID tokens (rotated every 60 min).
+
+Passwords encrypted (bcrypt, 12 rounds).
+
+All actions audited in adminLogs/{id}.
+
+Access by role: admin, moderator, finance, legal.
+
+3. User Verification
+
+Every user must pass 18+ verification:
+
+Live selfie
+
+Optional ID check or 0 PLN bank microcharge
+
+Verified users gain access to chat, earn mode, calendar.
+
+Non-verified users limited to browsing feed only.
+
+4. AI Moderation (Anthropic / Claude)
+
+Avalo integrates Anthropic Claude moderation pipeline.
+
+Real-time filters:
+
+Blocks messages containing banned phrases:
+escort, full service, happy ending, GFE, PSE, roses, donation, allowance, sugar baby, PPM.
+
+Blocks sexual negotiation or pricing references.
+
+Detects explicit nudity in uploads via Firebase Vision API.
+
+Actions:
+Detection	Action
+Mild warning	Notify user, delete message
+Severe violation	Auto-ban 24h
+Repeat offense (3x)	Permanent ban
+Criminal content	Report to authorities
+5. Human Moderation
+
+Admin dashboard shows flagged content from AI.
+
+Manual review within 24h.
+
+Moderator can delete, warn, suspend, or escalate to legal.
+
+Logs stored in Firestore adminFlags/.
+
+6. Reporting & Appeals
+
+In every chat/feed post: “Report” button.
+
+Report reasons: harassment, scam, explicit content, illegal offer.
+
+Users can appeal within 7 days.
+
+Appeals reviewed by legal moderator; decision final.
+
+7. Data Security
+
+Firestore rules enforce least privilege.
+
+All functions use context.auth.
+
+User data encrypted in transit (HTTPS) and at rest.
+
+No 3rd-party sharing without consent.
+
+8. 18+ Compliance
+
+Avalo is strictly for adults (18+).
+
+Child exploitation content = instant permanent ban and report.
+
+Identity verified by selfie, ID or bank microcharge.
+
+9. Communication with Users
+
+UI messages displayed for moderation actions:
+
+Event	EN Message	PL Message
+Warning	“Your message contained prohibited content.”	„Twoja wiadomość zawierała zabronione treści.”
+Auto Ban	“Your account was suspended for repeated violations.”	„Twoje konto zostało zawieszone za powtarzające się naruszenia.”
+Appeal Received	“Your appeal was received and will be reviewed.”	„Twoje odwołanie zostało przyjęte i będzie rozpatrzone.”
+Appeal Accepted	“Your account has been reinstated.”	„Twoje konto zostało przywrócone.”
+10. Cooperation with Law Enforcement
+
+Avalo reserves the right to cooperate fully with law enforcement when illegal activities are detected.
+Data disclosed only upon valid legal request.
+
+🇵🇱 POLSKA WERSJA
+Polityka Bezpieczeństwa i Moderacji Avalo (v1)
+1. Cel
+
+Polityka określa zasady bezpieczeństwa użytkowników, moderacji treści oraz wykorzystania AI w zapobieganiu nadużyciom.
+
+2. Bezpieczeństwo kont
+
+Dostępne uwierzytelnianie dwuetapowe (2FA).
+
+Sesje logowania – tokeny Firebase odnawiane co 60 minut.
+
+Hasła szyfrowane algorytmem bcrypt.
+
+Wszystkie działania logowane w adminLogs/{id}.
+
+Role dostępu: admin, moderator, finance, legal.
+
+3. Weryfikacja użytkowników
+
+Obowiązkowa weryfikacja 18+:
+
+Selfie na żywo
+
+Opcjonalnie skan dowodu lub mikropłatność 0 PLN
+
+Dopiero po weryfikacji dostępne: czat, tryb zarabiania, kalendarz.
+
+4. Moderacja AI
+
+Zastosowano system moderacji w czasie rzeczywistym (Anthropic Claude + Vision API).
+
+Filtry blokują:
+
+frazy o charakterze seksualnym komercyjnym,
+
+rozmowy o płatnościach za kontakty,
+
+zdjęcia z nagością.
+
+Działania:
+
+Wykrycie	Działanie
+Ostrzeżenie	komunikat + usunięcie wiadomości
+Poważne naruszenie	blokada 24h
+3 naruszenia	trwały ban
+Materiały nielegalne	zgłoszenie organom ścigania
+5. Moderacja manualna
+
+Moderatorzy weryfikują zgłoszenia AI w panelu administracyjnym.
+
+Czas reakcji – do 24h.
+
+Możliwe działania: ostrzeżenie, usunięcie treści, ban, eskalacja.
+
+6. Zgłoszenia i odwołania
+
+Każdy czat i post zawiera przycisk „Zgłoś”.
+
+Powody: nękanie, oszustwo, treści pornograficzne, oferty nielegalne.
+
+Użytkownik może się odwołać w ciągu 7 dni.
+
+Decyzja moderatora prawnego jest ostateczna.
+
+7. Ochrona danych
+
+Zasady minimalnych uprawnień.
+
+Dane szyfrowane podczas transmisji i przechowywania.
+
+Brak udostępniania podmiotom trzecim bez zgody użytkownika.
+
+8. Zgodność z przepisami 18+
+
+Aplikacja wyłącznie dla pełnoletnich.
+
+Treści z udziałem nieletnich skutkują natychmiastowym zgłoszeniem.
+
+9. Komunikaty systemowe
+
+Tabela wiadomości moderacyjnych znajduje się powyżej (EN/PL).
+
+10. Współpraca z organami ścigania
+
+Avalo może udostępniać dane wyłącznie na podstawie wniosku sądowego lub prokuratorskiego.

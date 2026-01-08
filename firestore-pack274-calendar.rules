@@ -1,0 +1,83 @@
+rules_version = '2';
+
+/**
+ * PACK 274 - Calendar Engine Security Rules
+ * Firestore security rules for calendar bookings system
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isVerified() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verified == true;
+    }
+    
+    // Calendar collection rules
+    match /calendars/{userId} {
+      // Allow user to read and write their own calendar
+      allow read: if isUser(userId);
+      allow write: if isUser(userId);
+      
+      // Allow anyone to read calendar for booking purposes (public availability)
+      allow get: if isAuthenticated();
+    }
+    
+    // Calendar bookings collection rules
+    match /calendarBookings/{bookingId} {
+      // Allow reading if user is host or guest
+      allow read: if isAuthenticated() && (
+        resource.data.hostId == request.auth.uid ||
+        resource.data.guestId == request.auth.uid
+      );
+      
+      // Allow creation only through Cloud Functions
+      // Users cannot directly create booking documents
+      allow create: if false;
+      
+      // Allow updates only through Cloud Functions
+      // This ensures all business logic is enforced
+      allow update: if false;
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    // Safety events collection (read-only for users)
+    match /safetyEvents/{eventId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid
+      );
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Safety tracking collection
+    match /safetyTracking/{bookingId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Safety flags collection (admin only)
+    match /safetyFlags/{flagId} {
+      allow read: if isAuthenticated() && 
+                  get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Review queue (admin only)
+    match /reviewQueue/{reviewId} {
+      allow read: if isAuthenticated() && 
+                  get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow write: if false; // Only Cloud Functions can write
+    }
+  }
+}

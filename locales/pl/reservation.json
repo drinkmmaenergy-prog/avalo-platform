@@ -1,0 +1,29 @@
+{
+  "reservation": {
+    "title": "Rezerwacje",
+    "availability": {
+      "title": "Dostępność na spotkania",
+      "price": "Cena za spotkanie",
+      "meetingMode": "Tryb spotkania",
+      "locationHint": "Miejsce lub szczegóły połączenia"
+    },
+    "book": {
+      "title": "Zarezerwuj spotkanie",
+      "slotLabel": "Wybierz termin",
+      "price": "Cena: {tokens} tokenów"
+    },
+    "status": {
+      "PENDING_PAYMENT": "Oczekiwanie na płatność",
+      "CONFIRMED": "Potwierdzone",
+      "CANCELLED": "Anulowane",
+      "NO_SHOW_CREATOR": "Twórca nie pojawił się",
+      "NO_SHOW_CLIENT": "Klient nie pojawił się",
+      "COMPLETED": "Zakończone",
+      "IN_DISPUTE": "W sporze"
+    },
+    "confirmMeeting": "Potwierdź, że spotkanie się odbyło",
+    "markNoShow": "Oznacz drugą osobę jako nieobecną",
+    "openDispute": "Otwórz spór",
+    "tokensLocked": "Tokeny zablokowane w escrow"
+  }
+}

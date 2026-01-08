@@ -1,0 +1,238 @@
+name: Rollback Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_version:
+        description: 'Backup version (commit SHA) to rollback to'
+        required: true
+      confirm_rollback:
+        description: 'Type "ROLLBACK PRODUCTION" to confirm'
+        required: true
+      reason:
+        description: 'Reason for rollback'
+        required: true
+
+env:
+  NODE_VERSION: '20.x'
+  FIREBASE_PROJECT: production
+
+jobs:
+  verify-rollback:
+    name: Verify Rollback Request
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Verify confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm_rollback }}" != "ROLLBACK PRODUCTION" ]; then
+            echo "❌ Rollback confirmation failed. You must type 'ROLLBACK PRODUCTION' exactly."
+            exit 1
+          fi
+      
+      - name: Log rollback request
+        run: |
+          echo "🔄 ROLLBACK REQUESTED"
+          echo "Requested by: ${{ github.actor }}"
+          echo "Backup version: ${{ github.event.inputs.backup_version }}"
+          echo "Reason: ${{ github.event.inputs.reason }}"
+          echo "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+  backup-current-state:
+    name: Backup Current Production State
+    runs-on: ubuntu-latest
+    needs: verify-rollback
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+      
+      - name: Backup current Firestore rules
+        run: |
+          firebase firestore:rules:get --project=production --token=${{ secrets.FIREBASE_TOKEN }} > current-firestore-rules.txt
+      
+      - name: Backup current Functions config
+        run: |
+          firebase functions:config:get --project=production --token=${{ secrets.FIREBASE_TOKEN }} > current-functions-config.json
+      
+      - name: Create backup metadata
+        run: |
+          echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"commit\":\"${{ github.sha }}\",\"type\":\"pre-rollback-backup\",\"rollback_to\":\"${{ github.event.inputs.backup_version }}\",\"reason\":\"${{ github.event.inputs.reason }}\"}" > current-backup-metadata.json
+      
+      - name: Upload current state backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-rollback-backup-${{ github.sha }}
+          path: |
+            current-*.txt
+            current-*.json
+          retention-days: 90
+
+  download-backup:
+    name: Download Target Backup
+    runs-on: ubuntu-latest
+    needs: backup-current-state
+    
+    steps:
+      - name: Download backup artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: production-backup-${{ github.event.inputs.backup_version }}
+      
+      - name: Verify backup exists
+        run: |
+          if [ ! -f backup-metadata.json ]; then
+            echo "❌ Backup not found for version ${{ github.event.inputs.backup_version }}"
+            exit 1
+          fi
+          echo "✅ Backup verified"
+          cat backup-metadata.json
+      
+      - name: Re-upload for next step
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-target
+          path: backup-*.txt
+          retention-days: 1
+
+  manual-approval:
+    name: Final Approval Required
+    runs-on: ubuntu-latest
+    needs: download-backup
+    environment:
+      name: rollback-approval
+    
+    steps:
+      - name: Wait for final approval
+        run: |
+          echo "⚠️ FINAL APPROVAL REQUIRED FOR PRODUCTION ROLLBACK"
+          echo "Target version: ${{ github.event.inputs.backup_version }}"
+          echo "Reason: ${{ github.event.inputs.reason }}"
+
+  execute-rollback:
+    name: Execute Rollback
+    runs-on: ubuntu-latest
+    needs: manual-approval
+    
+    steps:
+      - name: Checkout target version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.backup_version }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+      
+      - name: Download rollback target
+        uses: actions/download-artifact@v4
+        with:
+          name: rollback-target
+      
+      - name: Rollback Firestore rules
+        run: |
+          echo "🔄 Rolling back Firestore rules..."
+          firebase deploy --only firestore:rules --project=production --token=${{ secrets.FIREBASE_TOKEN }}
+      
+      - name: Rollback Firestore indexes
+        run: |
+          echo "🔄 Rolling back Firestore indexes..."
+          firebase deploy --only firestore:indexes --project=production --token=${{ secrets.FIREBASE_TOKEN }}
+      
+      - name: Rollback Cloud Functions
+        run: |
+          echo "🔄 Rolling back Cloud Functions..."
+          cd functions
+          npm ci
+          npm run build
+          cd ..
+          firebase deploy --only functions --project=production --token=${{ secrets.FIREBASE_TOKEN }}
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_LIVE_SECRET_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_PROD_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_PROD_KEY }}
+      
+      - name: Rollback Web Hosting
+        run: |
+          echo "🔄 Rolling back Web Hosting..."
+          firebase deploy --only hosting:web --project=production --token=${{ secrets.FIREBASE_TOKEN }}
+      
+      - name: Create rollback metadata
+        run: |
+          echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"rolled_back_to\":\"${{ github.event.inputs.backup_version }}\",\"rolled_back_from\":\"${{ github.sha }}\",\"reason\":\"${{ github.event.inputs.reason }}\",\"executed_by\":\"${{ github.actor }}\"}" > rollback-metadata.json
+      
+      - name: Upload rollback metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-metadata
+          path: rollback-metadata.json
+          retention-days: 365
+
+  verify-rollback-success:
+    name: Verify Rollback Success
+    runs-on: ubuntu-latest
+    needs: execute-rollback
+    
+    steps:
+      - name: Checkout target version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.backup_version }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Wait for deployment to propagate
+        run: sleep 60
+      
+      - name: Test Auth Flow
+        run: node scripts/test-auth.js --env=production
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_PROD_API_KEY }}
+      
+      - name: Test Wallet Operations
+        run: node scripts/test-wallet.js --env=production
+      
+      - name: Monitor error rates
+        run: node scripts/monitor-errors.js --env=production --duration=180
+      
+      - name: Verify rollback success
+        run: |
+          echo "✅ Rollback verification complete"
+
+  notify:
+    name: Notify Rollback Status
+    runs-on: ubuntu-latest
+    needs: [execute-rollback, verify-rollback-success]
+    if: always()
+    
+    steps:
+      - name: Notify success
+        if: success()
+        run: |
+          echo "✅ PRODUCTION ROLLBACK SUCCESSFUL"
+          echo "Rolled back to: ${{ github.event.inputs.backup_version }}"
+          echo "Reason: ${{ github.event.inputs.reason }}"
+          echo "Executed by: ${{ github.actor }}"
+          # Add urgent Slack/Discord/Email notification
+      
+      - name: Notify failure
+        if: failure()
+        run: |
+          echo "❌ PRODUCTION ROLLBACK FAILED - CRITICAL"
+          echo "Manual intervention required immediately"
+          # Add critical alert notification

@@ -1,0 +1,172 @@
+rules_version = '2';
+
+/**
+ * PACK 288 — Token Store & Purchases Security Rules
+ * 
+ * Collections:
+ * - tokenPurchases/{purchaseId}
+ * - purchaseLimits/{userId_month}
+ * - wallets/{userId} (from PACK 277)
+ * - walletTransactions/{txId} (from PACK 277)
+ * 
+ * Security Requirements:
+ * - Users can only read their own purchases
+ * - Only backend can write purchases
+ * - Users can read their own wallet
+ * - Age verification required for purchases (18+)
+ */
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+             request.auth.token.admin == true;
+    }
+
+    function isBackend() {
+      // Backend writes have special token
+      return request.auth.token.backend == true;
+    }
+
+    function isAgeVerified() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.ageVerified == true;
+    }
+
+    // ========================================================================
+    // TOKEN PURCHASES
+    // ========================================================================
+
+    match /tokenPurchases/{purchaseId} {
+      // Users can read their own purchases
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only backend/admin can create purchases
+      allow create: if isBackend() || isAdmin();
+      
+      // Only backend/admin can update purchase status
+      allow update: if (isBackend() || isAdmin()) &&
+                       // Prevent status changes from COMPLETED to anything else
+                       !(resource.data.status == 'COMPLETED' && 
+                         request.resource.data.status != 'COMPLETED');
+      
+      // No deletes allowed
+      allow delete: if false;
+    }
+
+    // ========================================================================
+    // PURCHASE LIMITS
+    // ========================================================================
+
+    match /purchaseLimits/{limitDoc} {
+      // Users can read their own limits
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only backend can write limits
+      allow write: if isBackend() || isAdmin();
+    }
+
+    // ========================================================================
+    // WALLETS (from PACK 277, extended for PACK 288)
+    // ========================================================================
+
+    match /wallets/{userId} {
+      // Users can read their own wallet
+      allow read: if isOwner(userId);
+      
+      // Only backend can write wallets
+      // Users cannot manually modify their balance
+      allow write: if isBackend() || isAdmin();
+    }
+
+    // ========================================================================
+    // WALLET TRANSACTIONS (from PACK 277)
+    // ========================================================================
+
+    match /walletTransactions/{txId} {
+      // Users can read their own transactions
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only backend can create transactions
+      allow create: if isBackend() || isAdmin();
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+
+    // ========================================================================
+    // PAYOUT REQUESTS
+    // ========================================================================
+
+    match /payoutRequests/{payoutId} {
+      // Users can read their own payout requests
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Users can create payout requests (if age verified and KYC completed)
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       isAgeVerified();
+      
+      // Only backend/admin can update status
+      allow update: if isBackend() || isAdmin();
+      
+      // No deletes
+      allow delete: if false;
+    }
+
+    // ========================================================================
+    // FAILED PURCHASES (for fraud detection)
+    // ========================================================================
+
+    match /failedPurchases/{attemptId} {
+      // Only backend/admin can read
+      allow read: if isBackend() || isAdmin();
+      
+      // Only backend can write
+      allow write: if isBackend() || isAdmin();
+    }
+
+    // ========================================================================
+    // STORE CONFIGURATION
+    // ========================================================================
+
+    match /config/tokenPacks {
+      // Everyone can read active packages
+      allow read: if true;
+      
+      // Only admin can modify
+      allow write: if isAdmin();
+    }
+
+    // ========================================================================
+    // ANALYTICS (optional)
+    // ========================================================================
+
+    match /purchaseAnalytics/{eventId} {
+      // Only backend/admin can access
+      allow read, write: if isBackend() || isAdmin();
+    }
+
+    match /conversionFunnels/{funnelId} {
+      // Users can read their own funnel
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Backend can write
+      allow write: if isBackend() || isAdmin();
+    }
+  }
+}

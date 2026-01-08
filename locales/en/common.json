@@ -1,0 +1,78 @@
+{
+  "app": {
+    "name": "Avalo",
+    "tagline": "Connect. Date. Thrive.",
+    "welcome": "Welcome to Avalo"
+  },
+  "navigation": {
+    "home": "Home",
+    "explore": "Explore",
+    "messages": "Messages",
+    "calendar": "Calendar",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "close": "Close",
+    "next": "Next",
+    "back": "Back",
+    "continue": "Continue",
+    "skip": "Skip",
+    "done": "Done",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "refresh": "Refresh"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access forbidden",
+    "serverError": "Server error. Please try again later.",
+    "validationError": "Please check your input"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "invalidPhone": "Invalid phone number",
+    "invalidDate": "Invalid date",
+    "minLength": "Minimum {{count}} characters required",
+    "maxLength": "Maximum {{count}} characters allowed"
+  },
+  "time": {
+    "now": "Now",
+    "justNow": "Just now",
+    "minuteAgo": "1 minute ago",
+    "minutesAgo": "{{count}} minutes ago",
+    "hourAgo": "1 hour ago",
+    "hoursAgo": "{{count}} hours ago",
+    "dayAgo": "1 day ago",
+    "daysAgo": "{{count}} days ago",
+    "weekAgo": "1 week ago",
+    "weeksAgo": "{{count}} weeks ago",
+    "monthAgo": "1 month ago",
+    "monthsAgo": "{{count}} months ago",
+    "yearAgo": "1 year ago",
+    "yearsAgo": "{{count}} years ago"
+  },
+  "currency": {
+    "free": "Free",
+    "tokens": "{{count}} Tokens",
+    "coins": "{{count}} Coins"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "away": "Away",
+    "busy": "Busy"
+  }
+}

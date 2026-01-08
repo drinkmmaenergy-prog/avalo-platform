@@ -1,0 +1,71 @@
+// PACK 187 — Dating Intention & Chemistry Declaration System
+// Firestore Security Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Dating intentions collection
+    // CRITICAL: These are PRIVATE and should NEVER be publicly readable
+    match /dating_intentions/{userId} {
+      // Users can only read their own dating intentions
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Users can only write their own dating intentions
+      allow write: if request.auth != null 
+                   && request.auth.uid == userId
+                   && validateDatingIntentions();
+      
+      // Validation function
+      function validateDatingIntentions() {
+        let data = request.resource.data;
+        
+        // Must have required fields
+        return data.keys().hasAll(['userId', 'badges', 'preferences', 'lastUpdated'])
+               // userId must match authenticated user
+               && data.userId == request.auth.uid
+               // badges must be an array
+               && data.badges is list
+               // Maximum 4 badges
+               && data.badges.size() <= 4
+               // All badges must be valid enum values
+               && validateBadges(data.badges)
+               // Preferences must be a map
+               && data.preferences is map;
+      }
+      
+      // Validate badge enum values
+      function validateBadges(badges) {
+        let validBadges = [
+          'romantic_vibe',
+          'open_to_flirting',
+          'serious_dating',
+          'casual_dating',
+          'spoil_dynamic',
+          'vibing'
+        ];
+        
+        return badges.toSet().hasOnly(validBadges.toSet());
+      }
+    }
+    
+    // Intention analytics (read-only for users, write-only for backend)
+    match /intention_analytics/{userId}/{document=**} {
+      // Users can read their own analytics
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only backend (via service account) can write
+      allow write: if false;
+    }
+    
+    // Compatibility cache (optional, for performance)
+    // Stores pre-calculated compatibility scores
+    match /intention_compatibility/{userId}/matches/{matchId} {
+      // Users can read their own compatibility scores
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only backend can write compatibility scores
+      allow write: if false;
+    }
+  }
+}

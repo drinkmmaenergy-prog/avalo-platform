@@ -1,0 +1,278 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for Pack 196
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isCreator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isCreator == true;
+    }
+    
+    function isVerifiedCreator() {
+      return isCreator() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verified == true;
+    }
+    
+    function hasAge18Plus() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.age18Plus == true;
+    }
+    
+    // ============================================================================
+    // PRODUCTS COLLECTION
+    // ============================================================================
+    match /products/{productId} {
+      // Public read for active products
+      allow read: if resource.data.status == 'active' || 
+                     (isAuthenticated() && resource.data.creatorId == request.auth.uid);
+      
+      // Only verified creators can create products
+      allow create: if isVerifiedCreator() && 
+                       request.resource.data.creatorId == request.auth.uid &&
+                       request.resource.data.status == 'pending' &&
+                       validProductData() &&
+                       safeProductContent();
+      
+      // Creators can update their own products
+      allow update: if isOwner(resource.data.creatorId) &&
+                       request.resource.data.creatorId == resource.data.creatorId &&
+                       validProductUpdate() &&
+                       safeProductContent();
+      
+      // Creators can delete their own products (soft delete)
+      allow delete: if isOwner(resource.data.creatorId);
+      
+      function validProductData() {
+        return request.resource.data.keys().hasAll(['creatorId', 'name', 'category', 'priceTokens', 'description', 'type', 'status', 'createdAt']) &&
+               request.resource.data.category in ['fitness', 'fashion', 'digital_skills', 'beauty', 'gadgets', 'education', 'home_lifestyle'] &&
+               request.resource.data.type in ['physical', 'digital'] &&
+               request.resource.data.priceTokens is int &&
+               request.resource.data.priceTokens > 0 &&
+               request.resource.data.priceTokens <= 10000 &&
+               request.resource.data.name is string &&
+               request.resource.data.name.size() > 0 &&
+               request.resource.data.name.size() <= 100;
+      }
+      
+      function validProductUpdate() {
+        // Cannot change creatorId or createdAt
+        return request.resource.data.creatorId == resource.data.creatorId &&
+               request.resource.data.createdAt == resource.data.createdAt;
+      }
+      
+      function safeProductContent() {
+        let blocked = ['erotic', 'sexual', 'nsfw', 'date', 'girlfriend', 'boyfriend', 'fetish', 'feet', 'onlyfans', 'escort', 'sugar'];
+        let name = request.resource.data.name.lower();
+        let desc = request.resource.data.description.lower();
+        
+        return !nameContainsBlockedWords(name, blocked) &&
+               !nameContainsBlockedWords(desc, blocked);
+      }
+      
+      function nameContainsBlockedWords(text, words) {
+        return words.hasAny([text.matches('.*' + words[0] + '.*')]) ||
+               text.matches('.*cam.*site.*') ||
+               text.matches('.*private.*show.*') ||
+               text.matches('.*personal.*attention.*');
+      }
+    }
+    
+    // ============================================================================
+    // PRODUCT REVIEWS
+    // ============================================================================
+    match /product_reviews/{reviewId} {
+      // Public read
+      allow read: if true;
+      
+      // Users can create reviews for products they purchased
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       validReviewData() &&
+                       userPurchasedProduct();
+      
+      // Users can update their own reviews
+      allow update: if isOwner(resource.data.userId) &&
+                       request.resource.data.userId == resource.data.userId &&
+                       request.resource.data.productId == resource.data.productId;
+      
+      // Users can delete their own reviews
+      allow delete: if isOwner(resource.data.userId);
+      
+      function validReviewData() {
+        return request.resource.data.keys().hasAll(['productId', 'userId', 'rating', 'review', 'createdAt']) &&
+               request.resource.data.rating is int &&
+               request.resource.data.rating >= 1 &&
+               request.resource.data.rating <= 5;
+      }
+      
+      function userPurchasedProduct() {
+        // Must be verified by cloud function
+        return exists(/databases/$(database)/documents/product_orders/$(request.auth.uid + '_' + request.resource.data.productId));
+      }
+    }
+    
+    // ============================================================================
+    // PRODUCT ORDERS
+    // ============================================================================
+    match /product_orders/{orderId} {
+      // Users can read their own orders
+      allow read: if isAuthenticated() && 
+                     (resource.data.buyerId == request.auth.uid || 
+                      resource.data.sellerId == request.auth.uid);
+      
+      // Orders can only be created by cloud functions
+      allow create: if false;
+      
+      // Orders can only be updated by cloud functions (status changes)
+      allow update: if false;
+      
+      // Orders cannot be deleted
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // BRAND DEALS
+    // ============================================================================
+    match /brand_deals/{dealId} {
+      // Public read for active deals
+      allow read: if resource.data.status == 'active' || 
+                     (isAuthenticated() && resource.data.creatorId == request.auth.uid);
+      
+      // Only verified creators can create brand deals
+      allow create: if isVerifiedCreator() &&
+                       request.resource.data.creatorId == request.auth.uid &&
+                       validBrandDealData();
+      
+      // Creators can update their own deals
+      allow update: if isOwner(resource.data.creatorId) &&
+                       request.resource.data.creatorId == resource.data.creatorId;
+      
+      // Creators can delete their own deals
+      allow delete: if isOwner(resource.data.creatorId);
+      
+      function validBrandDealData() {
+        return request.resource.data.keys().hasAll(['creatorId', 'brandName', 'type', 'status', 'createdAt']) &&
+               request.resource.data.type in ['sponsored_post', 'sponsored_stream', 'product_drop', 'promo_code', 'affiliate_link'] &&
+               request.resource.data.status in ['draft', 'active', 'completed'];
+      }
+    }
+    
+    // ============================================================================
+    // AFFILIATE LINKS
+    // ============================================================================
+    match /affiliate_links/{linkId} {
+      // Public read for active links
+      allow read: if resource.data.status == 'active' || 
+                     (isAuthenticated() && resource.data.creatorId == request.auth.uid);
+      
+      // Only verified creators can create affiliate links
+      allow create: if isVerifiedCreator() &&
+                       request.resource.data.creatorId == request.auth.uid &&
+                       validAffiliateLinkData() &&
+                       safeAffiliateMarketing();
+      
+      // Creators can update their own links
+      allow update: if isOwner(resource.data.creatorId) &&
+                       request.resource.data.creatorId == resource.data.creatorId;
+      
+      // Creators can delete their own links
+      allow delete: if isOwner(resource.data.creatorId);
+      
+      function validAffiliateLinkData() {
+        return request.resource.data.keys().hasAll(['creatorId', 'productId', 'status', 'createdAt']) &&
+               request.resource.data.status in ['active', 'inactive'];
+      }
+      
+      function safeAffiliateMarketing() {
+        // Marketing message cannot manipulate or guilt users
+        let forbidden = ['talk to you', 'personal attention', 'spend time', 'chat with me', 'buy and i', 'love you', 'special for you'];
+        
+        return !request.resource.data.keys().hasAny(['marketingMessage']) ||
+               !messageContainsForbiddenPhrases(request.resource.data.get('marketingMessage', '').lower(), forbidden);
+      }
+      
+      function messageContainsForbiddenPhrases(text, phrases) {
+        return text.matches('.*' + phrases[0] + '.*') ||
+               text.matches('.*emotional.*') ||
+               text.matches('.*lonely.*');
+      }
+    }
+    
+    // ============================================================================
+    // CREATOR SHOPS
+    // ============================================================================
+    match /creator_shops/{shopId} {
+      // Public read
+      allow read: if true;
+      
+      // Only verified creators can create shops
+      allow create: if isVerifiedCreator() &&
+                       request.resource.data.creatorId == request.auth.uid &&
+                       validShopData() &&
+                       safeShopContent();
+      
+      // Creators can update their own shops
+      allow update: if isOwner(resource.data.creatorId) &&
+                       request.resource.data.creatorId == resource.data.creatorId &&
+                       safeShopContent();
+      
+      // Creators can delete their own shops
+      allow delete: if isOwner(resource.data.creatorId);
+      
+      function validShopData() {
+        return request.resource.data.keys().hasAll(['creatorId', 'name', 'bio', 'createdAt']) &&
+               request.resource.data.name.size() > 0 &&
+               request.resource.data.name.size() <= 50 &&
+               request.resource.data.bio.size() <= 500;
+      }
+      
+      function safeShopContent() {
+        let blocked = ['sexy', 'hot', 'flirty', 'romantic', 'date', 'girlfriend', 'boyfriend', 'love', 'intimate'];
+        let name = request.resource.data.name.lower();
+        let bio = request.resource.data.get('bio', '').lower();
+        
+        return !containsBlockedWords(name, blocked) &&
+               !containsBlockedWords(bio, blocked);
+      }
+      
+      function containsBlockedWords(text, words) {
+        return words.hasAny([text.matches('.*' + words[0] + '.*')]);
+      }
+    }
+    
+    // ============================================================================
+    // MARKETPLACE DISPUTES
+    // ============================================================================
+    match /marketplace_disputes/{disputeId} {
+      // Users can read disputes they're involved in
+      allow read: if isAuthenticated() && 
+                     (resource.data.buyerId == request.auth.uid || 
+                      resource.data.sellerId == request.auth.uid);
+      
+      // Users can create disputes for their orders
+      allow create: if isAuthenticated() &&
+                       request.resource.data.buyerId == request.auth.uid &&
+                       validDisputeData();
+      
+      // Disputes can only be updated by cloud functions (resolution)
+      allow update: if false;
+      
+      // Disputes cannot be deleted
+      allow delete: if false;
+      
+      function validDisputeData() {
+        return request.resource.data.keys().hasAll(['orderId', 'buyerId', 'sellerId', 'reason', 'status', 'createdAt']) &&
+               request.resource.data.status == 'open' &&
+               request.resource.data.reason in ['not_received', 'not_as_described', 'defective', 'wrong_item'];
+      }
+    }
+  }
+}

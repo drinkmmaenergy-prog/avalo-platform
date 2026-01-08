@@ -1,0 +1,68 @@
+// PACK 295 - Globalization & Localization
+// Firestore Security Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // User Locale Profiles
+    // Collection: userLocales/{userId}
+    match /userLocales/{userId} {
+      // Users can read and write their own locale profile
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && 
+                      request.resource.data.userId == userId &&
+                      request.resource.data.keys().hasAll([
+                        'userId', 'preferredLocale', 'deviceLocaleLast', 
+                        'regionCountry', 'timeZone', 'createdAt', 'updatedAt'
+                      ]);
+      allow update: if isOwner(userId) && 
+                      request.resource.data.userId == userId &&
+                      request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isOwner(userId);
+    }
+    
+    // Legal Documents
+    // Collection: legalDocuments/{docId}
+    match /legalDocuments/{docId} {
+      // Anyone can read legal documents (public)
+      allow read: if true;
+      
+      // Only admins can create/update/delete legal documents
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // User Legal Acceptances
+    // Collection: userLegalAcceptances/{userId}
+    match /userLegalAcceptances/{userId} {
+      // Users can read their own acceptance records
+      allow read: if isOwner(userId);
+      
+      // Users can create their initial acceptance record
+      allow create: if isOwner(userId) && 
+                      request.resource.data.userId == userId;
+      
+      // Users can update to add new acceptances (append-only for acceptances array)
+      allow update: if isOwner(userId) && 
+                      request.resource.data.userId == userId &&
+                      request.resource.data.acceptances.size() >= resource.data.acceptances.size();
+      
+      // Admins can read all acceptance records (for compliance)
+      allow read: if isAdmin();
+    }
+  }
+}

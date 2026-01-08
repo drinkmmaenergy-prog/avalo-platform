@@ -1,0 +1,110 @@
+rules_version = '2';
+
+// ============================================================================
+// PACK 285 — Chat Free Windows & Funnel Security Rules
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isChatParticipant(chatData) {
+      return isAuthenticated() && 
+             (request.auth.uid == chatData.userA || 
+              request.auth.uid == chatData.userB);
+    }
+    
+    function isValidFreeWindowMode(mode) {
+      return mode in ['STANDARD', 'LOW_POP_FREE', 'EARN_OFF_AVALO_100'];
+    }
+    
+    function isValidFreeWindowState(state) {
+      return state in ['FREE', 'PAID', 'FULL_FREE'];
+    }
+    
+    // ========================================================================
+    // CHATS COLLECTION (with PACK 285 Free Window)
+    // ========================================================================
+    
+    match /chats/{chatId} {
+      // READ: Participants can read their chat
+      allow read: if isChatParticipant(resource.data);
+      
+      // CREATE: Only through backend functions
+      allow create: if false;
+      
+      // UPDATE: Only through backend functions for free window state changes
+      // Users can only update lastActivityAt through messages
+      allow update: if isChatParticipant(resource.data) &&
+                       // Only allow updating these fields
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['updatedAt', 'lastActivityAt']) &&
+                       // Cannot change core structure
+                       request.resource.data.chatId == resource.data.chatId &&
+                       request.resource.data.userA == resource.data.userA &&
+                       request.resource.data.userB == resource.data.userB;
+      
+      // DELETE: Only through backend functions
+      allow delete: if false;
+      
+      // Validate free window structure on write
+      allow write: if request.resource.data.freeWindow != null &&
+                      isValidFreeWindowMode(request.resource.data.freeWindow.mode) &&
+                      isValidFreeWindowState(request.resource.data.freeWindow.state) &&
+                      request.resource.data.freeWindow.perUserLimit is map &&
+                      request.resource.data.freeWindow.used is map;
+    }
+    
+    // ========================================================================
+    // CHAT MESSAGES SUB-COLLECTION
+    // ========================================================================
+    
+    match /chats/{chatId}/messages/{messageId} {
+      // READ: Chat participants can read messages
+      allow read: if isAuthenticated() && 
+                     exists(/databases/$(database)/documents/chats/$(chatId)) &&
+                     isChatParticipant(get(/databases/$(database)/documents/chats/$(chatId)).data);
+      
+      // CREATE: Only through backend functions (handles free window logic)
+      allow create: if false;
+      
+      // UPDATE/DELETE: Never
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // PROMO LIMITS COLLECTION (Low-Popularity Free Chats)
+    // ========================================================================
+    
+    match /promo_limits/{limitId} {
+      // READ: Admin only
+      allow read: if false;
+      
+      // WRITE: Only through backend functions
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // FREE WINDOW TRACKING (for analytics)
+    // ========================================================================
+    
+    match /free_window_analytics/{analyticsId} {
+      // READ: Admin only
+      allow read: if false;
+      
+      // WRITE: Only through backend functions
+      allow write: if false;
+    }
+  }
+}

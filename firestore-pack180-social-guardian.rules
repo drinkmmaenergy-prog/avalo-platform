@@ -1,0 +1,111 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // PACK 180: Social Guardian Collections
+    // ============================================================================
+    
+    // Guardian Interventions - Records of safety interventions in conversations
+    match /guardian_interventions/{interventionId} {
+      allow read: if request.auth != null && (
+        // Users can only read their own interventions
+        resource.data.userId == request.auth.uid ||
+        resource.data.targetUserId == request.auth.uid
+      );
+      
+      allow create: if request.auth != null && (
+        // Only system can create interventions (via backend)
+        false
+      );
+      
+      allow update: if request.auth != null && (
+        // Users can update feedback/appeal fields only
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['userFeedback', 'appealSubmitted', 'appealReason', 'updatedAt'])
+      );
+      
+      allow delete: if false; // No deletion allowed
+    }
+    
+    // Guardian Risk Events - Real-time risk detection events
+    match /guardian_risk_events/{eventId} {
+      allow read: if request.auth != null && (
+        // Users can read risk events in their conversations
+        resource.data.userId == request.auth.uid ||
+        resource.data.targetUserId == request.auth.uid
+      );
+      
+      allow create: if false; // Only backend creates
+      allow update: if false; // Immutable
+      allow delete: if false; // No deletion
+    }
+    
+    // Guardian Cooling Sessions - Active cooling measures
+    match /guardian_cooling_sessions/{sessionId} {
+      allow read: if request.auth != null && (
+        // Users can read their own cooling sessions
+        resource.data.userId == request.auth.uid ||
+        resource.data.affectedUserId == request.auth.uid
+      );
+      
+      allow create: if false; // Only backend creates
+      
+      allow update: if request.auth != null && (
+        // Users can acknowledge cooling sessions
+        (resource.data.userId == request.auth.uid ||
+         resource.data.affectedUserId == request.auth.uid) &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['acknowledged', 'acknowledgedAt', 'updatedAt'])
+      );
+      
+      allow delete: if false; // No deletion
+    }
+    
+    // Guardian Rewrite Requests - Message rewrite assistance
+    match /guardian_rewrite_requests/{requestId} {
+      allow read: if request.auth != null && (
+        // Users can read their own rewrite requests
+        resource.data.userId == request.auth.uid
+      );
+      
+      allow create: if request.auth != null && (
+        // Users can create rewrite requests
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll([
+          'userId', 'originalMessage', 'rewriteIntent', 'createdAt', 'status'
+        ]) &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.rewriteIntent in [
+          'calm_tone', 'clarify_intent', 'express_boundary',
+          'apologize', 'decline_politely'
+        ]
+      );
+      
+      allow update: if request.auth != null && (
+        // Users can accept or reject rewrites
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'userChoice', 'updatedAt'])
+      );
+      
+      allow delete: if false; // No deletion
+    }
+    
+    // Guardian Settings - Per-user guardian preferences
+    match /guardian_settings/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      allow create, update: if request.auth != null && 
+        request.auth.uid == userId &&
+        request.resource.data.keys().hasAll(['userId', 'updatedAt']) &&
+        (!request.resource.data.keys().hasAny(['enabled']) || 
+         request.resource.data.enabled is bool) &&
+        (!request.resource.data.keys().hasAny(['interventionLevel']) || 
+         request.resource.data.interventionLevel in ['minimal', 'moderate', 'proactive']);
+      
+      allow delete: if false; // Settings can be disabled but not deleted
+    }
+  }
+}

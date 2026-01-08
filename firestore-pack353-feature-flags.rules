@@ -1,0 +1,220 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // PACK 353 — System Feature Flags
+    // ============================================
+    
+    // Global feature flags (chat, calls, calendar, events, wallet, AI, support)
+    match /systemFeatureFlags/{feature} {
+      // Anyone can read feature flags
+      allow read: if true;
+      
+      // Only admins can write feature flags
+      allow write: if isAdmin();
+    }
+    
+    // Country-specific feature flags
+    match /countryFeatureFlags/{countryCode} {
+      // Anyone can read
+      allow read: if true;
+      
+      // Only admins can write
+      allow write: if isAdmin();
+    }
+    
+    // Platform-specific feature flags (web/ios/android)
+    match /platformFeatureFlags/{platform} {
+      // Anyone can read
+      allow read: if true;
+      
+      // Only admins can write
+      allow write: if isAdmin();
+    }
+    
+    // ============================================
+    // Feature Version Management
+    // ============================================
+    
+    match /featureVersions/{versionId} {
+      // Anyone can read versions
+      allow read: if true;
+      
+      // Only admins can manage versions
+      allow create, update, delete: if isAdmin();
+    }
+    
+    match /deploymentLogs/{logId} {
+      // Only admins can read deployment logs
+      allow read: if isAdmin();
+      
+      // System can create logs
+      allow create: if true;
+    }
+    
+    match /rollbackRecords/{recordId} {
+      // Only admins can read/write
+      allow read, write: if isAdmin();
+    }
+    
+    // ============================================
+    // Service Health & Monitoring
+    // ============================================
+    
+    match /serviceHealth/{service} {
+      // Admins and system can read/write
+      allow read: if isAdmin() || isSystem();
+      allow write: if isSystem();
+    }
+    
+    match /serviceAlerts/{alertId} {
+      // Admins can read all alerts
+      allow read: if isAdmin();
+      
+      // System can create alerts
+      allow create: if isSystem();
+      
+      // Admins can update (resolve) alerts
+      allow update: if isAdmin();
+    }
+    
+    match /serviceHeartbeats/{heartbeatId} {
+      // System can write heartbeats
+      allow write: if isSystem();
+      
+      // Admins can read
+      allow read: if isAdmin();
+    }
+    
+    // ============================================
+    // Rate Limiting
+    // ============================================
+    
+    match /rateLimits/{limitId} {
+      // Users can read their own rate limit status
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System can write rate limits
+      allow write: if isSystem();
+    }
+    
+    match /rateLimitViolations/{violationId} {
+      // System and admins only
+      allow read: if isAdmin();
+      allow write: if isSystem();
+    }
+    
+    // ============================================
+    // Payment Fail-Safe
+    // ============================================
+    
+    match /pendingTransactions/{transactionId} {
+      // Users can read their own pending transactions
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System can write
+      allow write: if isSystem();
+    }
+    
+    match /scheduledRetries/{retryId} {
+      // System only
+      allow read, write: if isSystem();
+    }
+    
+    // ============================================
+    // Session Recovery
+    // ============================================
+    
+    match /sessions/{sessionId} {
+      // Users can read their own sessions
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid ||
+                      resource.data.partnerId == request.auth.uid);
+      
+      // System can write
+      allow write: if isSystem();
+    }
+    
+    match /scheduledRecoveryAttempts/{attemptId} {
+      // System only
+      allow read, write: if isSystem();
+    }
+    
+    // ============================================
+    // Calendar & Event Recovery
+    // ============================================
+    
+    match /calendarEvents/{eventId} {
+      // Users can read their own events
+      allow read: if isAuthenticated() && 
+                     (resource.data.organizerId == request.auth.uid ||
+                      resource.data.participantId == request.auth.uid);
+      
+      // Users can create events
+      allow create: if isAuthenticated() && 
+                       request.resource.data.organizerId == request.auth.uid;
+      
+      // Users can update their own events or system can update
+      allow update: if isAuthenticated() && 
+                       (resource.data.organizerId == request.auth.uid ||
+                        resource.data.participantId == request.auth.uid) ||
+                       isSystem();
+    }
+    
+    match /eventQrCodes/{qrCode} {
+      // Anyone can read QR codes (for scanning)
+      allow read: if true;
+      
+      // System can write
+      allow write: if isSystem();
+    }
+    
+    match /eventDisputeResolutions/{resolutionId} {
+      // Admins only
+      allow read, write: if isAdmin();
+    }
+    
+    // ============================================
+    // Admin Notifications
+    // ============================================
+    
+    match /adminNotifications/{notificationId} {
+      // Only admins can read/write
+      allow read, write: if isAdmin();
+    }
+    
+    // ============================================
+    // Feature Errors
+    // ============================================
+    
+    match /featureErrors/{errorId} {
+      // System can write
+      allow create: if isSystem();
+      
+      // Admins can read
+      allow read: if isAdmin();
+    }
+    
+    // ============================================
+    // Helper Functions
+    // ============================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isSystem() {
+      // System operations (from Cloud Functions) have special claims
+      return request.auth != null && 
+             request.auth.token.system == true;
+    }
+  }
+}

@@ -1,0 +1,1557 @@
+# 📘 AVALO - CORE REFERENCE DOCUMENT
+**Version 1.0 | Last Updated: 2025-01-15**
+
+> **WKLEJ TEN DOKUMENT NA POCZĄTKU KAŻDEGO CZATU**
+> 
+> Ten dokument zawiera wszystkie kluczowe informacje o aplikacji AVALO,
+> które Claude musi znać, aby pisać spójny i poprawny kod.
+
+---
+
+## 🎯 CORE CONCEPT
+
+**AVALO = Tinder + Instagram + OnlyFans + AI Assistant**
+
+**Główny mechanizm: Earn-to-Chat**
+- Płacisz tylko za realne, odpowiedziane wiadomości
+- Odbiorca zarabia **65%**
+- AVALO pobiera **35%** natychmiast i **NIEZWRACALNIE**
+
+---
+
+## 💰 TOKEN ECONOMY (NAJWAŻNIEJSZE!)
+
+### **Token Value System (CRITICAL - READ CAREFULLY!)**
+
+#### **TWO SEPARATE RATES:**
+
+**1. Purchase Rate (what users pay - VARIABLE):**
+```
+100 tokens = 30 PLN (user pays 0.30 PLN/token)
+300 tokens = 84 PLN (user pays 0.28 PLN/token)
+500 tokens = 130 PLN (user pays 0.26 PLN/token)
+1000 tokens = 240 PLN (user pays 0.24 PLN/token)
+2000 tokens = 420 PLN (user pays 0.21 PLN/token)
+5000 tokens = 1000 PLN (user pays 0.20 PLN/token)
+```
+
+**2. Settlement Rate (how transactions are calculated - FIXED):**
+```
+ALWAYS: 1 token = 0.20 PLN
+
+ALL transactions (chat, calls, tips, bookings) are settled at 0.20 PLN/token.
+This is internal rate used for splits and payouts.
+```
+
+#### **HOW IT WORKS:**
+
+**Example: User buys 100 tokens for 30 PLN**
+```
+Step 1 - Purchase:
+- User pays: 30 PLN
+- User receives: 100 tokens in wallet
+
+Step 2 - Usage (deposit 100 tokens for chat):
+- Settlement value: 100 × 0.20 = 20 PLN
+- AVALO takes 35%: 7 PLN (instant, non-refundable)
+- Escrow 65%: 13 PLN (for creator)
+
+Step 3 - Creator withdrawal:
+- Creator earned: 65 tokens
+- Payout: 65 × 0.20 = 13 PLN
+
+AVALO Profit Breakdown:
+- Purchase profit: 30 - 20 = 10 PLN
+- Platform fee: 7 PLN
+- Total AVALO: 17 PLN (57% margin)
+- Creator gets: 13 PLN
+```
+
+**Example: User buys 5000 tokens for 1000 PLN**
+```
+Step 1 - Purchase:
+- User pays: 1000 PLN
+- User receives: 5000 tokens
+
+Step 2 - Usage (deposit 100 tokens for chat):
+- Settlement value: 100 × 0.20 = 20 PLN
+- AVALO takes 35%: 7 PLN
+- Escrow 65%: 13 PLN
+
+Step 3 - Creator withdrawal:
+- Creator earned: 65 tokens
+- Payout: 65 × 0.20 = 13 PLN
+
+AVALO Profit Breakdown:
+- Purchase profit: 0 PLN (paid 0.20/token)
+- Platform fee: 7 PLN
+- Total AVALO: 7 PLN (35% margin)
+- Creator gets: 13 PLN
+```
+
+**KEY INSIGHT:**
+- Users who buy small packages → AVALO makes MORE profit
+- Users who buy large packages → AVALO makes LESS profit per token
+- But 35% platform fee is ALWAYS guaranteed
+- Settlement rate (0.20 PLN) is used for ALL calculations
+
+### **Token Packages (Purchase)**
+| Package | Tokens | Price PLN | Price USD | Per Token | Discount |
+|---------|--------|-----------|-----------|-----------|----------|
+| Mini | 100 | 30 PLN | ~7.50 USD | 0.30 PLN | 0% (base) |
+| Basic | 300 | 84 PLN | ~21 USD | 0.28 PLN | 7% off |
+| Standard | 500 | 130 PLN | ~32.50 USD | 0.26 PLN | 13% off |
+| Premium | 1000 | 240 PLN | ~60 USD | 0.24 PLN | 20% off |
+| Pro | 2000 | 420 PLN | ~105 USD | 0.21 PLN | 30% off |
+| Elite | 5000 | 1000 PLN | ~250 USD | 0.20 PLN | 33% off |
+
+**Note:** Larger packages have progressive DISCOUNTS (7% to 33% off base rate).
+
+### **Chat Message Pricing**
+| Words | Tokens | User Paid (if 100 pkg) | Creator Gets (at payout) |
+|-------|--------|------------------------|--------------------------|
+| 11 words | 1 token | 0.30 PLN | 0.65 × 0.20 = 0.13 PLN |
+| 110 words | 10 tokens | 3 PLN | 6.5 × 0.20 = 1.30 PLN |
+| 220 words | 20 tokens | 6 PLN | 13 × 0.20 = 2.60 PLN |
+
+**Standard Rate: 11 words = 1 token (ALL USERS)**
+
+**Transaction Flow:**
+```
+1. Sender writes 110 words → 10 tokens deducted
+2. AVALO takes 35% → 3.5 tokens (non-refundable)
+3. Creator receives 65% → 6.5 tokens
+4. Creator withdraws: 6.5 tokens × 0.20 PLN = 1.30 PLN
+```
+
+**IMPORTANT:** 
+- All chat transactions in TOKENS only
+- PLN conversion happens at purchase (variable) and withdrawal (fixed 0.20)
+- This ensures AVALO profit regardless of which package user bought
+
+**Note:** Royal Club does NOT have better text rate. 
+All users (Free/VIP/Royal) use the same rate: 11 words = 1 token.
+
+### **Photo Sharing in Chat**
+| Chat Stage | Photos Allowed | Rules |
+|------------|----------------|-------|
+| **Free messages (1-3)** | ❌ NO | Text and GIFs only |
+| **Paid chat (after deposit)** | ✅ YES | Male photos → AI nudity check + blur if NSFW |
+| **Free chat pool** | ✅ YES | Low popularity users, photos allowed in free messages |
+
+**Exception - Free Chat Pool:**
+Chats with low popularity users (< 10 matches/month, < 7 days old, or < 50% profile completion) allow photos even in free messages. No earnings for creator in this pool.
+
+### **Voice Messages**
+```
+1 token per 30 seconds
+Max duration: 60 seconds (1 minute)
+Example: 45-second message = 2 tokens (rounded up)
+```
+
+### **Voice Calls**
+
+| Tier | Rate | Per 10min | Settlement |
+|------|------|-----------|------------|
+| **FREE** | 5 tokens/min | 50 tokens | 10 PLN |
+| **VIP/ROYAL** | 2 tokens/min | 20 tokens | 4 PLN |
+
+```
+Billing: Every 10 seconds
+Platform fee: 35%
+
+Example: 10-minute call (VIP):
+- Cost: 20 tokens
+- Settlement: 20 × 0.20 = 4 PLN
+- AVALO takes: 35% = 1.40 PLN
+- Creator gets: 65% = 2.60 PLN
+```
+
+### **Video Calls**
+```
+Rate: 10 tokens/min (for ALL users including FREE)
+Billing: Every 10 seconds (1.667 tokens per 10s)
+Platform fee: 30%
+
+Example: 10-minute call
+- Cost: 100 tokens
+- User paid: 30 PLN (if 100 pkg) or 20 PLN (if 5000 pkg)
+- Platform fee: 30 tokens (30%)
+- Creator receives: 70 tokens
+- Creator payout: 70 × 0.20 = 14 PLN
+```
+
+### **Calendar Bookings**
+```
+Price: Set by creator (minimum 100 tokens)
+Platform fee: 20% (NIEZWROTNA)
+Escrow: 80% (paid after verification)
+Example: 500 tokens booking = 100 AVALO (20%), 400 creator (80%)
+```
+
+### **Feed Tips**
+```
+Amounts: 5, 10, 20, 50, 100, 300, 500, 1000 tokens (or custom)
+Platform fee: 20%
+Creator receives: 80%
+```
+
+---
+
+## 💸 PAYMENT RULES (KRYTYCZNE!)
+
+### **Chat Payment Flow**
+
+#### **1. FREE MESSAGES**
+```
+Every NEW chat = 3 FREE messages per user
+Total: 6 free messages (3 each)
+After free messages → DEPOSIT REQUIRED
+```
+
+#### **2. INITIAL DEPOSIT**
+```
+Amount: 100 tokens
+Settlement value: 100 × 0.20 = 20 PLN (ALWAYS, regardless of purchase price)
+
+Split (at settlement rate 0.20 PLN):
+  - 35 tokens → AVALO = 7 PLN (INSTANT, NIEZWROTNE)
+  - 65 tokens → Escrow = 13 PLN (for creator, as messages are sent)
+
+Minimum chat value: 100 tokens
+```
+
+**Example scenarios:**
+
+**User bought 100-token package (paid 30 PLN):**
+```
+User paid: 30 PLN
+Settlement: 20 PLN (100 × 0.20)
+AVALO profit: 10 PLN (purchase) + 7 PLN (fee) = 17 PLN total
+Creator gets: 13 PLN maximum (if all 65 tokens used)
+```
+
+**User bought 5000-token package (paid 0.20 PLN/token):**
+```
+User paid: 20 PLN (100 tokens)
+Settlement: 20 PLN (100 × 0.20)
+AVALO profit: 0 PLN (purchase) + 7 PLN (fee) = 7 PLN total
+Creator gets: 13 PLN maximum (if all 65 tokens used)
+```
+
+**IMPORTANT:** Deposit is in TOKENS (100). Settlement rate (0.20 PLN) is used for ALL calculations, regardless of user's purchase price.
+
+#### **3. AUTO-RELOAD**
+```
+Trigger: Balance < 20 tokens
+Action: Add 100 tokens automatically
+Default: OFF (user must enable)
+```
+
+#### **4. CHAT LIMITS & QUEUE SYSTEM**
+```
+Default: 50 active chats simultaneously
+Expandable: Creator can increase limit in settings
+
+Self-service expansion:
+- 50 chats: Default (FREE)
+- 100 chats: Requires Quality Score ≥ 60
+- 200 chats: Requires Quality Score ≥ 70 + Royal
+- 500 chats: Requires Quality Score ≥ 80 + Royal
+
+When limit reached:
+- New messages go to QUEUE
+- Delivered when slot opens OR next day
+- Royal males ALWAYS bypass queue (top priority)
+
+Creator can end chat anytime:
+- Frees up slot
+- Unused tokens refunded per rules
+- Can accept new chat immediately
+
+Visibility when full (50/50):
+❌ Hidden from SWIPE stack
+✅ Visible in DISCOVER (with "Inbox Full" badge)
+✅ Royal males can still message (queue bypass)
+```
+
+#### **4. WHO PAYS WHO?**
+
+| Relationship | Payer | Earner | AVALO Fee |
+|--------------|-------|--------|-----------|
+| **M → K** (hetero) | Male | Female | 35% |
+| **K → M** (hetero) | Male | Female | 35% |
+| **K ↔ K** (lesbian) | Initiator | Receiver | 35% |
+| **M ↔ M** (gay) | Initiator | Receiver | 35% |
+| **Earning → Non-earning** | Sender | AVALO | 100% |
+
+**ZASADA:**
+- W relacji hetero **ZAWSZE KOBIETA ZARABIA**
+- W relacji homo **PŁACI INICJATOR CZATU**
+
+---
+
+## 💳 REVENUE SPLIT
+
+### **Chat Messages**
+```
+Sender pays 100%
+├── 35% → AVALO (NIEZWROTNA, instant)
+└── 65% → Creator (earned immediately)
+```
+
+### **Video Calls**
+```
+Caller pays 100%
+├── 30% → AVALO
+└── 70% → Creator
+```
+
+### **Calendar Bookings**
+```
+Booker pays 100% upfront (escrow)
+├── 20% → AVALO (NIEZWROTNA, on booking)
+└── 80% → Creator (after verification)
+```
+
+### **Feed Tips**
+```
+Tipper pays 100%
+├── 20% → AVALO
+└── 80% → Creator
+```
+
+### **Creator Subscriptions** (OnlyFans model)
+```
+Subscriber pays 100%
+├── 30% → AVALO
+└── 70% → Creator
+Price range: $5-100 USD/month
+```
+
+---
+
+## 🔄 REFUND RULES (KRYTYCZNE!)
+
+### **Chat Abandonment (48h inactivity)**
+
+| Scenario | Refund | AVALO Fee Status |
+|----------|--------|------------------|
+| **Earning user abandons** | Unused tokens → Payer | **NIEZWROTNA** (35% kept) |
+| **Non-earning user abandons** | 50/50 split (AVALO/Earner) | **NIEZWROTNA** (35% kept) |
+| **Payer abandons** | 100% → AVALO | **NIEZWROTNA** (35% already taken) |
+
+### **Calendar Cancellation**
+
+| Time Before Meeting | Refund to Booker | To Creator | AVALO |
+|---------------------|------------------|------------|-------|
+| **≥ 24 hours** | 50% | 30% | 20% (kept) |
+| **< 24 hours** | 0% | 80% | 20% (kept) |
+| **After start** | 0% | 80% | 20% (kept) |
+
+**Force majeure:** Manual review (choroba, wypadek)
+
+---
+
+## 👥 USER ROLES & TIERS
+
+### **Roles**
+```
+STANDARD = Pays for chat (default for males)
+CREATOR = Earns from chat (can be enabled by anyone)
+```
+
+### **Subscription Tiers**
+
+#### **FREE (Default - Standard for Everyone)**
+```
+Cost: 0 PLN/month
+
+Discovery:
+✅ 40 swipes + 10/hour (active only)
+✅ See who visited profile 🔥 FREE FOR ALL
+✅ Compatibility matching 🔥 FREE FOR ALL
+✅ Passport mode (change location) 🔥 CORE FEATURE
+✅ Incognito mode 🔥 CORE FEATURE
+✅ "Earn from chat" toggle 🔥 CORE FEATURE
+✅ Basic matching algorithm
+
+Communication:
+✅ 3 free messages per new match
+✅ Text chat (11 words/token after free messages)
+✅ Video calls (10 tokens/min)
+✅ Voice calls (5 tokens/min)
+✅ Photo sharing (in paid chat only)
+✅ GIF picker (Giphy)
+
+Profile:
+✅ Up to 6 photos
+✅ Bio & prompts (3 max)
+✅ Video intro (15s)
+✅ Voice intro (30s)
+
+Limitations:
+❌ No rewind
+❌ No super likes
+❌ No boosts
+❌ Ads visible
+```
+
+**REGISTRATION FLOW:**
+During signup, users see toggles for:
+1. Passport mode (change location)
+2. Incognito mode (hide from discovery)
+3. Earn from chat (become creator)
+
+These are CORE features, visible and accessible from day 1.
+
+#### **VIP**
+```
+Cost: 19.99 USD/month (~80 PLN)
+
+Discovery:
+✅ All FREE features
+✅ 100 swipes + 10/hour (vs 40 for FREE)
+✅ Rewind last swipe
+✅ 5 Super Likes/day
+✅ Boost profile 3x/month
+✅ No ads
+✅ Advanced filters (height, education, income)
+
+Communication:
+✅ Better call rates:
+   - Video: 5 tokens/min (vs 10 for FREE) 🔥
+   - Voice: 2 tokens/min (vs 5 for FREE) 🔥
+✅ Text: Same rate (11 words/token)
+✅ Priority message delivery
+✅ Read receipts
+```
+
+#### **ROYAL CLUB**
+```
+Cost: 49.99 USD/month (~200 PLN)
+
+Discovery:
+✅ All VIP features
+✅ UNLIMITED swipes 🔥 (no hourly limit)
+✅ 10 Super Likes/day (vs 5 for VIP)
+✅ Boost profile 5x/month (vs 3x for VIP) 🔥
+✅ Priority in matching algorithm
+✅ "Royal" badge on profile
+
+Communication:
+✅ Same call rates as VIP:
+   - Video: 5 tokens/min
+   - Voice: 2 tokens/min
+✅ Text: Same rate (11 words/token)
+✅ Priority support (24/7)
+✅ Early access to new features
+✅ Bypass chat limits (always top queue)
+```
+
+**AUTO-ENROLLMENT for Females (FREE Royal):**
+```
+Criteria (any of):
+✅ Quality Score ≥ 75 (consistent quality)
+✅ Instagram 1000+ followers (instant)
+✅ High engagement > 100 matches/month 🔥
+✅ High earnings > 15,000 tokens/month 🔥
+
+Permanent: While Quality Score > 70
+Lose Royal: If QS drops < 70 for 30 days
+
+Benefits:
+- All Royal features FREE
+- Message protection
+- Priority inbox
+- Higher visibility
+```
+
+---
+
+## 🔒 AGE VERIFICATION
+
+**Minimum age: 18+**
+
+### **Verification Methods**
+
+#### **1. Live Selfie (Primary - Required)**
+```
+✅ Face capture with liveness detection
+✅ AI age estimation (18+ check)
+✅ Manual review if AI confidence < 90%
+✅ Approval time: 2-5 minutes
+✅ Fast, non-invasive
+```
+
+#### **2. Bank Account Verification (Optional - Higher Trust)**
+```
+✅ Zero-charge authorization (0.00 PLN/USD)
+✅ Confirms adult status (bank accounts require 18+)
+✅ Adds verified payment method
+✅ Higher trust score = better matching priority
+✅ Optional but recommended for creators
+```
+
+#### **3. Phone Number (SMS - Required)**
+```
+✅ SMS code verification
+✅ Basic identity check
+✅ Required for account recovery
+✅ One phone per account
+```
+
+**REMOVED:** Government ID verification (too invasive, low user adoption)
+
+**Verification flow during registration:**
+1. Email/Phone signup
+2. Live selfie (AI check)
+3. Optional: Bank verification (for creators)
+4. Account activated
+
+### **Required for:**
+- Account activation
+- Earn-to-Chat toggle
+- Premium content (18+ section on web)
+- Calendar bookings
+
+---
+
+## 🚫 ANTI-ABUSE RULES
+
+### **Copy-Paste Detection**
+```
+Method: Regex + AI analysis
+Threshold: >80% similarity
+Penalty: -5 quality score per violation
+Action: Warn → Suspend → Ban
+```
+
+### **Empty Messages**
+```
+Minimum: 3 words
+Penalty: -3 quality score
+Block: Automatic
+```
+
+### **Quality Score System**
+```
+Range: 0-100
+Starting: 100
+Ban threshold: < 20
+
+Penalties:
+- Copy-paste: -5 per instance
+- Empty message: -3
+- Repetitive content: -4
+- Report: -10
+
+Bonuses:
+- Good messages: +0.1 per 10 messages (max +10)
+- Positive ratings: +2
+- Matches: +0.5 per 2 matches (max +5)
+```
+
+---
+
+## 📱 TECH STACK
+
+### **Frontend Mobile**
+```
+Framework: React Native + Expo SDK 54
+Language: TypeScript 5.6
+State: Zustand stores
+Navigation: Expo Router 6 (Stack + Tabs)
+Build: EAS Build (Android/iOS)
+```
+
+### **Frontend Web**
+```
+Framework: Next.js 14 (App Router)
+Styling: Tailwind CSS
+Auth: Firebase Auth
+Deployed: Firebase Hosting + Cloudflare CDN
+```
+
+### **Backend**
+```
+Platform: Firebase (Auth, Firestore, Functions, Storage)
+Runtime: Node.js 20 (TypeScript)
+Region: europe-west3 (Frankfurt)
+```
+
+### **Payments**
+```
+Primary: Stripe
+Regional: PayPal, BLIK, Przelewy24, PayU, Klarna, Crypto
+Integration: Firebase Functions + Webhooks
+Mobile → Web redirect for payments
+```
+
+### **AI Services**
+```
+Provider: Anthropic Claude (primary), OpenAI (secondary)
+Models: Claude Sonnet 4.5, GPT-4
+Features:
+- Wingman (chat tips, translations, tone)
+- Moderator (spam, NSFW, abuse detection)
+- Matchmaker (compatibility scoring)
+- Creator (post generation)
+```
+
+---
+
+## 💳 PAYMENT METHODS (20+ Options)
+
+**Auto-detection:** Based on `location.country` from user profile
+
+### **Global Methods:**
+```
+✅ Stripe (Primary)
+   - Credit/Debit cards (Visa, Mastercard, Amex)
+   - Google Pay
+   - Apple Pay
+   - SEPA Direct Debit (Europe)
+   - iDEAL (Netherlands)
+   - Bancontact (Belgium)
+
+✅ PayPal
+   - PayPal balance
+   - PayPal Credit
+   - Linked bank accounts
+
+✅ Cryptocurrency (Coinbase Commerce / Binance Pay)
+   - Bitcoin (BTC)
+   - Ethereum (ETH)
+   - Tether (USDT)
+   - USDC
+
+✅ Wise (International Transfers)
+   - Bank transfers
+   - Low fees for international
+```
+
+### **Poland / Central Europe:**
+```
+✅ BLIK
+   - 6-digit code
+   - Instant transfer
+   - Most popular in Poland
+
+✅ Przelewy24
+   - Polish bank transfers
+   - 24/7 availability
+
+✅ PayU
+   - Poland, Romania, Czech Republic
+   - Card + bank transfers
+
+✅ Klarna
+   - Pay now / Pay later
+   - Installments
+
+✅ Sofort
+   - Germany, Austria, Switzerland
+   - Direct bank transfer
+```
+
+### **USA / Canada:**
+```
+✅ Stripe US
+   - ACH Direct Debit
+   - Cards
+
+✅ Venmo
+   - Popular for peer-to-peer
+   - Linked to PayPal
+
+✅ Cash App
+   - Direct bank connection
+```
+
+### **Asia / Middle East:**
+```
+✅ Razorpay (India)
+   - UPI
+   - Cards
+   - Net Banking
+   - Wallets (Paytm, PhonePe)
+
+✅ AliPay (China)
+   - QR code payments
+   - Linked to bank
+
+✅ WeChat Pay (China)
+   - QR code
+   - Mini-programs
+
+✅ Paytm (India)
+   - Wallet
+   - UPI
+```
+
+### **Payment Integration:**
+```
+Platform: WEB ONLY (no Apple/Google 30% fee)
+Mobile → Redirect to web/wallet
+
+Webhooks:
+- payment_intent.succeeded
+- checkout.session.completed
+- customer.subscription.created
+- customer.subscription.updated
+- customer.subscription.deleted
+- transfer.created (payouts)
+- refund.updated
+
+Security:
+- PCI DSS compliant (via Stripe/PayPal)
+- 3D Secure (SCA compliance)
+- Fraud detection (Stripe Radar)
+- SSL/TLS encryption
+
+Currencies:
+- Primary: PLN, USD, EUR
+- Supported: 30+ currencies
+- Auto-conversion at checkout
+```
+
+### **Payout Methods (for Creators):**
+```
+✅ Bank Transfer (SEPA, ACH, SWIFT)
+   - Min: 100 PLN
+   - Fee: 0-5 PLN (depending on region)
+   - Time: 1-3 business days
+
+✅ PayPal
+   - Min: 50 PLN
+   - Fee: 2.5% + 0.30 PLN
+   - Time: Instant
+
+✅ Cryptocurrency
+   - Min: 20 USD
+   - Fee: Network fee (varies)
+   - Time: 10-60 minutes
+
+✅ Wise
+   - Min: 50 PLN
+   - Fee: 1-2%
+   - Time: 1-2 days
+```
+
+---
+
+## 🆓 FREE CHAT POOL (with Ads)
+
+### **What is Free Chat Pool?**
+Low-activity users who don't charge for chats, supported by ads.
+
+### **Criteria for Free Chat Pool:**
+```
+User qualifies if (in last 72 hours):
+- < 10 likes received
+- < 3 active chats
+- Profile completion < 50%
+- New users (< 7 days old)
+- "Earn from chat" = OFF
+
+Purpose:
+- Give new users chance to engage
+- Build activity before monetization
+- Supported by ads (not user payment)
+```
+
+### **How it works:**
+```
+1. User A (in free pool) matches with User B
+2. Both get:
+   ✅ Unlimited free messages (no 3-message limit)
+   ✅ Photos allowed
+   ✅ GIFs allowed
+   ❌ No video/voice calls
+
+3. Monetization via ADS:
+   - Native ads in chat (every 10 messages)
+   - Banner ads in chat header
+   - Interstitial ads (on chat open/close)
+   - Both users see ads
+
+4. Exit Free Pool:
+   - User gets > 10 likes in 72h
+   - User gets > 3 active chats
+   - User enables "Earn from chat"
+   - User completes profile > 50%
+```
+
+### **Ad Placement:**
+```
+In-Chat Ads:
+- Every 10 messages: Native ad card
+- Format: "Sponsored - [Brand] - [Message]"
+- Swipeable (user can dismiss)
+- Non-intrusive
+
+Chat List Ads:
+- Every 5th chat: Sponsored chat card
+- Clearly marked "Ad"
+- Click → external link or in-app offer
+
+Banner Ads:
+- Bottom of chat screen (50px height)
+- Dismissible after 5 seconds
+- Frequency cap: Max 1 per minute
+
+Interstitial Ads:
+- On chat open (if > 5 min since last ad)
+- Skippable after 3 seconds
+- Full-screen
+```
+
+### **Ad Revenue:**
+```
+Model: CPM (Cost Per Mille = per 1000 impressions)
+
+Rates:
+- Native ads: $5-10 CPM
+- Banner ads: $2-5 CPM
+- Interstitial: $10-20 CPM
+
+Example:
+- 1000 messages sent in free pool
+- 100 ads shown
+- $5 CPM = $0.50 earned
+- Scale: 100K users = $50K/month
+```
+
+---
+
+## 🗄️ FIRESTORE STRUCTURE
+
+### **Main Collections**
+```
+users/{uid}
+  ├── profile data
+  ├── wallet {balance, pending, earned}
+  ├── settings {earnFromChat, incognito, passport}
+  └── verification {selfie, id, status}
+
+chats/{chatId}
+  ├── participants[]
+  ├── status (free/pending/active/low_balance/paused/abandoned)
+  ├── deposit {amount, paidBy, platformFee, escrowAmount}
+  ├── billing {currentBalance, totalSpent, wordsSent, tokensSent}
+  └── messages/{messageId}
+
+matches/{matchId}
+  ├── user1Id, user2Id
+  ├── chatId
+  └── createdAt (TTL 24h)
+
+transactions/{txId}
+  ├── type (purchase/message_sent/message_received/video_call/calendar/tip)
+  ├── amount (+ for credit, - for debit)
+  ├── status (pending/completed/failed/refunded)
+  └── metadata {chatId, callId, bookingId, etc.}
+
+calendarBookings/{bookingId}
+  ├── creatorId, bookerId
+  ├── price, startTime, endTime
+  ├── payment {totalAmount, platformFee, creatorPayout}
+  ├── verification {method, isVerified, verifiedAt}
+  └── status (pending/confirmed/in_progress/completed/cancelled)
+
+bots/{botId}
+  ├── name, age, bio, personality
+  ├── customization {skin, height, hair, body, etc.}
+  ├── photos[] (5 AI-generated)
+  └── subscriptionPrice (9.99 USD/month)
+
+feedPosts/{postId}
+  ├── userId, mediaUrl, caption
+  ├── isPremium, premiumPrice
+  ├── stats {views, likes, comments, tips}
+  └── visibility {web, mobile}
+```
+
+---
+
+## 🔐 SECURITY RULES (Key Points)
+
+```javascript
+// Anyone can read profiles (for discovery)
+allow read: if isSignedIn() && !isBlocked(userId);
+
+// Users can only update own profile
+allow update: if isOwner(userId);
+
+// Chat participants only
+allow read: if isChatParticipant(chatId);
+
+// Only verified users can earn
+allow create: if isVerified() && isCreator();
+
+// VIP/Royal only for calls
+allow create: if isVIPOrRoyal() || isFemale();
+```
+
+---
+
+## 📊 KEY METRICS TO TRACK
+
+```
+Token flow:
+- Tokens purchased (revenue)
+- Tokens spent (engagement)
+- Tokens earned by creators (creator economy health)
+- Platform fees collected (profit)
+
+User behavior:
+- Chat completion rate (48h expiry)
+- Average message length
+- Copy-paste detection rate
+- Quality score distribution
+
+Monetization:
+- Average revenue per paying user (ARPPU)
+- Creator earnings (top 10%, median, bottom 10%)
+- Video call usage rate
+- Calendar booking conversion rate
+```
+
+---
+
+## ⚠️ CRITICAL BUSINESS RULES
+
+1. **35% platform fee on chat is NIEZWROTNA (non-refundable)**
+   - Taken immediately on deposit
+   - Never returned, even if chat abandoned
+
+2. **In hetero relationships, FEMALE ALWAYS EARNS**
+   - M→K: Male pays, Female earns
+   - K→M: Male pays, Female earns
+
+3. **3 free messages BEFORE payment required**
+   - Per user, per chat
+   - Total: 6 free messages (3 each)
+
+4. **48-hour chat expiry rule**
+   - No activity = chat expires
+   - Both users return to swipe pool
+   - Can match again in future
+
+5. **Minimum chat deposit: 100 tokens**
+   - 35 tokens → AVALO (instant)
+   - 65 tokens → Escrow (for messages)
+
+6. **Auto-reload: OFF by default**
+   - User must explicitly enable
+   - Triggers at <20 tokens
+   - Adds 100 tokens
+
+7. **Male NSFW photos → blur until approval**
+   - AI nudity detection
+   - Receiver must approve/reject
+   - Auto-report on rejection
+
+8. **Premium content (18+) only on WEB**
+   - Mobile app stays clean (Apple/Google policies)
+   - Age gate + verification required
+
+---
+
+## 🌍 LOCALIZATION
+
+**Supported languages: 30+**
+```
+Core: EN, PL, ES, DE, FR, IT, PT, RU, UK, TR, AR, HI, ZH, JA, KO
+Regional: CS, SK, HU, RO, BG, HR, SR, SV, NO, DA, FI, NL, EL, HE, VI, TH, ID
+```
+
+**Token value display:**
+- Show in local currency based on IP/profile
+- Always calculate in tokens internally
+- Currency conversion for display only
+
+---
+
+## 🎨 UI/UX PRINCIPLES
+
+- **Mobile-first** (80% of traffic expected)
+- **Clean & minimal** (like Tinder/Bumble)
+- **Dark mode default** (dating app standard)
+- **One-handed operation** (thumb-friendly)
+- **Instant feedback** (no loading spinners)
+
+---
+
+## 📝 NAMING CONVENTIONS
+
+### **Code**
+```typescript
+// Files: camelCase.callable.ts
+chat.callable.ts
+wallet.callable.ts
+
+// Functions: camelCase
+sendMessage()
+purchaseTokens()
+
+// Types: PascalCase
+User, Chat, Transaction
+
+// Constants: UPPER_SNAKE_CASE
+CHAT_INITIAL_DEPOSIT
+TOKEN_USD_RATE
+```
+
+### **Database**
+```
+Collections: camelCase (plural)
+users, chats, transactions
+
+Documents: IDs (auto-generated or uid)
+users/{uid}
+chats/{chatId}
+
+Fields: camelCase
+tokenBalance, createdAt
+```
+
+---
+
+## 👤 USER PROFILE STRUCTURE
+
+### **Profile Components:**
+
+#### **1. Photos (Max 6)**
+```
+Types:
+- Portrait photos (headshot, close-up)
+- Lifestyle photos (activities, hobbies)
+- Group photos (with friends, max 2)
+- Travel photos
+
+Requirements:
+- Minimum: 2 photos
+- Recommended: 4-6 photos
+- Formats: JPG, PNG, HEIC
+- Max size: 10 MB per photo
+- Min resolution: 800x800px
+
+Order: User can drag-and-drop to reorder
+Primary photo: First photo shown in discovery
+```
+
+#### **2. Video Intro (Optional)**
+```
+Duration: Max 15 seconds
+Purpose: Show personality, voice, vibe
+Format: MP4, MOV
+Max size: 50 MB
+Plays automatically in profile view (muted, tap to unmute)
+```
+
+#### **3. Voice Intro (Optional)**
+```
+Duration: Max 30 seconds
+Purpose: Voice verification + personality
+Format: MP3, M4A
+Max size: 5 MB
+Plays on tap in profile
+```
+
+#### **4. Basic Info (Required)**
+```
+Name: First name only (display name)
+Age: From date of birth (must be 18+)
+Gender: Male / Female / Non-binary
+Looking for: Male / Female / Everyone
+
+Location:
+- City (auto-detected or manual)
+- Country
+- Coordinates (for distance calculation)
+- Show distance to other users (on/off toggle)
+
+Height: Optional (cm or ft/in)
+Education: Optional (High school, Bachelor's, Master's, PhD, Other)
+Occupation: Optional (free text)
+```
+
+#### **5. Bio (Required)**
+```
+Max length: 500 characters
+Purpose: Short description about yourself
+Supports: Text only (no links, no emoji spam)
+Moderation: AI + manual review for inappropriate content
+```
+
+#### **6. Prompts (3 max)**
+```
+Choose from 50+ prompts, like:
+- "My simple pleasures"
+- "I'm looking for"
+- "A perfect day for me"
+- "Change my mind about"
+- "We'll get along if"
+- "The way to my heart is"
+
+Max length per prompt: 150 characters
+Purpose: Show personality beyond bio
+```
+
+#### **7. Interests/Hobbies (Max 10)**
+```
+Categories:
+- Sports (Football, Basketball, Gym, Yoga, Running, etc.)
+- Arts (Music, Painting, Photography, Dancing, etc.)
+- Food (Cooking, Wine, Coffee, Vegan, etc.)
+- Travel (Beaches, Mountains, Cities, Road trips, etc.)
+- Entertainment (Movies, Gaming, Reading, Podcasts, etc.)
+- Lifestyle (Fashion, Wellness, Pets, Volunteering, etc.)
+
+User selects from predefined list + can add custom (max 3 custom)
+Shown as tags on profile
+Used for compatibility matching
+```
+
+#### **8. Languages (Max 5)**
+```
+Native language: Auto-detected + user confirmation
+Additional languages: User selects
+Proficiency: Basic / Intermediate / Fluent / Native
+
+Used for:
+- Matching with similar language speakers
+- AI translation suggestions
+```
+
+#### **9. Verification Badges**
+```
+✅ Age verified (18+, green checkmark)
+✅ Photo verified (live selfie passed)
+✅ Bank verified (optional, gold badge)
+✅ Royal Club member (crown icon)
+✅ VIP member (star icon)
+✅ Creator verified (earning from chat, $ icon)
+```
+
+#### **10. Profile Stats (Public)**
+```
+Visible to others:
+- Response rate (% of messages replied within 24h)
+- Average response time (e.g., "Within 2 hours")
+- Profile completion (e.g., "85% complete")
+- Member since (e.g., "Joined Feb 2025")
+
+Hidden stats (only visible to user):
+- Profile views (last 7 days)
+- Likes received (last 7 days)
+- Matches (total count)
+- Earnings (if creator)
+```
+
+### **Profile Modes:**
+
+#### **1. Passport Mode (FREE for all)**
+```
+Purpose: Change your location to anywhere in the world
+How it works:
+- Select any city/country manually
+- OR use GPS for current location
+- Swipe users in that location
+- Shows "🌍 Traveling in [City]" on profile
+
+Use cases:
+- Planning travel, meet locals before arrival
+- Long-distance matching
+- Expats looking for people from home country
+```
+
+#### **2. Incognito Mode (FREE for all)**
+```
+Purpose: Browse profiles without being seen
+How it works:
+- You're invisible in swipe stack
+- You can still swipe others
+- Only visible to people YOU like
+- Your profile won't show in "Visitors" list
+
+Toggle: ON/OFF button in profile settings
+Icon: 👻 Ghost icon when active
+```
+
+#### **3. Earn from Chat Mode (FREE for all)**
+```
+Purpose: Enable earning 65% from paid chats
+How it works:
+- Toggle ON during registration or in settings
+- Profile marked with "💰 Earns from chat" badge
+- Opposite gender pays for chat (in hetero relationships)
+- You receive 65% of tokens spent
+
+Requirements:
+- Age verification (18+)
+- Bank verification (recommended for payout)
+- Profile completion (min 50%)
+
+Payout options:
+- Bank transfer (min 100 PLN)
+- PayPal (min 50 PLN)
+- Crypto (min 20 USD)
+```
+
+---
+
+## 🤖 BOTS MODULE
+
+### **What are Bots?**
+AI-powered chat companions with customizable appearance, personality, and daily content generation.
+
+### **Bot Types:**
+
+#### **1. System Bots (Gallery - Multi-User)**
+```
+Count: 100-300 bots available
+Categories:
+- Romance (flirty, passionate, romantic)
+- Friendship (supportive, funny, casual)
+- Fantasy (roleplay characters)
+- Professional (career advice, life coach)
+- Adult (erotic conversations, 18+ only)
+
+Each bot:
+- 5 initial AI-generated photos
+- 2-3 NEW photos daily (user can request more)
+- Erotic content available (per user preference)
+- Name, age, bio
+- Personality traits
+- Conversation style
+
+IMPORTANT: System bots can chat with MULTIPLE users
+- Not 1:1 exclusive
+- Each user has separate conversation thread
+- Bot remembers context per user
+- Male & female bots for all genders
+```
+
+#### **2. Custom Bots (User-Created - Private)**
+```
+Customization options:
+
+Physical appearance:
+- Skin tone (8 options)
+- Height (150-200 cm)
+- Hair color (12 options)
+- Hair length (short, medium, long)
+- Body type (slim, athletic, curvy, plus-size)
+- Breast size (for female bots: A-F)
+- Butt size (small, medium, large, extra-large)
+- Face shape (oval, round, square, heart)
+- Eye color (brown, blue, green, hazel, gray)
+- Ethnicity (Caucasian, Asian, Black, Latina, Middle Eastern, Mixed)
+
+Personality:
+- Traits: Funny, Serious, Flirty, Shy, Confident, Caring, Mysterious
+- Interests: Select from same list as user profiles
+- Conversation style: Casual, Formal, Playful, Romantic, Direct
+- Adult mode: ON/OFF (erotic conversations)
+
+Daily Content:
+✅ Bot generates 2-3 photos daily (automatic)
+✅ User can request specific types (casual, sexy, themed)
+✅ Erotic content if adult mode enabled
+✅ Photos saved in bot's gallery (swipe through)
+```
+
+#### **3. Bot Features:**
+```
+✅ AI conversations (Claude/GPT-powered)
+✅ Context memory (remembers previous chats)
+✅ Real-time responses (< 2 seconds)
+✅ Personality consistency
+✅ Daily photo generation (2-3 photos/day) 🔥
+✅ Erotic content option (18+ users only) 🔥
+✅ Voice messages (text-to-speech)
+✅ Multilingual (30+ languages)
+✅ System bots = Multi-user (chat with many) 🔥
+✅ Custom bots = Private (only creator)
+
+❌ NO video calls (bots are text/voice only)
+❌ NO real-time video (would break immersion)
+✅ Clear "AI Bot" label on profile
+```
+
+### **Bot Subscription:**
+```
+Price: 9.99 USD/month per bot
+Includes:
+- Unlimited messaging
+- Daily photo generation (2-3 photos)
+- Request custom photos (up to 5/day)
+- Voice messages
+- Adult content (if enabled)
+- No token cost
+- Cancel anytime
+
+Multi-bot discount:
+- 2 bots: 17.99 USD/month (10% off)
+- 3 bots: 24.99 USD/month (17% off)
+- 5+ bots: 39.99 USD/month (20% off)
+
+System bots (gallery):
+- Shared across users
+- Each user pays $9.99 for access
+- AVALO keeps 100%
+
+Custom bots (user-created):
+- Private to creator
+- Creator doesn't pay
+- Can't be accessed by others
+```
+
+### **Bot Chat Rules:**
+```
+- No token cost (included in subscription)
+- No earning for bot owner (AVALO keeps 100%)
+- Messages marked as "🤖 AI Bot" in chat
+- Can't match with bots in swipe stack
+- Must go to "Bots" tab to browse/subscribe
+- System bots: Multi-user (not exclusive)
+- Custom bots: Private (only creator access)
+```
+
+### **Bot Photo Generation:**
+```
+Frequency: 2-3 photos/day (automatic)
+Time: Random times throughout day
+Types: Based on user preferences:
+  - Casual (everyday outfits)
+  - Sexy (lingerie, poses)
+  - Themed (beach, gym, party)
+  - Erotic (nude/semi-nude, 18+)
+
+User can request:
+- Type of photo
+- Outfit/pose
+- Location/setting
+- Mood/expression
+
+Limits:
+- Auto: 2-3 photos/day
+- Requested: 5 additional photos/day
+- Gallery: Max 100 photos (oldest deleted)
+
+Storage:
+- Photos saved in bot profile
+- Swipe through gallery
+- Like/favorite photos
+- Download allowed
+```
+
+### **Bot Creation Flow:**
+```
+1. User clicks "Create Bot"
+2. Customizes appearance (10-15 options)
+3. Sets personality traits (5-8 options)
+4. Enables/disables adult mode
+5. Adds bio and interests
+6. AI generates 5 initial photos (30-60 seconds)
+7. User reviews and publishes
+8. Bot starts generating daily photos
+9. Bot is private (only visible to creator)
+```
+
+---
+
+## 💘 SWIPE & MATCHING MECHANICS
+
+### **Discovery Stack (Swipe Cards):**
+
+#### **How it works:**
+```
+1. User opens Discovery tab
+2. Sees profile cards (Tinder-style)
+3. Each card shows:
+   - Primary photo
+   - Name, Age
+   - Distance (e.g., "5 km away")
+   - Bio snippet (first 100 chars)
+   - Verification badges
+   - "💰 Earns from chat" (if enabled)
+
+4. User can:
+   - Swipe LEFT (❌ Nope)
+   - Swipe RIGHT (✅ Like)
+   - Swipe UP (⭐ Super Like) - VIP/Royal only
+   - TAP card to see full profile
+```
+
+#### **Swipe Limits:**
+```
+FREE: 40 swipes at start, then +10/hour (max 50, no accumulation)
+VIP: 100 swipes at start, then +10/hour (max 150)
+ROYAL: UNLIMITED swipes (no hourly refresh needed)
+
+Reset: Every hour (on the hour, e.g., 12:00, 13:00)
+Condition: Only if app was active in last hour (prevent farming)
+```
+
+#### **Swipe Actions:**
+
+**1. Nope (Swipe LEFT or tap ❌):**
+```
+- User is removed from your stack
+- You won't see them again (unless reset)
+- No notification sent to them
+- Can be undone with "Rewind" (VIP/Royal only)
+```
+
+**2. Like (Swipe RIGHT or tap ✅):**
+```
+- Creates "like" document in Firestore
+- If mutual like → instant match
+- If not mutual → stays pending for 24 hours
+- Other user sees you in "Likes You" tab (if they swipe on you)
+```
+
+**3. Super Like (Swipe UP or tap ⭐) - VIP/Royal:**
+```
+- Creates "super_like" document with priority=true
+- Sends notification to other user
+- You appear at TOP of their stack
+- Other user sees "⭐ Super Liked You" badge
+- Limit: 5/day (VIP) or 10/day (Royal)
+```
+
+#### **Quick Wave (Like + Icebreaker):**
+```
+What: Like + auto-send first message from 9 templates
+How: Long-press Like button → select template → send
+
+Templates (9 options):
+1. "Hey! 👋 You seem interesting, let's chat!"
+2. "Hi! How's your day going?"
+3. "Hey! Did you write about me in your bio? 😄"
+4. "Hi! Love your photos, let's connect!"
+5. "Hey! We should definitely talk 😊"
+6. "Hi! Your profile caught my eye!"
+7. "Hey! What's the story behind your third photo?"
+8. "Hi! We have similar interests, let's chat!"
+9. "Hey! Free this week? Let's grab coffee ☕"
+
+Benefits:
+- Increases match rate (personalized first message)
+- Saves time (no need to think of opener)
+- FREE to use (counts as 1 of 3 free messages)
+```
+
+### **Matching Algorithm:**
+
+#### **Factors (weighted):**
+```
+1. Distance (40% weight):
+   - Prefer users within 20 km
+   - Gradually show users up to 150 km
+   - Passport mode: no distance filter
+
+2. Age (20% weight):
+   - Prefer users within ±5 years
+   - Respect user's age range filters
+
+3. Activity (15% weight):
+   - Prioritize active users (last 24 hours)
+   - Deprioritize inactive (> 7 days)
+
+4. Compatibility (15% weight):
+   - Shared interests (max 5 points)
+   - Shared languages (max 3 points)
+   - Complementary prompts
+
+5. Profile Quality (10% weight):
+   - Photo count (min 2, ideal 6)
+   - Bio completeness
+   - Prompt completion
+   - Verification status
+
+Boosts: Royal/VIP users appear higher in stack
+```
+
+#### **Match Creation:**
+```
+Trigger: Mutual like (User A likes User B, and User B likes User A)
+
+Action:
+1. Create match document in matches collection
+2. Create chat document in chats collection
+3. Send push notifications to both users
+4. Show match modal with "Start Chat" button
+5. Both users get 3 FREE messages
+
+Match TTL: 24 hours
+- If no messages sent within 24h → match expires
+- Can match again in future if both re-swipe
+```
+
+### **Profile Visitors (FREE for all):**
+
+#### **How it works:**
+```
+When User A views User B's profile:
+1. Event logged in profile_views subcollection
+2. User B sees User A in "Visited Me" tab
+3. Shows: Photo, name, age, time visited
+4. User B can like back directly from this tab
+
+Retention: Last 100 visitors (or 30 days)
+Sorting: Most recent first
+```
+
+#### **Visited Me Tab:**
+```
+Shows:
+- User photo + name
+- "Visited 2 hours ago"
+- Like button (quick action)
+- View profile button
+
+Benefits:
+- See who's interested (even if they didn't like yet)
+- Increases match rate (reciprocal interest)
+- FREE feature (no VIP required)
+```
+
+---
+
+## 🔥 WHAT MAKES AVALO UNIQUE
+
+1. **Earn-to-Chat** - First app where EVERY message has value
+2. **Gender-balanced economy** - Females earn by default in hetero
+3. **AI Wingman** - Real-time conversation coaching
+4. **Calendar IRL** - Safe, verified real-world meetings
+5. **Transparent pricing** - Token system with clear 0.20 PLN settlement rate
+6. **No gamification** - No fake badges, roses, or gimmicks
+7. **Creator-friendly** - 65-80% revenue share (vs OnlyFans 70%)
+8. **Core features FREE** - Passport, Incognito, Visitors, Matching all free
+9. **Bots for companionship** - AI partners with full customization
+10. **Flexible monetization** - Tokens, not forced subscriptions
+
+---
+
+## ✅ USE THIS DOCUMENT
+
+**Every new chat starts with:**
+```
+Hi Claude! I'm building AVALO dating app.
+
+[PASTE THIS ENTIRE DOCUMENT]
+
+Today's task: [specific task]
+```
+
+This ensures **100% consistency** across all development chats.
+
+---
+
+**END OF CORE REFERENCE DOCUMENT**
+**Keep this file updated as business rules evolve**

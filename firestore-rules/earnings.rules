@@ -1,0 +1,66 @@
+/**
+ * PACK 81 — Creator Earnings Firestore Security Rules
+ * All financial operations must go through Cloud Functions
+ */
+
+rules_version = '2';
+
+// ============================================================================
+// EARNINGS LEDGER RULES
+// ============================================================================
+
+// Users can only read their own earnings ledger
+match /earnings_ledger/{entryId} {
+  // Read: Only the creator can view their own earnings
+  allow read: if request.auth != null 
+    && request.auth.uid == resource.data.creatorId;
+  
+  // Write: NO direct writes allowed - only Cloud Functions can write
+  allow create, update, delete: if false;
+}
+
+// ============================================================================
+// CREATOR BALANCES RULES
+// ============================================================================
+
+// Users can only read their own balance
+match /creator_balances/{userId} {
+  // Read: Only the owner can view their balance
+  allow read: if request.auth != null 
+    && request.auth.uid == userId;
+  
+  // Write: NO direct writes allowed - only Cloud Functions can write
+  allow create, update, delete: if false;
+}
+
+// ============================================================================
+// EARNINGS AGGREGATES RULES (Pre-computed breakdowns)
+// ============================================================================
+
+// Users can read their own pre-computed aggregates
+match /earnings_aggregates/{aggregateId} {
+  // Read: Only if the aggregateId contains the user's ID
+  // Format: {userId}_period (e.g., "user123_last30days")
+  allow read: if request.auth != null 
+    && aggregateId.matches('^' + request.auth.uid + '_.*');
+  
+  // Write: NO direct writes allowed - only Cloud Functions can write
+  allow create, update, delete: if false;
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+function isAuthenticated() {
+  return request.auth != null;
+}
+
+function isOwner(userId) {
+  return request.auth.uid == userId;
+}
+
+function isAdmin() {
+  return request.auth != null 
+    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+}

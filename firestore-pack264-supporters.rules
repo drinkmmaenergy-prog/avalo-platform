@@ -1,0 +1,105 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // PACK 264: TOP SUPPORTERS & VIP RANKINGS
+    // Spender Retention Engine
+    // ==========================================
+    
+    // Supporter Rankings Collection (per creator)
+    // Path: /creatorSupporters/{creatorId}/supporters/{supporterId}
+    match /creatorSupporters/{creatorId}/supporters/{supporterId} {
+      
+      // Read: Creator can see their supporters, supporter can see their own ranking
+      allow read: if request.auth != null && (
+        request.auth.uid == creatorId || 
+        request.auth.uid == supporterId
+      );
+      
+      // Write: Only backend functions (no client writes)
+      allow write: if false;
+    }
+    
+    // Monthly Supporter Rankings (resets monthly)
+    // Path: /creatorSupporters/{creatorId}/monthlyRankings/{period}/supporters/{supporterId}
+    match /creatorSupporters/{creatorId}/monthlyRankings/{period}/supporters/{supporterId} {
+      
+      allow read: if request.auth != null && (
+        request.auth.uid == creatorId || 
+        request.auth.uid == supporterId
+      );
+      
+      allow write: if false;
+    }
+    
+    // Supporter Profile (user's settings and aggregate data)
+    // Path: /supporterProfiles/{userId}
+    match /supporterProfiles/{userId} {
+      
+      // Read: Own profile only
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Update: Can only modify anonymousMode and notification preferences
+      allow update: if request.auth != null && 
+        request.auth.uid == userId &&
+        request.resource.data.keys().hasOnly([
+          'anonymousMode', 
+          'notificationPreferences',
+          'updatedAt'
+        ]);
+      
+      // Create/Delete: Backend only
+      allow create, delete: if false;
+    }
+    
+    // Lifetime Archive Badges
+    // Path: /lifetimeArchiveBadges/{userId}
+    match /lifetimeArchiveBadges/{userId} {
+      
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+    }
+    
+    // Supporter Entrance Effects Log (for Live broadcasts)
+    // Path: /liveRooms/{roomId}/entranceEffects/{effectId}
+    match /liveRooms/{roomId}/entranceEffects/{effectId} {
+      
+      // Read: Anyone in the live room
+      allow read: if request.auth != null;
+      
+      // Write: Backend only
+      allow write: if false;
+    }
+    
+    // Supporter Perks (auto-assigned based on rank)
+    // Path: /supporterPerks/{creatorId}/active/{supporterId}
+    match /supporterPerks/{creatorId}/active/{supporterId} {
+      
+      allow read: if request.auth != null && (
+        request.auth.uid == creatorId || 
+        request.auth.uid == supporterId
+      );
+      
+      allow write: if false;
+    }
+    
+    // Supporter Analytics (aggregated data for creator)
+    // Path: /creatorAnalytics/{creatorId}/supporters/stats
+    match /creatorAnalytics/{creatorId}/supporters/stats {
+      
+      allow read: if request.auth != null && request.auth.uid == creatorId;
+      allow write: if false;
+    }
+    
+    // Rank Change Notifications Queue
+    // Path: /supporterNotifications/{userId}/queue/{notificationId}
+    match /supporterNotifications/{userId}/queue/{notificationId} {
+      
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if false; // Backend only
+      allow delete: if request.auth != null && request.auth.uid == userId; // Can mark as read
+      allow update: if false;
+    }
+  }
+}

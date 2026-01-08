@@ -1,0 +1,197 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "revenue",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" },
+        { "fieldPath": "revenuePLN", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "revenue",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "DESCENDING" },
+        { "fieldPath": "revenuePLN", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "monthly",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "monthYear", "order": "DESCENDING" },
+        { "fieldPath": "totalRevenuePLN", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "forecasts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timeframe", "order": "ASCENDING" },
+        { "fieldPath": "generatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "forecasts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "ASCENDING" },
+        { "fieldPath": "confidence", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "segments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "avgLTVPLN", "order": "DESCENDING" },
+        { "fieldPath": "userCount", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "segments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "segment", "order": "ASCENDING" },
+        { "fieldPath": "calculatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "trends",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "segment", "order": "ASCENDING" },
+        { "fieldPath": "monthYear", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "trends",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "monthYear", "order": "DESCENDING" },
+        { "fieldPath": "ltvPLN", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "cohorts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "cohortMonth", "order": "DESCENDING" },
+        { "fieldPath": "segment", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "cohorts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "segment", "order": "ASCENDING" },
+        { "fieldPath": "projectedLifetimeLTV", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "results",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "scenarioId", "order": "ASCENDING" },
+        { "fieldPath": "simulatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "results",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "survivalRunwayDays", "order": "ASCENDING" },
+        { "fieldPath": "profitImpactPercent", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "history",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "scenarioId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "history",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "DESCENDING" },
+        { "fieldPath": "profitImpactPercent", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "active",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "resolved", "order": "ASCENDING" },
+        { "fieldPath": "severity", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "active",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "resolved", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "active",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "resolved", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "billing",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "monthYear", "order": "DESCENDING" },
+        { "fieldPath": "totalCost", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "transactions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "transactions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userSegments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "segment", "order": "ASCENDING" },
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userSegments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "segment", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

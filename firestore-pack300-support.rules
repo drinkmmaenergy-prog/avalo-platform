@@ -1,0 +1,352 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 300 - HELP CENTER, SUPPORT TICKETS & IN-APP EDUCATION
+    // ========================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.active == true;
+    }
+    
+    function hasAdminRole(role) {
+      return isAdmin() && 
+             get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role == role;
+    }
+    
+    function hasAnyAdminRole(roles) {
+      return isAdmin() && 
+             get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role in roles;
+    }
+    
+    function isSupportAdmin() {
+      return hasAnyAdminRole(['support_agent', 'support_manager', 'super_admin']);
+    }
+    
+    function isSafetyAdmin() {
+      return hasAnyAdminRole(['safety_admin', 'super_admin']);
+    }
+    
+    function isSuperAdmin() {
+      return hasAdminRole('super_admin');
+    }
+    
+    function isSafetyTicket(ticketData) {
+      return ticketData.type in ['SAFETY_REPORT_FOLLOWUP', 'CONTENT_TAKEDOWN'];
+    }
+    
+    // ========================================================================
+    // HELP ARTICLES
+    // ========================================================================
+    
+    match /helpArticles/{articleId} {
+      // Anyone can read searchable articles
+      allow read: if isAuthenticated() && 
+                     resource.data.isSearchable == true;
+      
+      // Admins can read all articles (including non-searchable drafts)
+      allow read: if isAdmin();
+      
+      // Only super admins can create/update/delete articles
+      allow create, update, delete: if isSuperAdmin();
+      
+      // Validation
+      allow write: if request.resource.data.keys().hasAll([
+        'articleId', 'category', 'slug', 'locale', 'title', 
+        'shortSummary', 'bodyMarkdown', 'isFeatured', 'isSearchable',
+        'tags', 'createdAt', 'updatedAt'
+      ]) &&
+      request.resource.data.articleId is string &&
+      request.resource.data.category in [
+        'GETTING_STARTED', 'PROFILE', 'DISCOVERY_AND_SWIPE',
+        'PAID_CHAT', 'CALLS', 'CALENDAR_AND_MEETINGS', 'EVENTS',
+        'TOKENS_AND_WALLET', 'PAYOUTS', 'SAFETY_AND_REPORTING',
+        'ACCOUNT_AND_PRIVACY', 'TECHNICAL_ISSUES'
+      ] &&
+      request.resource.data.slug is string &&
+      request.resource.data.locale is string &&
+      request.resource.data.title is string &&
+      request.resource.data.shortSummary is string &&
+      request.resource.data.bodyMarkdown is string &&
+      request.resource.data.isFeatured is bool &&
+      request.resource.data.isSearchable is bool &&
+      request.resource.data.tags is list &&
+      request.resource.data.createdAt is string &&
+      request.resource.data.updatedAt is string;
+    }
+    
+    // ========================================================================
+    // HELP ARTICLE FEEDBACK
+    // ========================================================================
+    
+    match /helpArticleFeedback/{feedbackId} {
+      // Users can create feedback for articles they read
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Users can read their own feedback
+      allow read: if isUser(resource.data.userId);
+      
+      // Admins can read all feedback
+      allow read: if isAdmin();
+      
+      // No updates or deletes allowed
+      allow update, delete: if false;
+      
+      // Validation
+      allow create: if request.resource.data.keys().hasAll([
+        'feedbackId', 'articleId', 'userId', 'helpful', 'createdAt'
+      ]) &&
+      request.resource.data.feedbackId is string &&
+      request.resource.data.articleId is string &&
+      request.resource.data.userId is string &&
+      request.resource.data.helpful is bool &&
+      request.resource.data.createdAt is string;
+    }
+    
+    // ========================================================================
+    // SUPPORT TICKETS
+    // ========================================================================
+    
+    match /supportTickets/{ticketId} {
+      // Users can read their own tickets
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Support admins can read non-safety tickets
+      allow read: if isSupportAdmin() && 
+                     !isSafetyTicket(resource.data);
+      
+      // Safety admins can read safety tickets
+      allow read: if isSafetyAdmin() && 
+                     isSafetyTicket(resource.data);
+      
+      // Super admins can read all tickets
+      allow read: if isSuperAdmin();
+      
+      // Users can create tickets for themselves
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status == 'OPEN';
+      
+      // Users can update their own tickets (limited fields)
+      allow update: if isAuthenticated() &&
+                       resource.data.userId == request.auth.uid &&
+                       // Only allow updating status to CLOSED
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']) &&
+                       request.resource.data.status == 'CLOSED' &&
+                       resource.data.status in ['RESOLVED', 'IN_PROGRESS'];
+      
+      // Support admins can update non-safety tickets
+      allow update: if isSupportAdmin() && 
+                       !isSafetyTicket(resource.data);
+      
+      // Safety admins can update safety tickets
+      allow update: if isSafetyAdmin() && 
+                       isSafetyTicket(resource.data);
+      
+      // Super admins can update all tickets
+      allow update: if isSuperAdmin();
+      
+      // No one can delete tickets (data retention)
+      allow delete: if false;
+      
+      // Validation for ticket creation
+      allow create: if request.resource.data.keys().hasAll([
+        'ticketId', 'userId', 'status', 'priority', 'type',
+        'subject', 'description', 'related', 'userLocale', 'userCountry',
+        'createdAt', 'updatedAt', 'lastMessageAt'
+      ]) &&
+      request.resource.data.ticketId is string &&
+      request.resource.data.userId is string &&
+      request.resource.data.status in ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'] &&
+      request.resource.data.priority in ['LOW', 'NORMAL', 'HIGH', 'CRITICAL'] &&
+      request.resource.data.type in [
+        'GENERAL_QUESTION', 'TECHNICAL_ISSUE', 'PAYMENT_ISSUE',
+        'PAYOUT_ISSUE', 'ACCOUNT_ACCESS', 'SAFETY_REPORT_FOLLOWUP',
+        'CONTENT_TAKEDOWN', 'CALENDAR_BOOKING_ISSUE', 'EVENT_ISSUE', 'OTHER'
+      ] &&
+      request.resource.data.subject is string &&
+      request.resource.data.subject.size() > 0 &&
+      request.resource.data.subject.size() <= 200 &&
+      request.resource.data.description is string &&
+      request.resource.data.description.size() > 0 &&
+      request.resource.data.description.size() <= 5000 &&
+      request.resource.data.related is map &&
+      request.resource.data.userLocale is string &&
+      request.resource.data.userCountry is string &&
+      request.resource.data.createdAt is string &&
+      request.resource.data.updatedAt is string &&
+      request.resource.data.lastMessageAt is string;
+    }
+    
+    // ========================================================================
+    // SUPPORT TICKET MESSAGES
+    // ========================================================================
+    
+    match /supportTicketMessages/{messageId} {
+      function getTicket() {
+        return get(/databases/$(database)/documents/supportTickets/$(resource.data.ticketId));
+      }
+      
+      function getTicketFromRequest() {
+        return get(/databases/$(database)/documents/supportTickets/$(request.resource.data.ticketId));
+      }
+      
+      // Users can read non-internal messages for their tickets
+      allow read: if isAuthenticated() &&
+                     resource.data.internal == false &&
+                     getTicket().data.userId == request.auth.uid;
+      
+      // Support admins can read all messages for non-safety tickets
+      allow read: if isSupportAdmin() && 
+                     !isSafetyTicket(getTicket().data);
+      
+      // Safety admins can read all messages for safety tickets
+      allow read: if isSafetyAdmin() && 
+                     isSafetyTicket(getTicket().data);
+      
+      // Super admins can read all messages
+      allow read: if isSuperAdmin();
+      
+      // Users can create messages for their own tickets
+      allow create: if isAuthenticated() &&
+                       getTicketFromRequest().data.userId == request.auth.uid &&
+                       request.resource.data.authorType == 'USER' &&
+                       request.resource.data.authorId == request.auth.uid &&
+                       request.resource.data.internal == false;
+      
+      // Support admins can create messages for non-safety tickets
+      allow create: if isSupportAdmin() && 
+                       !isSafetyTicket(getTicketFromRequest().data) &&
+                       request.resource.data.authorType == 'SUPPORT';
+      
+      // Safety admins can create messages for safety tickets
+      allow create: if isSafetyAdmin() && 
+                       isSafetyTicket(getTicketFromRequest().data) &&
+                       request.resource.data.authorType == 'SUPPORT';
+      
+      // Super admins can create any messages
+      allow create: if isSuperAdmin();
+      
+      // Only admins can update messages (for redaction)
+      allow update: if isAdmin() &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['redacted']);
+      
+      // No one can delete messages (data retention)
+      allow delete: if false;
+      
+      // Validation for message creation
+      allow create: if request.resource.data.keys().hasAll([
+        'messageId', 'ticketId', 'authorType', 'authorId',
+        'body', 'createdAt', 'internal'
+      ]) &&
+      request.resource.data.messageId is string &&
+      request.resource.data.ticketId is string &&
+      request.resource.data.authorType in ['USER', 'SUPPORT'] &&
+      request.resource.data.authorId is string &&
+      request.resource.data.body is string &&
+      request.resource.data.body.size() > 0 &&
+      request.resource.data.body.size() <= 5000 &&
+      request.resource.data.createdAt is string &&
+      request.resource.data.internal is bool;
+    }
+    
+    // ========================================================================
+    // EDUCATION CARDS
+    // ========================================================================
+    
+    match /educationCards/{cardId} {
+      // Anyone authenticated can read enabled cards
+      allow read: if isAuthenticated() && 
+                     resource.data.enabled == true;
+      
+      // Admins can read all cards (including disabled)
+      allow read: if isAdmin();
+      
+      // Only super admins can create/update/delete education cards
+      allow create, update, delete: if isSuperAdmin();
+      
+      // Validation
+      allow write: if request.resource.data.keys().hasAll([
+        'cardId', 'context', 'locale', 'title', 'body',
+        'ctaType', 'ctaPayload', 'enabled', 'order'
+      ]) &&
+      request.resource.data.cardId is string &&
+      request.resource.data.context in [
+        'PAID_CHAT', 'CALLS', 'CALENDAR', 'EVENTS',
+        'TOKENS', 'PAYOUTS', 'SAFETY', 'PANIC_BUTTON'
+      ] &&
+      request.resource.data.locale is string &&
+      request.resource.data.title is string &&
+      request.resource.data.body is string &&
+      request.resource.data.ctaType in ['OPEN_HELP_ARTICLE', 'OPEN_SETTINGS', 'NONE'] &&
+      request.resource.data.ctaPayload is map &&
+      request.resource.data.enabled is bool &&
+      request.resource.data.order is number;
+    }
+    
+    // ========================================================================
+    // USER EDUCATION STATE
+    // ========================================================================
+    
+    match /userEducationState/{userId} {
+      // Users can read and update their own education state
+      allow read, write: if isUser(userId);
+      
+      // Admins can read education state for analytics
+      allow read: if isAdmin();
+      
+      // Validation
+      allow write: if request.resource.data.keys().hasAll([
+        'userId', 'dismissedCards', 'updatedAt'
+      ]) &&
+      request.resource.data.userId == userId &&
+      request.resource.data.dismissedCards is map &&
+      request.resource.data.updatedAt is string;
+    }
+    
+    // ========================================================================
+    // ADMIN USERS
+    // ========================================================================
+    
+    match /adminUsers/{adminId} {
+      // Only super admins can read admin user list
+      allow read: if isSuperAdmin();
+      
+      // Admins can read their own profile
+      allow read: if isUser(adminId);
+      
+      // Only super admins can create/update admin users
+      allow create, update: if isSuperAdmin();
+      
+      // Only super admins can delete (deactivate) admin users
+      allow delete: if isSuperAdmin();
+      
+      // Validation
+      allow write: if request.resource.data.keys().hasAll([
+        'adminId', 'email', 'displayName', 'role', 'active', 'createdAt'
+      ]) &&
+      request.resource.data.adminId is string &&
+      request.resource.data.email is string &&
+      request.resource.data.displayName is string &&
+      request.resource.data.role in [
+        'support_agent', 'support_manager', 'safety_admin', 'super_admin'
+      ] &&
+      request.resource.data.active is bool &&
+      request.resource.data.createdAt is string;
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "countryRollout",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "launchReadiness", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "countryRollout",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "recommendedLaunchStrategy", "order": "ASCENDING" },
+        { "fieldPath": "launchReadiness", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "countryRollout",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "region", "order": "ASCENDING" },
+        { "fieldPath": "launchReadiness", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "countryFeatureFlagHistory",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "countryMarketSegments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "primarySegment", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creatorBootstrap",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creatorBootstrap",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "countryCode", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creatorBootstrap",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countryCode", "order": "ASCENDING" },
+        { "fieldPath": "enrolledAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "translationQueue",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "priority", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

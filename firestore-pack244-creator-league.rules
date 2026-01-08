@@ -1,0 +1,191 @@
+rules_version = '2';
+
+/**
+ * PACK 244 - Top Creator League
+ * Firestore Security Rules
+ * 
+ * Collections:
+ * - creator_league: Individual creator league data
+ * - league_rankings: Monthly league rankings by category
+ * - league_privileges: Active privileges for ranked creators
+ * - league_safety_checks: Eligibility checks
+ * - league_audit_logs: Audit trail for league actions
+ * - league_winners: Archived winners from previous months
+ * - new_creator_league: Sub-league for new creators
+ * - top_creators_strip: Top 20 creators for Discovery
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'super_admin']);
+    }
+    
+    function isCreator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['creator']);
+    }
+    
+    // ========================================================================
+    // CREATOR_LEAGUE COLLECTION
+    // Individual creator league data and rankings
+    // ========================================================================
+    
+    match /creator_league/{userId} {
+      // Anyone can read league data (for leaderboards)
+      allow read: if true;
+      
+      // Only system (Cloud Functions) can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // LEAGUE_RANKINGS COLLECTION
+    // Compiled rankings by category and month
+    // ========================================================================
+    
+    match /league_rankings/{rankingId} {
+      // Anyone can read rankings (public leaderboards)
+      allow read: if true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // LEAGUE_PRIVILEGES COLLECTION
+    // Active privileges for top-ranked creators
+    // ========================================================================
+    
+    match /league_privileges/{userId} {
+      // Creator can read their own privileges
+      // System can read for privilege checks
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // LEAGUE_SAFETY_CHECKS COLLECTION
+    // Eligibility checks for league participation
+    // ========================================================================
+    
+    match /league_safety_checks/{userId} {
+      // Creator can read their own eligibility
+      // Admins can read all
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Only system and admins can write
+      allow write: if isAdmin();
+    }
+    
+    // ========================================================================
+    // LEAGUE_AUDIT_LOGS COLLECTION
+    // Audit trail for league actions
+    // ========================================================================
+    
+    match /league_audit_logs/{logId} {
+      // User can read logs about themselves
+      // Admins can read all
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // LEAGUE_WINNERS COLLECTION
+    // Hall of Fame - Archived winners from previous months
+    // ========================================================================
+    
+    match /league_winners/{winnerId} {
+      // Anyone can read Hall of Fame
+      allow read: if true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // NEW_CREATOR_LEAGUE COLLECTION
+    // Sub-league for creators < 60 days old
+    // ========================================================================
+    
+    match /new_creator_league/{userId} {
+      // Anyone can read (for new creator leaderboards)
+      allow read: if true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // TOP_CREATORS_STRIP COLLECTION
+    // Top 20 creators displayed in Discovery
+    // ========================================================================
+    
+    match /top_creators_strip/{stripId} {
+      // Anyone can read (public display)
+      allow read: if true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // LEAGUE_ANALYTICS COLLECTION
+    // Monthly analytics and statistics
+    // ========================================================================
+    
+    match /league_analytics/{month} {
+      // Anyone can read analytics
+      allow read: if true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MONTHLY_RESET_EVENTS COLLECTION
+    // Track monthly league resets
+    // ========================================================================
+    
+    match /monthly_reset_events/{month} {
+      // Anyone can read reset events
+      allow read: if true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // CREATOR_LEAGUE_METRICS COLLECTION
+    // Detailed metrics for earnings score calculation
+    // ========================================================================
+    
+    match /creator_league_metrics/{userId} {
+      // Creator can read their own metrics
+      // Admins can read all
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+  }
+}

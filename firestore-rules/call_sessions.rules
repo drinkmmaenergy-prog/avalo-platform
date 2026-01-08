@@ -1,0 +1,35 @@
+// PACK 75 - Call Sessions Security Rules
+// Rules for voice & video calling sessions
+
+match /call_sessions/{callId} {
+  // Allow participants to read their own call sessions
+  allow read: if request.auth != null && (
+    resource.data.callerUserId == request.auth.uid ||
+    resource.data.calleeUserId == request.auth.uid
+  );
+
+  // Allow caller to create call session
+  allow create: if request.auth != null &&
+    request.resource.data.callerUserId == request.auth.uid &&
+    request.resource.data.status == 'CREATED' &&
+    request.resource.data.billingStatus == 'PENDING' &&
+    request.resource.data.billedMinutes == 0 &&
+    request.resource.data.totalTokensCharged == 0;
+
+  // Allow participants to update call session (state transitions)
+  allow update: if request.auth != null && (
+    (resource.data.callerUserId == request.auth.uid) ||
+    (resource.data.calleeUserId == request.auth.uid)
+  ) && (
+    // Only allow status transitions
+    request.resource.data.callerUserId == resource.data.callerUserId &&
+    request.resource.data.calleeUserId == resource.data.calleeUserId &&
+    request.resource.data.tokensPerMinute == resource.data.tokensPerMinute
+  );
+
+  // Backend can update billing fields
+  // (This will be handled via admin SDK, not client rules)
+
+  // No direct deletes allowed
+  allow delete: if false;
+}

@@ -1,0 +1,100 @@
+// Firestore Security Rules for AI Companions 2.0
+// Phase 12: Creator Bots
+// These rules are ADDITIVE - append to existing firestore.rules
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // AI BOTS COLLECTION
+    // ============================================================================
+    
+    match /aiBots/{botId} {
+      // Anyone can read active bots (for discovery)
+      allow read: if resource.data.isActive == true;
+      
+      // Only authenticated users can create bots
+      allow create: if request.auth != null
+                    && request.auth.uid == request.resource.data.creatorId
+                    && request.resource.data.isActive == true;
+      
+      // Only creator can update their own bots
+      allow update: if request.auth != null
+                    && request.auth.uid == resource.data.creatorId;
+      
+      // Only creator can delete (soft-delete by setting isActive = false)
+      allow delete: if request.auth != null
+                    && request.auth.uid == resource.data.creatorId;
+    }
+    
+    // ============================================================================
+    // AI CHATS COLLECTION
+    // ============================================================================
+    
+    match /aiChats/{chatId} {
+      // User can read their own chats
+      // Creator can read chats with their bots (for analytics)
+      allow read: if request.auth != null
+                  && (request.auth.uid == resource.data.userId 
+                      || request.auth.uid == resource.data.creatorId);
+      
+      // User can create chat if they're the userId
+      allow create: if request.auth != null
+                    && request.auth.uid == request.resource.data.userId
+                    && request.resource.data.state == 'FREE_ACTIVE';
+      
+      // User can update their own chats
+      allow update: if request.auth != null
+                    && request.auth.uid == resource.data.userId;
+      
+      // No one can delete chats (only server can close them)
+      allow delete: if false;
+      
+      // ============================================================================
+      // AI MESSAGES SUBCOLLECTION
+      // ============================================================================
+      
+      match /messages/{messageId} {
+        // User can read messages from their chat
+        // Creator can read messages from chats with their bots
+        allow read: if request.auth != null
+                    && (request.auth.uid == get(/databases/$(database)/documents/aiChats/$(chatId)).data.userId
+                        || request.auth.uid == get(/databases/$(database)/documents/aiChats/$(chatId)).data.creatorId);
+        
+        // Only server can create messages (via Cloud Functions)
+        allow create: if false;
+        
+        // No updates or deletes
+        allow update, delete: if false;
+      }
+    }
+    
+    // ============================================================================
+    // AI BOT EARNINGS COLLECTION
+    // ============================================================================
+    
+    match /aiBotEarnings/{botId}/records/{recordId} {
+      // Only creator can read their bot's earnings
+      allow read: if request.auth != null
+                  && request.auth.uid == resource.data.creatorId;
+      
+      // Only server can write earnings
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // AI BOT ANALYTICS COLLECTION
+    // ============================================================================
+    
+    match /aiBotAnalytics/{analyticsId} {
+      // Only creator can read their bot analytics
+      allow read: if request.auth != null
+                  && request.auth.uid == resource.data.creatorId;
+      
+      // Only server can write analytics
+      allow create, update, delete: if false;
+    }
+  }
+}

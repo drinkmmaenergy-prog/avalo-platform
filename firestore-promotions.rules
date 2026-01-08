@@ -1,0 +1,62 @@
+rules_version = '2';
+
+// PACK 61: Firestore Rules for Promotion Engine
+// Covers promotion_campaigns, promotion_orders, promotion_events, promotion_config
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PROMOTION CAMPAIGNS
+    // ========================================================================
+    match /promotion_campaigns/{campaignId} {
+      // Anyone can read active campaigns (filtering happens in backend)
+      allow read: if request.auth != null;
+      
+      // Only campaign owner can create/update their campaigns
+      allow create: if request.auth != null
+        && request.resource.data.ownerType == 'CREATOR'
+        && request.resource.data.ownerUserId == request.auth.uid;
+      
+      allow update: if request.auth != null
+        && resource.data.ownerUserId == request.auth.uid;
+      
+      // No direct deletes (campaigns should be ended, not deleted)
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // PROMOTION ORDERS
+    // ========================================================================
+    match /promotion_orders/{orderId} {
+      // Only owner can read their orders
+      allow read: if request.auth != null
+        && resource.data.ownerUserId == request.auth.uid;
+      
+      // Orders are created by backend only
+      allow create, update, delete: if false;
+    }
+    
+    // ========================================================================
+    // PROMOTION EVENTS (Impressions/Clicks)
+    // ========================================================================
+    match /promotion_events/{eventId} {
+      // No direct read access (analytics handled by backend)
+      allow read: if false;
+      
+      // Events are created by backend only
+      allow create, update, delete: if false;
+    }
+    
+    // ========================================================================
+    // PROMOTION CONFIG
+    // ========================================================================
+    match /promotion_config/{configId} {
+      // Anyone can read config
+      allow read: if request.auth != null;
+      
+      // Only admins can write config
+      allow write: if false;
+    }
+  }
+}
