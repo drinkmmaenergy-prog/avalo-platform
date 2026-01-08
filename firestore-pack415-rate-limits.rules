@@ -1,0 +1,255 @@
+// ============================================================================
+// PACK 415 - Global Rate Limiter Security Rules
+// ============================================================================
+// Purpose: Secure rate limiting, abuse flags, device fingerprints, and violations
+// Dependencies: PACK 296 (Audit), PACK 302 (Fraud), PACK 414 (Greenlight)
+// ============================================================================
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Check if user is system (cloud function)
+    function isSystem() {
+      return request.auth.token.system == true;
+    }
+
+    // Check if accessing own data
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check abuse mode
+    function getAbuseMode(userId) {
+      let abuseDoc = get(/databases/$(database)/documents/abuseFlags/$(userId));
+      return abuseDoc != null && abuseDoc.data != null ? abuseDoc.data.mode : 'NORMAL';
+    }
+
+    // ========================================================================
+    // RATE LIMITS COLLECTION
+    // ========================================================================
+    // Pattern: rateLimits/{key}
+    // Keys: ip:x.x.x.x:minute, user:userId:action, ip:x.x.x.x:violations
+    // ========================================================================
+
+    match /rateLimits/{key} {
+      // Only system (cloud functions) can read rate limits
+      allow read: if isSystem() || isAdmin();
+      
+      // Only system can write rate limits
+      allow write: if isSystem();
+      
+      // Deny all other access
+      allow create, update, delete: if false;
+    }
+
+    // ========================================================================
+    // ABUSE FLAGS COLLECTION
+    // ========================================================================
+    // Pattern: abuseFlags/{userId}
+    // Stores abuse mode state for users
+    // ========================================================================
+
+    match /abuseFlags/{userId} {
+      // Users can read their own abuse flag status
+      allow read: if isOwner(userId) || isAdmin() || isSystem();
+      
+      // Only system and admin can write abuse flags
+      allow create, update: if isSystem() || isAdmin();
+      
+      // Only admin can delete (for cleanup)
+      allow delete: if isAdmin();
+      
+      // Validation rules for writes
+      allow write: if (isSystem() || isAdmin()) && 
+                      request.resource.data.keys().hasAll(['userId', 'mode', 'reason', 'triggeredAt', 'triggeredBy', 'manualOverride', 'history']) &&
+                      request.resource.data.mode in ['NORMAL', 'SOFT', 'HARD', 'FREEZE'] &&
+                      request.resource.data.userId == userId;
+    }
+
+    // ========================================================================
+    // DEVICE FINGERPRINTS COLLECTION
+    // ========================================================================
+    // Pattern: deviceFingerprints/{fpHash}
+    // Tracks device-level abuse patterns
+    // ========================================================================
+
+    match /deviceFingerprints/{fpHash} {
+      // Only system and admin can read device fingerprints
+      allow read: if isSystem() || isAdmin();
+      
+      // Only system can write device fingerprints
+      allow create, update: if isSystem();
+      
+      // Admin can flag/unflag devices
+      allow update: if isAdmin() && 
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['flagged', 'flagReason']);
+      
+      // Only admin can delete
+      allow delete: if isAdmin();
+      
+      // Validation for system writes
+      allow write: if isSystem() && 
+                      request.resource.data.keys().hasAll(['fpHash', 'deviceId', 'ip', 'osVersion', 'screenSignature']) &&
+                      request.resource.data.fpHash == fpHash;
+    }
+
+    // ========================================================================
+    // VIOLATIONS COLLECTION
+    // ========================================================================
+    // Pattern: violations/{violationId}
+    // Audit log of all rate limit violations
+    // ========================================================================
+
+    match /violations/{violationId} {
+      // Only admin and system can read violations
+      allow read: if isAdmin() || isSystem();
+      
+      // Only system can create violations
+      allow create: if isSystem() && 
+                       request.resource.data.keys().hasAll(['source', 'sourceType', 'reason', 'timestamp']) &&
+                       request.resource.data.sourceType in ['ip', 'user', 'device'];
+      
+      // No updates or deletes allowed (audit log is immutable)
+      allow update, delete: if false;
+    }
+
+    // ========================================================================
+    // AUDIT LOGS INTEGRATION (PACK 296)
+    // ========================================================================
+    // Rate limiter writes to audit logs for compliance
+    // ========================================================================
+
+    match /auditLogs/{logId} {
+      // Allow system to write rate limit audit events
+      allow create: if isSystem() && 
+                       request.resource.data.type == 'RATE_LIMIT_VIOLATION' &&
+                       request.resource.data.pack == 'PACK_415';
+    }
+
+    // ========================================================================
+    // BLOCKED WRITES (ABUSE MODE ENFORCEMENT)
+    // ========================================================================
+    // These rules enforce write blocking based on abuse mode
+    // Applied to key collections that need protection
+    // ========================================================================
+
+    // Helper function to check if user can write based on abuse mode
+    function canWriteWithAbuseMode(userId) {
+      let mode = getAbuseMode(userId);
+      return mode != 'FREEZE'; // FREEZE blocks all writes
+    }
+
+    // Example: Apply to user profiles
+    match /users/{userId} {
+      // Existing rules would be here...
+      // Add abuse mode check to write operations
+      allow update: if isOwner(userId) && canWriteWithAbuseMode(userId);
+    }
+
+    // Example: Apply to swipes
+    match /swipes/{swipeId} {
+      // Block swipes if user is in FREEZE mode
+      allow create: if isAuthenticated() && canWriteWithAbuseMode(request.auth.uid);
+    }
+
+    // Example: Apply to chats
+    match /chats/{chatId} {
+      // Block chat messages if user is in FREEZE mode
+      allow create: if isAuthenticated() && canWriteWithAbuseMode(request.auth.uid);
+    }
+
+    // Example: Apply to support tickets
+    match /supportTickets/{ticketId} {
+      // Block support tickets if user is in FREEZE mode
+      allow create: if isAuthenticated() && canWriteWithAbuseMode(request.auth.uid);
+    }
+
+    // Example: Apply to token purchases
+    match /tokenPurchases/{purchaseId} {
+      // Block token purchases if user is in FREEZE mode
+      allow create: if isAuthenticated() && canWriteWithAbuseMode(request.auth.uid);
+    }
+
+    // ========================================================================
+    // NOTIFICATIONS INTEGRATION (PACK 293)
+    // ========================================================================
+    // Rate limiter creates security alert notifications
+    // ========================================================================
+
+    match /notifications/{notificationId} {
+      // Allow system to create security notifications
+      allow create: if isSystem() && 
+                       request.resource.data.type == 'SECURITY_ALERT' &&
+                       request.resource.data.pack == 'PACK_415';
+    }
+
+    // ========================================================================
+    // SAFETY TICKETS INTEGRATION (PACK 300A)
+    // ========================================================================
+    // Rate limiter escalates frozen accounts to safety team
+    // ========================================================================
+
+    match /safetyTickets/{ticketId} {
+      // Allow system to create safety tickets for abuse
+      allow create: if isSystem() && 
+                       request.resource.data.type == 'ABUSE_FREEZE' &&
+                       request.resource.data.pack == 'PACK_415';
+    }
+
+    // ========================================================================
+    // ADMIN ACCESS LOGGING
+    // ========================================================================
+    // Log all admin access to rate limit data
+    // ========================================================================
+
+    match /rateLimits/{key} {
+      allow read: if isAdmin() && logAdminAccess('rate_limits', key);
+    }
+
+    match /abuseFlags/{userId} {
+      allow read: if isAdmin() && logAdminAccess('abuse_flags', userId);
+    }
+
+    match /deviceFingerprints/{fpHash} {
+      allow read: if isAdmin() && logAdminAccess('device_fingerprints', fpHash);
+    }
+
+    match /violations/{violationId} {
+      allow read: if isAdmin() && logAdminAccess('violations', violationId);
+    }
+
+    // Helper to log admin access (always returns true)
+    function logAdminAccess(collection, docId) {
+      // In production, this would trigger an audit log write
+      // For now, always return true to allow access
+      return true;
+    }
+
+    // ========================================================================
+    // REGION-AWARE ACCESS (PACK 412 INTEGRATION)
+    // ========================================================================
+    // Future: Add region-based rate limiting rules
+    // ========================================================================
+
+    // TODO: Integrate with PACK 412 for region-specific rate limits
+    // Example: Higher limits for verified regions, lower for high-risk regions
+
+  }
+}

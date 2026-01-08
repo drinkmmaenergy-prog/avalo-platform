@@ -1,0 +1,170 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 119 — CREATOR AGENCIES SAAS PANEL
+    // SECURITY RULES
+    // ========================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAgencyOwner(agencyId) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/creator_agency_accounts/$(agencyId)) &&
+        get(/databases/$(database)/documents/creator_agency_accounts/$(agencyId)).data.createdBy == request.auth.uid;
+    }
+    
+    function isAgencyTeamMember(agencyId) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/agency_team_members/$(agencyId + '_' + request.auth.uid)) &&
+        get(/databases/$(database)/documents/agency_team_members/$(agencyId + '_' + request.auth.uid)).data.status == 'ACTIVE';
+    }
+    
+    function hasAgencyRole(agencyId, requiredRole) {
+      let member = get(/databases/$(database)/documents/agency_team_members/$(agencyId + '_' + request.auth.uid)).data;
+      return member.role == requiredRole || 
+             (requiredRole == 'MANAGER' && member.role == 'OWNER') ||
+             (requiredRole == 'EDITOR' && (member.role == 'OWNER' || member.role == 'MANAGER'));
+    }
+    
+    // ========================================================================
+    // AGENCY TEAM MEMBERS
+    // ========================================================================
+    
+    match /agency_team_members/{memberId} {
+      // Read: Agency owner and team members can read
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAgencyOwner(resource.data.agencyId) ||
+        isAgencyTeamMember(resource.data.agencyId)
+      );
+      
+      // Write: Only via Cloud Functions (for proper validation)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // AGENCY ASSETS
+    // ========================================================================
+    
+    match /agency_assets/{assetId} {
+      // Read: Agency team members with VIEWER+ role
+      allow read: if isAuthenticated() && (
+        isAgencyOwner(resource.data.agencyId) ||
+        isAgencyTeamMember(resource.data.agencyId)
+      );
+      
+      // Write: Only via Cloud Functions (for safety scans)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // SCHEDULER TASKS
+    // ========================================================================
+    
+    match /agency_scheduler_tasks/{taskId} {
+      // Read: Agency team members and linked creator
+      allow read: if isAuthenticated() && (
+        resource.data.creatorUserId == request.auth.uid ||
+        isAgencyOwner(resource.data.agencyId) ||
+        isAgencyTeamMember(resource.data.agencyId)
+      );
+      
+      // Write: Only via Cloud Functions (for validation and publishing)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // CREATOR PORTFOLIOS
+    // ========================================================================
+    
+    match /creator_portfolios/{portfolioId} {
+      // Read: Public if isPublic=true, otherwise only creator/agency
+      allow read: if resource.data.isPublic == true || (
+        isAuthenticated() && (
+          resource.data.creatorUserId == request.auth.uid ||
+          (resource.data.agencyId != null && (
+            isAgencyOwner(resource.data.agencyId) ||
+            isAgencyTeamMember(resource.data.agencyId)
+          ))
+        )
+      );
+      
+      // Write: Only via Cloud Functions (for validation)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // AGENCY DASHBOARD ANALYTICS
+    // ========================================================================
+    
+    match /agency_dashboard_analytics/{analyticsId} {
+      // Read: Agency team members and linked creator
+      allow read: if isAuthenticated() && (
+        resource.data.creatorUserId == request.auth.uid ||
+        isAgencyOwner(resource.data.agencyId) ||
+        isAgencyTeamMember(resource.data.agencyId)
+      );
+      
+      // Write: Only via Cloud Functions (computed aggregates)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // CREATOR OAUTH TOKENS
+    // ========================================================================
+    
+    match /creator_oauth_tokens/{tokenId} {
+      // Read: Only the creator who granted the token
+      allow read: if isAuthenticated() && resource.data.creatorUserId == request.auth.uid;
+      
+      // Write: Only via Cloud Functions (sensitive credentials)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // AGENCY SAFETY VIOLATIONS
+    // ========================================================================
+    
+    match /agency_safety_violations/{violationId} {
+      // Read: Agency owner and admins only
+      allow read: if isAuthenticated() && (
+        isAgencyOwner(resource.data.agencyId) ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+      
+      // Write: Only via Cloud Functions (safety enforcement)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // AGENCY SAAS AUDIT LOG
+    // ========================================================================
+    
+    match /agency_saas_audit_log/{logId} {
+      // Read: Agency owner and admins only
+      allow read: if isAuthenticated() && (
+        isAgencyOwner(resource.data.agencyId) ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+      
+      // Write: Only via Cloud Functions (audit trail integrity)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // IMPORTANT SECURITY NOTES:
+    // ========================================================================
+    // 1. NO access to private messages (chat data is in separate collection)
+    // 2. NO access to buyer identities (analytics are aggregated only)
+    // 3. NO ability to trigger token transfers or payouts
+    // 4. ALL writes go through Cloud Functions for validation
+    // 5. Agencies CANNOT boost visibility or manipulate rankings
+    // 6. Token economics remain untouched (65/35 split preserved)
+    // ========================================================================
+  }
+}

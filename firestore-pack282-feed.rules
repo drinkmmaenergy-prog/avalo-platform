@@ -1,0 +1,195 @@
+rules_version = '2';
+
+// PACK 282 — Feed Engine Firestore Rules
+// Instagram-style feed with posts, likes, comments, NSFW filtering, and safety integration
+
+// Helper functions
+function isAuthenticated() {
+  return request.auth != null;
+}
+
+function isOwner(userId) {
+  return isAuthenticated() && request.auth.uid == userId;
+}
+
+function isModerator() {
+  return isAuthenticated() && 
+    exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+    (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'moderator');
+}
+
+function isVerified18Plus() {
+  return isAuthenticated() && 
+    exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verified18Plus == true;
+}
+
+function hasValidNSFWFlag(flag) {
+  return flag in ['safe', 'soft', 'erotic', 'blocked'];
+}
+
+function isPublicOrFollower(post) {
+  return post.visibility == 'public' || 
+    (post.visibility == 'followers' && isFollowing(post.authorId)) ||
+    (post.visibility == 'subscribers' && isSubscribed(post.authorId));
+}
+
+function isFollowing(userId) {
+  return exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
+}
+
+function isSubscribed(userId) {
+  return exists(/databases/$(database)/documents/subscriptions/$(request.auth.uid + '_' + userId));
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // FEED POSTS
+    // ========================================================================
+    match /feedPosts/{postId} {
+      // Read: public posts visible to all authenticated users, 
+      // followers/subscribers only to relevant users, author always can read
+      allow read: if isAuthenticated() && (
+        isOwner(resource.data.authorId) ||
+        isModerator() ||
+        (resource.data.deleted == false && isPublicOrFollower(resource.data))
+      );
+      
+      // Create: only verified 18+ users can post
+      allow create: if isAuthenticated() && 
+        isVerified18Plus() &&
+        request.resource.data.authorId == request.auth.uid &&
+        request.resource.data.type in ['photo', 'video', 'carousel'] &&
+        request.resource.data.media is list &&
+        request.resource.data.media.size() >= 1 &&
+        request.resource.data.media.size() <= 10 &&
+        request.resource.data.visibility in ['public', 'followers', 'subscribers'] &&
+        hasValidNSFWFlag(request.resource.data.nsfw.flag) &&
+        request.resource.data.nsfw.flag != 'blocked' && // Cannot create blocked posts
+        request.resource.data.deleted == false &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time;
+      
+      // Update: author can update caption, tags, visibility
+      // Moderators can update nsfw flags and deleted status
+      allow update: if isAuthenticated() && (
+        (isOwner(resource.data.authorId) && 
+         request.resource.data.authorId == resource.data.authorId &&
+         request.resource.data.type == resource.data.type &&
+         request.resource.data.media == resource.data.media &&
+         request.resource.data.createdAt == resource.data.createdAt &&
+         request.resource.data.updatedAt == request.time) ||
+        (isModerator() && 
+         request.resource.data.authorId == resource.data.authorId &&
+         request.resource.data.updatedAt == request.time)
+      );
+      
+      // Delete: author or moderator can mark as deleted
+      allow delete: if isOwner(resource.data.authorId) || isModerator();
+    }
+    
+    // ========================================================================
+    // FEED LIKES
+    // ========================================================================
+    match /feedLikes/{likeId} {
+      // Read: anyone can read likes
+      allow read: if isAuthenticated();
+      
+      // Create: user can like a post (likeId format: postId_userId)
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.createdAt == request.time &&
+        likeId == request.resource.data.postId + '_' + request.auth.uid;
+      
+      // Delete: user can unlike their own like
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // ========================================================================
+    // FEED COMMENTS
+    // ========================================================================
+    match /feedComments/{commentId} {
+      // Read: anyone can read non-deleted comments
+      allow read: if isAuthenticated() && 
+        (resource.data.deleted == false || isOwner(resource.data.authorId) || isModerator());
+      
+      // Create: authenticated users can comment
+      allow create: if isAuthenticated() &&
+        request.resource.data.authorId == request.auth.uid &&
+        request.resource.data.text.size() >= 1 &&
+        request.resource.data.text.size() <= 2000 &&
+        request.resource.data.deleted == false &&
+        request.resource.data.reportedCount == 0 &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time;
+      
+      // Update: author can edit text, moderators can mark as deleted
+      allow update: if isAuthenticated() && (
+        (isOwner(resource.data.authorId) &&
+         request.resource.data.authorId == resource.data.authorId &&
+         request.resource.data.postId == resource.data.postId &&
+         request.resource.data.createdAt == resource.data.createdAt &&
+         request.resource.data.updatedAt == request.time) ||
+        isModerator()
+      );
+      
+      // Delete: author or moderator can delete
+      allow delete: if isOwner(resource.data.authorId) || isModerator();
+    }
+    
+    // ========================================================================
+    // FEED SAVES (Bookmarks)
+    // ========================================================================
+    match /feedSaves/{saveId} {
+      // Read: user can read their own saves
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Create: user can save a post (saveId format: postId_userId)
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.createdAt == request.time &&
+        saveId == request.resource.data.postId + '_' + request.auth.uid;
+      
+      // Delete: user can unsave their own save
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // ========================================================================
+    // FEED REPORTS
+    // ========================================================================
+    match /feedReports/{reportId} {
+      // Read: reporters and moderators can read
+      allow read: if isAuthenticated() && 
+        (resource.data.reporterId == request.auth.uid || isModerator());
+      
+      // Create: authenticated users can report content
+      allow create: if isAuthenticated() &&
+        request.resource.data.reporterId == request.auth.uid &&
+        request.resource.data.reason in ['hate', 'spam', 'illegal', 'violence', 'sexual_minor', 'other'] &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.createdAt == request.time;
+      
+      // Update: only moderators can update status
+      allow update: if isModerator();
+    }
+    
+    // ========================================================================
+    // FEED VIEWS (Write-only for batched aggregation)
+    // ========================================================================
+    match /feedViews/{viewId} {
+      // No read access (aggregated separately)
+      allow read: if false;
+      
+      // Create: users can log views
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.timestamp == request.time;
+    }
+  }
+}

@@ -1,0 +1,184 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ═══════════════════════════════════════════════════════════════
+    // PACK 368 — GLOBAL PUBLIC LAUNCH & MARKET EXPANSION ENGINE
+    // ═══════════════════════════════════════════════════════════════
+    // Manages geo-targeted launch phases, UA automation, ASO ops,
+    // referral/viral growth, and launch safety interlocks
+    // ═══════════════════════════════════════════════════════════════
+    
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isLaunchManager() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions.manageLaunch == true;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 1️⃣ GEO-LAUNCH CONTROLLER
+    // ═══════════════════════════════════════════════════════════════
+    
+    match /geoLaunchPhases/{countryCode} {
+      // Admin and launch managers can read/write
+      allow read: if isAdmin() || isLaunchManager();
+      allow create, update: if isAdmin() || isLaunchManager();
+      allow delete: if isAdmin();
+      
+      // Validate schema
+      allow create, update: if request.resource.data.keys().hasAll([
+        'countryCode', 'phase', 'dailyInstallCap', 'adBudgetCap',
+        'KYCRequired', 'payoutEnabled', 'updatedAt'
+      ]) &&
+      request.resource.data.phase in ['CLOSED', 'SOFT', 'OPEN', 'SCALE'] &&
+      request.resource.data.dailyInstallCap >= 0 &&
+      request.resource.data.adBudgetCap >= 0 &&
+      request.resource.data.updatedAt == request.time;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 2️⃣ UA AUTOMATION ENGINE - Install Tracking
+    // ═══════════════════════════════════════════════════════════════
+    
+    match /uaInstalls/{installId} {
+      // System can write, admins can read
+      allow read: if isAdmin() || isLaunchManager();
+      allow create: if true; // Cloud Functions create with elevated privileges
+      allow update, delete: if isAdmin();
+      
+      // Validate schema
+      allow create: if request.resource.data.keys().hasAll([
+        'userId', 'countryCode', 'source', 'campaign',
+        'timestamp', 'deviceId', 'ipHash'
+      ]);
+    }
+    
+    match /uaCampaigns/{campaignId} {
+      allow read: if isAdmin() || isLaunchManager();
+      allow create, update: if isAdmin() || isLaunchManager();
+      allow delete: if isAdmin();
+      
+      // Validate schema
+      allow create, update: if request.resource.data.keys().hasAll([
+        'name', 'countryCode', 'source', 'status',
+        'budget', 'spent', 'installs', 'createdAt'
+      ]) &&
+      request.resource.data.status in ['ACTIVE', 'PAUSED', 'COMPLETED', 'BLOCKED'];
+    }
+    
+    match /uaMetrics/{metricId} {
+      allow read: if isAdmin() || isLaunchManager();
+      allow write: if false; // Cloud Functions only
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 3️⃣ ASO & STORE OPS SYNC
+    // ═══════════════════════════════════════════════════════════════
+    
+    match /asoMetrics/{metricId} {
+      allow read: if isAdmin() || isLaunchManager();
+      allow write: if false; // Cloud Functions only
+    }
+    
+    match /asoAlerts/{alertId} {
+      allow read: if isAdmin() || isLaunchManager();
+      allow create: if false; // Cloud Functions only
+      allow update: if isAdmin() || isLaunchManager(); // Can acknowledge alerts
+      allow delete: if isAdmin();
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 4️⃣ REFERRAL & VIRAL MODE
+    // ═══════════════════════════════════════════════════════════════
+    
+    match /referralConfigs/{countryCode} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isLaunchManager();
+      
+      // Validate schema
+      allow create, update: if request.resource.data.keys().hasAll([
+        'countryCode', 'enabled', 'rewardAmount', 'capPerUser',
+        'capPerIP', 'capPerDevice', 'updatedAt'
+      ]) &&
+      request.resource.data.updatedAt == request.time;
+    }
+    
+    match /referralTracking/{referralId} {
+      allow read: if isAuthenticated() && 
+                    (resource.data.referrerId == request.auth.uid || 
+                     resource.data.referredId == request.auth.uid ||
+                     isAdmin());
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 5️⃣ INFLUENCER & PARTNER MODE
+    // ═══════════════════════════════════════════════════════════════
+    
+    match /launchPartners/{partnerId} {
+      allow read: if isAuthenticated() && 
+                    (resource.data.userId == request.auth.uid || isAdmin() || isLaunchManager());
+      allow create: if isAdmin() || isLaunchManager();
+      allow update: if isAdmin() || isLaunchManager() ||
+                      (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+      
+      // Validate schema
+      allow create, update: if request.resource.data.keys().hasAll([
+        'userId', 'isPartner', 'partnerTier', 'geoTarget',
+        'referralMultiplier', 'inviteVolumeCap', 'fraudScoreOverride'
+      ]) &&
+      request.resource.data.partnerTier in ['BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND'] &&
+      request.resource.data.referralMultiplier >= 1.0 &&
+      request.resource.data.referralMultiplier <= 10.0;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 6️⃣ LAUNCH SAFETY INTERLOCKS
+    // ═══════════════════════════════════════════════════════════════
+    
+    match /launchInterlocks/{interlockId} {
+      allow read: if isAdmin() || isLaunchManager();
+      allow write: if false; // Cloud Functions only
+    }
+    
+    match /launchAlerts/{alertId} {
+      allow read: if isAdmin() || isLaunchManager();
+      allow create: if false; // Cloud Functions only
+      allow update: if isAdmin() || isLaunchManager(); // Can acknowledge
+      allow delete: if isAdmin();
+    }
+    
+    match /fraudClusters/{clusterId} {
+      allow read: if isAdmin() || isLaunchManager();
+      allow write: if false; // Cloud Functions only
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 7️⃣ LAUNCH AUDIT LOG
+    // ═══════════════════════════════════════════════════════════════
+    
+    match /launchAuditLog/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Cloud Functions only
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // PACK 368 INTEGRATION POINTS
+    // ═══════════════════════════════════════════════════════════════
+    
+    match /launchDashboard/{dashboardId} {
+      allow read: if isAdmin() || isLaunchManager();
+      allow write: if false; // Cloud Functions only - aggregated data
+    }
+  }
+}

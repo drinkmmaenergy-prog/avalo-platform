@@ -1,0 +1,387 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // PACK 393: MARKETING ORCHESTRATION ENGINE
+    // ============================================
+    
+    // Helper function: Check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Helper function: Check if user is marketing manager
+    function isMarketingManager() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'marketing_manager'];
+    }
+    
+    // Helper function: Check if user is verified influencer
+    function isVerifiedInfluencer() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/influencerPartners/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/influencerPartners/$(request.auth.uid)).data.verified == true;
+    }
+    
+    // Helper function: Check if requesting own influencer data
+    function isOwnInfluencerData(partnerId) {
+      return request.auth != null && request.auth.uid == partnerId;
+    }
+    
+    // Helper function: Validate geo code
+    function isValidGeo(geo) {
+      return geo.matches('^[A-Z]{2}$');
+    }
+    
+    // Helper function: Validate campaign status
+    function isValidCampaignStatus(status) {
+      return status in ['active', 'paused', 'ended', 'pending'];
+    }
+    
+    // Helper function: Rate limiting check (simplified)
+    function rateLimitCheck() {
+      // In production, implement proper rate limiting via Cloud Functions
+      return true;
+    }
+    
+    // ============================================
+    // INFLUENCER PARTNERS
+    // ============================================
+    match /influencerPartners/{partnerId} {
+      // Read: Admin, marketing managers, or own data
+      allow read: if isAdmin() || 
+                     isMarketingManager() || 
+                     isOwnInfluencerData(partnerId);
+      
+      // Create: Admin or marketing managers only
+      allow create: if isMarketingManager() &&
+                       request.resource.data.keys().hasAll(['name', 'email', 'referralCode', 'payoutModel']) &&
+                       request.resource.data.payoutModel in ['CPA', 'CPL', 'RevShare'] &&
+                       request.resource.data.verified == false &&
+                       request.resource.data.createdAt == request.time;
+      
+      // Update: Admin/marketing can update, influencer can update limited fields
+      allow update: if (isMarketingManager() && 
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verified', 'payoutModel', 'status', 'updatedAt'])) ||
+                       (isOwnInfluencerData(partnerId) && 
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'phone', 'updatedAt']));
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // INFLUENCER CAMPAIGNS
+    // ============================================
+    match /influencerCampaigns/{campaignId} {
+      // Read: Admin, marketing managers, or campaign owner
+      allow read: if isAdmin() || 
+                     isMarketingManager() || 
+                     (isVerifiedInfluencer() && resource.data.partnerId == request.auth.uid);
+      
+      // Create: Admin or marketing managers only
+      allow create: if isMarketingManager() &&
+                       request.resource.data.keys().hasAll(['partnerId', 'status', 'geo', 'budget']) &&
+                       isValidCampaignStatus(request.resource.data.status) &&
+                       request.resource.data.geo is list &&
+                       request.resource.data.budget > 0 &&
+                       request.resource.data.createdAt == request.time;
+      
+      // Update: Admin or marketing managers only
+      allow update: if isMarketingManager() &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'budget', 'geo', 'updatedAt']);
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // INFLUENCER ATTRIBUTION EVENTS
+    // ============================================
+    match /influencerAttributionEvents/{eventId} {
+      // Read: Admin, marketing managers, or event owner
+      allow read: if isAdmin() || 
+                     isMarketingManager() || 
+                     (isVerifiedInfluencer() && resource.data.partnerId == request.auth.uid);
+      
+      // Create: Cloud Functions only (via service account)
+      // In production, this would be restricted further
+      allow create: if request.auth != null &&
+                       request.resource.data.keys().hasAll(['partnerId', 'userId', 'eventType', 'timestamp']) &&
+                       request.resource.data.eventType in ['ad_click', 'app_install', 'registration', 'verification', 'profile_completion', 'first_chat', 'first_purchase'] &&
+                       request.resource.data.timestamp == request.time &&
+                       rateLimitCheck();
+      
+      // Update/Delete: Admin only
+      allow update, delete: if isAdmin();
+    }
+    
+    // ============================================
+    // INFLUENCER PAYOUTS
+    // ============================================
+    match /influencerPayouts/{payoutId} {
+      // Read: Admin, marketing managers, or payout recipient
+      allow read: if isAdmin() || 
+                     isMarketingManager() || 
+                     (isVerifiedInfluencer() && resource.data.partnerId == request.auth.uid);
+      
+      // Create: Admin or marketing managers only
+      allow create: if isMarketingManager() &&
+                       request.resource.data.keys().hasAll(['partnerId', 'amount', 'status', 'period']) &&
+                       request.resource.data.status == 'pending' &&
+                       request.resource.data.amount > 0 &&
+                       request.resource.data.createdAt == request.time;
+      
+      // Update: Admin or marketing managers (status changes only)
+      allow update: if isMarketingManager() &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'paidAt', 'updatedAt']) &&
+                       request.resource.data.status in ['pending', 'processing', 'paid', 'cancelled'];
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // MARKETING CREATIVES
+    // ============================================
+    match /marketingCreatives/{creativeId} {
+      // Read: Admin or marketing managers
+      allow read: if isMarketingManager();
+      
+      // Create: Admin or marketing managers only
+      allow create: if isMarketingManager() &&
+                       request.resource.data.keys().hasAll(['type', 'geo', 'language', 'url', 'status']) &&
+                       request.resource.data.type in ['video', 'image', 'script', 'banner'] &&
+                       request.resource.data.status in ['active', 'testing', 'retired'] &&
+                       request.resource.data.createdAt == request.time;
+      
+      // Update: Admin or marketing managers
+      allow update: if isMarketingManager() &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'performance', 'geo', 'updatedAt']);
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // CREATIVE VARIANTS
+    // ============================================
+    match /creativeVariants/{variantId} {
+      // Read: Admin or marketing managers
+      allow read: if isMarketingManager();
+      
+      // Create: Admin or marketing managers only
+      allow create: if isMarketingManager() &&
+                       request.resource.data.keys().hasAll(['parentCreativeId', 'variation', 'testStatus']) &&
+                       request.resource.data.testStatus in ['control', 'variant_a', 'variant_b', 'variant_c'] &&
+                       request.resource.data.createdAt == request.time;
+      
+      // Update: Admin or marketing managers
+      allow update: if isMarketingManager();
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // CREATIVE PERFORMANCE
+    // ============================================
+    match /creativePerformance/{performanceId} {
+      // Read: Admin or marketing managers
+      allow read: if isMarketingManager();
+      
+      // Create/Update: Cloud Functions only (analytics pipeline)
+      allow create, update: if request.auth != null && rateLimitCheck();
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // MARKETING BUDGET
+    // ============================================
+    match /marketingBudget/{budgetId} {
+      // Read: Admin or marketing managers
+      allow read: if isMarketingManager();
+      
+      // Create: Admin or marketing managers only
+      allow create: if isMarketingManager() &&
+                       request.resource.data.keys().hasAll(['date', 'geo', 'channel', 'allocated']) &&
+                       isValidGeo(request.resource.data.geo) &&
+                       request.resource.data.allocated > 0 &&
+                       request.resource.data.spent >= 0 &&
+                       request.resource.data.createdAt == request.time;
+      
+      // Update: Admin or marketing managers (spent updates)
+      allow update: if isMarketingManager() &&
+                       request.resource.data.allocated == resource.data.allocated &&
+                       request.resource.data.spent >= resource.data.spent;
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // GEO FUNNEL ANALYTICS
+    // ============================================
+    match /geoFunnelAnalytics/{analyticsId} {
+      // Read: Admin or marketing managers
+      allow read: if isMarketingManager();
+      
+      // Create/Update: Cloud Functions only (analytics pipeline)
+      allow create, update: if request.auth != null &&
+                               request.resource.data.keys().hasAll(['geo', 'date', 'funnel']) &&
+                               isValidGeo(request.resource.data.geo);
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // MARKETING ATTRIBUTION
+    // ============================================
+    match /marketingAttribution/{attributionId} {
+      // Read: Admin or marketing managers
+      allow read: if isMarketingManager();
+      
+      // Create: Cloud Functions (on user registration)
+      allow create: if request.auth != null &&
+                       request.resource.data.keys().hasAll(['userId', 'source', 'geo', 'installDate']) &&
+                       isValidGeo(request.resource.data.geo) &&
+                       request.resource.data.ltv >= 0 &&
+                       rateLimitCheck();
+      
+      // Update: Cloud Functions (LTV updates)
+      allow update: if request.auth != null &&
+                       request.resource.data.userId == resource.data.userId &&
+                       request.resource.data.ltv >= resource.data.ltv;
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // USER ACQUISITION HEATMAP
+    // ============================================
+    match /userAcquisitionHeatmap/{heatmapId} {
+      // Read: Admin or marketing managers
+      allow read: if isMarketingManager();
+      
+      // Create/Update: Cloud Functions only (analytics aggregation)
+      allow create, update: if request.auth != null;
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // MARKETING CAMPAIGNS (General)
+    // ============================================
+    match /marketingCampaigns/{campaignId} {
+      // Read: Admin or marketing managers
+      allow read: if isMarketingManager();
+      
+      // Create: Admin or marketing managers only
+      allow create: if isMarketingManager() &&
+                       request.resource.data.keys().hasAll(['name', 'channel', 'geo', 'budget', 'status']) &&
+                       request.resource.data.channel in ['meta', 'tiktok', 'google_uac', 'influencer', 'aso'] &&
+                       isValidCampaignStatus(request.resource.data.status) &&
+                       request.resource.data.createdAt == request.time;
+      
+      // Update: Admin or marketing managers
+      allow update: if isMarketingManager();
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // CAMPAIGN PERFORMANCE
+    // ============================================
+    match /campaignPerformance/{performanceId} {
+      // Read: Admin or marketing managers
+      allow read: if isMarketingManager();
+      
+      // Create/Update: Cloud Functions (real-time analytics)
+      allow create, update: if request.auth != null;
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // GEO METRICS
+    // ============================================
+    match /geoMetrics/{geoId} {
+      // Read: Admin or marketing managers
+      allow read: if isMarketingManager();
+      
+      // Create/Update: Cloud Functions (daily aggregation)
+      allow create, update: if request.auth != null &&
+                               isValidGeo(request.resource.data.geo);
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // MARKETING ALERTS
+    // ============================================
+    match /marketingAlerts/{alertId} {
+      // Read: Admin or marketing managers
+      allow read: if isMarketingManager();
+      
+      // Create: Cloud Functions (alert generation)
+      allow create: if request.auth != null &&
+                       request.resource.data.keys().hasAll(['type', 'severity', 'message', 'timestamp']) &&
+                       request.resource.data.severity in ['critical', 'warning', 'info'] &&
+                       request.resource.data.timestamp == request.time;
+      
+      // Update: Admin or marketing managers (acknowledge alerts)
+      allow update: if isMarketingManager() &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['acknowledged', 'acknowledgedBy', 'acknowledgedAt']);
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // FRAUD TRACKING (Marketing-specific)
+    // ============================================
+    match /marketingFraudEvents/{eventId} {
+      // Read: Admin or marketing managers
+      allow read: if isMarketingManager();
+      
+      // Create: Cloud Functions (fraud detection)
+      allow create: if request.auth != null &&
+                       request.resource.data.keys().hasAll(['userId', 'source', 'fraudScore', 'timestamp']) &&
+                       request.resource.data.fraudScore >= 0 &&
+                       request.resource.data.fraudScore <= 1;
+      
+      // Update/Delete: Admin only
+      allow update, delete: if isAdmin();
+    }
+    
+    // ============================================
+    // AUDIT LOGS (Marketing)
+    // ============================================
+    match /marketingAuditLog/{logId} {
+      // Read: Admin only
+      allow read: if isAdmin();
+      
+      // Create: Any authenticated marketing action (append-only)
+      allow create: if request.auth != null &&
+                       request.resource.data.keys().hasAll(['action', 'actor', 'timestamp']) &&
+                       request.resource.data.timestamp == request.time;
+      
+      // Update/Delete: Never (immutable audit log)
+      allow update, delete: if false;
+    }
+  }
+}

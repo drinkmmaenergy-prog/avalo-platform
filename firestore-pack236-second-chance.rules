@@ -1,0 +1,76 @@
+// PACK 236 — Second Chance Mode
+// Cold match revival system with emotional re-engagement
+// Security rules for secondChance data
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Second Chance data stored in matches collection
+    match /matches/{matchId} {
+      
+      // Users can read their own secondChance data
+      allow read: if request.auth != null &&
+        (resource.data.userId1 == request.auth.uid || 
+         resource.data.userId2 == request.auth.uid);
+      
+      // Only Cloud Functions can write secondChance data
+      // This prevents manipulation of trigger timing
+      allow write: if false;
+      
+      // Allow Cloud Functions to update via admin SDK
+      // (bypasses these rules)
+    }
+    
+    // Second Chance notification preferences
+    match /users/{userId}/settings/secondChance {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == userId;
+      
+      // Validate settings structure
+      allow write: if request.auth.uid == userId &&
+        request.resource.data.keys().hasAll(['enabled']) &&
+        request.resource.data.enabled is bool;
+    }
+    
+    // Second Chance analytics (read-only for users)
+    match /users/{userId}/secondChance/stats {
+      allow read: if request.auth != null && 
+        request.auth.uid == userId;
+      
+      // Only Cloud Functions can write stats
+      allow write: if false;
+    }
+    
+    // Second Chance action logs
+    match /matches/{matchId}/secondChance/actions/{actionId} {
+      allow read: if request.auth != null &&
+        (get(/databases/$(database)/documents/matches/$(matchId)).data.userId1 == request.auth.uid ||
+         get(/databases/$(database)/documents/matches/$(matchId)).data.userId2 == request.auth.uid);
+      
+      // Users can create actions (send messages, book meetings, etc.)
+      allow create: if request.auth != null &&
+        (get(/databases/$(database)/documents/matches/$(matchId)).data.userId1 == request.auth.uid ||
+         get(/databases/$(database)/documents/matches/$(matchId)).data.userId2 == request.auth.uid) &&
+        request.resource.data.keys().hasAll(['timestamp', 'userId', 'actionType', 'paid']) &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.paid is bool;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // Safety override checks
+    function hasActiveFlag(matchId) {
+      let match = get(/databases/$(database)/documents/matches/$(matchId));
+      return match.data.keys().hasAny([
+        'sleepMode',
+        'breakupRecovery', 
+        'safetyFlag',
+        'blocked',
+        'stalkerRisk'
+      ]);
+    }
+  }
+}

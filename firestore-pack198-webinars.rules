@@ -1,0 +1,273 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isEventOrganizer(eventId) {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/events/$(eventId)).data.organizerId == request.auth.uid;
+    }
+    
+    function isEventPresenter(eventId) {
+      return isAuthenticated() && 
+             request.auth.uid in get(/databases/$(database)/documents/events/$(eventId)).data.presenters;
+    }
+    
+    function hasTicket(eventId) {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/event_tickets/$(request.auth.uid + '_' + eventId)) &&
+             get(/databases/$(database)/documents/event_tickets/$(request.auth.uid + '_' + eventId)).data.accessGranted == true;
+    }
+    
+    function isInSession(eventId) {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/event_sessions/$(request.auth.uid + '_' + eventId)) &&
+             get(/databases/$(database)/documents/event_sessions/$(request.auth.uid + '_' + eventId)).data.leftAt == null;
+    }
+    
+    // Events Collection
+    match /events/{eventId} {
+      // Anyone can read published events
+      allow read: if resource.data.status == 'published' || 
+                     resource.data.status == 'live' || 
+                     isEventOrganizer(eventId) ||
+                     isEventPresenter(eventId);
+      
+      // Only authenticated users can create events
+      allow create: if isAuthenticated() &&
+                      request.resource.data.organizerId == request.auth.uid &&
+                      request.resource.data.status == 'draft' &&
+                      request.resource.data.soldTickets == 0 &&
+                      request.resource.data.totalRevenue == 0 &&
+                      request.resource.data.totalViews == 0 &&
+                      request.resource.data.createdAt == request.time &&
+                      request.resource.data.updatedAt == request.time;
+      
+      // Only organizers can update their events
+      allow update: if isEventOrganizer(eventId) &&
+                      request.resource.data.organizerId == resource.data.organizerId &&
+                      request.resource.data.updatedAt == request.time;
+      
+      // Only organizers can delete draft events
+      allow delete: if isEventOrganizer(eventId) &&
+                      resource.data.status == 'draft' &&
+                      resource.data.soldTickets == 0;
+    }
+    
+    // Event Tickets Collection
+    match /event_tickets/{ticketId} {
+      // Users can read their own tickets
+      allow read: if isUser(resource.data.userId) ||
+                     isEventOrganizer(resource.data.eventId);
+      
+      // Only authenticated users can create tickets (via function)
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.paymentStatus == 'pending' &&
+                      request.resource.data.accessGranted == false &&
+                      request.resource.data.createdAt == request.time;
+      
+      // Tickets can be updated for payment completion (via function)
+      allow update: if isUser(resource.data.userId) &&
+                      request.resource.data.userId == resource.data.userId &&
+                      request.resource.data.eventId == resource.data.eventId;
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    // Event Sessions Collection
+    match /event_sessions/{sessionId} {
+      // Users can read their own sessions, organizers can read all sessions
+      allow read: if isUser(resource.data.userId) ||
+                     isEventOrganizer(resource.data.eventId) ||
+                     isEventPresenter(resource.data.eventId);
+      
+      // Sessions created when joining event (via function)
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.joinedAt == request.time &&
+                      request.resource.data.leftAt == null &&
+                      request.resource.data.createdAt == request.time;
+      
+      // Sessions can be updated for tracking
+      allow update: if isUser(resource.data.userId) ||
+                      isEventOrganizer(resource.data.eventId);
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    // Event Materials Collection
+    match /event_materials/{materialId} {
+      // Materials readable by ticket holders and event team
+      allow read: if hasTicket(resource.data.eventId) ||
+                     isEventOrganizer(resource.data.eventId) ||
+                     isEventPresenter(resource.data.eventId);
+      
+      // Only organizers and presenters can upload materials
+      allow create: if isAuthenticated() &&
+                      (isEventOrganizer(request.resource.data.eventId) ||
+                       isEventPresenter(request.resource.data.eventId)) &&
+                      request.resource.data.uploaderId == request.auth.uid &&
+                      request.resource.data.createdAt == request.time;
+      
+      // Only uploaders can update materials
+      allow update: if isUser(resource.data.uploaderId);
+      
+      // Only organizers can delete materials
+      allow delete: if isEventOrganizer(resource.data.eventId);
+    }
+    
+    // Event Translations Collection
+    match /event_translations/{translationId} {
+      // Readable by anyone with access to the event
+      allow read: if hasTicket(resource.data.eventId) ||
+                     isEventOrganizer(resource.data.eventId) ||
+                     isEventPresenter(resource.data.eventId);
+      
+      // Created via functions only
+      allow create: if false;
+      
+      // Updated via functions only
+      allow update: if false;
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // Event Chat Logs Collection
+    match /event_chat_logs/{messageId} {
+      // Readable by session participants
+      allow read: if isInSession(resource.data.eventId) ||
+                     isEventOrganizer(resource.data.eventId);
+      
+      // Users can post messages if in session and not blocked
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      isInSession(request.resource.data.eventId) &&
+                      request.resource.data.timestamp == request.time;
+      
+      // Messages can be updated for moderation
+      allow update: if isEventOrganizer(resource.data.eventId);
+      
+      // Only organizers can delete messages
+      allow delete: if isEventOrganizer(resource.data.eventId);
+    }
+    
+    // Event Questions Collection
+    match /event_questions/{questionId} {
+      // Readable by session participants
+      allow read: if isInSession(resource.data.eventId) ||
+                     isEventOrganizer(resource.data.eventId) ||
+                     isEventPresenter(resource.data.eventId);
+      
+      // Users can submit questions if in session
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      isInSession(request.resource.data.eventId) &&
+                      request.resource.data.status == 'pending' &&
+                      request.resource.data.createdAt == request.time;
+      
+      // Users can upvote questions, presenters can answer
+      allow update: if (isUser(resource.data.userId) && 
+                       request.resource.data.upvotes > resource.data.upvotes) ||
+                      isEventPresenter(resource.data.eventId) ||
+                      isEventOrganizer(resource.data.eventId);
+      
+      // Only organizers can delete questions
+      allow delete: if isEventOrganizer(resource.data.eventId);
+    }
+    
+    // Event Polls Collection
+    match /event_polls/{pollId} {
+      // Readable by session participants
+      allow read: if isInSession(resource.data.eventId) ||
+                     isEventOrganizer(resource.data.eventId) ||
+                     isEventPresenter(resource.data.eventId);
+      
+      // Only organizers and presenters can create polls
+      allow create: if isAuthenticated() &&
+                      (isEventOrganizer(request.resource.data.eventId) ||
+                       isEventPresenter(request.resource.data.eventId)) &&
+                      request.resource.data.createdBy == request.auth.uid &&
+                      request.resource.data.active == true &&
+                      request.resource.data.createdAt == request.time;
+      
+      // Participants can vote, creators can close poll
+      allow update: if (isInSession(resource.data.eventId) &&
+                       request.resource.data.voterIds.hasAny([request.auth.uid])) ||
+                      isUser(resource.data.createdBy);
+      
+      // Only organizers can delete polls
+      allow delete: if isEventOrganizer(resource.data.eventId);
+    }
+    
+    // Event Moderation Flags Collection
+    match /event_moderation_flags/{flagId} {
+      // Only organizers can read moderation flags
+      allow read: if isEventOrganizer(resource.data.eventId);
+      
+      // Flags created via automated moderation
+      allow create: if false;
+      
+      // Organizers can update flags for review
+      allow update: if isEventOrganizer(resource.data.eventId);
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    // Event Certificates Collection
+    match /event_certificates/{certificateId} {
+      // Users can read their own certificates
+      allow read: if isUser(resource.data.userId) ||
+                     isEventOrganizer(resource.data.eventId);
+      
+      // Certificates generated via function
+      allow create: if false;
+      
+      // No updates allowed
+      allow update: if false;
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    // Event Breakout Rooms Collection
+    match /event_breakout_rooms/{roomId} {
+      // Readable by participants and organizers
+      allow read: if isInSession(resource.data.eventId) ||
+                     isEventOrganizer(resource.data.eventId) ||
+                     request.auth.uid in resource.data.participants;
+      
+      // Created by organizers and presenters
+      allow create: if isAuthenticated() &&
+                      (isEventOrganizer(request.resource.data.eventId) ||
+                       isEventPresenter(request.resource.data.eventId)) &&
+                      request.resource.data.active == true &&
+                      request.resource.data.createdAt == request.time;
+      
+      // Participants can join, moderators can manage
+      allow update: if request.auth.uid in resource.data.moderators ||
+                      isEventOrganizer(resource.data.eventId);
+      
+      // Only organizers can delete rooms
+      allow delete: if isEventOrganizer(resource.data.eventId);
+    }
+    
+    // Event Analytics Collection (read-only by organizers)
+    match /event_analytics/{analyticsId} {
+      allow read: if isEventOrganizer(resource.data.eventId);
+      allow create, update, delete: if false;
+    }
+  }
+}

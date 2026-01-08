@@ -1,0 +1,160 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "creator_revenue_integrity",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "riskLevel", "order": "ASCENDING" },
+        { "fieldPath": "score", "order": "DESCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creator_revenue_integrity",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "score", "order": "ASCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creator_revenue_integrity",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "flags", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payout_escrow",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "creatorId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "escrowPeriod.plannedReleaseTime", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payout_escrow",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "escrowPeriod.plannedReleaseTime", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payout_escrow",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "integrityScore", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "metadata.createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payout_escrow",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "creatorId", "order": "ASCENDING" },
+        { "fieldPath": "metadata.createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payout_freezes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "creatorId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "timeline.frozenAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payout_freezes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "reason.severity", "order": "DESCENDING" },
+        { "fieldPath": "timeline.frozenAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payout_freezes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "timeline.estimatedRelease", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payout_freezes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "freezeType", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "timeline.frozenAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "compliance_escalations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "severity", "order": "DESCENDING" },
+        { "fieldPath": "timeline.createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "compliance_escalations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "department", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "timeline.createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "compliance_escalations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "creatorId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "timeline.createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "compliance_escalations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "assignedTo", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "timeline.slaDeadline", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "compliance_escalations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "severity", "order": "DESCENDING" },
+        { "fieldPath": "timeline.createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payout_status_transparency",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "currentStatus", "order": "ASCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "payout_status_transparency",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "integrityScoreTier", "order": "ASCENDING"},
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

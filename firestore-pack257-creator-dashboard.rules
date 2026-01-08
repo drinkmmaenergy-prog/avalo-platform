@@ -1,0 +1,229 @@
+// ============================================================================
+// PACK 257 — CREATOR ANALYTICS DASHBOARD
+// Firestore Security Rules for Creator Analytics
+// ============================================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isCreatorModeEnabled() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.creatorMode.enabled == true;
+    }
+    
+    function isRoyalTier() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.royalTier == 'L6';
+    }
+    
+    // ========================================================================
+    // CREATOR DASHBOARD ANALYTICS (PRIVACY-PROTECTED)
+    // ========================================================================
+    
+    // Creator analytics snapshots (aggregated daily data)
+    match /creator_analytics/{userId} {
+      // Only creator can read their own analytics
+      allow read: if isOwner(userId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // Daily analytics snapshots (detailed breakdown by day)
+    match /creator_analytics/{userId}/daily/{date} {
+      // Only creator can read their own daily analytics
+      allow read: if isOwner(userId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PERFORMANCE TIER TRACKING
+    // ========================================================================
+    
+    // Performance level and tier progression
+    match /creator_performance_levels/{userId} {
+      // Only creator can read their own performance level
+      allow read: if isOwner(userId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // OPTIMIZATION SUGGESTIONS (AI-GENERATED)
+    // ========================================================================
+    
+    // Optimization suggestions for creators
+    match /creator_suggestions/{userId} {
+      // Only creator can read their own suggestions
+      allow read: if isOwner(userId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // Individual suggestions subcollection
+    match /creator_suggestions/{userId}/suggestions/{suggestionId} {
+      // Only creator can read their own suggestions
+      allow read: if isOwner(userId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // Dismissed suggestions tracking
+    match /dismissed_suggestions/{docId} {
+      // Users can read their own dismissed suggestions
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // No direct client writes - use Cloud Function
+      allow write: if false;
+    }
+    
+    // Suggestion actions tracking
+    match /suggestion_actions/{docId} {
+      // Users can read their own actions
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // No direct client writes - use Cloud Function
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // ENGAGEMENT METRICS (PRIVACY-SAFE)
+    // ========================================================================
+    
+    // Profile views (anonymized for creators unless paid interaction)
+    match /profile_views/{viewId} {
+      // Viewers can see their own view history
+      allow read: if isOwner(resource.data.viewerId);
+      
+      // Profile owners cannot directly read views (privacy protection)
+      // They get aggregated data through Cloud Functions
+      allow create: if isAuthenticated() && 
+                       request.resource.data.viewerId == request.auth.uid &&
+                       request.resource.data.viewedAt == request.time;
+      
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // CONVERSATION ANALYTICS
+    // ========================================================================
+    
+    // Hourly conversation stats (aggregated by Cloud Functions)
+    match /conversation_stats/{userId}/hourly/{statId} {
+      // Only creator can read their own stats
+      allow read: if isOwner(userId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MEDIA SALES ANALYTICS
+    // ========================================================================
+    
+    // Paid media sales records
+    match /paid_media_sales/{saleId} {
+      // Buyers can see their purchases
+      allow read: if isOwner(resource.data.buyerId);
+      
+      // Creators can see sales of their media through Cloud Functions only
+      // (aggregated data, not individual buyer info)
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // Media revenue aggregates
+    match /media_revenue/{mediaId} {
+      // Only media owner can read revenue stats
+      allow read: if isAuthenticated() &&
+                     exists(/databases/$(database)/documents/paid_media/$(mediaId)) &&
+                     get(/databases/$(database)/documents/paid_media/$(mediaId)).data.creatorId == request.auth.uid;
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // ROYAL ADVANCED ANALYTICS (L6 TIER ONLY)
+    // ========================================================================
+    
+    // Top spenders tracking (Royal creators only)
+    match /royal_top_spenders/{userId} {
+      // Only Royal creators can read their own top spenders
+      allow read: if isOwner(userId) && isRoyalTier();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // Conversion funnel data (Royal creators only)
+    match /royal_conversion_funnels/{userId} {
+      // Only Royal creators can read their own funnel data
+      allow read: if isOwner(userId) && isRoyalTier();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // Deep chat analysis (Royal creators only)
+    match /royal_chat_analysis/{userId} {
+      // Only Royal creators can read their own chat analysis
+      allow read: if isOwner(userId) && isRoyalTier();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // Royal benchmark comparisons
+    match /royal_benchmarks/{userId} {
+      // Only Royal creators can read their own benchmarks
+      allow read: if isOwner(userId) && isRoyalTier();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PRIVACY SAFEGUARDS
+    // ========================================================================
+    
+    // Aggregated viewer insights (NO personal data)
+    match /viewer_insights/{userId} {
+      // Only creator can read aggregated insights
+      allow read: if isOwner(userId) && isCreatorModeEnabled();
+      
+      // No client writes - only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // STRICT PRIVACY RULES:
+    // - Creators CANNOT see individual viewer identities unless paid interaction
+    // - Creators CANNOT see exact locations of viewers
+    // - Creators CANNOT access personal phone numbers or socials
+    // - All analytics of minors are blocked (minors banned from platform)
+    // - All personal data is aggregated and anonymized by Cloud Functions
+  }
+}

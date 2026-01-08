@@ -1,0 +1,150 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Pack 441: Risk Scores
+    match /pack441_risk_scores/{userId} {
+      // Users can read their own risk score
+      allow read: if isOwner(userId) || isAdmin();
+      // Only system (server) can write risk scores
+      allow write: if false;
+      
+      // Risk score history
+      match /history/{historyId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if false;
+      }
+    }
+    
+    // Pack 441: Fraud Signals
+    match /pack441_fraud_signals/{userId} {
+      // Only admins can read fraud signals
+      allow read: if isAdmin();
+      // Only system (server) can write fraud signals
+      allow write: if false;
+      
+      // Fraud signal history
+      match /history/{historyId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+    }
+    
+    // Pack 441: Fraud Actions
+    match /pack441_fraud_actions/{userId} {
+      // Users can read their own actions (to display restrictions)
+      allow read: if isOwner(userId) || isAdmin();
+      // Only system (server) can write fraud actions
+      allow write: if false;
+    }
+    
+    // Pack 441: Trust Scores
+    match /pack441_trust_scores/{userId} {
+      // Users can read their own trust score
+      allow read: if isOwner(userId) || isAdmin();
+      // Only system (server) can write trust scores
+      allow write: if false;
+    }
+    
+    // Pack 441: Throttle Configs
+    match /pack441_throttle_configs/{userId} {
+      // Users can read their own throttle config
+      allow read: if isOwner(userId) || isAdmin();
+      // Only system (server) can write configs
+      allow write: if false;
+    }
+    
+    // Pack 441: Throttle Counters
+    match /pack441_throttle_counters/{userId} {
+      // Users can read their own counters  
+      allow read: if isOwner(userId) || isAdmin();
+      // Only system (server) can write counters
+      allow write: if false;
+    }
+    
+    // Pack 441: Throttle Events
+    match /pack441_throttle_events/{eventId} {
+      // Users can read their own events
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid || 
+                     isAdmin();
+      // Only system (server) can write events
+      allow write: if false;
+    }
+    
+    // Pack 441: Invite Quality Scores
+    match /pack441_invite_quality/{inviteId} {
+      // Anyone can read invite quality (for transparency)
+      allow read: if isAuthenticated() || isAdmin();
+      // Only system (server) can write quality scores
+      allow write: if false;
+    }
+    
+    // Pack 441: Correlations
+    match /pack441_correlations/{sourceId} {
+      // Only admins can read correlation analysis
+      allow read: if isAdmin();
+      // Only system (server) can write correlations
+      allow write: if false;
+      
+      // Correlation history
+      match /history/{historyId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+    }
+    
+    // Pack 441: Source Quality Metrics
+    match /pack441_source_quality/{sourceId} {
+      // Only admins can read source quality
+      allow read: if isAdmin();
+      // Only system (server) can write source quality
+      allow write: if false;
+    }
+    
+    // Pack 441: Source Restrictions
+    match /pack441_source_restrictions/{sourceId} {
+      // Only admins can read source restrictions
+      allow read: if isAdmin();
+      // Only system (server) can write restrictions
+      allow write: if false;
+    }
+    
+    // Pack 441: Alerts
+    match /pack441_alerts/{alertId} {
+      // Only admins can read alerts
+      allow read: if isAdmin();
+      // Admins can update alert status (for resolution)
+      allow update: if isAdmin() && 
+                       request.resource.data.status in ['investigating', 'resolved', 'false_positive'] &&
+                       request.resource.data.keys().hasAll(['status', 'resolvedAt', 'resolution', 'assignedTo']);
+      // Only system (server) can create alerts
+      allow create: if false;
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // Pack 441: Growth Spend (for ROI calculations)
+    match /growth_spend/{spendId} {
+      // Only admins can read growth spend
+      allow read: if isAdmin();
+      // Admins can write growth spend data
+      allow write: if isAdmin();
+    }
+  }
+}

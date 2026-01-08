@@ -1,0 +1,248 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 218: Calendar & Events Product Completion
+    // Unified schedule for meetings + events, reminders, host tools, safety panel
+    // ========================================================================
+    
+    // ========================================================================
+    // Unified Schedule Items (Read-Only Aggregation View)
+    // Combines meetings and events into single schedule view
+    // ========================================================================
+    match /schedule_items/{itemId} {
+      // Read: Only own schedule items
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.participantIds.hasAny([request.auth.uid]) ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side (Cloud Functions generate this view)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // Schedule Reminders
+    // Automatic reminders for meetings and events
+    // ========================================================================
+    match /schedule_reminders/{reminderId} {
+      // Read: Only own reminders
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      
+      // Create: Users can create custom reminders
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      
+      // Update: Users can mark reminders as read/dismissed
+      allow update: if request.auth != null &&
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'dismissed',
+          'read',
+          'updatedAt'
+        ]);
+      
+      // Delete: Users can delete their own reminders
+      allow delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // ========================================================================
+    // Event QR Check-Ins
+    // QR code scanning for event attendance verification
+    // ========================================================================
+    match /event_checkins/{checkinId} {
+      // Read: Host and attendee can read check-in records
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.hostUserId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Only server-side (Cloud Functions validate QR)
+      allow create: if false;
+      
+      // Update: Host can update check-in status
+      allow update: if request.auth != null &&
+        resource.data.hostUserId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'verified',
+          'notes',
+          'updatedAt'
+        ]);
+      
+      // Delete: Only admins
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Meeting Feedback (Vibe Ratings + Voluntary Refunds)
+    // Post-meeting feedback for reputation engine
+    // ========================================================================
+    match /meeting_feedback/{feedbackId} {
+      // Read: Only participants or admins
+      allow read: if request.auth != null && (
+        resource.data.giverId == request.auth.uid ||
+        resource.data.receiverId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Only meeting participants after completion
+      allow create: if request.auth != null &&
+        request.resource.data.giverId == request.auth.uid;
+      
+      // Update: Only within 24 hours by giver
+      allow update: if request.auth != null &&
+        resource.data.giverId == request.auth.uid &&
+        request.time < resource.data.createdAt + duration.value(1, 'd');
+      
+      // Delete: Only admins
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Voluntary Refund Requests (PACK 209 Integration)
+    // Earners can issue partial refunds from their share
+    // ========================================================================
+    match /voluntary_refund_requests/{requestId} {
+      // Read: Only involved parties or admins
+      allow read: if request.auth != null && (
+        resource.data.issuerId == request.auth.uid ||
+        resource.data.recipientId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Only earners can initiate voluntary refunds
+      allow create: if request.auth != null &&
+        request.resource.data.issuerId == request.auth.uid &&
+        request.resource.data.status == 'PENDING';
+      
+      // Update: Only server-side processes refunds
+      allow update: if false;
+      
+      // Delete: Only admins
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Event Attendee Management (Extended from PACK 182)
+    // Host tools for attendee check-in and management
+    // ========================================================================
+    match /event_attendee_management/{managementId} {
+      // Read: Only event host or admins
+      allow read: if request.auth != null && (
+        resource.data.hostUserId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only event host or admins
+      allow write: if request.auth != null && (
+        request.resource.data.hostUserId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+    }
+    
+    // ========================================================================
+    // Safety Panel Access Logs
+    // Track when users access safety features from schedule
+    // ========================================================================
+    match /safety_panel_access/{accessId} {
+      // Read: Only own access logs or safety team
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Users can log their own access
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      
+      // Update/Delete: Only safety team
+      allow update, delete: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+    }
+    
+    // ========================================================================
+    // Event Discovery Filters
+    // User-saved filters for event discovery
+    // ========================================================================
+    match /event_discovery_filters/{filterId} {
+      // Read: Only own filters
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      
+      // Create: Users can create their own filters
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      
+      // Update: Users can update their own filters
+      allow update: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      
+      // Delete: Users can delete their own filters
+      allow delete: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // ========================================================================
+    // Meeting Post-Summary Data
+    // Summary data shown after meeting completion
+    // ========================================================================
+    match /meeting_summaries/{summaryId} {
+      // Read: Only participants or admins
+      allow read: if request.auth != null && (
+        resource.data.earnerId == request.auth.uid ||
+        resource.data.payerId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side generates summaries
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // Cancellation Deadline Tracking
+    // Track refund windows for meetings and events
+    // ========================================================================
+    match /cancellation_deadlines/{deadlineId} {
+      // Read: Only participants
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.participantIds.hasAny([request.auth.uid])
+      );
+      
+      // Write: Only server-side calculates deadlines
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // Helper Functions
+    // ========================================================================
+    
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    function isSafetyTeam() {
+      return request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        isAdmin()
+      );
+    }
+    
+    function isHost(eventId) {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/events/$(eventId)).data.hostUserId == request.auth.uid;
+    }
+  }
+}

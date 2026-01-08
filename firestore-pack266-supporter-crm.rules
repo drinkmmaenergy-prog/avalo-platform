@@ -1,0 +1,297 @@
+rules_version = '2';
+
+// PACK 266: Smart Supporter CRM (Fans Relationship Manager)
+// Privacy-first CRM system for creators to manage supporter relationships
+//
+// CORE PRINCIPLES:
+// - Only creators with earnOn can access CRM features
+// - Supporters CANNOT see analytics about themselves
+// - NO identity revelation (name, location, contacts)
+// - NO bulk messaging or export capabilities
+// - Backend-controlled writes for data integrity
+//
+// SAFETY GUARDRAILS:
+// - Zero free messages or tokens
+// - No tokenomics changes
+// - No circumventing paywall
+// - Privacy-safe by design
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // Helper Functions
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isCreator(creatorId) {
+      return isAuthenticated() && request.auth.uid == creatorId;
+    }
+    
+    function hasEarnOn(userId) {
+      let profile = get(/databases/$(database)/documents/users/$(userId)).data;
+      return profile.earnOnChat == true;
+    }
+    
+    function isBackend() {
+      return request.auth.token.admin == true;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    // ============================================================================
+    // Supporter Segment Data
+    // ============================================================================
+    
+    match /supporterSegments/{creatorId}/supporters/{supporterId} {
+      // Only creator with earnOn can read their supporter segments
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      
+      // Only backend can write (automatic segmentation)
+      allow write: if false;
+    }
+    
+    // Segment summary for quick access
+    match /supporterSegmentSummary/{creatorId} {
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // CRM Inbox
+    // ============================================================================
+    
+    match /crmInbox/{creatorId}/tabs/{tab} {
+      // Creator can read their inbox tabs
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      
+      // Only backend updates inbox
+      allow write: if false;
+    }
+    
+    match /crmInboxEntries/{creatorId}/entries/{entryId} {
+      // Creator can read their inbox entries
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      
+      // Only backend writes
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // Supporter Profiles (PRIVATE ANALYTICS)
+    // ============================================================================
+    
+    match /supporterProfiles/{creatorId}/profiles/{supporterId} {
+      // CRITICAL: Only creator can read supporter analytics
+      // Supporters CANNOT read analytics about themselves
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      
+      // Only backend can write
+      allow write: if false;
+    }
+    
+    // Behavioral signals (internal data)
+    match /behavioralSignals/{creatorId}/signals/{supporterId} {
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // CRM Actions
+    // ============================================================================
+    
+    match /crmActions/{actionId} {
+      // Creator can read their own actions
+      allow read: if isAuthenticated() && 
+                    resource.data.creatorId == request.auth.uid &&
+                    hasEarnOn(request.auth.uid);
+      
+      // Creator can create actions (with validation)
+      allow create: if isAuthenticated() &&
+                      request.resource.data.creatorId == request.auth.uid &&
+                      hasEarnOn(request.auth.uid) &&
+                      request.resource.data.status == 'pending' &&
+                      request.resource.data.type in [
+                        'dm_reminder',
+                        'invite_to_live',
+                        'offer_fan_club',
+                        'event_early_access',
+                        'prioritize_reply'
+                      ];
+      
+      // Creator can update to mark as executed (backend will validate)
+      allow update: if isAuthenticated() &&
+                      resource.data.creatorId == request.auth.uid &&
+                      hasEarnOn(request.auth.uid) &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'executedAt', 'result']);
+      
+      // No deletion (audit trail)
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // Smart Alerts
+    // ============================================================================
+    
+    match /smartAlerts/{creatorId}/alerts/{alertId} {
+      // Creator can read their alerts
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      
+      // Creator can mark as read or dismissed
+      allow update: if isCreator(creatorId) &&
+                      hasEarnOn(creatorId) &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt', 'dismissedAt']);
+      
+      // Only backend creates alerts
+      allow create, delete: if false;
+    }
+    
+    // Alert summary for badge counts
+    match /alertSummary/{creatorId} {
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // CRM Settings & Configuration
+    // ============================================================================
+    
+    match /crmSettings/{creatorId} {
+      // Creator can read/write their own settings
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      
+      allow create: if isCreator(creatorId) &&
+                      hasEarnOn(creatorId) &&
+                      request.resource.data.creatorId == creatorId &&
+                      request.resource.data.enabled == true;
+      
+      allow update: if isCreator(creatorId) && hasEarnOn(creatorId);
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // CRM Metrics & Analytics
+    // ============================================================================
+    
+    match /crmMetrics/{creatorId}/periods/{periodId} {
+      // Creator can read their metrics
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      
+      // Only backend writes
+      allow write: if false;
+    }
+    
+    // Aggregated metrics summary
+    match /crmMetricsSummary/{creatorId} {
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // CRM Leaderboard (PRIVATE)
+    // ============================================================================
+    
+    match /crmLeaderboard/{creatorId} {
+      // ONLY creator can see their leaderboard
+      // Supporters cannot see rankings
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      
+      // Only backend writes
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // CRM Activity Log (Audit Trail)
+    // ============================================================================
+    
+    match /crmActivityLog/{creatorId}/activities/{activityId} {
+      // Creator can read their activity log
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      
+      // Creator can create activity logs
+      allow create: if isCreator(creatorId) &&
+                      hasEarnOn(creatorId) &&
+                      request.resource.data.creatorId == creatorId &&
+                      request.resource.data.timestamp == request.time;
+      
+      // No updates or deletions (immutable audit trail)
+      allow update, delete: if false;
+    }
+    
+    // ============================================================================
+    // Integration Data
+    // ============================================================================
+    
+    match /crmIntegrations/{creatorId} {
+      // Creator can read integration status
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      
+      // Only backend manages integrations
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // Notification Preferences
+    // ============================================================================
+    
+    match /crmNotificationPrefs/{creatorId} {
+      // Creator can read/write their preferences
+      allow read, write: if isCreator(creatorId) && hasEarnOn(creatorId);
+    }
+    
+    // ============================================================================
+    // Safety & Compliance
+    // ============================================================================
+    
+    match /crmSafetyLogs/{logId} {
+      // Only admins and backend can access safety logs
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    match /crmComplianceChecks/{creatorId} {
+      // Creator can read their compliance status
+      allow read: if isCreator(creatorId) && hasEarnOn(creatorId);
+      
+      // Only backend writes
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // FORBIDDEN: Bulk Export & Mass Messaging
+    // ============================================================================
+    
+    // NO collection for bulk exports
+    // NO collection for mass messaging queues
+    // These operations are STRICTLY PROHIBITED
+    
+    // ============================================================================
+    // Admin Access
+    // ============================================================================
+    
+    // Admins have read-only access for support and moderation
+    match /supporterSegments/{creatorId}/{document=**} {
+      allow read: if isAdmin();
+    }
+    
+    match /supporterProfiles/{creatorId}/{document=**} {
+      allow read: if isAdmin();
+    }
+    
+    match /crmActions/{document=**} {
+      allow read: if isAdmin();
+    }
+    
+    match /smartAlerts/{creatorId}/{document=**} {
+      allow read: if isAdmin();
+    }
+  }
+}

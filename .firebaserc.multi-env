@@ -1,0 +1,36 @@
+{
+  "projects": {
+    "dev": "avalo-dev",
+    "staging": "avalo-staging",
+    "production": "avalo-c8c46"
+  },
+  "targets": {
+    "avalo-dev": {
+      "hosting": {
+        "app": ["avalo-dev-app"],
+        "web": ["avalo-dev-web"],
+        "landing": ["avalo-dev-landing"]
+      }
+    },
+    "avalo-staging": {
+      "hosting": {
+        "app": ["avalo-staging-app"],
+        "web": ["avalo-staging-web"],
+        "landing": ["avalo-staging-landing"]
+      }
+    },
+    "avalo-c8c46": {
+      "hosting": {
+        "app": ["avalo-app"],
+        "web": ["avalo-web"],
+        "landing": ["avalo-landing"]
+      }
+    }
+  },
+  "experimental": {
+    "functions": {
+      "skipEnvValidation": true
+    }
+  },
+  "etags": {}
+}

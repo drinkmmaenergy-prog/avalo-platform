@@ -1,0 +1,60 @@
+{
+  "safety": {
+    "onboarding": {
+      "title1": "Stay safe while meeting new people",
+      "body1": "Avalo is for adults only. Never send money or share financial details outside the app.",
+      "title2": "Before you meet in person",
+      "body2": "Choose public places, tell a friend where you are going, and use in-app tools.",
+      "title3": "Report, block and get help",
+      "body3": "If someone makes you feel unsafe, block them, report their profile or contact support.",
+      "finish": "Finish"
+    },
+    "meeting": {
+      "tip": {
+        "title": "Before you meet in person",
+        "body": "Meet in public first, share your plans with someone you trust, and keep communication inside Avalo when possible.",
+        "ok": "Got it",
+        "cancel": "Cancel"
+      }
+    },
+    "offPlatform": {
+      "title": "Be careful with your contact details",
+      "body": "When you share your phone or social media, Avalo cannot protect you outside the app. Never send money or documents to strangers."
+    },
+    "payment": {
+      "title": "Pay safely",
+      "body": "Only pay when you feel comfortable. Avalo does not guarantee what happens outside the app."
+    },
+    "chat": {
+      "banner": {
+        "low": "Remember to protect your personal and financial information.",
+        "medium": "Be careful what you share. If something feels wrong, stop and report.",
+        "high": "Be extra careful with this conversation. Do not send money or personal documents. Block and report if you feel pressured."
+      },
+      "action": {
+        "block": "Block user",
+        "report": "Report",
+        "support": "Contact support"
+      }
+    },
+    "info": {
+      "title": "Safety & help",
+      "section": {
+        "basics": "Basic safety rules",
+        "meetings": "Safe meetings",
+        "support": "Support and reporting"
+      },
+      "link": {
+        "support": "Open support center",
+        "privacy": "Privacy & data",
+        "terms": "Safety policy & terms"
+      }
+    }
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next"
+  }
+}

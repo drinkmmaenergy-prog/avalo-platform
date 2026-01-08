@@ -1,0 +1,395 @@
+rules_version = '2';
+
+// PACK 260: Live Broadcasts (Fan-Only + Pay-Per-View + Gifting)
+// High-ARPU Module for Creator Monetization
+//
+// THREE LIVE MODES:
+// 1. Fan-Only Live: Only Fan Club members can watch (access included in membership)
+// 2. Pay-Per-View Live: Anyone can buy a ticket (100-1000 tokens)
+// 3. Open Live: Free entry + optional tipping
+//
+// MONETIZATION:
+// - PPV tickets: 65/35 split (creator/Avalo), non-refundable
+// - Gifting: Available in all modes, 65/35 split preserved
+// - Milestone unlocks: Extra time, Q&A, topic choice
+//
+// SAFETY RULES:
+// - Flirting, attractive outfits, suggestive talk: ALLOWED
+// - Exposed sexual acts, masturbation, pornography: BLOCKED (AI blur)
+// - 3 warnings → stream auto-ends
+// - No bans for dating/romantic content
+//
+// CONVERSIONS:
+// - Fan Club conversion funnel
+// - PPV conversion from gifting
+// - 1-on-1 conversion from high-value gifts
+// - Event ticket conversion
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // =====================================================================
+    // HELPER FUNCTIONS
+    // =====================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    function hasEarnOn(userId) {
+      let profile = get(/databases/$(database)/documents/users/$(userId)).data;
+      return profile.earnOnChat == true;
+    }
+    
+    function isFanClubMember(creatorId) {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/fanClubMemberships/$(creatorId + '_' + request.auth.uid)) &&
+             get(/databases/$(database)/documents/fanClubMemberships/$(creatorId + '_' + request.auth.uid)).data.status == 'active';
+    }
+    
+    function hasPPVTicket(streamId) {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/liveStreamTickets/$(streamId + '_' + request.auth.uid)) &&
+             get(/databases/$(database)/documents/liveStreamTickets/$(streamId + '_' + request.auth.uid)).data.status == 'active';
+    }
+    
+    function getMemberTier(creatorId) {
+      let membership = get(/databases/$(database)/documents/fanClubMemberships/$(creatorId + '_' + request.auth.uid)).data;
+      return membership.tier;
+    }
+    
+    function hasMinimumTier(creatorId, requiredTier) {
+      let tierOrder = ['silver', 'gold', 'diamond', 'royal_elite'];
+      let memberTier = getMemberTier(creatorId);
+      return tierOrder.indexOf(memberTier) >= tierOrder.indexOf(requiredTier);
+    }
+    
+    // =====================================================================
+    // LIVE STREAM SESSIONS
+    // =====================================================================
+    
+    match /liveStreamSessions/{streamId} {
+      // Creators with earnOn can create live streams
+      allow create: if isAuthenticated() &&
+                      request.resource.data.creatorId == request.auth.uid &&
+                      hasEarnOn(request.auth.uid) &&
+                      request.resource.data.mode in ['fan_only', 'ppv', 'open'] &&
+                      request.resource.data.status == 'scheduled';
+      
+      // Creators can update their own streams
+      allow update: if isAuthenticated() &&
+                      resource.data.creatorId == request.auth.uid &&
+                      hasEarnOn(request.auth.uid);
+      
+      // Read access based on stream mode:
+      // - Open Live: Anyone can read
+      allow read: if isAuthenticated() && 
+                    resource.data.mode == 'open';
+      
+      // - Fan-Only Live: Only active Fan Club members (Gold+)
+      allow read: if isAuthenticated() && 
+                    resource.data.mode == 'fan_only' &&
+                    isFanClubMember(resource.data.creatorId) &&
+                    hasMinimumTier(resource.data.creatorId, 'gold');
+      
+      // - PPV Live: Anyone with valid ticket
+      allow read: if isAuthenticated() && 
+                    resource.data.mode == 'ppv' &&
+                    hasPPVTicket(streamId);
+      
+      // Creator can always read their own stream
+      allow read: if isAuthenticated() && 
+                    resource.data.creatorId == request.auth.uid;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // No deletion during active stream
+      allow delete: if isAuthenticated() && 
+                      resource.data.creatorId == request.auth.uid &&
+                      resource.data.status in ['ended', 'cancelled', 'scheduled'];
+    }
+    
+    // =====================================================================
+    // LIVE STREAM TICKETS (PPV)
+    // =====================================================================
+    
+    match /liveStreamTickets/{ticketId} {
+      // Users can purchase tickets (after payment validation)
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.status == 'pending_payment';
+      
+      // Users can read their own tickets
+      allow read: if isAuthenticated() && 
+                    resource.data.userId == request.auth.uid;
+      
+      // Creators can read tickets for their streams
+      allow read: if isAuthenticated() &&
+                    exists(/databases/$(database)/documents/liveStreamSessions/$(resource.data.streamId)) &&
+                    get(/databases/$(database)/documents/liveStreamSessions/$(resource.data.streamId)).data.creatorId == request.auth.uid;
+      
+      // System updates status after payment
+      allow update: if isAdmin();
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // No deletion (ticket remains for audit)
+      allow delete: if false;
+    }
+    
+    // =====================================================================
+    // LIVE STREAM GIFTS
+    // =====================================================================
+    
+    match /liveStreamGifts/{giftId} {
+      // Any viewer can send gifts during active stream
+      allow create: if isAuthenticated() &&
+                      request.resource.data.senderId == request.auth.uid &&
+                      request.resource.data.status == 'pending';
+      
+      // Sender can read their own gifts
+      allow read: if isAuthenticated() && 
+                    resource.data.senderId == request.auth.uid;
+      
+      // Creator can read gifts sent to them
+      allow read: if isAuthenticated() && 
+                    resource.data.creatorId == request.auth.uid;
+      
+      // System processes gifts
+      allow update: if isAdmin();
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // No deletion (gifts permanent for analytics)
+      allow delete: if false;
+    }
+    
+    // =====================================================================
+    // LIVE STREAM CHAT MESSAGES
+    // =====================================================================
+    
+    match /liveStreamChat/{streamId}/messages/{messageId} {
+      // Viewers can send messages if they have access to stream
+      allow create: if isAuthenticated() &&
+                      request.resource.data.senderId == request.auth.uid &&
+                      (
+                        // Open stream: anyone
+                        get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.mode == 'open' ||
+                        // Fan-only: Gold+ members
+                        (get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.mode == 'fan_only' &&
+                         isFanClubMember(get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId) &&
+                         hasMinimumTier(get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId, 'gold')) ||
+                        // PPV: ticket holders
+                        (get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.mode == 'ppv' &&
+                         hasPPVTicket(streamId)) ||
+                        // Creator always has access
+                        get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId == request.auth.uid
+                      );
+      
+      // All viewers in the stream can read messages
+      allow read: if isAuthenticated() && (
+                    get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.mode == 'open' ||
+                    (get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.mode == 'fan_only' &&
+                     isFanClubMember(get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId) &&
+                     hasMinimumTier(get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId, 'gold')) ||
+                    (get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.mode == 'ppv' &&
+                     hasPPVTicket(streamId)) ||
+                    get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId == request.auth.uid
+                  );
+      
+      // Creator can delete any message
+      allow delete: if isAuthenticated() &&
+                      get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId == request.auth.uid;
+      
+      // Sender can delete own message within 2 minutes
+      allow delete: if isAuthenticated() &&
+                      resource.data.senderId == request.auth.uid &&
+                      request.time < resource.data.createdAt + duration.value(2, 'm');
+    }
+    
+    // =====================================================================
+    // LIVE STREAM VIEWERS (Real-time viewer list)
+    // =====================================================================
+    
+    match /liveStreamViewers/{streamId}/viewers/{viewerId} {
+      // Users can add themselves as viewers
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid;
+      
+      // Users can update their own viewer status (heartbeat)
+      allow update: if isAuthenticated() &&
+                      resource.data.userId == request.auth.uid;
+      
+      // Creator can read all viewers
+      allow read: if isAuthenticated() && 
+                    exists(/databases/$(database)/documents/liveStreamSessions/$(streamId)) &&
+                    get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId == request.auth.uid;
+      
+      // System can remove inactive viewers
+      allow delete: if isAdmin();
+      
+      // Viewers auto-removed after 30 seconds of inactivity (by system)
+    }
+    
+    // =====================================================================
+    // LIVE STREAM SPOTLIGHT (Top Gifters Leaderboard)
+    // =====================================================================
+    
+    match /liveStreamSpotlight/{streamId} {
+      // Anyone with stream access can read spotlight
+      allow read: if isAuthenticated() && (
+                    get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.mode == 'open' ||
+                    (get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.mode == 'fan_only' &&
+                     isFanClubMember(get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId)) ||
+                    (get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.mode == 'ppv' &&
+                     hasPPVTicket(streamId)) ||
+                    get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId == request.auth.uid
+                  );
+      
+      // Only system can write (auto-updates from gifts)
+      allow write: if false;
+    }
+    
+    // =====================================================================
+    // LIVE STREAM CO-HOSTS
+    // =====================================================================
+    
+    match /liveStreamCoHosts/{streamId}/cohosts/{cohostId} {
+      // Creator can invite co-hosts (Gold+ Fan Club or PPV viewers)
+      allow create: if isAuthenticated() &&
+                      get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId == request.auth.uid &&
+                      (
+                        isFanClubMember(request.auth.uid) &&
+                        hasMinimumTier(request.auth.uid, 'gold')
+                      ) ||
+                      hasPPVTicket(streamId);
+      
+      // Creator can remove co-hosts
+      allow delete: if isAuthenticated() &&
+                      get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId == request.auth.uid;
+      
+      // Co-host can read their status
+      allow read: if isAuthenticated() &&
+                    resource.data.userId == request.auth.uid;
+      
+      // Creator can read all co-hosts
+      allow read: if isAuthenticated() &&
+                    get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId == request.auth.uid;
+    }
+    
+    // =====================================================================
+    // LIVE STREAM MILESTONES (Gifting Thresholds)
+    // =====================================================================
+    
+    match /liveStreamMilestones/{streamId} {
+      // Anyone with stream access can read milestones
+      allow read: if isAuthenticated() && (
+                    get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.mode == 'open' ||
+                    (get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.mode == 'fan_only' &&
+                     isFanClubMember(get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId)) ||
+                    (get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.mode == 'ppv' &&
+                     hasPPVTicket(streamId)) ||
+                    get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId == request.auth.uid
+                  );
+      
+      // Creator can update unlocked milestones
+      allow update: if isAuthenticated() &&
+                      get(/databases/$(database)/documents/liveStreamSessions/$(streamId)).data.creatorId == request.auth.uid;
+      
+      // Only system can create/delete
+      allow create, delete: if false;
+    }
+    
+    // =====================================================================
+    // LIVE STREAM SAFETY WARNINGS
+    // =====================================================================
+    
+    match /liveStreamSafetyWarnings/{warningId} {
+      // Creator can read warnings about their stream
+      allow read: if isAuthenticated() && 
+                    resource.data.creatorId == request.auth.uid;
+      
+      // Admins can read and create warnings
+      allow read, create: if isAdmin();
+      
+      // Only system can update/delete
+      allow update, delete: if false;
+    }
+    
+    // =====================================================================
+    // LIVE STREAM TRANSCATIONS (Revenue Tracking)
+    // =====================================================================
+    
+    match /liveStreamTransactions/{transactionId} {
+      // Users can read their own transactions
+      allow read: if isAuthenticated() && 
+                    (resource.data.userId == request.auth.uid ||
+                     resource.data.creatorId == request.auth.uid);
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // =====================================================================
+    // LIVE STREAM ANALYTICS (Creator Dashboard)
+    // =====================================================================
+    
+    match /liveStreamAnalytics/{creatorId} {
+      // Creators can read their own analytics
+      allow read: if isUser(creatorId) && hasEarnOn(creatorId);
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // =====================================================================
+    // LIVE STREAM CONVERSION FUNNELS
+    // =====================================================================
+    
+    match /liveStreamConversions/{conversionId} {
+      // Users can read their own conversions
+      allow read: if isAuthenticated() && 
+                    resource.data.userId == request.auth.uid;
+      
+      // Creators can read conversions related to their streams
+      allow read: if isAuthenticated() && 
+                    resource.data.creatorId == request.auth.uid;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // =====================================================================
+    // LIVE STREAM GIFT CATALOG
+    // =====================================================================
+    
+    match /liveStreamGiftCatalog/{giftId} {
+      // Anyone can read gift catalog
+      allow read: if isAuthenticated();
+      
+      // Only admins can update catalog
+      allow write: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,214 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 245: Audience Classification & VIP Segmenting
+    // Smart viewer segmentation for better monetization without discounts
+    // ========================================================================
+    
+    // ========================================================================
+    // Audience Segments (Per Viewer-Creator Relationship)
+    // Internal classification: budget, intent, proximity, passion
+    // NEVER exposed as individual labels to end users
+    // ========================================================================
+    match /audience_segments/{segmentId} {
+      // Read: Only the viewer can see their own segment relative to a creator
+      // Creators NEVER see individual segment labels (only aggregated analytics)
+      allow read: if request.auth != null && 
+        resource.data.viewerId == request.auth.uid;
+      
+      // Write: Only server-side (Cloud Functions) or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Creator Audience Analytics (Aggregated Insights)
+    // Provides creators with segmented analytics WITHOUT individual labels
+    // Example: "40% local, 35% nearby, 25% remote"
+    // ========================================================================
+    match /creator_audience_analytics/{creatorId} {
+      // Read: Only the creator themselves or admins
+      allow read: if request.auth != null && (
+        creatorId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side (Cloud Functions) or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Segment Update Events (Audit Trail)
+    // Tracks when and why segments change
+    // ========================================================================
+    match /segment_update_events/{eventId} {
+      // Read: Only the viewer, creator involved, or admins
+      allow read: if request.auth != null && (
+        resource.data.viewerId == request.auth.uid ||
+        resource.data.creatorId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Only server-side or admins
+      allow create: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      
+      // No updates or deletes allowed (immutable audit trail)
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // Segment Computation Queue (Internal)
+    // Queue for scheduled segment recalculations
+    // ========================================================================
+    match /segment_computation_queue/{queueId} {
+      // Read: Only admins
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Budget Classification Cache (Internal)
+    // Cached spending patterns for quick segment lookup
+    // ========================================================================
+    match /budget_classification_cache/{cacheId} {
+      // Read: Only the user themselves or admins
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Intent Classification Cache (Internal)
+    // Cached behavioral patterns (chat/call/meeting/event focus)
+    // ========================================================================
+    match /intent_classification_cache/{cacheId} {
+      // Read: Only the user themselves or admins
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Proximity Cache (Internal)
+    // Cached location-based proximity classifications
+    // ========================================================================
+    match /proximity_cache/{cacheId} {
+      // Read: Only involved users or admins
+      allow read: if request.auth != null && (
+        resource.data.viewerId == request.auth.uid ||
+        resource.data.creatorId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Passion Signals (Internal)
+    // Tracks shared interests, visual attraction, loyalty patterns
+    // ========================================================================
+    match /passion_signals/{signalId} {
+      // Read: Only the viewer themselves or admins
+      allow read: if request.auth != null && (
+        resource.data.viewerId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Risk Assessment Cache (STRICTLY INTERNAL)
+    // Risk/safety flags - NEVER exposed to end users
+    // Only accessible to safety team and admins
+    // ========================================================================
+    match /risk_assessment_cache/{cacheId} {
+      // Read: Only safety team or admins
+      allow read: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side, safety team, or admins
+      allow write: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+    }
+    
+    // ========================================================================
+    // Segment Performance Metrics (Analytics)
+    // Tracks how well segmentation improves monetization
+    // ========================================================================
+    match /segment_performance_metrics/{metricId} {
+      // Read: Only admins and analytics team
+      allow read: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.analytics == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Segment Configuration (Admin Settings)
+    // Thresholds and rules for segment classification
+    // ========================================================================
+    match /segment_configuration/{configId} {
+      // Read: Only admins
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      
+      // Write: Only admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // Helper Functions
+    // ========================================================================
+    
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    function isSafetyTeam() {
+      return request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        isAdmin()
+      );
+    }
+    
+    function isAnalytics() {
+      return request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.analytics == true ||
+        isAdmin()
+      );
+    }
+  }
+}

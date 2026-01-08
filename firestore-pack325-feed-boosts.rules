@@ -1,0 +1,60 @@
+rules_version = '2';
+
+/**
+ * PACK 325 — Feed Monetization: Boosts & Promoted Posts
+ * Firestore Security Rules for feedBoosts collection
+ * 
+ * Collection: feedBoosts
+ * Purpose: Paid promotions for feedPosts and feedReels
+ * Revenue: 100% Avalo (no earner share)
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function: Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function: Check if user is the owner
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function: Check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // feedBoosts collection
+    match /feedBoosts/{boostId} {
+      // Anyone can read active boosts (for feed ranking)
+      allow read: if true;
+      
+      // Only the owner can read their own boost details
+      allow get: if isAuthenticated() && 
+                    resource.data.ownerUserId == request.auth.uid;
+      
+      // List boosts: owners can list their own, admins can list all
+      allow list: if isAuthenticated() && (
+        resource.data.ownerUserId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Only Cloud Functions can create boosts (via callable function)
+      // Users cannot directly write to this collection
+      allow create: if false;
+      
+      // Only Cloud Functions can update boosts (status changes, metrics)
+      allow update: if false;
+      
+      // Only owner or admin can delete boosts
+      allow delete: if isAuthenticated() && (
+        resource.data.ownerUserId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+  }
+}

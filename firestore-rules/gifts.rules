@@ -1,0 +1,136 @@
+/**
+ * PACK 79 — In-Chat Paid Gifts
+ * Firestore Security Rules for Gift System
+ * 
+ * Collections:
+ * - gift_catalog: Read-only for authenticated users, write-only via Functions
+ * - gift_transactions: Read for involved parties only, write-only via Functions
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    /**
+     * Gift Catalog Collection
+     * - Read: Any authenticated user can view active gifts
+     * - Write: Admin only via Cloud Functions
+     */
+    match /gift_catalog/{giftId} {
+      // Allow authenticated users to read gift catalog
+      allow read: if request.auth != null;
+      
+      // Prevent direct client writes - all updates via Cloud Functions
+      allow write: if false;
+      
+      // Validation function for gift catalog structure
+      function isValidGift() {
+        let data = request.resource.data;
+        return data.keys().hasAll(['id', 'name', 'priceTokens', 'animationUrl', 'imageUrl', 'isActive', 'createdAt'])
+          && data.id is string
+          && data.name is string
+          && data.priceTokens is number 
+          && data.priceTokens > 0
+          && data.animationUrl is string
+          && data.imageUrl is string
+          && data.isActive is bool
+          && data.createdAt is timestamp;
+      }
+    }
+    
+    /**
+     * Gift Transactions Collection
+     * - Read: Only sender or receiver can view their own transactions
+     * - Write: Cloud Functions only (payment processing)
+     */
+    match /gift_transactions/{transactionId} {
+      // Allow read if user is sender or receiver
+      allow read: if request.auth != null 
+        && (resource.data.senderId == request.auth.uid 
+        || resource.data.receiverId == request.auth.uid);
+      
+      // Prevent direct client writes - all transactions via Cloud Functions
+      allow write: if false;
+      
+      // Validation function for transaction structure
+      function isValidTransaction() {
+        let data = request.resource.data;
+        return data.keys().hasAll([
+            'id', 'senderId', 'receiverId', 'chatId', 'giftId', 
+            'priceTokens', 'commissionAvalo', 'receiverEarnings', 
+            'createdAt', 'status'
+          ])
+          && data.id is string
+          && data.senderId is string
+          && data.receiverId is string
+          && data.chatId is string
+          && data.giftId is string
+          && data.priceTokens is number
+          && data.priceTokens > 0
+          && data.commissionAvalo is number
+          && data.commissionAvalo >= 0
+          && data.receiverEarnings is number
+          && data.receiverEarnings >= 0
+          && data.createdAt is timestamp
+          && data.status in ['completed', 'failed']
+          // Enforce 35/65 split
+          && data.commissionAvalo == int(data.priceTokens * 0.35)
+          && data.receiverEarnings == (data.priceTokens - data.commissionAvalo)
+          // Prevent self-gifting
+          && data.senderId != data.receiverId;
+      }
+    }
+    
+    /**
+     * User Gift Statistics (embedded in user profiles)
+     * - Read: User can read their own stats
+     * - Write: Cloud Functions only
+     */
+    match /users/{userId} {
+      match /private/giftStats {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if false;
+      }
+    }
+    
+    /**
+     * Chat Messages with Gift Metadata
+     * - Gift messages are handled by existing chat rules
+     * - Additional validation for gift-type messages
+     */
+    match /chats/{chatId}/messages/{messageId} {
+      // Gift messages must include transaction reference
+      function isValidGiftMessage() {
+        let data = request.resource.data;
+        return data.type == 'gift'
+          && data.keys().hasAll(['giftTransactionId', 'giftMetadata'])
+          && data.giftTransactionId is string
+          && data.giftMetadata is map
+          && data.giftMetadata.keys().hasAll(['giftId', 'giftName', 'priceTokens', 'animationUrl', 'imageUrl'])
+          && data.giftMetadata.giftId is string
+          && data.giftMetadata.giftName is string
+          && data.giftMetadata.priceTokens is number
+          && data.giftMetadata.animationUrl is string
+          && data.giftMetadata.imageUrl is string;
+      }
+      
+      // Prevent deletion of gift messages (financial record)
+      allow delete: if request.auth != null
+        && request.auth.uid == resource.data.senderId
+        && resource.data.type != 'gift'; // Cannot delete gift messages
+    }
+    
+    /**
+     * Gift Analytics Events (optional tracking)
+     * - Write: Users can log their own events
+     * - Read: Admin only
+     */
+    match /analytics/gifts/events/{eventId} {
+      allow write: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.timestamp is timestamp;
+      
+      allow read: if false; // Admin access via Functions only
+    }
+  }
+}

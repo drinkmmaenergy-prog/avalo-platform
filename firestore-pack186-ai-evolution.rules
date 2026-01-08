@@ -1,0 +1,131 @@
+rules_version = '2';
+
+// PACK 186 - AI Evolution Engine
+// Firestore Security Rules for AI Memory & Growth Collections
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isSystem() {
+      return request.auth.token.system == true;
+    }
+    
+    // Validate safe memory categories
+    function isSafeMemoryCategory(category) {
+      return category in ['preferences', 'safe_topics', 'dislikes', 
+        'conversational_style', 'lore_continuity', 'interests'];
+    }
+    
+    // Forbidden memory validation
+    function containsForbiddenContent(data) {
+      let forbiddenKeywords = ['trauma', 'addiction', 'mental_health', 
+        'breakup', 'heartbreak', 'financial', 'vulnerable'];
+      return data.keys().hasAny(forbiddenKeywords);
+    }
+    
+    // AI Memories - User owns their memories
+    match /ai_memories/{memoryId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['userId', 'characterId', 'category', 'content', 'createdAt']) &&
+        isSafeMemoryCategory(request.resource.data.category) &&
+        !containsForbiddenContent(request.resource.data) &&
+        request.resource.data.expiresAt is timestamp;
+      
+      allow update: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isSystem()) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'characterId']));
+      
+      allow delete: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isSystem() || isAdmin());
+    }
+    
+    // AI Growth Events - System manages character evolution
+    match /ai_growth_events/{eventId} {
+      allow read: if isAuthenticated();
+      allow write: if isSystem() || isAdmin();
+    }
+    
+    // AI Memory Expirations - System manages decay cycles
+    match /ai_memory_expirations/{expirationId} {
+      allow read: if isSystem() || isAdmin();
+      allow write: if isSystem();
+    }
+    
+    // AI User Preferences - User controls their interaction preferences
+    match /ai_user_preferences/{preferenceId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['userId', 'characterId', 'createdAt']);
+      
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // AI Lore Updates - Seasonal content updates (read by users, managed by system)
+    match /ai_lore_updates/{updateId} {
+      allow read: if isAuthenticated();
+      allow create: if isSystem() || isAdmin();
+      allow update: if isSystem() || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // AI Dependency Signals - System tracks potential dependency risks
+    match /ai_dependency_signals/{signalId} {
+      allow read: if isSystem() || isAdmin();
+      allow write: if isSystem();
+    }
+    
+    // AI Stability Mode Sessions - Tracks when stability mode is active
+    match /ai_stability_sessions/{sessionId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if isSystem();
+    }
+    
+    // AI Growth Metrics - Internal growth tracking (non-monetization)
+    match /ai_growth_metrics/{metricId} {
+      allow read: if isAdmin();
+      allow write: if isSystem();
+    }
+    
+    // AI Memory Permissions - User consent for memory storage
+    match /ai_memory_permissions/{permissionId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['userId', 'characterId', 'memoryTypes', 'createdAt']);
+      
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+  }
+}

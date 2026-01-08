@@ -1,0 +1,46 @@
+{
+  "accountSuspended": "Twoje konto jest obecnie zawieszone. Nie możesz wysyłać wiadomości.",
+  "accountBanned": "Twoje konto zostało zablokowane. Skontaktuj się z pomocą, jeśli uważasz to za błąd.",
+  "messagingReadOnly": "Twoje wiadomości są tymczasowo ograniczone. Nie możesz wysyłać nowych wiadomości.",
+  "noNewChats": "Nie możesz rozpoczynać nowych czatów w tym momencie.",
+  "earningDisabled": "Zarabianie na czacie jest obecnie wyłączone na Twoim koncie.",
+  "hiddenFromDiscovery": "Twój profil jest ukryty w Discovery i Marketplace.",
+  "contactSupport": "Skontaktuj się z pomocą",
+  
+  "accountStatus": {
+    "active": "Twoje konto jest aktywne",
+    "softRestricted": "Twoje konto ma niektóre ograniczenia",
+    "hardRestricted": "Twoje konto jest ograniczone",
+    "suspended": "Twoje konto zostało zawieszone"
+  },
+  
+  "errors": {
+    "accountRestricted": "Twoje konto jest obecnie ograniczone. Skontaktuj się z pomocą techniczną, jeśli uważasz, że to pomyłka.",
+    "featureLocked": "Ta funkcja jest obecnie niedostępna na Twoim koncie.",
+    "accountSuspendedError": "Twoje konto zostało zawieszone. Skontaktuj się z pomocą techniczną.",
+    "permissionDenied": "Nie masz uprawnień do wykonania tej czynności.",
+    "cannotSendMessages": "Nie możesz teraz wysyłać wiadomości.",
+    "cannotSendGifts": "Nie możesz teraz wysyłać prezentów.",
+    "cannotSendPaidMedia": "Nie możesz teraz wysyłać płatnych mediów.",
+    "cannotPublishStories": "Nie możesz teraz publikować premium historii.",
+    "cannotRequestPayouts": "Nie możesz teraz wnioskować o wypłaty.",
+    "cannotAccessDiscovery": "Nie możesz teraz korzystać z odkrywania.",
+    "cannotStartCalls": "Nie możesz teraz rozpoczynać połączeń.",
+    "cannotSendGeoshare": "Nie możesz teraz udostępniać swojej lokalizacji."
+  },
+  
+  "restrictions": {
+    "softLimitActive": "Niektóre funkcje mogą być ograniczone z powodu niezwykłej aktywności.",
+    "hardLimitActive": "Twoje konto ma ograniczenia niektórych działań.",
+    "temporaryRestriction": "To jest tymczasowe ograniczenie.",
+    "contactSupportForDetails": "Skontaktuj się z pomocą techniczną po więcej szczegółów."
+  },
+  
+  "suspendedScreen": {
+    "title": "Konto zawieszone",
+    "message": "Twoje konto zostało zawieszone i nie możesz teraz korzystać z Avalo.",
+    "submessage": "Jeśli uważasz, że to pomyłka, skontaktuj się z naszym zespołem wsparcia.",
+    "contactButton": "Skontaktuj się z pomocą",
+    "footer": "Aby uzyskać więcej informacji, zapoznaj się z naszymi Wytycznymi społeczności i Warunkami świadczenia usług."
+  }
+}

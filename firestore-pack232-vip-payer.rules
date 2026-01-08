@@ -1,0 +1,228 @@
+rules_version = '2';
+
+// PACK 232 — VIP Repeat Payer Program
+// Emotional rewards for loyal paying users without free tokens or tokenomics changes
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // VIP PROFILES
+    // ============================================================================
+    // Tracks VIP status and progression for repeat payers
+    
+    match /vipProfiles/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only system can write (Cloud Functions)
+      allow create, update: if false;
+      
+      allow delete: if false; // Never delete VIP profiles
+    }
+    
+    // ============================================================================
+    // VIP HISTORY
+    // ============================================================================
+    // Audit trail of VIP level changes
+    
+    match /vipProfiles/{userId}/history/{historyId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // VIP ACTIVITY TRACKING
+    // ============================================================================
+    // Tracks behaviors that contribute to VIP qualification
+    
+    match /vipActivity/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only system can write (triggered by paid events)
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // VIP PRIVILEGES LOG
+    // ============================================================================
+    // Records when VIP privileges are used
+    
+    match /vipPrivilegesLog/{logId} {
+      allow read: if request.auth != null && 
+                     (request.auth.uid == resource.data.userId || 
+                      request.auth.uid == resource.data.creatorId);
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // VIP SETTINGS
+    // ============================================================================
+    // User-configurable VIP preferences
+    
+    match /vipSettings/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // User can update their own settings
+      allow update: if request.auth != null && 
+                       request.auth.uid == userId &&
+                       // Can only update allowed fields
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['showBadgeToCreators', 'notifyOnLevelUp', 
+                                  'privacyMode', 'updatedAt']);
+      
+      // System creates on first VIP qualification
+      allow create: if false;
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // VIP QUEUE PRIORITY (Integration with PACK 231)
+    // ============================================================================
+    // Enhanced queue priority tracking
+    
+    match /paidChatQueue/{creatorId}/chats/{chatId} {
+      // Read rules from PACK 231 still apply
+      allow read: if request.auth != null && 
+                     (request.auth.uid == creatorId || 
+                      request.auth.uid == resource.data.payerId);
+      
+      // VIP priority is added by system when user is queued
+      // Users cannot manually set their VIP level
+      allow update: if request.auth != null && 
+                       request.auth.uid == creatorId &&
+                       // Creator can only update status
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'updatedAt']);
+    }
+    
+    // ============================================================================
+    // VIP BADGE VISIBILITY
+    // ============================================================================
+    // Tracks who can see VIP badges (privacy control)
+    
+    match /vipBadgeVisibility/{userId} {
+      allow read: if request.auth != null;
+      
+      // User controls their own visibility
+      allow update: if request.auth != null && 
+                       request.auth.uid == userId &&
+                       request.resource.data.showBadge is bool &&
+                       request.resource.data.visibleTo in ['none', 'creators', 'everyone'];
+      
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // VIP ROMANTIC PROMPTS
+    // ============================================================================
+    // Unlocked conversation starters for VIP users
+    
+    match /vipRomanticPrompts/{promptId} {
+      allow read: if request.auth != null;
+      
+      // Only admins can create prompts
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // VIP EARLY ACCESS
+    // ============================================================================
+    // Stories and content early access for VIP users
+    
+    match /vipEarlyAccess/{userId}/content/{contentId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // System grants access based on VIP level
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // VIP SCORE COMPONENTS
+    // ============================================================================
+    // Detailed breakdown of VIP score calculation
+    
+    match /vipScoreComponents/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only system updates scores
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // VIP DOWNGRADE TRACKING
+    // ============================================================================
+    // Monitors inactivity for auto-downgrade (no shaming)
+    
+    match /vipDowngradeTracking/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // System manages downgrade logic
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // VIP LEVEL THRESHOLDS (Configuration)
+    // ============================================================================
+    // Global config for VIP qualification thresholds
+    
+    match /vipConfig/thresholds {
+      allow read: if request.auth != null;
+      
+      // Only admins can modify
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // VIP NOTIFICATIONS
+    // ============================================================================
+    // Level-up and privilege notifications
+    
+    match /vipNotifications/{notificationId} {
+      allow read: if request.auth != null && 
+                     request.auth.uid == resource.data.userId;
+      
+      // User can mark as read
+      allow update: if request.auth != null && 
+                       request.auth.uid == resource.data.userId &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['read', 'readAt']);
+      
+      // System creates notifications
+      allow create, delete: if false;
+    }
+    
+    // ============================================================================
+    // VIP ANALYTICS (Aggregated Stats)
+    // ============================================================================
+    // Platform-wide VIP statistics (admin view only)
+    
+    match /vipAnalytics/{period} {
+      allow read: if false; // Admin only via server
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function hasVipLevel(minLevel) {
+      let vipLevels = ['none', 'bronze', 'silver', 'gold', 'royal'];
+      let userProfile = get(/databases/$(database)/documents/vipProfiles/$(request.auth.uid));
+      let userLevel = userProfile.data.vipLevel;
+      return vipLevels.indexOf(userLevel) >= vipLevels.indexOf(minLevel);
+    }
+  }
+}

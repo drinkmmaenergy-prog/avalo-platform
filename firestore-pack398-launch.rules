@@ -1,0 +1,165 @@
+rules_version = '2';
+
+// PACK 398 - PUBLIC LAUNCH ORCHESTRATION
+// Firestore Security Rules for Launch Control, ASO, Viral Referrals, and Traffic Management
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // LAUNCH CONTROL - Admin only
+    match /launch_control/{document=**} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // LAUNCH EVENTS - Admin read only
+    match /launch_events/{eventId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // ASO A/B TESTS - Admin only
+    match /aso_ab_tests/{testId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // KEYWORD PERFORMANCE - Admin only
+    match /keyword_performance/{keywordId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // STORE PERFORMANCE METRICS - Admin only
+    match /store_performance_metrics/{metricsId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ASO RECOMMENDATIONS - Admin only
+    match /aso_recommendations/{recommendationId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // REFERRAL CODES - Users can read their own
+    match /referral_codes/{codeId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.userId == resource.data.userId;
+      allow delete: if false;
+    }
+
+    // REFERRALS - Users can read their own referrals
+    match /referrals/{referralId} {
+      allow read: if isAuthenticated() && 
+                     (resource.data.referrerId == request.auth.uid ||
+                      resource.data.referredUserId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+                       resource.data.referredUserId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // VIRAL INVITES - Users can manage their own invites
+    match /viral_invites/{inviteId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.senderId == request.auth.uid;
+      allow create: if isAuthenticated() && 
+                       request.resource.data.senderId == request.auth.uid;
+      allow update: if isAuthenticated() && 
+                       resource.data.senderId == request.auth.uid;
+      allow delete: if isAuthenticated() && 
+                       resource.data.senderId == request.auth.uid;
+    }
+
+    // INVITE REWARDS - Users can read their own rewards
+    match /invite_rewards/{rewardId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      allow create: if isAdmin();
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.status in ['claimed'] &&
+                       resource.data.status == 'granted';
+      allow delete: if false;
+    }
+
+    // VIRAL LEADERBOARDS - Public read, system write
+    match /viral_leaderboards/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only system can write
+    }
+
+    // CAMPAIGNS - Admin only
+    match /campaigns/{campaignId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // CAMPAIGN EVENTS - Admin read only
+    match /campaign_events/{eventId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // INFLUENCER COHORTS - Admin only
+    match /influencer_cohorts/{cohortId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // LTV PREDICTIONS - Users can read their own
+    match /ltv_predictions/{predictionId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    // CAC TRACKING - Admin only
+    match /cac_tracking/{trackingId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // CAMPAIGN ROI - Admin only
+    match /campaign_roi/{roiId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // GROWTH METRICS - Admin only
+    match /growth_metrics/{metricId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // DEVICE FINGERPRINTS - System only
+    match /device_fingerprints/{fingerprintId} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

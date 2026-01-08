@@ -1,0 +1,118 @@
+// ============================================================================
+// PACK 90 — Firestore Security Rules for Audit & Event Logging
+// ============================================================================
+//
+// These rules protect the audit log collections:
+// - business_audit_log: Business events (payments, earnings, payouts, KYC, disputes, enforcement)
+// - tech_event_log: Technical events (errors, warnings, performance)
+// - metrics_daily: Aggregated daily metrics
+//
+// SECURITY PRINCIPLES:
+// 1. All collections are write-only from backend Functions
+// 2. Admin users can read all logs via Cloud Functions (not directly)
+// 3. Regular users cannot read or write these collections
+// 4. Logs are immutable once created
+//
+// ============================================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // BUSINESS AUDIT LOG
+    // ========================================================================
+    // High-value events tied to users & money
+    // Only backend can write, only admin functions can read
+    
+    match /business_audit_log/{logId} {
+      // Nobody can read directly (must use admin Cloud Functions)
+      allow read: if false;
+      
+      // Only backend (Functions) can write
+      // In practice, this is enforced by Firebase Auth rules
+      // Regular users cannot write even with valid auth
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // TECHNICAL EVENT LOG
+    // ========================================================================
+    // System health, errors, debugging
+    // Only backend can write, only admin functions can read
+    
+    match /tech_event_log/{logId} {
+      // Nobody can read directly
+      allow read: if false;
+      
+      // Only backend can write
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // DAILY METRICS
+    // ========================================================================
+    // Pre-aggregated counters for dashboards
+    // Only backend can write, only admin functions can read
+    
+    match /metrics_daily/{metricId} {
+      // Nobody can read directly
+      allow read: if false;
+      
+      // Only backend can write
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is admin (via custom claims)
+    function isAdmin() {
+      return isAuthenticated() 
+        && request.auth.token.admin == true;
+    }
+    
+    // Check if user has specific role
+    function hasRole(role) {
+      return isAuthenticated() 
+        && request.auth.token.role == role;
+    }
+  }
+}
+
+// ============================================================================
+// IMPLEMENTATION NOTES
+// ============================================================================
+//
+// 1. These rules prevent all direct access to audit collections
+// 2. All reads must go through admin Cloud Functions that verify admin role
+// 3. All writes are performed by backend Cloud Functions with Admin SDK
+// 4. This ensures audit trail integrity and prevents tampering
+//
+// 5. To enable admin access:
+//    - Use admin_listBusinessEvents() Cloud Function
+//    - Use admin_listTechEvents() Cloud Function
+//    - Use admin_getDailyMetrics() Cloud Function
+//    - Use admin_getUserAuditTrail() Cloud Function
+//
+// 6. The admin Cloud Functions in pack90-admin.ts verify admin role
+//    by checking the admin_roles collection
+//
+// 7. For production, consider:
+//    - Setting TTL on tech_event_log (auto-delete after 90 days)
+//    - Exporting business_audit_log to BigQuery for long-term storage
+//    - Implementing log rotation for cost optimization
+//
+// ============================================================================

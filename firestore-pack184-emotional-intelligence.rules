@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // AI Emotional States - Track per-conversation emotional dynamics
+    match /ai_emotional_states/{stateId} {
+      allow read: if request.auth != null && 
+                     (request.auth.uid == resource.data.userId || 
+                      request.auth.token.role == 'admin' ||
+                      request.auth.token.role == 'moderator');
+      
+      allow create: if request.auth != null && 
+                       request.auth.uid == request.resource.data.userId &&
+                       request.resource.data.keys().hasAll([
+                         'userId', 'conversationId', 'timestamp', 
+                         'emotionalIntensity', 'toneType', 'attachmentRiskLevel'
+                       ]);
+      
+      allow update: if request.auth != null && 
+                       (request.auth.uid == resource.data.userId ||
+                        request.auth.token.role == 'system');
+      
+      allow delete: if request.auth.token.role == 'admin';
+    }
+    
+    // Attachment Risk Events - Critical safety monitoring
+    match /ai_attachment_risk_events/{eventId} {
+      allow read: if request.auth != null && 
+                     (request.auth.uid == resource.data.userId || 
+                      request.auth.token.role == 'admin' ||
+                      request.auth.token.role == 'moderator');
+      
+      allow create: if request.auth.token.role == 'system' &&
+                       request.resource.data.keys().hasAll([
+                         'userId', 'riskType', 'severity', 'timestamp', 
+                         'detectedPatterns', 'interventionApplied'
+                       ]);
+      
+      allow update: if request.auth.token.role == 'system' ||
+                       request.auth.token.role == 'admin';
+      
+      allow delete: if request.auth.token.role == 'admin';
+    }
+    
+    // User Emotional Preferences - User control settings
+    match /user_emotional_preferences/{userId} {
+      allow read: if request.auth != null && 
+                     (request.auth.uid == userId || 
+                      request.auth.token.role == 'admin');
+      
+      allow write: if request.auth != null && 
+                      request.auth.uid == userId;
+    }
+    
+    // Emotional Boundary Violations - Log inappropriate AI behavior
+    match /emotional_boundary_violations/{violationId} {
+      allow read: if request.auth.token.role == 'admin' ||
+                     request.auth.token.role == 'moderator';
+      
+      allow create: if request.auth.token.role == 'system';
+      
+      allow update, delete: if request.auth.token.role == 'admin';
+    }
+  }
+}

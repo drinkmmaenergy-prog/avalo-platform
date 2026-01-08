@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // PACK 348 — Ranking Engine Configuration
+    // Only admins can read/write ranking configuration
+    
+    match /system/rankingEngine {
+      allow read: if request.auth != null && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if request.auth != null && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    match /system/safetyPenalties {
+      allow read: if request.auth != null && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if request.auth != null && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    match /system/tierRouting {
+      allow read: if request.auth != null && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if request.auth != null && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Country-specific overrides
+    match /system/rankingByCountry/countries/{countryCode} {
+      allow read: if request.auth != null && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if request.auth != null && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // A/B Tests
+    match /system/abTests/tests/{testId} {
+      allow read: if request.auth != null && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow create: if request.auth != null 
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin'
+        && request.resource.data.excludedFromTest.revenueChanges == true
+        && request.resource.data.excludedFromTest.payoutChanges == true
+        && request.resource.data.excludedFromTest.refundPolicyChanges == true
+        && request.resource.data.excludedFromTest.safetyChanges == true;
+      allow update: if request.auth != null && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow delete: if request.auth != null && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Audit logs (read-only for admins, write-only for functions)
+    match /system/rankingAuditLogs/logs/{logId} {
+      allow read: if request.auth != null && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // User ranking scores
+    match /userRankingScores/{userId} {
+      // Creators can read their own scores
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // Only functions can write scores
+      allow write: if false;
+    }
+    
+    // Public read for ranked results (with rate limiting in functions)
+    match /rankedDiscovery/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    
+    match /rankedFeed/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    
+    match /rankedAICompanions/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,354 @@
+{
+  "en": {
+    "nav": {
+      "features": "Features",
+      "safety": "Safety",
+      "creators": "For Creators",
+      "download": "Download"
+    },
+    "hero": {
+      "title": "Where Authentic Connections Pay Off",
+      "subtitle": "Meet, Chat & Earn with Avalo",
+      "description": "Experience the next generation of social networking with AI companions, creator monetization, and quality conversations that matter.",
+      "downloadCTA": "Download Now",
+      "learnMore": "Learn More"
+    },
+    "features": {
+      "title": "Why Choose Avalo?",
+      "subtitle": "Everything you need to make meaningful connections and earn from your engagement",
+      "items": [
+        {
+          "icon": "💬",
+          "title": "Smart Chat System",
+          "description": "Start with free messages. Continue with our unique earn-to-chat model that ensures genuine interest from both sides."
+        },
+        {
+          "icon": "🎨",
+          "title": "Creator Economy",
+          "description": "Earn tokens from conversations, tips, and bookings. Track everything in your transparent wallet."
+        },
+        {
+          "icon": "🤖",
+          "title": "AI Companions",
+          "description": "Practice conversations and explore personalities with clearly marked AI companions in a separate section."
+        },
+        {
+          "icon": "🌍",
+          "title": "Global Discovery",
+          "description": "Connect with people nearby or anywhere in the world with Passport mode and location features."
+        },
+        {
+          "icon": "💎",
+          "title": "Token Economy",
+          "description": "Transparent pricing with no hidden fees. Buy packages on web, earn through engagement, cash out anytime."
+        },
+        {
+          "icon": "⚡",
+          "title": "Royal Club & VIP",
+          "description": "Auto-qualify with 1K+ Instagram followers or consistent earnings. Get better rates and priority features."
+        }
+      ]
+    },
+    "wallet": {
+      "title": "Simple, Transparent Tokens",
+      "subtitle": "All transactions use tokens for clarity and control",
+      "features": [
+        "Buy token packages on the web",
+        "Earn from meaningful conversations",
+        "Track all transactions in real-time",
+        "Cash out your earnings easily",
+        "No hidden fees or surprises"
+      ],
+      "cta": "Learn About Tokens"
+    },
+    "aiSection": {
+      "title": "Practice with AI Companions",
+      "subtitle": "Clearly separated from real dating",
+      "description": "Improve your social skills, explore conversations, and have fun with custom AI companions. All AI chats are clearly marked and in a dedicated section.",
+      "features": [
+        "Custom personalities and avatars",
+        "Unlimited conversations within your plan",
+        "Safe practice environment",
+        "Clear AI badges on all chats"
+      ]
+    },
+    "safety": {
+      "title": "Safety First, Always",
+      "subtitle": "Multiple layers of protection for peace of mind",
+      "features": [
+        {
+          "icon": "🔒",
+          "title": "18+ Age Verification",
+          "description": "Required phone + SMS verification, live selfie with liveness detection, and optional bank authorization."
+        },
+        {
+          "icon": "✓",
+          "title": "Photo Verification",
+          "description": "AI-powered verification ensures real people. Multiple trust levels with visible badges."
+        },
+        {
+          "icon": "🛡️",
+          "title": "AI Moderation",
+          "description": "Real-time content filtering powered by AI plus human moderator review. Report system with 24/7 support."
+        },
+        {
+          "icon": "🚫",
+          "title": "Anti-Bot Protection",
+          "description": "Advanced algorithms detect and remove fake accounts, spam, and suspicious behavior automatically."
+        }
+      ]
+    },
+    "creators": {
+      "title": "Built for Creators",
+      "subtitle": "Monetize your time and attention with transparent earnings",
+      "benefits": [
+        "Earn from every quality conversation",
+        "Set your availability with integrated calendar",
+        "Receive tips and build your following",
+        "Royal Club auto-qualification for top creators",
+        "Track earnings with detailed analytics",
+        "Fast payouts with multiple options"
+      ],
+      "stats": [
+        {
+          "value": "65%",
+          "label": "Goes to Creators"
+        },
+        {
+          "value": "0%",
+          "label": "Hidden Fees"
+        },
+        {
+          "value": "24/7",
+          "label": "Earning Potential"
+        }
+      ],
+      "cta": "Start Earning"
+    },
+    "verification": {
+      "title": "Build Trust with Verification",
+      "badges": [
+        {
+          "icon": "📱",
+          "title": "Phone Verified",
+          "description": "SMS verification confirms your number"
+        },
+        {
+          "icon": "📸",
+          "title": "Photo Verified",
+          "description": "Live selfie with AI liveness detection"
+        },
+        {
+          "icon": "🏦",
+          "title": "Bank Verified",
+          "description": "Highest trust with €0.00 authorization"
+        }
+      ]
+    },
+    "download": {
+      "title": "Ready to Join Avalo?",
+      "subtitle": "Download now and start making meaningful connections today",
+      "qrCode": "Scan QR code to download",
+      "available": "Available on iOS and Android"
+    },
+    "footer": {
+      "tagline": "Where Authentic Connections Pay Off",
+      "company": "Company",
+      "product": "Product",
+      "legal": "Legal",
+      "social": "Social",
+      "links": {
+        "about": "About Us",
+        "careers": "Careers",
+        "press": "Press Kit",
+        "blog": "Blog",
+        "features": "Features",
+        "pricing": "Token Packages",
+        "creators": "For Creators",
+        "safety": "Safety Center",
+        "terms": "Terms of Service",
+        "privacy": "Privacy Policy",
+        "cookies": "Cookie Policy",
+        "community": "Community Guidelines"
+      },
+      "copyright": "© 2024 Avalo. All rights reserved.",
+      "contact": "Contact us: support@avalo.app"
+    }
+  },
+  "pl": {
+    "nav": {
+      "features": "Funkcje",
+      "safety": "Bezpieczeństwo",
+      "creators": "Dla twórców",
+      "download": "Pobierz"
+    },
+    "hero": {
+      "title": "Gdzie autentyczne połączenia się opłacają",
+      "subtitle": "Poznaj, rozmawiaj i zarabiaj z Avalo",
+      "description": "Doświadcz nowej generacji sieci społecznościowych z asystentami AI, monetyzacją dla twórców i wartościowymi rozmowami.",
+      "downloadCTA": "Pobierz teraz",
+      "learnMore": "Dowiedz się więcej"
+    },
+    "features": {
+      "title": "Dlaczego warto wybrać Avalo?",
+      "subtitle": "Wszystko, czego potrzebujesz do nawiązywania znaczących połączeń i zarabiania na zaangażowaniu",
+      "items": [
+        {
+          "icon": "💬",
+          "title": "Inteligentny system czatu",
+          "description": "Zacznij od darmowych wiadomości. Kontynuuj z naszym unikalnym modelem earn-to-chat, który zapewnia autentyczne zainteresowanie z obu stron."
+        },
+        {
+          "icon": "🎨",
+          "title": "Ekonomia twórców",
+          "description": "Zarabiaj tokeny z rozmów, napiwków i rezerwacji. Śledź wszystko w przejrzystym portfelu."
+        },
+        {
+          "icon": "🤖",
+          "title": "Asystenci AI",
+          "description": "Ćwicz rozmowy i eksploruj osobowości z wyraźnie oznaczonymi asystentami AI w osobnej sekcji."
+        },
+        {
+          "icon": "🌍",
+          "title": "Globalne odkrywanie",
+          "description": "Nawiązuj kontakty z ludźmi w pobliżu lub w dowolnym miejscu na świecie z trybem Paszport i funkcjami lokalizacji."
+        },
+        {
+          "icon": "💎",
+          "title": "Ekonomia tokenów",
+          "description": "Przejrzyste ceny bez ukrytych opłat. Kupuj pakiety w internecie, zarabiaj poprzez zaangażowanie, wypłacaj w dowolnym momencie."
+        },
+        {
+          "icon": "⚡",
+          "title": "Royal Club i VIP",
+          "description": "Automatyczna kwalifikacja z 1K+ obserwujących na Instagramie lub stałymi zarobkami. Lepsze stawki i priorytetowe funkcje."
+        }
+      ]
+    },
+    "wallet": {
+      "title": "Proste, przejrzyste tokeny",
+      "subtitle": "Wszystkie transakcje wykorzystują tokeny dla jasności i kontroli",
+      "features": [
+        "Kupuj pakiety tokenów w internecie",
+        "Zarabiaj z wartościowych rozmów",
+        "Śledź wszystkie transakcje w czasie rzeczywistym",
+        "Łatwo wypłacaj swoje zarobki",
+        "Bez ukrytych opłat ani niespodzianek"
+      ],
+      "cta": "Dowiedz się o tokenach"
+    },
+    "aiSection": {
+      "title": "Ćwicz z asystentami AI",
+      "subtitle": "Wyraźnie oddzielone od prawdziwych randek",
+      "description": "Popraw swoje umiejętności społeczne, eksploruj rozmowy i baw się z niestandardowymi asystentami AI. Wszystkie czaty AI są wyraźnie oznaczone i znajdują się w dedykowanej sekcji.",
+      "features": [
+        "Niestandardowe osobowości i awatary",
+        "Nieograniczone rozmowy w ramach planu",
+        "Bezpieczne środowisko do ćwiczeń",
+        "Wyraźne odznaki AI na wszystkich czatach"
+      ]
+    },
+    "safety": {
+      "title": "Bezpieczeństwo na pierwszym miejscu",
+      "subtitle": "Wiele warstw ochrony dla spokoju ducha",
+      "features": [
+        {
+          "icon": "🔒",
+          "title": "Weryfikacja wieku 18+",
+          "description": "Wymagana weryfikacja telefonu + SMS, selfie na żywo z wykrywaniem żywości i opcjonalna autoryzacja bankowa."
+        },
+        {
+          "icon": "✓",
+          "title": "Weryfikacja zdjęć",
+          "description": "Weryfikacja wspierana przez AI zapewnia prawdziwe osoby. Wiele poziomów zaufania z widocznymi odznakami."
+        },
+        {
+          "icon": "🛡️",
+          "title": "Moderacja AI",
+          "description": "Filtrowanie treści w czasie rzeczywistym wspierane przez AI plus przegląd moderatorów ludzkich. System zgłaszania ze wsparciem 24/7."
+        },
+        {
+          "icon": "🚫",
+          "title": "Ochrona przed botami",
+          "description": "Zaawansowane algorytmy wykrywają i usuwają fałszywe konta, spam i podejrzane zachowania automatycznie."
+        }
+      ]
+    },
+    "creators": {
+      "title": "Stworzone dla twórców",
+      "subtitle": "Monetyzuj swój czas i uwagę dzięki przejrzystym zarobkom",
+      "benefits": [
+        "Zarabiaj z każdej wartościowej rozmowy",
+        "Ustal dostępność za pomocą zintegrowanego kalendarza",
+        "Otrzymuj napiwki i zbuduj swoją społeczność",
+        "Automatyczna kwalifikacja do Royal Club dla najlepszych twórców",
+        "Śledź zarobki dzięki szczegółowej analityce",
+        "Szybkie wypłaty z wieloma opcjami"
+      ],
+      "stats": [
+        {
+          "value": "65%",
+          "label": "Trafia do twórców"
+        },
+        {
+          "value": "0%",
+          "label": "Ukrytych opłat"
+        },
+        {
+          "value": "24/7",
+          "label": "Potencjał zarobkowy"
+        }
+      ],
+      "cta": "Zacznij zarabiać"
+    },
+    "verification": {
+      "title": "Zbuduj zaufanie dzięki weryfikacji",
+      "badges": [
+        {
+          "icon": "📱",
+          "title": "Zweryfikowany telefon",
+          "description": "Weryfikacja SMS potwierdza Twój numer"
+        },
+        {
+          "icon": "📸",
+          "title": "Zweryfikowane zdjęcie",
+          "description": "Selfie na żywo z wykrywaniem żywości AI"
+        },
+        {
+          "icon": "🏦",
+          "title": "Zweryfikowany bank",
+          "description": "Najwyższe zaufanie z autoryzacją €0.00"
+        }
+      ]
+    },
+    "download": {
+      "title": "Gotowy dołączyć do Avalo?",
+      "subtitle": "Pobierz teraz i zacznij nawiązywać znaczące połączenia już dziś",
+      "qrCode": "Zeskanuj kod QR, aby pobrać",
+      "available": "Dostępne na iOS i Android"
+    },
+    "footer": {
+      "tagline": "Gdzie autentyczne połączenia się opłacają",
+      "company": "Firma",
+      "product": "Produkt",
+      "legal": "Prawne",
+      "social": "Społeczność",
+      "links": {
+        "about": "O nas",
+        "careers": "Kariera",
+        "press": "Dla prasy",
+        "blog": "Blog",
+        "features": "Funkcje",
+        "pricing": "Pakiety tokenów",
+        "creators": "Dla twórców",
+        "safety": "Centrum bezpieczeństwa",
+        "terms": "Regulamin",
+        "privacy": "Polityka prywatności",
+        "cookies": "Polityka cookies",
+        "community": "Wytyczne społeczności"
+      },
+      "copyright": "© 2024 Avalo. Wszelkie prawa zastrzeżone.",
+      "contact": "Kontakt: support@avalo.app"
+    }
+  }
+}

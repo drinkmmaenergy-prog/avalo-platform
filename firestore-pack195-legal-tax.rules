@@ -1,0 +1,85 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isContractParty(contract) {
+      return isAuthenticated() && (
+        contract.data.creatorId == request.auth.uid ||
+        contract.data.counterparty.userId == request.auth.uid
+      );
+    }
+    
+    match /contracts/{contractId} {
+      allow read: if isAuthenticated() && (
+        isContractParty(resource) || isAdmin()
+      );
+      allow write: if false;
+    }
+    
+    match /contract_disputes/{disputeId} {
+      allow read: if isAuthenticated() && (
+        resource.data.raisedBy == request.auth.uid ||
+        resource.data.against == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if false;
+    }
+    
+    match /invoices/{invoiceId} {
+      allow read: if isAuthenticated() && (
+        resource.data.creatorId == request.auth.uid ||
+        resource.data.customerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if false;
+    }
+    
+    match /tax_profiles/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false;
+    }
+    
+    match /tax_reports/{reportId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow write: if false;
+    }
+    
+    match /earnings_certificates/{certificateId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow write: if false;
+    }
+    
+    match /legal_resources/{resourceId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    match /invoice_counters/{counterId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /certificate_counters/{counterId} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

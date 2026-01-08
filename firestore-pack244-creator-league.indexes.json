@@ -1,0 +1,96 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "creator_league",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isEligible", "order": "ASCENDING" },
+        { "fieldPath": "globalRank", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creator_league",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isEligible", "order": "ASCENDING" },
+        { "fieldPath": "earningsScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "league_rankings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "month", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "league_rankings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "country", "order": "ASCENDING" },
+        { "fieldPath": "month", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "league_rankings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "city", "order": "ASCENDING" },
+        { "fieldPath": "month", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "league_winners",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "month", "order": "DESCENDING" },
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "rank", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "league_winners",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "month", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "new_creator_league",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isEligible", "order": "ASCENDING" },
+        { "fieldPath": "earningsScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "league_audit_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "league_audit_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "action", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creator_league_metrics",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "month", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

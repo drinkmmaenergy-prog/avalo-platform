@@ -1,0 +1,184 @@
+// PACK 154 — Avalo Multilingual AI Moderation & Auto-Translation Layer
+// Firestore Security Rules
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ========================================================================
+    // Translation Logs
+    // ========================================================================
+    
+    match /translation_logs/{translationId} {
+      // Users can read their own translation logs
+      allow read: if isAuthenticated() && 
+                    resource.data.userId == request.auth.uid;
+      
+      // Only Cloud Functions can create translation logs
+      allow create: if false;
+      
+      // Only Cloud Functions can update (for appeal status)
+      allow update: if false;
+      
+      // Users cannot delete translation logs
+      allow delete: if false;
+      
+      // Admins can read all translation logs
+      allow read: if isAdmin();
+    }
+    
+    // ========================================================================
+    // Translation Flags
+    // ========================================================================
+    
+    match /translation_flags/{flagId} {
+      // Users can read their own translation flags
+      allow read: if isAuthenticated() && 
+                    resource.data.userId == request.auth.uid;
+      
+      // Only Cloud Functions can create flags
+      allow create: if false;
+      
+      // Admins can update flags (for review)
+      allow update: if isAdmin() && 
+                      request.resource.data.keys().hasOnly([
+                        'reviewed', 'reviewedBy', 'reviewedAt', 
+                        'reviewDecision', 'notes'
+                      ]);
+      
+      // Cannot delete flags
+      allow delete: if false;
+      
+      // Admins can read all flags
+      allow read: if isAdmin();
+    }
+    
+    // ========================================================================
+    // Blocked Translation Attempts
+    // ========================================================================
+    
+    match /blocked_translation_attempts/{userId} {
+      // Users can read their own blocked attempts
+      allow read: if isOwner(userId);
+      
+      // Only Cloud Functions can create/update
+      allow create, update: if false;
+      
+      // Cannot delete
+      allow delete: if false;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+    }
+    
+    // ========================================================================
+    // Translation Appeals
+    // ========================================================================
+    
+    match /translation_appeals/{appealId} {
+      // Users can read their own appeals
+      allow read: if isAuthenticated() && 
+                    resource.data.userId == request.auth.uid;
+      
+      // Users can create appeals for their own translations
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.keys().hasAll([
+                        'id', 'translationId', 'userId', 'reason', 
+                        'originalContent', 'translatedAttempt', 'blockReason',
+                        'status', 'submittedAt'
+                      ]) &&
+                      request.resource.data.status == 'pending' &&
+                      request.resource.data.userId == request.auth.uid;
+      
+      // Admins can update appeals (for review)
+      allow update: if isAdmin() && 
+                      request.resource.data.keys().hasOnly([
+                        'id', 'translationId', 'userId', 'reason', 
+                        'evidence', 'originalContent', 'translatedAttempt', 
+                        'blockReason', 'status', 'submittedAt', 'reviewedAt',
+                        'reviewedBy', 'reviewerNotes', 'decision'
+                      ]) &&
+                      request.resource.data.status in ['approved', 'rejected', 'escalated', 'under_review'];
+      
+      // Cannot delete appeals
+      allow delete: if false;
+      
+      // Admins can read all appeals
+      allow read: if isAdmin();
+    }
+    
+    // ========================================================================
+    // Translation Preferences
+    // ========================================================================
+    
+    match /translation_preferences/{userId} {
+      // Users can read their own preferences
+      allow read: if isOwner(userId);
+      
+      // Users can create/update their own preferences
+      allow create, update: if isOwner(userId) && 
+                              request.resource.data.userId == userId &&
+                              request.resource.data.keys().hasAll(['userId', 'autoTranslate', 'bilingualMode']) &&
+                              request.resource.data.autoTranslate is bool &&
+                              request.resource.data.bilingualMode is bool &&
+                              // Validate targetLanguages is array
+                              request.resource.data.targetLanguages is list &&
+                              request.resource.data.targetLanguages.size() > 0 &&
+                              request.resource.data.targetLanguages.size() <= 5 &&
+                              // Validate preserveHumor is bool
+                              request.resource.data.preserveHumor is bool;
+      
+      // Users cannot delete their preferences
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // Translation Statistics (Generated)
+    // ========================================================================
+    
+    match /translation_stats/{userId} {
+      // Users can read their own stats
+      allow read: if isOwner(userId);
+      
+      // Only Cloud Functions can create/update stats
+      allow create, update: if false;
+      
+      // Cannot delete
+      allow delete: if false;
+      
+      // Admins can read all stats
+      allow read: if isAdmin();
+    }
+    
+    // ========================================================================
+    // Multilingual Patterns (System Database)
+    // ========================================================================
+    
+    match /multilingual_patterns/{patternId} {
+      // All authenticated users can read patterns
+      allow read: if isAuthenticated();
+      
+      // Only admins can create/update patterns
+      allow create, update: if isAdmin();
+      
+      // Only admins can delete patterns
+      allow delete: if isAdmin();
+    }
+  }
+}

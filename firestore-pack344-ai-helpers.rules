@@ -1,0 +1,36 @@
+// PACK 344 — In-App AI Helpers
+// Firestore Security Rules
+// Collections: pack344_suggestion_usage, pack344_message_patterns, pack344_analytics
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 344: Suggestion Usage Tracking
+    // ========================================================================
+    match /pack344_suggestion_usage/{userId} {
+      // Users can only read their own usage
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Backend functions write usage data
+      allow write: if false; // Only backend can write
+    }
+    
+    // ========================================================================
+    // PACK 344: Message Pattern Detection (Anti Copy-Paste)
+    // ========================================================================
+    match /pack344_message_patterns/{patternId} {
+      // Only backend can read/write pattern data
+      allow read, write: if false; // Backend only
+    }
+    
+    // ========================================================================
+    // PACK 344: Analytics
+    // ========================================================================
+    match /pack344_analytics/{analyticsId} {
+      // Only backend can write analytics
+      allow read, write: if false; // Backend only
+    }
+  }
+}

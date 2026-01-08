@@ -1,0 +1,61 @@
+rules_version = '2';
+
+// ============================================================================
+// PACK 327 — Creator Promo Bundles (Subscriptions + Boosts + Tokens)
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ========================================================================
+    // PROMO BUNDLES (Public Read, Admin Write)
+    // ========================================================================
+    
+    match /promoBundles/{bundleId} {
+      // Anyone can read active bundles
+      allow read: if resource.data.available == true;
+      
+      // Only admins can create/update bundles
+      allow create, update: if isAdmin();
+      
+      // Only admins can delete (soft delete recommended)
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // PROMO BUNDLE PURCHASES (User Read Own, Cloud Functions Write)
+    // ========================================================================
+    
+    match /promoBundlePurchases/{purchaseId} {
+      // Users can read their own purchases
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Only Cloud Functions can write (no direct client writes)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // BUNDLE ANALYTICS (Admin Only)
+    // ========================================================================
+    
+    match /bundleAnalytics/{analyticsId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only via Cloud Functions
+    }
+  }
+}

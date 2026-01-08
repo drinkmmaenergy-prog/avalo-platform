@@ -1,0 +1,239 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 142 — Identity Authenticity Engine Rules
+    // ========================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator'];
+    }
+    
+    // ========================================================================
+    // Identity Checks
+    // ========================================================================
+    
+    match /identity_checks/{checkId} {
+      // Users can read their own checks
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System creates checks (via Cloud Functions)
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+    }
+    
+    // ========================================================================
+    // Liveness Sessions
+    // ========================================================================
+    
+    match /liveness_sessions/{sessionId} {
+      // Users can read their own sessions
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System creates and updates (via Cloud Functions)
+      allow create, update: if false;
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // Photo Consistency Logs
+    // ========================================================================
+    
+    match /photo_consistency_logs/{checkId} {
+      // Users can read their own checks
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System creates (via Cloud Functions)
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+      
+      // Moderators can read all
+      allow read: if isModerator();
+    }
+    
+    // ========================================================================
+    // Recurrent Authenticity Checks
+    // ========================================================================
+    
+    match /recurrent_authenticity_checks/{checkId} {
+      // Users can read their own checks
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System creates (via Cloud Functions)
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // Voice Signatures
+    // ========================================================================
+    
+    match /voice_signatures/{signatureId} {
+      // Users can read their own signatures
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System creates and updates (via Cloud Functions)
+      allow create, update: if false;
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // Voice Verification Logs
+    // ========================================================================
+    
+    match /voice_verification_logs/{checkId} {
+      // Users can read their own verifications
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System creates (via Cloud Functions)
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // Stolen Photo Checks
+    // ========================================================================
+    
+    match /stolen_photo_checks/{checkId} {
+      // Users can read their own checks
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System creates (via Cloud Functions)
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+      
+      // Moderators can read all
+      allow read: if isModerator();
+    }
+    
+    // ========================================================================
+    // Deepfake Detection Logs
+    // ========================================================================
+    
+    match /deepfake_detection_logs/{checkId} {
+      // Users can read their own checks
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System creates (via Cloud Functions)
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+      
+      // Moderators can read all
+      allow read: if isModerator();
+    }
+    
+    // ========================================================================
+    // Identity Fraud Signals
+    // ========================================================================
+    
+    match /identity_fraud_signals/{signalId} {
+      // Only admins can read
+      allow read: if isAdmin();
+      
+      // System creates (via Cloud Functions)
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // Social Graph Fraud Analysis
+    // ========================================================================
+    
+    match /social_graph_fraud_analysis/{analysisId} {
+      // Only admins can read
+      allow read: if isAdmin();
+      
+      // System creates (via Cloud Functions)
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // Identity Safety Cases
+    // ========================================================================
+    
+    match /identity_safety_cases/{caseId} {
+      // Users can read their own cases
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System creates (via Cloud Functions)
+      allow create: if false;
+      
+      // Moderators can update cases
+      allow update: if isModerator();
+      
+      // No deletes
+      allow delete: if false;
+      
+      // Moderators can read all
+      allow read: if isModerator();
+    }
+    
+    // ========================================================================
+    // Identity Verification Logs (Audit Trail)
+    // ========================================================================
+    
+    match /identity_verification_logs/{logId} {
+      // Users can read their own logs
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System creates (via Cloud Functions)
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+    }
+  }
+}

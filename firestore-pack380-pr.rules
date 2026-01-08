@@ -1,0 +1,271 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 380 — Global PR, Influencer, Media & Brand Expansion Engine
+    // ========================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isPRManager() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'pr_manager'];
+    }
+    
+    function isBrandManager() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'brand_manager'];
+    }
+    
+    function isInfluencerManager() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'influencer_manager'];
+    }
+    
+    function isLocalizationManager() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'localization_manager'];
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ========================================================================
+    // PR ENGINE COLLECTIONS
+    // ========================================================================
+    
+    // Press Releases
+    match /pressReleases/{releaseId} {
+      allow read: if isPRManager();
+      allow create: if isPRManager();
+      allow update: if isPRManager();
+      allow delete: if isAdmin();
+      
+      // Distributions subcollection
+      match /distributions/{distributionId} {
+        allow read: if isPRManager();
+        allow write: if isPRManager();
+      }
+    }
+    
+    // PR Campaigns
+    match /prCampaigns/{campaignId} {
+      allow read: if isPRManager();
+      allow create: if isPRManager();
+      allow update: if isPRManager();
+      allow delete: if isAdmin();
+    }
+    
+    // Press Contacts
+    match /pressContacts/{contactId} {
+      allow read: if isPRManager();
+      allow create: if isPRManager();
+      allow update: if isPRManager();
+      allow delete: if isAdmin();
+    }
+    
+    // Press Mentions
+    match /pressMentions/{mentionId} {
+      allow read: if isPRManager();
+      allow create: if isPRManager();
+      allow update: if isPRManager();
+      allow delete: if isAdmin();
+    }
+    
+    // PR Analytics
+    match /prAnalytics/{analyticsId} {
+      allow read: if isPRManager();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Crisis Alerts
+    match /crisisAlerts/{alertId} {
+      allow read: if isPRManager();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Monitoring Sources
+    match /monitoringSources/{sourceId} {
+      allow read: if isPRManager();
+      allow create: if isPRManager();
+      allow update: if isPRManager();
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // INFLUENCER ENGINE COLLECTIONS
+    // ========================================================================
+    
+    // Influencer Applications
+    match /influencerApplications/{applicationId} {
+      allow read: if isInfluencerManager() || 
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow update: if isInfluencerManager();
+      allow delete: if isAdmin();
+    }
+    
+    // Influencer Profiles
+    match /influencerProfiles/{influencerId} {
+      allow read: if isInfluencerManager() || isOwner(influencerId);
+      allow create: if isInfluencerManager();
+      allow update: if isInfluencerManager() || 
+                       (isOwner(influencerId) && 
+                        !request.resource.data.diff(resource.data).affectedKeys()
+                          .hasAny(['tier', 'status', 'totalEarnings', 'lifetimeInstalls', 
+                                   'lifetimeSignups', 'lifetimeRevenue']));
+      allow delete: if isAdmin();
+    }
+    
+    // Influencer Contracts
+    match /influencerContracts/{contractId} {
+      allow read: if isInfluencerManager() || 
+                     (isAuthenticated() && resource.data.influencerId == request.auth.uid);
+      allow create: if isInfluencerManager();
+      allow update: if isInfluencerManager();
+      allow delete: if isAdmin();
+    }
+    
+    // Influencer Performance
+    match /influencerPerformance/{performanceId} {
+      allow read: if isInfluencerManager() || 
+                     (isAuthenticated() && resource.data.influencerId == request.auth.uid);
+      allow write: if false; // Only backend can write
+    }
+    
+    // Influencer Payouts
+    match /influencerPayouts/{payoutId} {
+      allow read: if isInfluencerManager() || 
+                     (isAuthenticated() && resource.data.influencerId == request.auth.uid);
+      allow write: if false; // Only backend can write
+    }
+    
+    // Influencer Tiers (configuration)
+    match /influencerTiers/{tierId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // ========================================================================
+    // BRAND ENGINE COLLECTIONS
+    // ========================================================================
+    
+    // Brand Assets
+    match /brandAssets/{assetId} {
+      allow read: if isAuthenticated();
+      allow create: if isBrandManager();
+      allow update: if isBrandManager();
+      allow delete: if isAdmin();
+    }
+    
+    // Brand Guidelines
+    match /brandGuidelines/{guidelineId} {
+      allow read: if isAuthenticated();
+      allow create: if isBrandManager();
+      allow update: if isBrandManager();
+      allow delete: if isAdmin();
+    }
+    
+    // Brand Audit Logs
+    match /brandAuditLogs/{auditId} {
+      allow read: if isBrandManager();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Brand Config
+    match /brandConfig/{configId} {
+      allow read: if isAuthenticated();
+      allow write: if isBrandManager();
+    }
+    
+    // ========================================================================
+    // LOCALIZATION ENGINE COLLECTIONS
+    // ========================================================================
+    
+    // Localized Press Packs
+    match /localizedPressPacks/{packId} {
+      allow read: if isPRManager() || isLocalizationManager();
+      allow create: if isPRManager() || isLocalizationManager();
+      allow update: if isPRManager() || isLocalizationManager();
+      allow delete: if isAdmin();
+    }
+    
+    // Region Configs
+    match /regionConfigs/{region} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Translation Glossary
+    match /translationGlossary/{termId} {
+      allow read: if isAuthenticated();
+      allow create: if isLocalizationManager();
+      allow update: if isLocalizationManager();
+      allow delete: if isAdmin();
+    }
+    
+    // Creator Materials (localized)
+    match /creatorMaterials/{materialId} {
+      allow read: if isAuthenticated();
+      allow create: if isPRManager() || isLocalizationManager();
+      allow update: if isPRManager() || isLocalizationManager();
+      allow delete: if isAdmin();
+    }
+    
+    // Localized Pitch Decks
+    match /localizedPitchDecks/{deckId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow write: if false; // Only backend can write
+    }
+    
+    // Region Stats
+    match /regionStats/{region} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Region Earnings
+    match /regionEarnings/{region} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Creator Testimonials
+    match /creatorTestimonials/{testimonialId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAdmin() || isLocalizationManager();
+      allow delete: if isAdmin();
+    }
+    
+    // Pitch Deck Templates
+    match /pitchDeckTemplates/{templateId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // ========================================================================
+    // FEATURE FLAGS
+    // ========================================================================
+    
+    match /featureFlags/{flagId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

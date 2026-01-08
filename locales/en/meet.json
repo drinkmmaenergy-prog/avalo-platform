@@ -1,0 +1,13 @@
+{
+  "realMeet": "Real-life meeting",
+  "socialMeet": "Social gathering",
+  "bookNow": "Book now",
+  "pricePerMeet": "Price per meeting",
+  "hostRules": "Host rules",
+  "scheduleMeet": "Schedule meeting",
+  "bookingSuccess": "Booking confirmed",
+  "bookingCancelled": "Booking cancelled",
+  "hostNoShow": "Host didn't show up",
+  "guestNoShow": "Guest didn't show up",
+  "confirmCompleted": "Confirm completion"
+}

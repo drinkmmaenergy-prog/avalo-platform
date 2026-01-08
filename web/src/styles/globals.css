@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Primary Gradient */
+  --color-primary-start: #FF6B00;
+  --color-primary-middle: #FF3C8E;
+  --color-primary-end: #7B2EFF;
+  
+  /* Secondary Gradient */
+  --color-secondary-start: #FFC14F;
+  --color-secondary-middle: #FF5AA5;
+  --color-secondary-end: #8B4FFF;
+  
+  /* Light Mode Colors */
+  --color-background: #FFFFFF;
+  --color-background-secondary: #F5F5F7;
+  --color-background-tertiary: #EFEFF4;
+  --color-text: #111111;
+  --color-text-secondary: #3C3C43;
+  --color-text-tertiary: #8E8E93;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  --color-glass: rgba(255, 255, 255, 0.7);
+  --color-glass-border: rgba(0, 0, 0, 0.1);
+  --color-border: #E5E5EA;
+  --color-border-strong: #C6C6C8;
+  --color-overlay: rgba(0, 0, 0, 0.3);
+}
+
+.dark {
+  /* Dark Mode Colors */
+  --color-background: #0E0E10;
+  --color-background-secondary: #1C1C1E;
+  --color-background-tertiary: #2C2C2E;
+  --color-text: #FFFFFF;
+  --color-text-secondary: #EBEBF5;
+  --color-text-tertiary: #A1A1A6;
+  --color-surface: #1C1C1E;
+  --color-surface-elevated: #2C2C2E;
+  --color-glass: rgba(28, 28, 30, 0.7);
+  --color-glass-border: rgba(255, 255, 255, 0.1);
+  --color-border: #38383A;
+  --color-border-strong: #48484A;
+  --color-overlay: rgba(0, 0, 0, 0.5);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: linear-gradient(135deg, var(--color-primary-start), var(--color-primary-middle), var(--color-primary-end));
+  }
+  
+  .gradient-secondary {
+    background: linear-gradient(135deg, var(--color-secondary-start), var(--color-secondary-middle), var(--color-secondary-end));
+  }
+  
+  .glass-effect {
+    background: var(--color-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--color-glass-border);
+  }
+  
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradientShift 20s ease infinite;
+  }
+  
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+}

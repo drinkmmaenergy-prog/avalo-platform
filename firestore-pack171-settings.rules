@@ -1,0 +1,188 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // User Settings - Privacy First
+    // Users can only read and write their own settings
+    // No one else can access another user's settings
+    match /user_settings/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+    
+    // Consent Logs - Immutable Audit Trail
+    // Users can read their own consent logs
+    // Only the system (via Cloud Functions) can create consent logs
+    match /consent_logs/{consentId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      allow create: if false; // Only via Cloud Functions
+      allow update: if false; // Immutable
+      allow delete: if false; // Never delete consent logs
+    }
+    
+    // Session Devices - User Controlled
+    // Users can read and delete their own sessions
+    match /session_devices/{sessionId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      allow create: if false; // Only via Cloud Functions on login
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['lastActive', 'trusted']);
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // Data Requests - Privacy Rights
+    // Users can read their own data requests
+    // Only Cloud Functions can create/modify data requests
+    match /data_requests/{requestId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      allow create: if false; // Only via Cloud Functions
+      allow update: if false; // Only via Cloud Functions
+      allow delete: if false; // Keep audit trail
+    }
+    
+    // Settings Audit Logs - Immutable History
+    // Users can read their own audit logs
+    // Only Cloud Functions can create audit logs
+    match /settings_audit_logs/{logId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      allow create: if false; // Only via Cloud Functions
+      allow update: if false; // Immutable
+      allow delete: if false; // Never delete audit logs
+    }
+    
+    // Scheduled Deletions - System Only
+    // Users can read their own scheduled deletions
+    // Only Cloud Functions can manage deletions
+    match /scheduled_deletions/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // Permission Controls - User Privacy
+    // Users can read and update their own permissions
+    match /permission_controls/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) &&
+                       // Ensure userId cannot be changed
+                       request.resource.data.userId == resource.data.userId;
+      allow delete: if isOwner(userId);
+    }
+    
+    // Privacy Violation Alerts - Security Notifications
+    // Users can read their own alerts
+    // Only system can create alerts
+    match /privacy_violation_alerts/{alertId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      allow create: if false; // Only via Cloud Functions
+      allow update: if false; // Only via Cloud Functions
+      allow delete: if false; // Keep security audit trail
+    }
+    
+    // Block and Report Settings - User Safety
+    // Users can manage their own block lists
+    match /block_lists/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+    
+    // Temporary Location Share Sessions - PACK 76 Integration
+    // Users can read and delete their own temp share sessions
+    match /temp_share_sessions/{sessionId} {
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid ||
+                      resource.data.recipientId == request.auth.uid);
+      allow create: if false; // Only via Cloud Functions
+      allow update: if false; // Only via Cloud Functions
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // Notification Preferences - User Control
+    // Users can manage their own notification settings
+    match /notification_preferences/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+    
+    // Payment Settings - Secure by Default
+    // Users can read their own payment settings
+    // Sensitive updates only via Cloud Functions
+    match /payment_settings/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) &&
+                       // Cannot modify payout methods directly
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(['payoutMethod']);
+      allow delete: if false; // Keep payment history
+    }
+    
+    // Privacy-First Enforcement Rules
+    // These rules ensure no dark patterns or manipulative defaults
+    
+    // Rule: Default visibility must be private
+    function validatePrivacyDefaults() {
+      return request.resource.data.privacy.posts == 'private' &&
+             request.resource.data.privacy.purchases == 'private';
+    }
+    
+    // Rule: Consent cannot be bypassed
+    function hasValidConsent(purpose) {
+      return exists(/databases/$(database)/documents/consent_logs/$(request.auth.uid + '_' + purpose)) &&
+             get(/databases/$(database)/documents/consent_logs/$(request.auth.uid + '_' + purpose)).data.granted == true;
+    }
+    
+    // Rule: Opt-in required for sensitive features
+    function isOptedIn(feature) {
+      let settings = get(/databases/$(database)/documents/user_settings/$(request.auth.uid));
+      return settings.data.privacy[feature] == true;
+    }
+    
+    // Forbidden Settings - Block Dark Patterns
+    // These settings violate PACK 171 principles and are not allowed
+    
+    // ❌ Attractiveness visibility toggle - FORBIDDEN
+    // ❌ Romantic matching mode - FORBIDDEN
+    // ❌ VIP attention priority - FORBIDDEN
+    // ❌ Purchases visibility social features - FORBIDDEN
+    
+    // Validation: Ensure forbidden settings are never created
+    match /user_settings/{userId} {
+      allow write: if isOwner(userId) &&
+                      // Forbidden fields must not exist
+                      !request.resource.data.keys().hasAny([
+                        'attractivenessVisibility',
+                        'romanticMatchingMode',
+                        'vipAttentionPriority',
+                        'purchasesSocialVisibility'
+                      ]);
+    }
+  }
+}

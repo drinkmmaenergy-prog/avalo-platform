@@ -1,0 +1,267 @@
+rules_version = '2';
+
+/**
+ * PACK 359 — Legal Compliance: Firestore Security Rules
+ * 
+ * Protects legal, tax, and compliance data with strict access controls
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // =========================================================================
+    // HELPER FUNCTIONS
+    // =========================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator'];
+    }
+    
+    // =========================================================================
+    // JURISDICTION DATA
+    // =========================================================================
+    
+    match /legal_jurisdiction/{userId} {
+      // Users can read their own jurisdiction
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Only system (via Cloud Functions) can write jurisdiction data
+      allow write: if false; // Cloud Functions only
+    }
+    
+    // =========================================================================
+    // TAX LEDGER (Immutable)
+    // =========================================================================
+    
+    match /tax_ledger/{transactionId} {
+      // Users can read their own tax records
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || 
+                      resource.data.creatorId == request.auth.uid ||
+                      isAdmin());
+      
+      // Only system can write tax records (immutable)
+      allow write: if false; // Cloud Functions only
+    }
+    
+    // =========================================================================
+    // TAX SUMMARIES
+    // =========================================================================
+    
+    match /user_tax_summaries/{summaryId} {
+      // Users can read their own summaries
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid ||
+                     isAdmin();
+      
+      // Only system can write summaries
+      allow write: if false; // Cloud Functions only
+    }
+    
+    match /creator_tax_summaries/{summaryId} {
+      // Creators can read their own summaries
+      allow read: if isAuthenticated() && 
+                     resource.data.creatorId == request.auth.uid ||
+                     isAdmin();
+      
+      // Only system can write summaries
+      allow write: if false; // Cloud Functions only
+    }
+    
+    // =========================================================================
+    // TAX STATEMENTS
+    // =========================================================================
+    
+    match /tax_statements/{statementId} {
+      // Creators can read their own statements
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid ||
+                     isAdmin();
+      
+      // Only system can write statements
+      allow write: if false; // Cloud Functions only
+    }
+    
+    match /annual_tax_summaries/{summaryId} {
+      // Creators can read their own annual summaries
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid ||
+                     isAdmin();
+      
+      // Only system can write summaries
+      allow write: if false; // Cloud Functions only
+    }
+    
+    // =========================================================================
+    // GDPR DATA REQUESTS
+    // =========================================================================
+    
+    match /data_erasure_requests/{requestId} {
+      // Users can read their own erasure requests
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid ||
+                     isAdmin();
+      
+      // Users can create erasure requests for themselves
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status == 'pending';
+      
+      // Only system can update requests
+      allow update: if false; // Cloud Functions only
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    match /data_export_requests/{requestId} {
+      // Users can read their own export requests
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid ||
+                     isAdmin();
+      
+      // Users can create export requests for themselves
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status == 'pending';
+      
+      // Only system can update requests
+      allow update: if false; // Cloud Functions only
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    match /data_exports/{exportId} {
+      // Users can read their own exports
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid ||
+                     isAdmin();
+      
+      // Only system can write exports
+      allow write: if false; // Cloud Functions only
+    }
+    
+    // =========================================================================
+    // DSA REPORTS
+    // =========================================================================
+    
+    match /dsa_reports/{reportId} {
+      // Moderators and admins can read reports
+      // Users can read reports they created
+      allow read: if isModerator() ||
+                     (isAuthenticated() && resource.data.reporterId == request.auth.uid);
+      
+      // Users can create reports
+      allow create: if isAuthenticated() &&
+                       request.resource.data.reportedBy == 'user' &&
+                       request.resource.data.reporterId == request.auth.uid;
+      
+      // Only moderators can update reports
+      allow update: if isModerator();
+      
+      // No deletion allowed (audit trail)
+      allow delete: if false;
+    }
+    
+    match /dsa_compliance_reports/{reportId} {
+      // Only admins can read compliance reports
+      allow read: if isAdmin();
+      
+      // Only system can write compliance reports
+      allow write: if false; // Cloud Functions only
+    }
+    
+    // =========================================================================
+    // AUTHORITY NOTIFICATIONS
+    // =========================================================================
+    
+    match /authority_notifications/{notificationId} {
+      // Only admins can read notifications
+      allow read: if isAdmin();
+      
+      // Only system can write notifications
+      allow write: if false; // Cloud Functions only
+    }
+    
+    match /law_enforcement_notifications/{notificationId} {
+      // Only admins can read law enforcement notifications
+      allow read: if isAdmin();
+      
+      // Only system can write notifications
+      allow write: if false; // Cloud Functions only
+    }
+    
+    // =========================================================================
+    // MODERATOR QUEUE
+    // =========================================================================
+    
+    match /moderator_queue/{queueId} {
+      // Only moderators can read queue
+      allow read: if isModerator();
+      
+      // Moderators can update queue items (mark as reviewed)
+      allow update: if isModerator();
+      
+      // Only system can create queue items
+      allow create: if false; // Cloud Functions only
+      
+      // Moderators can delete resolved items
+      allow delete: if isModerator();
+    }
+    
+    // =========================================================================
+    // LEGAL AUDIT LOG (Immutable)
+    // =========================================================================
+    
+    match /legal_audit_log/{logId} {
+      // Only admins can read audit logs
+      allow read: if isAdmin();
+      
+      // Only system can write audit logs
+      allow write: if false; // Cloud Functions only
+    }
+    
+    // =========================================================================
+    // KYC VERIFICATIONS
+    // =========================================================================
+    
+    match /kyc_verifications/{userId} {
+      // Users can read their own KYC status
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Users can create/update their KYC data
+      allow create, update: if isOwner(userId);
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    // =========================================================================
+    // CONTENT MODERATION
+    // =========================================================================
+    
+    match /content_moderation/{contentId} {
+      // Moderators and content owners can read
+      allow read: if isModerator() ||
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      
+      // Only moderators can write
+      allow write: if isModerator();
+    }
+  }
+}

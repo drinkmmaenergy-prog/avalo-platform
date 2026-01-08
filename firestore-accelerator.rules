@@ -1,0 +1,200 @@
+rules_version = '2';
+
+// PACK 197 - Creator Accelerator Security Rules
+// Strict anti-exploitation protections
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    function isParticipant() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/accelerator_participants/$(request.auth.uid));
+    }
+    
+    function isMentor() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/accelerator_mentors/$(request.auth.uid));
+    }
+    
+    function hasSignedEthicsAgreement() {
+      return isParticipant() && 
+             get(/databases/$(database)/documents/accelerator_participants/$(request.auth.uid)).data.ethicsAgreementSigned == true;
+    }
+    
+    // Accelerator Applications
+    
+    match /accelerator_applications/{applicationId} {
+      allow read: if isUser(resource.data.userId) || isAdmin();
+      
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status == 'pending' &&
+                       request.resource.data.flags.hasEthicsViolations == false &&
+                       request.resource.data.flags.hasExploitationFlags == false;
+      
+      allow update: if isAdmin();
+      
+      allow delete: if false;
+    }
+    
+    // Accelerator Participants
+    
+    match /accelerator_participants/{userId} {
+      allow read: if isUser(userId) || isAdmin() || isMentor();
+      
+      allow create: if isAdmin();
+      
+      allow update: if isUser(userId) && 
+                       (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['tier', 'mentorId', 'violations'])) ||
+                       isAdmin();
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Accelerator Mentors
+    
+    match /accelerator_mentors/{mentorId} {
+      allow read: if isAuthenticated();
+      
+      allow create: if isAdmin();
+      
+      allow update: if isUser(mentorId) && 
+                       request.resource.data.ethicsAgreementSigned == true ||
+                       isAdmin();
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Mentorship Sessions
+    
+    match /mentorship_sessions/{sessionId} {
+      allow read: if isUser(resource.data.participantId) || 
+                     isUser(resource.data.mentorId) || 
+                     isAdmin();
+      
+      allow create: if (isUser(resource.data.mentorId) || isAdmin()) &&
+                       request.resource.data.ethicsCompliance.professionalBoundaries == true &&
+                       request.resource.data.ethicsCompliance.noRomanticAdvances == true &&
+                       request.resource.data.ethicsCompliance.noFavoritism == true;
+      
+      allow update: if (isUser(resource.data.participantId) || 
+                        isUser(resource.data.mentorId) || 
+                        isAdmin()) &&
+                       request.resource.data.ethicsCompliance.professionalBoundaries == true &&
+                       request.resource.data.ethicsCompliance.noRomanticAdvances == true &&
+                       request.resource.data.ethicsCompliance.noFavoritism == true;
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Creator Grants
+    
+    match /creator_grants/{requestId} {
+      allow read: if isUser(resource.data.participantId) || isAdmin();
+      
+      allow create: if isUser(request.resource.data.participantId) && 
+                       hasSignedEthicsAgreement() &&
+                       request.resource.data.status == 'pending' &&
+                       request.resource.data.amount > 0 &&
+                       request.resource.data.amount <= 10000;
+      
+      allow update: if isAdmin();
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Accelerator Tiers (read-only reference data)
+    
+    match /accelerator_tiers/{tierId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Violation Reports
+    
+    match /accelerator_violation_reports/{reportId} {
+      allow read: if isUser(resource.data.reporterId) || isAdmin();
+      
+      allow create: if isAuthenticated() && 
+                       request.resource.data.reporterId == request.auth.uid &&
+                       request.resource.data.status == 'pending';
+      
+      allow update: if isAdmin();
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Workshop Registrations
+    
+    match /accelerator_workshops/{workshopId} {
+      allow read: if isAuthenticated();
+      
+      allow create: if isAdmin();
+      
+      allow update: if isAdmin();
+      
+      allow delete: if isAdmin();
+    }
+    
+    match /accelerator_workshops/{workshopId}/registrations/{userId} {
+      allow read: if isUser(userId) || isAdmin();
+      
+      allow create: if isUser(userId) && hasSignedEthicsAgreement();
+      
+      allow update: if isUser(userId) || isAdmin();
+      
+      allow delete: if isUser(userId) || isAdmin();
+    }
+    
+    // Safety Training Progress
+    
+    match /safety_training_progress/{userId} {
+      allow read: if isUser(userId) || isAdmin();
+      
+      allow create, update: if isUser(userId);
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Business Resources (public for participants)
+    
+    match /accelerator_resources/{resourceId} {
+      allow read: if isParticipant() || isAdmin();
+      
+      allow write: if isAdmin();
+    }
+    
+    // Networking Events
+    
+    match /accelerator_events/{eventId} {
+      allow read: if isAuthenticated();
+      
+      allow create, update, delete: if isAdmin();
+    }
+    
+    match /accelerator_events/{eventId}/attendees/{userId} {
+      allow read: if isAuthenticated();
+      
+      allow create: if isUser(userId) && hasSignedEthicsAgreement();
+      
+      allow update: if isUser(userId) || isAdmin();
+      
+      allow delete: if isUser(userId) || isAdmin();
+    }
+  }
+}

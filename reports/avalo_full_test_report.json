@@ -1,0 +1,377 @@
+{
+  "timestamp": "2025-11-05T21:21:11.070Z",
+  "projectId": "avalo-c8c46",
+  "region": "europe-west3",
+  "totalTests": 28,
+  "passed": 6,
+  "failed": 12,
+  "warnings": 6,
+  "skipped": 4,
+  "duration": 138,
+  "results": [
+    {
+      "name": "Environment: Load .env file",
+      "status": "fail",
+      "duration": 1,
+      "error": "Failed to load .env file: Error: ENOENT: no such file or directory, open 'c:\\Users\\Drink\\avaloapp\\tests\\integration\\functions\\.env'"
+    },
+    {
+      "name": "Environment: Required variables",
+      "status": "fail",
+      "duration": 0,
+      "error": "Missing required variables: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, GOOGLE_CLIENT_ID, OPENAI_API_KEY, ANTHROPIC_API_KEY, NODE_ENV, FUNCTIONS_REGION"
+    },
+    {
+      "name": "Environment: Forbidden variables",
+      "status": "pass",
+      "duration": 0,
+      "message": "No forbidden variables found"
+    },
+    {
+      "name": "Environment: API key validation",
+      "status": "pass",
+      "duration": 0,
+      "message": "All API keys have valid formats"
+    },
+    {
+      "name": "Build: TypeScript compilation",
+      "status": "fail",
+      "duration": 8,
+      "error": "Build failed: spawn C:\\Windows\\system32\\cmd.exe ENOENT"
+    },
+    {
+      "name": "Build: Output validation",
+      "status": "fail",
+      "duration": 0,
+      "error": "lib/index.js not found after build"
+    },
+    {
+      "name": "Emulator: Functions emulator",
+      "status": "warning",
+      "duration": 49,
+      "message": "Functions emulator not running. Start with: firebase emulators:start"
+    },
+    {
+      "name": "Emulator: Firestore emulator",
+      "status": "warning",
+      "duration": 28,
+      "message": "Firestore emulator not running"
+    },
+    {
+      "name": "Emulator: Auth emulator",
+      "status": "pass",
+      "duration": 5,
+      "message": "Auth emulator running on port 9099"
+    },
+    {
+      "name": "Emulator: Storage emulator",
+      "status": "warning",
+      "duration": 4,
+      "message": "Storage emulator not running"
+    },
+    {
+      "name": "Endpoint: ping",
+      "status": "fail",
+      "duration": 4,
+      "error": "Request failed: Body is unusable: Body has already been read"
+    },
+    {
+      "name": "Endpoint: getSystemInfo",
+      "status": "fail",
+      "duration": 3,
+      "error": "Request failed: Body is unusable: Body has already been read"
+    },
+    {
+      "name": "Endpoint: getGlobalFeedV1",
+      "status": "fail",
+      "duration": 2,
+      "error": "Request failed: Body is unusable: Body has already been read"
+    },
+    {
+      "name": "Endpoint: purchaseTokensV2",
+      "status": "fail",
+      "duration": 2,
+      "error": "Request failed: Body is unusable: Body has already been read"
+    },
+    {
+      "name": "Endpoint: getTransactionHistoryV2",
+      "status": "fail",
+      "duration": 2,
+      "error": "Request failed: Body is unusable: Body has already been read"
+    },
+    {
+      "name": "Endpoint: connectWalletV1",
+      "status": "fail",
+      "duration": 3,
+      "error": "Request failed: Body is unusable: Body has already been read"
+    },
+    {
+      "name": "Stripe: API key validation",
+      "status": "fail",
+      "duration": 0,
+      "error": "STRIPE_SECRET_KEY not found"
+    },
+    {
+      "name": "Stripe: Webhook endpoint",
+      "status": "fail",
+      "duration": 8,
+      "error": "Request failed: Body is unusable: Body has already been read"
+    },
+    {
+      "name": "Firestore: Emulator connectivity",
+      "status": "skip",
+      "duration": 3,
+      "message": "Firestore emulator not running"
+    },
+    {
+      "name": "Auth: Emulator connectivity",
+      "status": "pass",
+      "duration": 2,
+      "message": "Auth emulator accessible"
+    },
+    {
+      "name": "Auth: OAuth configuration",
+      "status": "warning",
+      "duration": 0,
+      "message": "GOOGLE_CLIENT_ID not configured"
+    },
+    {
+      "name": "Storage: Emulator connectivity",
+      "status": "skip",
+      "duration": 2,
+      "message": "Storage emulator not running"
+    },
+    {
+      "name": "AI: OpenAI API key",
+      "status": "warning",
+      "duration": 0,
+      "message": "OPENAI_API_KEY not configured"
+    },
+    {
+      "name": "AI: Anthropic API key",
+      "status": "warning",
+      "duration": 0,
+      "message": "ANTHROPIC_API_KEY not configured"
+    },
+    {
+      "name": "Performance: Ping latency",
+      "status": "skip",
+      "duration": 3,
+      "message": "Endpoint unreachable"
+    },
+    {
+      "name": "Performance: System info response",
+      "status": "skip",
+      "duration": 2,
+      "message": "Endpoint unreachable"
+    },
+    {
+      "name": "Security: Environment variable exposure",
+      "status": "pass",
+      "duration": 0,
+      "message": "No obvious security issues in environment variables"
+    },
+    {
+      "name": "Security: API key formats",
+      "status": "pass",
+      "duration": 0,
+      "message": "All API keys have correct formats"
+    }
+  ],
+  "summary": {
+    "environment": [
+      {
+        "name": "Environment: Load .env file",
+        "status": "fail",
+        "duration": 1,
+        "error": "Failed to load .env file: Error: ENOENT: no such file or directory, open 'c:\\Users\\Drink\\avaloapp\\tests\\integration\\functions\\.env'"
+      },
+      {
+        "name": "Environment: Required variables",
+        "status": "fail",
+        "duration": 0,
+        "error": "Missing required variables: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, GOOGLE_CLIENT_ID, OPENAI_API_KEY, ANTHROPIC_API_KEY, NODE_ENV, FUNCTIONS_REGION"
+      },
+      {
+        "name": "Environment: Forbidden variables",
+        "status": "pass",
+        "duration": 0,
+        "message": "No forbidden variables found"
+      },
+      {
+        "name": "Environment: API key validation",
+        "status": "pass",
+        "duration": 0,
+        "message": "All API keys have valid formats"
+      },
+      {
+        "name": "Security: Environment variable exposure",
+        "status": "pass",
+        "duration": 0,
+        "message": "No obvious security issues in environment variables"
+      }
+    ],
+    "build": [
+      {
+        "name": "Build: TypeScript compilation",
+        "status": "fail",
+        "duration": 8,
+        "error": "Build failed: spawn C:\\Windows\\system32\\cmd.exe ENOENT"
+      },
+      {
+        "name": "Build: Output validation",
+        "status": "fail",
+        "duration": 0,
+        "error": "lib/index.js not found after build"
+      }
+    ],
+    "emulators": [
+      {
+        "name": "Emulator: Functions emulator",
+        "status": "warning",
+        "duration": 49,
+        "message": "Functions emulator not running. Start with: firebase emulators:start"
+      },
+      {
+        "name": "Emulator: Firestore emulator",
+        "status": "warning",
+        "duration": 28,
+        "message": "Firestore emulator not running"
+      },
+      {
+        "name": "Emulator: Auth emulator",
+        "status": "pass",
+        "duration": 5,
+        "message": "Auth emulator running on port 9099"
+      },
+      {
+        "name": "Emulator: Storage emulator",
+        "status": "warning",
+        "duration": 4,
+        "message": "Storage emulator not running"
+      },
+      {
+        "name": "Firestore: Emulator connectivity",
+        "status": "skip",
+        "duration": 3,
+        "message": "Firestore emulator not running"
+      },
+      {
+        "name": "Auth: Emulator connectivity",
+        "status": "pass",
+        "duration": 2,
+        "message": "Auth emulator accessible"
+      },
+      {
+        "name": "Storage: Emulator connectivity",
+        "status": "skip",
+        "duration": 2,
+        "message": "Storage emulator not running"
+      }
+    ],
+    "endpoints": [
+      {
+        "name": "Endpoint: ping",
+        "status": "fail",
+        "duration": 4,
+        "error": "Request failed: Body is unusable: Body has already been read"
+      },
+      {
+        "name": "Endpoint: getSystemInfo",
+        "status": "fail",
+        "duration": 3,
+        "error": "Request failed: Body is unusable: Body has already been read"
+      },
+      {
+        "name": "Endpoint: getGlobalFeedV1",
+        "status": "fail",
+        "duration": 2,
+        "error": "Request failed: Body is unusable: Body has already been read"
+      },
+      {
+        "name": "Endpoint: purchaseTokensV2",
+        "status": "fail",
+        "duration": 2,
+        "error": "Request failed: Body is unusable: Body has already been read"
+      },
+      {
+        "name": "Endpoint: getTransactionHistoryV2",
+        "status": "fail",
+        "duration": 2,
+        "error": "Request failed: Body is unusable: Body has already been read"
+      },
+      {
+        "name": "Endpoint: connectWalletV1",
+        "status": "fail",
+        "duration": 3,
+        "error": "Request failed: Body is unusable: Body has already been read"
+      }
+    ],
+    "integrations": [
+      {
+        "name": "Emulator: Storage emulator",
+        "status": "warning",
+        "duration": 4,
+        "message": "Storage emulator not running"
+      },
+      {
+        "name": "Stripe: API key validation",
+        "status": "fail",
+        "duration": 0,
+        "error": "STRIPE_SECRET_KEY not found"
+      },
+      {
+        "name": "Stripe: Webhook endpoint",
+        "status": "fail",
+        "duration": 8,
+        "error": "Request failed: Body is unusable: Body has already been read"
+      },
+      {
+        "name": "Storage: Emulator connectivity",
+        "status": "skip",
+        "duration": 2,
+        "message": "Storage emulator not running"
+      },
+      {
+        "name": "AI: OpenAI API key",
+        "status": "warning",
+        "duration": 0,
+        "message": "OPENAI_API_KEY not configured"
+      },
+      {
+        "name": "AI: Anthropic API key",
+        "status": "warning",
+        "duration": 0,
+        "message": "ANTHROPIC_API_KEY not configured"
+      }
+    ],
+    "security": [
+      {
+        "name": "Security: Environment variable exposure",
+        "status": "pass",
+        "duration": 0,
+        "message": "No obvious security issues in environment variables"
+      },
+      {
+        "name": "Security: API key formats",
+        "status": "pass",
+        "duration": 0,
+        "message": "All API keys have correct formats"
+      }
+    ],
+    "performance": [
+      {
+        "name": "Performance: Ping latency",
+        "status": "skip",
+        "duration": 3,
+        "message": "Endpoint unreachable"
+      },
+      {
+        "name": "Performance: System info response",
+        "status": "skip",
+        "duration": 2,
+        "message": "Endpoint unreachable"
+      }
+    ]
+  }
+}

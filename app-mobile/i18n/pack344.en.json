@@ -1,0 +1,29 @@
+{
+  "pack344": {
+    "aiHelp": "AI Help",
+    "aiCoach": "AI Coach",
+    "messageSuggestions": "AI Message Suggestions",
+    "generatingSuggestions": "Generating suggestions...",
+    "failedToGenerate": "Failed to generate suggestions",
+    "tapToInsert": "Tap a suggestion to insert it into your message",
+    "spamWarningTitle": "Personalize Your Message",
+    "spamWarningMessage": "Many users receive the same message. Personalized messages work better here.",
+    "getAiSuggestion": "Get AI Suggestion",
+    "profileTips": "Improve Your Profile",
+    "discoveryTips": "How to Start Conversations",
+    "analyzingProfile": "Analyzing your profile...",
+    "aiGeneratedDisclaimer": "💡 Tips are AI-generated and may need personalization",
+    "tonePlayful": "Playful",
+    "tonePolite": "Polite",
+    "toneConfident": "Confident",
+    "toneCurious": "Curious",
+    "improveChances": "Improve My Chances",
+    "recommendedImprovements": "Recommended Improvements",
+    "aiSuggestionsUnavailable": "AI suggestions are temporarily unavailable. Try again later.",
+    "dailyLimitReached": "Daily suggestion limit reached. Try again tomorrow.",
+    "spamDetected": "This message appears to be sent to multiple people. Personalize it for better results.",
+    "editMessage": "Edit Message",
+    "continueAnyway": "Continue Anyway",
+    "close": "Close"
+  }
+}

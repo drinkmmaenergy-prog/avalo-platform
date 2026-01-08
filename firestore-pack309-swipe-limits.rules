@@ -1,0 +1,113 @@
+rules_version = '2';
+
+/**
+ * PACK 309 — Swipe Limit Engine Firestore Rules
+ * 
+ * Security rules for swipe statistics and rate limiting
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // USER SWIPE STATS (Rate Limiting Data)
+    // ========================================================================
+    
+    match /userSwipeStats/{userId} {
+      // Users can only read their own stats
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only server (Cloud Functions) can write stats
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // SWIPE STATS (Legacy - PACK 284)
+    // ========================================================================
+    
+    match /swipeStats/{userId} {
+      // Users can only read their own stats
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only server can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // SWIPE DECISIONS (Swipe History)
+    // ========================================================================
+    
+    match /swipeDecisions/{decisionId} {
+      // Users can read their own swipe decisions
+      allow read: if request.auth != null && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only server can write swipe decisions
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // SWIPE PROFILES (Denormalized Discovery Index)
+    // ========================================================================
+    
+    match /swipeProfiles/{userId} {
+      // All authenticated users can read swipe profiles (for queue)
+      allow read: if request.auth != null;
+      
+      // Only server can write (synced from discoveryPresence)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // MATCHES (Mutual Likes)
+    // ========================================================================
+    
+    match /matches/{matchId} {
+      // Users can read matches they're part of
+      allow read: if request.auth != null && 
+                     (resource.data.userA == request.auth.uid || 
+                      resource.data.userB == request.auth.uid);
+      
+      // Only server can create/update matches
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PROFILE VIEWS (Discovery Visitors Tracking)
+    // ========================================================================
+    
+    match /profileViews/{viewId} {
+      // Users can read views where they are the target
+      allow read: if request.auth != null && 
+                     resource.data.targetId == request.auth.uid;
+      
+      // Only server can write profile views
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // DISCOVERY PRESENCE (Searchable Index)
+    // ========================================================================
+    
+    match /discoveryPresence/{userId} {
+      // All authenticated 18+ verified users can read
+      allow read: if request.auth != null;
+      
+      // Only server can write (synced from users collection)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // SWIPE ABUSE REPORTS
+    // ========================================================================
+    
+    match /swipeAbuseReports/{reportId} {
+      // Only admins can read abuse reports
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      
+      // Only server can write abuse reports
+      allow write: if false;
+    }
+  }
+}

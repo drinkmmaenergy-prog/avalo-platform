@@ -1,0 +1,299 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // PACK 254: MEET & DATE ENGINE - OFFLINE MEETINGS AUTOMATION
+    // ============================================================================
+    // Complete offline meeting system with:
+    // - Token-based booking (35% Avalo fee + 65% escrow)
+    // - Mandatory check-in/check-out (selfie or QR)
+    // - Refund logic (identity mismatch, safety violations, mutual agreement)
+    // - Panic Mode (in-app + lock-screen)
+    // - Post-meeting rating system
+    // - Shared logic with Events engine
+    // ============================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function userId() {
+      return request.auth.uid;
+    }
+    
+    function isCreator() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(userId())).data.earnFromChat == true ||
+        get(/databases/$(database)/documents/users/$(userId())).data.isCreator == true
+      );
+    }
+    
+    function isModerator() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(userId())).data.role in ['ADMIN', 'MODERATOR'];
+    }
+    
+    // Check if user is participant in meeting
+    function isMeetingParticipant(meetingId) {
+      let meeting = get(/databases/$(database)/documents/meetings/$(meetingId)).data;
+      return userId() == meeting.creatorId || userId() == meeting.bookerId;
+    }
+    
+    // ============================================================================
+    // MEETINGS COLLECTION (1:1 Offline Meetings)
+    // ============================================================================
+    
+    match /meetings/{meetingId} {
+      // Read: Participants or moderators
+      allow read: if isAuthenticated() && (
+        isMeetingParticipant(meetingId) ||
+        isModerator()
+      );
+      
+      // Create: Only authenticated users can create meetings
+      allow create: if isAuthenticated() &&
+        isCreator() &&
+        // Creator must be the one creating their availability
+        request.resource.data.creatorId == userId() &&
+        // Valid status
+        request.resource.data.status in ['AVAILABLE', 'BOOKED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] &&
+        // Initial status must be AVAILABLE
+        request.resource.data.status == 'AVAILABLE' &&
+        // Required fields
+        request.resource.data.keys().hasAll([
+          'meetingId', 'creatorId', 'creatorName', 'title', 'description',
+          'startTime', 'endTime', 'timezone', 'priceTokens', 'location',
+          'verificationType', 'status', 'createdAt', 'updatedAt'
+        ]) &&
+        // Timing constraints
+        request.resource.data.startTime > request.time &&
+        request.resource.data.endTime > request.resource.data.startTime &&
+        // Price must be positive
+        request.resource.data.priceTokens > 0 &&
+        // Verification type must be valid
+        request.resource.data.verificationType in ['SELFIE', 'QR', 'BOTH'];
+      
+      // Update: Participants can update based on status
+      allow update: if isAuthenticated() && (
+        // Creator can update their own meeting slots
+        (resource.data.creatorId == userId() && 
+         resource.data.status == 'AVAILABLE') ||
+        // Booker can cancel before meeting starts
+        (resource.data.bookerId == userId() &&
+         resource.data.status in ['BOOKED', 'IN_PROGRESS']) ||
+        // Moderators can update anything
+        isModerator()
+      ) &&
+        // Cannot change meeting ID or creator
+        request.resource.data.meetingId == resource.data.meetingId &&
+        request.resource.data.creatorId == resource.data.creatorId &&
+        // Cannot change to invalid status
+        request.resource.data.status in ['AVAILABLE', 'BOOKED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'REFUNDED'] &&
+        // Update timestamp must be set
+        request.resource.data.updatedAt == request.time;
+      
+      // Delete: Not allowed (use status change to CANCELLED)
+      allow delete: if false;
+      
+      // ============================================================================
+      // MEETING VALIDATIONS SUBCOLLECTION (Check-in/Check-out)
+      // ============================================================================
+      
+      match /validations/{validationId} {
+        // Read: Participants or moderators
+        allow read: if isAuthenticated() && (
+          isMeetingParticipant(meetingId) ||
+          isModerator()
+        );
+        
+        // Create: Only participants during meeting window
+        allow create: if isAuthenticated() &&
+          isMeetingParticipant(meetingId) &&
+          request.resource.data.userId == userId() &&
+          request.resource.data.keys().hasAll([
+            'validationId', 'meetingId', 'userId', 'validationType',
+            'verificationType', 'timestamp', 'verified'
+          ]) &&
+          request.resource.data.validationType in ['CHECK_IN', 'CHECK_OUT'] &&
+          request.resource.data.verificationType in ['SELFIE', 'QR'];
+        
+        // Update: Only system or moderators (for verification)
+        allow update: if isModerator();
+        
+        // Delete: Not allowed
+        allow delete: if false;
+      }
+      
+      // ============================================================================
+      // MEETING PANIC ALERTS SUBCOLLECTION
+      // ============================================================================
+      
+      match /panic_alerts/{alertId} {
+        // Read: Alert creator, meeting participants, moderators, trusted contacts
+        allow read: if isAuthenticated() && (
+          resource.data.userId == userId() ||
+          isMeetingParticipant(meetingId) ||
+          isModerator() ||
+          resource.data.trustedContactId == userId()
+        );
+        
+        // Create: Only participants during meeting
+        allow create: if isAuthenticated() &&
+          isMeetingParticipant(meetingId) &&
+          request.resource.data.userId == userId() &&
+          request.resource.data.keys().hasAll([
+            'alertId', 'meetingId', 'userId', 'alertType', 'location',
+            'timestamp', 'status'
+          ]) &&
+          request.resource.data.alertType in ['SAFETY_CONCERN', 'IDENTITY_MISMATCH', 'HARASSMENT', 'EMERGENCY'] &&
+          request.resource.data.status == 'ACTIVE';
+        
+        // Update: Only system or moderators
+        allow update: if isModerator();
+        
+        // Delete: Not allowed
+        allow delete: if false;
+      }
+    }
+    
+    // ============================================================================
+    // MEETING BOOKINGS COLLECTION (Payment + Escrow)
+    // ============================================================================
+    
+    match /meeting_bookings/{bookingId} {
+      // Read: Participants or moderators
+      allow read: if isAuthenticated() && (
+        resource.data.bookerId == userId() ||
+        resource.data.creatorId == userId() ||
+        isModerator()
+      );
+      
+      // Create: Only via Cloud Functions (handles payment)
+      allow create: if false;
+      
+      // Update: Only via Cloud Functions or moderators
+      allow update: if isModerator();
+      
+      // Delete: Not allowed
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // MEETING RATINGS COLLECTION (Post-Meeting Feedback)
+    // ============================================================================
+    
+    match /meeting_ratings/{ratingId} {
+      // Read: Rating creator, meeting participants, moderators
+      allow read: if isAuthenticated() && (
+        resource.data.raterId == userId() ||
+        resource.data.ratedUserId == userId() ||
+        isModerator()
+      );
+      
+      // Create: Only participants after meeting completion
+      allow create: if isAuthenticated() &&
+        // User must be a participant in the meeting
+        (get(/databases/$(database)/documents/meetings/$(request.resource.data.meetingId)).data.bookerId == userId() ||
+         get(/databases/$(database)/documents/meetings/$(request.resource.data.meetingId)).data.creatorId == userId()) &&
+        // Meeting must be completed
+        get(/databases/$(database)/documents/meetings/$(request.resource.data.meetingId)).data.status == 'COMPLETED' &&
+        // Rater must be current user
+        request.resource.data.raterId == userId() &&
+        // Valid rating type
+        request.resource.data.ratingType in ['POSITIVE', 'NEUTRAL', 'NEGATIVE', 'REPORT'] &&
+        // Required fields
+        request.resource.data.keys().hasAll([
+          'ratingId', 'meetingId', 'raterId', 'ratedUserId', 'ratingType', 'createdAt'
+        ]) &&
+        // If REPORT, must have reason
+        (request.resource.data.ratingType != 'REPORT' || request.resource.data.reportReason != null);
+      
+      // Update: Not allowed (ratings are immutable)
+      allow update, delete: if false;
+    }
+    
+    // ============================================================================
+    // MEETING REFUNDS COLLECTION (Identity Mismatch, Safety, Mutual Agreement)
+    // ============================================================================
+    
+    match /meeting_refunds/{refundId} {
+      // Read: Participants or moderators
+      allow read: if isAuthenticated() && (
+        resource.data.bookerId == userId() ||
+        resource.data.creatorId == userId() ||
+        isModerator()
+      );
+      
+      // Create: Participants can request refund
+      allow create: if isAuthenticated() &&
+        // Must be a participant
+        (get(/databases/$(database)/documents/meetings/$(request.resource.data.meetingId)).data.bookerId == userId() ||
+         get(/databases/$(database)/documents/meetings/$(request.resource.data.meetingId)).data.creatorId == userId()) &&
+        // Valid refund reason
+        request.resource.data.refundReason in [
+          'IDENTITY_MISMATCH',
+          'SAFETY_VIOLATION', 
+          'MUTUAL_AGREEMENT',
+          'CREATOR_VOLUNTARY'
+        ] &&
+        // Requester must be current user
+        request.resource.data.requesterId == userId() &&
+        // Required fields
+        request.resource.data.keys().hasAll([
+          'refundId', 'meetingId', 'bookingId', 'requesterId',
+          'refundReason', 'refundAmount', 'status', 'createdAt'
+        ]) &&
+        // Initial status must be PENDING
+        request.resource.data.status == 'PENDING';
+      
+      // Update: Only via Cloud Functions or moderators (for processing)
+      allow update: if isModerator();
+      
+      // Delete: Not allowed
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // MEETING EMERGENCY CONTACTS (For Panic Mode)
+    // ============================================================================
+    
+    match /meeting_emergency_contacts/{contactId} {
+      // Read: Owner or moderators
+      allow read: if isAuthenticated() && (
+        resource.data.userId == userId() ||
+        isModerator()
+      );
+      
+      // Create: User can add their own contacts
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == userId() &&
+        request.resource.data.keys().hasAll([
+          'contactId', 'userId', 'name', 'phone', 'email',
+          'isPrimary', 'isActive', 'createdAt'
+        ]);
+      
+      // Update: Owner can update their own contacts
+      allow update: if isAuthenticated() &&
+        resource.data.userId == userId() &&
+        request.resource.data.userId == userId();
+      
+      // Delete: Owner can delete their own contacts
+      allow delete: if isAuthenticated() &&
+        resource.data.userId == userId();
+    }
+    
+    // ============================================================================
+    // MEETING SAFETY LOGS (Private - Moderator Access Only)
+    // ============================================================================
+    
+    match /meeting_safety_logs/{logId} {
+      // Only moderators can read safety logs
+      allow read: if isModerator();
+      
+      // Safety logs created via Cloud Functions only
+      allow create, update, delete: if false;
+    }
+  }
+}

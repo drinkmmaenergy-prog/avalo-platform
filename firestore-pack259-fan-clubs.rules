@@ -1,0 +1,341 @@
+rules_version = '2';
+
+// PACK 259: Fan Clubs / Support Circles
+// Turning Creators Into Micro-Communities
+//
+// ALLOWED:
+// - Monthly recurring subscriptions (Silver/Gold/Diamond/Royal Elite)
+// - Exclusive content for members
+// - Group chat and fan-only live streams
+// - Member badges and priority inbox
+// - Member-only events
+//
+// SAFETY RULES:
+// - No romantic pressure or transactional dating
+// - No psychological obligation toward creator
+// - No content forced by supporters
+// - Members can leave anytime
+// - Badges visible only in DMs, not public
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    function hasEarnOn(userId) {
+      let profile = get(/databases/$(database)/documents/users/$(userId)).data;
+      return profile.earnOnChat == true;
+    }
+    
+    function isFanClubMember(creatorId) {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/fanClubMemberships/$(creatorId + '_' + request.auth.uid)) &&
+             get(/databases/$(database)/documents/fanClubMemberships/$(creatorId + '_' + request.auth.uid)).data.status == 'active';
+    }
+    
+    function getMemberTier(creatorId) {
+      let membership = get(/databases/$(database)/documents/fanClubMemberships/$(creatorId + '_' + request.auth.uid)).data;
+      return membership.tier;
+    }
+    
+    function hasMinimumTier(creatorId, requiredTier) {
+      let tierOrder = ['silver', 'gold', 'diamond', 'royal_elite'];
+      let memberTier = getMemberTier(creatorId);
+      return tierOrder.indexOf(memberTier) >= tierOrder.indexOf(requiredTier);
+    }
+    
+    // Fan Club Settings (Creator Configuration)
+    match /fanClubSettings/{creatorId} {
+      // Creators with earnOn can read/write their settings
+      allow read: if isUser(creatorId) && hasEarnOn(creatorId);
+      
+      allow create: if isUser(creatorId) && 
+                      hasEarnOn(creatorId) &&
+                      request.resource.data.creatorId == creatorId &&
+                      request.resource.data.enabled == true;
+      
+      allow update: if isUser(creatorId) && hasEarnOn(creatorId);
+      
+      // Potential members can read to see if Fan Club exists
+      allow read: if isAuthenticated() && resource.data.enabled == true;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    // Fan Club Memberships
+    match /fanClubMemberships/{membershipId} {
+      // Member can read their own membership
+      allow read: if isAuthenticated() && 
+                    resource.data.memberId == request.auth.uid;
+      
+      // Creator can read all their club memberships
+      allow read: if isAuthenticated() && 
+                    resource.data.creatorId == request.auth.uid;
+      
+      // Users can create membership (after payment)
+      allow create: if isAuthenticated() &&
+                      request.resource.data.memberId == request.auth.uid &&
+                      request.resource.data.status == 'pending_payment';
+      
+      // System updates membership status after payment
+      // Members can cancel (leave)
+      allow update: if (isAuthenticated() && 
+                        resource.data.memberId == request.auth.uid &&
+                        request.resource.data.status == 'cancelled') ||
+                       isAdmin();
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // No deletion (cancellation is status update)
+      allow delete: if false;
+    }
+    
+    // Fan Club Exclusive Content
+    match /fanClubContent/{contentId} {
+      // Creators can create and manage their exclusive content
+      allow create: if isAuthenticated() &&
+                      request.resource.data.creatorId == request.auth.uid &&
+                      hasEarnOn(request.auth.uid);
+      
+      allow update: if isAuthenticated() &&
+                      resource.data.creatorId == request.auth.uid;
+      
+      // Active members can read content if tier is sufficient
+      allow read: if isAuthenticated() && 
+                    isFanClubMember(resource.data.creatorId) &&
+                    hasMinimumTier(resource.data.creatorId, resource.data.minimumTier);
+      
+      // Creator can read their own content
+      allow read: if isAuthenticated() && 
+                    resource.data.creatorId == request.auth.uid;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Creators can delete their own content
+      allow delete: if isAuthenticated() && 
+                      resource.data.creatorId == request.auth.uid;
+    }
+    
+    // Fan Club Group Chat
+    match /fanClubGroupChats/{chatId} {
+      // Creators can create group chat
+      allow create: if isAuthenticated() &&
+                      request.resource.data.creatorId == request.auth.uid &&
+                      hasEarnOn(request.auth.uid);
+      
+      allow update: if isAuthenticated() &&
+                      resource.data.creatorId == request.auth.uid;
+      
+      // Gold+ members can read their creator's group chat
+      allow read: if isAuthenticated() && 
+                    isFanClubMember(resource.data.creatorId) &&
+                    hasMinimumTier(resource.data.creatorId, 'gold');
+      
+      // Creator can read their own group chat
+      allow read: if isAuthenticated() && 
+                    resource.data.creatorId == request.auth.uid;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // No deletion
+      allow delete: if false;
+      
+      // Group chat messages
+      match /messages/{messageId} {
+        // Creator can send messages
+        allow create: if isAuthenticated() &&
+                        get(/databases/$(database)/documents/fanClubGroupChats/$(chatId)).data.creatorId == request.auth.uid &&
+                        request.resource.data.senderId == request.auth.uid;
+        
+        // Gold+ members can send messages
+        allow create: if isAuthenticated() &&
+                        isFanClubMember(get(/databases/$(database)/documents/fanClubGroupChats/$(chatId)).data.creatorId) &&
+                        hasMinimumTier(get(/databases/$(database)/documents/fanClubGroupChats/$(chatId)).data.creatorId, 'gold') &&
+                        request.resource.data.senderId == request.auth.uid;
+        
+        // Gold+ members can read messages
+        allow read: if isAuthenticated() && 
+                      isFanClubMember(get(/databases/$(database)/documents/fanClubGroupChats/$(chatId)).data.creatorId) &&
+                      hasMinimumTier(get(/databases/$(database)/documents/fanClubGroupChats/$(chatId)).data.creatorId, 'gold');
+        
+        // Creator can read all messages
+        allow read: if isAuthenticated() && 
+                      get(/databases/$(database)/documents/fanClubGroupChats/$(chatId)).data.creatorId == request.auth.uid;
+        
+        // Sender can delete their own message within 5 minutes
+        allow delete: if isAuthenticated() &&
+                        resource.data.senderId == request.auth.uid &&
+                        request.time < resource.data.createdAt + duration.value(5, 'm');
+        
+        // Creator can delete any message in their group
+        allow delete: if isAuthenticated() &&
+                        get(/databases/$(database)/documents/fanClubGroupChats/$(chatId)).data.creatorId == request.auth.uid;
+      }
+    }
+    
+    // Fan Club Live Streams (Fan-Only)
+    match /fanClubLiveStreams/{streamId} {
+      // Creators can create live streams
+      allow create: if isAuthenticated() &&
+                      request.resource.data.creatorId == request.auth.uid &&
+                      hasEarnOn(request.auth.uid);
+      
+      allow update: if isAuthenticated() &&
+                      resource.data.creatorId == request.auth.uid;
+      
+      // Gold+ members can read their creator's streams
+      allow read: if isAuthenticated() && 
+                    isFanClubMember(resource.data.creatorId) &&
+                    hasMinimumTier(resource.data.creatorId, 'gold');
+      
+      // Creator can read their own streams
+      allow read: if isAuthenticated() && 
+                    resource.data.creatorId == request.auth.uid;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // No deletion during active stream
+      allow delete: if isAuthenticated() && 
+                      resource.data.creatorId == request.auth.uid &&
+                      resource.data.status == 'ended';
+    }
+    
+    // Fan Club Member Events
+    match /fanClubMemberEvents/{eventId} {
+      // Creators can create events
+      allow create: if isAuthenticated() &&
+                      request.resource.data.creatorId == request.auth.uid &&
+                      hasEarnOn(request.auth.uid);
+      
+      allow update: if isAuthenticated() &&
+                      resource.data.creatorId == request.auth.uid;
+      
+      // Diamond+ members can read their creator's events
+      allow read: if isAuthenticated() && 
+                    isFanClubMember(resource.data.creatorId) &&
+                    hasMinimumTier(resource.data.creatorId, 'diamond');
+      
+      // Creator can read their own events
+      allow read: if isAuthenticated() && 
+                    resource.data.creatorId == request.auth.uid;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Creators can delete unpublished events
+      allow delete: if isAuthenticated() && 
+                      resource.data.creatorId == request.auth.uid &&
+                      resource.data.published == false;
+    }
+    
+    // Fan Club Member Badges (PRIVATE - only visible in DMs)
+    match /fanClubMemberBadges/{userId} {
+      // User can read their own badges
+      allow read: if isUser(userId);
+      
+      // Users in DM with this member can read their badge
+      // This is handled by the app logic, not direct Firestore access
+      
+      // Only system can write badges
+      allow write: if false;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+    }
+    
+    // Fan Club Transactions (Billing History)
+    match /fanClubTransactions/{transactionId} {
+      // Users can read their own transactions
+      allow read: if isAuthenticated() && 
+                    (resource.data.memberId == request.auth.uid ||
+                     resource.data.creatorId == request.auth.uid);
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // Fan Club Creator Tools
+    match /fanClubCreatorTools/{creatorId} {
+      // Creators can read and use their tools
+      allow read: if isUser(creatorId) && hasEarnOn(creatorId);
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // Fan Club Leaderboard (PRIVATE - only creator sees)
+    match /fanClubLeaderboards/{creatorId} {
+      // Only creator can read their own leaderboard
+      allow read: if isUser(creatorId) && hasEarnOn(creatorId);
+      
+      // Admins can read all
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // Fan Club Notifications
+    match /fanClubNotifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isAuthenticated() && 
+                    resource.data.recipientId == request.auth.uid;
+      
+      // Users can mark as read
+      allow update: if isAuthenticated() && 
+                      resource.data.recipientId == request.auth.uid &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      
+      // Only system can create/delete
+      allow create, delete: if false;
+    }
+    
+    // Fan Club Safety Reports
+    match /fanClubSafetyReports/{reportId} {
+      // Any member can create a report
+      allow create: if isAuthenticated() &&
+                      request.resource.data.reporterId == request.auth.uid &&
+                      request.resource.data.status == 'pending';
+      
+      // Reporter can read their own report
+      allow read: if isAuthenticated() && 
+                    resource.data.reporterId == request.auth.uid;
+      
+      // Reported user can read reports about them
+      allow read: if isAuthenticated() && 
+                    resource.data.reportedUserId == request.auth.uid;
+      
+      // Admins can read and update all
+      allow read, update: if isAdmin();
+      
+      // No deletion
+      allow delete: if false;
+    }
+  }
+}

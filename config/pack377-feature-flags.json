@@ -1,0 +1,236 @@
+{
+  "pack377": {
+    "name": "Global Public Launch Orchestration Engine",
+    "version": "1.0.0",
+    "features": {
+      "launch.enabled": {
+        "type": "boolean",
+        "default": false,
+        "description": "Master switch for launch orchestration system",
+        "adminOnly": true,
+        "environments": {
+          "development": false,
+          "staging": true,
+          "production": false
+        }
+      },
+      "launch.countryCaps": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable country-level daily capacity caps",
+        "adminOnly": true,
+        "environments": {
+          "development": true,
+          "staging": true,
+          "production": true
+        }
+      },
+      "launch.autoThrottle": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable automatic infrastructure throttling during overload",
+        "adminOnly": true,
+        "environments": {
+          "development": false,
+          "staging": true,
+          "production": true
+        }
+      },
+      "launch.fraudShield": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable launch-time fraud detection and prevention",
+        "adminOnly": true,
+        "environments": {
+          "development": true,
+          "staging": true,
+          "production": true
+        }
+      },
+      "launch.regionAnalytics": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable regional performance tracking and risk scoring",
+        "adminOnly": false,
+        "environments": {
+          "development": true,
+          "staging": true,
+          "production": true
+        }
+      },
+      "launch.prCoordinator": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable PR campaign tracking and traffic forecasting",
+        "adminOnly": false,
+        "environments": {
+          "development": true,
+          "staging": true,
+          "production": true
+        }
+      },
+      "launch.autoRegionPause": {
+        "type": "boolean",
+        "default": true,
+        "description": "Automatically pause regions with critical risk scores",
+        "adminOnly": true,
+        "environments": {
+          "development": false,
+          "staging": true,
+          "production": true
+        }
+      },
+      "launch.marketSequencer": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable phased market entry sequencing",
+        "adminOnly": true,
+        "environments": {
+          "development": true,
+          "staging": true,
+          "production": true
+        }
+      }
+    },
+    "thresholds": {
+      "infraOverload": {
+        "webrtcSessions": 10000,
+        "paymentRate": 100,
+        "safetyTickets": 500
+      },
+      "fraudDetection": {
+        "deviceFarming": 3,
+        "creatorRing": 50,
+        "paymentBurst": 1000
+      },
+      "riskScoring": {
+        "supportVolumeHigh": 100,
+        "supportVolumeMedium": 50,
+        "safetyIncidentsCritical": 50,
+        "safetyIncidentsHigh": 20,
+        "safetyIncidentsMedium": 10,
+        "revenueThresholdLow": 1000,
+        "revenueThresholdMedium": 5000,
+        "verificationRateLow": 0.3,
+        "verificationRateMedium": 0.5,
+        "riskLevelCritical": 7,
+        "riskLevelHigh": 5,
+        "riskLevelMedium": 3
+      },
+      "defaultCaps": {
+        "alpha": {
+          "dailyUserCap": 100,
+          "dailyPaymentCap": 1000,
+          "dailyCreatorCap": 10
+        },
+        "soft": {
+          "dailyUserCap": 1000,
+          "dailyPaymentCap": 10000,
+          "dailyCreatorCap": 100
+        },
+        "public": {
+          "dailyUserCap": 10000,
+          "dailyPaymentCap": 100000,
+          "dailyCreatorCap": 1000
+        }
+      }
+    },
+    "euFirstWave": {
+      "countries": [
+        {
+          "code": "PL",
+          "name": "Poland",
+          "order": 1,
+          "population": 38000000,
+          "targetLaunchDate": null
+        },
+        {
+          "code": "CZ",
+          "name": "Czech Republic",
+          "order": 2,
+          "population": 10700000,
+          "targetLaunchDate": null
+        },
+        {
+          "code": "SK",
+          "name": "Slovakia",
+          "order": 3,
+          "population": 5500000,
+          "targetLaunchDate": null
+        },
+        {
+          "code": "HR",
+          "name": "Croatia",
+          "order": 4,
+          "population": 4100000,
+          "targetLaunchDate": null
+        },
+        {
+          "code": "RO",
+          "name": "Romania",
+          "order": 5,
+          "population": 19300000,
+          "targetLaunchDate": null
+        },
+        {
+          "code": "BG",
+          "name": "Bulgaria",
+          "order": 6,
+          "population": 6900000,
+          "targetLaunchDate": null
+        },
+        {
+          "code": "GR",
+          "name": "Greece",
+          "order": 7,
+          "population": 10400000,
+          "targetLaunchDate": null
+        },
+        {
+          "code": "IT",
+          "name": "Italy",
+          "order": 8,
+          "population": 60400000,
+          "targetLaunchDate": null
+        }
+      ],
+      "progressionCriteria": {
+        "minActiveUsers": 1000,
+        "minRevenue": 5000,
+        "maxSafetyIncidents": 20,
+        "minVerificationRate": 0.5,
+        "daysRequired": 7
+      }
+    },
+    "integrations": {
+      "pack296": {
+        "enabled": true,
+        "description": "Audit Logs - All launch events logged"
+      },
+      "pack300A": {
+        "enabled": true,
+        "description": "Support Operations - Support volume tracking"
+      },
+      "pack301": {
+        "enabled": true,
+        "description": "Retention & Win-Back - Churn risk monitoring"
+      },
+      "pack302": {
+        "enabled": true,
+        "description": "Fraud Detection - Launch threat shield"
+      },
+      "pack374": {
+        "enabled": true,
+        "description": "Viral Growth Engine - Campaign tracking"
+      },
+      "pack375": {
+        "enabled": true,
+        "description": "Creator Growth Engine - Creator caps and monitoring"
+      },
+      "pack376": {
+        "enabled": true,
+        "description": "App Store Defense - Store rating tracking"
+      }
+    }
+  }
+}

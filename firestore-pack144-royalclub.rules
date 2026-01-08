@@ -1,0 +1,199 @@
+rules_version = '2';
+
+/**
+ * PACK 144 - Royal Club & Loyalty Ecosystem 2.0
+ * Firestore Security Rules
+ * 
+ * SAFETY CONSTRAINTS:
+ * - No token price modifications
+ * - No 65/35 split modifications
+ * - No visibility/ranking advantages
+ * - No romantic/NSFW content
+ * - No creator earning boosts
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidActivityType(type) {
+      return type in ['club_post', 'challenge_join', 'event_attend', 'mentorship_session', 'product_purchase', 'mission_complete'];
+    }
+    
+    // Forbidden patterns for mission validation
+    function containsForbiddenPattern(text) {
+      let forbidden = [
+        'compliment', 'attention', 'attractive', 'selfie', 'like', 'flirt',
+        'date', 'match', 'swipe', 'romantic', 'nsfw', 'sexy', 'seductive',
+        'admire', 'crush', 'love', 'hot', 'cute'
+      ];
+      let lowerText = text.lower();
+      return forbidden.hasAny([lowerText.matches('.*' + pattern + '.*')]);
+    }
+    
+    // Royal Club Progress - User's Royal Club status
+    match /royalclub_progress/{userId} {
+      // Users can read their own progress
+      allow read: if isOwner(userId);
+      
+      // Only backend can create/update progress
+      allow create, update: if false;
+      
+      // Users cannot delete their progress
+      allow delete: if false;
+    }
+    
+    // Royal Club Levels - Level configurations (read-only)
+    match /royalclub_levels/{levelId} {
+      // Anyone can read level configurations
+      allow read: if isAuthenticated();
+      
+      // Only admins can modify (handled by backend)
+      allow write: if false;
+    }
+    
+    // Royal Club Missions - Available missions
+    match /royalclub_missions/{missionId} {
+      // Users can read active missions
+      allow read: if isAuthenticated() && resource.data.isActive == true;
+      
+      // Only backend can create missions (with safety validation)
+      allow create: if false;
+      
+      // No updates or deletes allowed from client
+      allow update, delete: if false;
+    }
+    
+    // Royal Club Rewards - Available perks
+    match /royalclub_rewards/{rewardId} {
+      // Users can read active rewards
+      allow read: if isAuthenticated() && resource.data.isActive == true;
+      
+      // Validate reward doesn't provide unfair advantages
+      allow create: if false;
+      
+      // No updates or deletes from client
+      allow update, delete: if false;
+    }
+    
+    // Royal Club User Rewards - Granted perks to users
+    match /royalclub_user_rewards/{rewardGrantId} {
+      // Users can read their own granted rewards
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Only backend can grant rewards
+      allow create: if false;
+      
+      // Users cannot modify or delete granted rewards
+      allow update, delete: if false;
+    }
+    
+    // Royal Club Activity Logs - Activity tracking
+    match /royalclub_activity_logs/{logId} {
+      // Users can read their own activity logs
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Only backend can create logs (with validation)
+      // Must validate activity type and ensure no forbidden patterns
+      allow create: if false;
+      
+      // No modifications to logs
+      allow update, delete: if false;
+    }
+    
+    // Royal Club Settings - User preferences
+    match /royalclub_settings/{userId} {
+      // Users can read their own settings
+      allow read: if isOwner(userId);
+      
+      // Users can update their own settings
+      allow update: if isOwner(userId)
+        && request.resource.data.userId == userId
+        && request.resource.data.keys().hasAll(['userId', 'updatedAt'])
+        // Validate boolean fields
+        && request.resource.data.showBadgeInProfile is bool
+        && request.resource.data.showLevelInChats is bool
+        && request.resource.data.notifyMissionUpdates is bool
+        && request.resource.data.notifyLevelUp is bool
+        && request.resource.data.notifyNewPerks is bool;
+      
+      // Users can create their own settings
+      allow create: if isOwner(userId)
+        && request.resource.data.userId == userId;
+      
+      // Users cannot delete settings
+      allow delete: if false;
+    }
+    
+    // Royal Lifestyle Channels - Premium community spaces
+    match /royalclub_lifestyle_channels/{channelId} {
+      // Users can read active channels they have access to
+      allow read: if isAuthenticated() && resource.data.isActive == true;
+      
+      // Only backend can manage channels
+      allow write: if false;
+    }
+    
+    // Prevent Royal Club status from affecting other collections
+    // These rules ensure Royal Club data is isolated
+    
+    // Feed/Discovery - Royal Club CANNOT affect ranking
+    match /feed_items/{itemId} {
+      // Ensure no Royal Club data in feed ranking
+      allow write: if !request.resource.data.keys().hasAny(['royalClubLevel', 'royalClubScore', 'isPremiumMember']);
+    }
+    
+    // User Profiles - Royal Club badge display is optional
+    match /users/{userId} {
+      // Allow reading Royal Club display preferences
+      allow read: if isAuthenticated();
+      
+      // Users can update their own Royal Club display settings
+      // But Royal Club status CANNOT affect other user data
+      allow update: if isOwner(userId)
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['royalClubLevel']) 
+            || request.resource.data.royalClubLevel == resource.data.royalClubLevel);
+    }
+    
+    // Token Transactions - Royal Club CANNOT affect pricing
+    match /token_transactions/{transactionId} {
+      // Ensure token price is never modified based on Royal Club status
+      allow create: if isAuthenticated()
+        && request.resource.data.tokenPrice == getBaseTokenPrice()
+        && !request.resource.data.keys().hasAny(['royalClubDiscount', 'premiumBonus']);
+    }
+    
+    // Creator Earnings - Royal Club CANNOT affect revenue split
+    match /creator_earnings/{earningId} {
+      // Ensure 65/35 split is maintained regardless of Royal Club
+      allow create: if isAuthenticated()
+        && request.resource.data.creatorShare == 0.65
+        && request.resource.data.platformShare == 0.35
+        && !request.resource.data.keys().hasAny(['royalClubBonus', 'premiumShare']);
+    }
+    
+    // Discovery/Matching - Royal Club status CANNOT affect algorithms
+    match /discovery_queue/{queueId} {
+      // Ensure no Royal Club factors in discovery
+      allow write: if !request.resource.data.keys().hasAny(['royalClubWeight', 'premiumPriority', 'vipBoost']);
+    }
+    
+    match /match_queue/{queueId} {
+      // Ensure no Royal Club factors in matching
+      allow write: if !request.resource.data.keys().hasAny(['royalClubWeight', 'premiumPriority', 'vipBoost']);
+    }
+  }
+  
+  // Helper function to get base token price (should match backend constant)
+  function getBaseTokenPrice() {
+    return 0.99; // Base price per token
+  }
+}

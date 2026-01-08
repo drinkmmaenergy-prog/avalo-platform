@@ -1,0 +1,177 @@
+// PACK 357 — ASO & Store Conversion Engine
+// Firestore Security Rules for ASO Management
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // ASO VARIANTS
+    // ============================================
+    match /aso_variants/{variantId} {
+      // Admins can read/write all variants
+      allow read: if isAdmin();
+      allow create, update, delete: if isAdmin();
+      
+      // Public read for active variants (for mobile clients)
+      allow get: if resource.data.status == 'ACTIVE';
+    }
+    
+    // ============================================
+    // ASO SCREENSHOT SETS
+    // ============================================
+    match /aso_screenshot_sets/{setId} {
+      // Admins can read/write
+      allow read, write: if isAdmin();
+      
+      // Public read for getting screenshot URLs
+      allow get: if true;
+    }
+    
+    // ============================================
+    // ASO VIDEO PREVIEWS
+    // ============================================
+    match /aso_video_previews/{previewId} {
+      // Admins can read/write
+      allow read, write: if isAdmin();
+      
+      // Public read for getting video URLs
+      allow get: if true;
+    }
+    
+    // ============================================
+    // ASO PERFORMANCE
+    // ============================================
+    match /aso_performance/{perfId} {
+      // Admins can read all performance data
+      allow read: if isAdmin();
+      
+      // No direct writes (only via functions)
+      allow write: if false;
+    }
+    
+    // ============================================
+    // ASO EVENTS
+    // ============================================
+    match /aso_events/{eventId} {
+      // Admins can read events
+      allow read: if isAdmin();
+      
+      // Authenticated users can create events
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // ============================================
+    // ASO BENCHMARKS
+    // ============================================
+    match /aso_benchmarks/{benchmarkId} {
+      // Admins can read/write benchmarks
+      allow read, write: if isAdmin();
+    }
+    
+    // ============================================
+    // ASO OPTIMIZATION ACTIONS
+    // ============================================
+    match /aso_optimization_actions/{actionId} {
+      // Admins can read all actions
+      allow read: if isAdmin();
+      
+      // Only functions can create/update actions
+      allow write: if false;
+    }
+    
+    // ============================================
+    // REVIEW REQUESTS
+    // ============================================
+    match /review_requests/{requestId} {
+      // Users can read their own review requests
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Users can update their own review status
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       // Only allow updating specific fields
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'reviewSubmitted', 'rating', 'reviewText', 'submittedAt', 'shownAt']);
+      
+      // Admins can read all review requests
+      allow read: if isAdmin();
+      
+      // Only functions can create review requests
+      allow create, delete: if false;
+    }
+    
+    // ============================================
+    // USER REVIEW HISTORY
+    // ============================================
+    match /user_review_history/{userId} {
+      // Users can read their own review history
+      allow read: if isAuthenticated() && userId == request.auth.uid;
+      
+      // Admins can read all review histories
+      allow read: if isAdmin();
+      
+      // No direct writes (only via functions)
+      allow write: if false;
+    }
+    
+    // ============================================
+    // REVIEW SENTIMENT
+    // ============================================
+    match /review_sentiment/{sentimentId} {
+      // Admins can read sentiment data
+      allow read: if isAdmin();
+      
+      // No direct writes (only via functions)
+      allow write: if false;
+    }
+    
+    // ============================================
+    // ADMIN NOTIFICATIONS
+    // ============================================
+    match /admin_notifications/{notificationId} {
+      // Only admins can read/write notifications
+      allow read, write: if isAdmin();
+    }
+    
+    // ============================================
+    // TRAFFIC SCALING REQUESTS
+    // ============================================
+    match /traffic_scaling_requests/{requestId} {
+      // Only admins can read/write scaling requests
+      allow read, write: if isAdmin();
+    }
+    
+    // ============================================
+    // FRAUD SCORES (PACK 302 integration)
+    // ============================================
+    match /fraud_scores/{userId} {
+      // Only admins and system can access fraud scores
+      allow read: if isAdmin();
+      allow write: if false; // Only via functions
+    }
+    
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return request.auth != null && 
+             request.auth.token.admin == true;
+    }
+    
+    function isVerified() {
+      return request.auth != null &&
+             request.auth.token.emailVerified == true;
+    }
+  }
+}

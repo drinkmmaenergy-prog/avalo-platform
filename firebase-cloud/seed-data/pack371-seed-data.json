@@ -1,0 +1,134 @@
+{
+  "reviewResponseTemplates": {
+    "positive_generic": {
+      "name": "Positive Generic",
+      "text": "Thank you so much for your kind words! We're thrilled you're enjoying Avalo. Your feedback helps us continue improving the experience for everyone. 🌟",
+      "sentimentRange": {
+        "min": 0.3,
+        "max": 1.0
+      },
+      "legalSafe": true,
+      "brandSafe": true,
+      "language": "en"
+    },
+    "positive_enthusiastic": {
+      "name": "Positive Enthusiastic",
+      "text": "Wow! Thank you for the amazing feedback! 🎉 We're so happy you love Avalo. Your support means the world to our team!",
+      "sentimentRange": {
+        "min": 0.7,
+        "max": 1.0
+      },
+      "legalSafe": true,
+      "brandSafe": true,
+      "language": "en"
+    },
+    "neutral_generic": {
+      "name": "Neutral Generic",
+      "text": "Thank you for taking the time to share your feedback. We're always working to improve Avalo and would love to hear more about your experience. Feel free to contact us at support@avalo.app anytime.",
+      "sentimentRange": {
+        "min": -0.3,
+        "max": 0.3
+      },
+      "legalSafe": true,
+      "brandSafe": true,
+      "language": "en"
+    },
+    "negative_constructive": {
+      "name": "Negative Constructive",
+      "text": "Thank you for your feedback. We take all concerns seriously and continuously work to improve Avalo. Please reach out to our support team at support@avalo.app so we can better understand and address your experience.",
+      "sentimentRange": {
+        "min": -1.0,
+        "max": -0.3
+      },
+      "legalSafe": true,
+      "brandSafe": true,
+      "language": "en"
+    },
+    "negative_urgent": {
+      "name": "Negative Urgent",
+      "text": "We're truly sorry to hear about your experience. This is not the standard we aim for. Please contact our support team immediately at support@avalo.app so we can address this as a priority.",
+      "sentimentRange": {
+        "min": -1.0,
+        "max": -0.7
+      },
+      "legalSafe": true,
+      "brandSafe": true,
+      "language": "en"
+    }
+  },
+  "asoConfig": {
+    "main": {
+      "allowedKeywords": [
+        "dating",
+        "social",
+        "meet",
+        "connect",
+        "video call",
+        "creator",
+        "monetization",
+        "safe",
+        "verify",
+        "authentic"
+      ],
+      "sentimentThresholds": {
+        "excellent": 0.7,
+        "good": 0.3,
+        "neutral": 0.0,
+        "poor": -0.3,
+        "critical": -0.7
+      },
+      "fraudThresholds": {
+        "low": 0.3,
+        "medium": 0.5,
+        "high": 0.7,
+        "critical": 0.9
+      },
+      "attackThresholds": {
+        "reviewSpike": {
+          "timeWindow": 3600,
+          "minReviews": 20,
+          "criticalReviews": 50
+        },
+        "geoFlood": {
+          "timeWindow": 3600,
+          "minReviews": 10,
+          "criticalReviews": 20
+        },
+        "wordingCluster": {
+          "similarityThreshold": 0.8,
+          "minOccurrences": 5,
+          "criticalOccurrences": 10
+        }
+      },
+      "trustScoreWeights": {
+        "profileVerification": 0.25,
+        "creatorEarningsHonesty": 0.20,
+        "appointmentReliability": 0.25,
+        "reportHistory": 0.15,
+        "identityConfirmation": 0.15
+      },
+      "decayRates": {
+        "trustScoreMonthly": 0.05,
+        "inactivityPenalty": 0.10
+      },
+      "reviewNudgeRules": {
+        "maxFrequencyDays": 30,
+        "minInteractionsBeforeNudge": 3,
+        "suppressAfterComplaint": true,
+        "suppressWithSafetyFlags": true
+      },
+      "geoSuppressionList": [],
+      "emergencyFreezeEnabled": false,
+      "lastUpdated": "2025-12-23T00:00:00Z"
+    }
+  },
+  "platformMetrics": {
+    "trustMetrics": {
+      "reviewSentimentAverage": 0.0,
+      "refundRatio": 0.02,
+      "safetyIncidentResolutionTime": 24,
+      "disputeResolutionScore": 0.95,
+      "lastUpdated": "2025-12-23T00:00:00Z"
+    }
+  }
+}

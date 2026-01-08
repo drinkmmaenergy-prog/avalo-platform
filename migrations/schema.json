@@ -1,0 +1,188 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Avalo Firestore Schema",
+  "version": "1.0.0",
+  "collections": {
+    "users": {
+      "description": "User profiles and authentication data",
+      "fields": {
+        "uid": { "type": "string", "required": true },
+        "email": { "type": "string", "required": true },
+        "displayName": { "type": "string", "required": true },
+        "photoURL": { "type": "string", "required": false },
+        "dateOfBirth": { "type": "string", "required": true },
+        "gender": { "type": "string", "enum": ["male", "female", "non-binary", "other"], "required": true },
+        "bio": { "type": "string", "required": false },
+        "location": {
+          "type": "object",
+          "required": false,
+          "fields": {
+            "city": { "type": "string" },
+            "country": { "type": "string" },
+            "coordinates": {
+              "type": "object",
+              "fields": {
+                "lat": { "type": "number" },
+                "lng": { "type": "number" }
+              }
+            }
+          }
+        },
+        "interests": { "type": "array", "items": { "type": "string" }, "required": false },
+        "isCreator": { "type": "boolean", "default": false },
+        "isVerified": { "type": "boolean", "default": false },
+        "kycStatus": { "type": "string", "enum": ["pending", "submitted", "approved", "rejected"], "default": "pending" },
+        "createdAt": { "type": "timestamp", "required": true },
+        "updatedAt": { "type": "timestamp", "required": true }
+      },
+      "indexes": [
+        { "fields": ["email"], "unique": true },
+        { "fields": ["isCreator", "isVerified"] },
+        { "fields": ["location.city", "location.country"] },
+        { "fields": ["createdAt"] }
+      ]
+    },
+    "posts": {
+      "description": "User posts and stories",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "authorId": { "type": "string", "required": true },
+        "type": { "type": "string", "enum": ["text", "image", "video", "story"], "required": true },
+        "content": { "type": "string", "required": true },
+        "mediaUrls": { "type": "array", "items": { "type": "string" }, "required": false },
+        "gated": { "type": "boolean", "default": false },
+        "unlockPrice": { "type": "number", "required": false },
+        "likes": { "type": "number", "default": 0 },
+        "comments": { "type": "number", "default": 0 },
+        "views": { "type": "number", "default": 0 },
+        "createdAt": { "type": "timestamp", "required": true },
+        "expiresAt": { "type": "timestamp", "required": false }
+      },
+      "indexes": [
+        { "fields": ["authorId", "createdAt"] },
+        { "fields": ["type", "createdAt"] },
+        { "fields": ["gated", "createdAt"] },
+        { "fields": ["createdAt"] }
+      ]
+    },
+    "chats": {
+      "description": "Chat conversations",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "participants": { "type": "array", "items": { "type": "string" }, "required": true },
+        "freeMessagesUsed": { "type": "number", "default": 0 },
+        "freeMessagesLimit": { "type": "number", "default": 4 },
+        "createdAt": { "type": "timestamp", "required": true },
+        "updatedAt": { "type": "timestamp", "required": true }
+      },
+      "indexes": [
+        { "fields": ["participants"] },
+        { "fields": ["updatedAt"] }
+      ]
+    },
+    "messages": {
+      "description": "Chat messages",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "chatId": { "type": "string", "required": true },
+        "senderId": { "type": "string", "required": true },
+        "recipientId": { "type": "string", "required": true },
+        "content": { "type": "string", "required": true },
+        "type": { "type": "string", "enum": ["text", "image", "video", "audio", "gift"], "required": true },
+        "price": { "type": "number", "required": false },
+        "paid": { "type": "boolean", "default": false },
+        "read": { "type": "boolean", "default": false },
+        "delivered": { "type": "boolean", "default": false },
+        "createdAt": { "type": "timestamp", "required": true }
+      },
+      "indexes": [
+        { "fields": ["chatId", "createdAt"] },
+        { "fields": ["senderId", "createdAt"] },
+        { "fields": ["recipientId", "read"] }
+      ]
+    },
+    "transactions": {
+      "description": "Financial transactions",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "userId": { "type": "string", "required": true },
+        "type": { "type": "string", "enum": ["deposit", "withdraw", "purchase", "earning", "refund"], "required": true },
+        "amount": { "type": "number", "required": true },
+        "currency": { "type": "string", "default": "USD" },
+        "status": { "type": "string", "enum": ["pending", "completed", "failed", "cancelled"], "required": true },
+        "description": { "type": "string", "required": true },
+        "createdAt": { "type": "timestamp", "required": true },
+        "completedAt": { "type": "timestamp", "required": false }
+      },
+      "indexes": [
+        { "fields": ["userId", "createdAt"] },
+        { "fields": ["type", "status"] },
+        { "fields": ["status", "createdAt"] }
+      ]
+    },
+    "loyalty": {
+      "description": "User loyalty points and rewards",
+      "fields": {
+        "userId": { "type": "string", "required": true },
+        "points": { "type": "number", "default": 0 },
+        "level": { "type": "number", "default": 1 },
+        "streakDays": { "type": "number", "default": 0 },
+        "lastActivityDate": { "type": "timestamp", "required": true },
+        "updatedAt": { "type": "timestamp", "required": true }
+      },
+      "indexes": [
+        { "fields": ["userId"], "unique": true },
+        { "fields": ["level", "points"] }
+      ]
+    },
+    "creatorPayouts": {
+      "description": "Creator payout records",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "creatorId": { "type": "string", "required": true },
+        "amount": { "type": "number", "required": true },
+        "status": { "type": "string", "enum": ["pending", "processing", "completed", "failed"], "required": true },
+        "method": { "type": "string", "required": true },
+        "initiatedAt": { "type": "timestamp", "required": true },
+        "completedAt": { "type": "timestamp", "required": false }
+      },
+      "indexes": [
+        { "fields": ["creatorId", "initiatedAt"] },
+        { "fields": ["status", "initiatedAt"] }
+      ]
+    },
+    "matches": {
+      "description": "Matchmaking records",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "userId": { "type": "string", "required": true },
+        "matchedUserId": { "type": "string", "required": true },
+        "score": { "type": "number", "required": true },
+        "status": { "type": "string", "enum": ["pending", "liked", "passed", "matched"], "required": true },
+        "chatId": { "type": "string", "required": false },
+        "createdAt": { "type": "timestamp", "required": true }
+      },
+      "indexes": [
+        { "fields": ["userId", "status"] },
+        { "fields": ["matchedUserId", "status"] },
+        { "fields": ["status", "createdAt"] }
+      ]
+    },
+    "aiMemory": {
+      "description": "AI companion conversation memory",
+      "fields": {
+        "chatId": { "type": "string", "required": true },
+        "userId": { "type": "string", "required": true },
+        "companionId": { "type": "string", "required": true },
+        "conversationHistory": { "type": "array", "items": { "type": "string" }, "required": true },
+        "userPreferences": { "type": "object", "required": false },
+        "memory": { "type": "object", "required": false },
+        "updatedAt": { "type": "timestamp", "required": true }
+      },
+      "indexes": [
+        { "fields": ["chatId"], "unique": true },
+        { "fields": ["userId", "companionId"] }
+      ]
+    }
+  }
+}

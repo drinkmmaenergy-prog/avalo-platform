@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avalo Infrastructure Dashboard - PACK 361</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0e27;
+      color: #fff;
+      padding: 20px;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+    }
+    
+    .status-badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .status-healthy {
+      background: #10b981;
+    }
+    
+    .status-degraded {
+      background: #f59e0b;
+    }
+    
+    .status-critical {
+      background: #ef4444;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .card {
+      background: #1a1f3a;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #2d3561;
+    }
+    
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: #a5b4fc;
+    }
+    
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #2d3561;
+    }
+    
+    .metric:last-child {
+      border-bottom: none;
+    }
+    
+    .metric-label {
+      color: #94a3b8;
+    }
+    
+    .metric-value {
+      font-weight: 600;
+      font-size: 18px;
+    }
+    
+    .metric-value.good {
+      color: #10b981;
+    }
+    
+    .metric-value.warning {
+      color: #f59e0b;
+    }
+    
+    .metric-value.critical {
+      color: #ef4444;
+    }
+    
+    .region-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    .region-card {
+      background: #0f1629;
+      padding: 15px;
+      border-radius: 8px;
+      border: 2px solid;
+    }
+    
+    .region-card.healthy {
+      border-color: #10b981;
+    }
+    
+    .region-card.degraded {
+      border-color: #f59e0b;
+    }
+    
+    .region-card.offline {
+      border-color: #ef4444;
+    }
+    
+    .region-name {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    
+    .alert {
+      background: #1a1f3a;
+      border-left: 4px solid;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    
+    .alert.warning {
+      border-color: #f59e0b;
+    }
+    
+    .alert.critical {
+      border-color: #ef4444;
+    }
+    
+    .alert-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    .alert-title {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    
+    .alert-time {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    
+    .alert-message {
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #0f1629;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width 0.3s;
+    }
+    
+    .progress-fill.warning {
+      background: #f59e0b;
+    }
+    
+    .progress-fill.critical {
+      background: #ef4444;
+    }
+    
+    .service-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .service-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: #0f1629;
+      border-radius: 8px;
+    }
+    
+    .service-info {
+      flex: 1;
+    }
+    
+    .service-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .service-instances {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: #667eea;
+      color: #fff;
+    }
+    
+    .btn-primary:hover {
+      background: #5568d3;
+    }
+    
+    .btn-danger {
+      background: #ef4444;
+      color: #fff;
+    }
+    
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    
+    .chart-container {
+      height: 200px;
+      margin-top: 15px;
+      background: #0f1629;
+      border-radius: 8px;
+      display: flex;
+      align-items: flex-end;
+      padding: 10px;
+      gap: 4px;
+    }
+    
+    .chart-bar {
+      flex: 1;
+      background: linear-gradient(180deg, #667eea, #764ba2);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .tab {
+      padding: 10px 20px;
+      background: #1a1f3a;
+      border: none;
+      color: #94a3b8;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .tab.active {
+      background: #667eea;
+      color: #fff;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🌐 Infrastructure Dashboard</h1>
+    <div class="status-badge status-healthy" id="overallStatus">
+      System Healthy
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('overview')">Overview</button>
+    <button class="tab" onclick="showTab('regions')">Regions</button>
+    <button class="tab" onclick="showTab('scaling')">Auto-Scaling</button>
+    <button class="tab" onclick="showTab('cdn')">CDN & Media</button>
+    <button class="tab" onclick="showTab('costs')">Cost Control</button>
+    <button class="tab" onclick="showTab('monitoring')">Monitoring</button>
+  </div>
+
+  <!-- Overview Tab -->
+  <div id="tab-overview" class="tab-content">
+    <div class="grid">
+      <div class="card">
+        <h2>📊 Performance Metrics</h2>
+        <div class="metric">
+          <span class="metric-label">Chat Delivery</span>
+          <span class="metric-value good" id="chatLatency">--ms</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Wallet TX</span>
+          <span class="metric-value good" id="walletLatency">--ms</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">AI Response</span>
+          <span class="metric-value good" id="aiLatency">--ms</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Video Packet Loss</span>
+          <span class="metric-value good" id="packetLoss">--%</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>💰 Cost Overview</h2>
+        <div class="metric">
+          <span class="metric-label">Total Monthly Spend</span>
+          <span class="metric-value" id="totalSpend">-- PLN</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Cost per User</span>
+          <span class="metric-value" id="costPerUser">-- PLN</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Cost per Revenue</span>
+          <span class="metric-value" id="costPerRevenue">--</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Budget Used</span>
+          <span class="metric-value warning" id="budgetUsed">--%</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>⚡ System Load</h2>
+        <div class="metric">
+          <span class="metric-label">Active Instances</span>
+          <span class="metric-value" id="activeInstances">--</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Requests/min</span>
+          <span class="metric-value" id="requestsPerMin">--</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Bandwidth</span>
+          <span class="metric-value" id="bandwidth">-- GB</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">CDN Hit Rate</span>
+          <span class="metric-value good" id="cdnHitRate">--%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🚨 Active Alerts</h2>
+      <div id="alertsList" class="loading">Loading alerts...</div>
+    </div>
+  </div>
+
+  <!-- Regions Tab -->
+  <div id="tab-regions" class="tab-content" style="display: none;">
+    <div class="card">
+      <h2>🌍 Global Regions</h2>
+      <div class="region-grid" id="regionsGrid">
+        <div class="loading">Loading regions...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📈 Latency Chart</h2>
+      <div class="chart-container" id="latencyChart">
+        <div class="chart-bar" style="height: 30%;"></div>
+        <div class="chart-bar" style="height: 50%;"></div>
+        <div class="chart-bar" style="height: 80%;"></div>
+        <div class="chart-bar" style="height: 40%;"></div>
+        <div class="chart-bar" style="height: 60%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scaling Tab -->
+  <div id="tab-scaling" class="tab-content" style="display: none;">
+    <div class="card">
+      <h2>🔧 Auto-Scaling Services</h2>
+      <div class="service-list" id="servicesList">
+        <div class="loading">Loading services...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🚀 Burst Protection</h2>
+      <div id="burstProtection" class="loading">Loading...</div>
+    </div>
+  </div>
+
+  <!-- CDN Tab -->
+  <div id="tab-cdn" class="tab-content" style="display: none;">
+    <div class="grid">
+      <div class="card">
+        <h2>📦 CDN Statistics</h2>
+        <div class="metric">
+          <span class="metric-label">Total Assets</span>
+          <span class="metric-value" id="totalAssets">--</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Total Size</span>
+          <span class="metric-value" id="totalSize">-- GB</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Requests Served</span>
+          <span class="metric-value" id="requestsServed">--</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Bandwidth Used</span>
+          <span class="metric-value" id="bandwidthUsed">-- GB</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🗺️ Regional Distribution</h2>
+        <div id="cdnRegions" class="loading">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Costs Tab -->
+  <div id="tab-costs" class="tab-content" style="display: none;">
+    <div class="card">
+      <h2>💸 Budget Status</h2>
+      <div id="budgetStatus" class="loading">Loading...</div>
+    </div>
+
+    <div class="card">
+      <h2>📊 Cost Breakdown</h2>
+      <div class="chart-container" id="costChart"></div>
+    </div>
+  </div>
+
+  <!-- Monitoring Tab -->
+  <div id="tab-monitoring" class="tab-content" style="display: none;">
+    <div class="grid">
+      <div class="card">
+        <h2>🏥 Service Health</h2>
+        <div id="serviceHealth" class="loading">Loading...</div>
+      </div>
+
+      <div class="card">
+        <h2>📈 Metrics History</h2>
+        <div class="chart-container" id="metricsChart"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
+
+    // Initialize Firebase (use your config)
+    const firebaseConfig = {
+      // Add your Firebase config here
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const functions = getFunctions(app);
+
+    // Tab switching
+    window.showTab = function(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
+      });
+      document.querySelectorAll('.tab').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(`tab-${tabName}`).style.display = 'block';
+      event.target.classList.add('active');
+    };
+
+    // Load dashboard data
+    async function loadDashboard() {
+      try {
+        const getDashboardData = httpsCallable(functions, 'getDashboardData');
+        const result = await getDashboardData();
+        const data = result.data;
+
+        // Update performance metrics
+        updateMetrics(data.metrics);
+
+        // Update health statuses
+        updateHealthStatuses(data.healthStatuses);
+
+        // Update alerts
+        updateAlerts(data.alerts);
+
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+      }
+    }
+
+    function updateMetrics(metrics) {
+      if (metrics.chatDeliveryTimeMs) {
+        document.getElementById('chatLatency').textContent = 
+          Math.round(metrics.chatDeliveryTimeMs.average) + 'ms';
+      }
+      if (metrics.walletTransactionTimeMs) {
+        document.getElementById('walletLatency').textContent = 
+          Math.round(metrics.walletTransactionTimeMs.average) + 'ms';
+      }
+      if (metrics.aiResponseTimeMs) {
+        document.getElementById('aiLatency').textContent = 
+          Math.round(metrics.aiResponseTimeMs.average) + 'ms';
+      }
+      if (metrics.videoCallPacketLoss) {
+        document.getElementById('packetLoss').textContent = 
+          (metrics.videoCallPacketLoss.average * 100).toFixed(1) + '%';
+      }
+    }
+
+    function updateHealthStatuses(statuses) {
+      let allHealthy = true;
+      let anyDegraded = false;
+
+      Object.values(statuses).forEach(status => {
+        if (status.status === 'critical') allHealthy = false;
+        if (status.status === 'degraded') anyDegraded = true;
+      });
+
+      const badge = document.getElementById('overallStatus');
+      badge.className = 'status-badge';
+      
+      if (!allHealthy) {
+        badge.classList.add('status-critical');
+        badge.textContent = 'System Critical';
+      } else if (anyDegraded) {
+        badge.classList.add('status-degraded');
+        badge.textContent = 'System Degraded';
+      } else {
+        badge.classList.add('status-healthy');
+        badge.textContent = 'System Healthy';
+      }
+    }
+
+    function updateAlerts(alerts) {
+      const container = document.getElementById('alertsList');
+      
+      if (!alerts || alerts.length === 0) {
+        container.innerHTML = '<p style="color: #94a3b8; text-align: center;">No active alerts</p>';
+        return;
+      }
+
+      container.innerHTML = alerts.map(alert => `
+        <div class="alert ${alert.severity}">
+          <div class="alert-header">
+            <span class="alert-title">${alert.service || alert.type}</span>
+            <span class="alert-time">${formatTime(alert.timestamp)}</span>
+          </div>
+          <div class="alert-message">${alert.message}</div>
+        </div>
+      `).join('');
+    }
+
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diff = now - date;
+      
+      if (diff < 60000) return 'Just now';
+      if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+      if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+      return Math.floor(diff / 86400000) + 'd ago';
+    }
+
+    // Auto-refresh every 10 seconds
+    setInterval(loadDashboard, 10000);
+    
+    // Initial load
+    loadDashboard();
+  </script>
+</body>
+</html>

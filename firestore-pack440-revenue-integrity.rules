@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isCreator(creatorId) {
+      return isAuthenticated() && request.auth.uid == creatorId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function hasRole(roles) {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in roles;
+    }
+    
+    function isSystemService() {
+      // Cloud Functions have admin privileges
+      return request.auth.token.admin == true;
+    }
+    
+    // PACK 440: Creator Revenue Integrity Score
+    // Creators can read their own score, but only system can write
+    match /creator_revenue_integrity/{creatorId} {
+      allow read: if isCreator(creatorId) || isAdmin() || isSystemService();
+      allow write: if isSystemService() || isAdmin();
+    }
+    
+    // PACK 440: Payout Escrow
+    // Creators can read their own escrow records
+    match /payout_escrow/{payoutId} {
+      allow read: if isCreator(resource.data.creatorId) || 
+                     hasRole(['admin', 'finance', 'compliance']);
+      allow write: if isSystemService() || hasRole(['admin', 'finance']);
+      
+      // Allow querying by creatorId
+      allow list: if isAuthenticated() && 
+                     (request.query.filters.size() > 0 &&
+                      request.query.filters[0].field == 'creatorId' &&
+                      request.query.filters[0].value == request.auth.uid)
+                  || hasRole(['admin', 'finance', 'compliance']);
+    }
+    
+    // PACK 440: Payout Freezes
+    // Creators can read their freeze status, system/admin can write
+    match /payout_freezes/{freezeId} {
+      allow read: if isCreator(resource.data.creatorId) || 
+                     hasRole(['admin', 'compliance', 'legal', 'finance']);
+      allow write: if isSystemService() || hasRole(['admin', 'compliance']);
+      
+      // Allow querying by creatorId
+      allow list: if isAuthenticated() && 
+                     (request.query.filters.size() > 0 &&
+                      request.query.filters[0].field == 'creatorId' &&
+                      request.query.filters[0].value == request.auth.uid)
+                  || hasRole(['admin', 'compliance', 'legal', 'finance']);
+    }
+    
+    // PACK 440: Payout Status Transparency
+    // Creators can only read their own status
+    match /payout_status_transparency/{creatorId} {
+      allow read: if isCreator(creatorId) || 
+                     hasRole(['admin', 'support', 'compliance']);
+      allow write: if isSystemService() || isAdmin();
+    }
+    
+    // PACK 440: Compliance Escalations
+    // Restricted to compliance team and admins only
+    match /compliance_escalations/{caseId} {
+      allow read: if hasRole(['admin', 'compliance', 'legal', 'finance']);
+      allow create: if isSystemService() || hasRole(['admin', 'compliance']);
+      allow update: if hasRole(['admin', 'compliance', 'legal', 'finance']);
+      allow delete: if isAdmin(); // Only admins can delete cases
+      
+      // Support team can read but not modify
+      allow list: if hasRole(['admin', 'compliance', 'legal', 'finance', 'support']);
+    }
+    
+    // Audit logs for PACK 440 operations
+    match /audit_logs_pack440/{logId} {
+      allow read: if hasRole(['admin', 'compliance', 'legal']);
+      allow write: if isSystemService() || isAdmin();
+    }
+  }
+}

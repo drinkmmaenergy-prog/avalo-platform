@@ -1,0 +1,131 @@
+rules_version = '2';
+
+// PACK 239: Two Truths & One Lie Micro-Game
+// Firestore Security Rules
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // MICRO-GAMES - Per chat conversation
+    // ============================================================================
+    
+    match /chats/{chatId}/microGames/{gameId} {
+      // Helper function to check if user is participant
+      function isParticipant() {
+        return request.auth != null &&
+          get(/databases/$(database)/documents/chats/$(chatId)).data.participants.hasAny([request.auth.uid]);
+      }
+      
+      // Helper function to check safety flags
+      function isSafetyBlocked() {
+        let chat = get(/databases/$(database)/documents/chats/$(chatId)).data;
+        let currentUser = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+        
+        // Check if user has safety settings that block micro-games
+        return (
+          // Sleep mode active
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)/settings/sleepMode) &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)/settings/sleepMode).data.isActive == true) ||
+          // Breakup recovery active
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)/settings/breakupRecovery) &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)/settings/breakupRecovery).data.isActive == true) ||
+          // Safety flag between users
+          (chat.safetyFlags != null && chat.safetyFlags[request.auth.uid] == true) ||
+          // Underage suspicion
+          (chat.underageSuspicion == true) ||
+          // Stalker risk
+          (chat.stalkerRisk == true)
+        );
+      }
+      
+      // Allow read if user is participant
+      allow read: if isParticipant();
+      
+      // Allow create/update if:
+      // - User is participant
+      // - No safety blocks active
+      // - Game type is allowed
+      allow create: if isParticipant() &&
+        !isSafetyBlocked() &&
+        request.resource.data.gameType in ['twoTruthsOneLie', 'truthOrDare'] &&
+        request.resource.data.initiatorId == request.auth.uid;
+      
+      // Allow update if participant and appropriate state transition
+      allow update: if isParticipant() &&
+        !isSafetyBlocked() &&
+        (
+          // Starting player turn
+          (resource.data.status == 'idle' && 
+           request.resource.data.status == 'active' &&
+           request.resource.data.currentPlayerId == request.auth.uid) ||
+          // Submitting statements
+          (resource.data.status == 'active' && 
+           request.resource.data.status == 'waitingForGuess' &&
+           resource.data.currentPlayerId == request.auth.uid) ||
+          // Making a guess
+          (resource.data.status == 'waitingForGuess' &&
+           request.resource.data.status == 'revealing' &&
+           resource.data.currentPlayerId != request.auth.uid) ||
+          // Completing round
+          (resource.data.status == 'revealing' &&
+           request.resource.data.status in ['switching', 'complete']) ||
+          // Switching roles
+          (resource.data.status == 'switching' &&
+           request.resource.data.status == 'active')
+        );
+      
+      // Allow delete only by participants (to cancel game)
+      allow delete: if isParticipant();
+    }
+    
+    // ============================================================================
+    // USER MICRO-GAME SETTINGS
+    // ============================================================================
+    
+    match /users/{userId}/settings/microGames {
+      // Users can read and write their own settings
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ============================================================================
+    // CHAT-SPECIFIC MICRO-GAME BLOCKS
+    // ============================================================================
+    
+    match /chats/{chatId}/microGameBlock/{userId} {
+      // Users can read their own block status
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Users can block micro-games from a specific match
+      allow create, update: if request.auth != null && 
+        request.auth.uid == userId &&
+        get(/databases/$(database)/documents/chats/$(chatId)).data.participants.hasAny([request.auth.uid]);
+      
+      // Users can remove their own blocks
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ============================================================================
+    // SPARK THEME UNLOCKS (cosmetic bonus)
+    // ============================================================================
+    
+    match /chats/{chatId}/sparkTheme/{themeId} {
+      // Allow read if participant
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/chats/$(chatId)).data.participants.hasAny([request.auth.uid]);
+      
+      // Only system can create spark themes
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // MICRO-GAME ANALYTICS (platform-wide stats)
+    // ============================================================================
+    
+    match /microGameAnalytics/{analyticsId} {
+      allow read: if request.auth != null && 
+        request.auth.token.admin == true;
+      allow write: if false; // Only backend can write
+    }
+  }
+}

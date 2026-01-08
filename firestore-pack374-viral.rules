@@ -1,0 +1,240 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // PACK 374 — VIRAL GROWTH ENGINE
+    // ========================================
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator'];
+    }
+    
+    // 1️⃣ VIRAL INVITES
+    match /viralInvites/{inviteId} {
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.inviterUserId) ||
+        isUser(resource.data.newUserId) ||
+        isAdmin()
+      );
+      
+      // Only cloud functions can create invites (prevents direct manipulation)
+      allow create: if false;
+      
+      allow update: if false; // Immutable once created
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Invite Codes (separate for validation)
+    match /inviteCodes/{code} {
+      allow read: if true; // Public read for validation
+      allow write: if false; // Only cloud functions
+    }
+    
+    // 2️⃣ VIRAL BOOSTS
+    match /viralBoosts/{boostId} {
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.userId) ||
+        isAdmin()
+      );
+      
+      // Only cloud functions can create boosts (payment verification required)
+      allow create: if false;
+      
+      allow update: if false; // Immutable
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Active Boosts Index (for quick queries)
+    match /activeBoosts/{userId} {
+      allow read: if isAuthenticated() && (
+        isUser(userId) ||
+        isAdmin()
+      );
+      allow write: if false; // Only cloud functions
+    }
+    
+    // 3️⃣ VIRAL EVENTS (Social Loops Tracking)
+    match /viralEvents/{eventId} {
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.userId) ||
+        isUser(resource.data.targetUserId) ||
+        isAdmin()
+      );
+      
+      // Only cloud functions can log events
+      allow create: if false;
+      
+      allow update: if false; // Immutable
+      
+      allow delete: if isAdmin();
+    }
+    
+    // 4️⃣ SHARE TRACKING
+    match /shareTracking/{shareId} {
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.userId) ||
+        isAdmin()
+      );
+      
+      // Only cloud functions can track shares
+      allow create: if false;
+      
+      allow update: if false; // Immutable for analytics
+      
+      allow delete: if isAdmin();
+    }
+    
+    // 5️⃣ VIRAL REWARDS
+    match /viralRewards/{rewardId} {
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.userId) ||
+        isAdmin()
+      );
+      
+      // Only cloud functions can issue rewards
+      allow create: if false;
+      
+      // Allow user to redeem rewards
+      allow update: if isAuthenticated() && 
+                      isUser(resource.data.userId) &&
+                      resource.data.status == 'pending' &&
+                      request.resource.data.status == 'redeemed';
+      
+      allow delete: if isAdmin();
+    }
+    
+    // User Rewards Summary (aggregated)
+    match /userRewardsSummary/{userId} {
+      allow read: if isAuthenticated() && (
+        isUser(userId) ||
+        isAdmin()
+      );
+      allow write: if false; // Only cloud functions
+    }
+    
+    // 6️⃣ VIRAL COEFFICIENTS (K-Factor Analytics)
+    match /viralCoefficients/{periodId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only cloud functions (batch analytics)
+    }
+    
+    // 7️⃣ BOOST TYPES (Configuration)
+    match /boostTypes/{typeId} {
+      allow read: if isAuthenticated(); // All users can see available boosts
+      allow write: if isAdmin();
+    }
+    
+    // 8️⃣ INVITE FRAUD TRACKING
+    match /inviteFraud/{fraudId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only cloud functions
+    }
+    
+    // Device Fingerprints (for fraud detection)
+    match /deviceFingerprints/{fingerprintId} {
+      allow read: if false; // Only cloud functions
+      allow write: if false; // Only cloud functions
+    }
+    
+    // 9️⃣ VIRAL CAMPAIGN CONFIGS
+    match /viralCampaigns/{campaignId} {
+      allow read: if isAuthenticated(); // Users can see active campaigns
+      allow write: if isAdmin();
+    }
+    
+    // 🔟 SHARE TEMPLATES
+    match /shareTemplates/{templateId} {
+      allow read: if isAuthenticated(); // Users can access templates
+      allow write: if isAdmin();
+    }
+    
+    // 1️⃣1️⃣ VIRAL LOOP METRICS (Daily/Hourly aggregates)
+    match /viralLoopMetrics/{metricId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only cloud functions
+    }
+    
+    // 1️⃣2️⃣ USER INVITE STATS
+    match /userInviteStats/{userId} {
+      allow read: if isAuthenticated() && (
+        isUser(userId) ||
+        isAdmin()
+      );
+      allow write: if false; // Only cloud functions
+    }
+    
+    // 1️⃣3️⃣ BOOST PURCHASE HISTORY
+    match /boostPurchaseHistory/{purchaseId} {
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.userId) ||
+        isAdmin()
+      );
+      allow write: if false; // Only cloud functions
+    }
+    
+    // 1️⃣4️⃣ VIRAL NOTIFICATIONS QUEUE
+    match /viralNotificationsQueue/{notificationId} {
+      allow read: if false; // Only cloud functions
+      allow write: if false; // Only cloud functions
+    }
+    
+    // 1️⃣5️⃣ REFERRAL TREE (nested invite structure)
+    match /referralTrees/{userId} {
+      allow read: if isAuthenticated() && (
+        isUser(userId) ||
+        isAdmin()
+      );
+      allow write: if false; // Only cloud functions
+    }
+    
+    // 1️⃣6️⃣ VIRAL FEATURE FLAGS
+    match /viralFeatureFlags/{flagId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // 1️⃣7️⃣ SHARE CONVERSION TRACKING
+    match /shareConversions/{conversionId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only cloud functions
+    }
+    
+    // 1️⃣8️⃣ BOOST ANALYTICS (aggregated)
+    match /boostAnalytics/{analyticsId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only cloud functions
+    }
+    
+    // 1️⃣9️⃣ VIRAL ABUSE REPORTS
+    match /viralAbuseReports/{reportId} {
+      allow read: if isModerator();
+      allow create: if isAuthenticated() && request.resource.data.reporterUserId == request.auth.uid;
+      allow update: if isModerator();
+      allow delete: if isAdmin();
+    }
+    
+    // 2️⃣0️⃣ INVITE REDEMPTION LOCKS (anti-fraud)
+    match /inviteRedemptionLocks/{lockId} {
+      allow read: if false; // Only cloud functions
+      allow write: if false; // Only cloud functions
+    }
+  }
+}

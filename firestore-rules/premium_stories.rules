@@ -1,0 +1,74 @@
+// Premium Stories - Firestore Security Rules
+// Defines access control for premium story posts and unlocks
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PREMIUM STORIES COLLECTION
+    // ========================================================================
+    
+    match /premium_stories/{storyId} {
+      // Anyone can read (for feed display with blur overlay)
+      allow read: if true;
+      
+      // Only authenticated users can create stories
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.authorId
+        && request.resource.data.priceTokens >= 50  // MIN_PRICE
+        && request.resource.data.priceTokens <= 500  // MAX_PRICE
+        && request.resource.data.durationHours == 24
+        && request.resource.data.unlockCount == 0
+        && request.resource.data.viewCount == 0;
+      
+      // Only author can update their own stories (stats only)
+      allow update: if request.auth != null
+        && request.auth.uid == resource.data.authorId
+        && request.resource.data.authorId == resource.data.authorId  // Can't change author
+        && request.resource.data.priceTokens == resource.data.priceTokens  // Can't change price
+        && request.resource.data.mediaUrl == resource.data.mediaUrl;  // Can't change media
+      
+      // Only author can delete their own stories
+      allow delete: if request.auth != null
+        && request.auth.uid == resource.data.authorId;
+    }
+    
+    // ========================================================================
+    // PREMIUM STORY UNLOCKS COLLECTION
+    // ========================================================================
+    
+    match /premium_story_unlocks/{unlockId} {
+      // Users can only read their own unlocks
+      allow read: if request.auth != null
+        && request.auth.uid == resource.data.userId;
+      
+      // Unlocks can only be created by Cloud Functions
+      allow create: if false;
+      
+      // Unlocks cannot be updated
+      allow update: if false;
+      
+      // Unlocks can only be deleted by Cloud Functions (cleanup)
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // SCREENSHOT ATTEMPTS LOG (for monitoring)
+    // ========================================================================
+    
+    match /screenshot_attempts/{attemptId} {
+      // Users can log their own screenshots (for analytics)
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.userId;
+      
+      // Only admins can read screenshot logs
+      allow read: if request.auth != null
+        && get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'admin';
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+  }
+}

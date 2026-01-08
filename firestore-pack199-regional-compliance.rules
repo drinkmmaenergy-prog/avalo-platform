@@ -1,0 +1,137 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Regional Rules (read by all authenticated users, write by admins only)
+    match /regional_rules/{regionCode} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Regional User Profiles (users can read/write their own)
+    match /regional_user_profiles/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAdmin();
+    }
+    
+    // Regional Safety Flags (read own flags, create by system/user, update by admins)
+    match /regional_safety_flags/{flagId} {
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Regional Marketplace Items (read by all, write by item owner or admin)
+    match /regional_marketplace_items/{itemId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+                       (resource.data.creatorId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    // Regional Legal Packets (read by all authenticated users)
+    match /regional_legal_packets/{packetId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Regional User Safety Stats (read own stats, write by system)
+    match /regional_user_safety_stats/{statsId} {
+      allow read: if isAuthenticated() && 
+                     (statsId.split('_')[0] == request.auth.uid || isAdmin());
+      allow write: if false; // Only backend can write
+    }
+    
+    // Regional Automatic Actions (admins only)
+    match /regional_automatic_actions/{actionId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Regional Escalations (admins only)
+    match /regional_escalations/{escalationId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Regional Compliance Violations (admins only)
+    match /regional_compliance_violations/{violationId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Regional Marketplace Removals (admins only)
+    match /regional_marketplace_removals/{removalId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Regional Marketplace Blocks (admins only)
+    match /regional_marketplace_blocks/{blockId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Regional Law Scans (admins only, read-only)
+    match /regional_law_scans/{scanId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Regional Law Update Log (admins only, read-only)
+    match /regional_law_update_log/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Marketplace Compliance Refreshes (admins only, read-only)
+    match /marketplace_compliance_refreshes/{refreshId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Regional Compliance Health (admins only, read-only)
+    match /regional_compliance_health/{healthId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Regional Stale Data Reports (admins only, read-only)
+    match /regional_stale_data_reports/{reportId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Regional Compliance Reports (admins only, read-only)
+    match /regional_compliance_reports/{reportId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend can write
+    }
+    
+    // Regional Compliance Scans (admins only, read-only)
+    match /regional_compliance_scans/{scanId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only backend can write
+    }
+  }
+}

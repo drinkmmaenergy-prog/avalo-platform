@@ -1,0 +1,106 @@
+rules_version = '2';
+
+// PACK 296 — Compliance & Audit Layer
+// Firestore security rules for audit logs and admin users
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid));
+    }
+    
+    function getAdminRole() {
+      return get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role;
+    }
+    
+    function hasAdminRole(role) {
+      return isAdmin() && getAdminRole() == role;
+    }
+    
+    function hasMinimumRole(minRole) {
+      let role = getAdminRole();
+      return isAdmin() && (
+        role == 'SUPERADMIN' ||
+        (minRole == 'RISK' && (role == 'RISK' || role == 'MODERATOR')) ||
+        (minRole == 'MODERATOR' && role == 'MODERATOR') ||
+        (minRole == 'VIEWER' && role == 'VIEWER')
+      );
+    }
+    
+    // ============================================================================
+    // AUDIT LOGS
+    // ============================================================================
+    
+    match /auditLogs/{logId} {
+      // Only system can create audit logs (via Cloud Functions)
+      allow create: if false;
+      
+      // Only admins with RISK or SUPERADMIN role can read audit logs
+      allow read: if hasMinimumRole('RISK');
+      
+      // Audit logs are immutable - no updates or deletes allowed
+      allow update, delete: if false;
+    }
+    
+    // ============================================================================
+    // ADMIN USERS
+    // ============================================================================
+    
+    match /adminUsers/{adminId} {
+      // Only SUPERADMIN can create admin users
+      allow create: if hasAdminRole('SUPERADMIN');
+      
+      // Admins can read their own profile, SUPERADMIN can read all
+      allow read: if isAuthenticated() && (
+        request.auth.uid == adminId ||
+        hasAdminRole('SUPERADMIN')
+      );
+      
+      // Only SUPERADMIN can update admin users (roles, permissions)
+      allow update: if hasAdminRole('SUPERADMIN');
+      
+      // Only SUPERADMIN can delete admin users
+      allow delete: if hasAdminRole('SUPERADMIN');
+    }
+    
+    // ============================================================================
+    // ADMIN SESSION LOGS
+    // ============================================================================
+    
+    match /adminSessionLogs/{sessionId} {
+      // System creates session logs via Cloud Functions
+      allow create: if false;
+      
+      // Only SUPERADMIN can read session logs
+      allow read: if hasAdminRole('SUPERADMIN');
+      
+      // Session logs are immutable
+      allow update, delete: if false;
+    }
+    
+    // ============================================================================
+    // COMPLIANCE EXPORTS (Tracked for audit trail)
+    // ============================================================================
+    
+    match /complianceExports/{exportId} {
+      // System creates export records via Cloud Functions
+      allow create: if false;
+      
+      // Only admins with RISK or SUPERADMIN can read export records
+      allow read: if hasMinimumRole('RISK');
+      
+      // Export records are immutable
+      allow update, delete: if false;
+    }
+  }
+}

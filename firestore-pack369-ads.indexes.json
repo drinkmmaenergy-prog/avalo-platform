@@ -1,0 +1,157 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "adSources",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "geo", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adSources",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "source", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "riskScore", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adSources",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "geo", "order": "ASCENDING" },
+        { "fieldPath": "dailyBudget", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adCreatives",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "performanceScore", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adCreatives",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fatigueScore", "order": "DESCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adCreatives",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "format", "order": "ASCENDING" },
+        { "fieldPath": "theme", "order": "ASCENDING" },
+        { "fieldPath": "performanceScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adCreatives",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "demographic", "order": "ASCENDING" },
+        { "fieldPath": "geo", "order": "ASCENDING" },
+        { "fieldPath": "performanceScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adPerformance",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sourceId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adPerformance",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "creativeId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adPerformance",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "geo", "order": "ASCENDING" },
+        { "fieldPath": "roas", "order": "DESCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "budgetHistory",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sourceId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "budgetHistory",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "action", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "creativePerformanceHistory",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "creativeId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "fraudAttributionEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sourceId", "order": "ASCENDING" },
+        { "fieldPath": "severity", "order": "DESCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "fraudAttributionEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fraudType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adBrainDecisions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "decisionType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adBrainDecisions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sourceId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "geoCreativeVariants",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "geo", "order": "ASCENDING" },
+        { "fieldPath": "demographicCluster", "order": "ASCENDING" },
+        { "fieldPath": "performanceScore", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

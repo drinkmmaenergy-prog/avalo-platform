@@ -1,0 +1,73 @@
+{
+  "name": "avaloapp",
+  "version": "3.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "clean": "pnpm -r exec rm -rf dist lib node_modules .next && rm -rf app-mobile/.expo app-mobile/.expo-shared app-mobile/.cache",
+    "bootstrap": "pnpm install && pnpm -F app-mobile install",
+    "mobile": "pnpm -F app-mobile start",
+    "mobile:reset": "pnpm -F app-mobile start:reset",
+    "typecheck": "pnpm -r exec tsc --noEmit",
+    "lint": "pnpm -r exec eslint . --max-warnings=0",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "test:coverage": "pnpm -r test -- --coverage",
+    "clean:caches": "pnpm -r exec rm -rf node_modules/.cache && rm -rf app-mobile/.expo && pnpm store prune",
+    "dev": "firebase emulators:start",
+    "dev:sync": "concurrently \"firebase emulators:start\" \"pnpm --filter local dev\" \"pnpm --filter monitoring dev\"",
+    "dev:backend": "firebase emulators:start --only functions,firestore,auth,storage",
+    "build:shared": "pnpm --filter @avalo/shared build",
+    "build:sdk": "pnpm --filter @avalo/sdk build",
+    "build:functions": "pnpm --filter functions build",
+    "build:mobile": "pnpm --filter app-mobile build",
+    "build:web": "pnpm --filter app-web build",
+    "deploy": "firebase deploy",
+    "deploy:functions": "firebase deploy --only functions",
+    "deploy:canary": "./scripts/deploy-canary.sh",
+    "rollback": "./scripts/rollback.sh",
+    "logs": "firebase functions:log",
+    "monitoring:deploy": "pnpm --filter monitoring deploy",
+    "prepare": "husky install",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@expo/cli": "~0.21.7",
+    "@types/body-parser": "^1.19.5",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.0",
+    "@types/pino": "^7.0.5",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "typescript": "~5.6.3"
+  },
+  "dependencies": {},
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "18.3.1",
+      "react-dom": "18.3.1"
+    }
+  }
+}

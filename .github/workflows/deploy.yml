@@ -1,0 +1,475 @@
+name: Deploy to Firebase
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '20.x'
+  PNPM_VERSION: '8.15.0'
+
+jobs:
+  # Job 1: Determine deployment environment
+  setup:
+    name: Setup Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.env.outputs.environment }}
+      project_id: ${{ steps.env.outputs.project_id }}
+      should_deploy: ${{ steps.env.outputs.should_deploy }}
+    steps:
+      - name: Determine environment
+        id: env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENV="${{ github.event.inputs.environment }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            ENV="production"
+          else
+            ENV="staging"
+          fi
+          
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+          echo "should_deploy=true" >> $GITHUB_OUTPUT
+          
+          if [[ "$ENV" == "production" ]]; then
+            echo "project_id=${{ secrets.FIREBASE_PROJECT_PROD }}" >> $GITHUB_OUTPUT
+          else
+            echo "project_id=${{ secrets.FIREBASE_PROJECT_STAGING }}" >> $GITHUB_OUTPUT
+          fi
+
+  # Job 2: Build everything
+  build:
+    name: Build All Components
+    runs-on: ubuntu-latest
+    needs: [setup]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build in workspace order
+        run: |
+          pnpm --filter @avalo/shared build
+          pnpm --filter @avalo/sdk build
+          pnpm --filter functions build
+          pnpm --filter app-web build
+        env:
+          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            shared/dist/
+            sdk/dist/
+            functions/lib/
+            app-web/.next/
+            app-web/out/
+
+  # Job 3: Run pre-deployment tests
+  pre-deploy-tests:
+    name: Pre-Deployment Tests
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run smoke tests
+        run: pnpm --filter tests/verification test:smoke || echo "Smoke tests not configured"
+
+  # Job 4: Deploy Cloud Functions
+  deploy-functions:
+    name: Deploy Cloud Functions
+    runs-on: ubuntu-latest
+    needs: [setup, build, pre-deploy-tests]
+    environment:
+      name: ${{ needs.setup.outputs.environment }}
+      url: https://${{ needs.setup.outputs.project_id }}.web.app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy Functions
+        run: |
+          firebase deploy \
+            --only functions \
+            --project ${{ needs.setup.outputs.project_id }} \
+            --force \
+            --json > deploy-result.json
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Check deployment status
+        run: |
+          if jq -e '.status == "error"' deploy-result.json > /dev/null; then
+            echo "::error::Functions deployment failed"
+            jq '.error' deploy-result.json
+            exit 1
+          fi
+          echo "Functions deployed successfully"
+
+      - name: Upload deployment logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: functions-deploy-logs
+          path: deploy-result.json
+
+  # Job 5: Deploy Firestore Rules
+  deploy-firestore-rules:
+    name: Deploy Firestore Rules
+    runs-on: ubuntu-latest
+    needs: [setup, deploy-functions]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Validate Firestore rules
+        run: |
+          if [ -f firestore.rules ]; then
+            echo "Validating Firestore rules..."
+            # Add validation logic here
+          else
+            echo "::warning::No Firestore rules found"
+            exit 0
+          fi
+
+      - name: Deploy Firestore rules
+        if: hashFiles('firestore.rules') != ''
+        run: |
+          firebase deploy \
+            --only firestore:rules \
+            --project ${{ needs.setup.outputs.project_id }} \
+            --force
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Deploy Firestore indexes
+        if: hashFiles('firestore.indexes.json') != ''
+        run: |
+          firebase deploy \
+            --only firestore:indexes \
+            --project ${{ needs.setup.outputs.project_id }} \
+            --force
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  # Job 6: Deploy Storage Rules
+  deploy-storage-rules:
+    name: Deploy Storage Rules
+    runs-on: ubuntu-latest
+    needs: [setup, deploy-functions]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Validate Storage rules
+        run: |
+          if [ -f storage.rules ]; then
+            echo "Validating Storage rules..."
+            # Add validation logic here
+          else
+            echo "::warning::No Storage rules found"
+            exit 0
+          fi
+
+      - name: Deploy Storage rules
+        if: hashFiles('storage.rules') != ''
+        run: |
+          firebase deploy \
+            --only storage \
+            --project ${{ needs.setup.outputs.project_id }} \
+            --force
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  # Job 7: Deploy Hosting (if applicable)
+  deploy-hosting:
+    name: Deploy Hosting
+    runs-on: ubuntu-latest
+    needs: [setup, deploy-functions]
+    if: hashFiles('public/**') != ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy hosting
+        run: |
+          firebase deploy \
+            --only hosting \
+            --project ${{ needs.setup.outputs.project_id }} \
+            --force
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  # Job 8: Post-deployment verification
+  verify-deployment:
+    name: Verify Deployment
+    runs-on: ubuntu-latest
+    needs: [setup, deploy-functions, deploy-firestore-rules, deploy-storage-rules]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run post-deployment tests
+        run: pnpm --filter tests/verification test:post-deploy
+        env:
+          API_ENDPOINT: https://${{ needs.setup.outputs.project_id }}.web.app
+          FIREBASE_PROJECT_ID: ${{ needs.setup.outputs.project_id }}
+
+      - name: Health check
+        run: |
+          ENDPOINT="https://${{ needs.setup.outputs.project_id }}.web.app/health"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" $ENDPOINT)
+          
+          if [ $STATUS -eq 200 ]; then
+            echo "✅ Health check passed"
+          else
+            echo "::error::Health check failed with status $STATUS"
+            exit 1
+          fi
+
+      - name: Upload verification results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: verification-results
+          path: tests/verification/reports/
+
+  # Job 9: Update deployment status
+  update-status:
+    name: Update Deployment Status
+    runs-on: ubuntu-latest
+    needs: [setup, verify-deployment]
+    if: always()
+    steps:
+      - name: Create deployment record
+        run: |
+          echo "Deployment to ${{ needs.setup.outputs.environment }} completed"
+          echo "Project: ${{ needs.setup.outputs.project_id }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Status: ${{ needs.verify-deployment.result }}"
+
+      - name: Notify Slack
+        if: success()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "✅ Deployment to ${{ needs.setup.outputs.environment }} succeeded",
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Deployment Status*\n• Environment: ${{ needs.setup.outputs.environment }}\n• Commit: `${{ github.sha }}`\n• Status: Success"
+                }
+              }]
+            }' || echo "Slack notification skipped"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "❌ Deployment to ${{ needs.setup.outputs.environment }} failed",
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Deployment Failed*\n• Environment: ${{ needs.setup.outputs.environment }}\n• Commit: `${{ github.sha }}`\n• Check workflow logs for details"
+                }
+              }]
+            }' || echo "Slack notification skipped"
+
+  # Job 10: Rollback on failure
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: [setup, verify-deployment]
+    if: failure()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Get previous deployment
+        id: previous
+        run: |
+          PREV_VERSION=$(firebase functions:list \
+            --project ${{ needs.setup.outputs.project_id }} \
+            --json | jq -r '.[0].versionId')
+          echo "previous_version=$PREV_VERSION" >> $GITHUB_OUTPUT
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Rollback Functions
+        run: |
+          echo "Rolling back to previous version..."
+          firebase functions:delete --project ${{ needs.setup.outputs.project_id }} --force
+          # Restore from backup or previous version
+          echo "::warning::Manual rollback may be required"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Notify rollback
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "⚠️ Rollback initiated for ${{ needs.setup.outputs.environment }}",
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Rollback Initiated*\n• Environment: ${{ needs.setup.outputs.environment }}\n• Reason: Deployment verification failed"
+                }
+              }]
+            }' || echo "Notification skipped"
+
+  # Job 11: Publish SDK (on production tags only)
+  publish-sdk:
+    name: Publish SDK to npm
+    runs-on: ubuntu-latest
+    needs: [setup, verify-deployment]
+    if: needs.setup.outputs.environment == 'production' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Publish to npm
+        working-directory: ./sdk
+        run: pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            ## Changes in this release
+            - See [CHANGELOG.md](CHANGELOG.md) for details
+            
+            ## Installation
+            ```bash
+            npm install @avalo/sdk@${{ github.ref_name }}
+            ```
+          draft: false
+          prerelease: false

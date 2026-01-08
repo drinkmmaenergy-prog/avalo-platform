@@ -1,0 +1,95 @@
+// ============================================================================
+// PACK 116: DIGITAL PRODUCTS FIRESTORE SECURITY RULES
+// ============================================================================
+// SAFE content only, no NSFW, full token economy compliance
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isVerifiedCreator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verification.status == 'approved' &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.settings.earnFromChat == true;
+    }
+    
+    function isSafeContent(data) {
+      return data.nsfwLevel == 'SAFE';
+    }
+    
+    function hasValidPrice(price) {
+      return price >= 10 && price <= 10000;
+    }
+    
+    // ========================================================================
+    // DIGITAL PRODUCTS COLLECTION
+    // ========================================================================
+    match /digital_products/{productId} {
+      // Anyone can read active SAFE products
+      allow read: if isAuthenticated() && 
+                     resource.data.isActive == true && 
+                     resource.data.nsfwLevel == 'SAFE';
+      
+      // Creators can read their own products (any status)
+      allow read: if isAuthenticated() && 
+                     isOwner(resource.data.creatorUserId);
+      
+      // Only verified creators can create products
+      allow create: if isVerifiedCreator() &&
+                       request.resource.data.creatorUserId == request.auth.uid &&
+                       isSafeContent(request.resource.data) &&
+                       hasValidPrice(request.resource.data.priceTokens) &&
+                       request.resource.data.title.size() >= 5 &&
+                       request.resource.data.title.size() <= 100 &&
+                       request.resource.data.description.size() >= 20 &&
+                       request.resource.data.description.size() <= 1000;
+      
+      // Creators can update their own products (but cannot change creator or NSFW status)
+      allow update: if isAuthenticated() &&
+                       isOwner(resource.data.creatorUserId) &&
+                       request.resource.data.creatorUserId == resource.data.creatorUserId &&
+                       request.resource.data.nsfwLevel == 'SAFE' &&
+                       (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['creatorUserId', 'productId']));
+      
+      // Creators can delete (deactivate) their own products
+      allow delete: if isAuthenticated() &&
+                       isOwner(resource.data.creatorUserId);
+    }
+    
+    // ========================================================================
+    // DIGITAL PRODUCT PURCHASES COLLECTION
+    // ========================================================================
+    match /digital_product_purchases/{purchaseId} {
+      // Users can read their own purchases
+      allow read: if isAuthenticated() && 
+                     (isOwner(resource.data.buyerUserId) || 
+                      isOwner(resource.data.creatorUserId));
+      
+      // Only Cloud Functions can create purchases (via transactions)
+      allow create: if false;
+      
+      // Only Cloud Functions can update purchases
+      allow update: if false;
+      
+      // No deletes allowed
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // PRODUCT REVIEWS (Future enhancement placeholder)
+    // ========================================================================
+    match /product_reviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Cloud Functions only
+    }
+  }
+}

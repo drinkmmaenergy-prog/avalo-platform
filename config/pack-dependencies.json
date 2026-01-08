@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "description": "PACK 333 - Dependency Configuration",
+  "packs": {
+    "300": {
+      "name": "Core Foundation",
+      "deps": [],
+      "critical": true,
+      "description": "Core foundation layer"
+    },
+    "300A": {
+      "name": "Core Extensions",
+      "deps": ["300"],
+      "critical": true,
+      "description": "Extended core functionality"
+    },
+    "301": {
+      "name": "Base Infrastructure",
+      "deps": [],
+      "critical": true,
+      "description": "Base infrastructure layer"
+    },
+    "301B": {
+      "name": "Infrastructure Extensions",
+      "deps": ["301"],
+      "critical": true,
+      "description": "Extended infrastructure"
+    },
+    "321": {
+      "name": "Integration Layer",
+      "deps": ["300", "301"],
+      "critical": true,
+      "description": "Integration and middleware layer"
+    },
+    "326": {
+      "name": "Advanced Features",
+      "deps": ["300", "301", "321"],
+      "critical": true,
+      "description": "Advanced feature implementations"
+    },
+    "333": {
+      "name": "Orchestration Layer",
+      "deps": ["300", "300A", "301", "301B", "321", "326"],
+      "critical": true,
+      "description": "System orchestration and coordination"
+    }
+  },
+  "initOrder": ["300", "301", "300A", "301B", "321", "326", "333"],
+  "healthCheckTimeout": 5000,
+  "maxRetries": 3,
+  "retryDelay": 1000
+}

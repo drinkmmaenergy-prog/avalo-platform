@@ -1,0 +1,29 @@
+{
+  "name": "avalo-monitoring",
+  "version": "1.0.0",
+  "description": "Avalo Production Monitoring & Auto-Rollback System",
+  "main": "index.ts",
+  "scripts": {
+    "monitor": "ts-node index.ts",
+    "monitor:force": "ts-node -e \"import('./rollback').then(m => m.forceRollback(process.argv[2] || 'Manual rollback'))\"",
+    "build": "tsc",
+    "dev": "ts-node-dev --respawn index.ts"
+  },
+  "keywords": [
+    "monitoring",
+    "rollback",
+    "firebase",
+    "avalo"
+  ],
+  "author": "Avalo Team",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  }
+}

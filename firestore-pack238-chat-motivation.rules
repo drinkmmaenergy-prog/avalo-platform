@@ -1,0 +1,110 @@
+rules_version = '2';
+
+// PACK 238 — Chat Motivation Engine
+// AI-driven conversation boosters that increase chemistry → paid chat duration → paid calls/meetings
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isChatParticipant(chatId) {
+      let chat = get(/databases/$(database)/documents/chats/$(chatId));
+      return isAuthenticated() && 
+             (request.auth.uid == chat.data.user1Id || 
+              request.auth.uid == chat.data.user2Id);
+    }
+    
+    function hasValidChemistryScore() {
+      return request.resource.data.chemistryScore >= 0 && 
+             request.resource.data.chemistryScore <= 10;
+    }
+    
+    function hasValidBoosterType() {
+      return request.resource.data.lastType in ['topic', 'memory', 'chemistry', 'challenge', 'flirt', 'none'];
+    }
+    
+    function isSafetyCompliant(chatId) {
+      let chat = get(/databases/$(database)/documents/chats/$(chatId));
+      // Check if any safety blocks are active
+      return !chat.data.sleepModeActive &&
+             !chat.data.breakupRecoveryActive &&
+             !chat.data.safetyIncidentFlagged &&
+             !chat.data.stalkerRiskHigh;
+    }
+    
+    // Chat Motivation metadata (per chat)
+    match /chats/{chatId}/chatMotivation/{motivationId} {
+      // Read: Both chat participants can read
+      allow read: if isChatParticipant(chatId);
+      
+      // Create: Backend only during chat initialization
+      allow create: if false; // Backend-only creation
+      
+      // Update: Backend only (Cloud Functions calculate and update)
+      allow update: if false; // Backend-only updates
+      
+      // Delete: Not allowed (data retained for analytics)
+      allow delete: if false;
+    }
+    
+    // Conversation analysis cache (per message)
+    match /chats/{chatId}/messages/{messageId}/analysis/{analysisId} {
+      // Read: Chat participants only
+      allow read: if isChatParticipant(chatId);
+      
+      // Write: Backend only
+      allow write: if false;
+    }
+    
+    // Booster triggers (active suggestions)
+    match /chats/{chatId}/boosters/{boosterId} {
+      // Read: Chat participants can read active boosters
+      allow read: if isChatParticipant(chatId);
+      
+      // Create: Backend only
+      allow create: if false;
+      
+      // Update: Users can mark booster as seen/dismissed
+      allow update: if isChatParticipant(chatId) &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['seen', 'dismissed', 'used', 'interactionTime']);
+      
+      // Delete: Backend cleanup only
+      allow delete: if false;
+    }
+    
+    // Chemistry score history (analytics)
+    match /chats/{chatId}/chemistryHistory/{historyId} {
+      // Read: Chat participants can view their chemistry progression
+      allow read: if isChatParticipant(chatId);
+      
+      // Write: Backend only
+      allow write: if false;
+    }
+    
+    // User-specific booster preferences
+    match /users/{userId}/boosterPreferences/config {
+      // Read: User can read their own preferences
+      allow read: if isOwner(userId);
+      
+      // Update: Users can adjust frequency preferences
+      allow update: if isOwner(userId) &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['frequency', 'enabledTypes', 'disabledCategories']);
+      
+      // Create: Backend initialization
+      allow create: if false;
+      
+      // Delete: Not allowed
+      allow delete: if false;
+    }
+  }
+}

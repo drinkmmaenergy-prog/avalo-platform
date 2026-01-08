@@ -1,0 +1,115 @@
+rules_version = '2';
+
+/**
+ * PACK 138 — VIP Access 2.0 Firestore Security Rules
+ * 
+ * Collections:
+ * - vip_subscriptions: VIP subscription records (extends PACK 107)
+ * - vip_themes: Available profile and chat themes
+ * - vip_user_themes: User's selected themes
+ * - vip_vault: Private user storage
+ * - vip_activity_logs: Activity tracking
+ * - vip_chat_enhancements: Chat customizations
+ * 
+ * Rules:
+ * - Users can only access their own data
+ * - VIP themes are public for browsing
+ * - Vault is strictly private
+ * - No writes to subscription data (managed by Cloud Functions)
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function hasVIP() {
+      let membership = get(/databases/$(database)/documents/user_membership/$(request.auth.uid)).data;
+      return membership.tier == 'VIP' || membership.tier == 'ROYAL_CLUB';
+    }
+    
+    // VIP Subscriptions - read own, write via Cloud Functions only
+    match /vip_subscriptions/{subscriptionId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // VIP Themes - public read for browsing, write via admin only
+    match /vip_themes/{themeId} {
+      allow read: if isAuthenticated(); // All users can browse themes
+      allow write: if isAdmin(); // Only admins can create/modify themes
+    }
+    
+    // User's Selected Themes - users can read/write their own
+    match /vip_user_themes/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && hasVIP() &&
+        request.resource.data.keys().hasOnly(['userId', 'profileThemeId', 'chatThemeId', 'updatedAt']) &&
+        request.resource.data.userId == userId;
+    }
+    
+    // VIP Vault - strictly private, users can read/write their own
+    match /vip_vault/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && hasVIP();
+      
+      // Vault items subcollection
+      match /items/{itemId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId) && hasVIP() &&
+          request.resource.data.size() < 1048576; // Max 1MB per item
+      }
+    }
+    
+    // VIP Activity Logs - read own, write via Cloud Functions
+    match /vip_activity_logs/{logId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // VIP Chat Enhancements - users can read/write their own
+    match /vip_chat_enhancements/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && hasVIP() &&
+        request.resource.data.keys().hasOnly([
+          'userId', 
+          'wallpaperId', 
+          'enabledStickers', 
+          'enabledReactions',
+          'autoSaveMedia',
+          'quickTranslate',
+          'updatedAt'
+        ]) &&
+        request.resource.data.userId == userId;
+    }
+    
+    // VIP Settings - users can read/write their own
+    match /vip_settings/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && hasVIP() &&
+        request.resource.data.keys().hasOnly([
+          'userId',
+          'cdnOptimization',
+          'cloudStorageLimit',
+          'noAds',
+          'autoPlayMedia',
+          'updatedAt'
+        ]) &&
+        request.resource.data.userId == userId;
+    }
+  }
+}

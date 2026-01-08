@@ -1,0 +1,74 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ============================================================================
+    // PACK 287: Chat Media Storage Rules
+    // ============================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isChatParticipant(chatId) {
+      return isAuthenticated() && 
+             request.auth.uid in firestore.get(/databases/(default)/documents/chats/$(chatId)).data.participants;
+    }
+    
+    function isValidMediaType(contentType) {
+      return contentType.matches('image/(jpeg|jpg|png)') ||
+             contentType.matches('video/(mp4|quicktime|x-msvideo)') ||
+             contentType.matches('audio/(mpeg|mp4|wav|webm)');
+    }
+    
+    function isWithinSizeLimit(size, type) {
+      // Photos: max 10MB
+      // Videos: max 50MB
+      // Voice: max 5MB
+      return (type.matches('image/.*') && size <= 10 * 1024 * 1024) ||
+             (type.matches('video/.*') && size <= 50 * 1024 * 1024) ||
+             (type.matches('audio/.*') && size <= 5 * 1024 * 1024);
+    }
+    
+    // Temporary uploads (before processing)
+    match /uploads/temp/{userId}/{timestamp} {
+      // Write: Only authenticated user uploading their own files
+      allow write: if isAuthenticated() &&
+                      request.auth.uid == userId &&
+                      isValidMediaType(request.resource.contentType) &&
+                      isWithinSizeLimit(request.resource.size, request.resource.contentType);
+      
+      // Read: Only uploader
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Delete: Only uploader or system (after 1 hour)
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Final chat media storage
+    match /chats/{chatId}/{messageId} {
+      // Write: Not allowed directly (only via Cloud Function after processing)
+      allow write: if false;
+      
+      // Read: Only chat participants
+      allow read: if isChatParticipant(chatId);
+      
+      // Delete: Not allowed (messages use soft delete)
+      allow delete: if false;
+    }
+    
+    // Media thumbnails
+    match /chats/{chatId}/{messageId}_thumb {
+      // Write: Not allowed directly (only via Cloud Function)
+      allow write: if false;
+      
+      // Read: Only chat participants
+      allow read: if isChatParticipant(chatId);
+      
+      // Delete: Not allowed
+      allow delete: if false;
+    }
+  }
+}

@@ -1,0 +1,167 @@
+rules_version = '2';
+
+// PACK 187: Avalo AI Multilingual Consciousness Layer
+// 40+ Languages · Code-Switching · Cultural Safety · Accent Safety
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['moderator', 'admin'];
+    }
+    
+    function hasValidLanguageCode(code) {
+      return code.matches('^[a-z]{2}(-[A-Z]{2})?$');
+    }
+    
+    function isValidCulturalSafetyLevel(level) {
+      return level in ['strict', 'moderate', 'relaxed'];
+    }
+    
+    // AI Language Profiles - Define language capabilities for each AI
+    match /ai_language_profiles/{profileId} {
+      // Public read for all authenticated users
+      allow read: if isAuthenticated();
+      
+      // Only admins can create/update
+      allow create, update: if isModerator() &&
+        request.resource.data.keys().hasAll(['aiId', 'primaryLanguage', 'secondaryLanguages', 'culturalContext']) &&
+        hasValidLanguageCode(request.resource.data.primaryLanguage) &&
+        request.resource.data.secondaryLanguages is list &&
+        request.resource.data.secondaryLanguages.size() <= 5 &&
+        (!request.resource.data.keys().hasAny(['fetishCoded', 'stereotypicalAccent']));
+      
+      allow delete: if isModerator();
+    }
+    
+    // User Language Preferences - Store user's language settings
+    match /ai_language_preferences/{userId} {
+      // Users can read/write their own preferences
+      allow read, write: if isOwner(userId) &&
+        request.resource.data.keys().hasAll(['preferredLanguage', 'allowAutoSwitch']) &&
+        hasValidLanguageCode(request.resource.data.preferredLanguage) &&
+        request.resource.data.allowAutoSwitch is bool &&
+        isValidCulturalSafetyLevel(request.resource.data.get('culturalSafetyLevel', 'strict'));
+      
+      // Moderators can read for support
+      allow read: if isModerator();
+    }
+    
+    // Translation Logs - Track translation for quality and safety
+    match /ai_translation_logs/{logId} {
+      // Create only by backend functions
+      allow create: if isAuthenticated() &&
+        request.resource.data.keys().hasAll([
+          'userId', 
+          'aiId', 
+          'originalLanguage', 
+          'targetLanguage',
+          'originalText',
+          'translatedText',
+          'timestamp',
+          'safetyCheckPassed'
+        ]) &&
+        request.resource.data.userId == request.auth.uid &&
+        hasValidLanguageCode(request.resource.data.originalLanguage) &&
+        hasValidLanguageCode(request.resource.data.targetLanguage) &&
+        request.resource.data.safetyCheckPassed is bool;
+      
+      // Users can read their own logs
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Moderators can read for review
+      allow read: if isModerator();
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // Cultural Safety Flags - Track blocked content patterns
+    match /cultural_safety_flags/{flagId} {
+      // Create by system or moderators
+      allow create: if isModerator() &&
+        request.resource.data.keys().hasAll([
+          'pattern',
+          'category',
+          'severity',
+          'languages',
+          'createdAt'
+        ]) &&
+        request.resource.data.category in [
+          'stereotype',
+          'fetishization',
+          'infantilization',
+          'cultural_mockery',
+          'accent_caricature',
+          'ownership_language'
+        ] &&
+        request.resource.data.severity in ['low', 'medium', 'high', 'critical'];
+      
+      // Read by system for checking
+      allow read: if isAuthenticated();
+      
+      // Update/delete by moderators only
+      allow update, delete: if isModerator();
+    }
+    
+    // Language Conflict Cases - Track code-switching issues for ML training
+    match /language_conflict_cases/{caseId} {
+      // System creates automatically
+      allow create: if isAuthenticated() &&
+        request.resource.data.keys().hasAll([
+          'userId',
+          'aiId',
+          'detectedLanguages',
+          'chosenLanguage',
+          'context',
+          'timestamp'
+        ]) &&
+        request.resource.data.userId == request.auth.uid;
+      
+      // Users can read their own
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Moderators can read all
+      allow read: if isModerator();
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // Accent Voice Profiles - Define safe voice characteristics
+    match /accent_voice_profiles/{profileId} {
+      // Read by all authenticated users
+      allow read: if isAuthenticated();
+      
+      // Create/update by admins only
+      allow create, update: if isModerator() &&
+        request.resource.data.keys().hasAll([
+          'language',
+          'region',
+          'characteristics',
+          'prohibitedCharacteristics'
+        ]) &&
+        hasValidLanguageCode(request.resource.data.language) &&
+        !request.resource.data.characteristics.hasAny([
+          'infantilized',
+          'exaggerated',
+          'mocking',
+          'sexually_coded'
+        ]);
+      
+      allow delete: if isModerator();
+    }
+  }
+}

@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // PACK 345 — Launch Readiness & Audit
+    // ========================================
+    
+    // Launch Readiness Status (Admin Read, System Write)
+    match /system/launchReadiness {
+      // Only admins can read
+      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'super_admin'];
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // Audit Logs (Admin Read Only)
+    match /system/auditLogs/runs/{auditId} {
+      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'super_admin'];
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Launch Overrides  (Super-Admin Only)
+    match /system/launchOverrides/logs/{overrideId} {
+      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Country Launch Configurations (Admin Read, Admin Write)
+    match /system/launchCountries/countries/{countryCode} {
+      allow read: if request.auth != null;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'super_admin'];
+    }
+    
+    // User Compliance Status (User Read Own, System Write)
+    match /users/{userId}/compliance/status {
+      allow read: if request.auth.uid == userId;
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Compliance Acceptances Log (User Read Own)
+    match /users/{userId}/compliance/acceptances/{acceptanceId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Compliance Verifications Log (User Read Own)
+    match /users/{userId}/compliance/verifications/{verificationId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Revenue Split Configuration (Admin Read Only)
+    match /revenue_splits/{feature} {
+      allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'super_admin'];
+      allow write: if false; // Only system can update
+    }
+    
+    // Refund Policies (Admin Read Only)
+    match /refund_policies/{policyId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only system can update
+    }
+  }
+}

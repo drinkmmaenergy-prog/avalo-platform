@@ -1,0 +1,141 @@
+{
+  "support": {
+    "title": "Support",
+    "newCase": "New Case",
+    "noCases": "No Support Cases",
+    "noCasesDesc": "You haven't created any support cases yet.",
+    "createNewCase": "Create New Case",
+    
+    "filters": {
+      "all": "All",
+      "open": "Open",
+      "resolved": "Resolved"
+    },
+    
+    "status": {
+      "OPEN": "Open",
+      "ASSIGNED": "Assigned",
+      "WAITING_FOR_AGENT": "Waiting for Agent",
+      "WAITING_FOR_USER": "Waiting for You",
+      "RESOLVED": "Resolved",
+      "CLOSED": "Closed"
+    },
+    
+    "priority": {
+      "CRITICAL": "Critical",
+      "HIGH": "High",
+      "NORMAL": "Normal"
+    },
+    
+    "categories": {
+      "TECHNICAL": "Technical Issue",
+      "BILLING": "Billing & Payments",
+      "ACCOUNT": "Account Access",
+      "CONTENT": "Content Issues",
+      "SAFETY": "Safety Concern",
+      "LEGAL": "Legal Request",
+      "FEATURE_REQUEST": "Feature Request",
+      "OTHER": "Other"
+    },
+    
+    "chat": {
+      "typeMessage": "Type your message...",
+      "send": "Send",
+      "supportAgent": "Support Agent",
+      "caseClosed": "This case has been closed",
+      "caseResolved": "Case resolved",
+      "reopen": "Reopen",
+      "reopenConfirm": "Would you like to reopen this case?",
+      "reopenSuccess": "Case has been reopened",
+      "cannotSendClosed": "This case has been closed. You cannot send new messages."
+    },
+    
+    "newCase": {
+      "title": "New Support Case",
+      "subject": "Subject",
+      "subjectPlaceholder": "Brief description of your issue",
+      "category": "Category",
+      "description": "Description",
+      "descriptionPlaceholder": "Please describe your issue in detail...",
+      "required": "Required",
+      "subjectRequired": "Please enter a subject for your case",
+      "messageRequired": "Please describe your issue",
+      "categoryRequired": "Please select a category",
+      "createButton": "Create Support Case",
+      "successTitle": "Success",
+      "successMessage": "Your support case has been created. Our team will respond shortly.",
+      "errorTitle": "Error",
+      "errorMessage": "Failed to create support case. Please try again.",
+      "infoMessage": "Our support team typically responds within 24 hours. For urgent issues, please mark as high priority.",
+      "charCount": "{count}/{max}"
+    },
+    
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{count}m ago",
+      "hoursAgo": "{count}h ago",
+      "daysAgo": "{count}d ago",
+      "yesterday": "Yesterday",
+      "updated": "Updated {time}"
+    },
+    
+    "errors": {
+      "caseNotFound": "Support case not found",
+      "unauthorized": "You do not have access to this case",
+      "sendFailed": "Failed to send message. Please try again.",
+      "reopenFailed": "Failed to reopen case. Please try again.",
+      "rateLimitExceeded": "You have reached the maximum number of support cases. Please wait before creating more."
+    },
+    
+    "notifications": {
+      "agentReplied": "Your support agent replied",
+      "needsInfo": "Support needs more information",
+      "caseResolved": "Your support case has been resolved",
+      "caseAssigned": "Your case has been assigned to an agent"
+    },
+    
+    "crisisResources": {
+      "US": {
+        "message": "If you are experiencing a mental health crisis, please contact the 988 Suicide & Crisis Lifeline immediately.",
+        "hotline": "988",
+        "website": "https://988lifeline.org"
+      },
+      "UK": {
+        "message": "If you need someone to talk to, Samaritans are available 24/7 at 116 123.",
+        "hotline": "116 123",
+        "website": "https://www.samaritans.org"
+      },
+      "DEFAULT": {
+        "message": "If you are in crisis, please contact local emergency services or visit findahelpline.com for resources in your area.",
+        "hotline": "Local emergency services",
+        "website": "https://findahelpline.com"
+      }
+    },
+    
+    "agent": {
+      "title": "Support Console",
+      "assignedCases": "Assigned Cases",
+      "unassignedCases": "Unassigned Cases",
+      "assignToMe": "Assign to Me",
+      "markWaiting": "Mark Waiting for User",
+      "resolveCase": "Resolve Case",
+      "changePriority": "Change Priority",
+      "changeCategory": "Change Category",
+      "addTags": "Add Tags",
+      "internalNote": "Internal Note",
+      "sendMessage": "Send Message",
+      "caseDetails": "Case Details",
+      "userInfo": "User Information",
+      "caseHistory": "Case History",
+      "resolution": {
+        "title": "Resolve Case",
+        "category": "Resolution Category",
+        "notes": "Resolution Notes",
+        "FIXED": "Issue Fixed",
+        "EXPLAINED": "Issue Explained",
+        "NO_ACTION_NEEDED": "No Action Needed",
+        "ESCALATED": "Escalated"
+      }
+    }
+  }
+}

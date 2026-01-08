@@ -1,0 +1,272 @@
+AVALO_DATA_MODELS_AND_API_SPEC.md
+
+Purpose: Precise schema and API contract for Firebase Firestore, Auth, Functions, and external payment gateways.
+Claude must follow these models exactly. (PL komentarze w nawiasach.)
+
+1) Firestore collections overview
+users/{uid}
+chats/{chatId}/messages/{messageId}
+transactions/{txId}
+calendarBookings/{bookingId}
+aiBots/{botId}
+subscriptions/{subId}
+
+2) users document
+{
+  uid: string
+  displayName: string
+  gender: 'male' | 'female' | 'nb'
+  seeking: 'male' | 'female' | 'all'
+  dob: Timestamp
+  age: number
+  bio: string
+  interests: string[]
+  location: {
+    country: string
+    city: string
+    coords: GeoPoint
+  }
+  verified: boolean
+  verification: {
+    selfie: boolean
+    idCheck: boolean
+    bankCheck: boolean
+  }
+  royal: boolean
+  royalReason?: 'instagram' | 'earnings'
+  earnFromChat: boolean
+  incognito: boolean
+  passport: {
+    enabled: boolean
+    country?: string
+    city?: string
+  }
+  instagramLinked: boolean
+  followersCount: number
+  wallet: {
+    balance: number      // tokens available
+    pending: number      // escrow
+    earned: number       // lifetime earnings
+  }
+  stats: {
+    likes: number
+    chats: number
+    rating: number
+  }
+  role: 'user' | 'creator' | 'admin' | 'finance' | 'legal'
+  qualityScore: number   // 0–100, affects ranking
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+
+(Pol: model profilu z portfelem, weryfikacją i statusami.)
+
+3) chats & messages
+chats/{chatId}
+{
+  participants: string[]       // [uid1, uid2]
+  initiator: string
+  earningParty: string
+  status: 'active' | 'closed' | 'refund_pending'
+  deposit: {
+    total: number              // 100 tokens per session
+    fee: 35                    // 35 tokens platform fee
+    escrow: 65                 // held for creator
+    refunded: boolean
+  }
+  startedAt: Timestamp
+  closedAt?: Timestamp
+}
+
+messages/{messageId}
+{
+  senderId: string
+  text: string
+  words: number
+  tokensCharged: number
+  createdAt: Timestamp
+  ai?: boolean
+}
+
+
+Server Function deducts 1 token per 11 words (7 for Royal female).
+
+4) transactions/{txId}
+{
+  userId: string
+  type: 'purchase' | 'chat' | 'tip' | 'subscription' | 'calendar' | 'refund'
+  amountTokens: number
+  amountFiat: number
+  currency: 'PLN' | 'EUR' | 'USD' | ...
+  rate: number        // fiat per token
+  direction: 'credit' | 'debit'
+  status: 'pending' | 'completed' | 'failed' | 'refunded'
+  stripeId?: string
+  cryptoTxId?: string
+  createdAt: Timestamp
+}
+
+5) calendarBookings/{bookingId}
+{
+  bookerId: string
+  earnerId: string
+  date: Timestamp
+  durationMinutes: number
+  amountTokens: number        // e.g. 500
+  escrow: {
+    avaloFee: number          // 20%
+    held: number              // 80%
+    released: boolean
+  }
+  verify: {
+    gps?: boolean
+    qr?: boolean
+    selfie?: boolean
+  }
+  refundStatus: 'none' | 'auto' | 'manual'
+  createdAt: Timestamp
+}
+
+
+Refund rules per core spec (section 8 Calendar).
+
+6) aiBots/{botId}
+{
+  ownerId?: string
+  type: 'system' | 'custom'
+  visibility: 'public' | 'private'
+  name: string
+  gender: 'male' | 'female' | 'nb'
+  traits: {
+    personality: string[]
+    tone: 'flirty' | 'friendly' | 'romantic' | 'dominant'
+    nsfw: 'PG13' | 'R' | 'XXX'
+  }
+  avatarUrl: string
+  subscriptionTier?: 'basic' | 'plus' | 'premium'
+  pricing: {
+    genImage: number
+    regenerate: number
+  }
+  createdAt: Timestamp
+}
+
+7) subscriptions/{subId}
+{
+  userId: string
+  tier: 'VIP' | 'Royal' | 'AI_Basic' | 'AI_Plus' | 'AI_Premium'
+  status: 'active' | 'canceled' | 'expired'
+  startedAt: Timestamp
+  renewedAt?: Timestamp
+  nextBilling: Timestamp
+  stripeSubId?: string
+  priceFiat: number
+  period: 'monthly' | 'yearly'
+}
+
+8) Firebase Functions API surface
+Endpoint	Purpose
+onUserCreate	init profile + wallet
+verifySelfie	ML-based age/face verification
+purchaseTokens	Stripe/crypto checkout
+applyDeposit	deduct 100 tokens and open chat
+processMessage	count words, charge tokens, pay split
+closeChat	refund unused escrow
+bookCalendar	create booking + escrow
+confirmMeeting	release escrow
+issueRefund	full refund if earner no-show
+generateAIBot	create new AI companion
+moderateContent	keyword flagging
+sendNotification	push/email
+adminExportStats	CSV/analytics
+
+All functions use region europe-west3, Node 20, TypeScript.
+
+9) Example: purchaseTokens flow
+
+Mobile → open web checkout URL with SSO JWT.
+
+Web → Stripe Checkout Session.
+
+User pays.
+
+Stripe Webhook → functions/payments.ts.
+
+Verify signature.
+
+Create transactions doc.
+
+Credit users.wallet.balance.
+
+10) Example: processMessage flow
+
+Client sends message.
+
+Function counts words.
+
+Determine rate (11 or 7 words/token).
+
+Deduct tokens from payer wallet.
+
+Credit escrow for earner.
+
+If wallet < threshold → pause chat until refill.
+
+11) Stripe objects
+
+Product IDs = TP100…TP5000.
+
+Webhook events: checkout.session.completed, invoice.payment_failed, customer.subscription.updated.
+
+functions/payments.ts handles mapping SKU→token amount, currency conversion, wallet credit.
+
+12) Security Rules principles
+
+Only verified 18+ users can Earn or book Calendar.
+
+User can read/write own profile, wallet (except earned).
+
+Admin/Finance can update payouts.
+
+No public access to AI Storage unless flagged safe.
+
+13) Indexes summary
+
+chats → participants array.
+
+transactions → userId+createdAt.
+
+calendarBookings → bookerId+date.
+
+aiBots → ownerId+type.
+
+14) Error codes
+Code	Meaning
+E001	Insufficient balance
+E002	User not verified
+E003	Invalid booking time
+E004	Refund not allowed
+E005	AI generation limit
+15) Example Firestore Rules snippet
+match /users/{uid} {
+  allow read, update: if request.auth.uid == uid;
+  allow create: if request.auth.uid != null;
+}
+match /transactions/{txId} {
+  allow read: if request.auth.uid == resource.data.userId;
+  allow write: if request.auth.uid == resource.data.userId;
+}
+match /calendarBookings/{bookingId} {
+  allow create: if get(/databases/(default)/documents/users/$(request.auth.uid)).data.verified == true;
+}
+
+16) Developer notes
+
+All writes validated server-side in Functions.
+
+Wallet balance changes atomic (Firestore transaction).
+
+All payouts processed via Finance panel manually.
+
+AI companion images must carry nsfwLevel metadata.

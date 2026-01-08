@@ -1,0 +1,74 @@
+// PACK 220: Fan & Kiss Economy Engine - Firestore Security Rules
+// Add these rules to your main firestore.rules file
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // =================================================================
+    // FAN STATUS COLLECTION
+    // Tracks fan relationships and milestone progression
+    // =================================================================
+    match /fan_status/{fanId} {
+      // Read: Users can see their own fan status (as suitor or creator)
+      allow read: if request.auth != null && (
+        resource.data.suitorId == request.auth.uid ||
+        resource.data.creatorId == request.auth.uid
+      );
+      
+      // Write: Only backend can write (prevents client manipulation)
+      allow write: if false;
+    }
+    
+    // =================================================================
+    // FAN RANKINGS COLLECTION
+    // Organized fan lists per creator
+    // =================================================================
+    match /fan_rankings/{creatorId} {
+      // Read: Only the creator can see their fan rankings
+      allow read: if request.auth != null && 
+        request.auth.uid == creatorId;
+      
+      // Write: Only backend can write
+      allow write: if false;
+    }
+    
+    // =================================================================
+    // EMOTION PROGRESSION EVENTS COLLECTION
+    // Romantic progression triggers
+    // =================================================================
+    match /emotion_progression_events/{eventId} {
+      // Read: Users can see events they're part of
+      allow read: if request.auth != null && (
+        resource.data.suitorId == request.auth.uid ||
+        resource.data.creatorId == request.auth.uid
+      );
+      
+      // Write: Only backend can write
+      allow write: if false;
+    }
+    
+    // =================================================================
+    // FAN MILESTONE LOGS COLLECTION
+    // Analytics tracking for milestone achievements
+    // =================================================================
+    match /fan_milestone_logs/{logId} {
+      // Read: Users can see their own milestone logs
+      allow read: if request.auth != null && (
+        resource.data.suitorId == request.auth.uid ||
+        resource.data.creatorId == request.auth.uid
+      );
+      
+      // Write: Only backend can write
+      allow write: if false;
+    }
+  }
+}
+
+// =================================================================
+// ADMIN OVERRIDES (for debugging/support)
+// =================================================================
+// Add to your existing admin checks:
+// - Admins can read all fan-related collections for support
+// - Admins CANNOT write (to prevent abuse)

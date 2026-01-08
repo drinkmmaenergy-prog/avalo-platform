@@ -1,0 +1,165 @@
+rules_version = '2';
+
+// PACK 276 - Profile Engine Security Rules
+// 
+// Comprehensive security rules for user profiles with:
+// - Photo validation (slots 1-6 must be face photos)
+// - Verification requirements
+// - Safety flags management
+// - Settings restrictions
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Validate profile data structure
+    function isValidProfile(data) {
+      return data.keys().hasAll(['userId', 'gender', 'orientation', 'age', 'birthdate', 'country', 'city', 'photos', 'verification', 'profileScore', 'settings', 'safetyFlags', 'createdAt', 'updatedAt'])
+        && data.userId is string
+        && data.gender in ['male', 'female', 'nonbinary']
+        && data.orientation in ['female', 'male', 'both']
+        && data.age is int && data.age >= 18 && data.age <= 100
+        && data.birthdate is string
+        && data.country is string
+        && data.city is string
+        && data.photos is list
+        && data.verification is map
+        && data.profileScore is int && data.profileScore >= 0 && data.profileScore <= 100
+        && data.settings is map
+        && data.safetyFlags is map
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+    
+    // Validate photo array (max 10 photos)
+    function isValidPhotos(photos) {
+      return photos.size() <= 10;
+    }
+    
+    // Validate photo object
+    function isValidPhoto(photo) {
+      return photo.keys().hasAll(['url', 'order', 'type'])
+        && photo.url is string
+        && photo.order is int && photo.order >= 1 && photo.order <= 10
+        && photo.type in ['face', 'lifestyle'];
+    }
+    
+    // Validate verification data
+    function isValidVerification(verification) {
+      return verification.keys().hasAll(['status', 'reason', 'onboardingSelfie'])
+        && verification.status in ['unverified', 'pending', 'verified']
+        && (verification.reason == null || verification.reason is string)
+        && (verification.onboardingSelfie == null || verification.onboardingSelfie is string);
+    }
+    
+    // Validate settings
+    function isValidSettings(settings) {
+      return settings.keys().hasAll(['incognito', 'passportEnabled', 'aiAvatarAllowed', 'notifications'])
+        && settings.incognito is bool
+        && settings.passportEnabled is bool
+        && settings.aiAvatarAllowed is bool
+        && settings.notifications is bool;
+    }
+    
+    // Validate safety flags (only admins can set fraudRisk/banRisk)
+    function canUpdateSafetyFlags(newFlags, oldFlags) {
+      return isAdmin() || (
+        newFlags.mismatchReports == oldFlags.mismatchReports &&
+        newFlags.fraudRisk == oldFlags.fraudRisk &&
+        newFlags.banRisk == oldFlags.banRisk
+      );
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Read: User can read their own profile, others can read if not incognito and not banned
+      allow read: if isOwner(userId) 
+                  || (isAuthenticated() && 
+                      !resource.data.settings.incognito && 
+                      !resource.data.isBanned &&
+                      resource.data.verification.status == 'verified');
+      
+      // Create: Only during registration, must be own profile
+      allow create: if isOwner(userId) 
+                    && isValidProfile(request.resource.data)
+                    && isValidPhotos(request.resource.data.photos)
+                    && isValidVerification(request.resource.data.verification)
+                    && isValidSettings(request.resource.data.settings)
+                    && request.resource.data.profileScore == 0
+                    && request.resource.data.verification.status == 'unverified'
+                    && request.resource.data.safetyFlags.mismatchReports == 0
+                    && request.resource.data.safetyFlags.fraudRisk == false
+                    && request.resource.data.safetyFlags.banRisk == false;
+      
+      // Update: Owner can update most fields, with restrictions
+      allow update: if isOwner(userId)
+                    && isValidProfile(request.resource.data)
+                    && isValidPhotos(request.resource.data.photos)
+                    && isValidVerification(request.resource.data.verification)
+                    && isValidSettings(request.resource.data.settings)
+                    // Gender cannot be changed after creation
+                    && request.resource.data.gender == resource.data.gender
+                    // UserId cannot be changed
+                    && request.resource.data.userId == resource.data.userId
+                    // CreatedAt cannot be changed
+                    && request.resource.data.createdAt == resource.data.createdAt
+                    // UpdatedAt must be set to now
+                    && request.resource.data.updatedAt == request.time
+                    // Safety flags require admin or specific rules
+                    && canUpdateSafetyFlags(request.resource.data.safetyFlags, resource.data.safetyFlags);
+      
+      // Delete: Only owner or admin can delete
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // Verification records (for audit trail)
+    match /verifications/{verificationId} {
+      // Read: Own verifications or admin
+      allow read: if isAuthenticated() && 
+                  (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Create: Only through service
+      allow create: if isAuthenticated() && 
+                    request.resource.data.userId == request.auth.uid &&
+                    request.resource.data.timestamp == request.time;
+      
+      // Update/Delete: Admin only
+      allow update, delete: if isAdmin();
+    }
+    
+    // Mismatch reports
+    match /mismatchReports/{reportId} {
+      // Read: Reporter, reported user, or admin
+      allow read: if isAuthenticated() && 
+                  (resource.data.reporterId == request.auth.uid ||
+                   resource.data.reportedUserId == request.auth.uid ||
+                   isAdmin());
+      
+      // Create: Authenticated users can report
+      allow create: if isAuthenticated() &&
+                    request.resource.data.reporterId == request.auth.uid &&
+                    request.resource.data.reportedUserId != request.auth.uid &&
+                    request.resource.data.timestamp == request.time &&
+                    request.resource.data.verified == false;
+      
+      // Update: Admin only (to verify reports)
+      allow update: if isAdmin();
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+  }
+}

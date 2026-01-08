@@ -1,0 +1,89 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 195 — Chemistry Matching Collections
+    // ========================================================================
+    
+    // Chemistry Scores
+    // Stores calculated chemistry scores between users
+    match /chemistry_scores/{scoreId} {
+      // Only readable by the users involved
+      allow read: if request.auth != null && 
+        (scoreId.matches(request.auth.uid + '_.*') || 
+         scoreId.matches('.*_' + request.auth.uid));
+      
+      // Only writable by backend functions
+      allow write: if false;
+    }
+    
+    // Interaction Metrics
+    // Tracks user interactions for chemistry calculations
+    match /interaction_metrics/{metricId} {
+      // Only readable by the user who owns the metric
+      allow read: if request.auth != null && 
+        metricId.matches(request.auth.uid + '_.*');
+      
+      // Only writable by backend functions
+      allow write: if false;
+    }
+    
+    // Chemistry Boosts
+    // Stores active chemistry boost states
+    match /chemistry_boosts/{boostId} {
+      // Readable by both users in the boost
+      allow read: if request.auth != null && 
+        (resource.data.userId1 == request.auth.uid || 
+         resource.data.userId2 == request.auth.uid);
+      
+      // Only writable by backend functions
+      allow write: if false;
+    }
+    
+    // Swipes
+    // Tracks user swipe actions
+    match /swipes/{swipeId} {
+      // User can read their own swipes
+      allow read: if request.auth != null && 
+        swipeId.matches(request.auth.uid + '_.*');
+      
+      // User can create their own swipes
+      allow create: if request.auth != null && 
+        swipeId == request.auth.uid + '_' + request.resource.data.targetUserId &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.direction in ['left', 'right'] &&
+        request.resource.data.timestamp == request.time;
+      
+      // Cannot update or delete swipes
+      allow update, delete: if false;
+    }
+    
+    // Vibe Tags
+    // User's vibe/interest tags for matching
+    match /vibe_tags/{userId} {
+      // Publicly readable
+      allow read: if request.auth != null;
+      
+      // User can update their own tags
+      allow write: if request.auth != null && 
+        request.auth.uid == userId &&
+        request.resource.data.tags is list &&
+        request.resource.data.tags.size() <= 20;
+    }
+    
+    // Passport Interests
+    // User's location/travel interests
+    match /passport_interests/{userId} {
+      // Publicly readable
+      allow read: if request.auth != null;
+      
+      // User can update their own interests
+      allow write: if request.auth != null && 
+        request.auth.uid == userId &&
+        request.resource.data.locations is list &&
+        request.resource.data.locations.size() <= 50;
+    }
+  }
+}

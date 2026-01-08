@@ -1,0 +1,146 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "referral_links",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "inviter_id", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "referral_links",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "link_code", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "referral_tracking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "inviter_id", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "referral_tracking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "invited_user_id", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "referral_tracking",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "inviter_id", "order": "ASCENDING" },
+        { "fieldPath": "reward_granted", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "viral_rewards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user_id", "order": "ASCENDING" },
+        { "fieldPath": "claimed", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "viral_rewards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user_id", "order": "ASCENDING" },
+        { "fieldPath": "reward_type", "order": "ASCENDING" },
+        { "fieldPath": "expires_at", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "audience_imports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "creator_id", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "audience_imports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "creator_id", "order": "ASCENDING" },
+        { "fieldPath": "platform", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "social_proof_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "target_user_id", "order": "ASCENDING" },
+        { "fieldPath": "read", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "social_proof_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "target_user_id", "order": "ASCENDING" },
+        { "fieldPath": "event_type", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "viral_badges",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user_id", "order": "ASCENDING" },
+        { "fieldPath": "badge_type", "order": "ASCENDING" },
+        { "fieldPath": "awarded_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "viral_badges",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user_id", "order": "ASCENDING" },
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "awarded_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "invited_users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "inviter_id", "order": "ASCENDING" },
+        { "fieldPath": "selfie_verified", "order": "ASCENDING" },
+        { "fieldPath": "joined_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "invited_users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "inviter_id", "order": "ASCENDING" },
+        { "fieldPath": "boost_active", "order": "ASCENDING" },
+        { "fieldPath": "joined_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "viral_stats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "total_invites", "order": "DESCENDING" },
+        { "fieldPath": "updated_at", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

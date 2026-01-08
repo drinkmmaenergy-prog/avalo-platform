@@ -1,0 +1,93 @@
+// PACK 425 — Global Expansion Firestore Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Country rollout profiles - Admin only write, authenticated read
+    match /countryRollout/{countryCode} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    // Country feature flags - Admin only write, public read
+    match /countryFeatureFlags/{countryCode} {
+      allow read: if true; // Public read for mobile app
+      allow write: if request.auth != null && 
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    // Feature flag history - Admin only
+    match /countryFeatureFlagHistory/{historyId} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      allow write: if false; // System only
+    }
+    
+    // Country payments - Admin only write, authenticated read
+    match /countryPayments/{countryCode} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    // Market segmentation - Admin only
+    match /countryMarketSegments/{countryCode} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      allow write: if request.auth != null && 
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    // Creator bootstrap configs - Admin only
+    match /creatorBootstrapConfigs/{countryCode} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      allow write: if request.auth != null && 
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    // Creator bootstrap profiles - Creators can read their own
+    match /creatorBootstrap/{profileId} {
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN'
+      );
+      allow write: if request.auth != null && 
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    // Creator incentives - Creators can read their own
+    match /creatorIncentives/{userId} {
+      allow read: if request.auth != null && (
+        userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN'
+      );
+      allow write: if false; // System only
+    }
+    
+    // Localization bundles - Public read
+    match /localizationBundles/{languageCode} {
+      allow read: if true; // Public read for app
+      allow write: if request.auth != null && 
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    // Translation keys - Admin and translators
+    match /translationKeys/{key} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'TRANSLATOR'
+      );
+    }
+    
+    // Translation queue - Admin only
+    match /translationQueue/{queueId} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      allow write: if false; // System only
+    }
+  }
+}

@@ -1,0 +1,132 @@
+rules_version = '2';
+
+/**
+ * PACK 410 - Enterprise Analytics
+ * Firestore Security Rules
+ * 
+ * Security Philosophy:
+ * - Analytics events are server-only (no client writes)
+ * - Admin read access only (no public access)
+ * - Immutable writes (no updates/deletes)
+ * - Audit trail preserved
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isSuperAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'super_admin';
+    }
+    
+    function isCreator() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/creators/$(request.auth.uid));
+    }
+    
+    function isOwnCreatorData(creatorId) {
+      return isAuthenticated() && request.auth.uid == creatorId;
+    }
+    
+    function isOwnUserData(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Analytics Events - Server-only, immutable
+    match /analytics_events/{eventId} {
+      allow read: if isAdmin();
+      allow create: if false; // Server-only via Cloud Functions
+      allow update, delete: if false; // Immutable
+    }
+    
+    // Daily Rollups - Server-only
+    match /analytics_daily_rollups/{rollupId} {
+      allow read: if isAdmin();
+      allow write: if false; // Server-only
+    }
+    
+    // User Lifecycle - Server-only, admin read
+    match /analytics_user_lifecycle/{userId} {
+      allow read: if isAdmin() || isOwnUserData(userId);
+      allow write: if false; // Server-only
+    }
+    
+    // Creator Earnings - Creator can read own, admin can read all
+    match /analytics_creator_earnings/{earningsId} {
+      allow read: if isAdmin() || 
+                     (isCreator() && resource.data.creatorId == request.auth.uid);
+      allow write: if false; // Server-only
+    }
+    
+    // AI Usage - Admin only
+    match /analytics_ai_usage/{usageId} {
+      allow read: if isAdmin();
+      allow write: if false; // Server-only
+    }
+    
+    // Safety Events - Admin only
+    match /analytics_safety_events/{eventId} {
+      allow read: if isAdmin();
+      allow write: if false; // Server-only
+    }
+    
+    // Marketing Attribution - Admin only
+    match /analytics_marketing_attribution/{userId} {
+      allow read: if isAdmin();
+      allow write: if false; // Server-only
+    }
+    
+    // Wallet Flow - Admin only (sensitive financial data)
+    match /analytics_wallet_flow/{flowId} {
+      allow read: if isAdmin();
+      allow write: if false; // Server-only
+    }
+    
+    // KPI Snapshots - Admin read
+    match /analytics_kpi_snapshots/{snapshotId} {
+      allow read: if isAdmin();
+      allow write: if false; // Server-only
+    }
+    
+    // Fraud Signals - Admin only
+    match /fraud_signals/{signalId} {
+      allow read: if isAdmin();
+      allow write: if false; // Server-only
+    }
+    
+    // Analytics Errors - Server-only
+    match /analytics_errors/{errorId} {
+      allow read: if isAdmin();
+      allow write: if false; // Server-only
+    }
+    
+    // Alert Thresholds - Super admin management
+    match /analytics_alert_thresholds/{thresholdId} {
+      allow read: if isAdmin();
+      allow write: if isSuperAdmin();
+    }
+    
+    // Alerts - Admin read
+    match /analytics_alerts/{alertId} {
+      allow read: if isAdmin();
+      allow write: if false; // Server-only
+    }
+    
+    // Analytics Exports - Admin only
+    match /analytics_exports/{exportId} {
+      allow read: if isAdmin() && resource.data.requestedBy == request.auth.uid;
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+  }
+}

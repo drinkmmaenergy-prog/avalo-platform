@@ -1,0 +1,314 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator'];
+    }
+    
+    function isAgeVerified() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.ageVerified == true;
+    }
+    
+    // Age Verification Records
+    match /age_verification_records/{recordId} {
+      // Users can read their own verification records
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      
+      // Only system (via Cloud Functions) can create verification records
+      allow create: if false;
+      
+      // Only admins can update verification records (for manual review)
+      allow update: if isAdmin() && 
+                       request.resource.data.keys().hasOnly([
+                         'status', 'manualReviewerId', 'manualReviewNotes', 
+                         'reviewedAt', 'updatedAt'
+                       ]);
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    // Youth Fetishization Flags
+    match /youth_fetishization_flags/{flagId} {
+      // Only moderators and admins can read flags
+      allow read: if isModerator();
+      
+      // Only system can create flags
+      allow create: if false;
+      
+      // Only moderators can update for review
+      allow update: if isModerator() &&
+                       request.resource.data.keys().hasOnly([
+                         'reviewStatus', 'reviewerId', 'reviewNotes', 
+                         'reviewedAt', 'updatedAt'
+                       ]);
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // Minor Risk Events
+    match /minor_risk_events/{eventId} {
+      // Users can read their own events, moderators can read all
+      allow read: if isOwner(resource.data.userId) || isModerator();
+      
+      // Only system can create events
+      allow create: if false;
+      
+      // No updates or deletions
+      allow update, delete: if false;
+    }
+    
+    // Grooming Events
+    match /grooming_events/{eventId} {
+      // Only moderators can read
+      allow read: if isModerator();
+      
+      // Only system can create
+      allow create: if false;
+      
+      // Moderators can update review fields
+      allow update: if isModerator() &&
+                       request.resource.data.keys().hasOnly([
+                         'reviewStatus', 'reviewerId', 'reviewNotes', 
+                         'reviewedAt', 'updatedAt'
+                       ]);
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // Vulnerable User Protection Profiles
+    match /vulnerable_user_protection_profiles/{userId} {
+      // Users can read and manage their own protection profile
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Users can create their own profile
+      allow create: if isOwner(userId) &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Users can update their own profile
+      allow update: if isOwner(userId) &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Admins can delete profiles
+      allow delete: if isAdmin();
+    }
+    
+    // Exploitation Detection Events
+    match /exploitation_detection_events/{eventId} {
+      // Target user and moderators can read
+      allow read: if isOwner(resource.data.targetUserId) || isModerator();
+      
+      // Only system can create
+      allow create: if false;
+      
+      // No updates or deletions
+      allow update, delete: if false;
+    }
+    
+    // Media Scan Results
+    match /media_scan_results/{mediaId} {
+      // Users can read their own scan results, moderators can read all
+      allow read: if isOwner(resource.data.userId) || isModerator();
+      
+      // Only system can create
+      allow create: if false;
+      
+      // No updates or deletions by users
+      allow update, delete: if false;
+    }
+    
+    // Minor Media Events
+    match /minor_media_events/{eventId} {
+      // Users can read their own events, moderators can read all
+      allow read: if isOwner(resource.data.userId) || isModerator();
+      
+      // Only system can create
+      allow create: if false;
+      
+      // No updates or deletions
+      allow update, delete: if false;
+    }
+    
+    // Age Verification Requests
+    match /age_verification_requests/{requestId} {
+      // Users can read their own requests, moderators can read all
+      allow read: if isOwner(resource.data.userId) || isModerator();
+      
+      // Only system can create requests
+      allow create: if false;
+      
+      // Users can update their own requests with verification data
+      // Moderators can update status and review fields
+      allow update: if (isOwner(resource.data.userId) &&
+                       request.resource.data.keys().hasOnly([
+                         'verificationData', 'submittedAt', 'updatedAt'
+                       ])) ||
+                       (isModerator() &&
+                       request.resource.data.keys().hasOnly([
+                         'status', 'reviewerId', 'reviewNotes', 
+                         'reviewedAt', 'updatedAt'
+                       ]));
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // Law Enforcement Reports
+    match /law_enforcement_reports/{reportId} {
+      // Only admins can read
+      allow read: if isAdmin();
+      
+      // Only system can create
+      allow create: if false;
+      
+      // Only admins can update status
+      allow update: if isAdmin();
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // Case Escalations
+    match /case_escalations/{caseId} {
+      // Only moderators and admins can read
+      allow read: if isModerator();
+      
+      // Only system can create
+      allow create: if false;
+      
+      // Moderators can update assignment and notes
+      allow update: if isModerator();
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // Blocked Transactions
+    match /blocked_transactions/{blockId} {
+      // Users can read blocks involving them, moderators can read all
+      allow read: if isOwner(resource.data.targetUserId) || 
+                     isOwner(resource.data.senderId) || 
+                     isModerator();
+      
+      // Only system can create
+      allow create: if false;
+      
+      // No updates or deletions
+      allow update, delete: if false;
+    }
+    
+    // Support Alerts
+    match /support_alerts/{alertId} {
+      // Only moderators and admins can read
+      allow read: if isModerator();
+      
+      // Only system can create
+      allow create: if false;
+      
+      // Moderators can update status and assignment
+      allow update: if isModerator();
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // Bulk Scan Results
+    match /bulk_scan_results/{scanId} {
+      // Users can read their own scan results, admins can read all
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      
+      // Only system can create
+      allow create: if false;
+      
+      // No updates or deletions
+      allow update, delete: if false;
+    }
+    
+    // User document updates for age verification and protection
+    match /users/{userId} {
+      // Prevent users from bypassing age verification
+      allow update: if isOwner(userId) && 
+                       (!request.resource.data.keys().hasAny([
+                         'ageVerified', 'ageVerifiedAt', 'estimatedAge',
+                         'accountDisabled', 'disabledReason', 'accountStatus',
+                         'bannedAt', 'banReason', 'frozenAt', 'frozenReason'
+                       ]) || isAdmin());
+    }
+    
+    // Conversations - add age verification check
+    match /conversations/{conversationId} {
+      allow read, write: if isAgeVerified() && 
+                           (isOwner(resource.data.user1Id) || 
+                            isOwner(resource.data.user2Id));
+    }
+    
+    // Messages - require age verification and check for frozen conversations
+    match /messages/{messageId} {
+      allow read: if isAgeVerified() && 
+                     (isOwner(resource.data.senderId) || 
+                      isOwner(resource.data.recipientId));
+      
+      allow create: if isAgeVerified() && 
+                       isOwner(request.resource.data.senderId) &&
+                       !get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.frozen;
+      
+      allow update, delete: if false;
+    }
+    
+    // Media uploads - require age verification
+    match /media/{mediaId} {
+      allow read: if isAuthenticated();
+      
+      allow create: if isAgeVerified() && 
+                       isOwner(request.resource.data.userId);
+      
+      allow update: if isOwner(resource.data.userId);
+      
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // Posts - require age verification
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      
+      allow create: if isAgeVerified() && 
+                       isOwner(request.resource.data.userId);
+      
+      allow update: if isOwner(resource.data.userId);
+      
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // Transactions - check spending limits for vulnerable users
+    match /transactions/{transactionId} {
+      allow read: if isOwner(resource.data.userId) || 
+                     isOwner(resource.data.recipientId) ||
+                     isAdmin();
+      
+      allow create: if isAgeVerified() && 
+                       isOwner(request.resource.data.userId);
+      
+      // No direct updates or deletions
+      allow update, delete: if false;
+    }
+  }
+}

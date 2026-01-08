@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // PACK 367: APP STORE DEFENSE & REPUTATION
+    // ==========================================
+    
+    // Store Reviews Mirror - Admin & System only
+    match /storeReviewsMirror/{reviewId} {
+      allow read: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator']);
+      allow write: if false; // Cloud Function only
+    }
+    
+    // Store Reputation Signals - Admin & System only
+    match /storeReputationSignals/{signalId} {
+      allow read: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator']);
+      allow write: if false; // Cloud Function only
+    }
+    
+    // Store Defense Actions - Admin & System only
+    match /storeDefenseActions/{actionId} {
+      allow read: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator']);
+      allow write: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+    
+    // Store Crisis Events - Admin & System only
+    match /storeCrisisEvents/{crisisId} {
+      allow read: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator']);
+      allow write: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+    
+    // Store Review Prompts - User can read their own
+    match /storeReviewPrompts/{promptId} {
+      allow read: if request.auth != null && 
+        (resource.data.userId == request.auth.uid ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator']);
+      allow write: if false; // Cloud Function only
+    }
+    
+    // Store Defense Config - Admin only
+    match /storeDefenseConfig/{configId} {
+      allow read: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator']);
+      allow write: if request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+  }
+}

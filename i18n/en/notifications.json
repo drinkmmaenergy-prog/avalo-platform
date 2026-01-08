@@ -1,0 +1,21 @@
+{
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet.",
+    "markAllRead": "Mark all as read",
+    "settings": {
+      "title": "Notification settings",
+      "push": "Push notifications",
+      "email": "Email notifications",
+      "inApp": "In-app notifications",
+      "newMessages": "New messages",
+      "aiCompanions": "AI companions",
+      "mediaUnlocks": "Paid media and unlocks",
+      "streaksRoyal": "Streaks and Royal",
+      "earnings": "Earnings and payouts",
+      "quietHours": "Quiet hours",
+      "quietHoursFrom": "From",
+      "quietHoursTo": "To"
+    }
+  }
+}

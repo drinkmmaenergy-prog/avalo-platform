@@ -1,0 +1,78 @@
+{
+  "app": {
+    "name": "Avalo",
+    "tagline": "Połącz się. Umów się. Rozwijaj się.",
+    "welcome": "Witaj w Avalo"
+  },
+  "navigation": {
+    "home": "Strona główna",
+    "explore": "Odkrywaj",
+    "messages": "Wiadomości",
+    "calendar": "Kalendarz",
+    "profile": "Profil",
+    "settings": "Ustawienia"
+  },
+  "actions": {
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "edit": "Edytuj",
+    "submit": "Wyślij",
+    "confirm": "Potwierdź",
+    "close": "Zamknij",
+    "next": "Dalej",
+    "back": "Wstecz",
+    "continue": "Kontynuuj",
+    "skip": "Pomiń",
+    "done": "Gotowe",
+    "loading": "Ładowanie...",
+    "retry": "Spróbuj ponownie",
+    "refresh": "Odśwież"
+  },
+  "errors": {
+    "generic": "Coś poszło nie tak. Spróbuj ponownie.",
+    "network": "Błąd sieci. Sprawdź połączenie.",
+    "notFound": "Nie znaleziono",
+    "unauthorized": "Brak autoryzacji",
+    "forbidden": "Dostęp zabroniony",
+    "serverError": "Błąd serwera. Spróbuj ponownie później.",
+    "validationError": "Sprawdź wprowadzone dane"
+  },
+  "validation": {
+    "required": "To pole jest wymagane",
+    "invalidEmail": "Nieprawidłowy adres email",
+    "passwordTooShort": "Hasło musi mieć minimum 8 znaków",
+    "passwordMismatch": "Hasła nie pasują do siebie",
+    "invalidPhone": "Nieprawidłowy numer telefonu",
+    "invalidDate": "Nieprawidłowa data",
+    "minLength": "Wymagane minimum {{count}} znaków",
+    "maxLength": "Maksymalnie {{count}} znaków"
+  },
+  "time": {
+    "now": "Teraz",
+    "justNow": "Przed chwilą",
+    "minuteAgo": "1 minutę temu",
+    "minutesAgo": "{{count}} minut temu",
+    "hourAgo": "1 godzinę temu",
+    "hoursAgo": "{{count}} godzin temu",
+    "dayAgo": "1 dzień temu",
+    "daysAgo": "{{count}} dni temu",
+    "weekAgo": "1 tydzień temu",
+    "weeksAgo": "{{count}} tygodni temu",
+    "monthAgo": "1 miesiąc temu",
+    "monthsAgo": "{{count}} miesięcy temu",
+    "yearAgo": "1 rok temu",
+    "yearsAgo": "{{count}} lat temu"
+  },
+  "currency": {
+    "free": "Bezpłatnie",
+    "tokens": "{{count}} tokenów",
+    "coins": "{{count}} monet"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "away": "Zaraz wracam",
+    "busy": "Zajęty"
+  }
+}

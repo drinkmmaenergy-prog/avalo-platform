@@ -1,0 +1,12 @@
+{
+  "discovery": {
+    "startChat": "Rozpocznij czat",
+    "viewProfile": "Zobacz profil",
+    "highRisk": "Ten profil był zgłaszany przez innych użytkowników",
+    "royalBadge": "Członek Royal",
+    "loading": "Ładowanie profili...",
+    "errorLoading": "Nie udało się załadować profili",
+    "empty": "Brak profili do wyświetlenia",
+    "title": "Odkrywaj"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "breakup_recovery_states",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "needsRecovery", "order": "ASCENDING" },
+        { "fieldPath": "currentPhase", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "breakup_recovery_states",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "journeyId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "breakup_recovery_states",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "currentPhase", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "confidence_boost_cards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "shownAt", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "confidence_boost_cards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "recoveryId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "chemistry_restart_suggestions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "shownAt", "order": "ASCENDING" },
+        { "fieldPath": "chemistryScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "chemistry_restart_suggestions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "recoveryId", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,302 @@
+AVALO_AI_START_CONTEXT.md
+
+Purpose: Single source of truth to start coding Avalo end-to-end. Claude must follow this context strictly, keep all previously added features, and only extend functionality.
+Language: Use English in code and comments. Polish helper notes are in parentheses.
+
+1) Mission and scope
+
+Build Avalo: hybrid Tinder + Instagram + OnlyFans + AI Companions with token economy.
+
+Platforms: Mobile (React Native + Expo) and Web (Next.js) with shared Firebase backend.
+
+Web includes: Wallet & Checkout, Premium Subscriptions (18+), Admin, Creator Dashboard, Legal pages.
+
+Single account, single auth, deep-link SSO from app → web for purchases without re-login.
+
+2) Non-negotiable business rules
+
+Token-only economy in app UI. No fiat in mobile screens. Fiat appears only on web checkout and creator payouts.
+
+Settlement rate fixed: 1 token = 0.20 PLN used internally for splits and payouts.
+
+Purchase price variable via packages:
+
+100 = 30 PLN, 300 = 84 PLN, 500 = 130 PLN, 1000 = 240 PLN, 2000 = 420 PLN, 5000 = 1000 PLN.
+
+Chat platform fee 35% taken instantly and non-refundable on each 100-token deposit. Creator portion (65%) accrues as messages are sent.
+
+3 free messages per user per new chat (total 6). Then deposit 100 tokens to continue.
+
+Refunds: Unused escrow tokens are auto-refunded to payer under inactivity/expiry rules. The 35% fee is never refunded.
+
+Hetero: Male pays, Female earns. Homo: initiator pays. NB: initiator pays; receiver earns if Earn is ON.
+
+Free Chat Pool for low-popularity users: free messaging with ads; no earnings.
+
+Incognito, Passport, Earn-from-Chat are free toggles for everyone.
+
+Royal Club autogrant (women) if Instagram linked with ≥1000 followers or ≥20 000 tokens/month earnings.
+
+Royal text rate: females in Royal (and any user in the earning position if explicitly allowed by product config) get ~7 words = 1 token. Everyone else ~11 words = 1 token.
+
+Age 18+ mandatory; verification at signup: live selfie primary; optional zero-amount bank auth for higher trust.
+
+Calendar is for legitimate social dates only. No sexual services. Strong disclaimers and enforcement.
+
+Bots/AI companions separated from human dating. Clear labels. No confusion.
+
+3) Token packs (web checkout)
+
+Use these SKUs and display strings (prices in web only; app shows tokens):
+
+SKU	Tokens	Price (PLN)	Per-token
+TP100	100	30	0.30
+TP300	300	84	0.28
+TP500	500	130	0.26
+TP1000	1000	240	0.24
+TP2000	2000	420	0.21
+TP5000	5000	1000	0.20
+
+Settlement always uses 0.20 PLN/token for splits and payouts.
+
+4) Monetization table
+
+Chat text: metered by words. Default 11 words = 1 token; Royal female earning rate 7 words = 1 token.
+
+Voice: 5 tokens/min (Free), 2 tokens/min (VIP/Royal).
+
+Video: 10 tokens/min (Free), 5 tokens/min (VIP/Royal).
+
+Tips on feed: 20% platform / 80% creator.
+
+Subscriptions (web-only): 30% platform / 70% creator.
+
+Calendar bookings: 20% platform non-refundable, 80% escrow → released on verify.
+
+AI Companions: system bots subscription fee kept by Avalo; custom avatar generation and premium NSFW tiers use token micro-costs (spec below).
+
+5) Roles and tiers
+
+Standard: default.
+
+Creator: Earn toggle ON after verification.
+
+VIP: subscription on web, call discounts, boosts, no ads.
+
+Royal Club: see rule #10; unlimited swipes, priority, better text rate (7 words/token) for Royal females; badge and queue bypass.
+
+6) Verification and safety
+
+Required at signup: live selfie + SMS phone. If selfie model confidence <90% → manual review.
+
+Optional bank zero-charge to strengthen trust score.
+
+NSFW image guard: male explicit photos blurred until receiver approves.
+
+Anti-abuse: copy-paste detection, empty/low-effort messages blocked, Quality Score 0–100 with penalties.
+
+7) Chat mechanics
+
+3 free msgs each → then 100-token deposit.
+
+On deposit: 35 tokens → Avalo immediately, 65 tokens escrow for receiver earnings as they send metered messages.
+
+Auto-reload option OFF by default; threshold <20 tokens → add 100 tokens.
+
+Limits: 50 active chats by default; higher tiers unlock with Quality Score and Royal status; queue when full; Royal males bypass queue.
+
+Who pays / who earns:
+
+Hetero: Male pays, Female earns always.
+
+Homo: Initiator pays, receiver earns if Earn ON.
+
+NB: Initiator pays. If receiver’s Earn ON → receiver earns; if OFF → Avalo takes 100% after fee.
+
+Abandonment (48h inactivity): refund of unused escrow to payer. Platform fee stays with Avalo.
+
+8) Calendar enforcement
+
+Purpose: legitimate social dates only.
+
+UI shows mandatory LEGAL NOTICE and checkboxes confirming no sexual services.
+
+Payment = time & platform services, not sexual services.
+
+Verification options after meeting: GPS 30min, QR scan, or selfie together.
+
+Refunds:
+
+If earning party no-shows or cancels → full refund of escrow to booker; Avalo 20% booking fee is non-refundable.
+
+If booker cancels ≥24h → 50% to booker, 30% to creator, 20% Avalo kept. <24h → 0% booker, 80% creator, 20% Avalo.
+
+Earning party can trigger voluntary refund post-meeting via “Refund” button; platform fee remains with Avalo.
+
+9) Free Chat Pool with ads
+
+Eligibility (last 72h): <10 likes, <3 active chats, profile <50%, account <7 days, Earn=OFF.
+
+Unlimited free messages, photos allowed, no calls, ads shown in chat (native every 10 msgs, banner, interstitial capped).
+
+Exit pool when thresholds surpassed or Earn=ON.
+
+10) AI Companions separation
+
+Tabs: Dating (humans) vs AI (companions).
+
+Clear labels in chat list: 👤 Real User vs 🤖 AI Companion.
+
+System bots: multi-user, $9.99/month each on web, Avalo keeps 100%.
+
+Custom bots: private to creator; generation features priced in tokens:
+
+Preview avatar: 10 tokens
+
+Regenerate: 5 tokens
+
+Advanced body pack: 50 tokens
+
+Extreme pack: 200 tokens
+
+Daily auto-photos: included in AI subscription tier, or 1–3 tokens each if a la carte (configurable)
+
+Content levels: PG-13, R-Rated, XXX (18+ verified). For XXX: explicit text + AI images allowed; strict age-gate and logs.
+
+11) i18n
+
+Auto-detect language from device/locale.
+
+Target 30+ languages (start set: EN, PL, ES, DE, FR; fallback EN).
+
+All strings come from JSON namespaces: common, auth, wallet, chat, calendar, ads, legal.
+
+Web legal pages auto-select by locale.
+
+12) Payments overview (web checkout)
+
+Primary PSP: Stripe (cards, Apple Pay, Google Pay, SEPA, iDEAL, Bancontact, Klarna, Sofort).
+
+Regionals: BLIK, Przelewy24, PayU; PayPal; crypto via gateway (Coinbase Commerce/alternative).
+
+Mobile opens secure web wallet: https://avalo.app/wallet?auth=SSO_TOKEN and returns by deep link avalo://wallet/success.
+
+Webhooks to Firebase Functions handle token crediting and subscription lifecycle.
+
+13) Compliance and moderation
+
+GDPR/CCPA, age-gate 18+.
+
+AI moderation: banned phrases list for escort euphemisms; auto-flag + human review.
+
+Calendar has the strong non-prostitution clause and explicit user acknowledgments.
+
+Bots detection layer for human section; honeypots; rate limiting.
+
+14) What to build first (order of work)
+
+Monorepo structure and shared packages for types.
+
+Firebase project wiring: Auth, Firestore, Functions, Storage, Hosting.
+
+Auth + Onboarding with selfie verification + SMS.
+
+Wallet objects and token math with settlement rate.
+
+Chat pipeline with 3-free-messages, deposit, 35/65 split, word metering (11 vs 7 for Royal females).
+
+Web Wallet with Stripe checkout, token SKUs, webhooks.
+
+Feed + Tips.
+
+Calendar with legal notices and verification.
+
+AI Companions tab and generation endpoints.
+
+Admin + Creator dashboards.
+
+Ads in Free Chat Pool.
+
+i18n hydration of all screens.
+
+Legal pages on web.
+
+15) Coding rules for Claude
+
+Always produce full files, with path headers, no ellipses.
+
+Preserve previously implemented features. If unsure, add, don’t remove.
+
+TypeScript strict. ESLint/Prettier config included by you when first creating repo.
+
+For React Native: Expo SDK 54, Expo Router 6, Zustand, Firebase JS SDK v10+.
+
+For web: Next.js 14 App Router, Tailwind, next-i18next.
+
+For Functions: Node 20, TypeScript, region europe-west3.
+
+All environment variables read from process env; never hardcode secrets.
+
+Provide Firebase Security Rules matching the business rules.
+
+Provide Firestore indexes.json if needed.
+
+Provide postman collection or REST examples for Functions.
+
+16) Minimal data model primer (details in next file)
+
+users/{uid}: profile, verification, wallet {balance, pending, earned}, settings {earnFromChat, incognito, passport}.
+
+chats/{chatId} with messages/{messageId} and deposit, billing.
+
+transactions/{txId} for purchases, chat spend, tips, calls, calendar.
+
+calendarBookings/{bookingId} with escrow math and verification.
+
+aiBots/{botId} and aiBotPhotos/{photoId}.
+
+subscriptions/* (web-only) for creator premium and AI subs.
+
+17) Key UI copy principles
+
+Don’t mention “users earn money” in primary CTA. Focus on quality chats and refund of unused tokens.
+
+Don’t mention “no Apple/Google fees”. Use “Better prices on web”.
+
+Mobile shows tokens only.
+
+Calendar copy includes the full prohibited activities list and legal disclaimers.
+
+18) Acceptance checklist for each milestone
+
+Unit + e2e tests for core flows (auth, wallet credit, chat deposit, refund).
+
+Emulator suite green.
+
+Security Rules enforce verification and role constraints.
+
+Webhooks idempotent and signed.
+
+i18n keys present for EN/PL baseline.
+
+Legal pages routable and linked.
+
+Next step for Claude (execute immediately)
+
+Create monorepo with workspaces:
+
+/app      (Expo)
+/web      (Next.js)
+/functions (Firebase)
+/packages (shared types, utils, i18n)
+
+
+Scaffold Auth + Onboarding with selfie stub and SMS.
+
+Implement Wallet domain and token math with settlement rate.
+
+Implement Chat: free-messages gate → 100-token deposit → 35/65 split → word metering (11 vs 7 for Royal females).
+
+Create Web Wallet checkout with token SKUs and Stripe webhooks.
+
+(PL: Zacznij od struktury repo i podstawowych modułów. Nie usuwaj funkcji. Każdy plik dawaj w całości z pełną ścieżką.)

@@ -1,0 +1,388 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================
+    // PACK 231 — Multi-Profile Protection & Anti-Burnout System
+    // ============================================================
+    // Protecting high-earning creators from burnout while maximizing
+    // revenue, chat quality, chemistry, and retention.
+    // ============================================================
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Helper function to check if profile tier is Royal or Influencer
+    function isHighTier(userId) {
+      let profile = get(/databases/$(database)/documents/users/$(userId)).data;
+      return profile.tier == 'Royal' || profile.tier == 'Influencer';
+    }
+
+    // ============================================================
+    // CREATOR LOAD TRACKING
+    // ============================================================
+    // Tracks active load, pending chats, calls, meetings for creators
+    // Auto-triggers protection when thresholds are exceeded
+    
+    match /creatorLoad/{userId} {
+      // Read: Owner or admin can view load status
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Create: System only (during first load detection)
+      allow create: if isAuthenticated() && (
+        // Owner can create their own load tracking
+        isOwner(userId) ||
+        // System can create (admin)
+        isAdmin()
+      ) && request.resource.data.keys().hasAll([
+        'activePaidChats',
+        'pendingPaidChats',
+        'callLoad24h',
+        'meetingLoad48h',
+        'overloadRiskLevel',
+        'queueEnabled',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      // Validation
+      request.resource.data.activePaidChats is int &&
+      request.resource.data.activePaidChats >= 0 &&
+      request.resource.data.pendingPaidChats is int &&
+      request.resource.data.pendingPaidChats >= 0 &&
+      request.resource.data.callLoad24h is int &&
+      request.resource.data.callLoad24h >= 0 &&
+      request.resource.data.meetingLoad48h is int &&
+      request.resource.data.meetingLoad48h >= 0 &&
+      request.resource.data.overloadRiskLevel is int &&
+      request.resource.data.overloadRiskLevel >= 0 &&
+      request.resource.data.overloadRiskLevel <= 100 &&
+      request.resource.data.queueEnabled is bool &&
+      request.resource.data.createdAt == request.time &&
+      request.resource.data.updatedAt == request.time;
+      
+      // Update: Owner or system can update load metrics
+      allow update: if (isOwner(userId) || isAdmin()) &&
+        // Required fields must remain
+        request.resource.data.keys().hasAll([
+          'activePaidChats',
+          'pendingPaidChats',
+          'callLoad24h',
+          'meetingLoad48h',
+          'overloadRiskLevel',
+          'queueEnabled',
+          'updatedAt'
+        ]) &&
+        // Validation
+        request.resource.data.activePaidChats is int &&
+        request.resource.data.activePaidChats >= 0 &&
+        request.resource.data.pendingPaidChats is int &&
+        request.resource.data.pendingPaidChats >= 0 &&
+        request.resource.data.callLoad24h is int &&
+        request.resource.data.callLoad24h >= 0 &&
+        request.resource.data.meetingLoad48h is int &&
+        request.resource.data.meetingLoad48h >= 0 &&
+        request.resource.data.overloadRiskLevel is int &&
+        request.resource.data.overloadRiskLevel >= 0 &&
+        request.resource.data.overloadRiskLevel <= 100 &&
+        request.resource.data.queueEnabled is bool &&
+        request.resource.data.updatedAt == request.time;
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // PAID CHAT QUEUE
+    // ============================================================
+    // Queue for incoming paid chat requests when creator is overloaded
+    // Prioritized by price, chemistry, tier, and boost type
+    
+    match /paidChatQueue/{creatorId} {
+      // Subcollection for queued chats
+      match /chats/{chatId} {
+        // Read: Creator can view their queue, payer can view their position
+        allow read: if isOwner(creatorId) || 
+                       (isAuthenticated() && resource.data.payerId == request.auth.uid) ||
+                       isAdmin();
+        
+        // Create: Payer creates queue entry when starting paid chat
+        allow create: if isAuthenticated() &&
+          request.resource.data.keys().hasAll([
+            'chatId',
+            'payerId',
+            'payerName',
+            'payerCountry',
+            'payerAge',
+            'scoreForOrder',
+            'timestampAdded',
+            'boostType',
+            'estimatedStartTime',
+            'chatPrice',
+            'chemistryScore',
+            'isNewPayer',
+            'payerTier',
+            'status'
+          ]) &&
+          // Payer must be the authenticated user
+          request.resource.data.payerId == request.auth.uid &&
+          // Validation
+          request.resource.data.chatId is string &&
+          request.resource.data.chatId.size() > 0 &&
+          request.resource.data.payerId is string &&
+          request.resource.data.payerName is string &&
+          request.resource.data.payerCountry is string &&
+          request.resource.data.payerAge is int &&
+          request.resource.data.payerAge >= 18 &&
+          request.resource.data.scoreForOrder is number &&
+          request.resource.data.scoreForOrder >= 0 &&
+          request.resource.data.timestampAdded == request.time &&
+          request.resource.data.boostType in ['none', 'standard', 'gold', 'royal'] &&
+          request.resource.data.estimatedStartTime is timestamp &&
+          request.resource.data.chatPrice is int &&
+          request.resource.data.chatPrice >= 100 &&
+          request.resource.data.chatPrice <= 500 &&
+          request.resource.data.chemistryScore is number &&
+          request.resource.data.chemistryScore >= 0 &&
+          request.resource.data.chemistryScore <= 100 &&
+          request.resource.data.isNewPayer is bool &&
+          request.resource.data.payerTier is string &&
+          request.resource.data.status == 'queued';
+        
+        // Update: Creator can update status (accept/skip), payer can update boost
+        allow update: if (
+          // Creator accepts or skips chat
+          (isOwner(creatorId) && 
+           request.resource.data.status in ['accepted', 'skipped']) ||
+          // Payer applies boost (once per chat)
+          (isAuthenticated() && 
+           resource.data.payerId == request.auth.uid &&
+           resource.data.boostType == 'none' &&
+           request.resource.data.boostType in ['standard', 'gold', 'royal'] &&
+           resource.data.diff(request.resource.data).affectedKeys().hasOnly(['boostType', 'scoreForOrder', 'updatedAt'])) ||
+          // Admin can update
+          isAdmin()
+        ) &&
+        request.resource.data.updatedAt == request.time;
+        
+        // Delete: Creator or admin can remove from queue
+        allow delete: if isOwner(creatorId) || isAdmin();
+      }
+    }
+
+    // ============================================================
+    // QUEUE STATISTICS
+    // ============================================================
+    // Aggregated statistics for creator's queue performance
+    
+    match /queueStats/{creatorId} {
+      // Read: Creator or admin
+      allow read: if isOwner(creatorId) || isAdmin();
+      
+      // Create/Update: System only (Cloud Functions)
+      allow write: if isAdmin();
+    }
+
+    // ============================================================
+    // CHAT QUALITY METRICS
+    // ============================================================
+    // Monitors reply patterns, response times, emotion scores
+    // Used to detect burnout signals
+    
+    match /chatQualityMetrics/{creatorId} {
+      // Read: Creator or admin
+      allow read: if isOwner(creatorId) || isAdmin();
+      
+      // Create: System creates on first quality check
+      allow create: if (isOwner(creatorId) || isAdmin()) &&
+        request.resource.data.keys().hasAll([
+          'avgReplyLength',
+          'avgResponseTime',
+          'emotionScore',
+          'recentPatterns',
+          'burnoutSignals',
+          'lastAnalyzed',
+          'createdAt'
+        ]) &&
+        request.resource.data.avgReplyLength is number &&
+        request.resource.data.avgReplyLength >= 0 &&
+        request.resource.data.avgResponseTime is number &&
+        request.resource.data.avgResponseTime >= 0 &&
+        request.resource.data.emotionScore is number &&
+        request.resource.data.emotionScore >= 0 &&
+        request.resource.data.emotionScore <= 100 &&
+        request.resource.data.recentPatterns is list &&
+        request.resource.data.burnoutSignals is list &&
+        request.resource.data.lastAnalyzed == request.time &&
+        request.resource.data.createdAt == request.time;
+      
+      // Update: System updates metrics regularly
+      allow update: if (isOwner(creatorId) || isAdmin()) &&
+        request.resource.data.lastAnalyzed == request.time;
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // PROTECTION SETTINGS
+    // ============================================================
+    // Creator-configurable protection preferences
+    
+    match /protectionSettings/{creatorId} {
+      // Read: Creator or admin
+      allow read: if isOwner(creatorId) || isAdmin();
+      
+      // Create: Creator sets their preferences
+      allow create: if isOwner(creatorId) &&
+        request.resource.data.keys().hasAll([
+          'maxSimultaneousPaidChats',
+          'autoBreaksEnabled',
+          'breakDurationMinutes',
+          'sleepModeAutoTrigger',
+          'queueAutoEnable',
+          'meetingLimitPerWeek',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        // Validation
+        request.resource.data.maxSimultaneousPaidChats is int &&
+        request.resource.data.maxSimultaneousPaidChats >= 1 &&
+        request.resource.data.maxSimultaneousPaidChats <= 20 &&
+        request.resource.data.autoBreaksEnabled is bool &&
+        request.resource.data.breakDurationMinutes is int &&
+        request.resource.data.breakDurationMinutes >= 10 &&
+        request.resource.data.breakDurationMinutes <= 60 &&
+        request.resource.data.sleepModeAutoTrigger is bool &&
+        request.resource.data.queueAutoEnable is bool &&
+        request.resource.data.meetingLimitPerWeek is int &&
+        request.resource.data.meetingLimitPerWeek >= 0 &&
+        request.resource.data.meetingLimitPerWeek <= 50 &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time;
+      
+      // Update: Creator can modify their settings
+      allow update: if isOwner(creatorId) &&
+        request.resource.data.maxSimultaneousPaidChats is int &&
+        request.resource.data.maxSimultaneousPaidChats >= 1 &&
+        request.resource.data.maxSimultaneousPaidChats <= 20 &&
+        request.resource.data.autoBreaksEnabled is bool &&
+        request.resource.data.breakDurationMinutes is int &&
+        request.resource.data.breakDurationMinutes >= 10 &&
+        request.resource.data.breakDurationMinutes <= 60 &&
+        request.resource.data.sleepModeAutoTrigger is bool &&
+        request.resource.data.queueAutoEnable is bool &&
+        request.resource.data.meetingLimitPerWeek is int &&
+        request.resource.data.meetingLimitPerWeek >= 0 &&
+        request.resource.data.meetingLimitPerWeek <= 50 &&
+        request.resource.data.updatedAt == request.time;
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // PRIORITY BOOST TRANSACTIONS
+    // ============================================================
+    // Tracks paid boost purchases and applications
+    
+    match /boostTransactions/{transactionId} {
+      // Read: Transaction owner or admin
+      allow read: if isAuthenticated() && 
+                     (resource.data.payerId == request.auth.uid || isAdmin());
+      
+      // Create: System creates when boost is purchased
+      allow create: if isAuthenticated() &&
+        request.resource.data.keys().hasAll([
+          'transactionId',
+          'payerId',
+          'creatorId',
+          'chatId',
+          'boostType',
+          'boostCost',
+          'rankIncrease',
+          'timestamp',
+          'status'
+        ]) &&
+        request.resource.data.payerId == request.auth.uid &&
+        request.resource.data.boostType in ['standard', 'gold', 'royal'] &&
+        request.resource.data.boostCost is int &&
+        request.resource.data.boostCost > 0 &&
+        request.resource.data.rankIncrease is int &&
+        request.resource.data.rankIncrease > 0 &&
+        request.resource.data.timestamp == request.time &&
+        request.resource.data.status == 'pending';
+      
+      // Update: System updates status after application
+      allow update: if isAdmin() &&
+        request.resource.data.status in ['applied', 'refunded'] &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'appliedAt']);
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // CALENDAR LOAD TRACKING
+    // ============================================================
+    // Tracks calls and meetings scheduled in calendar
+    
+    match /calendarLoad/{creatorId} {
+      // Read: Creator or admin
+      allow read: if isOwner(creatorId) || isAdmin();
+      
+      // Write: System updates based on calendar events
+      allow write: if isOwner(creatorId) || isAdmin();
+    }
+
+    // ============================================================
+    // OVERLOAD ALERTS
+    // ============================================================
+    // Alerts sent to creators when overload is detected
+    
+    match /overloadAlerts/{alertId} {
+      // Read: Alert recipient or admin
+      allow read: if isAuthenticated() && 
+                     (resource.data.creatorId == request.auth.uid || isAdmin());
+      
+      // Create: System creates alerts
+      allow create: if isAdmin() &&
+        request.resource.data.keys().hasAll([
+          'creatorId',
+          'alertType',
+          'severity',
+          'message',
+          'suggestedActions',
+          'timestamp',
+          'acknowledged'
+        ]) &&
+        request.resource.data.alertType in ['high_chat_volume', 'call_overload', 'meeting_overload', 'burnout_risk', 'quality_drop'] &&
+        request.resource.data.severity in ['low', 'medium', 'high', 'critical'] &&
+        request.resource.data.suggestedActions is list &&
+        request.resource.data.timestamp == request.time &&
+        request.resource.data.acknowledged == false;
+      
+      // Update: Creator can acknowledge alert
+      allow update: if isAuthenticated() &&
+        resource.data.creatorId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acknowledged', 'acknowledgedAt']) &&
+        request.resource.data.acknowledged == true &&
+        request.resource.data.acknowledgedAt == request.time;
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+  }
+}

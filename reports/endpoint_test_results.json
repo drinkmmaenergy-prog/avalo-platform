@@ -1,0 +1,41 @@
+{
+  "http": [
+    {
+      "name": "ping",
+      "url": "https://europe-west3-avalo-c8c46.cloudfunctions.net/ping",
+      "status": "✅",
+      "httpCode": 200,
+      "latency": 1782,
+      "success": true,
+      "responsePreview": "{\"ok\":true,\"timestamp\":\"2025-11-06T05:43:16.658Z\",\"version\":\"3.0.0\",\"service\":\"avalo-functions\",\"reg"
+    },
+    {
+      "name": "getSystemInfo",
+      "url": "https://europe-west3-avalo-c8c46.cloudfunctions.net/getSystemInfo",
+      "status": "✅",
+      "httpCode": 200,
+      "latency": 1617,
+      "success": true,
+      "responsePreview": "{\"version\":\"3.0.0\",\"service\":\"avalo-cloud-functions\",\"region\":\"europe-west3\",\"environment\":\"developm"
+    },
+    {
+      "name": "stripeWebhook",
+      "url": "https://europe-west3-avalo-c8c46.cloudfunctions.net/stripeWebhook",
+      "status": "⚠️",
+      "httpCode": 400,
+      "latency": 2458,
+      "success": false,
+      "responsePreview": "No signature"
+    }
+  ],
+  "callable": [],
+  "timestamp": "2025-11-06T05:43:14.575Z",
+  "summary": {
+    "totalHTTP": 3,
+    "totalCallable": 21,
+    "successfulHTTP": 2,
+    "avgLatencyHTTP": 1952,
+    "deployedFunctions": 28,
+    "allEndpointsHealthy": false
+  }
+}

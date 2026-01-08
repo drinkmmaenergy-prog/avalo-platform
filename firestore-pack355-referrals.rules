@@ -1,0 +1,129 @@
+rules_version = '2';
+
+/**
+ * PACK 355 - Referral & Invite Engine Security Rules
+ * 
+ * Collections:
+ * - referrals: Referral relationships between users
+ * - referralStats: Aggregated statistics per user
+ * - referralCodes: Unique codes for users/influencers/campaigns
+ * - referralRewards: Unlocked rewards for referrers
+ * - referralCampaigns: Admin-created marketing campaigns
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isInfluencer() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isInfluencer == true;
+    }
+    
+    // Referral codes collection
+    match /referralCodes/{code} {
+      // Anyone can read active codes (for validation)
+      allow read: if isAuthenticated() && resource.data.active == true;
+      
+      // Users can read their own codes
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Only backend can create/update codes
+      allow create, update: if false;
+      
+      // Only admins can deactivate codes
+      allow update: if isAdmin() && 
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active']);
+    }
+    
+    // Referrals collection
+    match /referrals/{referralId} {
+      // Users can read referrals where they are the referrer
+      allow read: if isAuthenticated() && resource.data.referrerUserId == request.auth.uid;
+      
+      // Users can read referrals where they are the invited user
+      allow read: if isAuthenticated() && resource.data.invitedUserId == request.auth.uid;
+      
+      // Only backend can create referrals
+      allow create: if false;
+      
+      // Only backend can update referral status
+      allow update: if false;
+      
+      // Admins can read all referrals
+      allow read: if isAdmin();
+      
+      // Admins can lock/freeze referrals
+      allow update: if isAdmin() && 
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+                      request.resource.data.status in ['LOCKED', 'FRAUD'];
+    }
+    
+    // Referral stats collection
+    match /referralStats/{userId} {
+      // Users can read their own stats
+      allow read: if isOwner(userId);
+      
+      // Influencers can read their own stats
+      allow read: if isInfluencer() && userId == request.auth.uid;
+      
+      // Only backend can write stats
+      allow write: if false;
+      
+      // Admins can read all stats
+      allow read: if isAdmin();
+    }
+    
+    // Referral rewards collection
+    match /referralRewards/{rewardId} {
+      // Users can read their own rewards
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Only backend can create rewards
+      allow create: if false;
+      
+      // Users can mark rewards as claimed
+      allow update: if isAuthenticated() && 
+                      resource.data.userId == request.auth.uid &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed']) &&
+                      request.resource.data.claimed == true;
+      
+      // Admins can read all rewards
+      allow read: if isAdmin();
+    }
+    
+    // Referral campaigns collection (admin only)
+    match /referralCampaigns/{campaignId} {
+      // Only admins can read campaigns
+      allow read: if isAdmin();
+      
+      // Only admins can create/update campaigns
+      allow create, update: if isAdmin();
+      
+      // Campaigns cannot be deleted (archive by setting active=false)
+      allow delete: if false;
+    }
+    
+    // Fraud logs (referenced for fraud detection)
+    match /fraudLogs/{logId} {
+      // Only admins can read fraud logs
+      allow read: if isAdmin();
+      
+      // Only backend can write fraud logs
+      allow write: if false;
+    }
+  }
+}

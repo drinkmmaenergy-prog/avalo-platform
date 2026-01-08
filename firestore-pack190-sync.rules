@@ -1,0 +1,166 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isSameUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Sync States - Store last sync timestamp per device
+    match /sync_states/{stateId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'deviceId', 'platform', 'lastSyncAt']) &&
+                       request.resource.data.platform in ['mobile', 'web', 'desktop', 'xr'];
+      
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // Sync Sessions - Active device sessions for multi-device tracking
+    match /sync_sessions/{sessionId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'deviceId', 'platform', 'isActive', 'startedAt']) &&
+                       request.resource.data.isActive == true;
+      
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // Device Sessions - Track all logged-in devices
+    match /device_sessions/{sessionId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'deviceId', 'platform', 'deviceInfo', 'isActive', 'createdAt']);
+      
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // Offline Queues - Store actions taken while offline
+    match /offline_queues/{queueId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'type', 'status', 'createdAt']) &&
+                       request.resource.data.type in ['message', 'media', 'token_purchase', 'story_progress', 'draft'] &&
+                       request.resource.data.status in ['queued', 'processing', 'completed', 'failed'];
+      
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status in ['queued', 'processing', 'completed', 'failed', 'expired'];
+      
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // Media Sync Jobs - Track media uploads and downloads across devices
+    match /media_sync_jobs/{jobId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'mediaType', 'status', 'createdAt']) &&
+                       request.resource.data.mediaType in ['image', 'video', 'audio', 'voice_note', 'call_recording'] &&
+                       request.resource.data.status == 'pending';
+      
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status in ['pending', 'uploading', 'processing', 'completed', 'failed'];
+      
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // Sync Conflicts - Log and resolve conflicts
+    match /sync_conflicts/{conflictId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['userId', 'type', 'resolved', 'createdAt']);
+      
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // Chat Sync State - Per-conversation sync metadata
+    match /users/{userId}/chat_sync/{chatId} {
+      allow read: if isOwner(userId);
+      
+      allow write: if isOwner(userId) &&
+                      request.resource.data.keys().hasAll(['lastMessageId', 'lastSyncAt', 'deviceId']) &&
+                      request.resource.data.lastSyncAt is timestamp;
+    }
+    
+    // AI State Sync - AI companion memory and state
+    match /users/{userId}/ai_sync/{companionId} {
+      allow read: if isOwner(userId);
+      
+      allow write: if isOwner(userId) &&
+                      request.resource.data.keys().hasAll(['lastMemorySync', 'lastStateSync']) &&
+                      request.resource.data.lastMemorySync is timestamp;
+    }
+    
+    // Token Sync State - Balance and transaction history
+    match /users/{userId}/token_sync/balance {
+      allow read: if isOwner(userId);
+      
+      allow write: if false;
+    }
+    
+    // Draft Messages - Cross-device draft synchronization
+    match /users/{userId}/drafts/{draftId} {
+      allow read: if isOwner(userId);
+      
+      allow create: if isOwner(userId) &&
+                       request.resource.data.keys().hasAll(['chatId', 'content', 'deviceId', 'createdAt']);
+      
+      allow update: if isOwner(userId) &&
+                       request.resource.data.chatId == resource.data.chatId;
+      
+      allow delete: if isOwner(userId);
+    }
+  }
+}

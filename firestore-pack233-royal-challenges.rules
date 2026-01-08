@@ -1,0 +1,242 @@
+rules_version = '2';
+
+// PACK 233: Royal Couple Challenges - Firestore Security Rules
+// Romantic duo missions that deepen chemistry and drive paid interactions
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is one of the participants
+    function isParticipant(participantIds) {
+      return request.auth.uid in participantIds;
+    }
+    
+    // Check if user is in the couple
+    function isInCouple(userAId, userBId) {
+      return request.auth.uid == userAId || request.auth.uid == userBId;
+    }
+    
+    // Check if no safety concerns exist
+    function hasSafetyClearance(userId) {
+      return !exists(/databases/$(database)/documents/safety_reports/$(userId)) &&
+             !exists(/databases/$(database)/documents/panic_button_events/$(userId));
+    }
+    
+    // Check if romantic momentum is above threshold
+    function hasMinimumRomanticMomentum(userId, threshold) {
+      let momentum = get(/databases/$(database)/documents/romantic_momentum_states/$(userId));
+      return momentum.data.score >= threshold;
+    }
+    
+    // Check if user is not in sleep mode
+    function isNotInSleepMode(userId) {
+      let sleepState = get(/databases/$(database)/documents/sleep_mode_states/$(userId));
+      return !sleepState.data.isActive;
+    }
+    
+    // Check if user is not in breakup recovery
+    function isNotInBreakupRecovery(userId) {
+      let recoveryState = get(/databases/$(database)/documents/breakup_recovery_states/$(userId));
+      return !recoveryState.data.needsRecovery;
+    }
+    
+    // Validate challenge data structure
+    function isValidChallengeData() {
+      return request.resource.data.keys().hasAll([
+        'coupleId', 'participantIds', 'challengeId', 
+        'challengeType', 'isActive', 'completed'
+      ]) &&
+      request.resource.data.participantIds.size() == 2 &&
+      request.resource.data.challengeType in [
+        'conversation', 'storytelling', 'flattery', 
+        'affection', 'planning', 'actions', 'shared_activity'
+      ];
+    }
+    
+    // ============================================================================
+    // ROYAL CHALLENGES COLLECTION
+    // ============================================================================
+    
+    match /royal_challenges/{challengeId} {
+      // Read: Both participants can read their active challenges
+      allow read: if isAuthenticated() &&
+                     isParticipant(resource.data.participantIds) &&
+                     hasSafetyClearance(request.auth.uid);
+      
+      // Create: Only by Cloud Functions (system-assigned)
+      allow create: if false;
+      
+      // Update: Participants can update progress only
+      allow update: if isAuthenticated() &&
+                       isParticipant(resource.data.participantIds) &&
+                       // Can only update progress fields
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(['coupleId', 'participantIds', 'challengeId', 
+                                  'challengeType', 'assignedAt', 'expiresAt']) &&
+                       // Cannot mark as completed (only Cloud Functions can)
+                       (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['completed']) ||
+                        resource.data.completed == request.resource.data.completed);
+      
+      // Delete: Never allowed directly
+      allow delete: if false;
+      
+      // Progress subcollection
+      match /challenge_progress/{userId} {
+        // Read: Only the participant themselves
+        allow read: if isAuthenticated() && 
+                       request.auth.uid == userId;
+        
+        // Create/Update: Only by participant or Cloud Functions
+        allow write: if isAuthenticated() && 
+                        request.auth.uid == userId &&
+                        request.resource.data.userId == userId &&
+                        request.resource.data.challengeId == challengeId;
+        
+        // Delete: Never allowed
+        allow delete: if false;
+      }
+    }
+    
+    // ============================================================================
+    // CHALLENGE ELIGIBILITY CACHE
+    // ============================================================================
+    
+    match /challenge_eligibility_cache/{coupleId} {
+      // Read: Both participants can read
+      allow read: if isAuthenticated() &&
+                     isParticipant(resource.data.participantIds);
+      
+      // Write: Only by Cloud Functions
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // CHALLENGE COMPLETION HISTORY
+    // ============================================================================
+    
+    match /challenge_completion_history/{historyId} {
+      // Read: Participants can read their history
+      allow read: if isAuthenticated() &&
+                     isParticipant(resource.data.participantIds);
+      
+      // Write: Only by Cloud Functions
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // CHALLENGE REWARDS
+    // ============================================================================
+    
+    match /challenge_rewards/{rewardId} {
+      // Read: Participants can read their rewards
+      allow read: if isAuthenticated() &&
+                     isParticipant(resource.data.participantIds);
+      
+      // Update: Participants can claim rewards
+      allow update: if isAuthenticated() &&
+                       isParticipant(resource.data.participantIds) &&
+                       // Can only update claimed status
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed', 'claimedAt']) &&
+                       !resource.data.claimed && // Was not claimed before
+                       request.resource.data.claimed && // Now claiming
+                       request.resource.data.expiresAt > request.time; // Not expired
+      
+      // Create/Delete: Only by Cloud Functions
+      allow create, delete: if false;
+    }
+    
+    // ============================================================================
+    // COMPETITIVE STATS
+    // ============================================================================
+    
+    match /competitive_stats/{statId} {
+      // Read: Participants can read their own stats
+      allow read: if isAuthenticated() &&
+                     (resource.data.coupleId.split('_').hasAny([request.auth.uid]));
+      
+      // Write: Only by Cloud Functions
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // COMPETITIVE LEADERBOARD CACHE
+    // ============================================================================
+    
+    match /competitive_leaderboard_cache/{cacheId} {
+      // Read: All authenticated users in the same city can read (anonymous leaderboard)
+      allow read: if isAuthenticated();
+      
+      // Write: Only by Cloud Functions
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // CHALLENGE BADGES
+    // ============================================================================
+    
+    match /challenge_badges/{badgeId} {
+      // Read: Participants can read their badges
+      allow read: if isAuthenticated() &&
+                     isParticipant(resource.data.participantIds);
+      
+      // Write: Only by Cloud Functions
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // CHALLENGE ANALYTICS
+    // ============================================================================
+    
+    match /challenge_analytics/{analyticsId} {
+      // Read: All authenticated users (aggregate data)
+      allow read: if isAuthenticated();
+      
+      // Write: Only by Cloud Functions
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // USER CHALLENGE SETTINGS
+    // ============================================================================
+    
+    match /users/{userId}/settings/royal_challenges {
+      // Read: Only own settings
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Update: User can enable/disable challenges
+      allow update: if isAuthenticated() && 
+                       request.auth.uid == userId &&
+                       request.resource.data.keys().hasOnly(['enabled', 'updatedAt']);
+      
+      // Create: On first use
+      allow create: if isAuthenticated() && 
+                       request.auth.uid == userId &&
+                       request.resource.data.enabled is bool;
+      
+      // Delete: User can delete settings
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ============================================================================
+    // CHALLENGE COOLDOWNS
+    // ============================================================================
+    
+    match /challenge_cooldowns/{cooldownId} {
+      // Read: Participants can read their cooldowns
+      allow read: if isAuthenticated() &&
+                     resource.data.coupleId.split('_').hasAny([request.auth.uid]);
+      
+      // Write: Only by Cloud Functions
+      allow write: if false;
+    }
+  }
+}

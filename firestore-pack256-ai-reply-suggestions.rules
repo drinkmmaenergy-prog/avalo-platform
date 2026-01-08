@@ -1,0 +1,90 @@
+rules_version = '2';
+
+// PACK 256: AI Reply Accelerator - Smart Message Suggestions
+// Security rules for AI-powered chat reply suggestions
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+    
+    function isChatParticipant(chatId) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/chats/$(chatId)) &&
+        get(/databases/$(database)/documents/chats/$(chatId)).data.participants.hasAny([request.auth.uid]);
+    }
+    
+    // AI Suggestion Sessions (temporary storage for active suggestions)
+    // Path: ai_suggestion_sessions/{sessionId}
+    match /ai_suggestion_sessions/{sessionId} {
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.chatId is string &&
+        request.resource.data.suggestions is list &&
+        request.resource.data.suggestions.size() <= 3 &&
+        request.resource.data.tone in ['flirty', 'sweet', 'confident', 'elegant', 'savage', 'nsfw'] &&
+        request.resource.data.createdAt == request.time;
+      
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        // Allow updating selected index and acceptance status
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['selectedIndex', 'accepted', 'edited', 'updatedAt']);
+      
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // AI Suggestion Analytics (aggregated performance data)
+    // Path: ai_suggestion_analytics/{userId}
+    match /ai_suggestion_analytics/{userId} {
+      allow read: if isUser(userId);
+      
+      // Only backend can write analytics
+      allow write: if false;
+    }
+    
+    // User AI Preferences (tone preferences, consent status)
+    // Path: users/{userId}/ai_preferences/{prefsId}
+    match /users/{userId}/ai_preferences/chat_suggestions {
+      allow read: if isUser(userId);
+      
+      allow write: if isUser(userId) && 
+        request.resource.data.defaultTone in ['flirty', 'sweet', 'confident', 'elegant', 'savage', 'nsfw'] &&
+        request.resource.data.nsfwConsent is bool &&
+        request.resource.data.enabled is bool;
+    }
+    
+    // Chat-level AI suggestion metadata
+    // Path: chats/{chatId}/ai_metadata/suggestions
+    match /chats/{chatId}/ai_metadata/suggestions {
+      allow read: if isChatParticipant(chatId);
+      
+      // Only backend can write suggestion metadata
+      allow write: if false;
+    }
+    
+    // AI Suggestion Performance Tracking (per chat)
+    // Path: chats/{chatId}/suggestion_tracking/{trackingId}
+    match /chats/{chatId}/suggestion_tracking/{trackingId} {
+      allow read: if isChatParticipant(chatId);
+      
+      allow create: if isChatParticipant(chatId) &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.suggestionType in ['flirty', 'sweet', 'confident', 'elegant', 'savage', 'nsfw'] &&
+        request.resource.data.action in ['accepted', 'edited', 'ignored'] &&
+        request.resource.data.createdAt == request.time;
+      
+      allow update, delete: if false; // Immutable once created
+    }
+  }
+}

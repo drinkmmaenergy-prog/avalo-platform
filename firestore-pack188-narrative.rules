@@ -1,0 +1,179 @@
+rules_version = '2';
+
+// PACK 188 - AI Narrative & Fantasy Engine
+// Firestore Security Rules for Story Collections
+// SFW Roleplay with Strict Safety Controls
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isSystem() {
+      return request.auth.token.system == true;
+    }
+    
+    // AI Story Arcs - Read: All authenticated, Write: System/Admin
+    match /ai_story_arcs/{arcId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() || isSystem();
+      allow update: if isAdmin() || isSystem();
+      allow delete: if isAdmin();
+      
+      // Subcollection: Story Chapters
+      match /chapters/{chapterId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin() || isSystem();
+      }
+    }
+    
+    // AI Story Branches - Read: All authenticated, Write: System/Admin
+    match /ai_story_branches/{branchId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() || isSystem();
+      allow update: if isAdmin() || isSystem();
+      allow delete: if isAdmin();
+    }
+    
+    // User Story States - Read/Write: Owner only
+    match /ai_scene_states/{stateId} {
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll([
+          'userId', 'arcId', 'characterId', 'createdAt'
+        ]);
+      
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Multi-Character Sessions - Read/Write: Owner only
+    match /ai_multi_character_sessions/{sessionId} {
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll([
+          'userId', 'characterIds', 'sceneType', 'createdAt'
+        ]) &&
+        request.resource.data.characterIds.size() <= 3;
+      
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Story Progress Tracking - Read/Write: Owner only
+    match /user_story_progress/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+      
+      // Subcollection: Arc Progress
+      match /arcs/{arcId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId);
+      }
+    }
+    
+    // Story Outcomes Log - Read: Owner, Write: System
+    match /ai_story_outcomes/{outcomeId} {
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      allow create: if (isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid) ||
+        isSystem();
+      
+      allow update: if isSystem();
+      allow delete: if isAdmin();
+    }
+    
+    // Seasonal Story Events - Read: All authenticated, Write: Admin/System
+    match /ai_seasonal_events/{eventId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isSystem();
+    }
+    
+    // Story Lore Journal - Read/Write: Owner only
+    match /user_lore_journal/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+      
+      // Subcollection: Lore Entries
+      match /entries/{entryId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId);
+      }
+    }
+    
+    // Story Safety Reports - Read: Admin/Reporter, Write: Users
+    match /ai_story_safety_reports/{reportId} {
+      allow read: if isAdmin() || 
+        (isAuthenticated() && resource.data.reporterId == request.auth.uid);
+      
+      allow create: if isAuthenticated() &&
+        request.resource.data.reporterId == request.auth.uid &&
+        request.resource.data.keys().hasAll([
+          'reporterId', 'arcId', 'reason', 'reportedAt'
+        ]);
+      
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Story Analytics - Read: Admin, Write: System
+    match /ai_story_analytics/{analyticsId} {
+      allow read: if isAdmin();
+      allow write: if isSystem();
+    }
+    
+    // Story Choice History - Read: Owner/Admin, Write: Owner/System
+    match /user_story_choices/{choiceId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      
+      allow create: if (isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid) ||
+        isSystem();
+      
+      allow update: if isSystem();
+      allow delete: if isAdmin();
+    }
+    
+    // Story Replay Bookmarks - Read/Write: Owner only
+    match /user_story_bookmarks/{bookmarkId} {
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      
+      allow update: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      allow delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+  }
+}

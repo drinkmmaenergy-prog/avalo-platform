@@ -1,0 +1,73 @@
+// PACK 291 — AI Assist for Creators — Firestore Security Rules
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // AI ASSIST CACHE
+    // ========================================================================
+    
+    match /aiAssistCache/{cacheId} {
+      // Users can only read their own cached insights
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only backend can write cache entries
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // AGGREGATED BEHAVIOR DATA
+    // ========================================================================
+    
+    match /aiAssistBehaviorData/{dataId} {
+      // Users can only read their own aggregated data
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only backend can write aggregated data
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // AI INSIGHTS HISTORY
+    // ========================================================================
+    
+    match /aiInsights/{insightId} {
+      // Users can read their own insights
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Users cannot create/update insights (backend only)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // SAFETY LOGS (Audit Trail)
+    // ========================================================================
+    
+    match /aiSafetyLogs/{logId} {
+      // Only admins can read safety logs
+      allow read: if isAdmin();
+      
+      // Only backend can write logs
+      allow write: if false;
+    }
+  }
+}

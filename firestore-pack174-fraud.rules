@@ -1,0 +1,297 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/moderators/$(request.auth.uid));
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isFraudInvestigator() {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/fraud_investigators/$(request.auth.uid)) ||
+        isAdmin()
+      );
+    }
+    
+    // ========================================================================
+    // FRAUD CASES
+    // ========================================================================
+    
+    match /fraud_cases/{caseId} {
+      // Users can read cases where they are involved
+      // Fraud investigators and admins can read all cases
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.targetUserId == request.auth.uid ||
+        isFraudInvestigator() ||
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Only system can create cases (via Cloud Functions)
+      allow create: if false;
+      
+      // Only fraud investigators and admins can update cases
+      allow update: if isFraudInvestigator() || isAdmin();
+      
+      // Only admins can delete cases
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // IMPERSONATION REPORTS
+    // ========================================================================
+    
+    match /impersonation_reports/{reportId} {
+      // Claimant and reported user can read
+      // Investigators can read all
+      allow read: if isAuthenticated() && (
+        resource.data.claimantUserId == request.auth.uid ||
+        resource.data.reportedUserId == request.auth.uid ||
+        isFraudInvestigator() ||
+        isAdmin()
+      );
+      
+      // Users can create reports claiming their identity is stolen
+      allow create: if isAuthenticated() && 
+        request.resource.data.claimantUserId == request.auth.uid;
+      
+      // Only investigators can update (verify, resolve)
+      allow update: if isFraudInvestigator() || isAdmin();
+      
+      // No deletion
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // PAYMENT DISPUTES
+    // ========================================================================
+    
+    match /payment_disputes/{disputeId} {
+      // Buyer and seller can read their own disputes
+      // Investigators can read all
+      allow read: if isAuthenticated() && (
+        resource.data.buyerId == request.auth.uid ||
+        resource.data.sellerId == request.auth.uid ||
+        isFraudInvestigator() ||
+        isAdmin()
+      );
+      
+      // Buyers can create disputes for their transactions
+      allow create: if isAuthenticated() && 
+        request.resource.data.buyerId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['buyerId', 'sellerId', 'transactionId', 'disputeType', 'description']);
+      
+      // Parties can add evidence, investigators can resolve
+      allow update: if isAuthenticated() && (
+        resource.data.buyerId == request.auth.uid ||
+        resource.data.sellerId == request.auth.uid ||
+        isFraudInvestigator() ||
+        isAdmin()
+      );
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // CRYPTO SCAM LOGS
+    // ========================================================================
+    
+    match /crypto_scam_logs/{logId} {
+      // Users can read logs about them
+      // Investigators can read all
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.targetUserId == request.auth.uid ||
+        isFraudInvestigator() ||
+        isAdmin()
+      );
+      
+      // Only system can write (via Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // FRAUD PATTERN SCANS
+    // ========================================================================
+    
+    match /fraud_pattern_scans/{scanId} {
+      // Users can read scans about themselves
+      // Investigators can read all
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isFraudInvestigator() ||
+        isAdmin()
+      );
+      
+      // Only system can write (automated scans)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PAYMENT FRAUD ATTEMPTS
+    // ========================================================================
+    
+    match /payment_fraud_attempts/{attemptId} {
+      // Users can read attempts on their account
+      // Investigators can read all
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isFraudInvestigator() ||
+        isAdmin()
+      );
+      
+      // Only system can write (fraud detection)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // BLACKLISTS (Cards, Wallets, Devices)
+    // ========================================================================
+    
+    match /blacklisted_cards/{cardId} {
+      // Only investigators can read
+      allow read: if isFraudInvestigator() || isAdmin();
+      
+      // Only system and investigators can write
+      allow write: if isFraudInvestigator() || isAdmin();
+    }
+    
+    match /blacklisted_wallets/{walletId} {
+      // Only investigators can read
+      allow read: if isFraudInvestigator() || isAdmin();
+      
+      // Only system and investigators can write
+      allow write: if isFraudInvestigator() || isAdmin();
+    }
+    
+    match /blacklisted_devices/{deviceId} {
+      // Only investigators can read
+      allow read: if isFraudInvestigator() || isAdmin();
+      
+      // Only system and investigators can write
+      allow write: if isFraudInvestigator() || isAdmin();
+    }
+    
+    // ========================================================================
+    // EMOTIONAL MANIPULATION LOGS
+    // ========================================================================
+    
+    match /emotional_manipulation_logs/{logId} {
+      // Victim can read logs about manipulation targeting them
+      // Investigators can read all
+      allow read: if isAuthenticated() && (
+        resource.data.victimUserId == request.auth.uid ||
+        isFraudInvestigator() ||
+        isModerator() ||
+        isAdmin()
+      );
+      
+      // Only system can write (detection engine)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // USER FRAUD RISK PROFILES
+    // ========================================================================
+    
+    match /user_fraud_risk_profiles/{userId} {
+      // Users can read their own risk profile
+      // Investigators can read all
+      allow read: if isUser(userId) || isFraudInvestigator() || isAdmin();
+      
+      // Only system can write (risk scoring)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // FRAUD MITIGATION ACTIONS
+    // ========================================================================
+    
+    match /fraud_mitigation_actions/{actionId} {
+      // Users can read actions taken on their account
+      // Investigators can read all
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isFraudInvestigator() ||
+        isAdmin()
+      );
+      
+      // Only system and investigators can write
+      allow write: if isFraudInvestigator() || isAdmin();
+    }
+    
+    // ========================================================================
+    // SPENDING SAFETY SETTINGS
+    // ========================================================================
+    
+    match /spending_safety_settings/{userId} {
+      // Users can read and write their own settings
+      allow read: if isUser(userId);
+      
+      allow create, update: if isUser(userId) && 
+        request.resource.data.userId == userId;
+      
+      // No deletion (only disable)
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // MESSAGES WITH FRAUD DETECTION
+    // ========================================================================
+    
+    match /messages/{messageId} {
+      // Read rules: standard chat permissions
+      allow read: if isAuthenticated() && (
+        resource.data.senderId == request.auth.uid ||
+        resource.data.recipientId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Create with fraud checks
+      allow create: if isAuthenticated() && 
+        request.resource.data.senderId == request.auth.uid &&
+        // No blacklisted user
+        !exists(/databases/$(database)/documents/blacklisted_users/$(request.auth.uid));
+      
+      // Standard update/delete rules
+      allow update: if isAuthenticated() && (
+        resource.data.senderId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      allow delete: if isAuthenticated() && (
+        resource.data.senderId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+    
+    // ========================================================================
+    // FRAUD INVESTIGATORS
+    // ========================================================================
+    
+    match /fraud_investigators/{investigatorId} {
+      // Only admins can read investigator list
+      allow read: if isAdmin();
+      
+      // Only admins can manage investigators
+      allow write: if isAdmin();
+    }
+  }
+}

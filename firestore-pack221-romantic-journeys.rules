@@ -1,0 +1,136 @@
+rules_version = '2';
+
+// PACK 221: Long-Arc Romance Journeys - Firestore Security Rules
+// Relationship timeline, memories, shared milestones, and streaks
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isJourneyParticipant(journeyData) {
+      return isAuthenticated() && 
+        (journeyData.user1Id == request.auth.uid || 
+         journeyData.user2Id == request.auth.uid);
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // =================================================================
+    // ROMANTIC JOURNEYS COLLECTION
+    // Pair-based private journeys between two users
+    // =================================================================
+    match /romantic_journeys/{journeyId} {
+      // Read: Both participants can read their own journey
+      allow read: if isJourneyParticipant(resource.data) || isAdmin();
+      
+      // Create: Either participant can create (with auto-approval needed)
+      allow create: if isAuthenticated() && 
+        (request.resource.data.user1Id == request.auth.uid || 
+         request.resource.data.user2Id == request.auth.uid) &&
+        request.resource.data.status == 'pending';
+      
+      // Update: Both participants can update status (accept/end)
+      // Only specific fields can be updated by users
+      allow update: if isJourneyParticipant(resource.data) &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'endedAt', 'endedBy', 'updatedAt']);
+      
+      // Delete: Only backend/admin
+      allow delete: if false;
+      
+      // Journey Milestones Subcollection
+      match /milestones/{milestoneId} {
+        // Read: Journey participants can read
+        allow read: if isAuthenticated() && 
+          (get(/databases/$(database)/documents/romantic_journeys/$(journeyId)).data.user1Id == request.auth.uid ||
+           get(/databases/$(database)/documents/romantic_journeys/$(journeyId)).data.user2Id == request.auth.uid);
+        
+        // Write: Only backend
+        allow write: if false;
+      }
+    }
+    
+    // =================================================================
+    // JOURNEY MILESTONES COLLECTION
+    // Timeline events that unlock automatically
+    // =================================================================
+    match /journey_milestones/{milestoneId} {
+      // Read: Users can read their own milestones
+      allow read: if isAuthenticated() && 
+        (resource.data.user1Id == request.auth.uid || 
+         resource.data.user2Id == request.auth.uid);
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+    
+    // =================================================================
+    // JOURNEY CHALLENGES COLLECTION
+    // Optional challenges to boost activity
+    // =================================================================
+    match /journey_challenges/{challengeId} {
+      // Read: All authenticated users can see available challenges
+      allow read: if isAuthenticated();
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+    
+    // =================================================================
+    // JOURNEY CHALLENGE PROGRESS COLLECTION
+    // Tracks user progress on challenges
+    // =================================================================
+    match /journey_challenge_progress/{progressId} {
+      // Read: Users can read their own challenge progress
+      allow read: if isAuthenticated() && 
+        (resource.data.user1Id == request.auth.uid || 
+         resource.data.user2Id == request.auth.uid);
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+    
+    // =================================================================
+    // JOURNEY CHEMISTRY THRESHOLD COLLECTION
+    // Tracks when pairs reach threshold for journey offer
+    // =================================================================
+    match /journey_chemistry_thresholds/{thresholdId} {
+      // Read: Users can read their own thresholds
+      allow read: if isAuthenticated() && 
+        (resource.data.user1Id == request.auth.uid || 
+         resource.data.user2Id == request.auth.uid);
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+    
+    // =================================================================
+    // JOURNEY ARCHIVES COLLECTION
+    // Ended journeys privately saved
+    // =================================================================
+    match /journey_archives/{archiveId} {
+      // Read: Only the participants can read their archived journey
+      allow read: if isAuthenticated() && 
+        (resource.data.user1Id == request.auth.uid || 
+         resource.data.user2Id == request.auth.uid);
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+  }
+}
+
+// =================================================================
+// INTEGRATION NOTES
+// =================================================================
+// - Journey status affected by safety_incidents (PACK 159)
+// - Journey milestones trigger notifications (PACK 169)
+// - Journey chemistry uses chemistry_scores (PACK 195)
+// - Journey token tracking integrates with fan_status (PACK 220)

@@ -1,0 +1,20 @@
+{
+  "available": "Special Offer Available",
+  "bestOffer": "Best Offer",
+  "expiresIn": "Expires in",
+  "activate": "Activate Offer",
+  "oldPrice": "Original Price",
+  "newPrice": "Your Price",
+  "claimNow": "Claim Now",
+  "discountApplied": "Discount Applied",
+  "noThanks": "No Thanks",
+  "offerActivated": "Offer Activated!",
+  "offerExpired": "Offer Expired",
+  "offerNotEligible": "You're not eligible for this offer",
+  "limitedTime": "Limited Time",
+  "save": "Save",
+  "exclusiveOffer": "Exclusive Offer",
+  "dontMissOut": "Don't miss out!",
+  "offerEnds": "Offer ends",
+  "discount": "Discount"
+}

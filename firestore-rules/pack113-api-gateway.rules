@@ -1,0 +1,148 @@
+rules_version = '2';
+
+/**
+ * PACK 113 — Full Ecosystem API Gateway
+ * Firestore Security Rules
+ * 
+ * CRITICAL SECURITY:
+ * - External apps cannot read/write these collections directly
+ * - Only Firebase Functions can manage API gateway data
+ * - Users can only view their own authorizations
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // EXTERNAL APPS
+    // ========================================================================
+    
+    match /external_apps/{appId} {
+      // Only functions can create/update apps
+      // Creators can read their own apps
+      allow read: if request.auth != null && 
+                     resource.data.createdBy == request.auth.uid;
+      allow write: if false; // Only functions
+    }
+    
+    // ========================================================================
+    // OAUTH2 AUTHORIZATION CODES
+    // ========================================================================
+    
+    match /oauth2_authorization_codes/{codeHash} {
+      // Only functions can manage
+      allow read, write: if false;
+    }
+    
+    // ========================================================================
+    // ACCESS TOKENS
+    // ========================================================================
+    
+    match /access_tokens/{tokenHash} {
+      // Only functions can manage tokens
+      // Tokens are never exposed to clients
+      allow read, write: if false;
+    }
+    
+    // ========================================================================
+    // USER APP AUTHORIZATIONS
+    // ========================================================================
+    
+    match /user_app_authorizations/{authId} {
+      // Users can read their own authorizations
+      allow read: if request.auth != null && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Users can revoke (delete) their own authorizations
+      allow delete: if request.auth != null && 
+                       resource.data.userId == request.auth.uid;
+      
+      // Only functions can create/update
+      allow create, update: if false;
+    }
+    
+    // ========================================================================
+    // API AUDIT LOG
+    // ========================================================================
+    
+    match /api_audit_log/{logId} {
+      // Immutable audit trail
+      // Only functions can write
+      // No one can read directly (use Cloud Functions)
+      allow read, write: if false;
+    }
+    
+    // ========================================================================
+    // API RATE LIMITS
+    // ========================================================================
+    
+    match /api_rate_limits/{limitId} {
+      // Only functions can manage rate limits
+      allow read, write: if false;
+    }
+    
+    // ========================================================================
+    // API SECURITY EVENTS
+    // ========================================================================
+    
+    match /api_security_events/{eventId} {
+      // Security events are write-only by functions
+      // Admins read via Cloud Functions
+      allow read, write: if false;
+    }
+    
+    // ========================================================================
+    // API ABUSE DETECTIONS
+    // ========================================================================
+    
+    match /api_abuse_detections/{detectionId} {
+      // Only functions can manage abuse detections
+      allow read, write: if false;
+    }
+    
+    // ========================================================================
+    // WEBHOOK SUBSCRIPTIONS
+    // ========================================================================
+    
+    match /webhook_subscriptions/{subscriptionId} {
+      // Users can read their own subscriptions
+      allow read: if request.auth != null && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only functions can create/update/delete
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // WEBHOOK DELIVERIES
+    // ========================================================================
+    
+    match /webhook_deliveries/{deliveryId} {
+      // Only functions can manage deliveries
+      allow read, write: if false;
+    }
+    
+    // ========================================================================
+    // DEVELOPER ACCOUNTS
+    // ========================================================================
+    
+    match /developer_accounts/{developerId} {
+      // Developers can read their own account
+      allow read: if request.auth != null && 
+                     request.auth.uid == developerId;
+      
+      // Only functions can create/update
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // TRUST EVENTS (Integration with PACK 103/104)
+    // ========================================================================
+    
+    match /trust_events/{eventId} {
+      // Only functions can create trust events
+      // Security team reads via admin console
+      allow read, write: if false;
+    }
+  }
+}

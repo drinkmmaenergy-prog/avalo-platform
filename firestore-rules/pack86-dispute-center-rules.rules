@@ -1,0 +1,122 @@
+// PACK 86 — Dispute Center & Transaction Issue Reporting
+// Firestore Security Rules for transaction_issues and user_report_events collections
+//
+// CRITICAL: These rules ensure users can only access their own reports
+// and that admins/moderators have full access for moderation
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // Helper Functions
+    // ========================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is the document owner
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if user has admin or moderator role
+    function isAdminOrModerator() {
+      return isAuthenticated() && (
+        request.auth.token.admin == true || 
+        request.auth.token.moderator == true
+      );
+    }
+    
+    // ========================================================================
+    // transaction_issues Collection
+    // ========================================================================
+    
+    match /transaction_issues/{issueId} {
+      // Users can READ only their own reports (where they are the reporter)
+      allow read: if isAuthenticated() && (
+        resource.data.reporterId == request.auth.uid ||
+        isAdminOrModerator()
+      );
+      
+      // Users can CREATE reports (Cloud Function validates participation)
+      // Note: reporterId must match authenticated user
+      allow create: if isAuthenticated() &&
+        request.resource.data.reporterId == request.auth.uid &&
+        request.resource.data.status == 'OPEN' &&
+        // Required fields must be present
+        request.resource.data.keys().hasAll([
+          'id',
+          'reporterId',
+          'reportedUserId',
+          'relatedType',
+          'reasonCode',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        // Cannot report yourself
+        request.resource.data.reporterId != request.resource.data.reportedUserId &&
+        // Valid enum values
+        request.resource.data.relatedType in [
+          'GIFT',
+          'PREMIUM_STORY',
+          'PAID_MEDIA',
+          'CALL',
+          'CHAT',
+          'OTHER'
+        ] &&
+        request.resource.data.reasonCode in [
+          'SCAM',
+          'HARASSMENT',
+          'SPAM',
+          'INAPPROPRIATE_CONTENT',
+          'OTHER'
+        ] &&
+        request.resource.data.status == 'OPEN';
+      
+      // Users CANNOT UPDATE their own reports (status changes are admin-only)
+      allow update: if false;
+      
+      // Users CANNOT DELETE reports
+      allow delete: if false;
+      
+      // Admin/moderator can update status and resolution fields
+      // This is typically done via Cloud Function, but rules allow direct access
+      allow update: if isAdminOrModerator() &&
+        // Only allow updating specific fields
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'reviewerId', 'resolutionSummary', 'updatedAt']) &&
+        // Status must be valid
+        request.resource.data.status in [
+          'OPEN',
+          'UNDER_REVIEW',
+          'RESOLVED',
+          'DISMISSED'
+        ] &&
+        // ReviewerId must be the current user
+        request.resource.data.reviewerId == request.auth.uid;
+      
+      // Admin can list all reports
+      allow list: if isAdminOrModerator();
+    }
+    
+    // ========================================================================
+    // user_report_events Collection
+    // ========================================================================
+    
+    match /user_report_events/{eventId} {
+      // Users CANNOT read report events (internal to Trust Engine)
+      allow read: if isAdminOrModerator();
+      
+      // Users CANNOT write directly (only via Cloud Function)
+      allow create, update, delete: if false;
+      
+      // Admin can list all events
+      allow list: if isAdminOrModerator();
+    }
+  }
+}

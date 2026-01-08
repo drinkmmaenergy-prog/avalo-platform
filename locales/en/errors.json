@@ -1,0 +1,18 @@
+{
+  "unknownError": "Unknown error",
+  "networkError": "Network error",
+  "serviceUnavailable": "Service unavailable",
+  "tryAgainLater": "Try again later",
+  "sessionExpired": "Session expired",
+  "accessDenied": "Access denied",
+  "invalidInput": "Invalid input",
+  "missingFields": "Missing fields",
+  "uploadFailed": "Upload failed",
+  "featureUnavailable": "Feature unavailable",
+  "rateLimited": {
+    "generic": "You are doing this too often. Please wait and try again later.",
+    "chat": "You are sending messages too quickly. Please slow down.",
+    "support": "You have reached the limit of support requests for now. Please try again later.",
+    "auth": "Too many attempts. Please wait a moment and try again."
+  }
+}

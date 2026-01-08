@@ -1,0 +1,88 @@
+rules_version = '2';
+
+// PACK 368 — Viral Referral & Invite Engine
+// Security rules for referral and invite system
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function hasVerifiedProfile() {
+      let user = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return user.verified == true && 
+             user.age >= 18 && 
+             user.selfieVerified == true;
+    }
+    
+    // User referral profile (subcollection)
+    match /users/{userId}/referralProfile/{docId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && hasVerifiedProfile();
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Main referrals collection
+    match /referrals/{referralId} {
+      allow read: if isAuthenticated() && (
+        resource.data.inviterId == request.auth.uid ||
+        resource.data.invitedUserId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      allow create: if isAuthenticated() && 
+                       request.resource.data.invitedUserId == request.auth.uid &&
+                       request.resource.data.status == 'pending' &&
+                       request.resource.data.createdAt == request.time &&
+                       request.resource.data.keys().hasAll([
+                         'inviterId', 'invitedUserId', 'attributionSource', 
+                         'status', 'createdAt'
+                       ]);
+      
+      // Only system/functions can update referral status
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // Referral rewards tracking
+    match /referralRewards/{rewardId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      
+      // Only functions can create/update rewards
+      allow create, update, delete: if false;
+    }
+    
+    // Referral fraud signals (admin/system only)
+    match /referralFraudSignals/{signalId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only functions
+    }
+    
+    // Referral stats aggregation (user-specific)
+    match /referralStats/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false; // Only functions
+    }
+    
+    // Global referral configuration (admin only)
+    match /referralConfig/{configId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

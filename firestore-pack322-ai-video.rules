@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 322 — AI Video Call Sessions
+    // ========================================================================
+    
+    match /aiVideoCallSessions/{sessionId} {
+      
+      // Allow user to read their own sessions
+      allow read: if request.auth != null 
+                  && request.auth.uid == resource.data.userId;
+      
+      // Allow user to create session (handled by callable function)
+      allow create: if request.auth != null 
+                    && request.auth.uid == request.resource.data.userId
+                    && request.resource.data.status == "ACTIVE"
+                    && request.resource.data.billedMinutes == 0
+                    && request.resource.data.totalTokensCharged == 0;
+      
+      // Allow user to update their own session (for billing ticks and end)
+      allow update: if request.auth != null 
+                    && request.auth.uid == resource.data.userId
+                    && (
+                      // Allow status updates to ENDED
+                      (request.resource.data.status == "ENDED" 
+                       && resource.data.status == "ACTIVE")
+                      ||
+                      // Allow billing updates while ACTIVE
+                      (resource.data.status == "ACTIVE"
+                       && request.resource.data.billedMinutes >= resource.data.billedMinutes
+                       && request.resource.data.totalTokensCharged >= resource.data.totalTokensCharged)
+                    );
+      
+      // No delete allowed
+      allow delete: if false;
+    }
+  }
+}

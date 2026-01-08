@@ -1,0 +1,29 @@
+{
+  "name": "@avalo/post-deployment-verification",
+  "version": "1.0.0",
+  "description": "Avalo Post-Deployment Verification Suite",
+  "main": "index.ts",
+  "scripts": {
+    "verify": "ts-node index.ts",
+    "verify:watch": "nodemon --exec ts-node index.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "avalo",
+    "verification",
+    "post-deployment",
+    "testing",
+    "firebase"
+  ],
+  "author": "Avalo Team",
+  "license": "PROPRIETARY",
+  "dependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "nodemon": "^3.0.1"
+  }
+}

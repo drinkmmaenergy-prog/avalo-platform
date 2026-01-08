@@ -1,0 +1,60 @@
+{
+  "safety": {
+    "onboarding": {
+      "title1": "Bezpieczeństwo przede wszystkim",
+      "body1": "Avalo jest tylko dla osób 18+. Nigdy nie wysyłaj pieniędzy ani danych finansowych poza aplikacją.",
+      "title2": "Zanim spotkasz się na żywo",
+      "body2": "Umawiaj się w miejscach publicznych, poinformuj zaufaną osobę i korzystaj z narzędzi w aplikacji.",
+      "title3": "Zgłaszaj, blokuj i korzystaj z pomocy",
+      "body3": "Jeśli ktoś sprawia, że czujesz się niekomfortowo, zablokuj go, zgłoś profil lub skontaktuj się z pomocą.",
+      "finish": "Zakończ"
+    },
+    "meeting": {
+      "tip": {
+        "title": "Zanim spotkasz się na żywo",
+        "body": "Na pierwsze spotkania wybieraj miejsca publiczne, powiedz komuś dokąd idziesz i w miarę możliwości trzymaj kontakt w aplikacji.",
+        "ok": "Rozumiem",
+        "cancel": "Anuluj"
+      }
+    },
+    "offPlatform": {
+      "title": "Uważaj na swoje dane kontaktowe",
+      "body": "Gdy udostępniasz telefon lub social media, Avalo nie może Cię chronić poza aplikacją. Nigdy nie wysyłaj pieniędzy ani dokumentów nieznajomym."
+    },
+    "payment": {
+      "title": "Płać bezpiecznie",
+      "body": "Płać tylko wtedy, gdy czujesz się komfortowo. Avalo nie gwarantuje tego, co dzieje się poza aplikacją."
+    },
+    "chat": {
+      "banner": {
+        "low": "Chroń swoje dane osobowe i finansowe.",
+        "medium": "Uważaj na to, co udostępniasz. Jeśli coś jest nie w porządku, przerwij i zgłoś.",
+        "high": "Zachowaj szczególną ostrożność. Nie wysyłaj pieniędzy ani dokumentów. Zablokuj i zgłoś, jeśli czujesz presję."
+      },
+      "action": {
+        "block": "Zablokuj użytkownika",
+        "report": "Zgłoś",
+        "support": "Kontakt z pomocą"
+      }
+    },
+    "info": {
+      "title": "Bezpieczeństwo i pomoc",
+      "section": {
+        "basics": "Podstawowe zasady bezpieczeństwa",
+        "meetings": "Bezpieczne spotkania",
+        "support": "Pomoc i zgłoszenia"
+      },
+      "link": {
+        "support": "Otwórz centrum pomocy",
+        "privacy": "Prywatność i dane",
+        "terms": "Zasady bezpieczeństwa i regulamin"
+      }
+    }
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Anuluj",
+    "back": "Wstecz",
+    "next": "Dalej"
+  }
+}

@@ -1,0 +1,112 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // PACK 369: Global Ads Automation
+    // ==========================================
+    
+    // Ad Sources Collection
+    match /adSources/{sourceId} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+      
+      allow write: if request.auth != null && 
+        request.auth.token.role == 'admin';
+      
+      allow update: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+    }
+    
+    // Ad Creatives Collection
+    match /adCreatives/{creativeId} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+      
+      allow create: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+      
+      allow update: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+      
+      allow delete: if request.auth != null && 
+        request.auth.token.role == 'admin';
+    }
+    
+    // Ad Performance Metrics
+    match /adPerformance/{metricId} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+      
+      allow write: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+    }
+    
+    // Creative Templates
+    match /creativeTemplates/{templateId} {
+      allow read: if request.auth != null;
+      
+      allow write: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+    }
+    
+    // Demographic Clusters
+    match /demographicClusters/{clusterId} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+      
+      allow write: if request.auth != null && 
+        request.auth.token.role == 'admin';
+    }
+    
+    // Budget History
+    match /budgetHistory/{historyId} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+      
+      allow create: if request.auth != null;
+    }
+    
+    // Creative Performance History
+    match /creativePerformanceHistory/{historyId} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+      
+      allow create: if request.auth != null;
+    }
+    
+    // Fraud Attribution Events
+    match /fraudAttributionEvents/{eventId} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth' || request.auth.token.role == 'security');
+      
+      allow create: if request.auth != null;
+    }
+    
+    // Ad Brain Decisions
+    match /adBrainDecisions/{decisionId} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+      
+      allow create: if request.auth != null;
+    }
+    
+    // Geo Creative Variants
+    match /geoCreativeVariants/{variantId} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+      
+      allow write: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+    }
+    
+    // Ad Automation Config
+    match /adAutomationConfig/{configId} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || request.auth.token.role == 'growth');
+      
+      allow write: if request.auth != null && 
+        request.auth.token.role == 'admin';
+    }
+  }
+}

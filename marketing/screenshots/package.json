@@ -1,0 +1,24 @@
+{
+  "name": "avalo-screenshot-generator",
+  "version": "1.0.0",
+  "description": "Automated screenshot generator for Avalo app store listings",
+  "main": "generate-screenshots.js",
+  "scripts": {
+    "generate": "node generate-screenshots.js",
+    "generate:ios": "node generate-screenshots.js --platform=ios",
+    "generate:android": "node generate-screenshots.js --platform=android",
+    "generate:en": "node generate-screenshots.js --locale=en",
+    "generate:pl": "node generate-screenshots.js --locale=pl"
+  },
+  "keywords": [
+    "screenshot",
+    "marketing",
+    "app-store",
+    "google-play"
+  ],
+  "author": "Avalo",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "canvas": "^2.11.2"
+  }
+}

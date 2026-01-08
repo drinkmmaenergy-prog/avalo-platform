@@ -1,0 +1,218 @@
+rules_version = '2';
+
+/**
+ * PACK 391 — Operations & Launch Infrastructure
+ * Firestore Security Rules
+ * 
+ * Protects: system metrics, scaling configs, deployment records,
+ * DDoS protection data, market controls, ops dashboard
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOpsTeam() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'ops', 'support'];
+    }
+    
+    // System Metrics - Read only for ops team, write only by functions
+    match /metrics/{document=**} {
+      allow read: if isOpsTeam();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // System Scaling Configuration - Admin only
+    match /system/scaling/{document=**} {
+      allow read: if isOpsTeam();
+      allow write: if isAdmin();
+    }
+    
+    // System configuration
+    match /system/{systemDoc} {
+      allow read: if isOpsTeam();
+      allow write: if isAdmin();
+      
+      // Nested collections
+      match /{collection}/{document=**} {
+        allow read: if isOpsTeam();
+        allow write: if isAdmin();
+      }
+    }
+    
+    // Load Test Results - Ops team read, admin write
+    match /system/loadTests/results/{testId} {
+      allow read: if isOpsTeam();
+      allow create: if isAdmin();
+      allow update: if false; // Only Cloud Functions update
+      allow delete: if isAdmin();
+    }
+    
+    match /system/loadTests/{document=**} {
+      allow read: if isOpsTeam();
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Deployments - Admin only
+    match /deployments/{deploymentId} {
+      allow read: if isOpsTeam();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+      
+      match /{subcollection}/{document=**} {
+        allow read: if isOpsTeam();
+        allow write: if isAdmin();
+      }
+    }
+    
+    // DDoS Protection Data - Read for ops, write by functions
+    match /ddosAlerts/{alertId} {
+      allow read: if isOpsTeam();
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    match /ipReputation/{ip} {
+      allow read: if isOpsTeam();
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    match /rateLimits/{limitKey} {
+      allow read: if false; // Internal only
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    match /blockedRequests/{requestId} {
+      allow read: if isOpsTeam();
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    match /bruteForceAttempts/{attemptKey} {
+      allow read: if isOpsTeam();
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Panic Escalation - User can create their own, ops can read all
+    match /panicEscalation/{escalationId} {
+      allow read: if isOpsTeam();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Fraud Alerts - Ops team access
+    match /fraudAlerts/{alertId} {
+      allow read: if isOpsTeam();
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Support Tickets - Users can read their own, ops can read all
+    match /supportTickets/{ticketId} {
+      allow read: if isOpsTeam() || 
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isOpsTeam();
+      allow delete: if isAdmin();
+    }
+    
+    // Payouts - Users can read their own, ops can read all
+    match /payouts/{payoutId} {
+      allow read: if isOpsTeam() || 
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if false; // Only Cloud Functions
+      allow delete: if isAdmin();
+    }
+    
+    // Market Control - Admin only
+    match /marketControl/{country} {
+      allow read: if isOpsTeam();
+      allow write: if isAdmin();
+      
+      match /history/{historyId} {
+        allow read: if isOpsTeam();
+        allow write: if false; // Only Cloud Functions
+      }
+    }
+    
+    // Alerts - Ops team read, functions write
+    match /alerts/{alertId} {
+      allow read: if isOpsTeam();
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Queue Collections - Internal only
+    match /queues/{queueType}/{document=**} {
+      allow read: if false; // Internal only
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Token Transactions - Users can read their own
+    match /tokenTransactions/{transactionId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Load Test Collections - Admin only
+    match /_loadTest_swipes/{document=**} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions
+      allow delete: if isAdmin();
+    }
+    
+    match /_loadTest_chats/{document=**} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions
+      allow delete: if isAdmin();
+    }
+    
+    match /_loadTest_payouts/{document=**} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions
+      allow delete: if isAdmin();
+    }
+    
+    match /_loadTest_calls/{document=**} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions
+      allow delete: if isAdmin();
+    }
+    
+    match /_loadTest_events/{document=**} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions
+      allow delete: if isAdmin();
+    }
+    
+    match /_loadTest_ai/{document=**} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions
+      allow delete: if isAdmin();
+    }
+    
+    match /_loadTest_generic/{document=**} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions
+      allow delete: if isAdmin();
+    }
+    
+    // Users - Can read own profile, ops can read all
+    match /users/{userId} {
+      allow read: if isAuthenticated() && 
+                     (request.auth.uid == userId || isOpsTeam());
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if isAdmin();
+    }
+  }
+}

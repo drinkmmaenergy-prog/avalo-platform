@@ -1,0 +1,78 @@
+// PACK 413 — KPI Command Center & Panic Playbooks
+// Firestore Security Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function: Check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    // Helper function: Check if user is service account
+    function isService() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'SERVICE';
+    }
+    
+    // Helper function: Admin or service
+    function isAdminOrService() {
+      return isAdmin() || isService();
+    }
+    
+    // KPI Alert Rules - Admin only writes, internal reads
+    match /kpiAlertRules/{ruleId} {
+      allow read: if isAdminOrService();
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // KPI Alert States - System writes, admin reads
+    match /kpiAlertStates/{stateId} {
+      allow read: if isAdminOrService();
+      allow write: if isService();
+    }
+    
+    // KPI Alert Events - System writes, admin reads/updates
+    match /kpiAlertEvents/{eventId} {
+      allow read: if isAdminOrService();
+      allow create: if isService();
+      allow update: if isAdmin(); // For acknowledgment, notes, resolution
+      allow delete: if false; // Never delete alerts
+    }
+    
+    // Panic Mode Configs - Admin only management
+    match /panicModeConfigs/{configId} {
+      allow read: if isAdminOrService();
+      allow write: if isAdmin();
+    }
+    
+    // Active Panic Modes - Admin activates/deactivates, system can read
+    match /activePanicModes/{modeId} {
+      allow read: if isAdminOrService();
+      allow create: if isAdmin();
+      allow update: if isAdmin(); // For deactivation
+      allow delete: if false; // Never delete, only deactivate
+    }
+    
+    // Panic Mode Proposals - System can create, admin manages
+    match /panicModeProposals/{proposalId} {
+      allow read: if isAdminOrService();
+      allow create: if isAdminOrService();
+      allow update: if isAdmin(); // Admin approves/rejects
+      allow delete: if false;
+    }
+    
+    // System Commands - Admin and system can write, services read
+    match /systemCommands/{commandId} {
+      allow read: if isAdminOrService();
+      allow create: if isAdminOrService();
+      allow update: if isService(); // For status updates
+      allow delete: if isAdmin();
+    }
+  }
+}

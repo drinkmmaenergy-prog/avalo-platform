@@ -1,0 +1,269 @@
+{
+  "pack379": {
+    "enabled": true,
+    "version": "1.0.0",
+    "features": {
+      "aso": {
+        "engine": {
+          "enabled": true,
+          "description": "ASO optimization and keyword ranking engine",
+          "config": {
+            "optimizationInterval": "6h",
+            "keywordRefreshInterval": "12h",
+            "algorithmResponseMonitoring": true,
+            "abTestingEnabled": true
+          }
+        }
+      },
+      "review": {
+        "defense": {
+          "enabled": true,
+          "description": "Automated review attack detection and defense",
+          "config": {
+            "velocityCheckInterval": "5m",
+            "attackDetectionInterval": "15m",
+            "fakeReviewClassification": true,
+            "autoFlagging": true,
+            "autoNotifyTrustTeam": true
+          }
+        },
+        "prompts": {
+          "enabled": true,
+          "description": "Store-safe review prompt system",
+          "config": {
+            "minimumTrustScore": 50,
+            "promptThrottleDays": 90,
+            "maxPromptsPerUser": 2,
+            "allowedTriggers": [
+              "successful_match",
+              "successful_date",
+              "positive_interaction",
+              "milestone_achieved",
+              "premium_upgrade"
+            ]
+          }
+        }
+      },
+      "dispute": {
+        "auto": {
+          "enabled": false,
+          "description": "Automatic store dispute submission (requires API keys)",
+          "config": {
+            "autoSubmit": false,
+            "prepareOnly": true,
+            "requireManualReview": true
+          }
+        }
+      },
+      "trustScore": {
+        "enabled": true,
+        "description": "User trust score calculation engine",
+        "config": {
+          "recalculationTriggers": [
+            "user_update",
+            "support_ticket",
+            "payment_event",
+            "report_submitted"
+          ],
+          "weights": {
+            "supportHistory": 0.15,
+            "fraudHistory": 0.25,
+            "paymentBehavior": 0.20,
+            "reportBehavior": 0.15,
+            "verificationDepth": 0.15,
+            "accountAge": 0.10
+          },
+          "thresholds": {
+            "normal": {
+              "minimumScoreForReview": 50,
+              "minimumScoreForPublicContent": 60,
+              "minimumScoreForMarketplace": 70
+            },
+            "crisis": {
+              "minimumScoreForReview": 70,
+              "minimumScoreForPublicContent": 75,
+              "minimumScoreForMarketplace": 80
+            }
+          }
+        }
+      },
+      "compliance": {
+        "monitoring": {
+          "enabled": true,
+          "description": "Store policy and compliance monitoring",
+          "config": {
+            "checkInterval": "24h",
+            "preemptiveAlerts": true,
+            "autoComplianceChecks": [
+              "content_moderation",
+              "payment_compliance",
+              "age_rating",
+              "data_privacy"
+            ]
+          }
+        }
+      },
+      "crisis": {
+        "mode": {
+          "enabled": true,
+          "description": "Crisis mode and reputation shield",
+          "config": {
+            "autoTriggers": {
+              "reviewBomb": {
+                "enabled": true,
+                "threshold": 20,
+                "timeWindow": "15m"
+              },
+              "ratingDrop": {
+                "enabled": true,
+                "threshold": 0.5,
+                "timeWindow": "24h"
+              },
+              "supportSpike": {
+                "enabled": true,
+                "threshold": 100,
+                "timeWindow": "3h"
+              }
+            },
+            "actions": {
+              "freezeReviewPrompts": true,
+              "raiseTrustThresholds": true,
+              "lockSuspiciousAccounts": true,
+              "enableDiscoverySuppression": true,
+              "activateEmergencySupport": true
+            },
+            "notificationChannels": [
+              "email",
+              "slack",
+              "sms"
+            ]
+          }
+        }
+      },
+      "analytics": {
+        "dashboard": {
+          "enabled": true,
+          "description": "Executive reputation dashboard",
+          "config": {
+            "refreshInterval": "5m",
+            "defaultTimeRange": "30d",
+            "availableTimeRanges": ["7d", "30d", "90d"],
+            "metrics": [
+              "overallHealth",
+              "asoPerformance",
+              "reviewHealth",
+              "trustDistribution",
+              "countryReputation"
+            ]
+          }
+        },
+        "reports": {
+          "enabled": true,
+          "description": "Automated executive reports",
+          "config": {
+            "daily": {
+              "enabled": true,
+              "schedule": "08:00",
+              "timezone": "America/New_York",
+              "recipients": ["admin", "executive"]
+            },
+            "weekly": {
+              "enabled": true,
+              "schedule": "Monday 09:00",
+              "timezone": "America/New_York",
+              "recipients": ["admin", "executive", "trust_team"]
+            }
+          }
+        }
+      }
+    },
+    "integrations": {
+      "pack277": {
+        "enabled": true,
+        "description": "Wallet & Token Store integration for payment behavior"
+      },
+      "pack296": {
+        "enabled": true,
+        "description": "Audit Logs integration for event tracking"
+      },
+      "pack300": {
+        "enabled": true,
+        "description": "Support system integration for trust scores"
+      },
+      "pack300A": {
+        "enabled": true,
+        "description": "Safety Ops integration for escalations"
+      },
+      "pack301": {
+        "enabled": true,
+        "description": "Growth & Retention integration"
+      },
+      "pack301B": {
+        "enabled": true,
+        "description": "Winback integration"
+      },
+      "pack302": {
+        "enabled": true,
+        "description": "Fraud Detection integration for trust scores"
+      },
+      "pack378": {
+        "enabled": true,
+        "description": "Tax & Legal Compliance integration"
+      }
+    },
+    "externalApis": {
+      "appStoreConnect": {
+        "enabled": false,
+        "description": "App Store Connect API for iOS metrics",
+        "requiresSetup": true
+      },
+      "googlePlayDeveloper": {
+        "enabled": false,
+        "description": "Google Play Developer API for Android metrics",
+        "requiresSetup": true
+      }
+    },
+    "security": {
+      "rateLimit": {
+        "dashboard": {
+          "requestsPerMinute": 60,
+          "requestsPerHour": 1000
+        },
+        "api": {
+          "requestsPerMinute": 100,
+          "requestsPerHour": 5000
+        }
+      },
+      "accessControl": {
+        "dashboard": ["admin", "executive"],
+        "crisisMode": ["admin"],
+        "disputes": ["admin", "trust_team"],
+        "reports": ["admin", "executive", "trust_team"]
+      }
+    },
+    "monitoring": {
+      "alerts": {
+        "reviewAttack": {
+          "enabled": true,
+          "severity": "critical",
+          "channels": ["email", "slack", "dashboard"]
+        },
+        "complianceRisk": {
+          "enabled": true,
+          "severity": "high",
+          "channels": ["email", "dashboard"]
+        },
+        "asoDecline": {
+          "enabled": true,
+          "severity": "medium",
+          "channels": ["dashboard"]
+        }
+      },
+      "performance": {
+        "logSlowQueries": true,
+        "slowQueryThreshold": 3000,
+        "trackFunctionExecutionTime": true
+      }
+    }
+  }
+}

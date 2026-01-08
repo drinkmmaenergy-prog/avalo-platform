@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Dashboard - PACK 358</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1>💰 Financial Dashboard</h1>
+      <p class="subtitle">PACK 358 — Revenue Forecasting & Financial Stress Engine</p>
+      <div class="header-actions">
+        <button id="refresh-all" class="btn btn-primary">🔄 Refresh All</button>
+        <button id="run-stress-test" class="btn btn-warning">⚡ Run Stress Tests</button>
+        <span id="last-updated" class="last-updated"></span>
+      </div>
+    </header>
+
+    <!-- Alert Banner -->
+    <div id="alerts-container" class="alerts-container"></div>
+
+    <!-- Summary Cards -->
+    <section class="summary-cards">
+      <div class="card">
+        <div class="card-header">
+          <h3>💵 Revenue (30d)</h3>
+        </div>
+        <div class="card-body">
+          <div class="metric-value" id="revenue-30d">Loading...</div>
+          <div class="metric-change" id="revenue-change"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>📊 Net Profit</h3>
+        </div>
+        <div class="card-body">
+          <div class="metric-value" id="net-profit">Loading...</div>
+          <div class="metric-change" id="profit-margin"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>🔥 Monthly Burn</h3>
+        </div>
+        <div class="card-body">
+          <div class="metric-value" id="monthly-burn">Loading...</div>
+          <div class="metric-change" id="burn-change"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>⏱️ Runway</h3>
+        </div>
+        <div class="card-body">
+          <div class="metric-value" id="runway">Loading...</div>
+          <div class="metric-change" id="runway-months"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Tabs -->
+    <section class="tabs">
+      <button class="tab-btn active" data-tab="forecast">📈 Forecast</button>
+      <button class="tab-btn" data-tab="burnrate">🔥 Burn Rate</button>
+      <button class="tab-btn" data-tab="ltv">💎 LTV Analysis</button>
+      <button class="tab-btn" data-tab="stress">⚡ Stress Tests</button>
+      <button class="tab-btn" data-tab="alerts">🚨 Alerts</button>
+    </section>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      
+      <!-- Forecast Tab -->
+      <div id="forecast-tab" class="tab-pane active">
+        <div class="section-header">
+          <h2>Revenue Forecast</h2>
+          <div class="timeframe-selector">
+            <button class="timeframe-btn active" data-timeframe="30d">30 Days</button>
+            <button class="timeframe-btn" data-timeframe="90d">90 Days</button>
+            <button class="timeframe-btn" data-timeframe="12m">12 Months</button>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="forecast-chart"></canvas>
+        </div>
+
+        <div class="confidence-bands">
+          <h3>Confidence Bands</h3>
+          <div class="bands-grid">
+            <div class="band">
+              <span class="band-label">P50 (Median)</span>
+              <span class="band-value" id="p50">-</span>
+            </div>
+            <div class="band">
+              <span class="band-label">P75</span>
+              <span class="band-value" id="p75">-</span>
+            </div>
+            <div class="band">
+              <span class="band-label">P90</span>
+              <span class="band-value" id="p90">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Burn Rate Tab -->
+      <div id="burnrate-tab" class="tab-pane">
+        <div class="section-header">
+          <h2>Monthly Burn Rate Analysis</h2>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="burnrate-chart"></canvas>
+        </div>
+
+        <div class="cost-breakdown">
+          <h3>Cost Breakdown (Current Month)</h3>
+          <div class="breakdown-grid" id="cost-breakdown"></div>
+        </div>
+      </div>
+
+      <!-- LTV Tab -->
+      <div id="ltv-tab" class="tab-pane">
+        <div class="section-header">
+          <h2>Lifetime Value by Segment</h2>
+        </div>
+
+        <div class="ltv-grid">
+          <div id="ltv-segments"></div>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="ltv-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Stress Tests Tab -->
+      <div id="stress-tab" class="tab-pane">
+        <div class="section-header">
+          <h2>Financial Stress Scenarios</h2>
+          <button id="run-single-scenario" class="btn btn-primary">Run Scenario</button>
+        </div>
+
+        <div class="scenarios-grid" id="scenarios-grid"></div>
+      </div>
+
+      <!-- Alerts Tab -->
+      <div id="alerts-tab" class="tab-pane">
+        <div class="section-header">
+          <h2>Financial Alerts</h2>
+          <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="critical">Critical</button>
+            <button class="filter-btn" data-filter="high">High</button>
+            <button class="filter-btn" data-filter="unresolved">Unresolved</button>
+          </div>
+        </div>
+
+        <div class="alerts-list" id="alerts-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

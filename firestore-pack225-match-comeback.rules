@@ -1,0 +1,96 @@
+rules_version = '2';
+
+// PACK 225: Match Comeback Engine
+// Security rules for rekindle suggestions, attempts, and analytics
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ============================================================================
+    // REKINDLE SUGGESTIONS
+    // ============================================================================
+    
+    match /rekindle_suggestions/{suggestionId} {
+      // Users can read their own suggestions
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // System creates suggestions (server-side only)
+      allow create: if false;
+      
+      // Users can update to dismiss their suggestions
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['dismissed', 'dismissedAt', 'dismissedBy', 'actioned', 'actionedAt']);
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // REKINDLE ATTEMPTS
+    // ============================================================================
+    
+    match /rekindle_attempts/{attemptId} {
+      // Users can read attempts they initiated or received
+      allow read: if isAuthenticated() && 
+                     (resource.data.initiatorId == request.auth.uid ||
+                      resource.data.recipientId == request.auth.uid);
+      
+      // Users can create attempts as initiator
+      allow create: if isAuthenticated() &&
+                       request.resource.data.initiatorId == request.auth.uid &&
+                       request.resource.data.keys().hasAll([
+                         'attemptId', 'chatId', 'initiatorId', 'recipientId',
+                         'templateUsed', 'messageText', 'createdAt', 'replied'
+                       ]) &&
+                       request.resource.data.replied == false;
+      
+      // System updates reply status (server-side only)
+      allow update: if false;
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // REKINDLE CONVERSIONS (Analytics)
+    // ============================================================================
+    
+    match /rekindle_conversions/{conversionId} {
+      // Users cannot read conversions (admin/analytics only)
+      allow read: if false;
+      
+      // System creates conversions (server-side only)
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // ============================================================================
+    // USER SETTINGS - Rekindle Preferences
+    // ============================================================================
+    
+    match /users/{userId}/settings/preferences {
+      // Users can read and update their own preferences
+      allow read, update: if isUser(userId);
+      
+      allow create: if isUser(userId) &&
+                       request.resource.data.keys().hasAny([
+                         'rekindleSuggestionsEnabled',
+                         'rekindleFrequency'
+                       ]);
+    }
+  }
+}

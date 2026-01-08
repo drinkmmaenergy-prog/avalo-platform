@@ -1,0 +1,240 @@
+{
+  "timestamp": "2025-11-06T14:20:03.655Z",
+  "compression": [
+    {
+      "endpoint": "https://europe-west3-avalo-c8c46.cloudfunctions.net/ping",
+      "originalSize": 120,
+      "gzipSize": 122,
+      "brotliSize": 95,
+      "gzipRatio": -1.6666666666666607,
+      "brotliRatio": 20.833333333333336,
+      "gzipSupported": false,
+      "brotliSupported": false
+    },
+    {
+      "endpoint": "https://europe-west3-avalo-c8c46.cloudfunctions.net/getSystemInfo",
+      "originalSize": 686,
+      "gzipSize": 421,
+      "brotliSize": 320,
+      "gzipRatio": 38.62973760932945,
+      "brotliRatio": 53.352769679300295,
+      "gzipSupported": false,
+      "brotliSupported": false
+    },
+    {
+      "endpoint": "https://avalo-c8c46.web.app/",
+      "originalSize": 50,
+      "gzipSize": 73,
+      "brotliSize": 54,
+      "gzipRatio": -46,
+      "brotliRatio": -8.000000000000007,
+      "gzipSupported": false,
+      "brotliSupported": true
+    },
+    {
+      "endpoint": "https://avalo-c8c46.firebaseapp.com/",
+      "originalSize": 50,
+      "gzipSize": 73,
+      "brotliSize": 54,
+      "gzipRatio": -46,
+      "brotliRatio": -8.000000000000007,
+      "gzipSupported": false,
+      "brotliSupported": true
+    }
+  ],
+  "ttfb": [
+    {
+      "endpoint": "https://europe-west3-avalo-c8c46.cloudfunctions.net/ping",
+      "ttfb": 50,
+      "totalTime": 50,
+      "statusCode": 200,
+      "headers": {
+        "vary": "Origin",
+        "content-type": "application/json; charset=utf-8",
+        "x-cloud-trace-context": "b25ee65c7d2f7b0ecb7a2184140a2fe0",
+        "date": "Thu, 06 Nov 2025 14:20:09 GMT",
+        "server": "Google Frontend",
+        "content-length": "120",
+        "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    },
+    {
+      "endpoint": "https://europe-west3-avalo-c8c46.cloudfunctions.net/getSystemInfo",
+      "ttfb": 50,
+      "totalTime": 51,
+      "statusCode": 200,
+      "headers": {
+        "vary": "Origin",
+        "content-type": "application/json; charset=utf-8",
+        "x-cloud-trace-context": "6dfe75c7895bea66cb7a2184140a2b02",
+        "date": "Thu, 06 Nov 2025 14:20:09 GMT",
+        "server": "Google Frontend",
+        "content-length": "686",
+        "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+      }
+    },
+    {
+      "endpoint": "https://avalo-c8c46.web.app/",
+      "ttfb": 135,
+      "totalTime": 136,
+      "statusCode": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "52",
+        "cache-control": "max-age=3600",
+        "content-type": "text/html; charset=utf-8",
+        "etag": "\"a6fa24dfbfcd844f9897c57e0f26a49475b1e7e3a2527dd8200878c9f1109f62\"",
+        "last-modified": "Thu, 09 Oct 2025 17:37:12 GMT",
+        "strict-transport-security": "max-age=31556926; includeSubDomains; preload",
+        "accept-ranges": "bytes",
+        "date": "Thu, 06 Nov 2025 14:20:09 GMT",
+        "x-served-by": "cache-cph2320056-CPH",
+        "x-cache": "MISS",
+        "x-cache-hits": "0",
+        "x-timer": "S1762438809.136150,VS0,VE96",
+        "vary": "x-fh-requested-host, accept-encoding",
+        "alt-svc": "h3=\":443\";ma=86400,h3-29=\":443\";ma=86400,h3-27=\":443\";ma=86400"
+      }
+    },
+    {
+      "endpoint": "https://avalo-c8c46.firebaseapp.com/",
+      "ttfb": 128,
+      "totalTime": 128,
+      "statusCode": 200,
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "52",
+        "cache-control": "max-age=3600",
+        "content-type": "text/html; charset=utf-8",
+        "etag": "\"a6fa24dfbfcd844f9897c57e0f26a49475b1e7e3a2527dd8200878c9f1109f62\"",
+        "last-modified": "Thu, 09 Oct 2025 17:37:12 GMT",
+        "strict-transport-security": "max-age=31556926; includeSubDomains; preload",
+        "accept-ranges": "bytes",
+        "date": "Thu, 06 Nov 2025 14:20:09 GMT",
+        "x-served-by": "cache-cph2320029-CPH",
+        "x-cache": "MISS",
+        "x-cache-hits": "0",
+        "x-timer": "S1762438809.270597,VS0,VE84",
+        "vary": "x-fh-requested-host, accept-encoding",
+        "alt-svc": "h3=\":443\";ma=86400,h3-29=\":443\";ma=86400,h3-27=\":443\";ma=86400"
+      }
+    }
+  ],
+  "cdn": [
+    {
+      "endpoint": "https://europe-west3-avalo-c8c46.cloudfunctions.net/ping",
+      "cdnHit": false,
+      "cdnProvider": null,
+      "cacheControl": "null",
+      "age": null,
+      "xCache": "null"
+    },
+    {
+      "endpoint": "https://europe-west3-avalo-c8c46.cloudfunctions.net/getSystemInfo",
+      "cdnHit": false,
+      "cdnProvider": null,
+      "cacheControl": "null",
+      "age": null,
+      "xCache": "null"
+    },
+    {
+      "endpoint": "https://avalo-c8c46.web.app/",
+      "cdnHit": true,
+      "cdnProvider": null,
+      "cacheControl": "max-age=3600",
+      "age": null,
+      "xCache": "HIT"
+    },
+    {
+      "endpoint": "https://avalo-c8c46.firebaseapp.com/",
+      "cdnHit": true,
+      "cdnProvider": null,
+      "cacheControl": "max-age=3600",
+      "age": null,
+      "xCache": "HIT"
+    }
+  ],
+  "functions": [
+    {
+      "name": "analyzeContentV1",
+      "currentMemory": "256MB (default)",
+      "recommendedMemory": "512MB",
+      "reason": "AI processing requires more memory for ML models and inference"
+    },
+    {
+      "name": "sendAIMessageCallable",
+      "currentMemory": "256MB (default)",
+      "recommendedMemory": "512MB",
+      "reason": "AI processing requires more memory for ML models and inference"
+    },
+    {
+      "name": "startAIChatCallable",
+      "currentMemory": "256MB (default)",
+      "recommendedMemory": "512MB",
+      "reason": "AI processing requires more memory for ML models and inference"
+    },
+    {
+      "name": "listAICompanionsCallable",
+      "currentMemory": "256MB (default)",
+      "recommendedMemory": "512MB",
+      "reason": "AI processing requires more memory for ML models and inference"
+    },
+    {
+      "name": "analyzeUserRiskGraphV1",
+      "currentMemory": "256MB (default)",
+      "recommendedMemory": "512MB",
+      "reason": "AI processing requires more memory for ML models and inference"
+    },
+    {
+      "name": "getUserRiskAssessmentV1",
+      "currentMemory": "256MB (default)",
+      "recommendedMemory": "512MB",
+      "reason": "AI processing requires more memory for ML models and inference"
+    },
+    {
+      "name": "getGlobalFeedV1",
+      "currentMemory": "512MB (configured)",
+      "recommendedMemory": "256MB",
+      "reason": "Current allocation is appropriate for feed queries with pagination"
+    },
+    {
+      "name": "createPostV1",
+      "currentMemory": "256MB (default)",
+      "recommendedMemory": "256MB",
+      "reason": "Current allocation is sufficient for post creation"
+    },
+    {
+      "name": "generatePredictionsV1",
+      "currentMemory": "2GB (configured)",
+      "recommendedMemory": "2GB",
+      "reason": "Heavy ML prediction workload requires high memory"
+    },
+    {
+      "name": "exportMetricsV1",
+      "currentMemory": "1GB (configured)",
+      "recommendedMemory": "1GB",
+      "reason": "Large data export operations need substantial memory"
+    },
+    {
+      "name": "purchaseTokensV2",
+      "currentMemory": "256MB (default)",
+      "recommendedMemory": "256MB",
+      "reason": "Standard API processing is sufficient"
+    },
+    {
+      "name": "stripeWebhook",
+      "currentMemory": "256MB (default)",
+      "recommendedMemory": "256MB",
+      "reason": "Webhook processing is lightweight"
+    }
+  ],
+  "bundles": [],
+  "recommendations": [
+    "⚠️  2 endpoint(s) missing compression (gzip/brotli)",
+    "🧠 12 function(s) need memory allocation adjustments",
+    "✅ Enable Cloudflare CDN for all static assets",
+    "✅ Implement lazy loading for heavy function imports",
+    "✅ Use tree-shaking to eliminate unused dependencies",
+    "✅ Consider Cloud CDN for Firebase Functions"
+  ]
+}

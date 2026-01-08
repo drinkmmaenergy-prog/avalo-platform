@@ -1,0 +1,85 @@
+// PACK 85 — Trust & Risk Engine Firestore Security Rules
+// 
+// Collections:
+// - user_trust_profile: User risk scores and enforcement levels
+// - user_trust_events: Trust events that affect risk scores
+// - user_trust_audit: Audit trail of risk changes
+//
+// Security principles:
+// - Users can read their own sanitized trust profile
+// - Only Cloud Functions can write trust data
+// - Admins can read all trust data for moderation
+// - Trust events are not directly readable by users (sensitive)
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is accessing their own data
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if user is admin (TODO: implement proper admin role check)
+    function isAdmin() {
+      return isAuthenticated() && 
+             request.auth.token.admin == true;
+    }
+    
+    // Check if request is from Cloud Functions
+    function isServerRequest() {
+      // Cloud Functions use admin SDK, so no auth context
+      // This means writes can only happen from Cloud Functions
+      return request.auth == null;
+    }
+    
+    // ========================================================================
+    // TRUST PROFILE COLLECTION
+    // ========================================================================
+    
+    match /user_trust_profile/{userId} {
+      // Users can read their own trust profile (sanitized view)
+      // Admins can read any trust profile
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Only Cloud Functions can write trust profiles
+      // Users cannot modify their own risk scores
+      allow write: if false; // All writes must go through Cloud Functions
+    }
+    
+    // ========================================================================
+    // TRUST EVENTS COLLECTION
+    // ========================================================================
+    
+    match /user_trust_events/{eventId} {
+      // Trust events are sensitive - not directly readable by users
+      // Only admins can read for investigation
+      allow read: if isAdmin();
+      
+      // Only Cloud Functions can create trust events
+      allow write: if false; // All writes must go through Cloud Functions
+    }
+    
+    // ========================================================================
+    // TRUST AUDIT COLLECTION
+    // ========================================================================
+    
+    match /user_trust_audit/{auditId} {
+      // Audit logs are admin-only for compliance and investigation
+      allow read: if isAdmin();
+      
+      // Only Cloud Functions can create audit entries
+      allow write: if false; // All writes must go through Cloud Functions
+    }
+  }
+}

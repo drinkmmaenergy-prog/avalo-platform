@@ -1,0 +1,220 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator'];
+    }
+    
+    function isVerified() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verified == true;
+    }
+    
+    function isAdult() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.age >= 18;
+    }
+    
+    function hasValidIdentity() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/kyc_verifications/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/kyc_verifications/$(request.auth.uid)).data.status == 'verified';
+    }
+    
+    // PACK 164: Accelerator Tracks
+    // Professional skill-focused tracks (no seduction/NSFW allowed)
+    match /accelerator_tracks/{trackId} {
+      // Public read for browsing available tracks
+      allow read: if true;
+      
+      // Only admins can create/update tracks
+      allow create, update: if isAdmin() &&
+        // Forbidden track validation
+        !('track_name' in request.resource.data && 
+          (request.resource.data.track_name.lower() in ['seduction', 'flirting', 'dating', 'intimacy', 'erotic'])) &&
+        // Must have professional focus
+        'focus' in request.resource.data &&
+        'description' in request.resource.data &&
+        'curriculum' in request.resource.data &&
+        // No beauty/appearance criteria
+        !('selection_criteria' in request.resource.data && 
+          request.resource.data.selection_criteria.hasAny(['attractiveness', 'looks', 'beauty', 'sexual_appeal', 'body_type']));
+      
+      allow delete: if isAdmin();
+    }
+    
+    // PACK 164: Accelerator Applications
+    match /accelerator_applications/{applicationId} {
+      // Users can read their own applications
+      allow read: if isUser(resource.data.user_id) || isModerator();
+      
+      // Users can create applications (must be 18+, verified, with business plan)
+      allow create: if isAuthenticated() &&
+        isUser(request.resource.data.user_id) &&
+        isAdult() &&
+        hasValidIdentity() &&
+        // Required fields
+        'user_id' in request.resource.data &&
+        'track_ids' in request.resource.data &&
+        'business_plan' in request.resource.data &&
+        'goals' in request.resource.data &&
+        'sample_content_urls' in request.resource.data &&
+        // Business plan must have required sections
+        'financial_goals' in request.resource.data.goals &&
+        'educational_goals' in request.resource.data.goals &&
+        // Sample content must be marked as SFW
+        request.resource.data.sample_content_sfw == true &&
+        // No superficial data allowed
+        !('appearance_rating' in request.resource.data) &&
+        !('attractiveness_score' in request.resource.data) &&
+        !('flirt_engagement' in request.resource.data) &&
+        !('seduction_metrics' in request.resource.data) &&
+        // Initial status
+        request.resource.data.status == 'pending';
+      
+      // Users can update their own draft applications
+      allow update: if isUser(resource.data.user_id) &&
+        resource.data.status == 'draft' &&
+        // Cannot change user_id or submitted status without being admin
+        request.resource.data.user_id == resource.data.user_id &&
+        // No superficial data
+        !('appearance_rating' in request.resource.data) &&
+        !('attractiveness_score' in request.resource.data);
+      
+      // Moderators can review and update application status
+      allow update: if isModerator() &&
+        // Can update review fields
+        (request.resource.data.keys().hasAny(['status', 'review_notes', 'reviewer_id', 'reviewed_at', 'rejection_reason'])) &&
+        // Selection must use non-superficial criteria only
+        (!('rejection_reason' in request.resource.data) || 
+         !request.resource.data.rejection_reason.lower().matches('.*(?:unattractive|ugly|not pretty|body type|appearance|looks).*'));
+      
+      allow delete: if isAdmin();
+    }
+    
+    // PACK 164: Accelerator Milestones
+    match /accelerator_milestones/{milestoneId} {
+      // Users can read their own milestones
+      allow read: if isUser(resource.data.user_id) || isModerator();
+      
+      // System creates milestones (via cloud function)
+      allow create: if false; // Only via server-side
+      
+      // Users can update their milestone progress
+      allow update: if isUser(resource.data.user_id) &&
+        // Can only update completion fields
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['progress_percentage', 'completed', 'completed_at', 'submission_url', 'notes']) &&
+        // No gaming the system with fake completion
+        (!request.resource.data.completed || 
+         ('submission_url' in request.resource.data && request.resource.data.submission_url != '')) &&
+        // Progress is objective (0-100)
+        request.resource.data.progress_percentage >= 0 &&
+        request.resource.data.progress_percentage <= 100;
+      
+      // Moderators can verify completion
+      allow update: if isModerator() &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['verified', 'verified_by', 'verified_at', 'verification_notes']);
+      
+      allow delete: if isAdmin();
+    }
+    
+    // PACK 164: Accelerator Grants
+    match /accelerator_grants/{grantId} {
+      // Users can read their own grants
+      allow read: if isUser(resource.data.user_id) || isModerator();
+      
+      // Only admins can create grants
+      allow create: if isAdmin() &&
+        'user_id' in request.resource.data &&
+        'grant_type' in request.resource.data &&
+        'amount' in request.resource.data &&
+        'purpose' in request.resource.data &&
+        // Grants must be for production costs, not emotional labor
+        request.resource.data.grant_type in ['equipment', 'production', 'studio', 'marketing', 'software'] &&
+        // Cannot require emotional/romantic content
+        !('requires_content_type' in request.resource.data && 
+          request.resource.data.requires_content_type in ['romantic', 'flirty', 'intimate', 'sexual', 'emotional_attention']) &&
+        // Cannot require audience access
+        !('requires_dm_access' in request.resource.data && request.resource.data.requires_dm_access == true) &&
+        !('requires_audience_access' in request.resource.data && request.resource.data.requires_audience_access == true);
+      
+      // Admins can update grant status
+      allow update: if isAdmin();
+      
+      allow delete: if isAdmin();
+    }
+    
+    // PACK 164: Accelerator Certificates
+    match /accelerator_certificates/{certificateId} {
+      // Users can read their own certificates
+      allow read: if isUser(resource.data.user_id) || isModerator();
+      
+      // Only system/admin can issue certificates
+      allow create: if isAdmin() &&
+        'user_id' in request.resource.data &&
+        'track_id' in request.resource.data &&
+        'issued_at' in request.resource.data &&
+        'curriculum_completed' in request.resource.data &&
+        // Certificate is for Creator Dashboard only (not public display)
+        request.resource.data.visibility == 'dashboard_only' &&
+        // No algorithm boost granted
+        !('discovery_boost' in request.resource.data) &&
+        !('feed_priority' in request.resource.data) &&
+        !('trending_priority' in request.resource.data);
+      
+      allow update: if false; // Certificates are immutable
+      allow delete: if isAdmin();
+    }
+    
+    // PACK 164: Accelerator Workshop Sessions
+    match /accelerator_workshops/{workshopId} {
+      allow read: if true; // Public calendar
+      
+      allow create, update: if isAdmin() &&
+        'title' in request.resource.data &&
+        'scheduled_at' in request.resource.data &&
+        'facilitator_id' in request.resource.data &&
+        'max_participants' in request.resource.data &&
+        // No appearance/dating workshops allowed
+        !request.resource.data.title.lower().matches('.*(?:seduction|flirting|dating|attraction|beauty|makeup).*');
+      
+      allow delete: if isAdmin();
+      
+      // Workshop Participants
+      match /participants/{participantId} {
+        allow read: if true;
+        allow create: if isAuthenticated() &&
+          isUser(request.resource.data.user_id) &&
+          // Must be accepted to accelerator
+          exists(/databases/$(database)/documents/accelerator_applications/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/accelerator_applications/$(request.auth.uid)).data.status == 'accepted';
+        
+        allow delete: if isUser(resource.data.user_id) || isAdmin();
+      }
+    }
+    
+    // PACK 164: Accelerator Analytics (read-only for users)
+    match /accelerator_analytics/{analyticsId} {
+      allow read: if isUser(resource.data.user_id) || isModerator();
+      allow write: if false; // Only via server-side functions
+    }
+  }
+}

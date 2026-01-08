@@ -1,0 +1,202 @@
+rules_version = '2';
+
+// PACK 349 - Ad Engine Security Rules
+// Firestore security for ads, campaigns, and sponsorships
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator'];
+    }
+
+    // Ads collection
+    match /ads/{adId} {
+      // Anyone can read approved, active ads
+      allow read: if resource.data.status == 'active' && 
+                     resource.data.moderationStatus == 'approved';
+      
+      // Advertiser can read their own ads
+      allow read: if isAuthenticated() && resource.data.advertiserId == request.auth.uid;
+      
+      // Moderators can read all ads
+      allow read: if isModerator();
+      
+      // Advertiser can create ads
+      allow create: if isAuthenticated() &&
+                       request.resource.data.advertiserId == request.auth.uid &&
+                       request.resource.data.ageGate >= 18 &&
+                       request.resource.data.moderationStatus == 'pending';
+      
+      // Advertiser can update their own ads (if not active)
+      allow update: if isAuthenticated() &&
+                       resource.data.advertiserId == request.auth.uid &&
+                       resource.data.status != 'active';
+      
+      // Advertiser can delete their own ads (if not active)
+      allow delete: if isAuthenticated() &&
+                       resource.data.advertiserId == request.auth.uid &&
+                       resource.data.status != 'active';
+      
+      // Moderators can update moderation status
+      allow update: if isModerator() &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['moderationStatus', 'moderationNotes', 'rejectionReason', 'status', 'updatedAt']);
+    }
+
+    // Brand Campaigns
+    match /brandCampaigns/{campaignId} {
+      // Advertiser can read their own campaigns
+      allow read: if isAuthenticated() && resource.data.advertiserId == request.auth.uid;
+      
+      // Moderators can read all campaigns
+      allow read: if isModerator();
+      
+      // Advertiser can create campaigns
+      allow create: if isAuthenticated() &&
+                       request.resource.data.advertiserId == request.auth.uid;
+      
+      // Advertiser can update their own campaigns
+      allow update: if isAuthenticated() &&
+                       resource.data.advertiserId == request.auth.uid;
+      
+      // Advertiser can delete their own campaigns (if not active)
+      allow delete: if isAuthenticated() &&
+                       resource.data.advertiserId == request.auth.uid &&
+                       resource.data.status != 'active';
+    }
+
+    // Ad Statistics (read-only for advertisers, moderators)
+    match /adStats/{statId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only backend can write
+    }
+
+    // Ad Placements (system only)
+    match /adPlacements/{placementId} {
+      // Users can read their own placements
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow write: if false; // Only backend can write
+    }
+
+    // Ad Reports (users can create, moderators can manage)
+    match /adReports/{reportId} {
+      // Reporter can read their own reports
+      allow read: if isAuthenticated() && resource.data.reporterId == request.auth.uid;
+      
+      // Moderators can read all reports
+      allow read: if isModerator();
+      
+      // Any user can report an ad
+      allow create: if isAuthenticated() &&
+                       request.resource.data.reporterId == request.auth.uid;
+      
+      // Moderators can update reports
+      allow update: if isModerator();
+    }
+
+    // Ad Violations (moderators only)
+    match /adViolations/{violationId} {
+      allow read: if isModerator();
+      allow write: if isModerator();
+    }
+
+    // Advertiser Accounts
+    match /advertisers/{advertiserId} {
+      // Advertiser can read their own account
+      allow read: if isAuthenticated() && request.auth.uid == advertiserId;
+      
+      // Admins can read all accounts
+      allow read: if isAdmin();
+      
+      // User can create their own advertiser account
+      allow create: if isAuthenticated() &&
+                       request.auth.uid == advertiserId &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Advertiser can update their own account (limited fields)
+      allow update: if isAuthenticated() &&
+                       request.auth.uid == advertiserId &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['businessName', 'contactEmail', 'updatedAt']);
+      
+      // Admins can update any account
+      allow update: if isAdmin();
+    }
+
+    // Sponsored Creators
+    match /sponsoredCreators/{userId} {
+      // Creator can read their own sponsorship
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Anyone can read active sponsorships (for badge display)
+      allow read: if resource.data.isActive == true;
+      
+      // Admins and brands can read
+      allow read: if isAdmin();
+      
+      // Creator can create their own sponsorship (opt-in)
+      allow create: if isAuthenticated() &&
+                       request.auth.uid == userId;
+      
+      // Creator can end their sponsorship
+      allow update: if isAuthenticated() &&
+                       request.auth.uid == userId &&
+                       request.resource.data.isActive == false;
+      
+      // Brands and admins can manage sponsorships
+      allow update: if isAdmin();
+    }
+
+    // Sponsorship Earnings (read-only for creators)
+    match /sponsorshipEarnings/{earningId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow write: if false; // Only backend can write
+    }
+
+    // Sponsorship Payouts (read-only for creators)
+    match /sponsorshipPayouts/{payoutId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow write: if false; // Only backend can write
+    }
+
+    // Ad Transactions (advertiser can read their own)
+    match /adTransactions/{transactionId} {
+      allow read: if isAuthenticated() && resource.data.advertiserId == request.auth.uid;
+      allow write: if false; // Only backend can write
+    }
+
+    // Ad Conversions (system only)
+    match /adConversions/{conversionId} {
+      allow read: if isModerator();
+      allow write: if false; // Only backend can write
+    }
+
+    // Ad Moderation Queue (moderators only)
+    match /adModerationQueue/{queueId} {
+      allow read: if isModerator();
+      allow write: if isModerator();
+    }
+
+    // Ad Refunds (read-only for advertisers)
+    match /adRefunds/{refundId} {
+      allow read: if isAuthenticated() && resource.data.advertiserId == request.auth.uid;
+      allow write: if false; // Only backend can write
+    }
+  }
+}

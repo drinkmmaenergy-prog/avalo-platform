@@ -1,0 +1,142 @@
+rules_version = '2';
+
+/**
+ * PACK 447 — Global Data Residency & Sovereignty Control
+ * Firestore Security Rules
+ * 
+ * Enforces data sovereignty, residency, and cross-border transfer controls
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isComplianceOfficer() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'compliance_officer'];
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Data Residency Policies
+    // Only compliance officers can modify policies
+    match /dataResidencyPolicies/{policyId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isComplianceOfficer();
+      allow delete: if false; // Never delete, only deactivate
+    }
+    
+    // Data Residency Decisions
+    // Users can read their own decisions
+    match /dataResidencyDecisions/{decisionId} {
+      allow read: if isAuthenticated() && 
+                     (isComplianceOfficer() || 
+                      resource.data.userId == request.auth.uid);
+      allow write: if false; // System-only
+    }
+    
+    // Storage Backends
+    // Read-only for authenticated users
+    match /storageBackends/{backendId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Cross-Border Transfer Policies
+    match /crossBorderTransferPolicies/{policyId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isComplianceOfficer();
+      allow delete: if false; // Never delete
+    }
+    
+    // Cross-Border Transfer Requests
+    match /crossBorderTransferRequests/{requestId} {
+      allow read: if isAuthenticated() && 
+                     (isComplianceOfficer() || 
+                      resource.data.userId == request.auth.uid ||
+                      resource.data.requestedBy == request.auth.uid);
+      
+      allow create: if isAuthenticated() && 
+                       request.resource.data.requestedBy == request.auth.uid &&
+                       request.resource.data.status == 'PENDING';
+      
+      allow update: if isComplianceOfficer() && 
+                       resource.data.status == 'PENDING' &&
+                       request.resource.data.status in ['APPROVED', 'DENIED'];
+      
+      allow delete: if false;
+    }
+    
+    // Regional Isolations
+    // Only compliance officers can manage
+    match /regionalIsolations/{isolationId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isComplianceOfficer();
+      allow delete: if false; // Never delete, only deactivate
+    }
+    
+    // Isolation Events
+    // Read-only audit log
+    match /isolationEvents/{eventId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // System-only
+    }
+    
+    // Sovereignty Audit Log
+    // Compliance officers and auditors only
+    match /sovereigntyAuditLog/{eventId} {
+      allow read: if isComplianceOfficer();
+      allow write: if false; // System-only
+    }
+    
+    // Compliance Alerts
+    match /complianceAlerts/{alertId} {
+      allow read: if isComplianceOfficer();
+      allow update: if isComplianceOfficer() && 
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'assignedTo', 'resolvedAt', 'resolution']);
+      allow create, delete: if false; // System-only
+    }
+    
+    // Operational Alerts
+    match /operationalAlerts/{alertId} {
+      allow read: if isAdmin();
+      allow update: if isAdmin() && 
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'acknowledgedBy', 'acknowledgedAt']);
+      allow create, delete: if false; // System-only
+    }
+    
+    // User Consent Records (for cross-border transfers)
+    match /userConsents/{consentId} {
+      allow read: if isAuthenticated() && 
+                     (isComplianceOfficer() || 
+                      resource.data.userId == request.auth.uid);
+      
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.consentType in ['CROSS_BORDER_TRANSFER', 'DATA_PROCESSING'];
+      
+      allow update: if isOwner(resource.data.userId) && 
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['revoked', 'revokedAt']);
+      
+      allow delete: if false;
+    }
+    
+    // Regulatory Reports
+    // Compliance officers only
+    match /regulatoryReports/{reportId} {
+      allow read: if isComplianceOfficer();
+      allow write: if false; // System-only
+    }
+  }
+}

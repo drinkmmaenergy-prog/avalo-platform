@@ -1,0 +1,107 @@
+/**
+ * PACK 170 — Avalo Universal Search 3.0
+ * Firestore Security Rules for Search Collections
+ * 
+ * Collections:
+ * - search_index: Searchable content index
+ * - search_logs: Search query logs
+ * - search_history: User search history
+ * - search_categories: Category metadata
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isCreator() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/creators/$(request.auth.uid));
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Search Index Collection
+    // Only creators can write their own content, everyone can read safe content
+    match /search_index/{itemId} {
+      // Read: Anyone authenticated can read non-banned, non-explicit content
+      allow read: if isAuthenticated() && 
+                     resource.data.isBanned == false &&
+                     resource.data.isExplicit == false &&
+                     resource.data.safetyScore >= 60;
+      
+      // Create: Only creators can create index entries for their own content
+      allow create: if isCreator() &&
+                       request.resource.data.creatorId == request.auth.uid &&
+                       request.resource.data.isBanned == false &&
+                       request.resource.data.isExplicit == false &&
+                       request.resource.data.safetyScore >= 60 &&
+                       // Forbidden fields must not exist
+                       !('attractivenessScore' in request.resource.data) &&
+                       !('giftingAmount' in request.resource.data) &&
+                       !('romanticScore' in request.resource.data) &&
+                       !('bodyMetrics' in request.resource.data);
+      
+      // Update: Creators can update their own entries, admins can update any
+      allow update: if (isCreator() && resource.data.creatorId == request.auth.uid) ||
+                       isAdmin();
+      
+      // Delete: Creators can delete their own entries, admins can delete any
+      allow delete: if (isCreator() && resource.data.creatorId == request.auth.uid) ||
+                       isAdmin();
+    }
+    
+    // Search Logs Collection
+    // Backend-only writes, admins can read for analytics
+    match /search_logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Search History Collection
+    // Users can only access their own search history
+    match /search_history/{entryId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.filters.safeSearchEnabled == true;
+      
+      allow delete: if isAuthenticated() &&
+                       resource.data.userId == request.auth.uid;
+      
+      allow update: if false; // History entries are immutable
+    }
+    
+    // Search Categories Collection
+    // Read-only metadata for everyone, admins can write
+    match /search_categories/{categoryId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Banned Search Terms Collection (admin only)
+    match /banned_search_terms/{termId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // Search Analytics Collection (admin only)
+    match /search_analytics/{analyticId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions can write
+    }
+  }
+}

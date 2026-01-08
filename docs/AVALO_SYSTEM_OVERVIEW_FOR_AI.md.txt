@@ -1,0 +1,194 @@
+VALO_SYSTEM_OVERVIEW_FOR_AI.md
+
+Purpose: Technical map for Claude. Defines repo structure, cross-module data flow, and integration logic between mobile app, web, Firebase, and external services.
+
+1) Repository architecture
+avaloapp/
+├── app/                    # Expo React Native mobile client
+│   ├── app/(tabs)/         # Discovery, Chat, Feed, Calendar, Wallet
+│   ├── components/         # Shared UI
+│   ├── lib/                # Firebase, Auth, API helpers
+│   ├── store/              # Zustand stores
+│   └── assets/             # images, icons
+│
+├── web/                    # Next.js 14 App Router web + admin
+│   ├── app/(public)/       # Landing, Legal (/terms, /privacy)
+│   ├── app/(user)/         # Wallet, Checkout, Subscriptions
+│   ├── app/(admin)/        # Analytics, Users, Finance, AI control
+│   ├── components/         # Shared cards, tables, modals
+│   └── i18n/               # next-i18next config + locale JSON
+│
+├── functions/              # Firebase Cloud Functions
+│   ├── src/payments.ts     # Stripe webhooks + crypto gateway
+│   ├── src/auth.ts         # JWT, verification logic
+│   ├── src/chat.ts         # Chat metering, refunds
+│   ├── src/calendar.ts     # Booking + escrow
+│   ├── src/ai.ts           # AI companions endpoints
+│   ├── src/moderation.ts   # keyword filter, flags
+│   ├── src/utils.ts        # helpers
+│   └── src/index.ts        # export + region setup
+│
+├── packages/
+│   ├── types/              # TS interfaces shared
+│   ├── i18n/               # common translations
+│   └── utils/              # token math, date, validation
+│
+├── firestore.rules         # access control
+├── firestore.indexes.json  # composite indexes
+├── firebase.json           # hosting + emulators
+└── package.json
+
+2) Core dependencies
+Layer	Key libraries
+Mobile	expo-router, firebase, stripe-react-native, react-native-iap, zustand, react-query
+Web	next@14, firebase, stripe-js, next-i18next, recharts, shadcn-ui, tailwindcss
+Backend	firebase-functions, stripe, openai, anthropic, axios, zod
+Shared	typescript, eslint, prettier, dotenv, dayjs
+3) Firebase project modules
+
+Auth: Email/Password, Google, Phone (OTP), Apple, Facebook.
+
+Firestore:
+
+users, chats, transactions, calendarBookings, aiBots, subscriptions.
+
+Functions: Payments, Refunds, ChatMetering, AI endpoints, Moderation.
+
+Storage: Profile photos, Feed posts, AI generated images.
+
+Hosting: Web + Admin (Next.js build).
+
+4) Data flow overview
+User → Mobile (Expo)
+     → Auth (Firebase)
+     → Firestore
+     → Functions (payments, chat)
+     → Stripe/PSP → Web Wallet
+
+
+Wallet acts as central layer; all token balance updates flow through transactions collection and Functions.
+
+Admin dashboard reads aggregated stats via Firestore + Functions (cached).
+
+5) Integration logic
+
+Mobile never directly contacts Stripe. All payments go via web checkout.
+
+Functions verify signature of webhooks and issue wallet credit.
+
+Calls / Video handled through external provider (to add later); token drain per minute handled client-side + confirmed server-side.
+
+AI images stored in Firebase Storage with moderation metadata.
+
+6) Cloudflare & Hosting routing
+
+Domain: avaloapp.com
+
+A record → Firebase Hosting IP
+
+CNAME www → avaloapp.web.app
+
+TXT → Firebase verification token
+
+Proxy orange cloud enabled (HTTPS)
+
+Rules:
+
+Cache static assets
+
+Don’t cache /api/* or /functions/*
+
+Redirect http→https
+
+SSL automatic from Cloudflare edge.
+
+7) CI/CD summary
+
+GitHub Actions: deploy Functions + Hosting on push to main.
+
+name: Deploy Avalo
+on: [push]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm install
+      - run: npm run build
+      - run: firebase deploy --token ${{ secrets.FIREBASE_TOKEN }}
+
+
+Secrets: FIREBASE_TOKEN, STRIPE_SECRET_KEY, CLOUDFLARE_API_KEY.
+
+8) External APIs
+Purpose	Service	Integration
+Payment	Stripe	Web checkout + Connect payouts
+Crypto	CoinGate / Coinbase Commerce	via functions/payments.ts
+AI Chat / Image	Anthropic + OpenAI	via functions/ai.ts
+Email	SendGrid	transactional mails
+Geolocation	Google Maps API	for Calendar verify
+Analytics	Firebase Analytics + Recharts	dashboard
+Moderation	Claude filters + keyword lists	inline + post
+9) Folder-level coding rules
+
+Every new file must have full TypeScript typing.
+
+Shared interfaces go into /packages/types.
+
+Constants (fees, word ratios, roles) in /packages/utils/constants.ts.
+
+Never hardcode SKUs; read from Firestore or .env.
+
+10) Admin dashboard modules
+
+Finance: token sales, payouts, refunds.
+
+Users: verification, reports, bans.
+
+Chats: volume, top earners.
+
+AI: companion usage analytics.
+
+Moderation: flagged content review.
+
+Legal: DMCA, GDPR requests.
+
+11) Security & roles
+Role	Permissions
+user	own data, chats, purchases
+creator	Earn toggle ON, stats view
+admin	moderation, finance, AI
+finance	payouts, refunds
+legal	privacy & DMCA
+12) i18n distribution
+/packages/i18n/
+ ├── en/common.json
+ ├── pl/common.json
+ ├── es/common.json
+ ├── de/common.json
+ ├── fr/common.json
+ └── ... 55+ others
+
+
+All UI loads strings from this shared folder.
+fallbackLng: 'en'.
+
+13) Development workflow summary
+
+Setup Firebase project.
+
+Link domain via Cloudflare.
+
+Run firebase emulators:start.
+
+Build mobile with eas build.
+
+Deploy web with firebase deploy.
+
+Verify Stripe + crypto webhooks.
+
+Test Age/ID verification.
+
+Enable ads in Free Chat Pool.
+
+Launch Admin analytics.

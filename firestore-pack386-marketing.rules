@@ -1,0 +1,208 @@
+// PACK 386 - Global Marketing Automation Firestore Rules
+//
+// Protects:
+// - marketingCampaigns
+// - influencerProfiles
+// - influencerCampaigns
+// - influencerAttribution
+// - acquisitionAttribution
+// - reviewPrompts
+// - marketingFraudSignals
+// - marketingBudgets
+// - marketingBudgetRules
+// - attributionBlocklist
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ========================================================================
+    // MARKETING CAMPAIGNS (Admin only)
+    // ========================================================================
+    
+    match /marketingCampaigns/{campaignId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false; // Never delete, only archive
+    }
+    
+    // ========================================================================
+    // INFLUENCER PROFILES (Admin only, except own profile read)
+    // ========================================================================
+    
+    match /influencerProfiles/{influencerId} {
+      allow read: if isAdmin() || 
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // INFLUENCER CAMPAIGNS (Admin only, except assigned influencer read)
+    // ========================================================================
+    
+    match /influencerCampaigns/{campaignId} {
+      allow read: if isAdmin() || 
+                     (isAuthenticated() && 
+                      exists(/databases/$(database)/documents/influencerProfiles/$(resource.data.influencerId)) &&
+                      get(/databases/$(database)/documents/influencerProfiles/$(resource.data.influencerId)).data.userId == request.auth.uid);
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // INFLUENCER ATTRIBUTION (Write via Cloud Functions only)
+    // ========================================================================
+    
+    match /influencerAttribution/{attributionId} {
+      allow read: if isAdmin() ||
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if false; // Cloud Functions only
+      allow update: if false; // Cloud Functions only
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // ACQUISITION ATTRIBUTION (Users can read their own, write via Functions)
+    // ========================================================================
+    
+    match /acquisitionAttribution/{attributionId} {
+      allow read: if isAdmin() ||
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if false; // Cloud Functions only
+      allow update: if false; // Cloud Functions only
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // REVIEW PROMPTS (Users can read/update their own)
+    // ========================================================================
+    
+    match /reviewPrompts/{promptId} {
+      allow read: if isAdmin() ||
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if false; // Cloud Functions only
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['shown', 'shownAt', 'completed', 'completedAt']));
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // MARKETING FRAUD SIGNALS (Admin only)
+    // ========================================================================
+    
+    match /marketingFraudSignals/{signalId} {
+      allow read: if isAdmin();
+      allow create: if false; // Cloud Functions only
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // MARKETING BUDGETS (Admin only)
+    // ========================================================================
+    
+    match /marketingBudgets/{budgetId} {
+      allow read: if isAdmin();
+      allow create: if false; // Cloud Functions only
+      allow update: if false; // Cloud Functions only
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // MARKETING BUDGET RULES (Admin only)
+    // ========================================================================
+    
+    match /marketingBudgetRules/{ruleId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // ATTRIBUTION BLOCKLIST (Admin only)
+    // ========================================================================
+    
+    match /attributionBlocklist/{blockId} {
+      allow read: if isAdmin();
+      allow create: if false; // Cloud Functions only
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // MARKETING BUDGET ARCHIVE (Admin read only)
+    // ========================================================================
+    
+    match /marketingBudgetArchive/{archiveId} {
+      allow read: if isAdmin();
+      allow write: if false; // Cloud Functions only
+    }
+    
+    // ========================================================================
+    // CHURN EVENTS (Admin only)
+    // ========================================================================
+    
+    match /churnEvents/{eventId} {
+      allow read: if isAdmin();
+      allow create: if false; // Cloud Functions only
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // STORE REVIEW EVENTS (Admin only)
+    // ========================================================================
+    
+    match /storeReviewEvents/{eventId} {
+      allow read: if isAdmin();
+      allow create: if false; // Cloud Functions only
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // FRAUD ALERTS (Admin only)
+    // ========================================================================
+    
+    match /fraudAlerts/{alertId} {
+      allow read: if isAdmin();
+      allow create: if false; // Cloud Functions only
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // ADMIN ALERTS (Admin only)
+    // ========================================================================
+    
+    match /adminAlerts/{alertId} {
+      allow read: if isAdmin();
+      allow create: if false; // Cloud Functions only
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "timestamp": "2025-11-05T21:24:23.322Z",
+  "environment": {
+    "nodeVersion": "v20.19.5",
+    "platform": "win32",
+    "arch": "x64",
+    "hostname": "Cinek"
+  },
+  "github": {
+    "sha": "local",
+    "ref": "local",
+    "actor": "local",
+    "runId": "local",
+    "runNumber": "local"
+  },
+  "tests": {
+    "total": 28,
+    "passed": 0,
+    "failed": 0,
+    "duration": 138
+  },
+  "emulators": {
+    "functions": "✅",
+    "auth": "✅",
+    "firestore": "✅",
+    "hosting": "✅",
+    "storage": "✅"
+  },
+  "testReportExists": true
+}

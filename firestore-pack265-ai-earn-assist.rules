@@ -1,0 +1,127 @@
+// PACK 265: AI EARN ASSIST ENGINE
+// Firestore Security Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isCreator() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.earnOnChat == true;
+    }
+
+    // ========================================================================
+    // AI EARN ASSIST - Main Collection
+    // ========================================================================
+    
+    match /aiEarnAssist/{creatorId} {
+      // Creator can read their own AI Earn Assist data
+      allow read: if isOwner(creatorId);
+      
+      // Settings subcollection
+      match /settings/{document=**} {
+        allow read: if isOwner(creatorId);
+        allow write: if isOwner(creatorId) && isCreator();
+      }
+      
+      // Suggestions subcollection
+      match /suggestions/{suggestionId} {
+        allow read: if isOwner(creatorId);
+        // Only backend can write suggestions
+        allow write: if false;
+      }
+      
+      // Conversion targets subcollection
+      match /conversionTargets/{supporterId} {
+        allow read: if isOwner(creatorId);
+        // Only backend can write
+        allow write: if false;
+      }
+      
+      // DM priorities subcollection
+      match /dmPriorities/{chatId} {
+        allow read: if isOwner(creatorId);
+        // Only backend can write
+        allow write: if false;
+      }
+      
+      // Metrics subcollection
+      match /metrics/{period} {
+        allow read: if isOwner(creatorId);
+        // Only backend can write
+        allow write: if false;
+      }
+    }
+
+    // ========================================================================
+    // AI EARN ASSIST - Schedule Collection
+    // ========================================================================
+    
+    match /aiEarnAssist_schedule/{creatorId} {
+      allow read: if isOwner(creatorId);
+      
+      match /liveRecommendations/{date} {
+        allow read: if isOwner(creatorId);
+        // Only backend can write
+        allow write: if false;
+      }
+    }
+
+    // ========================================================================
+    // AI EARN ASSIST - Content Collection
+    // ========================================================================
+    
+    match /aiEarnAssist_content/{creatorId} {
+      allow read: if isOwner(creatorId);
+      
+      match /optimizations/{id} {
+        allow read: if isOwner(creatorId);
+        // Creators can dismiss optimizations
+        allow update: if isOwner(creatorId) && 
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['dismissedAt']);
+        // Only backend can create
+        allow create: if false;
+        allow delete: if false;
+      }
+    }
+
+    // ========================================================================
+    // AI EARN ASSIST - Features Collection
+    // ========================================================================
+    
+    match /aiEarnAssist_features/{creatorId} {
+      allow read: if isOwner(creatorId);
+      
+      match /prompts/{featureId} {
+        allow read: if isOwner(creatorId);
+        // Creators can dismiss or mark as shown
+        allow update: if isOwner(creatorId) && 
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['dismissedAt', 'shownAt', 'actionTaken']);
+        // Only backend can create
+        allow create: if false;
+        allow delete: if false;
+      }
+    }
+
+    // ========================================================================
+    // SUPPORTER BEHAVIOR - Signals Collection
+    // ========================================================================
+    
+    match /supporterBehavior/{creatorId}/signals/{supporterId} {
+      // Only creator can read their supporters' behavior signals
+      allow read: if isOwner(creatorId);
+      // Only backend can write
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,301 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 392 - Store Defense, ASO, Trust & Reviews Security Rules
+    // ========================================================================
+    
+    // Helper functions
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isVerifiedUser() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.kycVerified == true;
+    }
+    
+    // ========================================================================
+    // STORE DEFENSE
+    // ========================================================================
+    
+    // Store defense data (admin read-only)
+    match /storeDefense/{storeId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Store threats (admin only)
+    match /storeReviewThreats/{threatId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // Attack patterns (admin read)
+    match /attackPatterns/{patternId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // Store incidents (admin only)
+    match /storeIncidents/{incidentId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin(); // Admins can update status
+    }
+    
+    // Incident responses (admin read)
+    match /incidentResponses/{responseId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // Evidence packs (admin only)
+    match /evidencePacks/{packId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // ASO (APP STORE OPTIMIZATION)
+    // ========================================================================
+    
+    // ASO metrics (admin read, public limited read)
+    match /asoMetrics/{metricId} {
+      allow read: if isAdmin() || 
+                     (isAuthenticated() && 
+                      !exists(/databases/$(database)/documents/asoMetrics/$(metricId)) || 
+                      resource.data.public == true);
+      allow write: if false;
+    }
+    
+    // ASO keywords (admin only)
+    match /asoKeywords/{keywordId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // ASO screenshots (admin only)
+    match /asoScreenshots/{screenshotId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // ASO icons (admin only)
+    match /asoIcons/{iconId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // ASO title variants (admin only)
+    match /asoTitleVariants/{variantId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // ASO auto-implementations (admin read)
+    match /asoAutoImplementations/{implId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // Performance metrics (internal only)
+    match /keywordPerformance/{perfId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /screenshotPerformance/{perfId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /iconPerformance/{perfId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /titleVariantPerformance/{perfId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // REVIEW INTELLIGENCE
+    // ========================================================================
+    
+    // Store reviews raw (admins and verified users can read their own)
+    match /storeReviewsRaw/{reviewId} {
+      allow read: if isAdmin() || 
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isVerifiedUser() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasAll(['storeId', 'rating', 'text', 'timestamp', 'userId']);
+      allow update, delete: if false;
+    }
+    
+    // Review intelligence (admin only)
+    match /reviewIntelligence/{reviewId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // Review clusters (admin only)
+    match /reviewClusters/{clusterId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // Store escalations (admin only)
+    match /storeEscalations/{escalationId} {
+      allow read: if isAdmin();
+      allow update: if isAdmin(); // Can update submission status
+      allow create, delete: if false;
+    }
+    
+    // ========================================================================
+    // TRUST SCORE
+    // ========================================================================
+    
+    // App trust score (public read for current score)
+    match /appTrustScore/current {
+      allow read: if true; // Public
+      allow write: if false;
+    }
+    
+    // Historical trust scores
+    match /appTrustScore/{scoreId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // User trust impacts (user can read their own, admin can read all)
+    match /userTrustImpacts/{impactId} {
+      allow read: if isAdmin() || 
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow write: if false;
+    }
+    
+    // Store safety ratings (public read)
+    match /storeSafetyRatings/{storeId} {
+      allow read: if true; // Public for transparency
+      allow write: if false;
+    }
+    
+    // Retention metrics (admin only)
+    match /retentionMetrics/{metricId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // SAFE MODE
+    // ========================================================================
+    
+    // Safe mode config (public read for current state)
+    match /safeModeConfig/{storeId} {
+      allow read: if true; // Public so app can check
+      allow write: if isAdmin();
+    }
+    
+    // Payout settings (admin only)
+    match /payoutSettings/{storeId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // Crash reporting config (internal)
+    match /crashReportingConfig/{storeId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // STORES & METRICS
+    // ========================================================================
+    
+    // Stores (admin manage, public can list active)
+    match /stores/{storeId} {
+      allow read: if true; // Public
+      allow write: if isAdmin();
+    }
+    
+    // Store metrics (admin only)
+    match /storeMetrics/{metricId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // Store installs (internal tracking)
+    match /storeInstalls/{installId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    // Store reports (users can create, admin can read)
+    match /storeReports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // CERTIFICATIONS
+    // ========================================================================
+    
+    // Store certifications (public read)
+    match /storeCertifications/{certId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // ========================================================================
+    // ADMIN NOTIFICATIONS
+    // ========================================================================
+    
+    // Admin notifications (admin only)
+    match /adminNotifications/{notifId} {
+      allow read: if isAdmin();
+      allow update: if isAdmin(); // Can mark as read
+      allow create, delete: if false;
+    }
+    
+    // ========================================================================
+    // COMPLIANCE & AUDITS
+    // ========================================================================
+    
+    // Security audits (admin only)
+    match /securityAudits/{auditId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // Financial compliance (admin only)
+    match /financialCompliance/{complianceId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // Content moderation (admin only)
+    match /contentModeration/{modId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // QUEUE (Task queue for background processing)
+    // ========================================================================
+    
+    match /queue/{queueName}/tasks/{taskId} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

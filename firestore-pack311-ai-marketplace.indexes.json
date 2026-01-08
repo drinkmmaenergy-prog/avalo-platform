@@ -1,0 +1,84 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "aiAvatarIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "rankingScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aiAvatarIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "trust.riskLevel", "order": "ASCENDING" },
+        { "fieldPath": "rankingScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aiAvatarIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "languages", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "rankingScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aiAvatarIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "country", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "rankingScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aiAvatarIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ownerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "stats.tokensEarned7d", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aiAvatarIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "categoryTags", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "rankingScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aiAvatarIndex",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "trust.ownerVerified", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "rankingScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analytics_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "analytics_events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "avatarId", "order": "ASCENDING" },
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

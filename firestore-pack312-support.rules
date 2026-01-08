@@ -1,0 +1,108 @@
+rules_version = '2';
+
+// PACK 312 — Customer Support Console & Case Management
+// Firestore Security Rules for Support Tickets
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/admin_users/$(request.auth.uid));
+    }
+    
+    function hasAdminRole(allowedRoles) {
+      return isAdmin() && 
+        get(/databases/$(database)/documents/admin_users/$(request.auth.uid)).data.role in allowedRoles;
+    }
+    
+    function isTicketOwner(ticketData) {
+      return isAuthenticated() && ticketData.userId == request.auth.uid;
+    }
+    
+    // ========================================================================
+    // SUPPORT TICKETS
+    // ========================================================================
+    
+    // Support tickets - users can read own, admins can read all
+    match /support_tickets/{ticketId} {
+      // Users can read their own tickets
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        hasAdminRole(['SUPPORT', 'MODERATOR', 'RISK', 'FINANCE', 'LEGAL', 'SUPERADMIN'])
+      );
+      
+      // Users can create tickets for themselves
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.createdBy.type == 'USER' &&
+        request.resource.data.createdBy.userId == request.auth.uid;
+      
+      // Only admins can update tickets
+      allow update: if hasAdminRole(['SUPPORT', 'MODERATOR', 'RISK', 'FINANCE', 'LEGAL', 'SUPERADMIN']);
+      
+      // Only superadmins can delete tickets
+      allow delete: if hasAdminRole(['SUPERADMIN']);
+    }
+    
+    // ========================================================================
+    // SUPPORT TICKET MESSAGES
+    // ========================================================================
+    
+    // Ticket messages - users can read their ticket messages, admins can read all
+    match /support_ticket_messages/{messageId} {
+      // Users can read non-internal messages from their tickets
+      allow read: if isAuthenticated() && (
+        (
+          !resource.data.internalNote &&
+          exists(/databases/$(database)/documents/support_tickets/$(resource.data.ticketId)) &&
+          get(/databases/$(database)/documents/support_tickets/$(resource.data.ticketId)).data.userId == request.auth.uid
+        ) ||
+        hasAdminRole(['SUPPORT', 'MODERATOR', 'RISK', 'FINANCE', 'LEGAL', 'SUPERADMIN'])
+      );
+      
+      // Users can create messages on their own tickets (non-internal only)
+      allow create: if isAuthenticated() && (
+        (
+          !request.resource.data.internalNote &&
+          request.resource.data.authorType == 'USER' &&
+          request.resource.data.authorId == request.auth.uid &&
+          exists(/databases/$(database)/documents/support_tickets/$(request.resource.data.ticketId)) &&
+          get(/databases/$(database)/documents/support_tickets/$(request.resource.data.ticketId)).data.userId == request.auth.uid
+        ) ||
+        (
+          hasAdminRole(['SUPPORT', 'MODERATOR', 'RISK', 'FINANCE', 'LEGAL', 'SUPERADMIN']) &&
+          request.resource.data.authorType == 'ADMIN'
+        )
+      );
+      
+      // Only admins can update/delete messages
+      allow update, delete: if hasAdminRole(['SUPPORT', 'SUPERADMIN']);
+    }
+    
+    // ========================================================================
+    // ADMIN USERS
+    // ========================================================================
+    
+    // Admin users collection - read only for admins
+    match /admin_users/{adminId} {
+      allow read: if isAdmin();
+      allow write: if hasAdminRole(['SUPERADMIN']);
+    }
+    
+    // ========================================================================
+    // SUPPORT AUDIT LOG
+    // ========================================================================
+    
+    // Support audit log - read only for specific admin roles
+    match /support_audit_log/{auditId} {
+      allow read: if hasAdminRole(['RISK', 'LEGAL', 'SUPERADMIN']);
+      allow write: if false; // Only via Cloud Functions
+    }
+  }
+}

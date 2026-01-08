@@ -1,0 +1,219 @@
+rules_version = '2';
+
+// ========================================================================
+// PACK 328C: Calendar & Meetup Selfie Timeout + Mismatch Enforcement
+// Security rules for selfie verification at meetup start
+// ========================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    function isSafetyTeam() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        isAdmin()
+      );
+    }
+    
+    // ========================================================================
+    // Calendar Bookings - Extended Rules for Selfie Verification
+    // ========================================================================
+    match /calendarBookings/{bookingId} {
+      // Read: Host, Guest, or Admins
+      allow read: if isAuthenticated() && (
+        resource.data.hostId == request.auth.uid ||
+        resource.data.guestId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Update: Limited fields can be updated by participants
+      allow update: if isAuthenticated() && 
+        (resource.data.hostId == request.auth.uid || resource.data.guestId == request.auth.uid) &&
+        // Only allow updating selfie-related fields
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'safety',
+          'timestamps'
+        ]) &&
+        // Ensure safety nested fields are limited
+        (
+          // Host can update their own selfie fields
+          (resource.data.hostId == request.auth.uid && 
+           request.resource.data.safety.diff(resource.data.safety).affectedKeys().hasOnly([
+             'hostSelfieSubmitted',
+             'hostSelfieSubmittedAt',
+             'hostSelfieUrl'
+           ])) ||
+          // Guest can update their own selfie fields
+          (resource.data.guestId == request.auth.uid && 
+           request.resource.data.safety.diff(resource.data.safety).affectedKeys().hasOnly([
+             'guestSelfieSubmitted',
+             'guestSelfieSubmittedAt',
+             'guestSelfieUrl'
+           ]))
+        );
+      
+      // Create/Delete: Only backend/admin
+      allow create, delete: if false;
+    }
+    
+    // ========================================================================
+    // Selfie Timeout Tracking (Internal Collection)
+    // ========================================================================
+    match /_selfie_timeouts/{timeoutId} {
+      // Read: Only backend and admins
+      allow read: if isAdmin();
+      
+      // Write: Only backend (cloud functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // Bank-ID Verification Queue (Internal Collection)
+    // ========================================================================
+    match /_bankid_verification_queue/{queueId} {
+      // Read: User can see their own verification requests
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin() ||
+        isSafetyTeam()
+      );
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // Meetup Selfie Reports (For tracking mismatch reports)
+    // ========================================================================
+    match /meetup_selfie_reports/{reportId} {
+      // Read: Reporter, reported user, safety team, or admins
+      allow read: if isAuthenticated() && (
+        resource.data.reportedBy == request.auth.uid ||
+        resource.data.reportedUserId == request.auth.uid ||
+        isSafetyTeam() ||
+        isAdmin()
+      );
+      
+      // Create: Users can report mismatches (backend validates)
+      allow create: if isAuthenticated() &&
+        request.resource.data.reportedBy == request.auth.uid &&
+        request.resource.data.keys().hasAll([
+          'bookingId',
+          'reportedBy',
+          'reportedUserId',
+          'reason',
+          'timestamp'
+        ]);
+      
+      // Update/Delete: Only safety team or admins
+      allow update, delete: if isSafetyTeam() || isAdmin();
+    }
+    
+    // ========================================================================
+    // Selfie Verification Analytics
+    // ========================================================================
+    match /analytics_events/{eventId} {
+      // Read: Only admins and analytics team
+      allow read: if isAdmin();
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // Fraud Signals - Extended for Selfie Verification
+    // Inherits from PACK 324B but adds selfie-specific signal types
+    // ========================================================================
+    match /fraud_signals/{signalId} {
+      // Read: User can see their own signals, admins/safety team can see all
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isSafetyTeam() ||
+        isAdmin()
+      );
+      
+      // Write: Only backend (cloud functions emit signals)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // Notifications - Extended for Selfie Verification
+    // ========================================================================
+    match /notifications/{notificationId} {
+      // Read: Only notification recipient
+      allow read: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+      
+      // Update: User can mark as read
+      allow update: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      
+      // Create/Delete: Only backend
+      allow create, delete: if false;
+    }
+    
+    // ========================================================================
+    // Transaction Logs - Extended for Selfie Timeout/Mismatch Refunds
+    // ========================================================================
+    match /transactions/{transactionId} {
+      // Read: Only transaction owner or admins
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // Moderation Queue - For Selfie Mismatch Reports
+    // ========================================================================
+    match /moderationQueue/{queueId} {
+      // Read: Reporter, target user, safety team, or admins
+      allow read: if isAuthenticated() && (
+        resource.data.reporterId == request.auth.uid ||
+        resource.data.targetUserId == request.auth.uid ||
+        isSafetyTeam() ||
+        isAdmin()
+      );
+      
+      // Create: Users can submit reports
+      allow create: if isAuthenticated() &&
+        request.resource.data.reporterId == request.auth.uid;
+      
+      // Update: Only safety team or admins
+      allow update: if isSafetyTeam() || isAdmin();
+      
+      // Delete: Only admins
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================================================
+    // Safety Flags - Extended for Identity Mismatch
+    // ========================================================================
+    match /safetyFlags/{flagId} {
+      // Read: Flagged user, reporter, safety team, or admins
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.reportedBy == request.auth.uid ||
+        isSafetyTeam() ||
+        isAdmin()
+      );
+      
+      // Write: Only backend and safety team
+      allow write: if isSafetyTeam() || isAdmin();
+    }
+  }
+}

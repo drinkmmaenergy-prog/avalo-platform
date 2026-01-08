@@ -1,0 +1,101 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "storeReputationSignals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "source", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReputationSignals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "fraudProbability", "order": "DESCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReputationSignals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "geo", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReputationSignals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sentimentScore", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "storeReputationSignals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "trustScore",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "overallScore", "order": "DESCENDING" },
+        { "fieldPath": "lastUpdated", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "trustScore",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "profileVerification", "order": "DESCENDING" },
+        { "fieldPath": "overallScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reputationAttacks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "attackType", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reputationAttacks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "severity", "order": "DESCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reputationAttacks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "resolved", "order": "ASCENDING" },
+        { "fieldPath": "detectedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewNudgeHistory",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "shownAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reviewNudgeHistory",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "converted", "order": "ASCENDING" },
+        { "fieldPath": "shownAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

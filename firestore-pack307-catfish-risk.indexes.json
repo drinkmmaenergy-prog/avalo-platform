@@ -1,0 +1,153 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "userRisk",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "riskLevel", "order": "ASCENDING" },
+        { "fieldPath": "lastRecomputedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRisk",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "catfishRiskScore", "order": "DESCENDING" },
+        { "fieldPath": "lastRecomputedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRisk",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "manualReviewRequired", "order": "ASCENDING" },
+        { "fieldPath": "catfishRiskScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRisk",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "autoHiddenFromDiscovery", "order": "ASCENDING" },
+        { "fieldPath": "lastRecomputedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRisk",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "riskLevel", "order": "ASCENDING" },
+        { "fieldPath": "catfishRiskScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRisk",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "aiFaceProbability", "order": "DESCENDING" },
+        { "fieldPath": "lastRecomputedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRisk",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "genderMismatchFlag", "order": "ASCENDING" },
+        { "fieldPath": "catfishRiskScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userRisk",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ageMismatchFlag", "order": "ASCENDING" },
+        { "fieldPath": "catfishRiskScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "catfishRiskEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "catfishRiskEvents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "verificationReviewQueue",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "priority", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "verificationReviewQueue",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "flagReason", "order": "ASCENDING" },
+        { "fieldPath": "priority", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "reportType", "order": "ASCENDING" },
+        { "fieldPath": "reportedUserId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "reportedUserId", "order": "ASCENDING" },
+        { "fieldPath": "reportType", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "reportType", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adminActions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "actionType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adminActions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "targetUserId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adminActions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "adminId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

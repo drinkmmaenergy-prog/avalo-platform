@@ -1,0 +1,136 @@
+// PACK 128 - Treasury Security Rules
+// Bank-grade protection for payment vaults
+
+rules_version = '2';
+
+// ============================================================================
+// TREASURY LEDGER - Append-only audit trail
+// ============================================================================
+match /treasury_ledger/{ledgerId} {
+  // Anyone authenticated can read their own ledger entries
+  allow read: if request.auth != null && 
+    (resource.data.userId == request.auth.uid || 
+     resource.data.creatorId == request.auth.uid);
+  
+  // NO client writes - Functions only
+  allow write: if false;
+}
+
+// ============================================================================
+// USER TOKEN WALLETS - User prepaid balances
+// ============================================================================
+match /user_token_wallets/{userId} {
+  // Users can only read their own wallet
+  allow read: if request.auth != null && request.auth.uid == userId;
+  
+  // NO client writes - Functions only (prevents balance manipulation)
+  allow write: if false;
+}
+
+// ============================================================================
+// CREATOR VAULTS - Creator earnings before payout
+// ============================================================================
+match /creator_vaults/{userId} {
+  // Creators can only read their own vault
+  allow read: if request.auth != null && request.auth.uid == userId;
+  
+  // NO client writes - Functions only (prevents earnings manipulation)
+  allow write: if false;
+}
+
+// ============================================================================
+// AVALO REVENUE VAULT - Platform commission (admin only)
+// ============================================================================
+match /avalo_revenue_vault/{vaultId} {
+  // Only admins can read revenue vault
+  allow read: if request.auth != null && 
+    request.auth.token.admin == true;
+  
+  // NO writes - Functions only
+  allow write: if false;
+}
+
+// ============================================================================
+// HOT WALLET - Fast-access payout funds (admin only)
+// ============================================================================
+match /treasury_hot_wallet/{walletId} {
+  // Only admins can read hot wallet
+  allow read: if request.auth != null && 
+    request.auth.token.admin == true;
+  
+  // NO writes - Functions only
+  allow write: if false;
+}
+
+// ============================================================================
+// COLD WALLET - Secure storage (admin only)
+// ============================================================================
+match /treasury_cold_wallet/{walletId} {
+  // Only admins can read cold wallet
+  allow read: if request.auth != null && 
+    request.auth.token.admin == true;
+  
+  // NO writes - Functions only
+  allow write: if false;
+}
+
+// ============================================================================
+// TOKEN PURCHASE RECORDS - Purchase history
+// ============================================================================
+match /token_purchase_records/{purchaseId} {
+  // Users can only read their own purchases
+  allow read: if request.auth != null && 
+    resource.data.userId == request.auth.uid;
+  
+  // NO client writes - Functions only
+  allow write: if false;
+}
+
+// ============================================================================
+// REFUND RECORDS - Refund audit trail
+// ============================================================================
+match /refund_records/{refundId} {
+  // Users can read refunds involving them
+  allow read: if request.auth != null && 
+    (resource.data.userId == request.auth.uid || 
+     resource.data.creatorId == request.auth.uid);
+  
+  // NO client writes - Functions only
+  allow write: if false;
+}
+
+// ============================================================================
+// TREASURY AUDIT REPORTS - Admin only
+// ============================================================================
+match /treasury_audit_reports/{reportId} {
+  // Only admins can read audit reports
+  allow read: if request.auth != null && 
+    request.auth.token.admin == true;
+  
+  // NO writes - Functions only
+  allow write: if false;
+}
+
+// ============================================================================
+// TREASURY CONFIG - Read-only for all, admin write
+// ============================================================================
+match /treasury_config/{configId} {
+  // Anyone authenticated can read config (for display purposes)
+  allow read: if request.auth != null;
+  
+  // Only admins can write config
+  allow write: if request.auth != null && 
+    request.auth.token.admin == true;
+}
+
+// ============================================================================
+// ADMIN ALERTS - Admin only
+// ============================================================================
+match /admin_alerts/{alertId} {
+  // Only admins can read alerts
+  allow read: if request.auth != null && 
+    request.auth.token.admin == true;
+  
+  // NO client writes - Functions only
+  allow write: if false;
+}

@@ -1,0 +1,75 @@
+rules_version = '2';
+
+/**
+ * PACK 320 - Real-Time Moderation Dashboard
+ * Firestore Security Rules for Moderation Queue and Actions
+ * 
+ * Collections:
+ * - moderationQueue: Flagged items awaiting review
+ * - moderationActions: Log of all moderation actions taken
+ * - moderationAnalytics: Daily rollup statistics
+ * 
+ * Access: ADMIN and MODERATOR roles only
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'MODERATOR' ||
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN');
+    }
+    
+    // Moderation Queue - Items flagged for review
+    match /moderationQueue/{item} {
+      // Only moderators and admins can read
+      allow read: if isModerator();
+      
+      // Only server (Cloud Functions) can create queue items
+      allow create: if false;
+      
+      // Only moderators can update status and notes
+      allow update: if isModerator() && 
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'notes', 'lastUpdated']);
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // Moderation Actions - Audit log of actions taken
+    match /moderationActions/{actionId} {
+      // Only moderators and admins can read
+      allow read: if isModerator();
+      
+      // Only server (Cloud Functions) can write
+      allow create, update, delete: if false;
+    }
+    
+    // Moderation Analytics - Daily statistics
+    match /moderationAnalytics/{dateId} {
+      // Only moderators and admins can read
+      allow read: if isModerator();
+      
+      // Only server (Cloud Functions) can write
+      allow create, update, delete: if false;
+    }
+    
+    // User profiles - needed for role checks
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+  }
+}

@@ -1,0 +1,86 @@
+﻿
+/**
+ * Participant leaves event with PACK 209 logging
+ * No refunds per policy - enhanced with transaction logging
+ */
+export const pack209_leaveEventWithLogging = leaveEventWithPack209;
+
+/**
+ * PACK 209 ADMIN ENDPOINTS
+ */
+
+import {
+  admin_getAppearanceComplaints,
+  admin_getRefundTransactions,
+  admin_getVoluntaryRefunds,
+  admin_getTrustIncidents,
+  admin_reviewTrustIncident,
+  admin_getRefundStatistics,
+  admin_getVoluntaryRefundStatistics,
+  admin_getComplaintStatistics,
+  admin_forceRefund,
+} from './pack209-admin-endpoints';
+
+/**
+ * Get all appearance complaints (admin/moderator)
+ * Filter by decision, review status, source
+ */
+export const pack209_admin_getComplaints = admin_getAppearanceComplaints;
+
+/**
+ * Get all refund transactions (admin/moderator)
+ * Filter by type, source, user
+ */
+export const pack209_admin_getRefundTransactions = admin_getRefundTransactions;
+
+/**
+ * Get all voluntary refunds (admin/moderator)
+ * Filter by source, user
+ */
+export const pack209_admin_getVoluntaryRefunds = admin_getVoluntaryRefunds;
+
+/**
+ * Get trust & safety incidents (admin/moderator)
+ * Filter by type, severity, review status
+ */
+export const pack209_admin_getTrustIncidents = admin_getTrustIncidents;
+
+/**
+ * Review and resolve trust incident (admin/moderator)
+ * Update action taken and mark as reviewed
+ */
+export const pack209_admin_reviewIncident = admin_reviewTrustIncident;
+
+/**
+ * Get refund statistics dashboard (admin/moderator)
+ * Analytics on refund patterns and amounts
+ */
+export const pack209_admin_getRefundStats = admin_getRefundStatistics;
+
+/**
+ * Get voluntary refund statistics (admin/moderator)
+ * Analytics on voluntary refund patterns
+ */
+export const pack209_admin_getVoluntaryRefundStats = admin_getVoluntaryRefundStatistics;
+
+/**
+ * Get complaint statistics (admin/moderator)
+ * Analytics on appearance complaints and decisions
+ */
+export const pack209_admin_getComplaintStats = admin_getComplaintStatistics;
+
+/**
+ * Force admin refund (admin only, emergency override)
+ * Manual refund outside normal policies
+ */
+export const pack209_admin_forceRefund = admin_forceRefund;
+ */
+export const pack209_leaveEventWithLogging = leaveEventWithPack209;
+
+console.log('âś… Firebase Functions initialized - Pack 209 (Unified Meeting & Event Refund & Complaint Extensions) + All Previous Packs');
+console.log('đź’° REFUND POLICY: Meetings 65/35 split | Events 80/20 split | Avalo commission NEVER refunded | Appearance complaints | Voluntary refunds');
+console.log('đź’• VIBE MATCHING: Photo energy | Chat tone | Interests | Attraction prefs (NO SHAMING) | Past success patterns | Chemistry > Demographics');
+
+// ============================================================================
+// PACK 257 â€” CREATOR ANALYTICS DASHBOARD (REVENUE, ENGAGEMENT, FAN GROWTH & OPTIMIZATION)
+// ============================================================================

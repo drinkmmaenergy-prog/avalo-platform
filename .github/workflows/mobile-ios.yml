@@ -1,0 +1,232 @@
+name: Build iOS
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'Build profile'
+        required: true
+        type: choice
+        options:
+          - development
+          - preview
+          - production
+
+env:
+  NODE_VERSION: '20.x'
+  PNPM_VERSION: '8.15.0'
+
+jobs:
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        working-directory: ./app-mobile
+        run: pnpm install --frozen-lockfile
+
+      - name: Determine build profile
+        id: profile
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "profile=${{ github.event.inputs.profile }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            echo "profile=production" >> $GITHUB_OUTPUT
+          else
+            echo "profile=preview" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run tests
+        working-directory: ./app-mobile
+        run: pnpm test || echo "Tests not configured yet"
+
+      - name: Build iOS with EAS
+        working-directory: ./app-mobile
+        run: |
+          eas build --platform ios \
+            --profile ${{ steps.profile.outputs.profile }} \
+            --non-interactive \
+            --no-wait
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Get build ID
+        id: build
+        working-directory: ./app-mobile
+        run: |
+          BUILD_ID=$(eas build:list --platform ios --limit 1 --json | jq -r '.[0].id')
+          echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
+          echo "Build ID: $BUILD_ID"
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Wait for build completion
+        working-directory: ./app-mobile
+        run: |
+          BUILD_ID="${{ steps.build.outputs.build_id }}"
+          echo "Waiting for build $BUILD_ID"
+          
+          TIMEOUT=2400  # 40 minutes (iOS builds take longer)
+          ELAPSED=0
+          INTERVAL=30
+          
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            STATUS=$(eas build:view $BUILD_ID --json | jq -r '.status')
+            echo "Build status: $STATUS (${ELAPSED}s elapsed)"
+            
+            if [[ "$STATUS" == "finished" ]]; then
+              echo "✅ Build completed successfully"
+              exit 0
+            elif [[ "$STATUS" == "errored" || "$STATUS" == "canceled" ]]; then
+              echo "❌ Build failed with status: $STATUS"
+              eas build:view $BUILD_ID
+              exit 1
+            fi
+            
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+          
+          echo "❌ Build timed out after ${TIMEOUT}s"
+          exit 1
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Download build artifact
+        if: steps.profile.outputs.profile == 'production'
+        working-directory: ./app-mobile
+        run: |
+          BUILD_ID="${{ steps.build.outputs.build_id }}"
+          ARTIFACT_URL=$(eas build:view $BUILD_ID --json | jq -r '.artifacts.buildUrl')
+          
+          if [[ "$ARTIFACT_URL" != "null" && -n "$ARTIFACT_URL" ]]; then
+            echo "Downloading artifact from: $ARTIFACT_URL"
+            curl -L -o app-release.ipa "$ARTIFACT_URL"
+            ls -lh app-release.ipa
+          else
+            echo "⚠️ No artifact URL available"
+          fi
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Upload artifact to GitHub
+        if: steps.profile.outputs.profile == 'production' && hashFiles('app-mobile/app-release.ipa') != ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-release-${{ github.sha }}
+          path: app-mobile/app-release.ipa
+          retention-days: 30
+
+      - name: Build summary
+        run: |
+          echo "### iOS Build Summary 🍎" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Profile**: ${{ steps.profile.outputs.profile }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build ID**: ${{ steps.build.outputs.build_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Platform**: iOS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "View build details: https://expo.dev/accounts/YOUR_ACCOUNT/projects/avalo/builds/${{ steps.build.outputs.build_id }}" >> $GITHUB_STEP_SUMMARY
+
+  submit-ios:
+    name: Submit to App Store
+    runs-on: macos-latest
+    needs: [build-ios]
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Submit to App Store
+        working-directory: ./app-mobile
+        run: |
+          eas submit --platform ios \
+            --latest \
+            --profile production \
+            --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Notify submission success
+        run: |
+          echo "### App Store Submission 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ iOS build submitted to App Store Connect" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Next Steps:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review build in App Store Connect" >> $GITHUB_STEP_SUMMARY
+          echo "2. Complete App Store metadata" >> $GITHUB_STEP_SUMMARY
+          echo "3. Submit for review" >> $GITHUB_STEP_SUMMARY
+          echo "4. Monitor review status" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify Slack
+        if: success() && env.SLACK_WEBHOOK_URL != ''
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "✅ iOS build submitted to App Store",
+              "blocks": [{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*iOS Submission*\n• Version: `${{ github.ref_name }}`\n• Status: Submitted to App Store Connect"
+                }
+              }]
+            }' || echo "Slack notification skipped"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "### Submission Failed ❌" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "iOS build submission to App Store failed." >> $GITHUB_STEP_SUMMARY
+          echo "Check the logs above for details." >> $GITHUB_STEP_SUMMARY

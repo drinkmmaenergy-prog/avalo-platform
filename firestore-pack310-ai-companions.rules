@@ -1,0 +1,98 @@
+rules_version = '2';
+
+// PACK 310 — AI Companions & Avatar Builder
+// Firestore Security Rules
+
+// Helper functions
+function isAuthenticated() {
+  return request.auth != null;
+}
+
+function isOwner(userId) {
+  return isAuthenticated() && request.auth.uid == userId;
+}
+
+function isAdmin() {
+  return isAuthenticated() && 
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+}
+
+function isModerator() {
+  return isAuthenticated() && 
+    (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'moderator');
+}
+
+function is18Plus() {
+  let userProfile = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+  return userProfile.age >= 18 || userProfile.verified18Plus == true;
+}
+
+function hasEarnEnabled() {
+  let userProfile = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+  return userProfile.modes.earnFromChat == true;
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // AI Avatars - creators can create/read/update their own, all can read active
+    match /aiAvatars/{avatarId} {
+      // Anyone can read ACTIVE avatars (for discovery)
+      allow read: if isAuthenticated() && 
+        (resource.data.status == 'ACTIVE' || isOwner(resource.data.ownerId) || isModerator());
+      
+      // Creators can create avatars if they are 18+, verified, and have earnOnChat enabled
+      allow create: if isAuthenticated() && 
+        is18Plus() &&
+        hasEarnEnabled() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.status == 'DRAFT';
+      
+      // Owners can update their own avatars (but not change ownerId)
+      allow update: if isOwner(resource.data.ownerId) &&
+        request.resource.data.ownerId == resource.data.ownerId;
+      
+      // Only moderators can delete
+      allow delete: if isModerator();
+    }
+    
+    // AI Sessions - participants can read their own sessions
+    match /aiSessions/{sessionId} {
+      allow read: if isAuthenticated() && 
+        (request.auth.uid == resource.data.payerId || 
+         request.auth.uid == resource.data.ownerId ||
+         isModerator());
+      
+      // Only Cloud Functions can write sessions
+      allow write: if false;
+    }
+    
+    // Chat messages with AI flag - extend existing chat rules
+    match /chats/{chatId}/messages/{messageId} {
+      allow read: if isAuthenticated() && 
+        request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+      
+      // Users can send messages (including to AI avatars)
+      allow create: if isAuthenticated() && 
+        request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
+        request.auth.uid == request.resource.data.senderId;
+      
+      // No updates or deletes allowed
+      allow update, delete: if false;
+    }
+    
+    // AI Avatar Analytics - owners can read their own, write via Cloud Functions
+    match /aiAvatarAnalytics/{avatarId} {
+      allow read: if isAuthenticated() && 
+        (request.auth.uid == resource.data.ownerId || isModerator());
+      
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // AI Moderation Queue - moderators only
+    match /aiModerationQueue/{queueId} {
+      allow read, write: if isModerator();
+    }
+  }
+}

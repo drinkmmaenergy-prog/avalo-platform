@@ -1,0 +1,214 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['ADMIN', 'MODERATOR']);
+    }
+    
+    // PACK 162: Courses Collection
+    match /courses/{courseId} {
+      allow read: if resource.data.visibility == 'PUBLIC' && 
+                     resource.data.status == 'PUBLISHED' ||
+                     isOwner(resource.data.creatorId) ||
+                     isModerator();
+      
+      allow create: if isAuthenticated() &&
+                       request.resource.data.creatorId == request.auth.uid &&
+                       request.resource.data.status in ['DRAFT', 'UNDER_REVIEW'] &&
+                       request.resource.data.format in ['LINEAR_COURSE', 'MULTI_TRACK', 'WEEKLY_PROGRAM', 'AUDIOBOOK_SERIES', 'CHALLENGE_SERIES'] &&
+                       request.resource.data.category in ['BUSINESS', 'EDUCATION', 'FITNESS', 'LIFESTYLE', 'PERSONAL_DEVELOPMENT', 'SKILLS', 'HEALTH', 'CREATIVITY'] &&
+                       !request.resource.data.keys().hasAny(['isNSFW']) &&
+                       request.resource.data.contentType in ['VIDEO', 'AUDIO', 'MIXED', 'TEXT'];
+      
+      allow update: if isOwner(resource.data.creatorId) &&
+                       (resource.data.status == 'DRAFT' || 
+                        resource.data.status == 'UNDER_REVIEW') &&
+                       request.resource.data.creatorId == resource.data.creatorId ||
+                       isModerator();
+      
+      allow delete: if isOwner(resource.data.creatorId) ||
+                       isAdmin();
+    }
+    
+    // Course Episodes
+    match /course_episodes/{episodeId} {
+      allow read: if isAuthenticated() &&
+                     (exists(/databases/$(database)/documents/course_purchases/$(request.auth.uid + '_' + resource.data.courseId)) ||
+                      isOwner(resource.data.creatorId) ||
+                      isModerator());
+      
+      allow create: if isAuthenticated() &&
+                       request.resource.data.creatorId == request.auth.uid &&
+                       exists(/databases/$(database)/documents/courses/$(request.resource.data.courseId)) &&
+                       get(/databases/$(database)/documents/courses/$(request.resource.data.courseId)).data.creatorId == request.auth.uid &&
+                       request.resource.data.contentType in ['VIDEO', 'AUDIO', 'TEXT', 'PDF', 'IMAGE'];
+      
+      allow update: if isOwner(resource.data.creatorId) ||
+                       isModerator();
+      
+      allow delete: if isOwner(resource.data.creatorId) ||
+                       isAdmin();
+    }
+    
+    // Course Purchases
+    match /course_purchases/{purchaseId} {
+      allow read: if isAuthenticated() &&
+                     (isOwner(resource.data.userId) ||
+                      isModerator());
+      
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status == 'ACTIVE';
+      
+      allow update: if isModerator() ||
+                       isAdmin();
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Course Progress
+    match /course_progress/{progressId} {
+      allow read: if isAuthenticated() &&
+                     isOwner(resource.data.userId);
+      
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      allow update: if isAuthenticated() &&
+                       isOwner(resource.data.userId);
+      
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    // Episode Progress
+    match /episode_progress/{progressId} {
+      allow read: if isAuthenticated() &&
+                     isOwner(resource.data.userId);
+      
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      allow update: if isAuthenticated() &&
+                       isOwner(resource.data.userId);
+      
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    // Course Reviews
+    match /course_reviews/{reviewId} {
+      allow read: if resource.data.status == 'APPROVED' ||
+                     isOwner(resource.data.userId) ||
+                     isModerator();
+      
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       exists(/databases/$(database)/documents/course_purchases/$(request.auth.uid + '_' + request.resource.data.courseId)) &&
+                       request.resource.data.rating >= 1 &&
+                       request.resource.data.rating <= 5;
+      
+      allow update: if isOwner(resource.data.userId) &&
+                       resource.data.status == 'PENDING' ||
+                       isModerator();
+      
+      allow delete: if isOwner(resource.data.userId) ||
+                       isAdmin();
+    }
+    
+    // Course Bundles
+    match /course_bundles/{bundleId} {
+      allow read: if resource.data.status == 'ACTIVE' ||
+                     isOwner(resource.data.creatorId) ||
+                     isModerator();
+      
+      allow create: if isAuthenticated() &&
+                       request.resource.data.creatorId == request.auth.uid &&
+                       request.resource.data.courseIds.size() >= 2 &&
+                       request.resource.data.discountPercentage >= 0 &&
+                       request.resource.data.discountPercentage <= 50;
+      
+      allow update: if isOwner(resource.data.creatorId) ||
+                       isModerator();
+      
+      allow delete: if isOwner(resource.data.creatorId) ||
+                       isAdmin();
+    }
+    
+    // Course Certificates
+    match /course_certificates/{certificateId} {
+      allow read: if isAuthenticated() &&
+                     (isOwner(resource.data.userId) ||
+                      isModerator());
+      
+      allow create: if false; // Only created by backend
+      
+      allow update: if false; // Immutable
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Course Quizzes
+    match /course_quizzes/{quizId} {
+      allow read: if isAuthenticated() &&
+                     (exists(/databases/$(database)/documents/course_purchases/$(request.auth.uid + '_' + resource.data.courseId)) ||
+                      isOwner(resource.data.creatorId) ||
+                      isModerator());
+      
+      allow create: if isAuthenticated() &&
+                       request.resource.data.creatorId == request.auth.uid;
+      
+      allow update: if isOwner(resource.data.creatorId);
+      
+      allow delete: if isOwner(resource.data.creatorId) ||
+                       isAdmin();
+    }
+    
+    // Quiz Attempts
+    match /quiz_attempts/{attemptId} {
+      allow read: if isAuthenticated() &&
+                     isOwner(resource.data.userId);
+      
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      allow update: if false; // Immutable once created
+      
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    // Course Moderation Flags
+    match /course_moderation_flags/{flagId} {
+      allow read: if isModerator();
+      
+      allow create: if false; // Only created by backend moderation system
+      
+      allow update: if isModerator();
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Course Analytics (Creator stats)
+    match /course_analytics/{analyticsId} {
+      allow read: if isAuthenticated() &&
+                     (isOwner(resource.data.creatorId) ||
+                      isModerator());
+      
+      allow create, update, delete: if false; // Only managed by backend
+    }
+  }
+}

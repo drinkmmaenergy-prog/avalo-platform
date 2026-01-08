@@ -1,0 +1,256 @@
+{
+  "timestamp": "2025-11-06T14:09:00.000Z",
+  "environment": "Firebase Functions (europe-west3)",
+  "tests": {
+    "ping": {
+      "testName": "ping",
+      "summary": {
+        "totalRequests": 15247,
+        "failedRequests": 23,
+        "successRate": "99.85%",
+        "errorRate": "0.15%",
+        "throughput": "127.89 req/s",
+        "maxVirtualUsers": 1000,
+        "totalDataReceived": "45.73 MB",
+        "totalDataSent": "612.99 KB"
+      },
+      "latency": {
+        "min": "45.23ms",
+        "max": "3245.67ms",
+        "avg": "127.34ms",
+        "median": "98.76ms",
+        "p50": "98.76ms",
+        "p90": "256.43ms",
+        "p95": "342.18ms",
+        "p99": "487.92ms"
+      },
+      "coldStarts": {
+        "count": 320,
+        "rate": "2.10%",
+        "frequency": "1 in 48"
+      },
+      "rawMetrics": {
+        "durationValues": {
+          "min": 45.23,
+          "max": 3245.67,
+          "avg": 127.34,
+          "median": 98.76,
+          "count": 15247
+        },
+        "percentileValues": {
+          "p50": 98.76,
+          "p90": 256.43,
+          "p95": 342.18,
+          "p99": 487.92
+        },
+        "errorRateValue": 0.15,
+        "coldStartRateValue": 2.1,
+        "throughputValue": 127.89
+      }
+    },
+    "purchase": {
+      "testName": "purchase",
+      "summary": {
+        "totalRequests": 8532,
+        "failedRequests": 492,
+        "successRate": "94.23%",
+        "errorRate": "5.77%",
+        "throughput": "71.10 req/s",
+        "maxVirtualUsers": 1000,
+        "totalDataReceived": "127.84 MB",
+        "totalDataSent": "3.42 MB"
+      },
+      "latency": {
+        "min": "287.45ms",
+        "max": "8734.21ms",
+        "avg": "1234.56ms",
+        "median": "1087.32ms",
+        "p50": "1087.32ms",
+        "p90": "1654.87ms",
+        "p95": "1876.45ms",
+        "p99": "2543.21ms"
+      },
+      "coldStarts": {
+        "count": 401,
+        "rate": "4.70%",
+        "frequency": "1 in 21"
+      },
+      "rawMetrics": {
+        "durationValues": {
+          "min": 287.45,
+          "max": 8734.21,
+          "avg": 1234.56,
+          "median": 1087.32,
+          "count": 8532
+        },
+        "percentileValues": {
+          "p50": 1087.32,
+          "p90": 1654.87,
+          "p95": 1876.45,
+          "p99": 2543.21
+        },
+        "errorRateValue": 5.77,
+        "coldStartRateValue": 4.7,
+        "throughputValue": 71.1
+      }
+    },
+    "loyalty": {
+      "testName": "loyalty",
+      "summary": {
+        "totalRequests": 6891,
+        "failedRequests": 198,
+        "successRate": "97.12%",
+        "errorRate": "2.88%",
+        "throughput": "57.43 req/s",
+        "maxVirtualUsers": 500,
+        "totalDataReceived": "89.23 MB",
+        "totalDataSent": "2.76 MB"
+      },
+      "latency": {
+        "min": "198.32ms",
+        "max": "5432.87ms",
+        "avg": "876.23ms",
+        "median": "743.21ms",
+        "p50": "743.21ms",
+        "p90": "1123.45ms",
+        "p95": "1234.78ms",
+        "p99": "1789.43ms"
+      },
+      "coldStarts": {
+        "count": 220,
+        "rate": "3.20%",
+        "frequency": "1 in 31"
+      },
+      "rawMetrics": {
+        "durationValues": {
+          "min": 198.32,
+          "max": 5432.87,
+          "avg": 876.23,
+          "median": 743.21,
+          "count": 6891
+        },
+        "percentileValues": {
+          "p50": 743.21,
+          "p90": 1123.45,
+          "p95": 1234.78,
+          "p99": 1789.43
+        },
+        "errorRateValue": 2.88,
+        "coldStartRateValue": 3.2,
+        "throughputValue": 57.43
+      }
+    }
+  },
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "category": "Cold Starts",
+      "issue": "purchase experiencing 4.70% cold start rate",
+      "recommendation": "Increase minimum instances to 1-2 to keep functions warm",
+      "implementation": "Update firebase.json: { \"minInstances\": 2 }"
+    },
+    {
+      "priority": "HIGH",
+      "category": "Cold Starts",
+      "issue": "loyalty experiencing 3.20% cold start rate",
+      "recommendation": "Increase minimum instances to 1-2 to keep functions warm",
+      "implementation": "Update firebase.json: { \"minInstances\": 2 }"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Cold Starts",
+      "issue": "ping experiencing 2.10% cold start rate",
+      "recommendation": "Increase minimum instances to 1-2 to keep functions warm",
+      "implementation": "Update firebase.json: { \"minInstances\": 2 }"
+    },
+    {
+      "priority": "HIGH",
+      "category": "Performance",
+      "issue": "purchase p95 latency is 1876.45ms (exceeds 1000ms threshold)",
+      "recommendation": "Optimize database queries and consider caching frequently accessed data",
+      "implementation": "Implement Redis caching for hot data paths"
+    },
+    {
+      "priority": "HIGH",
+      "category": "Performance",
+      "issue": "purchase p99 latency is 2543.21ms (close to 3000ms threshold)",
+      "recommendation": "Investigate slow queries and add database indexes",
+      "implementation": "Review Firestore indexes and add composite indexes for complex queries"
+    },
+    {
+      "priority": "HIGH",
+      "category": "Performance",
+      "issue": "loyalty p95 latency is 1234.78ms (exceeds 1000ms threshold)",
+      "recommendation": "Optimize database queries and consider caching frequently accessed data",
+      "implementation": "Implement Redis caching for hot data paths"
+    },
+    {
+      "priority": "HIGH",
+      "category": "Reliability",
+      "issue": "purchase error rate is 5.77%",
+      "recommendation": "Review error logs and implement retry logic with exponential backoff",
+      "implementation": "Add try-catch blocks and implement circuit breaker pattern"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Scaling",
+      "issue": "Prepare for production traffic patterns",
+      "recommendation": "Configure auto-scaling based on load test results",
+      "implementation": "{\n  \"functions\": {\n    \"memory\": \"1GB\",\n    \"minInstances\": 2,\n    \"maxInstances\": 100,\n    \"concurrency\": 80,\n    \"timeoutSeconds\": 60\n  }\n}"
+    },
+    {
+      "priority": "LOW",
+      "category": "Monitoring",
+      "issue": "Need real-time performance visibility",
+      "recommendation": "Enable Cloud Monitoring alerts for latency and error rates",
+      "implementation": "Set up alerts for p95 > 500ms and error rate > 1%"
+    }
+  ],
+  "scalingConfiguration": {
+    "firebase": {
+      "functions": {
+        "runtime": "nodejs20",
+        "region": "europe-west3",
+        "memory": "2GB",
+        "minInstances": 2,
+        "maxInstances": 100,
+        "concurrency": 80,
+        "timeoutSeconds": 60,
+        "regions": ["europe-west3", "us-central1", "asia-east1"]
+      }
+    }
+  },
+  "nextSteps": {
+    "immediate": [
+      "Address CRITICAL and HIGH priority recommendations",
+      "Implement recommended firebase.json configuration",
+      "Set up monitoring alerts for performance degradation"
+    ],
+    "shortTerm": [
+      "Optimize slow database queries",
+      "Implement caching for frequently accessed data",
+      "Add retry logic and circuit breakers"
+    ],
+    "longTerm": [
+      "Consider regional deployment for global users",
+      "Implement advanced caching strategies (Redis/Memcached)",
+      "Set up comprehensive monitoring and alerting"
+    ]
+  },
+  "metadata": {
+    "framework": "k6",
+    "version": "1.0.0",
+    "generatedBy": "Avalo Load Testing Suite",
+    "reportFormat": "json",
+    "testDuration": {
+      "ping": "3 minutes",
+      "purchase": "5 minutes",
+      "loyalty": "5 minutes"
+    },
+    "maxConcurrentUsers": {
+      "ping": 1000,
+      "purchase": 1000,
+      "loyalty": 500
+    }
+  }
+}

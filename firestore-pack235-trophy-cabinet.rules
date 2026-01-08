@@ -1,0 +1,164 @@
+rules_version = '2';
+
+// PACK 235: Couple Trophy Cabinet - Firestore Security Rules
+// Automatic achievement system that reinforces paid relationships
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isParticipant(participantIds) {
+      return isAuthenticated() && request.auth.uid in participantIds;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ========================================================================
+    // TROPHIES
+    // Core trophy data per couple
+    // ========================================================================
+    match /trophies/{coupleId} {
+      // Read: Participants or admins
+      allow read: if isParticipant(resource.data.participantIds) || isAdmin();
+      
+      // Create: Only backend creates initial trophy status
+      allow create: if false;
+      
+      // Update: Only backend updates trophy counts
+      allow update: if false;
+      
+      // Delete: Never delete, only deactivate
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // TROPHY UNLOCKS
+    // Individual trophy records with timestamps
+    // ========================================================================
+    match /trophy_unlocks/{trophyId} {
+      // Read: Participants can view their trophies
+      allow read: if isParticipant(resource.data.participantIds) || isAdmin();
+      
+      // Create: Only backend creates trophy unlocks
+      allow create: if false;
+      
+      // Update: Participants can mark trophy as viewed
+      allow update: if isParticipant(resource.data.participantIds) &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['viewedBy', 'viewedAt']);
+      
+      // Delete: Never delete trophies (permanent record)
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // TROPHY COSMETIC REWARDS
+    // Unlocked cosmetic rewards from trophy milestones
+    // ========================================================================
+    match /trophy_rewards/{rewardId} {
+      // Read: Participants can view their rewards
+      allow read: if isParticipant(resource.data.participantIds) || isAdmin();
+      
+      // Create: Only backend creates rewards
+      allow create: if false;
+      
+      // Update: Participants can activate/deactivate rewards they've earned
+      allow update: if isParticipant(resource.data.participantIds) &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['isActive', 'activatedAt', 'deactivatedAt']) &&
+        resource.data.isEarned == true;
+      
+      // Delete: Never delete earned rewards
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // TROPHY NOTIFICATIONS
+    // Celebration notifications for trophy unlocks
+    // ========================================================================
+    match /trophy_notifications/{notificationId} {
+      // Read: Recipient can read their notifications
+      allow read: if isOwner(resource.data.recipientUserId);
+      
+      // Create: Only backend creates notifications
+      allow create: if false;
+      
+      // Update: User can mark as read
+      allow update: if isOwner(resource.data.recipientUserId) &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['isRead', 'readAt']);
+      
+      // Delete: User can delete their notifications
+      allow delete: if isOwner(resource.data.recipientUserId);
+    }
+    
+    // ========================================================================
+    // TROPHY SETTINGS
+    // User preferences for trophy visibility
+    // ========================================================================
+    match /users/{userId}/settings/trophies {
+      // Read: Own settings only
+      allow read: if isOwner(userId);
+      
+      // Create/Update: User can manage their own settings
+      allow create, update: if isOwner(userId) &&
+        (!request.resource.data.keys().hasAny(['showOnProfile']) ||
+         request.resource.data.showOnProfile is bool);
+      
+      // Delete: Can disable by deletion
+      allow delete: if isOwner(userId);
+    }
+    
+    // ========================================================================
+    // TROPHY ANALYTICS
+    // Platform-wide trophy statistics
+    // ========================================================================
+    match /trophy_analytics/{analyticsId} {
+      // Read: Only admins
+      allow read: if isAdmin();
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // TROPHY MILESTONE HISTORY
+    // Historical record of all trophy events
+    // ========================================================================
+    match /trophy_milestone_history/{historyId} {
+      // Read: Participants can read their history
+      allow read: if isAuthenticated() && 
+        request.auth.uid in resource.data.participantIds;
+      
+      // Write: Only backend
+      allow write: if false;
+    }
+  }
+}
+
+// =================================================================
+// INTEGRATION NOTES
+// =================================================================
+// - Pauses when Sleep Mode active (PACK 228)
+// - Pauses when Breakup Recovery active (PACK 222)
+// - Respects safety incidents between couples
+// - Integrates with Memory Log (PACK 229)
+// - Does NOT modify chat/call pricing or tokenomics
+// - Does NOT provide free tokens or discounts
+// - Rewards are cosmetic only (borders, animations, badges, themes, frames)
+// - Trophy tracking based on paid interactions only
+// - All trophy data is preserved (never deleted)
+// - Users can control visibility via settings
+// - Trophies are private by default unless both users enable public display
+// =================================================================

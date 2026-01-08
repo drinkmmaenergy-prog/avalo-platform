@@ -1,0 +1,117 @@
+rules_version = '2';
+
+/**
+ * PACK 437 - Post-Launch Hardening & Revenue Protection Core
+ * Firestore Security Rules
+ * 
+ * Collections:
+ * - revenueRiskScores
+ * - revenueRiskProfiles
+ * - fraudRevenueCorrelations
+ * - creatorPayoutRisks
+ * - retentionImpactAnalyses
+ * - monetizationStrategies
+ * - guardrailTriggers
+ * - executiveDashboard
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isExecutive() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'executive'];
+    }
+    
+    function isSystemService() {
+      return request.auth.token.service == 'system';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Revenue Risk Scores
+    // Users can read their own, admins can read all, system can write
+    match /revenueRiskScores/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isSystemService();
+    }
+    
+    // Revenue Risk Profiles (Regional)
+    // Executives and admins can read, system can write
+    match /revenueRiskProfiles/{profileId} {
+      allow read: if isExecutive();
+      allow write: if isSystemService();
+    }
+    
+    // Fraud Revenue Correlations
+    // Users can read their own, admins can read all, system can write
+    match /fraudRevenueCorrelations/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isSystemService();
+    }
+    
+    // Creator Payout Risks
+    // Creators can read their own, admins can read all, system can write
+    match /creatorPayoutRisks/{creatorId} {
+      allow read: if isOwner(creatorId) || isAdmin();
+      allow write: if isSystemService();
+    }
+    
+    // Retention Impact Analyses
+    // Executives and admins only (business intelligence)
+    match /retentionImpactAnalyses/{strategyId} {
+      allow read: if isExecutive();
+      allow write: if isSystemService();
+    }
+    
+    // Monetization Strategies
+    // Executives can read, admins can write
+    match /monetizationStrategies/{strategyId} {
+      allow read: if isExecutive();
+      allow write: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isSystemService(); // Auto-adjustments
+    }
+    
+    // Guardrail Triggers
+    // Admins and executives can read, system can write
+    match /guardrailTriggers/{triggerId} {
+      allow read: if isExecutive();
+      allow write: if isSystemService();
+      allow update: if isAdmin(); // Allow acknowledging
+    }
+    
+    // Executive Dashboard
+    // Executives and admins only (read-only for humans)
+    match /executiveDashboard/{docId} {
+      allow read: if isExecutive();
+      allow write: if isSystemService();
+    }
+    
+    // System Configuration (for guardrails)
+    match /systemConfig/{configId} {
+      allow read: if isExecutive();
+      allow write: if isSystemService();
+      allow update: if isAdmin(); // Manual overrides
+    }
+    
+    // System Alerts
+    match /systemAlerts/{alertId} {
+      allow read: if isExecutive();
+      allow write: if isSystemService();
+      allow update: if isExecutive(); // Allow acknowledging
+    }
+  }
+}

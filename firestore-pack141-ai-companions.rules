@@ -1,0 +1,170 @@
+// PACK 141 - AI Companion Security Rules
+// Enforces strict access control and safety validation
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ==========================================================================
+    // AI COMPANION PROFILES (Read-only for users, admin-write)
+    // ==========================================================================
+    
+    match /ai_companion_profiles/{companionId} {
+      // Users can read active, safety-validated companions
+      allow read: if isAuthenticated() && 
+        resource.data.isActive == true && 
+        resource.data.safetyValidated == true;
+      
+      // Only admins can create/update/delete
+      allow write: if isAdmin();
+    }
+    
+    // ==========================================================================
+    // USER COMPANION SESSIONS (Own sessions only)
+    // ==========================================================================
+    
+    match /ai_companion_sessions/{sessionId} {
+      // Users can read/write their own sessions
+      allow read, write: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+    }
+    
+    // ==========================================================================
+    // COMPANION MEMORIES (Own memories only)
+    // ==========================================================================
+    
+    match /ai_companion_memories/{memoryId} {
+      // Users can read their own memories (safety-validated only)
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        resource.data.safetyValidated == true;
+      
+      // Users CANNOT write directly (only via Cloud Functions)
+      allow write: if false;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+    }
+    
+    // ==========================================================================
+    // SAFETY CHECKS (Own checks only, read-only)
+    // ==========================================================================
+    
+    match /ai_companion_safety_checks/{checkId} {
+      // Users can read their own safety checks
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // No direct writes (only via Cloud Functions)
+      allow write: if false;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+    }
+    
+    // ==========================================================================
+    // CONVERSATION LIMITS (Own limits only)
+    // ==========================================================================
+    
+    match /ai_companion_conversation_limits/{limitId} {
+      // Users can read their own limits
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // No direct writes (only via Cloud Functions)
+      allow write: if false;
+      
+      // Admins can read/write all
+      allow read, write: if isAdmin();
+    }
+    
+    // ==========================================================================
+    // DAILY USAGE TRACKING (Own usage only)
+    // ==========================================================================
+    
+    match /ai_companion_daily_usage/{usageId} {
+      // Users can read their own usage
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // No direct writes (only via Cloud Functions)
+      allow write: if false;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+    }
+    
+    // ==========================================================================
+    // WELLNESS ESCALATIONS (Read-only for users, write via functions)
+    // ==========================================================================
+    
+    match /ai_companion_wellness_escalations/{escalationId} {
+      // Users can read their own escalations
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      
+      // No direct writes (only via Cloud Functions)
+      allow write: if false;
+      
+      // Admins and moderators can read all
+      allow read: if isAdmin();
+    }
+    
+    // ==========================================================================
+    // ONBOARDING PREFERENCES (Own preferences only)
+    // ==========================================================================
+    
+    match /ai_companion_onboarding/{userId} {
+      // Users can read/write their own onboarding
+      allow read, write: if isOwner(userId) &&
+        // Ensure userId matches
+        request.resource.data.userId == userId;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+    }
+    
+    // ==========================================================================
+    // ANALYTICS (Admin-only)
+    // ==========================================================================
+    
+    match /ai_companion_daily_analytics/{analyticsId} {
+      // Only admins can read/write analytics
+      allow read, write: if isAdmin();
+    }
+    
+    // ==========================================================================
+    // TRANSACTIONS (Own transactions only, read-only)
+    // ==========================================================================
+    
+    match /transactions/{txId} {
+      // Users can read their own AI companion transactions
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid &&
+        resource.data.type == 'AI_COMPANION_CHARGE';
+      
+      // No direct writes (only via Cloud Functions)
+      allow write: if false;
+      
+      // Admins can read all
+      allow read: if isAdmin();
+    }
+  }
+}

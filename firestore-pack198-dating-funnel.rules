@@ -1,0 +1,200 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 198 — Dating Funnel Collections
+    // ========================================================================
+    
+    // Phase 1: Attraction Actions (Follow, Like, Wink, SuperLike)
+    match /attraction_actions/{actionId} {
+      // User can read their own actions (sent)
+      allow read: if request.auth != null && 
+        resource.data.fromUserId == request.auth.uid;
+      
+      // User can create their own actions
+      allow create: if request.auth != null && 
+        request.resource.data.fromUserId == request.auth.uid &&
+        request.resource.data.actionType in ['follow', 'like', 'wink', 'superlike'] &&
+        request.resource.data.timestamp == request.time;
+      
+      // Cannot update or delete
+      allow update, delete: if false;
+    }
+    
+    // Received Attraction Actions (denormalized for quick inbox view)
+    match /received_attraction_actions/{userId}/actions/{actionId} {
+      // User can read actions received by them
+      allow read: if request.auth != null && 
+        request.auth.uid == userId;
+      
+      // Only backend can write
+      allow write: if false;
+    }
+    
+    // Phase 2: Flirt Sessions
+    match /flirt_sessions/{sessionId} {
+      // Both participants can read
+      allow read: if request.auth != null && 
+        (resource.data.user1Id == request.auth.uid || 
+         resource.data.user2Id == request.auth.uid);
+      
+      // Only backend can manage sessions
+      allow write: if false;
+    }
+    
+    // Compliments
+    match /compliments/{complimentId} {
+      // Sender can read their sent compliments
+      allow read: if request.auth != null && 
+        (resource.data.senderId == request.auth.uid ||
+         resource.data.recipientId == request.auth.uid);
+      
+      // User can send compliments
+      allow create: if request.auth != null && 
+        request.resource.data.senderId == request.auth.uid &&
+        request.resource.data.timestamp == request.time;
+      
+      // Cannot update or delete
+      allow update, delete: if false;
+    }
+    
+    // Chemistry Discovery Boosts
+    match /chemistry_discovery_boosts/{boostId} {
+      // Both users can read
+      allow read: if request.auth != null && 
+        (resource.data.userId1 == request.auth.uid || 
+         resource.data.userId2 == request.auth.uid);
+      
+      // Only backend can manage
+      allow write: if false;
+    }
+    
+    // Sexy Mode Consent
+    match /sexy_mode_consent/{pairId} {
+      // Both users can read
+      allow read: if request.auth != null && 
+        (pairId.matches(request.auth.uid + '_.*') || 
+         pairId.matches('.*_' + request.auth.uid));
+      
+      // User can update their consent status
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.userId1 || 
+         request.auth.uid == resource.data.userId2) &&
+        request.resource.data.keys().hasOnly(['userId1Consent', 'userId2Consent', 'updatedAt', 'enabled']);
+      
+      // Backend can create
+      allow create: if false;
+      allow delete: if false;
+    }
+    
+    // Phase 3: Connection Sessions
+    match /connection_sessions/{sessionId} {
+      // Both participants can read
+      allow read: if request.auth != null && 
+        (resource.data.user1Id == request.auth.uid || 
+         resource.data.user2Id == request.auth.uid);
+      
+      // Only backend can manage
+      allow write: if false;
+    }
+    
+    // Calendar Events (dating context)
+    match /dating_calendar_events/{eventId} {
+      // Both participants can read
+      allow read: if request.auth != null && 
+        (resource.data.hostId == request.auth.uid || 
+         resource.data.attendeeId == request.auth.uid);
+      
+      // Only backend can manage
+      allow write: if false;
+    }
+    
+    // Phase 4: Meeting Verifications
+    match /meeting_verifications/{verificationId} {
+      // Both participants can read
+      allow read: if request.auth != null && 
+        (resource.data.user1Id == request.auth.uid || 
+         resource.data.user2Id == request.auth.uid);
+      
+      // Users can submit their verification
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.user1Id || 
+         request.auth.uid == resource.data.user2Id) &&
+        request.resource.data.keys().hasOnly([
+          'user1Id', 'user2Id', 'meetingId', 
+          'user1Verified', 'user2Verified', 
+          'user1VerifiedAt', 'user2VerifiedAt',
+          'qrCode', 'status', 'updatedAt'
+        ]);
+      
+      // Backend creates
+      allow create: if false;
+      allow delete: if false;
+    }
+    
+    // Safety Tracking (active meetings)
+    match /active_meetings/{meetingId} {
+      // Both participants can read
+      allow read: if request.auth != null && 
+        (resource.data.user1Id == request.auth.uid || 
+         resource.data.user2Id == request.auth.uid);
+      
+      // Users can update their location/status
+      allow update: if request.auth != null && 
+        (request.auth.uid == resource.data.user1Id || 
+         request.auth.uid == resource.data.user2Id);
+      
+      // Backend creates and deletes
+      allow create, delete: if false;
+    }
+    
+    // Panic Alerts
+    match /panic_alerts/{alertId} {
+      // Only the user who triggered can read initially
+      allow read: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
+      
+      // User can create panic alert
+      allow create: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.timestamp == request.time;
+      
+      // Cannot update or delete (immutable for safety)
+      allow update, delete: if false;
+    }
+    
+    // Paid Time Bookings (earn-to-date)
+    match /paid_time_bookings/{bookingId} {
+      // Both participants can read
+      allow read: if request.auth != null && 
+        (resource.data.bookerId == request.auth.uid || 
+         resource.data.hostId == request.auth.uid);
+      
+      // Only backend can manage
+      allow write: if false;
+    }
+    
+    // Funnel Progress Tracking
+    match /dating_funnel_progress/{userId} {
+      // User can read their own progress
+      allow read: if request.auth != null && 
+        request.auth.uid == userId;
+      
+      // Only backend can update
+      allow write: if false;
+    }
+    
+    // Funnel Analytics (per user pair)
+    match /dating_funnel_analytics/{pairId} {
+      // Both users can read
+      allow read: if request.auth != null && 
+        (pairId.matches(request.auth.uid + '_.*') || 
+         pairId.matches('.*_' + request.auth.uid));
+      
+      // Only backend can write
+      allow write: if false;
+    }
+  }
+}

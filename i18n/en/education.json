@@ -1,0 +1,108 @@
+{
+  "intro": {
+    "title": "Welcome to Avalo",
+    "subtitle": "Learn how to use the platform",
+    "skip": "Skip",
+    "next": "Next",
+    "get_started": "Get Started",
+    "slide_tokens": "Tokens",
+    "slide_chats": "Chats",
+    "slide_calendar": "Calendar",
+    "slide_ai": "AI Companions",
+    "slide_safety": "Safety"
+  },
+  "tokens": {
+    "title": "How Tokens Work",
+    "subtitle": "Avalo uses tokens as currency. 1 token = 0.20 PLN",
+    "how_it_works": "How It Works",
+    "buy_tokens": "Buy Tokens",
+    "buy_tokens_desc": "Purchase token packages on the web (PLN 30-1000)",
+    "earn_tokens": "Earn Tokens",
+    "earn_tokens_desc": "Enable Earn Mode and get paid for chats and calls",
+    "spend_tokens": "Spend Tokens",
+    "spend_tokens_desc": "Use tokens for messages, calls, meetings, and AI chats",
+    "note": "Your wallet shows token balance. PLN amounts only on web checkout."
+  },
+  "chats": {
+    "title": "Chat Pricing",
+    "subtitle": "Fair pricing with free messages and transparent fees",
+    "free_messages": "3 Free Messages",
+    "free_messages_desc": "Every chat starts with 3 free messages per person",
+    "deposit": "100 Token Deposit",
+    "deposit_desc": "After free messages: 35% platform fee (35 tokens non-refundable)",
+    "escrow_desc": "65% goes to escrow (65 tokens refundable)",
+    "per_message": "Per Message",
+    "per_message_desc": "Standard: 11 words/token • Royal earners: 7 words/token",
+    "auto_refund": "Auto-Refund",
+    "auto_refund_desc": "48h inactive? Unused escrow automatically refunded",
+    "fees_non_refundable": "Platform fees (35%) are non-refundable under all circumstances. Only unused escrow can be refunded."
+  },
+  "calendar": {
+    "title": "Calendar Meetings",
+    "subtitle": "Book social meetings with safety and transparency",
+    "social_only": "Social Only",
+    "social_only_desc": "Coffee, dinner, public activities. No escort services allowed.",
+    "escrow_protection": "Escrow Protection",
+    "escrow_explained": "20% platform fee + 80% held in escrow until meeting verified",
+    "verification": "Verification Required",
+    "verification_desc": "GPS, QR code, or selfie to confirm attendance",
+    "refund_policy": "Refund Policy",
+    "refund_policy_desc": "Cancel before: full refund. No-show: partial. Late: varies.",
+    "legal_warning": "Payment is for TIME ONLY, not services. No escorting, no sex work. Violations result in permanent ban."
+  },
+  "ai": {
+    "title": "AI Companions",
+    "subtitle": "Chat with AI friends - subscription-based, no per-message fees",
+    "subscription_model": "Subscription Model",
+    "tier_free": "Free",
+    "tier_free_price": "PLN 0",
+    "tier_free_features": "10 messages/day • 3 AI companions • SFW only",
+    "tier_plus": "Plus",
+    "tier_plus_price": "PLN 39/mo",
+    "tier_plus_features": "Unlimited messages • All standard AIs • 2 tokens/photo",
+    "tier_intimate": "Intimate",
+    "tier_intimate_price": "PLN 79/mo",
+    "tier_intimate_features": "Unlimited + NSFW • Romantic content • 3 tokens/photo",
+    "tier_creator": "Creator",
+    "tier_creator_price": "PLN 149/mo",
+    "tier_creator_features": "Create custom AIs • Fine-tune responses • Share publicly",
+    "revenue_note": "100% Avalo revenue - no revenue sharing with AI creators"
+  },
+  "safety": {
+    "title": "Your Safety Matters",
+    "subtitle": "We take safety seriously with multiple protection layers",
+    "moderation": "Content Moderation",
+    "moderation_desc": "AI + human review for inappropriate content",
+    "reporting": "Easy Reporting",
+    "reporting_desc": "Report users, messages, or meetings instantly",
+    "fraud_detection": "Fraud Detection",
+    "fraud_detection_desc": "Automated systems detect scams and fake profiles",
+    "privacy": "Data Privacy",
+    "privacy_desc": "Encrypted chats, secure storage, GDPR compliant",
+    "guidelines": "Community Guidelines",
+    "guidelines_desc": "Be respectful. No harassment, hate speech, or illegal activities. Platform fees are non-refundable. Violations result in warnings or bans.",
+    "support": "Need help? Contact support anytime",
+    "support_email": "support@avalo.app"
+  },
+  "tooltips": {
+    "chat_cost": "This action costs tokens",
+    "chat_cost_desc": "You'll be charged {{cost}} tokens for this message",
+    "deposit_required": "Deposit Required",
+    "deposit_required_desc": "Pay 100 tokens: 35 platform fee + 65 escrow (refundable)",
+    "calendar_booking": "Meeting Booking",
+    "calendar_booking_desc": "20% platform fee is non-refundable. 80% held until verified.",
+    "ai_limit": "Daily Limit",
+    "ai_limit_desc": "Free tier: {{remaining}} messages left today. Upgrade for unlimited.",
+    "photo_unlock": "Unlock Photo",
+    "photo_unlock_desc": "This will cost {{cost}} tokens to unlock permanently"
+  },
+  "pricing": {
+    "notice": "Global billing uses USD — no surcharge or conversion fees",
+    "display_only": "Prices shown in local currency for convenience only"
+  },
+  "personalization": {
+    "recommendedForYou": "Recommended for you",
+    "aboutYou": "What your AI knows about you",
+    "activityLevel": "Your activity level: {score}"
+  }
+}

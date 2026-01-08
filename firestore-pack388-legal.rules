@@ -1,0 +1,237 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // PACK 388 — LEGAL COMPLIANCE RULES
+    // ============================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true;
+    }
+    
+    function isLegalTeam() {
+      return isAdmin() && 
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.permissions.hasAny(['LEGAL_ADMIN', 'COMPLIANCE_OFFICER']);
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ============================================
+    // GDPR DATA REQUESTS
+    // ============================================
+    match /dataRequests/{requestId} {
+      allow read: if isOwner(resource.data.userId) || isLegalTeam();
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.type in ['ACCESS', 'EXPORT', 'RECTIFY', 'RESTRICT', 'DELETE'] &&
+                      request.resource.data.status == 'PENDING';
+      allow update: if isLegalTeam(); // Only legal team can update
+      allow delete: if false; // Never delete (audit trail)
+    }
+    
+    // ============================================
+    // AGE VERIFICATIONS
+    // ============================================
+    match /ageVerifications/{verificationId} {
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.status == 'PENDING';
+      allow update: if isAdmin(); // Only admins can update (for reviews)
+      allow delete: if false; // Never delete (compliance)
+    }
+    
+    // ============================================
+    // MINOR DETECTION ALERTS
+    // ============================================
+    match /minorDetectionAlerts/{alertId} {
+      allow read: if isAdmin();
+      allow create: if false; // Only created by Cloud Functions
+      allow update: if isAdmin();
+      allow delete: if false; // Never delete (legal evidence)
+    }
+    
+    // ============================================
+    // KYC VERIFICATIONS
+    // ============================================
+    match /kycVerifications/{verificationId} {
+      allow read: if isOwner(resource.data.userId) || isLegalTeam();
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.status == 'PENDING';
+      allow update: if isLegalTeam(); // Only legal team can update
+      allow delete: if false; // Never delete (regulatory requirement)
+    }
+    
+    // ============================================
+    // AML ALERTS
+    // ============================================
+    match /amlAlerts/{alertId} {
+      allow read: if isLegalTeam();
+      allow create: if false; // Only created by Cloud Functions
+      allow update: if isLegalTeam();
+      allow delete: if false; // Never delete (compliance)
+    }
+    
+    // ============================================
+    // LEGAL HOLDS
+    // ============================================
+    match /legalHolds/{holdId} {
+      allow read: if isLegalTeam();
+      allow create: if isLegalTeam() &&
+                      request.resource.data.appliedBy == request.auth.uid;
+      allow update: if isLegalTeam();
+      allow delete: if false; // Never delete (legal requirement)
+    }
+    
+    // ============================================
+    // DATA RETENTION POLICIES
+    // ============================================
+    match /dataRetentionPolicies/{policyId} {
+      allow read: if isAuthenticated();
+      allow create: if isLegalTeam();
+      allow update: if isLegalTeam();
+      allow delete: if false; // Never delete (compliance records)
+    }
+    
+    // ============================================
+    // CRYPTOGRAPHIC ERASE LOGS
+    // ============================================
+    match /cryptographicEraseLogs/{logId} {
+      allow read: if isLegalTeam();
+      allow create: if false; // Only created by Cloud Functions
+      allow update: if false; // Immutable
+      allow delete: if false; // Never delete (proof of deletion)
+    }
+    
+    // ============================================
+    // RETENTION PURGE LOGS
+    // ============================================
+    match /retentionPurgeLogs/{logId} {
+      allow read: if isLegalTeam();
+      allow create: if false; // Only created by Cloud Functions
+      allow update: if false; // Immutable
+      allow delete: if false; // Never delete (audit trail)
+    }
+    
+    // ============================================
+    // REGULATORY INCIDENTS
+    // ============================================
+    match /regulatoryIncidents/{incidentId} {
+      allow read: if isLegalTeam();
+      allow create: if isLegalTeam();
+      allow update: if isLegalTeam();
+      allow delete: if false; // Never delete (legal records)
+    }
+    
+    // ============================================
+    // INCIDENT EVENTS
+    // ============================================
+    match /incidentEvents/{eventId} {
+      allow read: if isLegalTeam();
+      allow create: if isLegalTeam();
+      allow update: if false; // Immutable timeline
+      allow delete: if false; // Never delete
+    }
+    
+    // ============================================
+    // LEGAL REPORTS
+    // ============================================
+    match /legalReports/{reportId} {
+      allow read: if isLegalTeam();
+      allow create: if isLegalTeam();
+      allow update: if false; // Immutable
+      allow delete: if false; // Never delete (legal documents)
+    }
+    
+    // ============================================
+    // LEGAL NOTIFICATIONS
+    // ============================================
+    match /legalNotifications/{notificationId} {
+      allow read: if isLegalTeam();
+      allow create: if false; // Only created by Cloud Functions
+      allow update: if isLegalTeam(); // Can mark as read
+      allow delete: if false; // Never delete
+    }
+    
+    // ============================================
+    // COMPLIANCE ALERTS
+    // ============================================
+    match /complianceAlerts/{alertId} {
+      allow read: if isLegalTeam();
+      allow create: if false; // Only created by Cloud Functions
+      allow update: if isLegalTeam();
+      allow delete: if false; // Never delete
+    }
+    
+    // ============================================
+    // KYC EXPORTS
+    // ============================================
+    match /kycExports/{exportId} {
+      allow read: if isLegalTeam();
+      allow create: if false; // Only created by Cloud Functions
+      allow update: if false; // Immutable
+      allow delete: if false; // Never delete (compliance)
+    }
+    
+    // ============================================
+    // LEGAL JURISDICTIONS
+    // ============================================
+    match /legalJurisdictions/{countryCode} {
+      allow read: if isAuthenticated();
+      allow create: if isLegalTeam();
+      allow update: if isLegalTeam();
+      allow delete: if isLegalTeam();
+    }
+    
+    // ============================================
+    // PR INCIDENTS (PACK 387 integration)
+    // ============================================
+    match /prIncidents/{incidentId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+    
+    // ============================================
+    // SUPPORT ESCALATIONS (PACK 300 integration)
+    // ============================================
+    match /supportEscalations/{escalationId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+    
+    // ============================================
+    // FRAUD ANALYSIS TASKS (PACK 302 integration)
+    // ============================================
+    match /fraudAnalysisTasks/{taskId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+    
+    // ============================================
+    // ADMIN NOTIFICATIONS
+    // ============================================
+    match /adminNotifications/{notificationId} {
+      allow read: if isAdmin();
+      allow create: if false; // Only created by Cloud Functions
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}

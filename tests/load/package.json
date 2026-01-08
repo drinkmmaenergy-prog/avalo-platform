@@ -1,0 +1,30 @@
+{
+  "name": "@avalo/load-tests",
+  "version": "1.0.0",
+  "description": "Avalo Load Testing Suite - 100K to 20M users",
+  "private": true,
+  "scripts": {
+    "test:100k": "node --max-old-space-size=4096 dist/100k-load.js",
+    "test:1m": "node --max-old-space-size=8192 dist/1m-synthetic.js",
+    "test:20m": "node --max-old-space-size=16384 dist/20m-stress.js",
+    "test:all": "npm run test:100k && npm run test:1m && npm run test:20m",
+    "build": "tsc -p .",
+    "report": "node dist/reporter.js",
+    "ci": "npm run build && npm run test:all && npm run report"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "cli-progress": "^3.12.0",
+    "firebase-admin": "^12.7.0",
+    "pino": "^9.5.0",
+    "statistics": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/cli-progress": "^3.11.6",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

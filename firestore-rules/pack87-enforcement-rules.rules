@@ -1,0 +1,60 @@
+// PACK 87 — Enforcement & Account State Machine Firestore Security Rules
+// 
+// Collections:
+// - user_enforcement_state: User account status and restrictions
+// - enforcement_audit: Audit trail of enforcement changes (optional)
+//
+// Security principles:
+// - Users CANNOT read their own enforcement state directly (use Cloud Function for sanitized data)
+// - Only Cloud Functions can write enforcement data
+// - Admins can read all enforcement data for moderation
+// - Enforcement state is internal-only to prevent gaming the system
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             request.auth.token.admin == true;
+    }
+    
+    // ========================================================================
+    // USER ENFORCEMENT STATE COLLECTION
+    // ========================================================================
+    
+    match /user_enforcement_state/{userId} {
+      // Users CANNOT read their own enforcement state directly
+      // They must use Cloud Function which returns sanitized data
+      // This prevents users from gaming the system or seeing internal flags
+      allow read: if isAdmin();
+      
+      // Only Cloud Functions can write enforcement states
+      // Users cannot modify their own enforcement states
+      allow write: if false; // All writes must go through Cloud Functions
+    }
+    
+    // ========================================================================
+    // ENFORCEMENT AUDIT COLLECTION (Optional)
+    // ========================================================================
+    
+    match /enforcement_audit/{auditId} {
+      // Audit logs are admin-only for compliance and investigation
+      allow read: if isAdmin();
+      
+      // Only Cloud Functions can create audit entries
+      allow write: if false; // All writes must go through Cloud Functions
+    }
+  }
+}

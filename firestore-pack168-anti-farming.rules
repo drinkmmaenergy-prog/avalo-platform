@@ -1,0 +1,147 @@
+rules_version = '2';
+
+///
+/// PACK 168 — Anti-Farming & Wealth-Protection Engine
+/// Firestore Security Rules
+///
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['moderator', 'admin'];
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Farming Cases - Only moderators and admins can access
+    match /farming_cases/{caseId} {
+      allow read: if isModerator() || isAdmin();
+      allow write: if isModerator() || isAdmin();
+    }
+
+    // Wealth Protection Profiles - Users can read/update their own
+    match /wealth_protection_profiles/{userId} {
+      allow read: if isOwner(userId) || isModerator();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && 
+        // Users can only update protection settings, not spending data
+        !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['totalSpent', 'totalEarned', 'last30DaysSpent', 'last30DaysEarned']);
+      allow delete: if false;
+    }
+
+    // Spending Risk Events - System-generated, read-only for users
+    match /spending_risk_events/{eventId} {
+      allow read: if isOwner(resource.data.userId) || isModerator();
+      allow write: if false;
+    }
+
+    // Harvest Detection Logs - Moderators only
+    match /harvest_detection_logs/{logId} {
+      allow read: if isModerator() || isAdmin();
+      allow write: if false;
+    }
+
+    // Farming Risk Scores - System-generated, moderators can read
+    match /farming_risk_scores/{userId} {
+      allow read: if isModerator() || isAdmin();
+      allow write: if false;
+    }
+
+    // Multi-Account Clusters - Moderators only
+    match /multi_account_clusters/{clusterId} {
+      allow read: if isModerator() || isAdmin();
+      allow write: if isModerator() || isAdmin();
+    }
+
+    // Emotional Grooming Patterns - Moderators only
+    match /emotional_grooming_patterns/{patternId} {
+      allow read: if isModerator() || isAdmin();
+      allow write: if false;
+    }
+
+    // Token Laundering Networks - Moderators only
+    match /token_laundering_networks/{networkId} {
+      allow read: if isModerator() || isAdmin();
+      allow write: if false;
+    }
+
+    // Farming Appeals - Users can create appeals for their own cases
+    match /farming_appeals/{appealId} {
+      allow read: if isOwner(resource.data.userId) || isModerator();
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.status == 'pending';
+      allow update: if isModerator() || isAdmin();
+      allow delete: if false;
+    }
+
+    // Spending Health Notifications - Users can read their own
+    match /spending_health_notifications/{notificationId} {
+      allow read: if isOwner(resource.data.userId);
+      allow update: if isOwner(resource.data.userId) && 
+        // Users can only dismiss notifications
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['dismissed']);
+      allow write: if false;
+    }
+
+    // Blocked Monetization Pairs - System-managed
+    match /blocked_monetization_pairs/{blockId} {
+      allow read: if isAuthenticated() && 
+        (request.auth.uid == resource.data.userId || 
+         request.auth.uid == resource.data.targetUserId ||
+         isModerator());
+      allow write: if false;
+    }
+
+    // Affiliate Loop Audits - Admins only
+    match /affiliate_loop_audits/{auditId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Network Graph Scans - Admins only
+    match /network_graph_scans/{scanId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Risk Score Alerts - Moderators and admins
+    match /risk_score_alerts/{alertId} {
+      allow read: if isModerator() || isAdmin();
+      allow write: if false;
+    }
+
+    // Conversation Health Alerts - Users can read their own
+    match /conversation_health_alerts/{alertId} {
+      allow read: if isOwner(resource.data.userId) || isModerator();
+      allow write: if false;
+    }
+
+    // Affiliate Violations - System-managed, moderators can read
+    match /affiliate_violations/{violationId} {
+      allow read: if isModerator() || isAdmin();
+      allow write: if false;
+    }
+
+    // KYC Verification Requests - Users can read their own
+    match /kyc_verification_requests/{requestId} {
+      allow read: if isOwner(resource.data.userId) || isModerator();
+      allow write: if isModerator() || isAdmin();
+    }
+  }
+}

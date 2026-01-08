@@ -1,0 +1,326 @@
+/**
+ * PACK 193 — Avalo Club Intelligence Architecture
+ * Smart Community Ranking • Anti-Toxicity • Anti-Cliques • Zero Popularity Wars
+ * 
+ * Collections:
+ * - club_contributions (contribution tracking)
+ * - club_roles (functional, non-hierarchical roles)
+ * - club_toxicity_events (toxicity monitoring)
+ * - club_challenges (safe missions & challenges)
+ * - club_contribution_scores (aggregated scores)
+ * - club_clique_detections (anti-clique monitoring)
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isMemberOfClub(userId, clubId) {
+      return exists(/databases/$(database)/documents/club_members/$(userId + '_' + clubId))
+        && get(/databases/$(database)/documents/club_members/$(userId + '_' + clubId)).data.isActive == true
+        && get(/databases/$(database)/documents/club_members/$(userId + '_' + clubId)).data.isBanned == false;
+    }
+    
+    function isClubOwner(clubId) {
+      return get(/databases/$(database)/documents/clubs/$(clubId)).data.ownerId == request.auth.uid;
+    }
+    
+    function isClubModerator(userId, clubId) {
+      return isClubOwner(clubId)
+        || (exists(/databases/$(database)/documents/club_moderators/$(userId + '_' + clubId))
+            && get(/databases/$(database)/documents/club_moderators/$(userId + '_' + clubId)).data.isActive == true);
+    }
+    
+    function hasValidContributionType(type) {
+      return type in ['knowledge', 'engagement', 'creativity', 'collaboration', 'leadership', 
+                      'tutorial', 'guide', 'qa', 'project', 'mentorship', 'resource'];
+    }
+    
+    function hasValidRoleType(role) {
+      return role in ['owner', 'moderator', 'coach', 'researcher', 'archivist', 'host', 'member'];
+    }
+    
+    function hasValidChallengeType(type) {
+      return type in ['fitness', 'language', 'business', 'creativity', 'team_project'];
+    }
+    
+    function isForbiddenChallengeType(type) {
+      return type in ['flirt', 'seduction', 'jealousy', 'humiliation', 'popularity', 'attractiveness'];
+    }
+
+    // ============================================
+    // CLUB CONTRIBUTIONS COLLECTION
+    // Track valuable contributions (not popularity)
+    // ============================================
+    
+    match /club_contributions/{contributionId} {
+      // Members can read contributions in their clubs
+      allow read: if isAuthenticated()
+        && isMemberOfClub(request.auth.uid, resource.data.clubId);
+      
+      // Created via Cloud Function only (validation + scoring)
+      allow create: if false;
+      
+      // Updated via Cloud Function only (validation)
+      allow update: if false;
+      
+      // No deletion (historical record)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // CLUB CONTRIBUTION SCORES
+    // Aggregated contribution metrics (public within club)
+    // ============================================
+    
+    match /club_contribution_scores/{scoreId} {
+      // Members can read scores in their clubs
+      allow read: if isAuthenticated()
+        && isMemberOfClub(request.auth.uid, resource.data.clubId);
+      
+      // Managed via Cloud Function only
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ============================================
+    // CLUB ROLES (Functional, NOT hierarchical)
+    // ============================================
+    
+    match /club_roles/{roleId} {
+      // Members can read roles in their clubs
+      allow read: if isAuthenticated()
+        && isMemberOfClub(request.auth.uid, resource.data.clubId);
+      
+      // Owner/Moderator can assign functional roles
+      allow create: if isAuthenticated()
+        && isClubModerator(request.auth.uid, request.resource.data.clubId)
+        && hasValidRoleType(request.resource.data.role)
+        && request.resource.data.isFunctional == true
+        && request.resource.data.isStatusBased == false
+        && !request.resource.data.keys().hasAny(['rank', 'hierarchy', 'level', 'tier']);
+      
+      // Owner/Moderator can update roles
+      allow update: if isAuthenticated()
+        && isClubModerator(request.auth.uid, resource.data.clubId)
+        && hasValidRoleType(request.resource.data.role)
+        && request.resource.data.isFunctional == true
+        && !request.resource.data.keys().hasAny(['rank', 'hierarchy', 'level', 'tier']);
+      
+      // Owner/Moderator can remove roles
+      allow delete: if isAuthenticated()
+        && isClubModerator(request.auth.uid, resource.data.clubId);
+    }
+
+    // ============================================
+    // CLUB CHALLENGES (Safe missions only)
+    // ============================================
+    
+    match /club_challenges/{challengeId} {
+      // Members can read challenges in their clubs
+      allow read: if isAuthenticated()
+        && isMemberOfClub(request.auth.uid, resource.data.clubId)
+        && resource.data.isActive == true;
+      
+      // Owner/Moderator can create safe challenges
+      allow create: if isAuthenticated()
+        && isClubModerator(request.auth.uid, request.resource.data.clubId)
+        && hasValidChallengeType(request.resource.data.type)
+        && !isForbiddenChallengeType(request.resource.data.type)
+        && request.resource.data.isSafe == true
+        && request.resource.data.isEducational == true
+        && !request.resource.data.keys().hasAny(['attractivenessRating', 'popularityContest', 
+                                                   'flirtingGoal', 'jealousyTask']);
+      
+      // Owner/Moderator can update challenges
+      allow update: if isAuthenticated()
+        && isClubModerator(request.auth.uid, resource.data.clubId)
+        && hasValidChallengeType(request.resource.data.type)
+        && !isForbiddenChallengeType(request.resource.data.type);
+      
+      // Owner/Moderator can delete challenges
+      allow delete: if isAuthenticated()
+        && isClubModerator(request.auth.uid, resource.data.clubId);
+    }
+
+    // ============================================
+    // CLUB TOXICITY EVENTS (Private monitoring)
+    // ============================================
+    
+    match /club_toxicity_events/{eventId} {
+      // Only moderators can read toxicity events
+      allow read: if isAuthenticated()
+        && isClubModerator(request.auth.uid, resource.data.clubId);
+      
+      // Detected and logged via Cloud Function only
+      allow create: if false;
+      
+      // Resolved via Cloud Function only
+      allow update: if false;
+      
+      // No deletion (audit trail)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // CLUB CLIQUE DETECTIONS (Private monitoring)
+    // ============================================
+    
+    match /club_clique_detections/{detectionId} {
+      // Only owner and moderators can read clique detections
+      allow read: if isAuthenticated()
+        && isClubModerator(request.auth.uid, resource.data.clubId);
+      
+      // Detected via Cloud Function only
+      allow create: if false;
+      
+      // Mitigation status updated via Cloud Function only
+      allow update: if false;
+      
+      // No deletion (audit trail)
+      allow delete: if false;
+    }
+
+    // ============================================
+    // SAFETY ENFORCEMENT
+    // Prevent ranking manipulation
+    // ============================================
+    
+    // Ensure clubs CANNOT rank by forbidden metrics
+    match /clubs/{clubId} {
+      allow update: if isAuthenticated()
+        && isClubOwner(clubId)
+        && !request.resource.data.keys().hasAny([
+          'beautyRanking', 'attractivenessScore', 'flirtSuccessRate',
+          'spendingRank', 'wealthRank', 'incomeRank', 'fanCount',
+          'popularityScore', 'topMen', 'topWomen', 'topFlirts',
+          'vipMembers', 'eliteGroup', 'coolGang'
+        ]);
+    }
+    
+    // Ensure members CANNOT be ranked by forbidden metrics
+    match /club_members/{memberId} {
+      allow update: if isAuthenticated()
+        && !request.resource.data.keys().hasAny([
+          'beautySc ore', 'attractivenessRating', 'seductionScore',
+          'wealthLevel', 'spendingAmount', 'popularityPoints',
+          'fanLevel', 'eliteStatus', 'coolnessScore'
+        ]);
+    }
+
+    // ============================================
+    // ANTI-TOXICITY RULES
+    // Prevent toxic content and behavior
+    // ============================================
+    
+    // Ensure posts don't contain toxic patterns
+    match /club_posts/{postId} {
+      allow create: if false;  // Always via Cloud Function for toxicity detection
+      
+      allow update: if isAuthenticated()
+        && (isOwner(resource.data.userId) || isClubModerator(request.auth.uid, resource.data.clubId))
+        && !request.resource.data.keys().hasAny(['isFlameWar', 'isRaid', 'isDrama', 'isConflict']);
+    }
+
+    // ============================================
+    // NEWCOMER PROTECTION
+    // Boost visibility for new members
+    // ============================================
+    
+    match /club_newcomer_boost/{boostId} {
+      // Members can see their own boost status
+      allow read: if isAuthenticated()
+        && isOwner(resource.data.userId);
+      
+      // Managed via Cloud Function only
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ============================================
+    // CLUB SAFETY SETTINGS
+    // Owner-controlled safety preferences
+    // ============================================
+    
+    match /club_safety_settings/{clubId} {
+      // Members can read safety settings
+      allow read: if isAuthenticated()
+        && isMemberOfClub(request.auth.uid, clubId);
+      
+      // Owner can update safety settings
+      allow create: if isAuthenticated()
+        && isClubOwner(clubId)
+        && request.resource.data.antiCliqueEnabled == true
+        && request.resource.data.antiToxicityEnabled == true
+        && request.resource.data.newcomerProtectionEnabled == true;
+      
+      allow update: if isAuthenticated()
+        && isClubOwner(clubId)
+        && request.resource.data.antiCliqueEnabled == true
+        && request.resource.data.antiToxicityEnabled == true
+        && request.resource.data.newcomerProtectionEnabled == true;
+      
+      // Cannot disable core safety features
+      allow delete: if false;
+    }
+
+    // ============================================
+    // MISSION PROGRESS (Safe educational progress)
+    // ============================================
+    
+    match /club_mission_progress/{progressId} {
+      // Users can read their own progress
+      allow read: if isAuthenticated()
+        && isOwner(resource.data.userId);
+      
+      // Tracked via Cloud Function only (validation)
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ============================================
+    // FORBIDDEN: Hierarchies and Status Systems
+    // ============================================
+    
+    // Explicitly block any attempts to create status hierarchies
+    match /club_hierarchy/{doc=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /club_leaderboards/{doc=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /club_popularity_rankings/{doc=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /club_attractiveness_ratings/{doc=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    
+    match /club_wealth_rankings/{doc=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

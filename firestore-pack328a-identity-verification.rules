@@ -1,0 +1,114 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // PACK 328A: Identity Verification Collections
+    // Bank-ID & Document Fallback Verification (18+ Enforcement Layer)
+    // ============================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+             (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN' ||
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'MODERATOR');
+    }
+    
+    // ============================================================================
+    // Identity Verification Requests
+    // ============================================================================
+    match /identityVerificationRequests/{requestId} {
+      // Users can read their own verification requests
+      allow read: if isOwner(resource.data.userId) || isModerator();
+      
+      // System creates verification requests (via Cloud Functions)
+      allow create: if isAuthenticated() && 
+                       request.resource.data.keys().hasAll(['userId', 'reason', 'provider', 'status', 'requestedAt']) &&
+                       isOwner(request.resource.data.userId) &&
+                       request.resource.data.reason in ['SELFIE_FAIL', 'MISMATCH', 'FRAUD_FLAG', 'UNDERAGE_RISK'] &&
+                       request.resource.data.provider in ['BANK_ID', 'DOC_AI', 'MANUAL'] &&
+                       request.resource.data.status == 'PENDING' &&
+                       request.resource.data.requestedAt == request.time;
+      
+      // Users can update their own requests (uploading documents)
+      // Moderators can update status
+      allow update: if (isOwner(resource.data.userId) && 
+                        request.resource.data.userId == resource.data.userId &&
+                        request.resource.data.reason == resource.data.reason &&
+                        request.resource.data.provider == resource.data.provider) ||
+                       (isModerator() && 
+                        request.resource.data.status in ['VERIFIED', 'REJECTED', 'TIMEOUT']);
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Identity Verification Results
+    // ============================================================================
+    match /identityVerificationResults/{resultId} {
+      // Users can read their own results
+      allow read: if isOwner(resource.data.userId) || isModerator();
+      
+      // Only system/moderators can create results
+      allow create: if isModerator() &&
+                       request.resource.data.keys().hasAll(['userId', 'verified', 'ageConfirmed', 'identityMatch', 'provider', 'createdAt']) &&
+                       request.resource.data.createdAt == request.time;
+      
+      // Only moderators can update results
+      allow update: if isModerator();
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // Verification Documents (Secure Storage References)
+    // ============================================================================
+    match /verificationDocuments/{documentId} {
+      // Users can read their own documents
+      allow read: if isOwner(resource.data.userId) || isModerator();
+      
+      // Users can upload their own documents
+      allow create: if isAuthenticated() &&
+                       isOwner(request.resource.data.userId) &&
+                       request.resource.data.keys().hasAll(['userId', 'requestId', 'type', 'uploadedAt']) &&
+                       request.resource.data.uploadedAt == request.time;
+      
+      // Only moderators can update
+      allow update: if isModerator();
+      
+      // Users can delete their own documents, admins can delete any
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+    
+    // ============================================================================
+    // Verification Audit Log
+    // ============================================================================
+    match /verificationAuditLog/{logId} {
+      // Only moderators can read audit logs
+      allow read: if isModerator();
+      
+      // System creates audit logs (append-only)
+      allow create: if isAuthenticated() &&
+                       request.resource.data.keys().hasAll(['userId', 'action', 'timestamp', 'performedBy']) &&
+                       request.resource.data.timestamp == request.time;
+      
+      // Audit logs are immutable
+      allow update, delete: if false;
+    }
+  }
+}

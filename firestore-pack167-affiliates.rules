@@ -1,0 +1,152 @@
+rules_version = '2';
+
+// PACK 167 - Avalo Influencer & Affiliate Attribution Network
+// Ethical affiliate marketing with zero romantic/sexual manipulation
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function hasVerifiedAccount() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.emailVerified == true;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Validate revenue split (65% seller, up to 20% referrer, min 15% platform)
+    function isValidRevenueSplit(data) {
+      return data.referralPercentage >= 0 && 
+             data.referralPercentage <= 20 &&
+             data.sellerPercentage >= 65 &&
+             data.platformFee >= 15;
+    }
+    
+    // Validate allowed product categories
+    function isAllowedCategory(category) {
+      return category in ['digital_products', 'courses', 'events', 
+                         'clubs', 'challenges', 'brand_merch', 'coaching'];
+    }
+    
+    // Block forbidden content
+    function hasNoForbiddenContent(text) {
+      let lower = text.lower();
+      return !lower.matches('.*private attention.*') &&
+             !lower.matches('.*love you.*buy.*') &&
+             !lower.matches('.*prove it.*purchas.*') &&
+             !lower.matches('.*affection.*') &&
+             !lower.matches('.*romantic.*') &&
+             !lower.matches('.*seduc.*') &&
+             !lower.matches('.*erotic.*') &&
+             !lower.matches('.*nsfw.*') &&
+             !lower.matches('.*onlyfans.*') &&
+             !lower.matches('.*escort.*') &&
+             !lower.matches('.*sugar.*dating.*');
+    }
+    
+    // Validate external URLs are not forbidden platforms
+    function isAllowedURL(url) {
+      let lower = url.lower();
+      return !lower.matches('.*onlyfans.*') &&
+             !lower.matches('.*telegram.*') &&
+             !lower.matches('.*whatsapp.*') &&
+             !lower.matches('.*patreon.*') &&
+             !lower.matches('.*external.*payment.*');
+    }
+    
+    // Affiliate Links Collection
+    match /affiliate_links/{linkId} {
+      allow read: if isAuthenticated();
+      
+      allow create: if isAuthenticated() &&
+                       hasVerifiedAccount() &&
+                       isOwner(request.resource.data.creatorId) &&
+                       isAllowedCategory(request.resource.data.category) &&
+                       isValidRevenueSplit(request.resource.data) &&
+                       hasNoForbiddenContent(request.resource.data.description) &&
+                       request.resource.data.isActive == true &&
+                       request.resource.data.affectsRanking == false &&
+                       request.resource.data.affectsDiscovery == false;
+      
+      allow update: if isOwner(resource.data.creatorId) &&
+                       (!('category' in request.resource.data.diff(resource.data).affectedKeys()) ||
+                        isAllowedCategory(request.resource.data.category)) &&
+                       (!('description' in request.resource.data.diff(resource.data).affectedKeys()) ||
+                        hasNoForbiddenContent(request.resource.data.description)) &&
+                       (!('referralPercentage' in request.resource.data.diff(resource.data).affectedKeys()) ||
+                        isValidRevenueSplit(request.resource.data)) &&
+                       request.resource.data.affectsRanking == false &&
+                       request.resource.data.affectsDiscovery == false;
+      
+      allow delete: if isOwner(resource.data.creatorId) || isAdmin();
+    }
+    
+    // Affiliate Conversions Collection
+    match /affiliate_conversions/{conversionId} {
+      allow read: if isAuthenticated() &&
+                     (isOwner(resource.data.referrerId) || 
+                      isOwner(resource.data.sellerId) ||
+                      isOwner(resource.data.buyerId) ||
+                      isAdmin());
+      
+      allow create: if false; // Only Cloud Functions can create conversions
+      allow update: if false; // Only Cloud Functions can update conversions
+      allow delete: if isAdmin();
+    }
+    
+    // Affiliate Commissions Collection
+    match /affiliate_commissions/{commissionId} {
+      allow read: if isAuthenticated() &&
+                     (isOwner(resource.data.creatorId) || isAdmin());
+      
+      allow create: if false; // Only Cloud Functions can create commissions
+      allow update: if false; // Only Cloud Functions can update commissions
+      allow delete: if isAdmin();
+    }
+    
+    // Affiliate Banners Collection
+    match /affiliate_banners/{bannerId} {
+      allow read: if isAuthenticated();
+      
+      allow create: if isAuthenticated() &&
+                       hasVerifiedAccount() &&
+                       isOwner(request.resource.data.creatorId) &&
+                       hasNoForbiddenContent(request.resource.data.text) &&
+                       request.resource.data.isNSFW == false &&
+                       request.resource.data.isSeductive == false;
+      
+      allow update: if isOwner(resource.data.creatorId) &&
+                       (!('text' in request.resource.data.diff(resource.data).affectedKeys()) ||
+                        hasNoForbiddenContent(request.resource.data.text)) &&
+                       request.resource.data.isNSFW == false &&
+                       request.resource.data.isSeductive == false;
+      
+      allow delete: if isOwner(resource.data.creatorId) || isAdmin();
+    }
+    
+    // Affiliate Analytics Collection (per creator)
+    match /affiliate_analytics/{creatorId} {
+      allow read: if isOwner(creatorId) || isAdmin();
+      allow create: if false; // Only Cloud Functions
+      allow update: if false; // Only Cloud Functions
+      allow delete: if isAdmin();
+    }
+    
+    // Blocked Affiliate Content (AI moderation results)
+    match /blocked_affiliate_content/{blockId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only Cloud Functions
+    }
+  }
+}

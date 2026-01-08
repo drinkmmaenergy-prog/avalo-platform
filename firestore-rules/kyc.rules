@@ -1,0 +1,73 @@
+/**
+ * PACK 84 — KYC & Identity Verification Security Rules
+ * Firestore rules for user_kyc_status and user_kyc_documents collections
+ * 
+ * SECURITY REQUIREMENTS:
+ * - Users can only read their own KYC data
+ * - No direct client writes - all updates via Cloud Functions
+ * - Admin-only access for reviews
+ * - Strict privacy controls on sensitive documents
+ */
+
+// ============================================================================
+// USER KYC STATUS
+// ============================================================================
+
+match /user_kyc_status/{userId} {
+  // Users can read only their own KYC status
+  allow read: if isAuthenticated() && isOwner(userId);
+  
+  // No direct client writes - only via Cloud Functions
+  allow write: if false;
+}
+
+// ============================================================================
+// USER KYC DOCUMENTS
+// ============================================================================
+
+match /user_kyc_documents/{documentId} {
+  // Users can read only their own documents
+  allow read: if isAuthenticated() && 
+    resource.data.userId == request.auth.uid;
+  
+  // Users can create documents (for submission), but status must be PENDING
+  // and cannot set reviewerId, reviewedAt, or manipulate status
+  allow create: if isAuthenticated() && 
+    request.resource.data.userId == request.auth.uid &&
+    request.resource.data.status == "PENDING" &&
+    !request.resource.data.keys().hasAny(['reviewerId', 'reviewedAt', 'rejectionReason']) &&
+    // Required fields must be present
+    request.resource.data.keys().hasAll([
+      'id', 'userId', 'status', 'documentType', 
+      'frontImageUrl', 'selfieImageUrl', 'country', 
+      'fullName', 'dateOfBirth', 'submittedAt'
+    ]) &&
+    // Validate document type
+    request.resource.data.documentType in ['ID_CARD', 'PASSPORT', 'DRIVERS_LICENSE'] &&
+    // Validate country code (2 letters)
+    request.resource.data.country.size() == 2 &&
+    // Validate date format (basic check)
+    request.resource.data.dateOfBirth.matches('^\\d{4}-\\d{2}-\\d{2}$') &&
+    // Validate name length
+    request.resource.data.fullName.size() >= 2;
+  
+  // No updates or deletes by users
+  allow update, delete: if false;
+}
+
+// ============================================================================
+// HELPER FUNCTIONS (defined in main firestore.rules)
+// ============================================================================
+
+function isAuthenticated() {
+  return request.auth != null;
+}
+
+function isOwner(userId) {
+  return isAuthenticated() && request.auth.uid == userId;
+}
+
+function isAdmin() {
+  return isAuthenticated() && 
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+}

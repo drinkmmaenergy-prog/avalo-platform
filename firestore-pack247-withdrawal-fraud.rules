@@ -1,0 +1,99 @@
+rules_version = '2';
+
+/**
+ * PACK 247 — Token Withdrawal Anti-Fraud & Earnings Unlock System
+ * 
+ * Security rules for:
+ * - economicLogs: Withdrawal attempts, validation results
+ * - riskLogs: Risk score calculations and events
+ * - withdrawalReviews: Manual review queue for suspicious withdrawals
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // ECONOMIC LOGS - Withdrawal tracking and validation
+    // ========================================================================
+    match /economicLogs/{logId} {
+      // Only admins can read economic logs
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      
+      // Only backend can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // RISK LOGS - Risk score calculations
+    // ========================================================================
+    match /riskLogs/{userId} {
+      // Users can read their own risk logs
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only backend can write
+      allow write: if false;
+    }
+    
+    // User risk score subcollection for history
+    match /riskLogs/{userId}/events/{eventId} {
+      // Users can read their own risk event history
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Only backend can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // WITHDRAWAL REVIEWS - Manual review queue
+    // ========================================================================
+    match /withdrawalReviews/{reviewId} {
+      // Only admins can read withdrawal reviews
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      
+      // Only backend and admins can write
+      allow create: if false; // Only backend
+      allow update: if request.auth != null && 
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // WITHDRAWAL REQUESTS - Extended with anti-fraud fields
+    // ========================================================================
+    match /withdrawalRequests/{requestId} {
+      // Users can read their own withdrawal requests
+      allow read: if request.auth != null && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Users can create withdrawal requests (backend validates)
+      allow create: if request.auth != null && 
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Only backend can update status
+      allow update: if false;
+      
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // USER PROFILES - Extended with anti-fraud fields
+    // ========================================================================
+    match /users/{userId} {
+      // Existing rules remain, just documenting new fields:
+      // - riskScore: number (0-100)
+      // - unlockStatus: string ('LOCKED' | 'UNLOCKED')
+      // - verificationStatus: object
+      // - nextAuditDate: timestamp
+      
+      // Users can read their own profile including risk score
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Users cannot modify their own risk score
+      allow update: if request.auth != null && 
+                       request.auth.uid == userId &&
+                       !request.resource.data.diff(resource.data).affectedKeys().hasAny(['riskScore', 'unlockStatus', 'verificationStatus', 'nextAuditDate']);
+    }
+  }
+}

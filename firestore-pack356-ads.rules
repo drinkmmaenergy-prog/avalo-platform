@@ -1,0 +1,119 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isAdminOrSystem() {
+      return isAdmin() || request.auth.token.system == true;
+    }
+    
+    // Ad Campaigns Collection
+    // Only admins can manage campaigns
+    match /adCampaigns/{campaignId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && 
+                      request.resource.data.keys().hasAll([
+                        'campaignId', 'platform', 'objective', 
+                        'dailyBudget', 'totalBudget', 'countryCode', 
+                        'status', 'createdAt'
+                      ]) &&
+                      request.resource.data.platform in [
+                        'META', 'TIKTOK', 'GOOGLE', 'UGC_CREATOR', 'APP_STORE'
+                      ] &&
+                      request.resource.data.status in [
+                        'ACTIVE', 'PAUSED', 'BLOCKED'
+                      ] &&
+                      request.resource.data.dailyBudget is number &&
+                      request.resource.data.totalBudget is number &&
+                      request.resource.data.dailyBudget > 0 &&
+                      request.resource.data.totalBudget > 0;
+      
+      allow update: if isAdmin() && 
+                      request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['status', 'dailyBudget', 'totalBudget', 'updatedAt']);
+      
+      allow delete: if isAdmin();
+    }
+    
+    // Ad Attribution Collection
+    // System writes, admins read
+    match /adAttribution/{attributionId} {
+      allow read: if isAdmin();
+      allow create: if isAdminOrSystem() &&
+                      request.resource.data.keys().hasAll([
+                        'userId', 'campaignId', 'source', 'installTime'
+                      ]) &&
+                      request.resource.data.verified is bool;
+      
+      allow update: if isAdminOrSystem() &&
+                      request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly([
+                          'firstPurchaseTime', 'revenueGenerated', 
+                          'verified', 'updatedAt'
+                        ]);
+      
+      allow delete: if false; // Never delete attribution
+    }
+    
+    // Ad Performance Collection
+    // System writes, admins read
+    match /adPerformance/{performanceId} {
+      allow read: if isAdmin();
+      allow write: if isAdminOrSystem();
+    }
+    
+    // Ad Retargeting Audiences
+    match /adRetargetingAudiences/{audienceId} {
+      allow read: if isAdmin();
+      allow write: if isAdminOrSystem();
+    }
+    
+    // Ad Creative Performance
+    match /adCreativePerformance/{creativeId} {
+      allow read: if isAdmin();
+      allow write: if isAdminOrSystem();
+    }
+    
+    // ROAS Automation Logs
+    match /roasAutomationLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if isAdminOrSystem();
+    }
+    
+    // Country Performance
+    match /adCountryPerformance/{countryCode} {
+      allow read: if isAdmin();
+      allow write: if isAdminOrSystem();
+    }
+    
+    // User Ad Events (for SDK tracking)
+    match /users/{userId}/adEvents/{eventId} {
+      allow read: if isAdmin() || request.auth.uid == userId;
+      allow create: if isAuthenticated() && 
+                      request.auth.uid == userId &&
+                      request.resource.data.keys().hasAll([
+                        'eventType', 'timestamp'
+                      ]) &&
+                      request.resource.data.eventType in [
+                        'install', 'register', 'verification_passed', 
+                        'token_purchase', 'paid_chat_start'
+                      ];
+      allow update, delete: if false;
+    }
+    
+    // Fraud Blocked Installs
+    match /fraudBlockedInstalls/{installId} {
+      allow read: if isAdmin();
+      allow write: if isAdminOrSystem();
+    }
+  }
+}

@@ -1,0 +1,167 @@
+rules_version = '2';
+
+/**
+ * PACK 197 — AI Recommendation Engine
+ * Match by Vibe, Not by Demographics
+ * 
+ * Collections:
+ * - vibe_profiles: User vibe analysis (photo energy, interests, chat tone)
+ * - attraction_preferences: User preferences (NO SHAMING - all allowed)
+ * - vibe_matches: AI-generated match scores based on chemistry
+ * - match_feedback: User responses for ML training
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // VIBE PROFILES - User energy, interests, personality
+    // ============================================================================
+    
+    match /vibe_profiles/{userId} {
+      // Read: User can read own vibe profile and matched users
+      allow read: if request.auth != null && (
+        request.auth.uid == userId ||
+        exists(/databases/$(database)/documents/matches/$(request.auth.uid + '_' + userId)) ||
+        exists(/databases/$(database)/documents/matches/$(userId + '_' + request.auth.uid))
+      );
+      
+      // Write: Only authenticated user can update own profile
+      // OR Cloud Functions for AI analysis
+      allow create, update: if request.auth != null && (
+        request.auth.uid == userId ||
+        request.auth.token.admin == true
+      );
+      
+      // Validated fields
+      allow update: if request.auth.uid == userId && (
+        // Photo energy scores (0-100)
+        (!('photoEnergy' in request.resource.data) || (
+          request.resource.data.photoEnergy.keys().hasAll(['smile', 'nightlife', 'glamour', 'serious']) &&
+          request.resource.data.photoEnergy.smile >= 0 && request.resource.data.photoEnergy.smile <= 100 &&
+          request.resource.data.photoEnergy.nightlife >= 0 && request.resource.data.photoEnergy.nightlife <= 100 &&
+          request.resource.data.photoEnergy.glamour >= 0 && request.resource.data.photoEnergy.glamour <= 100 &&
+          request.resource.data.photoEnergy.serious >= 0 && request.resource.data.photoEnergy.serious <= 100
+        )) &&
+        // Interests list (strings)
+        (!('interests' in request.resource.data) || request.resource.data.interests is list) &&
+        // Personality labels
+        (!('personalityLabels' in request.resource.data) || request.resource.data.personalityLabels is list) &&
+        // Chat tone (playful, serious, emotional)
+        (!('chatTone' in request.resource.data) || request.resource.data.chatTone in ['playful', 'serious', 'emotional', 'mixed'])
+      );
+      
+      // Delete: User can delete own profile
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ============================================================================
+    // ATTRACTION PREFERENCES - NO SHAMING ZONE
+    // All preferences are allowed: height, body type, style, etc.
+    // ============================================================================
+    
+    match /attraction_preferences/{userId} {
+      // Read: Only user can read own preferences (PRIVATE)
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Write: Only user can update own preferences
+      allow create, update: if request.auth != null && request.auth.uid == userId && (
+        // Physical preferences (all optional, all allowed)
+        (!('physical' in request.resource.data) || (
+          (!('height' in request.resource.data.physical) || request.resource.data.physical.height in ['any', 'short', 'average', 'tall', 'very_tall']) &&
+          (!('build' in request.resource.data.physical) || request.resource.data.physical.build is list) && // ['slim', 'athletic', 'curvy', 'muscular', 'average']
+          (!('beard' in request.resource.data.physical) || request.resource.data.physical.beard in ['any', 'yes', 'no', 'prefer']) &&
+          (!('tattoos' in request.resource.data.physical) || request.resource.data.physical.tattoos in ['any', 'yes', 'no', 'prefer']) &&
+          (!('hairLength' in request.resource.data.physical) || request.resource.data.physical.hairLength is list) &&
+          (!('gymFrequency' in request.resource.data.physical) || request.resource.data.physical.gymFrequency in ['any', 'never', 'sometimes', 'regularly', 'daily'])
+        )) &&
+        // Style preferences
+        (!('style' in request.resource.data) || request.resource.data.style is list) && // ['casual', 'sporty', 'elegant', 'alternative', 'glamorous']
+        // Lifestyle preferences
+        (!('lifestyle' in request.resource.data) || (
+          (!('nightlife' in request.resource.data.lifestyle) || request.resource.data.lifestyle.nightlife in ['any', 'love_it', 'sometimes', 'rarely']) &&
+          (!('travel' in request.resource.data.lifestyle) || request.resource.data.lifestyle.travel in ['any', 'frequent', 'occasional', 'rare']) &&
+          (!('music' in request.resource.data.lifestyle) || request.resource.data.lifestyle.music is list)
+        )) &&
+        // Updated timestamp
+        request.resource.data.updatedAt is timestamp
+      );
+      
+      // Delete: User can delete own preferences
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ============================================================================
+    // VIBE MATCHES - AI-generated match scores
+    // ============================================================================
+    
+    match /vibe_matches/{matchId} {
+      // Read: Users can see their own match scores
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        request.auth.uid == resource.data.targetUserId
+      );
+      
+      // Write: Only Cloud Functions (admin) can create/update match scores
+      allow create, update: if request.auth != null && request.auth.token.admin == true;
+      
+      // Delete: Not allowed (historical data for ML)
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // MATCH FEEDBACK - User responses (for ML training)
+    // ============================================================================
+    
+    match /match_feedback/{feedbackId} {
+      // Read: User can read own feedback
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // Create: User can provide feedback on matches
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId &&
+        request.resource.data.targetUserId is string &&
+        request.resource.data.action in ['liked', 'passed', 'matched', 'responded', 'ignored'] &&
+        request.resource.data.timestamp is timestamp &&
+        // Optional feedback fields
+        (!('rating' in request.resource.data) || (request.resource.data.rating >= 1 && request.resource.data.rating <= 5)) &&
+        (!('notes' in request.resource.data) || request.resource.data.notes is string);
+      
+      // Update: Not allowed (immutable feedback for ML)
+      allow update: if false;
+      
+      // Delete: User can delete own feedback
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // ============================================================================
+    // RECOMMENDATION QUEUE - Personalized match queue per user
+    // ============================================================================
+    
+    match /recommendation_queues/{userId}/queue/{profileId} {
+      // Read: User can read own queue
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Write: Only Cloud Functions can populate queue
+      allow create, update: if request.auth != null && request.auth.token.admin == true;
+      
+      // Delete: User can remove profiles from queue (skipped)
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ============================================================================
+    // SUCCESSFUL MATCH PATTERNS - Learn from user's actual matches
+    // ============================================================================
+    
+    match /successful_match_patterns/{userId} {
+      // Read: User can read own patterns (insights)
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Write: Only Cloud Functions can analyze patterns
+      allow create, update: if request.auth != null && request.auth.token.admin == true;
+      
+      // Delete: Not allowed (ML training data)
+      allow delete: if false;
+    }
+  }
+}

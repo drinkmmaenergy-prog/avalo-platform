@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "apiEndpoint": "https://api.avalo.app",
+  "env": "production",
+  "timeout": 30000,
+  "retryAttempts": 3,
+  "retryDelay": 1000,
+  "features": {
+    "auth": true,
+    "payments": true,
+    "ai": true,
+    "matchmaking": true,
+    "creator": true,
+    "admin": false
+  },
+  "endpoints": {
+    "auth": "/auth",
+    "profiles": "/profiles",
+    "feed": "/feed",
+    "chat": "/chat",
+    "payments": "/payments",
+    "ai": "/ai",
+    "creator": "/creator",
+    "matchmaking": "/matchmaking",
+    "notifications": "/notifications",
+    "admin": "/admin"
+  },
+  "limits": {
+    "maxFileSize": 104857600,
+    "maxRequestSize": 10485760,
+    "rateLimit": 100,
+    "rateLimitWindow": 60000
+  },
+  "regions": [
+    "us-central1",
+    "europe-west1",
+    "asia-northeast1"
+  ],
+  "cdn": "https://cdn.avalo.app",
+  "websocket": "wss://ws.avalo.app",
+  "status": "https://status.avalo.app"
+}

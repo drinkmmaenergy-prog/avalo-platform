@@ -1,0 +1,20 @@
+{
+  "name": "@avalo/migrations",
+  "version": "1.0.0",
+  "description": "Avalo Database Migration and Schema Validation",
+  "private": true,
+  "scripts": {
+    "migrate": "ts-node migrate.ts migrate",
+    "migrate:fix": "ts-node migrate.ts fix",
+    "migrate:types": "ts-node migrate.ts types",
+    "validate": "ts-node migrate.ts migrate"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0"
+  }
+}

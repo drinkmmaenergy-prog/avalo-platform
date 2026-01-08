@@ -1,0 +1,111 @@
+# Avalo Local Development Configuration
+# Run with: npm run dev:sync
+
+version: '1.0'
+
+# Environment Settings
+environment:
+  NODE_ENV: development
+  FIREBASE_PROJECT_ID: avalo-dev
+  FIREBASE_EMULATOR_HUB: localhost:4400
+  
+# Emulator Configuration
+emulators:
+  auth:
+    port: 9099
+    host: localhost
+  firestore:
+    port: 8080
+    host: localhost
+  functions:
+    port: 5001
+    host: localhost
+  storage:
+    port: 9199
+    host: localhost
+  database:
+    port: 9000
+    host: localhost
+  pubsub:
+    port: 8085
+    host: localhost
+  ui:
+    enabled: true
+    port: 4000
+    host: localhost
+
+# Mock Services
+mocks:
+  ai:
+    enabled: true
+    port: 7001
+    latency: 200
+    errorRate: 0
+  payments:
+    enabled: true
+    port: 7002
+    stripe_mode: test
+  wallet:
+    enabled: true
+    port: 7003
+    initial_balance: 100
+
+# Debug Dashboard
+debug:
+  enabled: true
+  port: 7777
+  host: localhost
+  features:
+    - health_checks
+    - env_variables
+    - emulator_status
+    - function_logs
+    - request_inspector
+
+# Auto-sync Settings
+sync:
+  interval: 5000
+  watch_paths:
+    - functions/src/**/*.ts
+    - firestore.rules
+    - storage.rules
+  auto_restart: true
+  hot_reload: true
+
+# Test Data Seeding
+seed:
+  enabled: true
+  data:
+    users: 10
+    posts: 50
+    chats: 20
+    creators: 5
+    ai_companions: 10
+
+# Feature Flags (Development)
+features:
+  ai_companions: true
+  payments: true
+  matchmaking: true
+  nsfw_content: true
+  creator_mode: true
+  admin_panel: true
+
+# Security (Development Only)
+security:
+  cors_enabled: true
+  auth_required: false
+  rate_limiting: false
+  
+# Logging
+logging:
+  level: debug
+  format: pretty
+  output: console
+  file: logs/dev.log
+
+# Performance
+performance:
+  caching: false
+  compression: false
+  throttling: false

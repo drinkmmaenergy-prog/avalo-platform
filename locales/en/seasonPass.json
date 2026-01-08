@@ -1,0 +1,77 @@
+{
+  "title": "Season Pass",
+  "subtitle": "Reward Your Most Engaged Fans",
+  "seasonActive": "Season Active",
+  "createNew": "Create New Season",
+  "createSeason": "Create Season",
+  "startSeason": "Start Season",
+  "startNewSeason": "Start New Season",
+  "joinSeason": "Join Season",
+  "continueProgress": "Continue",
+  "continue": "Continue",
+  "seasonComplete": "Season Complete",
+  
+  "seasonName": "Season Name",
+  "seasonNamePlaceholder": "e.g., Winter Championship",
+  "description": "Description",
+  "descriptionPlaceholder": "Tell fans what this season is about...",
+  "heroBanner": "Hero Banner (Optional)",
+  "selectBanner": "Tap to select banner image",
+  
+  "tierPreview": "Tier Rewards Preview",
+  "tierRewards": "Tier Rewards",
+  "tier": "Tier",
+  "points": "points",
+  "level": "Level",
+  "totalPoints": "Total Points",
+  "duration": "Duration",
+  "daysLeft": "Days Left",
+  "daysLeftShort": "{{days}}d left",
+  "hoursLeftShort": "{{hours}}h left",
+  "minutesLeftShort": "{{minutes}}m left",
+  "daysCount": "{{count}} days",
+  "hoursCount": "{{count}} hours",
+  "endsIn": "Ends in",
+  "timeRemaining": "Time remaining",
+  "pointsToNext": "pts to next tier",
+  
+  "participants": "Participants",
+  "participating": "participating",
+  "tiers": "Tiers",
+  "completed": "Completed",
+  "active": "Active",
+  "expired": "Expired",
+  
+  "tierUnlocked": "🎉 Tier Unlocked!",
+  "congratulations": "Congratulations!",
+  "rewardActivated": "Your reward is now active",
+  "rewardActive": "Your cosmetic reward is now active and will be visible to everyone",
+  
+  "rewardTypes": {
+    "frame": "Profile Frame",
+    "badge": "Badge",
+    "animation": "Animation",
+    "aura": "Aura Effect",
+    "entrance": "Entrance"
+  },
+  
+  "success": "Success",
+  "error": "Error",
+  "loading": "Loading season...",
+  "seasonStarted": "Season started successfully!",
+  "failedToStart": "Failed to start season",
+  "nameRequired": "Season name is required",
+  "descriptionRequired": "Season description is required",
+  
+  "noActiveChallenge": "No Active Season",
+  "createYourFirst": "Create your first season to engage fans",
+  
+  "cosmeticOnly": "✨ Cosmetic rewards only - zero cost",
+  "noTokenRewards": "No tokens or paid rewards included",
+  
+  "engagementBoost": "Boost engagement with time-limited seasonal challenges",
+  "noTokenCost": "100% Cosmetic - Zero Token Cost",
+  "ruleOneActive": "Only 1 active season at a time",
+  "ruleDuration": "Seasons last 30 days",
+  "ruleRewards": "5 tiers of exclusive cosmetic rewards"
+}

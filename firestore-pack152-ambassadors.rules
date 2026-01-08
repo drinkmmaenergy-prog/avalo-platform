@@ -1,0 +1,245 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    function isAmbassador() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/ambassador_profiles/$(request.auth.uid));
+    }
+    
+    function getAmbassadorProfile(ambassadorId) {
+      return get(/databases/$(database)/documents/ambassador_profiles/$(ambassadorId)).data;
+    }
+    
+    function isActiveAmbassador() {
+      return isAmbassador() && 
+             getAmbassadorProfile(request.auth.uid).status in ['approved', 'active'];
+    }
+    
+    function isCityLeader() {
+      return isActiveAmbassador() && 
+             getAmbassadorProfile(request.auth.uid).role == 'city_leader';
+    }
+    
+    // CRITICAL: Forbidden profile modifications
+    function hasForb iddenProfileChanges() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['rankingBoost', 'visibilityBoost', 'matchmakingPriority', 
+                 'discoveryBoost', 'premiumStatus', 'featuredStatus', 
+                 'highlightedProfile', 'topRanked']);
+    }
+    
+    // Ambassador Applications
+    match /ambassador_applications/{applicationId} {
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.userId) || 
+        isAdmin() || 
+        isCityLeader()
+      );
+      
+      allow create: if isAuthenticated() &&
+        isUser(request.resource.data.userId) &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.motivation.size() >= 100 &&
+        request.resource.data.experienceDescription.size() >= 50;
+      
+      allow update: if isAdmin() &&
+        request.resource.data.status in ['under_review', 'approved', 'rejected'];
+      
+      allow delete: if false; // No deletion allowed
+    }
+    
+    // Ambassador Profiles
+    match /ambassador_profiles/{ambassadorId} {
+      allow read: if isAuthenticated() && (
+        isUser(ambassadorId) ||
+        isAdmin() ||
+        isCityLeader()
+      );
+      
+      allow create: if isAdmin() &&
+        request.resource.data.status in ['approved', 'active'] &&
+        request.resource.data.trainingCompleted == false &&
+        request.resource.data.eventsHosted == 0 &&
+        request.resource.data.totalTokensEarned == 0 &&
+        !hasForb iddenProfileChanges();
+      
+      allow update: if (
+        (isAdmin() || isUser(ambassadorId)) &&
+        !hasForb iddenProfileChanges() &&
+        // Cannot self-promote status
+        (isAdmin() || request.resource.data.status == resource.data.status)
+      );
+      
+      allow delete: if false; // No deletion, only status changes
+    }
+    
+    // Ambassador Events
+    match /ambassador_events/{eventId} {
+      allow read: if true; // Events are public
+      
+      allow create: if isActiveAmbassador() &&
+        isUser(request.resource.data.ambassadorId) &&
+        request.resource.data.status == 'pending_approval' &&
+        request.resource.data.complianceApproved == false &&
+        request.resource.data.registeredCount == 0 &&
+        request.resource.data.attendedCount == 0 &&
+        request.resource.data.ageRestriction >= 18 &&
+        request.resource.data.photographyConsentRequired == true &&
+        // No late-night events (safety)
+        request.resource.data.startTime.toMillis() % 86400000 >= 21600000 && // After 6 AM
+        request.resource.data.startTime.toMillis() % 86400000 <= 75600000;   // Before 9 PM
+      
+      allow update: if (
+        // Ambassadors can update their own draft events
+        (isActiveAmbassador() && 
+         isUser(resource.data.ambassadorId) && 
+         resource.data.status == 'draft') ||
+        // Admins can approve/reject
+        (isAdmin() && 
+         request.resource.data.status in ['approved', 'rejected', 'cancelled']) ||
+        // System updates attendance counts
+        (request.resource.data.diff(resource.data).affectedKeys()
+         .hasOnly(['registeredCount', 'attendedCount', 'updatedAt']))
+      );
+      
+      allow delete: if false; // No deletion, only cancellation
+    }
+    
+    // Event Attendance
+    match /event_attendance/{attendanceId} {
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.userId) ||
+        isUser(resource.data.ambassadorId) ||
+        isCityLeader() ||
+        isAdmin()
+      );
+      
+      allow create: if isAuthenticated() &&
+        isUser(request.resource.data.userId) &&
+        request.resource.data.safetyRulesAccepted == true &&
+        request.resource.data.checkedIn == false &&
+        request.resource.data.newCreatorOnboarded == false &&
+        request.resource.data.newUserOnboarded == false;
+      
+      allow update: if (
+        // User can update feedback
+        (isUser(resource.data.userId) && 
+         request.resource.data.diff(resource.data).affectedKeys()
+         .hasOnly(['satisfactionScore', 'feedback', 'updatedAt'])) ||
+        // Ambassador can check in attendees
+        (isUser(resource.data.ambassadorId) && 
+         request.resource.data.diff(resource.data).affectedKeys()
+         .hasOnly(['checkedIn', 'checkInTime', 'checkInMethod', 'updatedAt'])) ||
+        // System can update onboarding flags
+        (request.resource.data.diff(resource.data).affectedKeys()
+         .hasOnly(['newCreatorOnboarded', 'newUserOnboarded', 'updatedAt']))
+      );
+      
+      allow delete: if false;
+    }
+    
+    // Ambassador Performance
+    match /ambassador_performance/{performanceId} {
+      allow read: if isAuthenticated() && (
+        performanceId.matches('^' + request.auth.uid + '_.*') ||
+        isCityLeader() ||
+        isAdmin()
+      );
+      
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+    
+    // City Leader Reports
+    match /city_leader_reports/{reportId} {
+      allow read: if isAuthenticated() && (
+        reportId.matches('^' + request.auth.uid + '_.*') ||
+        isAdmin()
+      );
+      
+      allow create: if isCityLeader() || isAdmin();
+      allow update: if isCityLeader() || isAdmin();
+      allow delete: if false;
+    }
+    
+    // Ambassador Earnings Records
+    match /ambassador_earnings_records/{recordId} {
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.ambassadorId) ||
+        isAdmin()
+      );
+      
+      // Only system/admin can create earnings
+      allow create: if isAdmin() &&
+        request.resource.data.sourceType in ['event_hosted', 'user_onboarded', 'creator_onboarded', 'ticket_revenue'] &&
+        request.resource.data.status == 'pending';
+      
+      allow update: if isAdmin() &&
+        request.resource.data.status in ['approved', 'paid', 'disputed'];
+      
+      allow delete: if false;
+    }
+    
+    // Ambassador Training Modules
+    match /ambassador_training_modules/{moduleId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Ambassador Training Progress
+    match /ambassador_training_progress/{progressId} {
+      allow read: if isAuthenticated() && (
+        progressId.matches('^' + request.auth.uid + '_.*') ||
+        isAdmin()
+      );
+      
+      allow create: if isAuthenticated() &&
+        progressId.matches('^' + request.auth.uid + '_.*') &&
+        request.resource.data.status == 'not_started';
+      
+      allow update: if isAuthenticated() &&
+        progressId.matches('^' + request.auth.uid + '_.*') &&
+        request.resource.data.status in ['in_progress', 'completed', 'failed'];
+      
+      allow delete: if false;
+    }
+    
+    // Compliance Incidents
+    match /ambassador_compliance_incidents/{incidentId} {
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.reportedBy) ||
+        isUser(resource.data.ambassadorId) ||
+        isCityLeader() ||
+        isAdmin()
+      );
+      
+      allow create: if isAuthenticated() &&
+        isUser(request.resource.data.reportedBy) &&
+        request.resource.data.status == 'reported' &&
+        request.resource.data.severity in ['low', 'medium', 'high', 'critical'];
+      
+      allow update: if isAdmin() &&
+        request.resource.data.status in ['under_investigation', 'resolved', 'dismissed'];
+      
+      allow delete: if false; // Incidents are permanent records
+    }
+  }
+}

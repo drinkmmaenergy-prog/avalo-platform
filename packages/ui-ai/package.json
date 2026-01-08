@@ -1,0 +1,17 @@
+{
+  "name": "@avalo/ui-ai",
+  "version": "1.0.0",
+  "description": "Shared AI Companions UI components and utilities for Avalo",
+  "main": "index.ts",
+  "types": "index.ts",
+  "private": true,
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "firebase": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  }
+}

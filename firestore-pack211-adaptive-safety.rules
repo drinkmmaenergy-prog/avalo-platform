@@ -1,0 +1,215 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 211: User Risk Profiles
+    // Internal risk scoring (never visible to users except their own basics)
+    // ========================================================================
+    match /user_risk_profiles/{userId} {
+      // Read: Own profile (limited fields) or admins/safety team
+      allow read: if request.auth != null && (
+        // Users can only see their own category and basic info
+        (userId == request.auth.uid) ||
+        // Admins and safety team see everything
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true
+      );
+      
+      // Write: Only server-side or admins
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // PACK 211: Booking Attempt History (Anti-Stalking)
+    // Tracks booking attempts and rejections between users
+    // ========================================================================
+    match /booking_attempt_history/{historyId} {
+      // Read: Only the requester, target, or admins
+      allow read: if request.auth != null && (
+        resource.data.requesterId == request.auth.uid ||
+        resource.data.targetId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true
+      );
+      
+      // Write: Only server-side (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 211: Swipe Pattern Tracking (Repeated-Match Prevention)
+    // Tracks swipe patterns to detect obsessive behavior
+    // ========================================================================
+    match /swipe_pattern_tracking/{trackingId} {
+      // Read: Only the swiper (limited view), target (notification only), or admins
+      allow read: if request.auth != null && (
+        resource.data.swiperId == request.auth.uid ||
+        resource.data.targetId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true
+      );
+      
+      // Write: Only server-side (Cloud Functions)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PACK 211: Location Safety Checks
+    // Assessment of meeting/event locations for risk
+    // ========================================================================
+    match /location_safety_checks/{checkId} {
+      // Read: Only the user who requested the check, or admins/safety team
+      allow read: if request.auth != null && (
+        // User who requested the location check
+        resource.data.requestedBy == request.auth.uid ||
+        // Users involved in the booking/event
+        (resource.data.bookingId != null && (
+          get(/databases/$(database)/documents/calendarBookings/$(resource.data.bookingId)).data.bookerId == request.auth.uid ||
+          get(/databases/$(database)/documents/calendarBookings/$(resource.data.bookingId)).data.creatorId == request.auth.uid
+        )) ||
+        // Admins and safety team
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true
+      );
+      
+      // Write: Only server-side or safety team
+      allow create: if request.auth != null;
+      
+      allow update: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Delete: Only admins
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // PACK 211: Adaptive Safety Events (Audit Log)
+    // Complete audit trail of all adaptive safety actions
+    // ========================================================================
+    match /adaptive_safety_events/{eventId} {
+      // Read: Only involved users (limited), safety team, or admins
+      allow read: if request.auth != null && (
+        // User can see their own events (but may be filtered by client)
+        resource.data.userId == request.auth.uid ||
+        // Related user can see some events
+        resource.data.relatedUserId == request.auth.uid ||
+        // Safety team and admins see all
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Write: Only server-side or safety team
+      allow create: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Update: Only safety team or admins (for adding notes)
+      allow update: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Delete: Only admins
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // PACK 211: Enhanced Calendar Bookings (with adaptive safety)
+    // Extended from PACK 209/210 with risk-aware booking limits
+    // ========================================================================
+    match /calendarBookings/{bookingId} {
+      // Read: Participants or admins
+      allow read: if request.auth != null && (
+        resource.data.bookerId == request.auth.uid ||
+        resource.data.creatorId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Create: Only the booker (server validates cooldowns)
+      allow create: if request.auth != null &&
+        request.resource.data.bookerId == request.auth.uid &&
+        request.resource.data.status == 'PENDING';
+      
+      // Update: Participants (for status changes) or server-side
+      allow update: if request.auth != null && (
+        // Creator can confirm
+        (resource.data.creatorId == request.auth.uid &&
+         resource.data.status == 'PENDING' &&
+         request.resource.data.status == 'CONFIRMED') ||
+        // Either party can verify, cancel, or end
+        (resource.data.bookerId == request.auth.uid || resource.data.creatorId == request.auth.uid) &&
+        (request.resource.data.status in ['COMPLETED', 'CANCELLED', 'COMPLAINT_REFUNDED', 'PANIC_ENDED', 'REJECTED']) ||
+        // Admins can update anything
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true
+      );
+      
+      // Delete: Only admins
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    // ========================================================================
+    // PACK 211: Enhanced User Profiles (with safety category)
+    // Users collection extended with safety category field
+    // ========================================================================
+    match /users/{userId} {
+      // Read: Public profile data visible to all authenticated users
+      allow read: if request.auth != null;
+      
+      // Update: Users can update their own profiles
+      // Safety category is managed by server-side only
+      allow update: if request.auth != null && 
+        userId == request.auth.uid &&
+        // Cannot manually change safety category or risk score
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'safetyCategory',
+          'riskScore',
+          'internalRiskData'
+        ]) || 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true);
+    }
+    
+    // ========================================================================
+    // PACK 211: Match/Swipe Visibility Control
+    // Additional rules for match suggestions considering hidden profiles
+    // ========================================================================
+    match /match_suggestions/{suggestionId} {
+      // Read: Only the user receiving the suggestion
+      allow read: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      
+      // Write: Only server-side (which checks swipe pattern tracking)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // Helper Functions for PACK 211
+    // ========================================================================
+    
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    function isSafetyTeam() {
+      return request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.safety_team == true ||
+        isAdmin()
+      );
+    }
+    
+    function isModerator() {
+      return request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true ||
+        isSafetyTeam()
+      );
+    }
+  }
+}

@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // PACK 135: Offline Assets (QR codes, posters, NFC cards)
+    match /offline_assets/{assetId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // PACK 135: QR Profile Data
+    match /offline_qr_profiles/{qrId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // PACK 135: QR Scan Logs (anonymous, aggregate only)
+    match /qr_scan_logs/{logId} {
+      allow read: if false; // Never directly readable (privacy)
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // PACK 135: Scan Analytics (aggregated, anonymous data)
+    match /scan_analytics/{analyticsId} {
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // PACK 135: Event Poster Bundles
+    match /event_poster_bundles/{bundleId} {
+      allow read: if isAuthenticated(); // Public events
+      allow write: if false; // Only via Cloud Functions
+    }
+    
+    // PACK 135: NFC Card Registry (optional, for tracking activated cards)
+    match /nfc_cards/{cardId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false; // Only via Cloud Functions
+    }
+  }
+}

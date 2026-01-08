@@ -1,0 +1,128 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // PACK 337: Public Launch Operations & Geo Rollout Engine
+    // ============================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role in ['SUPER_ADMIN', 'ADMIN'];
+    }
+    
+    function isSystemService() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+    
+    // ============================================
+    // 1. Geo Rollout Countries
+    // ============================================
+    match /geoRolloutCountries/{countryCode} {
+      // Read: Anyone can read to check country availability
+      allow read: if true;
+      
+      // Write: Only admins and system services
+      allow write: if isAdmin() || isSystemService();
+    }
+    
+    // ============================================
+    // 2. Marketing Budgets
+    // ============================================
+    match /marketingBudgets/{countryCode} {
+      // Read: Admins only
+      allow read: if isAdmin();
+      
+      // Write: Admins and system services (for spend tracking)
+      allow write: if isAdmin() || isSystemService();
+    }
+    
+    // ============================================
+    // 3. Ad Attribution Events
+    // ============================================
+    match /adAttributionEvents/{eventId} {
+      // Read: User can read their own attribution, admins can read all
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Create: System services only (ingestion from attribution providers)
+      allow create: if isSystemService();
+      
+      // Update: System services only (for payment conversions)
+      allow update: if isSystemService();
+      
+      // Delete: Admins only
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================
+    // 4. System Load Guards
+    // ============================================
+    match /systemLoadGuards/{guardId} {
+      // Read: System services and admins
+      allow read: if isAdmin() || isSystemService();
+      
+      // Write: Admins only (manual configuration)
+      allow write: if isAdmin();
+    }
+    
+    // ============================================
+    // 5. Load Metrics (real-time monitoring)
+    // ============================================
+    match /loadMetrics/{metricId} {
+      // Read: Admins only
+      allow read: if isAdmin();
+      
+      // Create: System services only (automatic tracking)
+      allow create: if isSystemService();
+      
+      // Update/Delete: System services and admins
+      allow update, delete: if isAdmin() || isSystemService();
+    }
+    
+    // ============================================
+    // 6. Country Registration Quotas (daily tracking)
+    // ============================================
+    match /countryRegistrationQuotas/{countryCode} {
+      // Read: System services
+      allow read: if isSystemService() || isAdmin();
+      
+      // Write: System services only (automatic tracking)
+      allow write: if isSystemService();
+    }
+    
+    // ============================================
+    // 7. Marketing Spend Logs (audit trail)
+    // ============================================
+    match /marketingSpendLogs/{logId} {
+      // Read: Admins only
+      allow read: if isAdmin();
+      
+      // Create: System services only
+      allow create: if isSystemService();
+      
+      // No updates or deletes (immutable audit trail)
+      allow update, delete: if false;
+    }
+    
+    // ============================================
+    // 8. Emergency Mode Logs (audit trail)
+    // ============================================
+    match /emergencyModeLogs/{logId} {
+      // Read: Admins only
+      allow read: if isAdmin();
+      
+      // Create: Admins and system services
+      allow create: if isAdmin() || isSystemService();
+      
+      // No updates or deletes (immutable audit trail)
+      allow update, delete: if false;
+    }
+  }
+}

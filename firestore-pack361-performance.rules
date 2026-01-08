@@ -1,0 +1,318 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // PACK 361 - PERFORMANCE & INFRASTRUCTURE
+    // ============================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ============================================
+    // REGION NODES
+    // ============================================
+    
+    match /regionNodes/{region} {
+      // Anyone can read region status for routing
+      allow read: if true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /regionMappings/{userId} {
+      // Users can read their own region mapping
+      allow read: if isOwner(userId);
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /regionHealthHistory/{historyId} {
+      // Admins can read health history
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /failoverEvents/{eventId} {
+      // Admins can read failover events
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ============================================
+    // SCALING & PERFORMANCE
+    // ============================================
+    
+    match /serviceMetrics/{service} {
+      // Admins can read metrics
+      allow read: if isAdmin();
+      
+      // System can write
+      allow write: if false;
+    }
+    
+    match /serviceConfig/{service} {
+      // Admins can read config
+      allow read: if isAdmin();
+      
+      // Only admins can manually scale
+      allow write: if isAdmin();
+    }
+    
+    match /scalingEvents/{eventId} {
+      // Admins can read scaling events
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /throttleRules/{service} {
+      // Anyone can read throttle status
+      allow read: if isAuthenticated();
+      
+      // Only admins can modify
+      allow write: if isAdmin();
+    }
+    
+    // ============================================
+    // CDN & MEDIA
+    // ============================================
+    
+    match /mediaAssets/{assetId} {
+      // Users can read media they have access to
+      allow read: if isAuthenticated();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /cdnMetrics/{metricId} {
+      // Admins can read CDN metrics
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /cdnRequests/{requestId} {
+      // Only system writes
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    
+    // ============================================
+    // COST CONTROL
+    // ============================================
+    
+    match /serviceCosts/{costId} {
+      // Admins can read costs
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /costTotals/{service} {
+      // Admins can read totals
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /costReports/{reportId} {
+      // Admins can read reports
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /userThrottles/{userId} {
+      // Users can read their own throttle status
+      allow read: if isOwner(userId);
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ============================================
+    // BACKUPS & RECOVERY
+    // ============================================
+    
+    match /backupMetadata/{backupId} {
+      // Admins can read backup metadata
+      allow read: if isAdmin();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /recoveryOperations/{recoveryId} {
+      // Admins can read recovery operations
+      allow read: if isAdmin();
+      
+      // Only admins can initiate recovery
+      allow create: if isAdmin();
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    match /failoverStatus/{statusId} {
+      // Admins can read failover status
+      allow read: if isAdmin();
+      
+      // Only admins can initiate failover
+      allow write: if isAdmin();
+    }
+    
+    // ============================================
+    // MONITORING & HEALTH
+    // ============================================
+    
+    match /systemMetrics/{metricId} {
+      // Authenticated users can write metrics
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+    
+    match /metricsAverages/{metric} {
+      // Anyone can read averages for monitoring
+      allow read: if isAuthenticated();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /healthStatus/{service} {
+      // Anyone can read health status
+      allow read: if isAuthenticated();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /systemHealth/{healthId} {
+      // Anyone can read system health
+      allow read: if isAuthenticated();
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    match /walletMetrics/{metricId} {
+      // Admins can read wallet metrics
+      allow read: if isAdmin();
+      
+      // System can write
+      allow write: if false;
+    }
+    
+    match /callQualityMetrics/{metricId} {
+      // Users can read their own call metrics
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can write their metrics
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+    
+    // ============================================
+    // ALERTS
+    // ============================================
+    
+    match /systemAlerts/{alertId} {
+      // Admins can read all alerts
+      allow read: if isAdmin();
+      
+      // System can create alerts
+      allow create: if false;
+      
+      // Admins can resolve alerts
+      allow update: if isAdmin() && 
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['resolved', 'resolvedAt', 'resolvedBy']);
+      
+      // No deletes
+      allow delete: if false;
+    }
+    
+    // ============================================
+    // SYSTEM CONFIG
+    // ============================================
+    
+    match /systemConfig/{configId} {
+      // Admins can read config
+      allow read: if isAdmin();
+      
+      // Only admins can write config
+      allow write: if isAdmin();
+    }
+    
+    match /regionMetrics/{region} {
+      // Public read for routing decisions
+      allow read: if true;
+      
+      // Only system can write
+      allow write: if false;
+    }
+    
+    // ============================================
+    // LOGS (time-series data)
+    // ============================================
+    
+    match /requestLogs/{logId} {
+      // Admins can read logs
+      allow read: if isAdmin();
+      
+      // System can write
+      allow write: if false;
+    }
+    
+    match /errors/{errorId} {
+      // Admins can read errors
+      allow read: if isAdmin();
+      
+      // System can write
+      allow write: if false;
+    }
+    
+    match /requests/{requestId} {
+      // Admins can read requests
+      allow read: if isAdmin();
+      
+      // System can write
+      allow write: if false;
+    }
+    
+    // ============================================
+    // STATISTICS
+    // ============================================
+    
+    match /systemStats/{statId} {
+      // Public read for general stats
+      allow read: if isAuthenticated();
+      
+      // Only system can write
+      allow write: if false;
+    }
+  }
+}

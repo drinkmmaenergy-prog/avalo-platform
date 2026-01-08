@@ -1,0 +1,60 @@
+rules_version = '2';
+
+// PACK 305 — Legal & Audit Snapshot Export
+// Read-only reporting for investors, regulators, internal compliance
+// Access restricted by admin roles
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is an admin with required role
+    function isAdminWithRole(roles) {
+      return request.auth != null 
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in roles;
+    }
+    
+    // Check if user can access INVESTOR_OVERVIEW snapshots
+    function canAccessInvestorOverview() {
+      return isAdminWithRole(['FINANCE', 'SUPERADMIN']);
+    }
+    
+    // Check if user can access REGULATOR_OVERVIEW snapshots
+    function canAccessRegulatorOverview() {
+      return isAdminWithRole(['COMPLIANCE', 'SUPERADMIN']);
+    }
+    
+    // Check if user can access INTERNAL_COMPLIANCE snapshots
+    function canAccessInternalCompliance() {
+      return isAdminWithRole(['COMPLIANCE', 'SUPERADMIN', 'LEGAL']);
+    }
+    
+    // Check if user can access a specific snapshot based on type
+    function canAccessSnapshotType(snapshotType) {
+      return (snapshotType == 'INVESTOR_OVERVIEW' && canAccessInvestorOverview())
+        || (snapshotType == 'REGULATOR_OVERVIEW' && canAccessRegulatorOverview())
+        || (snapshotType == 'INTERNAL_COMPLIANCE' && canAccessInternalCompliance());
+    }
+    
+    // Legal snapshots collection
+    match /legalSnapshots/{snapshotId} {
+      // Allow read only if user has permission for that snapshot type
+      allow read: if canAccessSnapshotType(resource.data.type);
+      
+      // Allow create only if user has permission for the requested type
+      allow create: if canAccessSnapshotType(request.resource.data.type)
+        && request.resource.data.requestedByAdminId == request.auth.uid
+        && request.resource.data.status == 'PENDING'
+        && request.resource.data.type in ['INVESTOR_OVERVIEW', 'REGULATOR_OVERVIEW', 'INTERNAL_COMPLIANCE']
+        && request.resource.data.fileFormat in ['PDF', 'ZIP', 'JSON']
+        && request.resource.data.period.keys().hasAll(['from', 'to'])
+        && request.resource.data.requestedAt is timestamp;
+      
+      // Only system (via admin SDK) can update snapshots during processing
+      allow update: if false;
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+  }
+}

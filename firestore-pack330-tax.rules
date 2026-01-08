@@ -1,0 +1,98 @@
+rules_version = '2';
+
+/**
+ * PACK 330 — Tax Reports, Earnings Statements & Payout Compliance
+ * Firestore Security Rules
+ * 
+ * Collections:
+ * - taxProfiles
+ * - taxReportsUser
+ * - taxReportsPlatform
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    function hasIdentityVerification(userId) {
+      let verificationDoc = get(/databases/$(database)/documents/identityVerificationResults/$(userId));
+      return verificationDoc != null && 
+             verificationDoc.data.verified == true &&
+             verificationDoc.data.ageConfirmed == true;
+    }
+    
+    function isOver18(userId) {
+      let userDoc = get(/databases/$(database)/documents/users/$(userId));
+      return userDoc != null && userDoc.data.age >= 18;
+    }
+    
+    // ============================================================================
+    // TAX PROFILES
+    // ============================================================================
+    
+    match /taxProfiles/{userId} {
+      // Users can read their own tax profile
+      allow read: if isUser(userId) || isAdmin();
+      
+      // Users can create/update their own tax profile if:
+      // 1. They are authenticated as that user
+      // 2. They have verified identity (PACK 328A)
+      // 3. They are 18+
+      allow create, update: if isUser(userId) && 
+                               hasIdentityVerification(userId) &&
+                               isOver18(userId) &&
+                               request.resource.data.userId == userId &&
+                               request.resource.data.consentToElectronicDocs is bool &&
+                               request.resource.data.countryCode is string &&
+                               request.resource.data.taxResidenceCountry is string &&
+                               request.resource.data.isBusiness is bool &&
+                               request.resource.data.preferredReportCurrency in ['PLN', 'EUR', 'USD', 'GBP'];
+      
+      // No deletion - tax profiles are permanent records
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // USER TAX REPORTS
+    // ============================================================================
+    
+    match /taxReportsUser/{reportId} {
+      // Users can only read their own reports
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only system (Cloud Functions) can write reports
+      // Use Firebase Admin SDK for writes
+      allow create, update, delete: if false;
+    }
+    
+    // ============================================================================
+    // PLATFORM TAX REPORTS
+    // ============================================================================
+    
+    match /taxReportsPlatform/{reportId} {
+      // Only admins can read platform reports
+      allow read: if isAdmin();
+      
+      // Only system (Cloud Functions) can write reports
+      // Use Firebase Admin SDK for writes
+      allow create, update, delete: if false;
+    }
+  }
+}

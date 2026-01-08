@@ -1,0 +1,27 @@
+{
+  "name": "@avalo/local-dev",
+  "version": "1.0.0",
+  "description": "Avalo Local Development Tools",
+  "private": true,
+  "scripts": {
+    "start:ai": "ts-node mock-ai.ts",
+    "start:wallet": "ts-node mock-wallet.ts",
+    "start:payments": "ts-node mock-payments.ts",
+    "start:all": "concurrently \"npm:start:ai\" \"npm:start:wallet\" \"npm:start:payments\"",
+    "debug": "vite dev --port 7777"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.20",
+    "@types/cors": "^2.8.15",
+    "@types/node": "^20.0.0",
+    "concurrently": "^8.2.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "@vitejs/plugin-react": "^4.0.0"
+  }
+}

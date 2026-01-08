@@ -1,0 +1,103 @@
+rules_version = '2';
+
+/// PACK 303 — Creator Earnings Dashboard & Monthly Statements
+/// Security Rules for Creator Earnings Collections
+///
+/// Collections:
+/// - creatorEarningsMonthly: Monthly aggregated earnings per user
+/// - statementAuditLogs: Audit logs for statement exports
+///
+/// Key Security Principles:
+/// - Creators can only read their own earnings data
+/// - Only system (Cloud Functions) can write earnings data
+/// - Admins with FINANCE_ADMIN role can read earnings (with audit)
+/// - All write operations must come from authenticated Cloud Functions
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isSystemWrite() {
+      // Cloud Functions have auth.token.system == true
+      return request.auth != null && request.auth.token.system == true;
+    }
+    
+    function isFinanceAdmin() {
+      return isAuthenticated() && 
+             request.auth.token.roles != null &&
+             'FINANCE_ADMIN' in request.auth.token.roles;
+    }
+    
+    function extractUserIdFromDocId(docId) {
+      // Format: ${userId}_${year}_${month}
+      // Extract userId by removing last two underscore-separated parts
+      let parts = docId.split('_');
+      let userId = '';
+      let i = 0;
+      while (i < parts.size() - 2) {
+        userId = i == 0 ? parts[i] : userId + '_' + parts[i];
+        i = i + 1;
+      }
+      return userId;
+    }
+    
+    // ========================================================================
+    // CREATOR EARNINGS MONTHLY COLLECTION
+    // ========================================================================
+    
+    match /creatorEarningsMonthly/{docId} {
+      // Creators can read their own earnings
+      // Finance admins can read any earnings (audit logged separately)
+      allow read: if isOwner(extractUserIdFromDocId(docId)) || 
+                     isFinanceAdmin();
+      
+      // Only system (Cloud Functions) can create/update earnings
+      allow create, update: if isSystemWrite();
+      
+      // No deletion allowed
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // STATEMENT AUDIT LOGS COLLECTION
+    // ========================================================================
+    
+    match /statementAuditLogs/{logId} {
+      // Users can read their own audit logs
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Admins can read all audit logs
+      allow read: if isFinanceAdmin();
+      
+      // Only system can write audit logs
+      allow create: if isSystemWrite();
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // ========================================================================
+    // AGGREGATION STATUS COLLECTION (for tracking job runs)
+    // ========================================================================
+    
+    match /earningsAggregationStatus/{statusId} {
+      // Only admins can read aggregation status
+      allow read: if isFinanceAdmin();
+      
+      // Only system can write
+      allow create, update: if isSystemWrite();
+      
+      // No deletes
+      allow delete: if false;
+    }
+  }
+}

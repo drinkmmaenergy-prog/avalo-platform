@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PACK 360 - Localization Dashboard | Avalo Admin</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .header h1 {
+      color: #667eea;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      color: #666;
+      font-size: 16px;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .tab-button {
+      background: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .tab-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    
+    .tab-button.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .panel {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .panel h2 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card h3 {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .stat-card .value {
+      font-size: 36px;
+      font-weight: bold;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .form-group textarea {
+      min-height: 150px;
+      font-family: monospace;
+    }
+    
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+    }
+    
+    .btn-danger {
+      background: #dc3545;
+    }
+    
+    .table-wrapper {
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    
+    table th {
+      background: #f8f9fa;
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    
+    table td {
+      padding: 15px;
+      border-bottom: 1px solid #e0e0e0;
+      color: #666;
+    }
+    
+    table tr:hover {
+      background: #f8f9fa;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .badge-success {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .badge-warning {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .badge-danger {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .badge-info {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    .alert {
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .alert-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: #667eea;
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🌍 PACK 360 - Global Localization Dashboard</h1>
+      <p>Multi-language, Multi-currency & Cultural Optimization Engine</p>
+    </div>
+    
+    <div class="tabs">
+      <button class="tab-button active" onclick="switchTab('overview')">Overview</button>
+      <button class="tab-button" onclick="switchTab('languages')">Languages</button>
+      <button class="tab-button" onclick="switchTab('currencies')">Currencies</button>
+      <button class="tab-button" onclick="switchTab('regional-ux')">Regional UX</button>
+      <button class="tab-button" onclick="switchTab('safety')">Cultural Safety</button>
+      <button class="tab-button" onclick="switchTab('legal')">Legal Documents</button>
+    </div>
+    
+    <!-- Overview Tab -->
+    <div id="overview" class="tab-content active">
+      <div class="panel">
+        <h2>📊 Global Statistics</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Supported Languages</h3>
+            <div class="value" id="stat-languages">14</div>
+          </div>
+          <div class="stat-card">
+            <h3>Supported Currencies</h3>
+            <div class="value" id="stat-currencies">31</div>
+          </div>
+          <div class="stat-card">
+            <h3>Active Countries</h3>
+            <div class="value" id="stat-countries">35</div>
+          </div>
+          <div class="stat-card">
+            <h3>Legal Documents</h3>
+            <div class="value" id="stat-legal">--</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <h2>🔧 Quick Actions</h2>
+        <div class="grid-2">
+          <button class="btn" onclick="initializeCurrencyRates()">🔄 Update Exchange Rates</button>
+          <button class="btn" onclick="cacheTranslations()">💾 Rebuild Translation Cache</button>
+        </div>
+      </div>
+      
+      <div id="alert-container"></div>
+    </div>
+    
+    <!-- Languages Tab -->
+    <div id="languages" class="tab-content">
+      <div class="panel">
+        <h2>🗣️ Language Management</h2>
+        <div class="table-wrapper">
+          <table id="languages-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Native Name</th>
+                <th>RTL</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="languages-tbody">
+              <tr><td colspan="6" class="loading">Loading languages...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <h2>✏️ Translation Phrase Editor</h2>
+        <div class="form-group">
+          <label>Phrase ID</label>
+          <input type="text" id="phrase-id" placeholder="e.g., 'home.welcome'">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="phrase-category">
+            <option value="ui">UI</option>
+            <option value="notification">Notification</option>
+            <option value="education">Education</option>
+            <option value="ai">AI</option>
+            <option value="support">Support</option>
+            <option value="legal">Legal</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Translations (JSON format)</label>
+          <textarea id="phrase-translations" placeholder='{"en": "Welcome", "pl": "Witaj", "de": "Willkommen"}'></textarea>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="phrase-locked"> Lock phrase (prevent auto-translation)
+          </label>
+       </div>
+        <button class="btn" onclick="saveTranslationPhrase()">💾 Save Phrase</button>
+      </div>
+    </div>
+    
+    <!-- Currencies Tab -->
+    <div id="currencies" class="tab-content">
+      <div class="panel">
+        <h2>💱 Currency Management</h2>
+        <div class="table-wrapper">
+          <table id="currencies-table">
+            <thead>
+              <tr>
+                <th>Currency</th>
+                <th>Country</th>
+                <th>Symbol</th>
+                <th>Exchange Rate (USD)</th>
+                <th>Last Updated</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="currencies-tbody">
+              <tr><td colspan="7" class="loading">Loading currencies...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <h2>⚙️ Regional Pricing Adjustment</h2>
+        <div class="form-group">
+          <label>Currency</label>
+          <select id="pricing-currency">
+            <option value="">Select currency...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Price Multiplier (0.5 - 5.0)</label>
+          <input type="number" id="pricing-multiplier" step="0.1" min="0.5" max="5.0" value="1.0">
+        </div>
+        <div class="form-group">
+          <label>Reason</label>
+          <input type="text" id="pricing-reason" placeholder="e.g., 'Lower purchasing power'">
+        </div>
+        <button class="btn" onclick="setRegionalPricing()">💰 Apply Adjustment</button>
+      </div>
+    </div>
+    
+    <!-- Regional UX Tab -->
+    <div id="regional-ux" class="tab-content">
+      <div class="panel">
+        <h2>🌐 Regional UX Rules</h2>
+        <p style="margin-bottom: 20px; color: #666;">Configure country-specific behavior, limits, and features</p>
+        <div id="regional-ux-content" class="loading">Loading regional UX rules...</div>
+      </div>
+    </div>
+    
+    <!-- Cultural Safety Tab -->
+    <div id="safety" class="tab-content">
+      <div class="panel">
+        <h2>🛡️ Cultural Safety Profiles</h2>
+        <p style="margin-bottom: 20px; color: #666;">Manage content filtering and compliance per country</p>
+        <div id="safety-profiles-content" class="loading">Loading safety profiles...</div>
+      </div>
+    </div>
+    
+    <!-- Legal Documents Tab -->
+    <div id="legal" class="tab-content">
+      <div class="panel">
+        <h2>📜 Legal Documents Management</h2>
+        <div class="table-wrapper">
+          <table id="legal-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Country</th>
+                <th>Language</th>
+                <th>Version</th>
+                <th>Status</th>
+                <th>Effective Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="legal-tbody">
+              <tr><td colspan="7" class="loading">Loading legal documents...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <h2>➕ Create Legal Document</h2>
+        <div class="form-group">
+          <label>Document Type</label>
+          <select id="legal-type">
+            <option value="terms_of_service">Terms of Service</option>
+            <option value="privacy_policy">Privacy Policy</option>
+            <option value="refund_policy">Refund Policy</option>
+            <option value="calendar_regulations">Calendar Regulations</option>
+            <option value="event_regulations">Event Regulations</option>
+            <option value="cookie_policy">Cookie Policy</option>
+            <option value="dsa_compliance">DSA Compliance</option>
+            <option value="community_guidelines">Community Guidelines</option>
+          </select>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Country Code</label>
+            <input type="text" id="legal-country" placeholder="e.g., 'US', 'PL', 'GLOBAL'">
+          </div>
+          <div class="form-group">
+            <label>Language Code</label>
+            <input type="text" id="legal-language" placeholder="e.g., 'en', 'pl'">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Version</label>
+          <input type="text" id="legal-version" placeholder="e.g., '1.0', '2.1'">
+        </div>
+        <div class="form-group">
+          <label>Content</label>
+          <textarea id="legal-content" placeholder="Enter legal document content..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="legal-mandatory" checked> Require user acceptance
+          </label>
+        </div>
+        <button class="btn" onclick="createLegalDocument()">📝 Create Document</button>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    
+    // Initialize Firebase (use your config)
+    const firebaseConfig = {
+      // Add your Firebase config here
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const functions = getFunctions(app);
+    const auth = getAuth(app);
+    
+    window.functions = functions;
+    window.httpsCallable = httpsCallable;
+    
+    // Auth check
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = '/admin-login.html';
+      } else {
+        loadDashboard();
+      }
+    });
+    
+    function showAlert(message, type = 'success') {
+      const container = document.getElementById('alert-container');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      container.appendChild(alert);
+      setTimeout(() => alert.remove(), 5000);
+    }
+    
+    window.showAlert = showAlert;
+    
+    async function loadDashboard() {
+      await Promise.all([
+        loadLanguages(),
+        loadCurrencies(),
+        loadLegalDocuments()
+      ]);
+    }
+    
+    async function loadLanguages() {
+      try {
+        const getSupportedLanguages = httpsCallable(functions, 'getSupportedLanguages');
+        const result = await getSupportedLanguages();
+        
+        if (result.data.success) {
+          const tbody = document.getElementById('languages-tbody');
+          tbody.innerHTML = result.data.languages.map(lang => `
+            <tr>
+              <td>${lang.code}</td>
+              <td>${lang.name}</td>
+              <td>${lang.nativeName}</td>
+              <td>${lang.rtl ? 'Yes' : 'No'}</td>
+              <td><span class="badge ${lang.enabled ? 'badge-success' : 'badge-danger'}">${lang.enabled ? 'Enabled' : 'Disabled'}</span></td>
+              <td>
+                <button class="btn btn-secondary" onclick="toggleLanguage('${lang.code}', ${!lang.enabled})">
+                  ${lang.enabled ? 'Disable' : 'Enable'}
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (error) {
+        console.error('Error loading languages:', error);
+      }
+    }
+    
+    async function loadCurrencies() {
+      try {
+        const getSupportedCurrencies = httpsCallable(functions, 'getSupportedCurrencies');
+        const result = await getSupportedCurrencies();
+        
+        if (result.data.success) {
+          const tbody = document.getElementById('currencies-tbody');
+          const select = document.getElementById('pricing-currency');
+          
+          tbody.innerHTML = result.data.currencies.map(curr => `
+            <tr>
+              <td><strong>${curr.currency}</strong></td>
+              <td>${curr.countryCode}</td>
+              <td>${curr.symbol}</td>
+              <td>${curr.exchangeRate.toFixed(4)}</td>
+              <td>${new Date(curr.lastUpdate).toLocaleString()}</td>
+              <td><span class="badge ${curr.enabled ? 'badge-success' : 'badge-danger'}">${curr.enabled ? 'Active' : 'Inactive'}</span></td>
+              <td>
+                <button class="btn btn-secondary" onclick="toggleCurrency('${curr.currency}', ${!curr.enabled})">
+                  ${curr.enabled ? 'Disable' : 'Enable'}
+                </button>
+              </td>
+            </tr>
+          `).join('');
+          
+          select.innerHTML = '<option value="">Select currency...</option>' +
+            result.data.currencies.map(curr => `<option value="${curr.currency}">${curr.currency} - ${curr.countryCode}</option>`).join('');
+        }
+      } catch (error) {
+        console.error('Error loading currencies:', error);
+      }
+    }
+    
+    async function loadLegalDocuments() {
+      try {
+        const adminGetAllLegalDocuments = httpsCallable(functions, 'adminGetAllLegalDocuments');
+        const result = await adminGetAllLegalDocuments({ status: 'active' });
+        
+        if (result.data.success) {
+          const tbody = document.getElementById('legal-tbody');
+          document.getElementById('stat-legal').textContent = result.data.documents.length;
+          
+          tbody.innerHTML = result.data.documents.map(doc => `
+            <tr>
+              <td>${doc.type.replace(/_/g, ' ').toUpperCase()}</td>
+              <td>${doc.country}</td>
+              <td>${doc.languageCode}</td>
+              <td><span class="badge badge-info">${doc.version}</span></td>
+              <td><span class="badge badge-success">${doc.status}</span></td>
+              <td>${new Date(doc.effectiveDate).toLocaleDateString()}</td>
+              <td>
+                <button class="btn btn-secondary">View</button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (error) {
+        console.error('Error loading legal documents:', error);
+      }
+    }
+    
+    window.loadLanguages = loadLanguages;
+    window.loadCurrencies = loadCurrencies;
+    window.loadLegalDocuments = loadLegalDocuments;
+  </script>
+  
+  <script>
+    function switchTab(tabName) {
+      // Update buttons
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Update content
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+    }
+    
+    async function initializeCurrencyRates() {
+      try {
+        const initializeCurrencyRates = window.httpsCallable(window.functions, 'initializeCurrencyRates');
+        const result = await initializeCurrencyRates();
+        if (result.data.success) {
+          showAlert('Exchange rates updated successfully!');
+          loadCurrencies();
+        }
+      } catch (error) {
+        showAlert('Error updating exchange rates: ' + error.message, 'error');
+      }
+    }
+    
+    async function saveTranslationPhrase() {
+      try {
+        const phraseId = document.getElementById('phrase-id').value;
+        const category = document.getElementById('phrase-category').value;
+        const translations = JSON.parse(document.getElementById('phrase-translations').value);
+        const locked = document.getElementById('phrase-locked').checked;
+        
+        const adminUpdateTranslationPhrase = window.httpsCallable(window.functions, 'adminUpdateTranslationPhrase');
+        const result = await adminUpdateTranslationPhrase({ phraseId, category, translations, locked });
+        
+        if (result.data.success) {
+          showAlert('Translation phrase saved successfully!');
+        }
+      } catch (error) {
+        showAlert('Error saving phrase: ' + error.message, 'error');
+      }
+    }
+    
+    async function toggleLanguage(code, enabled) {
+      try {
+        const adminToggleLanguage = window.httpsCallable(window.functions, 'adminToggleLanguage');
+        const result = await adminToggleLanguage({ languageCode: code, enabled });
+        
+        if (result.data.success) {
+          showAlert(`Language ${enabled ? 'enabled' : 'disabled'} successfully!`);
+          loadLanguages();
+        }
+      } catch (error) {
+        showAlert('Error toggling language: ' + error.message, 'error');
+      }
+    }
+    
+    async function toggleCurrency(currency, enabled) {
+      try {
+        const adminToggleCurrency = window.httpsCallable(window.functions, 'adminToggleCurrency');
+        const result = await adminToggleCurrency({ currency, enabled });
+        
+        if (result.data.success) {
+          showAlert(`Currency ${enabled ? 'enabled' : 'disabled'} successfully!`);
+          loadCurrencies();
+        }
+      } catch (error) {
+        showAlert('Error toggling currency: ' + error.message, 'error');
+      }
+    }
+    
+    async function setRegionalPricing() {
+      try {
+        const currency = document.getElementById('pricing-currency').value;
+        const multiplier = parseFloat(document.getElementById('pricing-multiplier').value);
+        const reason = document.getElementById('pricing-reason').value;
+        
+        if (!currency) {
+          showAlert('Please select a currency', 'error');
+          return;
+        }
+        
+        const adminSetRegionalPricing = window.httpsCallable(window.functions, 'adminSetRegionalPricing');
+        const result = await adminSetRegionalPricing({ currency, multiplier, reason });
+        
+        if (result.data.success) {
+          showAlert('Regional pricing adjustment applied!');
+        }
+      } catch (error) {
+        showAlert('Error setting pricing: ' + error.message, 'error');
+      }
+    }
+    
+    async function createLegalDocument() {
+      try {
+        const type = document.getElementById('legal-type').value;
+        const country = document.getElementById('legal-country').value.toUpperCase();
+        const languageCode = document.getElementById('legal-language').value.toLowerCase();
+        const version = document.getElementById('legal-version').value;
+        const content = document.getElementById('legal-content').value;
+        const mandatory = document.getElementById('legal-mandatory').checked;
+        
+        const adminCreateLegalDocument = window.httpsCallable(window.functions, 'adminCreateLegalDocument');
+        const result = await adminCreateLegalDocument({
+          type, country, languageCode, version, content, mandatory,
+          status: 'draft'
+        });
+        
+        if (result.data.success) {
+          showAlert('Legal document created successfully!');
+          loadLegalDocuments();
+          // Clear form
+          document.getElementById('legal-content').value = '';
+          document.getElementById('legal-version').value = '';
+        }
+      } catch (error) {
+        showAlert('Error creating legal document: ' + error.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

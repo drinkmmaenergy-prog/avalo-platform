@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  firebase-emulators:
+    image: node:20-alpine
+    container_name: avalo-firebase-emulators
+    working_dir: /app
+    ports:
+      # Emulator UI
+      - "4000:4000"
+      # Emulator Hub
+      - "4610:4610"
+      # Auth Emulator
+      - "9099:9099"
+      # Firestore Emulator
+      - "8080:8080"
+      # Functions Emulator
+      - "5001:5001"
+      # Hosting Emulator
+      - "5000:5000"
+      # Storage Emulator
+      - "9199:9199"
+      # PubSub Emulator
+      - "8085:8085"
+      # Logging
+      - "4710:4710"
+    volumes:
+      - .:/app
+      - firebase-data:/app/.firebase-data
+    environment:
+      - FIRESTORE_EMULATOR_HOST=0.0.0.0:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=0.0.0.0:9099
+      - FIREBASE_STORAGE_EMULATOR_HOST=0.0.0.0:9199
+      - PUBSUB_EMULATOR_HOST=0.0.0.0:8085
+      - FUNCTIONS_EMULATOR_HOST=0.0.0.0:5001
+      - GCLOUD_PROJECT=avalo-demo
+      - NODE_ENV=development
+    command: >
+      sh -c "
+        npm install -g firebase-tools &&
+        firebase emulators:start --project=avalo-demo
+      "
+    networks:
+      - avalo-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  firebase-data:
+    driver: local
+
+networks:
+  avalo-network:
+    driver: bridge

@@ -1,0 +1,26 @@
+@echo off
+"C:\\Users\\Drink\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\cmake.exe" ^
+  "-HC:\\Users\\Drink\\avaloapp\\app-mobile\\node_modules\\.pnpm\\expo-modules-core@3.0.29_re_b3867649d0595256a6cdfd2ca6d16091\\node_modules\\expo-modules-core\\android" ^
+  "-DCMAKE_SYSTEM_NAME=Android" ^
+  "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" ^
+  "-DCMAKE_SYSTEM_VERSION=24" ^
+  "-DANDROID_PLATFORM=android-24" ^
+  "-DANDROID_ABI=armeabi-v7a" ^
+  "-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a" ^
+  "-DANDROID_NDK=C:\\Users\\Drink\\AppData\\Local\\Android\\Sdk\\ndk\\27.1.12297006" ^
+  "-DCMAKE_ANDROID_NDK=C:\\Users\\Drink\\AppData\\Local\\Android\\Sdk\\ndk\\27.1.12297006" ^
+  "-DCMAKE_TOOLCHAIN_FILE=C:\\Users\\Drink\\AppData\\Local\\Android\\Sdk\\ndk\\27.1.12297006\\build\\cmake\\android.toolchain.cmake" ^
+  "-DCMAKE_MAKE_PROGRAM=C:\\Users\\Drink\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe" ^
+  "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=C:\\avalo\\.build\\expo-modules-core\\intermediates\\cxx\\Debug\\4x6f5271\\obj\\armeabi-v7a" ^
+  "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=C:\\avalo\\.build\\expo-modules-core\\intermediates\\cxx\\Debug\\4x6f5271\\obj\\armeabi-v7a" ^
+  "-DCMAKE_BUILD_TYPE=Debug" ^
+  "-DCMAKE_FIND_ROOT_PATH=C:\\Users\\Drink\\avaloapp\\app-mobile\\node_modules\\.pnpm\\expo-modules-core@3.0.29_re_b3867649d0595256a6cdfd2ca6d16091\\node_modules\\expo-modules-core\\android\\.cxx\\Debug\\4x6f5271\\prefab\\armeabi-v7a\\prefab" ^
+  "-BC:\\Users\\Drink\\avaloapp\\app-mobile\\node_modules\\.pnpm\\expo-modules-core@3.0.29_re_b3867649d0595256a6cdfd2ca6d16091\\node_modules\\expo-modules-core\\android\\.cxx\\Debug\\4x6f5271\\armeabi-v7a" ^
+  -GNinja ^
+  "-DANDROID_STL=c++_shared" ^
+  "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON" ^
+  "-DREACT_NATIVE_DIR=C:\\Users\\Drink\\avaloapp\\app-mobile\\node_modules\\.pnpm\\react-native@0.81.5_@babel+_90593d4ed3aa219ea593401cfa50ee72\\node_modules\\react-native" ^
+  "-DREACT_NATIVE_TARGET_VERSION=81" ^
+  "-DUSE_HERMES=false" ^
+  "-DIS_NEW_ARCHITECTURE_ENABLED=false" ^
+  "-DUNIT_TEST=false"

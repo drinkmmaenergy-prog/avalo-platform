@@ -1,0 +1,65 @@
+/**
+ * PACK 88 — Moderation Console Firestore Security Rules
+ * Restrict access to moderation collections to admin users only
+ */
+
+// Admin users collection - only admins can read/write
+match /admin_users/{userId} {
+  // No public read or write access
+  allow read, write: if false;
+}
+
+// Moderation cases - no public access
+match /moderation_cases/{caseId} {
+  // No public read or write access
+  allow read, write: if false;
+}
+
+// Case notes - no public access
+match /moderation_case_notes/{noteId} {
+  // No public read or write access
+  allow read, write: if false;
+}
+
+// Audit logs - no public access
+match /moderation_audit_log/{logId} {
+  // No public read or write access
+  allow read, write: if false;
+}
+
+/**
+ * IMPLEMENTATION NOTES:
+ * 
+ * 1. All moderation collections are completely locked down from public access
+ * 2. Access is only via Cloud Functions with admin authentication checks
+ * 3. Admin authentication is handled in Cloud Functions using:
+ *    - Custom claims (if configured)
+ *    - admin_users collection lookup
+ * 4. These rules should be merged into the main firestore.rules file
+ * 
+ * To integrate into main firestore.rules:
+ * 
+ * rules_version = '2';
+ * service cloud.firestore {
+ *   match /databases/{database}/documents {
+ *     // ... existing rules ...
+ *     
+ *     // PACK 88: Moderation Console Rules
+ *     match /admin_users/{userId} {
+ *       allow read, write: if false;
+ *     }
+ *     
+ *     match /moderation_cases/{caseId} {
+ *       allow read, write: if false;
+ *     }
+ *     
+ *     match /moderation_case_notes/{noteId} {
+ *       allow read, write: if false;
+ *     }
+ *     
+ *     match /moderation_audit_log/{logId} {
+ *       allow read, write: if false;
+ *     }
+ *   }
+ * }
+ */

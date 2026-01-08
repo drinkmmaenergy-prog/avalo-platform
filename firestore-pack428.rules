@@ -1,0 +1,179 @@
+rules_version = '2';
+
+/**
+ * PACK 428 — Feature Flags & Kill-Switch
+ * 
+ * Firestore Security Rules
+ * 
+ * Security:
+ * - Read: all authenticated clients
+ * - Write: admin only
+ * - All changes audited via PACK 296
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function: Check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Helper function: Check if user is ops team
+    function isOps() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'ops'];
+    }
+    
+    // Helper function: Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function: Check if user owns the resource
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ==========================================
+    // FEATURE FLAGS (global/featureFlags/*)
+    // ==========================================
+    
+    match /global/featureFlags {
+      // Allow read of the parent document
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+      
+      match /flags/{flagKey} {
+        // Anyone authenticated can read flags
+        allow read: if isAuthenticated();
+        
+        // Only admins can create/update/delete flags
+        allow create: if isAdmin();
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
+      }
+    }
+    
+    // ==========================================
+    // KILL SWITCHES (global/killSwitches/*)
+    // ==========================================
+    
+    match /global/killSwitches {
+      // Allow read of the parent document
+      allow read: if isAuthenticated();
+      allow write: if isOps();
+      
+      match /switches/{switchKey} {
+        // Anyone authenticated can read kill switches (important for client-side enforcement)
+        allow read: if isAuthenticated();
+        
+        // Only ops/admin can activate/deactivate kill switches
+        allow create: if isOps();
+        allow update: if isOps();
+        allow delete: if isAdmin(); // Only admins can delete (rare)
+      }
+      
+      match /autoActivations/{activationId} {
+        // Read only by ops team
+        allow read: if isOps();
+        
+        // System can write (will be done via admin SDK)
+        allow write: if false; // Admin SDK only
+      }
+    }
+    
+    // ==========================================
+    // EXPERIMENTS (global/experiments/*)
+    // ==========================================
+    
+    match /global/experiments {
+      // Allow read of the parent document
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+      
+      match /active/{experimentKey} {
+        // Anyone authenticated can read experiments (for client-side checks)
+        allow read: if isAuthenticated();
+        
+        // Only admins can create/update experiments
+        allow create: if isAdmin();
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
+        
+        match /variants/{variantKey} {
+          // Anyone authenticated can read variants
+          allow read: if isAuthenticated();
+          
+          // Only admins can modify variants
+          allow create: if isAdmin();
+          allow update: if isAdmin();
+          allow delete: if isAdmin();
+        }
+      }
+      
+      match /autoDisables/{eventId} {
+        // Read only by ops team
+        allow read: if isOps();
+        
+        // System can write (will be done via admin SDK)
+        allow write: if false; // Admin SDK only
+      }
+    }
+    
+    // ==========================================
+    // USER EXPERIMENT ASSIGNMENTS
+    // ==========================================
+    
+    match /users/{userId}/experimentAssignments/{experimentKey} {
+      // Users can read their own assignments
+      allow read: if isOwner(userId) || isOps();
+      
+      // System assigns (will be done via admin SDK or cloud function)
+      allow write: if false; // Admin SDK/Cloud Functions only
+    }
+    
+    // ==========================================
+    // ANALYTICS (EXPERIMENTS)
+    // ==========================================
+    
+    match /analytics/experiments {
+      // Only ops team can read analytics
+      allow read: if isOps();
+      allow write: if false; // Admin SDK only
+      
+      match /exposures/{exposureId} {
+        allow read: if isOps();
+        allow write: if false; // Admin SDK only
+      }
+      
+      match /metrics/{metricId} {
+        allow read: if isOps();
+        allow write: if false; // Admin SDK only
+      }
+      
+      match /events/{eventId} {
+        allow read: if isOps();
+        allow write: if false; // Admin SDK only
+      }
+      
+      match /crashes/{crashId} {
+        allow read: if isOps();
+        allow write: if false; // Admin SDK only
+      }
+    }
+    
+    // ==========================================
+    // RETENTION PROFILES (PACK 301 Integration)
+    // ==========================================
+    
+    match /retention/profiles/users/{userId} {
+      // Users can read their own retention profile for experiment data
+      allow read: if isOwner(userId) || isOps();
+      
+      // System writes via admin SDK
+      allow write: if false; // Admin SDK only
+    }
+  }
+}

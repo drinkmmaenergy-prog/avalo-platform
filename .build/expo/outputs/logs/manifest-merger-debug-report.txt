@@ -1,0 +1,14 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\Users\Drink\avaloapp\app-mobile\node_modules\.pnpm\expo@54.0.30_@babel+core@7._e5fdef06ea6eba6591f770e2a63f651e\node_modules\expo\android\src\main\AndroidManifest.xml:1:1-3:12
+INJECTED from C:\Users\Drink\avaloapp\app-mobile\node_modules\.pnpm\expo@54.0.30_@babel+core@7._e5fdef06ea6eba6591f770e2a63f651e\node_modules\expo\android\src\main\AndroidManifest.xml:1:1-3:12
+	package
+		INJECTED from C:\Users\Drink\avaloapp\app-mobile\node_modules\.pnpm\expo@54.0.30_@babel+core@7._e5fdef06ea6eba6591f770e2a63f651e\node_modules\expo\android\src\main\AndroidManifest.xml
+uses-sdk
+INJECTED from C:\Users\Drink\avaloapp\app-mobile\node_modules\.pnpm\expo@54.0.30_@babel+core@7._e5fdef06ea6eba6591f770e2a63f651e\node_modules\expo\android\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\Users\Drink\avaloapp\app-mobile\node_modules\.pnpm\expo@54.0.30_@babel+core@7._e5fdef06ea6eba6591f770e2a63f651e\node_modules\expo\android\src\main\AndroidManifest.xml
+INJECTED from C:\Users\Drink\avaloapp\app-mobile\node_modules\.pnpm\expo@54.0.30_@babel+core@7._e5fdef06ea6eba6591f770e2a63f651e\node_modules\expo\android\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from C:\Users\Drink\avaloapp\app-mobile\node_modules\.pnpm\expo@54.0.30_@babel+core@7._e5fdef06ea6eba6591f770e2a63f651e\node_modules\expo\android\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\Users\Drink\avaloapp\app-mobile\node_modules\.pnpm\expo@54.0.30_@babel+core@7._e5fdef06ea6eba6591f770e2a63f651e\node_modules\expo\android\src\main\AndroidManifest.xml

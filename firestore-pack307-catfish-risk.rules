@@ -1,0 +1,174 @@
+rules_version = '2';
+
+/**
+ * PACK 307 — Fake Profile Detection & Catfish Risk Engine
+ * Firestore Security Rules
+ * 
+ * Purpose: Protect catfish risk scoring data and admin-only operations
+ * Dependencies: PACK 306 (Verification), PACK 268 (Risk Engine), PACK 296 (Audit)
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid));
+    }
+    
+    function hasAdminRole(role) {
+      return isAdmin() && 
+             get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role == role;
+    }
+    
+    function hasMinimumRole(minRole) {
+      let role = get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role;
+      return isAdmin() && (
+        role == 'SUPERADMIN' ||
+        (minRole == 'RISK' && (role == 'RISK' || role == 'MODERATOR')) ||
+        (minRole == 'MODERATOR' && role == 'MODERATOR')
+      );
+    }
+    
+    // ============================================================================
+    // USER RISK COLLECTION (Extended for Catfish Risk)
+    // Collection: userRisk/{userId}
+    // ============================================================================
+    
+    match /userRisk/{userId} {
+      // Read: Only admins with RISK or higher role
+      // Users CANNOT read their own risk scores (intentional for security)
+      allow read: if hasMinimumRole('RISK');
+      
+      // Create/Update: Only backend (Cloud Functions) or admins
+      allow create: if false; // Backend only via admin SDK
+      allow update: if false; // Backend only via admin SDK
+      
+      // Delete: Never (maintain audit trail)
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // CATFISH RISK EVENTS LOG
+    // Collection: catfishRiskEvents/{eventId}
+    // For tracking all risk score changes and admin actions
+    // ============================================================================
+    
+    match /catfishRiskEvents/{eventId} {
+      // Read: Admins only
+      allow read: if hasMinimumRole('RISK');
+      
+      // Write: Backend only
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // VERIFICATION REVIEW QUEUE (Extended for Catfish Cases)
+    // Collection: verificationReviewQueue/{reviewId}
+    // ============================================================================
+    
+    match /verificationReviewQueue/{reviewId} {
+      // Read: Admins with RISK or MODERATOR role
+      allow read: if hasMinimumRole('MODERATOR');
+      
+      // Create: Backend only
+      allow create: if false;
+      
+      // Update: Admins can update review status and add notes
+      allow update: if hasMinimumRole('MODERATOR') && 
+                       request.resource.data.reviewedBy == request.auth.uid &&
+                       request.resource.data.reviewedAt == request.time;
+      
+      // Delete: Admins only (cleanup resolved cases)
+      allow delete: if hasMinimumRole('RISK');
+    }
+    
+    // ============================================================================
+    // CATFISH REPORTS
+    // Collection: reports/{reportId}
+    // Extended to handle FAKE_PROFILE_OR_CATFISH report type
+    // ============================================================================
+    
+    match /reports/{reportId} {
+      // Read: Reporter can read own reports, admins can read all
+      allow read: if isAuthenticated() && (
+        resource.data.reporterId == request.auth.uid ||
+        hasMinimumRole('MODERATOR')
+      );
+      
+      // Create: Any authenticated user can create reports
+      allow create: if isAuthenticated() && 
+                       request.resource.data.reporterId == request.auth.uid &&
+                       request.resource.data.createdAt == request.time;
+      
+      // Update: Only admins (for status changes)
+      allow update: if hasMinimumRole('MODERATOR');
+      
+      // Delete: Never (maintain audit trail)
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // ADMIN ACTIONS LOG
+    // Collection: adminActions/{actionId}
+    // Logs all admin actions on catfish cases
+    // ============================================================================
+    
+    match /adminActions/{actionId} {
+      // Read: Admins only
+      allow read: if hasMinimumRole('RISK');
+      
+      // Create: Admins only (tracked for accountability)
+      allow create: if isAdmin() &&
+                       request.resource.data.adminId == request.auth.uid &&
+                       request.resource.data.timestamp == request.time;
+      
+      // Update/Delete: Never (immutable audit trail)
+      allow update, delete: if false;
+    }
+    
+    // ============================================================================
+    // PROFILE VISIBILITY OVERRIDES
+    // Enforce auto-hiding for HIGH/CRITICAL risk users
+    // ============================================================================
+    
+    // Discovery/Swipe - Check risk status
+    match /swipes/{swipeId} {
+      allow read: if isAuthenticated() && !isHighRiskUser(request.auth.uid);
+      allow write: if isAuthenticated() && !isHighRiskUser(request.auth.uid);
+    }
+    
+    match /discovery_profiles/{userId} {
+      allow read: if isAuthenticated() && !isHighRiskUser(userId);
+      allow write: if isUser(userId) && !isHighRiskUser(userId);
+    }
+    
+    // Feed - Check risk status
+    match /feed/{feedId} {
+      allow read: if isAuthenticated() && !isHighRiskUser(request.auth.uid);
+      allow write: if isAuthenticated() && !isHighRiskUser(request.auth.uid);
+    }
+    
+    // Helper function to check if user is high risk
+    // Returns true if user has autoHiddenFromDiscovery or autoHiddenFromSwipe set
+    function isHighRiskUser(userId) {
+      let riskDoc = get(/databases/$(database)/documents/userRisk/$(userId));
+      return riskDoc != null && (
+        riskDoc.data.autoHiddenFromDiscovery == true ||
+        riskDoc.data.autoHiddenFromSwipe == true
+      );
+    }
+  }
+}

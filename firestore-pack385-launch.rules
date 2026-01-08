@@ -1,0 +1,304 @@
+rules_version = '2';
+
+// PACK 385 — Public Launch Orchestration Security Rules
+// Protects launch configuration, market activation, referrals, ambassadors, and traffic controls
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================================
+    // LAUNCH PHASES
+    // ========================================
+    match /launchPhases/{phaseId} {
+      // Only admins can write
+      allow write: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // All authenticated users can read current phase
+      allow read: if request.auth != null;
+    }
+
+    // ========================================
+    // MARKET ACTIVATION
+    // ========================================
+    match /marketActivation/{countryCode} {
+      // Only admins can write
+      allow write: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // All authenticated users can read
+      allow read: if request.auth != null;
+    }
+
+    match /marketActivation/{countryCode}/history/{historyId} {
+      // Only admins can write
+      allow write: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // Admins can read
+      allow read: if request.auth != null && 
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+
+    // ========================================
+    // REFERRAL LINKS
+    // ========================================
+    match /referralLinks/{code} {
+      // Users can create their own referral links
+      allow create: if request.auth != null && 
+                      request.resource.data.userId == request.auth.uid;
+      
+      // Users can read their own links
+      allow read: if request.auth != null;
+      
+      // System can update usage counts
+      allow update: if request.auth != null;
+      
+      // Users cannot delete
+      allow delete: if false;
+    }
+
+    // ========================================
+    // REFERRAL ATTRIBUTION
+    // ========================================
+    match /referralAttribution/{attributionId} {
+      // System creates attribution records
+      allow create: if request.auth != null;
+      
+      // Users can read their own attributions
+      allow read: if request.auth != null && 
+                    (resource.data.inviterId == request.auth.uid || 
+                     resource.data.invitedUserId == request.auth.uid);
+      
+      // Only system/admin can update
+      allow update: if request.auth != null && 
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // Cannot delete
+      allow delete: if false;
+    }
+
+    // ========================================
+    // VIRAL REWARDS
+    // ========================================
+    match /viralRewards/{rewardId} {
+      // System creates rewards
+      allow create: if false;
+      
+      // Users can read their own rewards
+      allow read: if request.auth != null && 
+                    resource.data.userId == request.auth.uid;
+      
+      // System can update
+      allow update: if false;
+      
+      // Cannot delete
+      allow delete: if false;
+    }
+
+    match /lockedTokens/{tokenId} {
+      // System creates locked tokens
+      allow create: if false;
+      
+      // Users can read their own locked tokens
+      allow read: if request.auth != null && 
+                    resource.data.userId == request.auth.uid;
+      
+      // System can update
+      allow update: if false;
+      
+      // Cannot delete
+      allow delete: if false;
+    }
+
+    // ========================================
+    // LAUNCH AMBASSADORS
+    // ========================================
+    match /launchAmbassadors/{userId} {
+      // Only admins can create/update ambassadors
+      allow create, update: if request.auth != null && 
+                              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // Users can read their own ambassador data
+      allow read: if request.auth != null && 
+                    (userId == request.auth.uid || 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN');
+      
+      // Cannot delete
+      allow delete: if request.auth != null && 
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+
+    match /discoveryBoosts/{boostId} {
+      // System creates boosts
+      allow create: if request.auth != null;
+      
+      // Users can read their own boosts
+      allow read: if request.auth != null && 
+                    resource.data.userId == request.auth.uid;
+      
+      // System can update
+      allow update: if false;
+      
+      // Cannot delete
+      allow delete: if false;
+    }
+
+    // ========================================
+    // TRAFFIC GUARDS
+    // ========================================
+    match /launchTrafficGuards/{guardId} {
+      // Only admins can write
+      allow write: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // All authenticated users can read
+      allow read: if request.auth != null;
+    }
+
+    match /userThrottles/{userId} {
+      // Only admins can write
+      allow write: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // Users can read their own throttle status
+      allow read: if request.auth != null && 
+                    userId == request.auth.uid;
+    }
+
+    match /throttleEvents/{eventId} {
+      // System creates events
+      allow create: if false;
+      
+      // Admins can read
+      allow read: if request.auth != null && 
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // Cannot update or delete
+      allow update, delete: if false;
+    }
+
+    match /trafficMetrics/{metricId} {
+      // System creates metrics
+      allow create: if false;
+      
+      // Admins can read
+      allow read: if request.auth != null && 
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // Cannot update or delete
+      allow update, delete: if false;
+    }
+
+    // ========================================
+    // PAYOUT SAFETY
+    // ========================================
+    match /payoutSafetyConfig/{marketCode} {
+      // Only admins can write
+      allow write: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // All authenticated users can read
+      allow read: if request.auth != null;
+    }
+
+    match /payoutRequests/{requestId} {
+      // Users can create their own payout requests
+      allow create: if request.auth != null && 
+                      request.resource.data.userId == request.auth.uid;
+      
+      // Users can read their own requests
+      // Admins can read all
+      allow read: if request.auth != null && 
+                    (resource.data.userId == request.auth.uid || 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN');
+      
+      // Only admins can update status
+      allow update: if request.auth != null && 
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // Cannot delete
+      allow delete: if false;
+    }
+
+    match /payoutBuffers/{bufferId} {
+      // System creates buffers
+      allow create: if false;
+      
+      // Users can read their own buffers
+      allow read: if request.auth != null && 
+                    resource.data.userId == request.auth.uid;
+      
+      // System can update
+      allow update: if false;
+      
+      // Cannot delete
+      allow delete: if false;
+    }
+
+    // ========================================
+    // USER ACTIVITY TRACKING
+    // ========================================
+    match /userActivity/{userId} {
+      // System creates/updates activity
+      allow create, update: if request.auth != null && 
+                              userId == request.auth.uid;
+      
+      // Users can read their own activity
+      allow read: if request.auth != null && 
+                    userId == request.auth.uid;
+      
+      // Cannot delete
+      allow delete: if false;
+    }
+
+    match /userRestrictions/{userId} {
+      // System creates restrictions
+      allow create: if false;
+      
+      // Users can read their own restrictions
+      allow read: if request.auth != null && 
+                    userId == request.auth.uid;
+      
+      // System can update
+      allow update: if false;
+      
+      // System can delete expired restrictions
+      allow delete: if false;
+    }
+
+    // ========================================
+    // SUSPICIOUS ACTIVITY
+    // ========================================
+    match /suspiciousActivity/{activityId} {
+      // System creates records
+      allow create: if false;
+      
+      // Admins can read
+      allow read: if request.auth != null && 
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // Cannot update or delete
+      allow update, delete: if false;
+    }
+
+    // ========================================
+    // ALERTS
+    // ========================================
+    match /alerts/{alertId} {
+      // System creates alerts
+      allow create: if false;
+      
+      // Admins can read
+      allow read: if request.auth != null && 
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // Admins can update (to mark as resolved)
+      allow update: if request.auth != null && 
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+      
+      // Cannot delete
+      allow delete: if false;
+    }
+  }
+}

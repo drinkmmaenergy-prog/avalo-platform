@@ -1,0 +1,160 @@
+// ============================================================================
+// PACK 336 — INVESTOR METRICS & POST-LAUNCH GROWTH ENGINE
+// Firestore Security Rules
+// ============================================================================
+//
+// Collections:
+// - kpiNorthStarSnapshots: North Star KPI snapshots
+// - kpiDailyGlobal: Daily global metrics
+// - kpiDailyByCountry: Daily metrics by country
+// - kpiCohorts: Cohort analysis
+// - kpiUserLifecycle: User lifecycle tracking
+// - kpiVirality: Virality metrics
+// - kpiRevenueStreams: Revenue breakdown
+// - kpiExperiments: Growth experiments
+// - kpiAlerts: System alerts
+//
+// Access Rules:
+// - Admin-only read access
+// - No client-side writes (server-only via Cloud Functions)
+// - Read-only analytics layer
+//
+// ============================================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function: Check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Helper function: Check if user is moderator or admin
+    function isModeratorOrAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator'];
+    }
+    
+    // ========================================================================
+    // NORTH STAR KPI SNAPSHOTS
+    // ========================================================================
+    match /kpiNorthStarSnapshots/{date} {
+      // Admin-only read access
+      allow read: if isAdmin();
+      
+      // No client-side writes (server-only)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // DAILY GLOBAL KPI
+    // ========================================================================
+    match /kpiDailyGlobal/{date} {
+      // Admin-only read access
+      allow read: if isAdmin();
+      
+      // No client-side writes (server-only)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // DAILY BY COUNTRY KPI
+    // ========================================================================
+    match /kpiDailyByCountry/{dateCountry} {
+      // Admin-only read access
+      allow read: if isAdmin();
+      
+      // No client-side writes (server-only)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // COHORT ANALYSIS
+    // ========================================================================
+    match /kpiCohorts/{cohortId} {
+      // Admin-only read access
+      allow read: if isAdmin();
+      
+      // No client-side writes (server-only)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // USER LIFECYCLE
+    // ========================================================================
+    match /kpiUserLifecycle/{userId} {
+      // Admin can read all user lifecycle data
+      allow read: if isAdmin();
+      
+      // Users can read their own lifecycle data only
+      allow get: if request.auth != null && request.auth.uid == userId;
+      
+      // No client-side writes (server-only)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // VIRALITY METRICS
+    // ========================================================================
+    match /kpiVirality/{date} {
+      // Admin-only read access
+      allow read: if isAdmin();
+      
+      // No client-side writes (server-only)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // REVENUE STREAMS
+    // ========================================================================
+    match /kpiRevenueStreams/{date} {
+      // Admin-only read access
+      allow read: if isAdmin();
+      
+      // No client-side writes (server-only)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // GROWTH EXPERIMENTS
+    // ========================================================================
+    match /kpiExperiments/{experimentId} {
+      // Admin-only read access
+      allow read: if isAdmin();
+      
+      // Admin can create/update experiments
+      allow create, update: if isAdmin();
+      
+      // No delete allowed
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // SYSTEM ALERTS
+    // ========================================================================
+    match /kpiAlerts/{alertId} {
+      // Admin and moderators can read alerts
+      allow read: if isModeratorOrAdmin();
+      
+      // Admin and moderators can acknowledge alerts
+      allow update: if isModeratorOrAdmin() && 
+                      request.resource.data.status in ['ACKNOWLEDGED', 'RESOLVED'];
+      
+      // No client-side creation or deletion (server-only)
+      allow create, delete: if false;
+    }
+    
+    // ========================================================================
+    // INVESTOR REPORTS (Export Storage)
+    // ========================================================================
+    match /investorReports/{reportId} {
+      // Admin-only read access
+      allow read: if isAdmin();
+      
+      // No client-side writes (server-only)
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,119 @@
+rules_version = '2';
+
+/**
+ * PACK 293 - Notifications & Activity Center
+ * Unified notification system with real-time + batched delivery
+ * Safety-aware, respects user preferences and quiet hours
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ============================================================================
+    // NOTIFICATIONS COLLECTION
+    // ============================================================================
+    
+    match /notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only backend can create notifications
+      allow create: if false;
+      
+      // Users can update status fields only (read, dismissed)
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'readAt', 'dismissedAt']);
+      
+      // Users can delete their own notifications
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // ============================================================================
+    // NOTIFICATION SETTINGS
+    // ============================================================================
+    
+    match /notificationSettings/{userId} {
+      // Users can read and write their own settings
+      allow read: if isUser(userId);
+      allow write: if isUser(userId);
+    }
+    
+    // ============================================================================
+    // USER DEVICES (for push tokens)
+    // ============================================================================
+    
+    match /userDevices/{deviceId} {
+      // Users can read their own devices
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Users can register their devices
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      
+      // Users can update their device tokens
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+      
+      // Users can remove their devices
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // ============================================================================
+    // NOTIFICATION THROTTLE TRACKING (internal use)
+    // ============================================================================
+    
+    match /notificationThrottle/{userId} {
+      // Read-only for users (to see their current limits)
+      allow read: if isUser(userId);
+      
+      // Only backend can write
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // NOTIFICATION BATCHES (for grouping low-priority notifications)
+    // ============================================================================
+    
+    match /notificationBatches/{batchId} {
+      // Users can read their batches
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Only backend can write
+      allow write: if false;
+    }
+    
+    // ============================================================================
+    // NOTIFICATION LOGS (admin analytics)
+    // ============================================================================
+    
+    match /notificationLogs/{logId} {
+      // Admin only
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+  }
+}

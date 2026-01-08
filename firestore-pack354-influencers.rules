@@ -1,0 +1,247 @@
+rules_version = '2';
+
+/**
+ * ========================================================================
+ * PACK 354 — INFLUENCER ACQUISITION FIRESTORE RULES
+ * ========================================================================
+ * Security rules for influencer applications, profiles, and regional programs
+ *
+ * @version 1.0.0
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ====================================================================
+    // HELPER FUNCTIONS
+    // ====================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+    
+    function isCreator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.creator == true;
+    }
+    
+    function hasCreatorProfile() {
+      return exists(/databases/$(database)/documents/creatorProfiles/$(request.auth.uid));
+    }
+    
+    // ====================================================================
+    // INFLUENCER APPLICATIONS
+    // ====================================================================
+    
+    match /influencerApplications/{applicationId} {
+      // Users can read their own applications
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Users can create applications for themselves
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.age >= 18 &&
+                       request.resource.data.agreedToRules == true &&
+                       request.resource.data.photoUrls.size() >= 3 &&
+                       request.resource.data.photoUrls.size() <= 6 &&
+                       request.resource.data.status == 'APPLIED';
+      
+      // Only admins can update applications
+      allow update: if isAdmin();
+      
+      // Admins can read all applications
+      allow read: if isAdmin();
+      
+      // No one can delete applications (audit trail)
+      allow delete: if false;
+    }
+    
+    // ====================================================================
+    // CREATOR PROFILES
+    // ====================================================================
+    
+    match /creatorProfiles/{userId} {
+      // Creators can read their own profile
+      allow read: if isOwner(userId);
+      
+      // Only backend can create profiles (via approval)
+      allow create: if false;
+      
+      // Creators cannot update their own profile directly
+      // (must go through admin or backend functions)
+      allow update: if false;
+      
+      // Admins can read and update all profiles
+      allow read, update: if isAdmin();
+      
+      // No one can delete profiles
+      allow delete: if false;
+    }
+    
+    // ====================================================================
+    // INFLUENCER KPI SNAPSHOTS
+    // ====================================================================
+    
+    match /influencerKPISnapshots/{snapshotId} {
+      // Creators can read their own KPIs
+      allow read: if isAuthenticated() && 
+                     resource.data.creatorId == request.auth.uid;
+      
+      // Only backend can create/update KPIs
+      allow create, update: if false;
+      
+      // Admins can read all KPIs
+      allow read: if isAdmin();
+      
+      // No one can delete KPIs (analytics data)
+      allow delete: if false;
+    }
+    
+    // ====================================================================
+    // CREATOR RISK FLAGS
+    // ====================================================================
+    
+    match /creatorRiskFlags/{userId} {
+      // Creators cannot see their own risk flags
+      allow read: if false;
+      
+      // Only admins can read risk flags
+      allow read: if isAdmin();
+      
+      // Only backend can create/update risk flags
+      allow create, update: if false;
+      
+      // No one can delete risk flags
+      allow delete: if false;
+    }
+    
+    // ====================================================================
+    // REGIONAL INFLUENCER PROGRAMS
+    // ====================================================================
+    
+    match /regionalInfluencerPrograms/{programId} {
+      // Anyone can read active programs
+      allow read: if isAuthenticated() && 
+                     resource.data.status == 'active';
+      
+      // Only admins can create/update/delete programs
+      allow create, update, delete: if isAdmin();
+      
+      // Admins can read all programs regardless of status
+      allow read: if isAdmin();
+    }
+    
+    // ====================================================================
+    // DEVICE BANS
+    // ====================================================================
+    
+    match /deviceBans/{banId} {
+      // No public read access to bans
+      allow read: if false;
+      
+      // Only admins can read bans
+      allow read: if isAdmin();
+      
+      // Only backend/admins can create bans
+      allow create: if isAdmin();
+      
+      // No updates or deletes (permanent record)
+      allow update, delete: if false;
+    }
+    
+    // ====================================================================
+    // CREATOR DASHBOARDS (From existing creator hub)
+    // ====================================================================
+    
+    match /creatorDashboards/{userId} {
+      // Creators can read their own dashboard
+      allow read: if isOwner(userId);
+      
+      // Only backend can create/update dashboards
+      allow create, update: if false;
+      
+      // Admins can read all dashboards
+      allow read: if isAdmin();
+      
+      // No one can delete dashboards
+      allow delete: if false;
+    }
+    
+    // ====================================================================
+    // CREATOR QUESTS (From existing creator hub)
+    // ====================================================================
+    
+    match /creatorQuests/{questId} {
+      // Creators can read their own quests
+      allow read: if isAuthenticated() && 
+                     resource.data.creatorId == request.auth.uid;
+      
+      // Only backend can create/update quests
+      allow create, update: if false;
+      
+      // Admins can read all quests
+      allow read: if isAdmin();
+      
+      // No one can delete quests
+      allow delete: if false;
+    }
+    
+    // ====================================================================
+    // MESSAGE TEMPLATES (From existing creator hub)
+    // ====================================================================
+    
+    match /messageTemplates/{templateId} {
+      // Creators can read their own templates
+      allow read: if isAuthenticated() && 
+                     resource.data.creatorId == request.auth.uid;
+      
+      // Creators can create their own templates
+      allow create: if isAuthenticated() && 
+                       request.resource.data.creatorId == request.auth.uid &&
+                       hasCreatorProfile();
+      
+      // Creators can update their own templates
+      allow update: if isAuthenticated() && 
+                       resource.data.creatorId == request.auth.uid;
+      
+      // Creators can delete their own templates
+      allow delete: if isAuthenticated() && 
+                       resource.data.creatorId == request.auth.uid;
+      
+      // Admins can read all templates
+      allow read: if isAdmin();
+    }
+    
+    // ====================================================================
+    // WITHDRAWALS (From existing creator earnings)
+    // ====================================================================
+    
+    match /withdrawals/{withdrawalId} {
+      // Creators can read their own withdrawals
+      allow read: if isAuthenticated() && 
+                     resource.data.creatorId == request.auth.uid;
+      
+      // Only backend can create withdrawals (via function)
+      allow create: if false;
+      
+      // No one can update withdrawals directly
+      allow update: if false;
+      
+      // Admins can read and update all withdrawals
+      allow read, update: if isAdmin();
+      
+      // No one can delete withdrawals (audit trail)
+      allow delete: if false;
+    }
+  }
+}

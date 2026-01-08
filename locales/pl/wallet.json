@@ -1,0 +1,12 @@
+{
+  "myBalance": "Moje saldo",
+  "buyTokens": "Kup tokeny",
+  "payout": "Wypłata",
+  "transactionHistory": "Historia transakcji",
+  "addCard": "Dodaj kartę",
+  "oneTimePurchase": "Jednorazowy zakup",
+  "subscription": "Subskrypcja",
+  "paymentSuccess": "Płatność zrealizowana",
+  "paymentFailed": "Płatność nieudana",
+  "withdrawalRequested": "Zlecono wypłatę"
+}

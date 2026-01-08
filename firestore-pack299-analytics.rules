@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Analytics daily aggregates - Admin only
+    match /analytics_daily/{docId} {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'analyst'];
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // User KPIs - User can read own, admin can read all
+    match /user_kpis/{userId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid == userId || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'analyst']);
+      allow write: if false; // Only Cloud Functions
+      
+      match /events/{eventId} {
+        allow read: if request.auth != null && 
+          (request.auth.uid == userId || 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'analyst']);
+        allow write: if false; // Only Cloud Functions
+      }
+    }
+    
+    // Creator metrics - Creator can read own, admin can read all
+    match /creator_metrics/{creatorId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid == creatorId || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'analyst']);
+      allow write: if false; // Only Cloud Functions
+      
+      match /daily/{date} {
+        allow read: if request.auth != null && 
+          (request.auth.uid == creatorId || 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'analyst']);
+        allow write: if false; // Only Cloud Functions
+      }
+    }
+    
+    // Safety events - Admin only
+    match /safety_events/{eventId} {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'safety_moderator'];
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Fraud alerts - Admin only
+    match /fraud_alerts/{alertId} {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'fraud_analyst'];
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Monetization events - Admin only
+    match /monetization_events/{eventId} {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'analyst'];
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Calendar analytics - Admin only
+    match /calendar_analytics/{docId} {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'analyst'];
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Realtime dashboard data - Role-based access
+    match /dashboard_realtime/{metric} {
+      allow read: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'analyst'];
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // User behavior tracking - Internal only
+    match /user_behavior/{userId} {
+      allow read: if request.auth != null && 
+        (request.auth.uid == userId || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'analyst']);
+      allow write: if false; // Only Cloud Functions
+      
+      match /sessions/{sessionId} {
+        allow read: if request.auth != null && 
+          (request.auth.uid == userId || 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'analyst']);
+        allow write: if false; // Only Cloud Functions
+      }
+    }
+  }
+}

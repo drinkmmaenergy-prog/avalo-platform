@@ -1,0 +1,536 @@
+app/(tabs)/feed.tsx(20,38): error TS2307: Cannot find module 'react-native-reanimated' or its corresponding type declarations.
+app/(tabs)/wallet.tsx(84,46): error TS18048: 'response.data' is possibly 'undefined'.
+app/_layout.tsx(8,27): error TS2307: Cannot find module 'expo-status-bar' or its corresponding type declarations.
+app/ai-companions/chat/[id].tsx(177,60): error TS18048: 'response.data' is possibly 'undefined'.
+app/calendar/booking.tsx(21,19): error TS2339: Property 'fetchWallet' does not exist on type 'WalletState'.
+app/calendar/booking.tsx(41,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/chat/[id].tsx(103,34): error TS2339: Property 'isRoyalEarner' does not exist on type 'UserProfile'.
+app/chat/[id].tsx(119,33): error TS2339: Property 'escrow' does not exist on type 'Chat'.
+app/components/AvatarRing.tsx(9,32): error TS2307: Cannot find module 'expo-linear-gradient' or its corresponding type declarations.
+app/components/AvatarRing.tsx(16,8): error TS2307: Cannot find module 'react-native-reanimated' or its corresponding type declarations.
+app/components/ChatListItem.tsx(72,28): error TS2339: Property 'unreadCount' does not exist on type 'Chat'.
+app/components/ChatListItem.tsx(75,30): error TS2339: Property 'escrow' does not exist on type 'Chat'.
+app/components/ChatListItem.tsx(95,19): error TS2339: Property 'lastMessage' does not exist on type 'Chat'.
+app/components/GlassCard.tsx(9,26): error TS2307: Cannot find module 'expo-blur' or its corresponding type declarations.
+app/components/GlassCard.tsx(13,8): error TS2307: Cannot find module 'react-native-reanimated' or its corresponding type declarations.
+app/components/GradientBackground.tsx(9,32): error TS2307: Cannot find module 'expo-linear-gradient' or its corresponding type declarations.
+app/components/GradientBackground.tsx(18,8): error TS2307: Cannot find module 'react-native-reanimated' or its corresponding type declarations.
+app/components/GradientButton.tsx(9,32): error TS2307: Cannot find module 'expo-linear-gradient' or its corresponding type declarations.
+app/components/GradientButton.tsx(16,8): error TS2307: Cannot find module 'react-native-reanimated' or its corresponding type declarations.
+app/components/Input.tsx(38,33): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: TextInputProps): TextInput', gave the following error.
+    Type '"" | { borderColor: string; backgroundColor: string; } | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+      Type '""' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+  Overload 2 of 2, '(props: TextInputProps, context: any): TextInput', gave the following error.
+    Type '"" | { borderColor: string; backgroundColor: string; } | undefined' is not assignable to type 'Falsy | TextStyle | RegisteredStyle<TextStyle> | RecursiveArray<Falsy | TextStyle | RegisteredStyle<TextStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+app/components/MessageBubble.tsx(81,26): error TS18048: 'message.tokensCharged' is possibly 'undefined'.
+app/components/MessageBubble.tsx(109,24): error TS2339: Property 'readBy' does not exist on type 'Message'.
+app/components/MessageBubble.tsx(109,42): error TS2339: Property 'readBy' does not exist on type 'Message'.
+app/components/Tooltip.tsx(17,35): error TS2307: Cannot find module '../lib/analytics' or its corresponding type declarations.
+app/lib/aiCompanionsGallery.ts(7,26): error TS2307: Cannot find module '@react-native-async-storage/async-storage' or its corresponding type declarations.
+app/lib/aiCompanionsGallery.ts(132,38): error TS7006: Parameter 'key' implicitly has an 'any' type.
+app/lib/auth.ts(17,10): error TS7034: Variable 'auth' implicitly has type 'any' in some locations where its type cannot be determined.
+app/lib/auth.ts(25,61): error TS7005: Variable 'auth' implicitly has an 'any' type.
+app/lib/auth.ts(42,65): error TS7005: Variable 'auth' implicitly has an 'any' type.
+app/lib/auth.ts(69,27): error TS7005: Variable 'auth' implicitly has an 'any' type.
+app/lib/auth.ts(81,34): error TS7005: Variable 'auth' implicitly has an 'any' type.
+app/lib/auth.ts(92,29): error TS7005: Variable 'auth' implicitly has an 'any' type.
+app/lib/auth.ts(99,10): error TS7005: Variable 'auth' implicitly has an 'any' type.
+app/lib/education.ts(6,26): error TS2307: Cannot find module '@react-native-async-storage/async-storage' or its corresponding type declarations.
+app/lib/firebase.ts(7,35): error TS2305: Module '"firebase/auth"' has no exported member 'getReactNativePersistence'.
+app/lib/firebase.ts(11,26): error TS2307: Cannot find module '@react-native-async-storage/async-storage' or its corresponding type declarations.
+app/lib/firebase.ts(26,5): error TS7034: Variable 'app' implicitly has type 'any' in some locations where its type cannot be determined.
+app/lib/firebase.ts(63,46): error TS7005: Variable 'app' implicitly has an 'any' type.
+app/onboarding/intro.tsx(19,35): error TS2307: Cannot find module '../lib/analytics' or its corresponding type declarations.
+app/onboarding/slides/ai.tsx(15,19): error TS2820: Type '"chatbot"' is not assignable to type '"text" | "image" | "male" | "female" | "location" | "document" | "push" | "map" | "filter" | "at" | "wallet" | "body" | "notifications" | "code" | "options" | "duplicate" | "search" | ... 1321 more ... | undefined'. Did you mean '"chatbox"'?
+app/profile/[id].tsx(26,37): error TS2339: Property 'id' does not exist on type 'User'.
+app/profile/[id].tsx(41,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/profile/[id].tsx(111,11): error TS2322: Type '{ imageUrl: string | undefined; size: number; verified: boolean; }' is not assignable to type 'IntrinsicAttributes & AvatarRingProps'.
+  Property 'imageUrl' does not exist on type 'IntrinsicAttributes & AvatarRingProps'.
+functions/src/adminPanel.ts(520,40): error TS18048: 'withdrawal' is possibly 'undefined'.
+functions/src/adminPanel.ts(521,47): error TS18048: 'withdrawal' is possibly 'undefined'.
+functions/src/adminPanel.ts(522,59): error TS18048: 'withdrawal' is possibly 'undefined'.
+functions/src/aiExplainability.ts(695,54): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: unknown, currentValue: unknown, currentIndex: number, array: unknown[]) => unknown, initialValue: unknown): unknown', gave the following error.
+    Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: unknown, currentValue: unknown, currentIndex: number, array: unknown[]) => unknown'.
+      Types of parameters 'a' and 'previousValue' are incompatible.
+        Type 'unknown' is not assignable to type 'number'.
+  Overload 2 of 3, '(callbackfn: (previousValue: number, currentValue: unknown, currentIndex: number, array: unknown[]) => number, initialValue: number): number', gave the following error.
+    Argument of type '(a: number, b: number) => number' is not assignable to parameter of type '(previousValue: number, currentValue: unknown, currentIndex: number, array: unknown[]) => number'.
+      Types of parameters 'b' and 'currentValue' are incompatible.
+        Type 'unknown' is not assignable to type 'number'.
+functions/src/aiRouter.ts(176,11): error TS18048: 'health' is possibly 'undefined'.
+functions/src/aiRouter.ts(177,11): error TS18048: 'health' is possibly 'undefined'.
+functions/src/analyticsExport.ts(246,52): error TS2339: Property 'id' does not exist on type 'never'.
+functions/src/analyticsExport.ts(258,46): error TS2339: Property 'id' does not exist on type 'never'.
+functions/src/chats.ts(295,54): error TS2345: Argument of type 'boolean | undefined' is not assignable to parameter of type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.
+functions/src/creatorMode.ts(210,57): error TS2352: Conversion of type '{ userId: string; totalRevenue: number; monthlyRevenue: number; weeklyRevenue: number; todayRevenue: number; fanCount: number; topFans: never[]; contentStats: { totalPosts: number; gatedPosts: number; totalUnlocks: number; avgUnlockPrice: number; }; chatStats: { ...; }; withdrawalStats: { ...; }; referralStats: { .....' to type 'CreatorStats' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'lastUpdated' are incompatible.
+    Type 'FieldValue' is missing the following properties from type 'Timestamp': seconds, nanoseconds, toDate, toMillis
+functions/src/creatorMode.ts(450,20): error TS18048: 'post' is possibly 'undefined'.
+functions/src/creatorMode.ts(451,22): error TS18048: 'post' is possibly 'undefined'.
+functions/src/engines/riskEngine.ts(516,5): error TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
+functions/src/i18nExtended.ts(468,3): error TS2322: Type 'LanguageConfig | undefined' is not assignable to type 'LanguageConfig'.
+  Type 'undefined' is not assignable to type 'LanguageConfig'.
+functions/src/init.ts(6,24): error TS2497: This module can only be referenced with ECMAScript imports/exports by turning on the 'esModuleInterop' flag and referencing its default export.
+functions/src/modHub.ts(404,38): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+functions/src/modHub.ts(417,40): error TS7006: Parameter 'item' implicitly has an 'any' type.
+functions/src/modHub.ts(418,41): error TS7006: Parameter 'item' implicitly has an 'any' type.
+functions/src/payments.providers.ts(224,29): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+functions/src/payments.providers.ts(278,28): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+functions/src/payments.providers.ts(279,23): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+functions/src/payments.providers.ts(302,20): error TS18048: 'config.apiUrl' is possibly 'undefined'.
+functions/src/payments.providers.ts(320,8): error TS18048: 'config.apiUrl' is possibly 'undefined'.
+functions/src/payments.providers.ts(321,25): error TS2345: Argument of type '{ grant_type: string; client_id: string | undefined; client_secret: string | undefined; }' is not assignable to parameter of type 'string | Record<string, string> | URLSearchParams | string[][] | undefined'.
+  Type '{ grant_type: string; client_id: string | undefined; client_secret: string | undefined; }' is not assignable to type 'undefined'.
+functions/src/performanceOptimization.ts(331,15): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+functions/src/riskGraph.ts(216,28): error TS7006: Parameter 'err' implicitly has an 'any' type.
+functions/src/scheduled.ts(25,33): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; region: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<null>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<null>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<null>' is not assignable to type 'Promise<void>'.
+          Type 'null' is not assignable to type 'void'.
+functions/src/scheduled.ts(117,30): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; region: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<null>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<null>' is not assignable to type 'void | Promise<void>'.
+functions/src/scheduled.ts(226,39): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; region: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<null>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<null>' is not assignable to type 'void | Promise<void>'.
+functions/src/seedAICompanions.ts(14,24): error TS2497: This module can only be referenced with ECMAScript imports/exports by turning on the 'esModuleInterop' flag and referencing its default export.
+functions/tests/setup.ts(9,1): error TS2304: Cannot find name 'jest'.
+functions/tests/setup.ts(29,1): error TS2304: Cannot find name 'beforeAll'.
+functions/tests/setup.ts(40,1): error TS2304: Cannot find name 'afterAll'.
+functions/tests/testUtils.ts(6,10): error TS2305: Module '"firebase-admin"' has no exported member 'firestore'.
+functions/tests/testUtils.ts(6,27): error TS2497: This module can only be referenced with ECMAScript imports/exports by turning on the 'esModuleInterop' flag and referencing its default export.
+local/mock-payments.ts(6,7): error TS2451: Cannot redeclare block-scoped variable 'express'.
+local/mock-payments.ts(7,7): error TS2451: Cannot redeclare block-scoped variable 'app'.
+local/mock-payments.ts(10,7): error TS2451: Cannot redeclare block-scoped variable 'config'.
+local/mock-wallet.ts(6,7): error TS2451: Cannot redeclare block-scoped variable 'express'.
+local/mock-wallet.ts(7,7): error TS2451: Cannot redeclare block-scoped variable 'app'.
+local/mock-wallet.ts(10,7): error TS2451: Cannot redeclare block-scoped variable 'config'.
+local/mock-wallet.ts(19,29): error TS7006: Parameter 'req' implicitly has an 'any' type.
+local/mock-wallet.ts(19,34): error TS7006: Parameter 'res' implicitly has an 'any' type.
+local/mock-wallet.ts(25,23): error TS2339: Property 'initialBalance' does not exist on type '{ port: number; stripeMode: string; }'.
+local/mock-wallet.ts(35,34): error TS7006: Parameter 'req' implicitly has an 'any' type.
+local/mock-wallet.ts(35,39): error TS7006: Parameter 'res' implicitly has an 'any' type.
+local/mock-wallet.ts(59,37): error TS7006: Parameter 'req' implicitly has an 'any' type.
+local/mock-wallet.ts(59,42): error TS7006: Parameter 'res' implicitly has an 'any' type.
+local/mock-wallet.ts(86,21): error TS7006: Parameter 'req' implicitly has an 'any' type.
+local/mock-wallet.ts(86,26): error TS7006: Parameter 'res' implicitly has an 'any' type.
+local/mock-wallet.ts(92,46): error TS2339: Property 'initialBalance' does not exist on type '{ port: number; stripeMode: string; }'.
+migrations/migrate.ts(6,24): error TS2497: This module can only be referenced with ECMAScript imports/exports by turning on the 'esModuleInterop' flag and referencing its default export.
+migrations/migrate.ts(81,24): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+ops/logging.ts(70,19): error TS2349: This expression is not callable.
+  Type 'typeof import("pino")' has no call signatures.
+ops/logging.ts(81,17): error TS7006: Parameter 'label' implicitly has an 'any' type.
+ops/logging.ts(82,20): error TS7006: Parameter 'bindings' implicitly has an 'any' type.
+ops/logging.ts(159,5): error TS2349: This expression is not callable.
+  Not all constituents of type 'string | (() => Record<string, any>) | { (obj: object, msg?: string | undefined, ...args: any[]): void; (msg: string, ...args: any[]): void; } | { (obj: object, msg?: string | undefined, ...args: any[]): void; (msg: string, ...args: any[]): void; } | ... 4 more ... | ((bindings: Record<...>) => Logger)' are callable.
+    Type 'string' has no call signatures.
+sdk/src/client.ts(7,24): error TS2395: Individual declarations in merged declaration 'AvaloSDKError' must be all exported or all local.
+sdk/src/client.ts(7,24): error TS2440: Import declaration conflicts with local declaration of 'AvaloSDKError'.
+sdk/src/client.ts(319,14): error TS2395: Individual declarations in merged declaration 'AvaloSDKError' must be all exported or all local.
+sdk/src/client.ts(331,5): error TS2739: Type 'AvaloSDKError' is missing the following properties from type 'AvaloSDKError': retryable, toJSON
+sdk/tests/setup.ts(8,16): error TS2304: Cannot find name 'jest'.
+sdk/tests/setup.ts(12,20): error TS2503: Cannot find namespace 'jest'.
+sdk/tests/setup.ts(23,20): error TS2503: Cannot find namespace 'jest'.
+sdk/tests/setup.ts(117,1): error TS2304: Cannot find name 'beforeEach'.
+sdk/tests/setup.ts(118,3): error TS2304: Cannot find name 'jest'.
+sdk/tests/setup.ts(125,1): error TS2304: Cannot find name 'afterEach'.
+sdk/tests/setup.ts(126,3): error TS2304: Cannot find name 'jest'.
+sdk/tests/setup.ts(143,14): error TS2304: Cannot find name 'jest'.
+sdk/tests/setup.ts(144,14): error TS2304: Cannot find name 'jest'.
+sdk/tests/setup.ts(145,17): error TS2304: Cannot find name 'jest'.
+sdk/tests/setup.ts(146,12): error TS2304: Cannot find name 'jest'.
+tests/integration/utils.ts(142,31): error TS7006: Parameter 'value' implicitly has an 'any' type.
+tests/integration/utils.ts(142,38): error TS7006: Parameter 'key' implicitly has an 'any' type.
+tests/system-functions/index.ts(13,21): error TS1362: 'SystemFunctionsTestSuite' cannot be used as a value because it was exported using 'export type'.
+web/admin/moderation/queue.tsx(400,30): error TS2339: Property 'assignedTo' does not exist on type 'QueueItem'.
+web/app/admin/page.tsx(10,10): error TS7034: Variable 'auth' implicitly has type 'any' in some locations where its type cannot be determined.
+web/app/admin/page.tsx(23,23): error TS2305: Module '"@/lib/types"' has no exported member 'Flag'.
+web/app/admin/page.tsx(23,29): error TS2305: Module '"@/lib/types"' has no exported member 'AdminStats'.
+web/app/admin/page.tsx(24,25): error TS2305: Module '"lucide-react"' has no exported member 'AlertTriangle'.
+web/app/admin/page.tsx(39,44): error TS7005: Variable 'auth' implicitly has an 'any' type.
+web/app/admin/page.tsx(51,24): error TS2551: Property 'role' does not exist on type 'UserProfile'. Did you mean 'roles'?
+web/app/admin/page.tsx(51,53): error TS2551: Property 'role' does not exist on type 'UserProfile'. Did you mean 'roles'?
+web/app/admin/page.tsx(68,17): error TS2551: Property 'role' does not exist on type 'UserProfile'. Did you mean 'roles'?
+web/app/admin/page.tsx(68,45): error TS2551: Property 'role' does not exist on type 'UserProfile'. Did you mean 'roles'?
+web/app/admin/page.tsx(143,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(144,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(149,28): error TS2551: Property 'role' does not exist on type 'UserProfile'. Did you mean 'roles'?
+web/app/admin/page.tsx(149,56): error TS2551: Property 'role' does not exist on type 'UserProfile'. Did you mean 'roles'?
+web/app/admin/page.tsx(151,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(152,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(153,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(154,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(157,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(164,6): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(166,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(167,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(168,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(169,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(170,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(171,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(172,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(173,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(176,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(183,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(185,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(186,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(187,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(197,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(207,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(212,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(227,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(228,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(229,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(230,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(231,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(232,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(233,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(237,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(238,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(243,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(244,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(245,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(246,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(247,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(251,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(252,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(257,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(258,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(259,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(260,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(261,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(265,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(266,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(271,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(272,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(273,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(274,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(275,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(279,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(280,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(286,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(287,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(290,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(291,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(292,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(293,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(295,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(296,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(297,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(299,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(300,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(301,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(303,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(304,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(305,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(314,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(315,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(316,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(321,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(325,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(327,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(331,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(332,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(333,28): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(336,28): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(340,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(343,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(344,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(347,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(351,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(356,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(357,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(363,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(369,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(386,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(387,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(390,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(393,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(394,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(395,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(396,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(397,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(398,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/admin/page.tsx(399,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/api/auth/verify-token/route.ts(7,50): error TS2307: Cannot find module '@/lib/firebase-admin' or its corresponding type declarations.
+web/app/api/auth/verify-token/route.ts(11,39): error TS2339: Property 'json' does not exist on type 'NextRequest'.
+web/app/api/checkout/create-session/route.ts(7,31): error TS2307: Cannot find module '@/lib/firebase-admin' or its corresponding type declarations.
+web/app/api/checkout/create-session/route.ts(8,32): error TS2307: Cannot find module '@/lib/stripe' or its corresponding type declarations.
+web/app/api/checkout/create-session/route.ts(11,3): error TS2322: Type '"2024-12-18.acacia"' is not assignable to type '"2025-02-24.acacia"'.
+web/app/api/checkout/create-session/route.ts(17,32): error TS2339: Property 'headers' does not exist on type 'NextRequest'.
+web/app/api/checkout/create-session/route.ts(36,41): error TS2339: Property 'json' does not exist on type 'NextRequest'.
+web/app/api/checkout/create-session/route.ts(46,47): error TS7006: Parameter 'pkg' implicitly has an 'any' type.
+web/app/checkout/success/page.tsx(34,6): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(35,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(36,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(37,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(38,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(44,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(54,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(58,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(62,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(66,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(67,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(74,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(79,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/checkout/success/page.tsx(80,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(9,10): error TS7034: Variable 'auth' implicitly has type 'any' in some locations where its type cannot be determined.
+web/app/dashboard/page.tsx(13,10): error TS2305: Module '"lucide-react"' has no exported member 'BarChart'.
+web/app/dashboard/page.tsx(25,44): error TS7005: Variable 'auth' implicitly has an 'any' type.
+web/app/dashboard/page.tsx(79,28): error TS2352: Conversion of type '{ txnId: string; }[]' to type 'Transaction[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ txnId: string; }' is missing the following properties from type 'Transaction': txId, uid, type, amountTokens, and 2 more.
+web/app/dashboard/page.tsx(92,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(93,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(98,29): error TS2339: Property 'earnFromChat' does not exist on type 'UserProfile'.
+web/app/dashboard/page.tsx(99,28): error TS2339: Property 'isRoyalEarner' does not exist on type 'UserProfile'.
+web/app/dashboard/page.tsx(103,6): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(105,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(106,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(107,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(108,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(109,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(110,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(114,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(115,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(121,25): error TS2551: Property 'role' does not exist on type 'UserProfile'. Did you mean 'roles'?
+web/app/dashboard/page.tsx(122,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(134,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(136,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(138,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(139,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(140,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(141,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(142,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(146,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(147,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(153,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(154,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(155,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(156,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(157,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(160,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(164,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(165,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(171,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(172,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(173,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(174,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(175,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(179,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(180,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(186,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(187,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(188,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(189,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(190,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(194,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(195,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(202,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(205,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(206,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(209,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(212,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(213,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(214,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(215,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(222,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(223,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(224,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(226,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(229,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(230,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(231,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(232,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(233,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(240,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(241,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(242,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(245,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(254,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(258,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(259,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(260,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(261,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(262,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(265,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(268,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(271,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(276,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(278,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(278,34): error TS2551: Property 'txnId' does not exist on type 'Transaction'. Did you mean 'txId'?
+web/app/dashboard/page.tsx(279,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(280,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(294,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(295,30): error TS2339: Property 'description' does not exist on type 'Transaction'.
+web/app/dashboard/page.tsx(297,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/dashboard/page.tsx(305,30): error TS2339: Property 'amount' does not exist on type 'Transaction'.
+web/app/dashboard/page.tsx(307,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/layout.tsx(25,6): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/layout.tsx(26,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/layout.tsx(27,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(9,10): error TS2305: Module '"@/lib/firebase"' has no exported member 'signInWithIdToken'.
+web/app/page.tsx(9,29): error TS7034: Variable 'auth' implicitly has type 'any' in some locations where its type cannot be determined.
+web/app/page.tsx(31,30): error TS7005: Variable 'auth' implicitly has an 'any' type.
+web/app/page.tsx(51,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(52,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(53,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(54,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(62,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(63,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(64,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(65,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(68,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(69,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(81,6): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(82,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(83,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(84,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(85,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(86,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(90,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(91,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(92,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(93,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(94,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/page.tsx(95,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(9,10): error TS7034: Variable 'auth' implicitly has type 'any' in some locations where its type cannot be determined.
+web/app/transactions/page.tsx(22,10): error TS2305: Module '"lucide-react"' has no exported member 'ArrowLeft'.
+web/app/transactions/page.tsx(36,44): error TS7005: Variable 'auth' implicitly has an 'any' type.
+web/app/transactions/page.tsx(74,22): error TS2352: Conversion of type '{ txnId: string; }[]' to type 'Transaction[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ txnId: string; }' is missing the following properties from type 'Transaction': txId, uid, type, amountTokens, and 2 more.
+web/app/transactions/page.tsx(117,20): error TS2352: Conversion of type '{ txnId: string; }[]' to type 'Transaction[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ txnId: string; }' is missing the following properties from type 'Transaction': txId, uid, type, amountTokens, and 2 more.
+web/app/transactions/page.tsx(138,11): error TS2339: Property 'description' does not exist on type 'Transaction'.
+web/app/transactions/page.tsx(139,11): error TS2339: Property 'amount' does not exist on type 'Transaction'.
+web/app/transactions/page.tsx(140,11): error TS2339: Property 'source' does not exist on type 'Transaction'.
+web/app/transactions/page.tsx(154,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(155,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(161,6): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(163,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(164,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(165,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(166,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(167,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(171,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(173,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(174,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(177,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(182,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(183,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(190,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(192,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(193,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(194,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(195,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(198,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(216,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(218,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(219,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(222,13): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(223,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(224,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(225,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(226,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(227,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(230,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(233,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(236,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(239,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(244,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(246,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(246,36): error TS2551: Property 'txnId' does not exist on type 'Transaction'. Did you mean 'txId'?
+web/app/transactions/page.tsx(247,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(250,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(251,28): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(267,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(268,32): error TS2339: Property 'description' does not exist on type 'Transaction'.
+web/app/transactions/page.tsx(270,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(271,32): error TS2339: Property 'source' does not exist on type 'Transaction'.
+web/app/transactions/page.tsx(273,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(287,32): error TS2339: Property 'amount' does not exist on type 'Transaction'.
+web/app/transactions/page.tsx(297,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(298,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(304,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/transactions/page.tsx(305,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(9,10): error TS7034: Variable 'auth' implicitly has type 'any' in some locations where its type cannot be determined.
+web/app/wallet/page.tsx(9,20): error TS2305: Module '"@/lib/firebase"' has no exported member 'getCurrentIdToken'.
+web/app/wallet/page.tsx(12,66): error TS2307: Cannot find module '@/lib/stripe' or its corresponding type declarations.
+web/app/wallet/page.tsx(24,44): error TS7005: Variable 'auth' implicitly has an 'any' type.
+web/app/wallet/page.tsx(84,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(85,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(91,6): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(93,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(94,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(95,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(96,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(97,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(98,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(100,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(110,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(112,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(113,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(114,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(115,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(116,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(118,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(121,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(122,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(123,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(127,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(128,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(129,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(133,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(134,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(135,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(136,26): error TS2339: Property 'spent' does not exist on type 'UserWallet'.
+web/app/wallet/page.tsx(143,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(144,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(147,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(148,34): error TS7006: Parameter 'pkg' implicitly has an 'any' type.
+web/app/wallet/page.tsx(149,16): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(156,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(157,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(163,18): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(164,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(167,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(169,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(171,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(175,22): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(179,20): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(187,24): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(188,26): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(202,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(203,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(206,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(207,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(208,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(209,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(210,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(211,14): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(216,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/app/wallet/page.tsx(217,12): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/src/app/layout.tsx(50,6): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/src/app/layout.tsx(51,8): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/src/app/layout.tsx(52,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/src/app/layout.tsx(53,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/src/app/layout.tsx(56,10): error TS2686: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+web/tailwind.config.ts(1,15): error TS2616: 'Config' can only be imported by using 'import Config = require("tailwindcss")' or a default import.
+web/tailwind.config.ts(1,29): error TS2497: This module can only be referenced with ECMAScript imports/exports by turning on the 'esModuleInterop' flag and referencing its default export.

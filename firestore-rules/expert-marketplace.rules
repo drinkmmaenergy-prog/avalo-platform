@@ -1,0 +1,235 @@
+// PACK 136: Verified Expert / Mentorship Marketplace - Firestore Security Rules
+//
+// Zero Escort/Dating Loopholes - SAFE Content Only
+//
+// Rules enforce:
+// - Expert verification required
+// - SAFE categories only
+// - No escort/dating/romance content
+// - In-app transactions only
+// - Non-competitive visibility
+// - 65/35 split preserved
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isModerator() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator'];
+    }
+    
+    function isVerifiedExpert(userId) {
+      return exists(/databases/$(database)/documents/expert_profiles/$(userId)) &&
+        get(/databases/$(database)/documents/expert_profiles/$(userId)).data.isActive == true;
+    }
+    
+    // Validate SAFE categories only
+    function isSafeCategory(category) {
+      return category in [
+        'fitness', 'lifestyle', 'language', 'finance',
+        'beauty', 'creative', 'education', 'productivity',
+        'wellness', 'cooking'
+      ];
+    }
+    
+    // Check for forbidden categories
+    function hasForbiddenCategory(category) {
+      let forbidden = ['dating', 'romance', 'relationships', 'companionship',
+                      'intimacy', 'escort', 'sugar', 'girlfriend', 'boyfriend'];
+      return category.lower() in forbidden;
+    }
+    
+    // ===========================================================================
+    // EXPERT APPLICATIONS
+    // ===========================================================================
+    
+    match /expert_applications/{applicationId} {
+      // Users can read their own applications
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isModerator()
+      );
+      
+      // Applications created via Cloud Functions only
+      allow create: if false;
+      
+      // Only moderators can update (approve/reject)
+      allow update: if false;
+      
+      allow delete: if false;
+    }
+    
+    // ===========================================================================
+    // EXPERT PROFILES
+    // ===========================================================================
+    
+    match /expert_profiles/{expertId} {
+      // Anyone can read active expert profiles (public discovery)
+      allow read: if resource.data.isActive == true || 
+                     isOwner(expertId) ||
+                     isAdmin();
+      
+      // Profiles created/updated via Cloud Functions only
+      allow create: if false;
+      
+      // Experts can update limited fields (bio, portfolio)
+      allow update: if isOwner(expertId) &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['bio', 'portfolio', 'achievements', 'updatedAt']) &&
+        request.resource.data.category == resource.data.category &&
+        request.resource.data.isActive == resource.data.isActive;
+      
+      allow delete: if false;
+    }
+    
+    // ===========================================================================
+    // EXPERT OFFERS (Mentorship Services)
+    // ===========================================================================
+    
+    match /expert_offers/{offerId} {
+      // Anyone can read active offers
+      allow read: if resource.data.isActive == true ||
+                     isOwner(resource.data.expertId) ||
+                     isAdmin();
+      
+      // Offers managed via Cloud Functions only (safety validation)
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ===========================================================================
+    // EXPERT CURRICULUMS
+    // ===========================================================================
+    
+    match /expert_curriculums/{curriculumId} {
+      // Anyone can read active curriculums
+      allow read: if resource.data.isActive == true ||
+                     isOwner(resource.data.expertId) ||
+                     isAdmin();
+      
+      // Curriculums managed via Cloud Functions only
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ===========================================================================
+    // CURRICULUM ENROLLMENTS
+    // ===========================================================================
+    
+    match /curriculum_enrollments/{enrollmentId} {
+      // Users can read their own enrollments
+      // Experts can read enrollments in their curriculums (anonymized)
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.expertId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Enrollments created via Cloud Functions only (payment validation)
+      allow create: if false;
+      
+      // Users can update their own progress
+      allow update: if isOwner(resource.data.userId) &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['progress', 'completedLessons', 'lastAccessedAt', 'completedAt']);
+      
+      allow delete: if false;
+    }
+    
+    // ===========================================================================
+    // MENTOR SESSIONS
+    // ===========================================================================
+    
+    match /mentor_sessions/{sessionId} {
+      // Participants can read their sessions
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.expertId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Sessions created via Cloud Functions only (payment & scheduling)
+      allow create: if false;
+      
+      // Sessions updated via Cloud Functions only (status changes)
+      allow update: if false;
+      
+      allow delete: if false;
+    }
+    
+    // ===========================================================================
+    // SESSION ATTENDANCE (for group sessions)
+    // ===========================================================================
+    
+    match /session_attendance/{attendanceId} {
+      // Participants and expert can read attendance
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.expertId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Attendance tracked via Cloud Functions only
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ===========================================================================
+    // EXPERT REVIEWS (Non-Competitive, Skill-Focused)
+    // ===========================================================================
+    
+    match /expert_reviews/{reviewId} {
+      // Reviews are public on expert profiles (non-competitive)
+      allow read: if resource.data.isVisible == true ||
+                     isOwner(resource.data.reviewerId) ||
+                     isOwner(resource.data.expertId) ||
+                     isAdmin();
+      
+      // Reviews created via Cloud Functions only (validation)
+      allow create: if false;
+      
+      // Reviewers cannot edit reviews (immutable)
+      allow update: if false;
+      
+      // Only admins can hide inappropriate reviews
+      allow delete: if false;
+    }
+    
+    // ===========================================================================
+    // AI CASES (Escort/Dating Violations)
+    // ===========================================================================
+    
+    match /ai_cases/{caseId} {
+      // Only moderators can read AI cases
+      allow read: if isModerator();
+      
+      // Cases created via Cloud Functions (auto-detection)
+      allow create: if false;
+      
+      // Moderators can update case status
+      allow update: if isModerator() &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'resolution', 'resolvedAt', 'resolvedBy', 'notes']);
+      
+      allow delete: if false;
+    }
+  }
+}

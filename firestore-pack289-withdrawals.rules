@@ -1,0 +1,247 @@
+/**
+ * PACK 289 — Payouts & Withdrawals Security Rules
+ * 
+ * Collections:
+ * - kycProfiles/{userId}
+ * - withdrawalRequests/{withdrawalId}
+ * - monthlyWithdrawalStats/{userId_YYYY-MM}
+ * - withdrawalAuditLogs/{logId}
+ * - wallets/{userId} (extended)
+ * 
+ * Security model:
+ * - Users can read their own data only
+ * - All writes via Cloud Functions (backend-only)
+ * - Admins can read/write everything
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isAgeVerified() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.ageVerified == true;
+    }
+    
+    function hasKYCVerified(userId) {
+      return exists(/databases/$(database)/documents/kycProfiles/$(userId)) &&
+        get(/databases/$(database)/documents/kycProfiles/$(userId)).data.status == 'VERIFIED';
+    }
+    
+    // ========================================================================
+    // KYC PROFILES
+    // ========================================================================
+    
+    /**
+     * KYC Profiles: kycProfiles/{userId}
+     * 
+     * Users can:
+     * - Read their own KYC profile
+     * - Create/update their own profile (with validation)
+     * 
+     * Admins can:
+     * - Read all profiles
+     * - Update status for review
+     */
+    match /kycProfiles/{userId} {
+      // Read: Own profile or admin
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Create: Only if 18+ and doesn't exist yet
+      allow create: if isOwner(userId) && 
+        isAgeVerified() &&
+        !exists(/databases/$(database)/documents/kycProfiles/$(userId)) &&
+        request.resource.data.keys().hasAll([
+          'userId', 'status', 'fullName', 'dateOfBirth', 
+          'country', 'taxResidence', 'idDocument', 'address', 
+          'payoutMethod', 'createdAt', 'updatedAt'
+        ]) &&
+        request.resource.data.userId == userId &&
+        request.resource.data.status == 'PENDING';
+      
+      // Update: Own profile (only if not yet verified) or admin
+      allow update: if (
+        isOwner(userId) && 
+        resource.data.status != 'VERIFIED' &&
+        request.resource.data.userId == userId
+      ) || isAdmin();
+      
+      // Delete: Never allowed
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // WITHDRAWAL REQUESTS
+    // ========================================================================
+    
+    /**
+     * Withdrawal Requests: withdrawalRequests/{withdrawalId}
+     * 
+     * Users can:
+     * - Read their own withdrawal requests
+     * - Create new requests (with validated conditions)
+     * - Cancel pending requests
+     * 
+     * Admins can:
+     * - Read all requests
+     * - Update status (approve/reject)
+     */
+    match /withdrawalRequests/{withdrawalId} {
+      // Read: Own request or admin
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        isAdmin()
+      );
+      
+      // Create: Only if KYC verified, 18+, and proper structure
+      allow create: if isAuthenticated() &&
+        isAgeVerified() &&
+        hasKYCVerified(request.auth.uid) &&
+        request.resource.data.keys().hasAll([
+          'withdrawalId', 'userId', 'requestedTokens', 
+          'approvedTokens', 'payoutCurrency', 'payoutAmount',
+          'ratePerTokenPLN', 'fxRateToPayoutCurrency', 'status',
+          'kycSnapshot', 'provider', 'createdAt', 'updatedAt'
+        ]) &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.status == 'PENDING_REVIEW' &&
+        request.resource.data.requestedTokens > 0 &&
+        request.resource.data.approvedTokens == 0 &&
+        request.resource.data.ratePerTokenPLN == 0.20;
+      
+      // Update: Cancel own pending request, or admin can update
+      allow update: if (
+        isOwner(resource.data.userId) && 
+        resource.data.status in ['PENDING_USER', 'PENDING_REVIEW'] &&
+        request.resource.data.status == 'CANCELLED'
+      ) || isAdmin();
+      
+      // Delete: Never allowed
+      allow delete: if false;
+    }
+    
+    // ========================================================================
+    // MONTHLY WITHDRAWAL STATS
+    // ========================================================================
+    
+    /**
+     * Monthly Withdrawal Stats: monthlyWithdrawalStats/{userId_YYYY-MM}
+     * 
+     * Users can:
+     * - Read their own stats
+     * 
+     * Backend only writes
+     */
+    match /monthlyWithdrawalStats/{statsId} {
+      // Read: Extract userId from document ID (format: userId_YYYY-MM)
+      allow read: if isAuthenticated() && (
+        statsId.split('_')[0] == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Write: Backend only
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // WITHDRAWAL AUDIT LOGS
+    // ========================================================================
+    
+    /**
+     * Withdrawal Audit Logs: withdrawalAuditLogs/{logId}
+     * 
+     * Users can:
+     * - Read logs for their own withdrawals
+     * 
+     * Backend only writes
+     */
+    match /withdrawalAuditLogs/{logId} {
+      // Read: Own logs or admin
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Write: Backend only
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // WALLETS (Extended for PACK 289)
+    // ========================================================================
+    
+    /**
+     * Wallets: wallets/{userId}
+     * 
+     * Extended from PACK 277 with withdrawal tracking
+     * 
+     * Users can:
+     * - Read their own wallet
+     * 
+     * Backend only writes
+     */
+    match /wallets/{userId} {
+      // Read: Own wallet or admin
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Write: Backend only
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // WALLET TRANSACTIONS (Extended for PACK 289)
+    // ========================================================================
+    
+    /**
+     * Wallet Transactions: walletTransactions/{txId}
+     * 
+     * Extended from PACK 277 to include WITHDRAWAL type
+     * 
+     * Users can:
+     * - Read their own transactions
+     * 
+     * Backend only writes
+     */
+    match /walletTransactions/{txId} {
+      // Read: Own transactions or admin
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Write: Backend only
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // WITHDRAWAL LIMITS CONFIG
+    // ========================================================================
+    
+    /**
+     * Withdrawal Limits Config: config/withdrawalLimits
+     * 
+     * Public read, admin write
+     */
+    match /config/withdrawalLimits {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

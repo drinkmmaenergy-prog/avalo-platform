@@ -1,0 +1,20 @@
+{
+  "send": "Send",
+  "typing": "typing...",
+  "freeMessagesLeft": "Free messages remaining",
+  "startPaidChat": "Start premium chat",
+  "tokensPerMessage": "tokens per message",
+  "messageTooShort": "Message too short",
+  "messageLimitReached": "Message limit reached",
+  "introMessage": "Start an exclusive conversation",
+  "userIsTyping": "typing",
+  "chatLocked": "Chat locked",
+  "unlockChat": "Unlock chat",
+  "insufficientTokens": "Insufficient tokens",
+  "ppm": {
+    "uploading": "Uploading…",
+    "uploadFailed": "Upload failed. Will retry.",
+    "mediaProcessing": "Media still processing…",
+    "unlockMedia": "Unlock for {{tokens}} tokens"
+  }
+}

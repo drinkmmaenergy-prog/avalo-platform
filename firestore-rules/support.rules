@@ -1,0 +1,145 @@
+/**
+ * PACK 111 — Support System Firestore Rules
+ * Access control for support cases, audit logs, and agent operations
+ */
+
+// Support Cases Collection
+match /support_cases/{caseId} {
+  // Users can read their own cases
+  allow read: if request.auth != null && 
+    resource.data.userId == request.auth.uid;
+
+  // Users can create new cases (with rate limiting enforced server-side)
+  allow create: if request.auth != null &&
+    request.resource.data.userId == request.auth.uid &&
+    request.resource.data.status == 'OPEN' &&
+    request.resource.data.category in ['TECHNICAL', 'BILLING', 'ACCOUNT', 'CONTENT', 'SAFETY', 'LEGAL', 'FEATURE_REQUEST', 'OTHER'] &&
+    request.resource.data.priority in ['CRITICAL', 'HIGH', 'NORMAL'] &&
+    request.resource.data.messages.size() == 1 &&
+    request.resource.data.messages[0].fromUserId == request.auth.uid;
+
+  // Users can update their cases (add messages only)
+  allow update: if request.auth != null && 
+    resource.data.userId == request.auth.uid &&
+    // Only allow adding messages and updating timestamps/status
+    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['messages', 'updatedAt', 'lastUserMessage', 'status']) &&
+    // Cannot change resolved/closed cases
+    resource.data.status != 'CLOSED';
+
+  // Agents can read all cases
+  allow read: if request.auth != null &&
+    get(/databases/$(database)/documents/support_agents/$(request.auth.uid)).data.isActive == true;
+
+  // Agents can update cases
+  allow update: if request.auth != null &&
+    get(/databases/$(database)/documents/support_agents/$(request.auth.uid)).data.isActive == true;
+
+  // Admins have full access
+  allow read, write: if request.auth != null &&
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+}
+
+// Support Audit Log Collection (immutable, write-only from backend)
+match /support_audit_log/{logId} {
+  // Only backend can write
+  allow read: if request.auth != null &&
+    (get(/databases/$(database)/documents/support_agents/$(request.auth.uid)).data.isActive == true ||
+     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN');
+
+  // No client writes allowed (server-side only)
+  allow write: if false;
+}
+
+// Support Agents Collection
+match /support_agents/{agentId} {
+  // Agents can read their own profile
+  allow read: if request.auth != null && 
+    request.auth.uid == agentId;
+
+  // Agents can update their own active status and last active time
+  allow update: if request.auth != null && 
+    request.auth.uid == agentId &&
+    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastActiveAt', 'isActive']);
+
+  // Admins can manage all agents
+  allow read, write: if request.auth != null &&
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+}
+
+// Support Configuration
+match /support_config/{document} {
+  // Read-only for agents
+  allow read: if request.auth != null &&
+    (get(/databases/$(database)/documents/support_agents/$(request.auth.uid)).data.isActive == true ||
+     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN');
+
+  // Only admins can write
+  allow write: if request.auth != null &&
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+}
+
+// Support Templates
+match /support_templates/{templateId} {
+  // Agents can read templates
+  allow read: if request.auth != null &&
+    get(/databases/$(database)/documents/support_agents/$(request.auth.uid)).data.isActive == true;
+
+  // Only admins can manage templates
+  allow write: if request.auth != null &&
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+}
+
+// Safety Alerts (from support escalation)
+match /safety_alerts/{alertId} {
+  // Only safety team and admins can read
+  allow read: if request.auth != null &&
+    (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['SAFETY', 'ADMIN']);
+
+  // Server-side only writes
+  allow write: if false;
+}
+
+// Compliance Alerts (from support escalation)
+match /compliance_alerts/{alertId} {
+  // Only compliance team and admins can read
+  allow read: if request.auth != null &&
+    (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['COMPLIANCE', 'ADMIN']);
+
+  // Server-side only writes
+  allow write: if false;
+}
+
+// Legal Alerts (from support escalation)
+match /legal_alerts/{alertId} {
+  // Only legal team and admins can read
+  allow read: if request.auth != null &&
+    (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['LEGAL', 'ADMIN']);
+
+  // Server-side only writes
+  allow write: if false;
+}
+
+// Agent Notifications
+match /agent_notifications/{notificationId} {
+  // Agents can read their own notifications
+  allow read: if request.auth != null && 
+    resource.data.agentId == request.auth.uid;
+
+  // Agents can mark as read
+  allow update: if request.auth != null && 
+    resource.data.agentId == request.auth.uid &&
+    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+
+  // Server-side only writes
+  allow create, delete: if false;
+}
+
+// Scheduled Tasks (auto-close support cases)
+match /scheduled_tasks/{taskId} {
+  // Only admins and system can read
+  allow read: if request.auth != null &&
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+
+  // Server-side only writes
+  allow write: if false;
+}

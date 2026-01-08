@@ -1,0 +1,85 @@
+rules_version = '2';
+
+// PACK 243: Creator Ego Metrics Dashboard
+// Private analytics dashboard that boosts motivation and monetization
+// NO free rewards, NO discounts - purely prestige and data-driven
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isCreator() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'creator';
+    }
+    
+    // Creator Dashboard Collection - PRIVATE
+    // Only the creator themselves can read their own dashboard
+    match /creatorDashboard/{userId} {
+      // Creators can only read their own dashboard
+      allow read: if isOwner(userId) && isCreator();
+      
+      // Only Cloud Functions can write (no direct user writes)
+      allow write: if false;
+      
+      // Analytics subcollections
+      match /dailyStats/{date} {
+        allow read: if isOwner(userId) && isCreator();
+        allow write: if false;
+      }
+      
+      match /weeklyStats/{week} {
+        allow read: if isOwner(userId) && isCreator();
+        allow write: if false;
+      }
+      
+      match /monthlyStats/{month} {
+        allow read: if isOwner(userId) && isCreator();
+        allow write: if false;
+      }
+      
+      match /motivationalNudges/{nudgeId} {
+        allow read: if isOwner(userId) && isCreator();
+        allow write: if false;
+      }
+      
+      match /actionSuggestions/{suggestionId} {
+        allow read: if isOwner(userId) && isCreator();
+        allow write: if false;
+      }
+    }
+    
+    // Dashboard Rankings - Regional leaderboards (percentile only, not full list)
+    match /dashboardRankings/{regionId} {
+      // Creators can see regional statistics (aggregated only)
+      allow read: if isCreator();
+      allow write: if false;
+    }
+    
+    // Dashboard Events Log - Track actions taken from dashboard
+    match /dashboardEvents/{userId} {
+      match /events/{eventId} {
+        allow read: if isOwner(userId) && isCreator();
+        allow create: if isOwner(userId) && isCreator() &&
+                        request.resource.data.keys().hasAll(['type', 'timestamp', 'metadata']) &&
+                        request.resource.data.timestamp == request.time;
+        allow update, delete: if false;
+      }
+    }
+    
+    // Top Creator Badges - Public visibility (optional)
+    match /topCreatorBadges/{userId} {
+      // Public read for profile display
+      allow read: if isAuthenticated();
+      allow write: if false; // Only Cloud Functions
+    }
+  }
+}

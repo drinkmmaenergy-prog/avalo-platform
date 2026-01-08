@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // PACK 286 — Calendar & Events Rules
+    // ========================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    // ========================================================================
+    // BOOKINGS COLLECTION (PACK 286 Normalized Schema)
+    // ========================================================================
+    
+    match /bookings/{bookingId} {
+      // Read: Only host, guest, or admin
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.hostId) ||
+        isUser(resource.data.guestId) ||
+        isAdmin()
+      );
+      
+      // Write: Only via Cloud Functions (server-side only)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // EVENT TICKETS COLLECTION (PACK 286 Normalized Schema)
+    // ========================================================================
+    
+    match /eventTickets/{ticketId} {
+      // Read: Only organizer, attendee, or admin
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.organizerId) ||
+        isUser(resource.data.attendeeId) ||
+        isAdmin()
+      );
+      
+      // Write: Only via Cloud Functions (server-side only)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // LEGACY COLLECTIONS (Maintain compatibility)
+    // ========================================================================
+    
+    // Legacy calendar bookings (PACK 274)
+    match /calendarBookings/{bookingId} {
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.hostId) ||
+        isUser(resource.data.guestId) ||
+        isAdmin()
+      );
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // WALLET TRANSACTIONS (Read-only for users)
+    // ========================================================================
+    
+    match /walletTransactions/{txId} {
+      // Read: Only own transactions or admin
+      allow read: if isAuthenticated() && (
+        isUser(resource.data.userId) ||
+        isAdmin()
+      );
+      
+      // Write: Only via Cloud Functions
+      allow write: if false;
+    }
+  }
+}

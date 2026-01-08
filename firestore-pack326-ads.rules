@@ -1,0 +1,103 @@
+rules_version = '2';
+
+/**
+ * PACK 326 — In-Feed Ads System
+ * Security rules for adsCampaigns, adsCreatives, adsImpressions, adsClicks
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    function isAdvertiser(advertiserId) {
+      return isAuthenticated() && request.auth.uid == advertiserId;
+    }
+    
+    function is18Plus() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.age >= 18;
+    }
+    
+    // ========================================
+    // adsCampaigns Collection
+    // ========================================
+    match /adsCampaigns/{campaignId} {
+      // Read: Admins can read all, advertisers can read their own
+      allow read: if isAdmin() || 
+                     (isAdvertiser(resource.data.advertiserUserId));
+      
+      // Create: Only verified 18+ users or admins
+      allow create: if is18Plus() && 
+                       request.resource.data.advertiserUserId == request.auth.uid &&
+                       request.resource.data.budgetTokens > 0 &&
+                       request.resource.data.status == 'DRAFT';
+      
+      // Update: Campaign owner or admin only
+      allow update: if isAdmin() || 
+                       (isAdvertiser(resource.data.advertiserUserId) && 
+                        resource.data.status in ['DRAFT', 'PAUSED']);
+      
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+    
+    // ========================================
+    // adsCreatives Collection
+    // ========================================
+    match /adsCreatives/{creativeId} {
+      // Read: Admins, campaign owner, or public for approved
+      allow read: if isAdmin() || 
+                     resource.data.status == 'APPROVED' ||
+                     isAdvertiser(get(/databases/$(database)/documents/adsCampaigns/$(resource.data.campaignId)).data.advertiserUserId);
+      
+      // Create: Campaign owner only
+      allow create: if isAuthenticated() &&
+                       isAdvertiser(get(/databases/$(database)/documents/adsCampaigns/$(request.resource.data.campaignId)).data.advertiserUserId) &&
+                       request.resource.data.status == 'PENDING';
+      
+      // Update: Admin only (for approval/rejection)
+      allow update: if isAdmin();
+      
+      // Delete: Admin or campaign owner
+      allow delete: if isAdmin() || 
+                       isAdvertiser(get(/databases/$(database)/documents/adsCampaigns/$(resource.data.campaignId)).data.advertiserUserId);
+    }
+    
+    // ========================================
+    // adsImpressions Collection
+    // ========================================
+    match /adsImpressions/{impressionId} {
+      // Read: Admin only (analytics)
+      allow read: if isAdmin();
+      
+      // Create: System only (via Cloud Functions)
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+    
+    // ========================================
+    // adsClicks Collection
+    // ========================================
+    match /adsClicks/{clickId} {
+      // Read: Admin only (analytics)
+      allow read: if isAdmin();
+      
+      // Create: System only (via Cloud Functions)
+      allow create: if false;
+      
+      // No updates or deletes
+      allow update, delete: if false;
+    }
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "destiny_weekly_themes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "startsAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "destiny_weekly_themes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "endsAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "destiny_user_states",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "inBreakupRecovery", "order": "ASCENDING" },
+        { "fieldPath": "currentWeekScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "destiny_user_states",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "activeThemeId", "order": "ASCENDING" },
+        { "fieldPath": "currentWeekScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "destiny_milestones",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "themeId", "order": "ASCENDING" },
+        { "fieldPath": "scoreThreshold", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "destiny_milestones",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "claimed", "order": "ASCENDING" },
+        { "fieldPath": "reachedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "destiny_rewards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "earnedFrom.userId", "order": "ASCENDING" },
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "activatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "destiny_rewards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "earnedFrom.userId", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "destiny_leaderboards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "weekOf", "order": "DESCENDING" },
+        { "fieldPath": "themeId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "destiny_week_recaps",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "weekOf", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "destiny_actions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "destiny_actions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "actionType", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

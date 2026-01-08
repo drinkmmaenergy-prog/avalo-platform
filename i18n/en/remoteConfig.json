@@ -1,0 +1,16 @@
+{
+  "settings": {
+    "debug": {
+      "remoteConfig": "Remote config",
+      "remoteConfigRefresh": "Refresh remote config",
+      "remoteConfigStatus": "Remote Config Status",
+      "remoteConfigLastFetch": "Last fetched",
+      "remoteConfigFeatures": "Active features",
+      "remoteConfigExperiments": "Active experiments",
+      "remoteConfigValues": "Config values",
+      "remoteConfigRefreshing": "Refreshing configuration...",
+      "remoteConfigRefreshSuccess": "Configuration refreshed successfully",
+      "remoteConfigRefreshError": "Failed to refresh configuration"
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "title": "Sezonowy Pass",
+  "subtitle": "Nagradzaj Najbardziej Zaangażowanych Fanów",
+  "seasonActive": "Sezon Aktywny",
+  "createNew": "Utwórz Nowy Sezon",
+  "createSeason": "Utwórz Sezon",
+  "startSeason": "Rozpocznij Sezon",
+  "startNewSeason": "Rozpocznij Nowy Sezon",
+  "joinSeason": "Dołącz do Sezonu",
+  "continueProgress": "Kontynuuj",
+  "continue": "Kontynuuj",
+  "seasonComplete": "Sezon Zakończony",
+  
+  "seasonName": "Nazwa Sezonu",
+  "seasonNamePlaceholder": "np. Zimowe Mistrzostwa",
+  "description": "Opis",
+  "descriptionPlaceholder": "Powiedz fanom, o czym jest ten sezon...",
+  "heroBanner": "Banner Główny (Opcjonalnie)",
+  "selectBanner": "Dotknij, aby wybrać zdjęcie banera",
+  
+  "tierPreview": "Podgląd Nagród Poziomów",
+  "tierRewards": "Nagrody Poziomów",
+  "tier": "Poziom",
+  "points": "punktów",
+  "level": "Poziom",
+  "totalPoints": "Wszystkie Punkty",
+  "duration": "Czas Trwania",
+  "daysLeft": "Dni Pozostało",
+  "daysLeftShort": "{{days}}d pozostało",
+  "hoursLeftShort": "{{hours}}h pozostało",
+  "minutesLeftShort": "{{minutes}}m pozostało",
+  "daysCount": "{{count}} dni",
+  "hoursCount": "{{count}} godzin",
+  "endsIn": "Kończy się za",
+  "timeRemaining": "Pozostały czas",
+  "pointsToNext": "pkt do następnego poziomu",
+  
+  "participants": "Uczestnicy",
+  "participating": "uczestniczy",
+  "tiers": "Poziomy",
+  "completed": "Ukończone",
+  "active": "Aktywny",
+  "expired": "Wygasły",
+  
+  "tierUnlocked": "🎉 Poziom Odblokowany!",
+  "congratulations": "Gratulacje!",
+  "rewardActivated": "Twoja nagroda jest teraz aktywna",
+  "rewardActive": "Twoja nagroda kosmetyczna jest teraz aktywna i będzie widoczna dla wszystkich",
+  
+  "rewardTypes": {
+    "frame": "Ramka Profilu",
+    "badge": "Odznaka",
+    "animation": "Animacja",
+    "aura": "Efekt Aury",
+    "entrance": "Wejście"
+  },
+  
+  "success": "Sukces",
+  "error": "Błąd",
+  "loading": "Ładowanie sezonu...",
+  "seasonStarted": "Sezon rozpoczęty pomyślnie!",
+  "failedToStart": "Nie udało się rozpocząć sezonu",
+  "nameRequired": "Nazwa sezonu jest wymagana",
+  "descriptionRequired": "Opis sezonu jest wymagany",
+  
+  "noActiveChallenge": "Brak Aktywnego Sezonu",
+  "createYourFirst": "Utwórz swój pierwszy sezon, aby zaangażować fanów",
+  
+  "cosmeticOnly": "✨ Tylko nagrody kosmetyczne - zero kosztów",
+  "noTokenRewards": "Brak tokenów ani płatnych nagród",
+  
+  "engagementBoost": "Zwiększ zaangażowanie dzięki sezonowym wyzwaniom",
+  "noTokenCost": "100% Kosmetyczne - Zero Kosztów Tokenów",
+  "ruleOneActive": "Tylko 1 aktywny sezon na raz",
+  "ruleDuration": "Sezony trwają 30 dni",
+  "ruleRewards": "5 poziomów ekskluzywnych nagród kosmetycznych"
+}

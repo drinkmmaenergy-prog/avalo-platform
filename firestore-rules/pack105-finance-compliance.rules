@@ -1,0 +1,151 @@
+// PACK 105 — Business Audit & Financial Compliance - Firestore Security Rules
+//
+// Collections:
+// - business_audit_log (immutable, read-only for admins)
+// - kyc_audit_records (restricted access)
+// - finance_cases (admin/moderator only)
+// - finance_alerts (admin/moderator only)
+// - vat_invoices (user read-only)
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // BUSINESS AUDIT LOG (IMMUTABLE, APPEND-ONLY)
+    // ========================================================================
+    
+    match /business_audit_log/{logId} {
+      // NO ONE can write directly (only via Cloud Functions)
+      allow write: if false;
+      
+      // Admin/moderators can read audit logs
+      allow read: if request.auth != null &&
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true);
+      
+      // Users can read their own audit trail
+      allow read: if request.auth != null &&
+                     resource.data.userId == request.auth.uid;
+    }
+    
+    // ========================================================================
+    // KYC AUDIT RECORDS
+    // ========================================================================
+    
+    match /kyc_audit_records/{recordId} {
+      // NO ONE can write directly (only via Cloud Functions)
+      allow write: if false;
+      
+      // Users can read their own KYC audit records
+      allow read: if request.auth != null &&
+                     resource.data.userId == request.auth.uid;
+      
+      // Admin/moderators can read all KYC audit records
+      allow read: if request.auth != null &&
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true);
+    }
+    
+    // ========================================================================
+    // FINANCE CASES
+    // ========================================================================
+    
+    match /finance_cases/{caseId} {
+      // NO ONE can write directly (only via Cloud Functions)
+      allow write: if false;
+      
+      // Only admin/moderators can read finance cases
+      allow read: if request.auth != null &&
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true);
+    }
+    
+    // ========================================================================
+    // FINANCE ALERTS
+    // ========================================================================
+    
+    match /finance_alerts/{alertId} {
+      // NO ONE can write directly (only via Cloud Functions)
+      allow write: if false;
+      
+      // Only admin/moderators can read alerts
+      allow read: if request.auth != null &&
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true);
+    }
+    
+    // ========================================================================
+    // VAT INVOICES
+    // ========================================================================
+    
+    match /vat_invoices/{invoiceId} {
+      // NO ONE can write directly (only via Cloud Functions)
+      allow write: if false;
+      
+      // Users can read their own VAT invoices
+      allow read: if request.auth != null &&
+                     resource.data.userId == request.auth.uid;
+      
+      // Admin/moderators can read all VAT invoices
+      allow read: if request.auth != null &&
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true);
+    }
+    
+    // ========================================================================
+    // EARNINGS LEDGER (existing with additional protection)
+    // ========================================================================
+    
+    match /earnings_ledger/{ledgerId} {
+      // NO ONE can write directly (only via Cloud Functions)
+      allow write: if false;
+      
+      // Users can read their own earnings ledger
+      allow read: if request.auth != null &&
+                     resource.data.creatorId == request.auth.uid;
+      
+      // Admin/moderators can read all earnings ledger entries
+      allow read: if request.auth != null &&
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true);
+    }
+    
+    // ========================================================================
+    // CREATOR BALANCES (existing with additional protection)
+    // ========================================================================
+    
+    match /creator_balances/{userId} {
+      // NO ONE can write directly (only via Cloud Functions)
+      allow write: if false;
+      
+      // Users can read their own balance
+      allow read: if request.auth != null &&
+                     userId == request.auth.uid;
+      
+      // Admin/moderators can read all balances
+      allow read: if request.auth != null &&
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true);
+    }
+    
+    // ========================================================================
+    // PAYOUT REQUESTS (existing with additional protection)
+    // ========================================================================
+    
+    match /payoutRequests/{payoutId} {
+      // Users can only create their own payout requests via Cloud Function
+      // NO direct writes allowed
+      allow write: if false;
+      
+      // Users can read their own payout requests
+      allow read: if request.auth != null &&
+                     resource.data.userId == request.auth.uid;
+      
+      // Admin/moderators can read all payout requests
+      allow read: if request.auth != null &&
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true);
+    }
+  }
+}

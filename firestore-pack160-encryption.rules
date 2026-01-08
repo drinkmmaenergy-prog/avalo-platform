@@ -1,0 +1,205 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================================================
+    // PACK 160 - ENCRYPTION & SECURITY RULES
+    // Local-First Security · Crash-Proof Storage · Zero Eavesdropping Risk
+    // ============================================================================
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ============================================================================
+    // ENCRYPTION KEYS
+    // Only the key owner can read their keys
+    // Backend can write keys, users cannot modify directly
+    // ============================================================================
+    match /encryption_keys/{keyId} {
+      // Read: Only owner can read their own keys
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Create: Backend only (via Cloud Functions)
+      allow create: if false;
+      
+      // Update: Backend only for rotation
+      allow update: if false;
+      
+      // Delete: Backend only for destruction
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // ENCRYPTED MESSAGES
+    // Only sender and recipient can access
+    // ============================================================================
+    match /encrypted_messages/{messageId} {
+      // Read: Only sender or recipient
+      allow read: if isAuthenticated() && 
+                     (resource.data.senderId == request.auth.uid ||
+                      resource.data.recipientId == request.auth.uid);
+      
+      // Create: Authenticated users (via Cloud Functions)
+      allow create: if false;
+      
+      // Update: No updates allowed
+      allow update: if false;
+      
+      // Delete: Only sender or backend
+      allow delete: if isAuthenticated() && 
+                       resource.data.senderId == request.auth.uid;
+    }
+    
+    // ============================================================================
+    // ENCRYPTED MEDIA
+    // Only owner can access their media
+    // ============================================================================
+    match /encrypted_media/{mediaId} {
+      // Read: Only owner
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Create: Backend only
+      allow create: if false;
+      
+      // Update: No updates allowed
+      allow update: if false;
+      
+      // Delete: Only owner or admin
+      allow delete: if isAuthenticated() && 
+                       (resource.data.userId == request.auth.uid || isAdmin());
+    }
+    
+    // ============================================================================
+    // ENCRYPTED PURCHASES
+    // Only owner can access
+    // ============================================================================
+    match /encrypted_purchases/{purchaseId} {
+      // Read: Only owner
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Create: Backend only
+      allow create: if false;
+      
+      // Update: No updates allowed
+      allow update: if false;
+      
+      // Delete: Only owner
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // ============================================================================
+    // ENCRYPTED CALLS
+    // Only owner can access where legal
+    // ============================================================================
+    match /encrypted_calls/{callId} {
+      // Read: Only owner and must be legal
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid &&
+                     resource.data.isLegal == true;
+      
+      // Create: Backend only
+      allow create: if false;
+      
+      // Update: No updates allowed
+      allow update: if false;
+      
+      // Delete: Only owner or admin
+      allow delete: if isAuthenticated() && 
+                       (resource.data.userId == request.auth.uid || isAdmin());
+    }
+    
+    // ============================================================================
+    // USER DEVICES
+    // Track device security status
+    // ============================================================================
+    match /user_devices/{deviceId} {
+      // Read: Only owner
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Create: Backend only
+      allow create: if false;
+      
+      // Update: Backend only
+      allow update: if false;
+      
+      // Delete: Backend only
+      allow delete: if false;
+    }
+    
+    // ============================================================================
+    // SECURITY EVENTS
+    // Audit log of security events
+    // ============================================================================
+    match /security_events/{eventId} {
+      // Read: Only owner or admin
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Create: Backend only
+      allow create: if false;
+      
+      // Update: Admin only (for resolution)
+      allow update: if isAdmin();
+      
+      // Delete: Admin only (data retention)
+      allow delete: if isAdmin();
+    }
+    
+    // ============================================================================
+    // SECURITY ALERTS
+    // User notifications for security events
+    // ============================================================================
+    match /security_alerts/{alertId} {
+      // Read: Only owner
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Create: Backend only
+      allow create: if false;
+      
+      // Update: Owner can mark as read/dismissed
+      allow update: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.keys().hasOnly(['read', 'dismissed', 'updatedAt']);
+      
+      // Delete: Owner or admin
+      allow delete: if isAuthenticated() && 
+                       (resource.data.userId == request.auth.uid || isAdmin());
+    }
+    
+    // ============================================================================
+    // DESTRUCTION LOGS
+    // Audit trail of data destruction events
+    // ============================================================================
+    match /destruction_logs/{logId} {
+      // Read: Only owner or admin
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // Create: Backend only
+      allow create: if false;
+      
+      // Update: No updates
+      allow update: if false;
+      
+      // Delete: Admin only (data retention)
+      allow delete: if isAdmin();
+    }
+  }
+}

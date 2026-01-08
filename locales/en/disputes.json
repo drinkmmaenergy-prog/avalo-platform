@@ -1,0 +1,57 @@
+{
+  "disputes": {
+    "title": "Disputes and Issues",
+    "empty": "You have no disputes.",
+    "create": {
+      "title": "Report a Problem",
+      "button": "Report a Problem",
+      "type": {
+        "payout": "Problem with Payout",
+        "earning": "Problem with Earnings",
+        "reservation": "Problem with a Meeting or Reservation",
+        "content": "Abuse, Scam or Content Issue"
+      }
+    },
+    "field": {
+      "title": "Title",
+      "description": "Describe what happened"
+    },
+    "button": {
+      "submit": "Submit Dispute"
+    },
+    "status": {
+      "OPEN": "Open",
+      "UNDER_REVIEW": "Under Review",
+      "RESOLVED": "Resolved",
+      "ESCALATED": "Escalated",
+      "CLOSED": "Closed"
+    },
+    "type": {
+      "PAYOUT": "Payout",
+      "EARNING": "Earning",
+      "RESERVATION": "Reservation",
+      "CONTENT": "Content",
+      "OTHER": "Other"
+    },
+    "outcome": "Resolution",
+    "evidenceCount": "{{count}} evidence items attached",
+    "evidenceCount_other": "{{count}} evidence items attached",
+    "messages": "Messages",
+    "message": {
+      "you": "You",
+      "support": "Support",
+      "system": "System",
+      "placeholder": "Type your message...",
+      "send": "Send"
+    },
+    "error": {
+      "notFound": "Dispute not found",
+      "sendMessage": "Failed to send message. Please try again."
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "retry": "Retry",
+    "goBack": "Go Back"
+  }
+}

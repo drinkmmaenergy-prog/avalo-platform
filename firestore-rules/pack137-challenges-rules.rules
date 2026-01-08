@@ -1,0 +1,168 @@
+/**
+ * PACK 137: Avalo Global Community Challenges
+ * Firestore Security Rules
+ * 
+ * Collections:
+ * - challenges
+ * - challenge_participants
+ * - challenge_progress
+ * - challenge_posts
+ * - challenge_badges
+ */
+
+// ============================================
+// CHALLENGES COLLECTION
+// ============================================
+
+match /challenges/{challengeId} {
+  // Anyone can read active challenges
+  allow read: if request.auth != null
+    && resource.data.isActive == true
+    && resource.data.status == 'ACTIVE';
+  
+  // Verified creators can create challenges
+  allow create: if request.auth != null
+    && request.auth.uid == request.resource.data.creatorId
+    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isCreator == true
+    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.earnFromChat == true
+    // Validate SAFE content
+    && !hasBlockedKeywords(request.resource.data.title)
+    && !hasBlockedKeywords(request.resource.data.description)
+    && !hasBlockedKeywords(request.resource.data.taskTitle)
+    && !hasBlockedKeywords(request.resource.data.taskDescription)
+    // Validate category is SAFE
+    && request.resource.data.category in ['FITNESS', 'LIFESTYLE', 'EDUCATION', 'CREATIVE', 'ENTERTAINMENT', 'PRODUCTIVITY', 'WELLNESS']
+    // Validate pricing
+    && (request.resource.data.entryTokens >= 0 && request.resource.data.entryTokens <= 5000)
+    // Enforce consistency-based leaderboard
+    && request.resource.data.leaderboardMode == 'CONSISTENCY';
+  
+  // Creator can update own challenge
+  allow update: if request.auth != null
+    && request.auth.uid == resource.data.creatorId
+    // Cannot change to NSFW content
+    && !hasBlockedKeywords(request.resource.data.title)
+    && !hasBlockedKeywords(request.resource.data.description)
+    // Cannot change pricing or split
+    && request.resource.data.entryTokens == resource.data.entryTokens
+    && request.resource.data.isPaid == resource.data.isPaid
+    // Cannot change leaderboard mode
+    && request.resource.data.leaderboardMode == 'CONSISTENCY';
+  
+  // Creator can delete own challenge
+  allow delete: if request.auth != null
+    && request.auth.uid == resource.data.creatorId;
+}
+
+// ============================================
+// CHALLENGE PARTICIPANTS COLLECTION
+// ============================================
+
+match /challenge_participants/{participantId} {
+  // User can read own participation records
+  allow read: if request.auth != null
+    && (request.auth.uid == resource.data.userId
+        || request.auth.uid == resource.data.creatorId);
+  
+  // Created via Cloud Function only (payment handling)
+  allow create: if false;
+  
+  // User can update own progress (via Cloud Function)
+  allow update: if false;
+  
+  // No deletion allowed
+  allow delete: if false;
+}
+
+// ============================================
+// CHALLENGE PROGRESS COLLECTION
+// ============================================
+
+match /challenge_progress/{progressId} {
+  // User can read own progress
+  allow read: if request.auth != null
+    && request.auth.uid == resource.data.userId;
+  
+  // Created via Cloud Function only (consistency tracking)
+  allow create: if false;
+  
+  // No updates allowed (immutable)
+  allow update: if false;
+  
+  // No deletion allowed
+  allow delete: if false;
+}
+
+// ============================================
+// CHALLENGE POSTS COLLECTION
+// ============================================
+
+match /challenge_posts/{postId} {
+  // Anyone in the challenge can read posts
+  allow read: if request.auth != null
+    && resource.data.isVisible == true
+    && exists(/databases/$(database)/documents/challenge_participants/$(request.auth.uid + '_' + resource.data.challengeId));
+  
+  // Created via Cloud Function only (NSFW validation)
+  allow create: if false;
+  
+  // User can like/comment (handled by Cloud Function)
+  allow update: if false;
+  
+  // No deletion allowed
+  allow delete: if false;
+}
+
+// ============================================
+// CHALLENGE BADGES COLLECTION
+// ============================================
+
+match /challenge_badges/{badgeId} {
+  // User can read own badges
+  allow read: if request.auth != null
+    && request.auth.uid == resource.data.userId;
+  
+  // Created via Cloud Function only (on completion)
+  allow create: if false;
+  
+  // User can update display preference
+  allow update: if request.auth != null
+    && request.auth.uid == resource.data.userId
+    && request.resource.data.keys().hasOnly(['displayOnProfile'])
+    && request.resource.data.displayOnProfile is bool;
+  
+  // No deletion allowed
+  allow delete: if false;
+}
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+function hasBlockedKeywords(text) {
+  let lowerText = text.lower();
+  return lowerText.matches('.*sexy.*')
+    || lowerText.matches('.*seductive.*')
+    || lowerText.matches('.*lingerie.*')
+    || lowerText.matches('.*bikini.*')
+    || lowerText.matches('.*nude.*')
+    || lowerText.matches('.*naked.*')
+    || lowerText.matches('.*explicit.*')
+    || lowerText.matches('.*nsfw.*')
+    || lowerText.matches('.*adult.*')
+    || lowerText.matches('.*xxx.*')
+    || lowerText.matches('.*porn.*')
+    || lowerText.matches('.*erotic.*')
+    || lowerText.matches('.*dating.*')
+    || lowerText.matches('.*romance.*')
+    || lowerText.matches('.*romantic.*')
+    || lowerText.matches('.*boyfriend.*')
+    || lowerText.matches('.*girlfriend.*')
+    || lowerText.matches('.*sugar.*')
+    || lowerText.matches('.*hottest.*')
+    || lowerText.matches('.*sexiest.*')
+    || lowerText.matches('.*beauty contest.*')
+    || lowerText.matches('.*body rating.*')
+    || lowerText.matches('.*onlyfans.*')
+    || lowerText.matches('.*fansly.*');
+}

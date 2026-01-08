@@ -1,0 +1,227 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuth() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+    
+    function isVerified() {
+      return isAuth() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verification.age18 == true;
+    }
+    
+    // ============================================================================
+    // PACK 191 — LIVE VIDEO ARENA
+    // ============================================================================
+    
+    // Live Streams (Main Arena Streams)
+    match /live_streams/{streamId} {
+      // Allow public read of active streams
+      allow read: if resource.data.status == 'live' || 
+                     resource.data.status == 'scheduled' ||
+                     isOwner(resource.data.hostId);
+      
+      // Only verified 18+ users can create streams
+      allow create: if isVerified() && 
+                       request.resource.data.hostId == request.auth.uid &&
+                       request.resource.data.category in [
+                         'fitness', 'gaming', 'education', 'art', 'music',
+                         'travel', 'lifestyle', 'entertainment', 'cooking',
+                         'business', 'wellness', 'dance', 'sports'
+                       ] &&
+                       request.resource.data.status == 'scheduled';
+      
+      // Only host can update their own stream
+      allow update: if isOwner(resource.data.hostId) &&
+                       request.resource.data.hostId == resource.data.hostId;
+      
+      // Only host can delete (end) their stream
+      allow delete: if isOwner(resource.data.hostId);
+    }
+    
+    // Stream Participants (Who's in the stream)
+    match /stream_participants/{participantId} {
+      allow read: if isAuth();
+      
+      allow create: if isAuth() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.role in ['viewer', 'participant'];
+      
+      allow update: if isOwner(resource.data.userId);
+      
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    // Stream Reactions (Paid reactions during stream)
+    match /stream_reactions/{reactionId} {
+      allow read: if isAuth();
+      
+      allow create: if isAuth() && 
+                       request.resource.data.senderId == request.auth.uid &&
+                       request.resource.data.tokens > 0 &&
+                       request.resource.data.tokens <= 10000;
+      
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Stream Polls (Interactive polls)
+    match /stream_polls/{pollId} {
+      allow read: if isAuth();
+      
+      // Only stream host can create polls
+      allow create: if isAuth() &&
+                       exists(/databases/$(database)/documents/live_streams/$(request.resource.data.streamId)) &&
+                       get(/databases/$(database)/documents/live_streams/$(request.resource.data.streamId)).data.hostId == request.auth.uid;
+      
+      allow update: if isAuth() &&
+                       exists(/databases/$(database)/documents/live_streams/$(resource.data.streamId)) &&
+                       get(/databases/$(database)/documents/live_streams/$(resource.data.streamId)).data.hostId == request.auth.uid;
+      
+      allow delete: if false;
+    }
+    
+    // Poll Votes
+    match /poll_votes/{voteId} {
+      allow read: if isAuth();
+      
+      allow create: if isAuth() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       exists(/databases/$(database)/documents/stream_polls/$(request.resource.data.pollId));
+      
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Stream Challenges (Skill challenges during stream)
+    match /stream_challenges/{challengeId} {
+      allow read: if isAuth();
+      
+      // Only stream host can create challenges
+      allow create: if isAuth() &&
+                       exists(/databases/$(database)/documents/live_streams/$(request.resource.data.streamId)) &&
+                       get(/databases/$(database)/documents/live_streams/$(request.resource.data.streamId)).data.hostId == request.auth.uid;
+      
+      allow update: if isAuth() &&
+                       exists(/databases/$(database)/documents/live_streams/$(resource.data.streamId)) &&
+                       get(/databases/$(database)/documents/live_streams/$(resource.data.streamId)).data.hostId == request.auth.uid;
+      
+      allow delete: if false;
+    }
+    
+    // Challenge Submissions
+    match /challenge_submissions/{submissionId} {
+      allow read: if isAuth();
+      
+      allow create: if isAuth() && 
+                       request.resource.data.userId == request.auth.uid &&
+                       exists(/databases/$(database)/documents/stream_challenges/$(request.resource.data.challengeId));
+      
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if false;
+    }
+    
+    // Stream Moderation Events (Real-time safety)
+    match /stream_moderation_events/{eventId} {
+      // Only moderators and system can read
+      allow read: if isAuth() && 
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true ||
+                      isOwner(resource.data.streamHostId));
+      
+      // System creates these
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Stream Chat Messages
+    match /stream_chat/{messageId} {
+      allow read: if isAuth();
+      
+      allow create: if isAuth() && 
+                       request.resource.data.senderId == request.auth.uid &&
+                       request.resource.data.message.size() <= 500 &&
+                       exists(/databases/$(database)/documents/live_streams/$(request.resource.data.streamId));
+      
+      allow update: if false;
+      allow delete: if isOwner(resource.data.senderId) ||
+                       exists(/databases/$(database)/documents/live_streams/$(resource.data.streamId)) &&
+                       get(/databases/$(database)/documents/live_streams/$(resource.data.streamId)).data.hostId == request.auth.uid;
+    }
+    
+    // Stream Replays (VOD)
+    match /stream_replays/{replayId} {
+      // Public if stream was public and not restricted
+      allow read: if resource.data.isPublic == true ||
+                     isOwner(resource.data.hostId);
+      
+      // Only system creates replays
+      allow create: if false;
+      allow update: if isOwner(resource.data.hostId);
+      allow delete: if isOwner(resource.data.hostId);
+    }
+    
+    // Stream Analytics (Per stream stats)
+    match /stream_analytics/{analyticsId} {
+      allow read: if isAuth() &&
+                     (isOwner(resource.data.hostId) ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true);
+      
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Collab Stream Invites
+    match /collab_invites/{inviteId} {
+      allow read: if isAuth() && 
+                     (isOwner(resource.data.inviterId) ||
+                      isOwner(resource.data.inviteeId));
+      
+      allow create: if isAuth() && 
+                       isOwner(request.resource.data.inviterId) &&
+                       exists(/databases/$(database)/documents/live_streams/$(request.resource.data.streamId)) &&
+                       get(/databases/$(database)/documents/live_streams/$(request.resource.data.streamId)).data.hostId == request.auth.uid;
+      
+      allow update: if isOwner(resource.data.inviteeId);
+      allow delete: if isOwner(resource.data.inviterId) || isOwner(resource.data.inviteeId);
+    }
+    
+    // Stream Reports (Safety reports)
+    match /stream_reports/{reportId} {
+      allow read: if isAuth() && 
+                     (isOwner(resource.data.reporterId) ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true);
+      
+      allow create: if isAuth() && 
+                       request.resource.data.reporterId == request.auth.uid &&
+                       exists(/databases/$(database)/documents/live_streams/$(request.resource.data.streamId));
+      
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Creator Burnout Tracking
+    match /creator_burnout/{userId} {
+      allow read: if isOwner(userId);
+      
+      allow create, update: if false;
+      allow delete: if false;
+    }
+    
+    // Stream Safety Violations
+    match /stream_violations/{violationId} {
+      // Only moderators can read
+      allow read: if isAuth() && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.moderator == true;
+      
+      allow create, update, delete: if false;
+    }
+  }
+}

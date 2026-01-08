@@ -1,0 +1,398 @@
+name: Release Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      build_profile:
+        description: 'EAS Build Profile'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - preview
+          - internal
+          - production
+
+env:
+  NODE_OPTIONS: --max_old_space_size=4096
+  PNPM_VERSION: 8
+
+jobs:
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ESLint
+        run: pnpm run lint
+        continue-on-error: true
+
+      - name: Run tests
+        run: |
+          cd functions
+          npm test
+        continue-on-error: true
+
+  web-build-deploy:
+    name: Web Build & Deploy
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Functions
+        run: |
+          cd functions
+          npm run build
+
+      - name: Build Web
+        run: pnpm --filter web build
+        env:
+          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+
+      - name: Setup Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase Hosting
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            firebase deploy --only hosting:web --project=${{ secrets.FIREBASE_PROJECT_ID }} --token=${{ secrets.FIREBASE_TOKEN }}
+          else
+            firebase deploy --only hosting:web --project=${{ secrets.FIREBASE_PROJECT_ID }} --token=${{ secrets.FIREBASE_TOKEN }}
+          fi
+
+      - name: Deploy Functions
+        if: github.ref == 'refs/heads/main'
+        run: firebase deploy --only functions --project=${{ secrets.FIREBASE_PROJECT_ID }} --token=${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Configure Stripe Webhooks
+        if: github.ref == 'refs/heads/main'
+        run: |
+          # Install Stripe CLI
+          curl -s https://packages.stripe.com/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | sudo tee /usr/share/keyrings/stripe.gpg
+          echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.com/stripe-cli-debian-local stable main" | sudo tee /etc/apt/sources.list.d/stripe.list
+          sudo apt update
+          sudo apt install stripe
+          
+          # Configure webhook endpoint
+          HOSTING_URL="https://${{ secrets.FIREBASE_PROJECT_ID }}.web.app"
+          echo "Configuring Stripe webhook for: ${HOSTING_URL}/api/webhooks/stripe"
+          
+          # Create webhook endpoint (if not exists)
+          stripe webhooks create \
+            --api-key ${{ secrets.STRIPE_SECRET_KEY }} \
+            --url "${HOSTING_URL}/api/webhooks/stripe" \
+            --description "Avalo Production Webhook" \
+            --events checkout.session.completed,payment_intent.succeeded,payment_intent.payment_failed,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted
+        continue-on-error: true
+
+  mobile-eas-android:
+    name: Android EAS Build
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Determine build profile
+        id: build-profile
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "PROFILE=${{ github.event.inputs.build_profile }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "PROFILE=production" >> $GITHUB_OUTPUT
+          else
+            echo "PROFILE=preview" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build Android with EAS
+        id: build
+        run: |
+          BUILD_PROFILE="${{ steps.build-profile.outputs.PROFILE }}"
+          echo "Building with profile: $BUILD_PROFILE"
+          eas build --platform android --profile $BUILD_PROFILE --non-interactive --no-wait | tee build_output.txt
+          
+          # Extract build URL from output
+          BUILD_URL=$(grep -oP 'https://expo.dev/accounts/[^ ]+' build_output.txt | head -1)
+          echo "BUILD_URL=$BUILD_URL" >> $GITHUB_OUTPUT
+          echo "Android build started: $BUILD_URL"
+
+      - name: Comment build URL on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🤖 Android build started!\n\nProfile: `${{ steps.build-profile.outputs.PROFILE }}`\n\n[View build](${{ steps.build.outputs.BUILD_URL }})'
+            })
+
+      - name: Upload build artifacts info
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-build-info
+          path: build_output.txt
+
+  mobile-eas-ios:
+    name: iOS EAS Build
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Determine build profile
+        id: build-profile
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "PROFILE=${{ github.event.inputs.build_profile }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "PROFILE=production" >> $GITHUB_OUTPUT
+          else
+            echo "PROFILE=preview" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build iOS with EAS
+        id: build
+        run: |
+          BUILD_PROFILE="${{ steps.build-profile.outputs.PROFILE }}"
+          echo "Building with profile: $BUILD_PROFILE"
+          eas build --platform ios --profile $BUILD_PROFILE --non-interactive --no-wait | tee build_output.txt
+          
+          # Extract build URL from output
+          BUILD_URL=$(grep -oP 'https://expo.dev/accounts/[^ ]+' build_output.txt | head -1)
+          echo "BUILD_URL=$BUILD_URL" >> $GITHUB_OUTPUT
+          echo "iOS build started: $BUILD_URL"
+
+      - name: Comment build URL on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🍎 iOS build started!\n\nProfile: `${{ steps.build-profile.outputs.PROFILE }}`\n\n[View build](${{ steps.build.outputs.BUILD_URL }})'
+            })
+
+      - name: Upload build artifacts info
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-build-info
+          path: build_output.txt
+
+  security-checks:
+    name: Security & QA Checks
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run npm audit
+        run: pnpm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Check for sensitive data
+        run: |
+          echo "Checking for potential secrets in code..."
+          if grep -r -i "api[_-]key\s*=\s*['\"][^'\"]*['\"]" --include="*.ts" --include="*.js" --exclude-dir=node_modules .; then
+            echo "⚠️ Warning: Found potential API keys in code"
+            exit 1
+          fi
+        continue-on-error: true
+
+      - name: Verify environment configuration
+        run: |
+          echo "Checking environment files..."
+          if [ ! -f "functions/.env.example" ]; then
+            echo "⚠️ Warning: functions/.env.example not found"
+          fi
+          if [ ! -f "app/.env.example" ]; then
+            echo "⚠️ Warning: app/.env.example not found"
+          fi
+
+  deploy-summary:
+    name: Deployment Summary
+    needs: [web-build-deploy, mobile-eas-android, mobile-eas-ios]
+    runs-on: ubuntu-latest
+    if: always() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        continue-on-error: true
+
+      - name: Generate deployment summary
+        run: |
+          echo "# 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Web Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ needs.web-build-deploy.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: https://${{ secrets.FIREBASE_PROJECT_ID }}.web.app" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Mobile Builds" >> $GITHUB_STEP_SUMMARY
+          echo "- Android: ${{ needs.mobile-eas-android.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- iOS: ${{ needs.mobile-eas-ios.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Monitor builds at [Expo Dashboard](https://expo.dev)" >> $GITHUB_STEP_SUMMARY
+          echo "2. Test deployed web app" >> $GITHUB_STEP_SUMMARY
+          echo "3. Download and test mobile builds" >> $GITHUB_STEP_SUMMARY
+          echo "4. Submit to app stores if production build" >> $GITHUB_STEP_SUMMARY

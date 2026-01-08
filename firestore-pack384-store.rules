@@ -1,0 +1,130 @@
+// PACK 384 — App Store Defense, Reviews, Reputation & Trust Engine
+// Security rules for store defense collections
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Store review signals - admin write, authenticated read
+    match /storeReviewSignals/{signalId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth.token.admin == true;
+    }
+    
+    // Store abuse signals - admin only
+    match /storeAbuseSignals/{signalId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // Store reviews - authenticated read, admin write
+    match /storeReviews/{reviewId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // Public trust scores - public read, admin write
+    match /publicTrustScores/{userId} {
+      allow read: if true; // Public visibility
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // ASO health metrics - admin only
+    match /asoHealthMetrics/{metricId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // ASO incidents - admin only
+    match /asoIncidents/{incidentId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // Store safety alerts - admin only
+    match /storeSafetyAlerts/{alertId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // Store defense dossiers - admin only
+    match /storeDefenseDossiers/{dossierId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // Review bombing detections - admin only
+    match /reviewBombingDetections/{detectionId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // Review farm detections - admin only
+    match /reviewFarmDetections/{detectionId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // Coordinated attacks - admin only
+    match /coordinatedAttacks/{attackId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // Device fingerprints - owner or admin read, system write
+    match /deviceFingerprints/{fingerprintId} {
+      allow read: if request.auth != null && 
+        (resource.data.userId == request.auth.uid || request.auth.token.admin == true);
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth.token.admin == true;
+    }
+    
+    // Blocked IP ranges - admin only
+    match /blockedIPRanges/{rangeId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // Store review requests - owner or admin read, system write
+    match /storeReviewRequests/{requestId} {
+      allow read: if request.auth != null && 
+        (resource.data.userId == request.auth.uid || request.auth.token.admin == true);
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth.token.admin == true;
+    }
+    
+    // Authenticity reports - admin only
+    match /authenticityReports/{reportId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // ASO keywords - admin only
+    match /asoKeywords/{keywordId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // App installs tracking - admin read, system write
+    match /appInstalls/{installId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth.token.admin == true;
+    }
+    
+    // App uninstalls tracking - admin only
+    match /appUninstalls/{uninstallId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth.token.admin == true;
+    }
+    
+    // Store page views - admin read, system write
+    match /storePageViews/{viewId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+      allow create: if true; // Can be tracked before auth
+      allow update, delete: if request.auth.token.admin == true;
+    }
+  }
+}
