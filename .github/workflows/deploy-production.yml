@@ -1,9 +1,6 @@
 name: Deploy to Production
 
 on:
-  push:
-    branches:
-      - release/*
   workflow_dispatch:
     inputs:
       confirm_deployment:
