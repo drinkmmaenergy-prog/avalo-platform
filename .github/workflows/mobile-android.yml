@@ -1,11 +1,6 @@
 name: Build Android
 
 on:
-  push:
-    branches: [main, develop]
-    tags: ['v*']
-  pull_request:
-    branches: [main]
   workflow_dispatch:
     inputs:
       profile:
