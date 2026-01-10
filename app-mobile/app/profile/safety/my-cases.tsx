@@ -18,7 +18,12 @@ import {
 import { useRouter } from 'expo-router';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db, auth } from "@/lib/firebase";
-import LegalCaseCard from "@/components/LegalCaseCard";
+const LegalCaseCard = ({ caseId }: any) => (
+  <View style={{ padding: 12, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, marginBottom: 8 }}>
+    <Text>Case ID: {caseId}</Text>
+    <Text>Status: stubbed</Text>
+  </View>
+);
 
 interface SafetyCase {
   caseId: string;
