@@ -15,6 +15,7 @@ import {
   isValidDisputeStatus,
   isValidDisputeOutcome
 } from "./disputeEngine";
+import { Timestamp, increment } from './runtime';
 
 const FieldValue = admin.firestore.FieldValue;
 

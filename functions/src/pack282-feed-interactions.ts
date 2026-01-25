@@ -17,6 +17,7 @@ import {
 } from './pack282-feed-types';
 import { moderateText } from './aiModeration';
 import { canSendMessage, getEnforcementState } from './moderationEngine';
+import { admin, auth, functions, increment, timestamp } from './runtime';
 
 // ============================================================================
 // SCHEMAS

@@ -24,6 +24,7 @@ import type {
 // Import existing engines for integration
 import { recordRankingAction } from './rankingEngine';
 import { recordRiskEvent, evaluateUserRisk } from './trustEngine';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // CONSTANTS

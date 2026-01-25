@@ -24,6 +24,7 @@ import * as logger from 'firebase-functions/logger';
 import { getFirestore } from 'firebase-admin/firestore';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db, serverTimestamp } from './init';
+import { HttpsError, admin, auth, increment, onCall, storage, z } from './runtime';
 
 // ============================================================================
 // TYPES

@@ -15,6 +15,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, increment, FieldValue } from './init';
 import { logger } from 'firebase-functions/v1';
+import { HttpsError, Timestamp, arrayUnion, auth, onCall, timestamp } from './runtime';
 
 // ============================================================================
 // CONSTANTS & CONFIGURATION

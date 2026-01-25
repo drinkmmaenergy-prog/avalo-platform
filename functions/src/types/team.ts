@@ -3,6 +3,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { Timestamp, timestamp } from '../runtime';
 
 export interface TeamMembership {
   membershipId: string;

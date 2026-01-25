@@ -4,6 +4,8 @@
  * Royal = high-demand profiles driving platform monetization
  */
 
+import { timestamp } from './runtime';
+
 export interface RoyalMetrics {
   userId: string;
   periodStart: number; // timestamp

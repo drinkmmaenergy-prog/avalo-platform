@@ -17,6 +17,7 @@ import {
   DocumentType,
   VERIFICATION_CONFIG,
 } from './pack328a-identity-verification-types';
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 // ============================================================================
 // Callable Functions (User-facing)

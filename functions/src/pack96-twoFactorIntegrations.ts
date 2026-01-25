@@ -9,6 +9,7 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 import { evaluateStepUpRequirement } from './pack96-twoFactorEngine';
 import { SensitiveAction } from './types/twoFactor.types';
+import { auth, functions, onCall } from './runtime';
 
 // ============================================================================
 // Step-Up Enforcement Helpers

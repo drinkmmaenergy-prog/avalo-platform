@@ -20,6 +20,7 @@ import {
   detectEventAttendance,
   trackMomentumFromMemory
 } from './pack-229-shared-memories.js';
+import { db, timestamp } from './runtime';
 
 // ============================================================================
 // CHAT MESSAGE TRIGGERS

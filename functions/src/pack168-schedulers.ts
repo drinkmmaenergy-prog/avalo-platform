@@ -10,6 +10,7 @@ import { detectMultiAccountFarming, requestIdentityReVerification, disableAffili
 import { calculateFarmingRiskScore } from "./pack168-anti-farming-engine";
 import { scanConversationHistory } from "./pack168-emotional-grooming";
 import { NetworkGraphScanResult, AffiliateLoopAudit } from "./pack168-types";
+import { admin, functions, timestamp } from './runtime';
 
 export const networkGraphScan = onSchedule(
   {

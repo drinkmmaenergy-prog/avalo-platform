@@ -14,6 +14,7 @@ import {
   AdsCreative,
   AdPlacement,
 } from './types/pack326-ads.types';
+import { auth, functions, onCall } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

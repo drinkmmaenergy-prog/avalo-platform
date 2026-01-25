@@ -20,6 +20,7 @@ import {
   UserSegment,
   KillSwitchKey
 } from './pack428-flags-types';
+import { FieldValue, Timestamp, increment, serverTimestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 

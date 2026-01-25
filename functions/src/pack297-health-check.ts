@@ -7,6 +7,7 @@
 import { onRequest } from 'firebase-functions/v2/https';
 import { db } from './init.js';
 import Stripe from 'stripe';
+import { admin, auth, functions } from './runtime';
 
 export interface HealthCheckResponse {
   status: 'ok' | 'degraded' | 'down';

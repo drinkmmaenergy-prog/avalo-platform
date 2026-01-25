@@ -6,6 +6,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { Timestamp, db } from './runtime';
 
 // ============================================================================
 // AMBASSADOR ROLES & TYPES

@@ -10,6 +10,7 @@
 import { db, serverTimestamp } from './init.js';
 import { trackMomentumAction, applyMomentumPenalty, getMomentumState } from './pack-224-romantic-momentum.js';
 import { syncBreakupRecoveryStatus as syncDestinyBreakupStatus } from './pack-223-destiny-weeks.js';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // PACK 221: ROMANTIC JOURNEYS INTEGRATION

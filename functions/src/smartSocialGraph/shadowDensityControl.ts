@@ -12,6 +12,7 @@ import {
   SHADOW_DENSITY_THRESHOLD,
   GUARANTEED_NEW_CREATOR_SLOTS,
 } from '../types/smartSocialGraph.types';
+import { admin } from '../runtime';
 
 // ============================================================================
 // LOGGER

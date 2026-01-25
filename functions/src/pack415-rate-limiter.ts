@@ -15,6 +15,7 @@ import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions/v2';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
+import { FieldValue, arrayUnion, auth, functions, increment, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES

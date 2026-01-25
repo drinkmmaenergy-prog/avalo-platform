@@ -5,6 +5,7 @@
 
 import { recordEarning, EarningSourceType } from './creatorEarnings';
 import { logger } from 'firebase-functions/v2';
+import { functions } from './runtime';
 
 /**
  * Record gift earning in ledger

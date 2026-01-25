@@ -31,6 +31,7 @@ import {
   passesSafetyFilters,
 } from './pack255-match-ranker';
 import { BehaviorSignalType, EmotionalTrigger } from './pack255-ai-matchmaker-types';
+import { Timestamp, admin, auth, db, functions } from './runtime';
 
 // ============================================================================
 // LOGGER

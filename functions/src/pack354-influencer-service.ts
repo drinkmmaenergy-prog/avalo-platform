@@ -20,6 +20,7 @@
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { HttpsError } from 'firebase-functions/v2/https';
+import { admin, functions, serverTimestamp } from './runtime';
 
 const db = getFirestore();
 

@@ -26,6 +26,7 @@ import {
   SafetyIntervention,
 } from './pack159-safety-types';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { admin, auth, functions, increment } from './runtime';
 
 // ============================================================================
 // CONSENT STATE MANAGEMENT

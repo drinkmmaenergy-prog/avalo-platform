@@ -14,6 +14,7 @@ import {
   FORBIDDEN_PATTERNS
 } from '../types/integrations';
 import * as crypto from 'crypto';
+import { FieldValue, HttpsError, auth, db, functions, onCall } from '../runtime';
 
 const db = admin.firestore();
 

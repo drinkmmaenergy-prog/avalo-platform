@@ -6,6 +6,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { HttpsError, Timestamp, auth, db, onCall, timestamp } from '../../runtime';
 
 interface GetTeamActivityRequest {
   memberUserId?: string;

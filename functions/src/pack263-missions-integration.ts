@@ -12,6 +12,7 @@
 
 import { db } from './init';
 import { recordMissionProgress } from './pack263-creator-missions';
+import { auth, functions, onCall, timestamp } from './runtime';
 
 // ============================================================================
 // CHAT MONETIZATION INTEGRATION (PACK 261)

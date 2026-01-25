@@ -32,6 +32,7 @@ import {
   calculateMatchPriority,
   expireOldBoosts,
 } from './pack213-match-priority-engine';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // LOGGER

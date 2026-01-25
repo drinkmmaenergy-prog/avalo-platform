@@ -22,6 +22,7 @@ import {
   PanicAlertStatus,
   TrustedContactRelationship,
 } from './pack210-safety-tracking-types';
+import { HttpsError, admin, auth, db, onCall, serverTimestamp, timestamp } from './runtime';
 
 // ============================================================================
 // USER FUNCTIONS - Safety Session Management

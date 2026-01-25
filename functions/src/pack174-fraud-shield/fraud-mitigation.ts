@@ -6,6 +6,7 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db, serverTimestamp, generateId } from '../init';
 import { FraudMitigationAction } from './types';
+import { admin, auth, functions } from '../runtime';
 
 /**
  * Apply fraud mitigation action

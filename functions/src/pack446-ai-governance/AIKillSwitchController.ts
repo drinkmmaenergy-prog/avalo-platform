@@ -8,6 +8,7 @@
 
 import { logger } from 'firebase-functions';
 import { ModelStatus } from './AIModelRegistry';
+import { db, functions, timestamp } from '../runtime';
 
 export enum KillSwitchTrigger {
   MANUAL = 'MANUAL',

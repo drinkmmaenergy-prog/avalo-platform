@@ -6,6 +6,7 @@
 import { getFirestore } from "firebase-admin/firestore";
 import { NotificationDocument } from "./types/notification.types";
 import sgMail from "@sendgrid/mail";
+import { admin } from './runtime';
 
 const db = getFirestore();
 

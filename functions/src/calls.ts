@@ -13,6 +13,7 @@ import { getCallPricing } from './callPricing.js';
 import { billCall, checkCallBalance } from './callBilling.js';
 import { logEvent } from './observability.js';
 import { checkAndIncrementRateLimit, hashIpAddress, createRateLimitError } from './rateLimit.js';
+import { admin, functions } from './runtime';
 
 type CallMode = 'VOICE' | 'VIDEO';
 type CallOrigin = 'DIRECT' | 'RESERVATION';

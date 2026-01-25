@@ -13,6 +13,7 @@
 import { db, serverTimestamp, increment } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logTechEvent } from './pack90-logging';
+import { admin, auth, functions, onCall } from './runtime';
 
 // ============================================================================
 // TYPES

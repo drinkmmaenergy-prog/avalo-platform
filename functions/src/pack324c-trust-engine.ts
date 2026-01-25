@@ -19,6 +19,7 @@ import {
   ELITE_REQUIREMENTS,
   TRUST_CONFIG,
 } from './pack324c-trust-types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // TRUST SCORE CALCULATION

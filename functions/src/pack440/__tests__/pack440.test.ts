@@ -11,6 +11,7 @@ import { IntelligentPayoutEscrowService } from '../services/IntelligentPayoutEsc
 import { ProgressiveFreezeController } from '../services/ProgressiveFreezeController';
 import { CreatorPayoutStatusAPI } from '../services/CreatorPayoutStatusAPI';
 import { ComplianceEscalationOrchestrator } from '../services/ComplianceEscalationOrchestrator';
+import { db } from '../../runtime';
 
 // Test database instance
 let db: admin.firestore.Firestore;

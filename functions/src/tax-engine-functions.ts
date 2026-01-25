@@ -20,6 +20,7 @@ import {
   getComplianceRequirements,
   recalculateTaxLiabilityForPeriod
 } from './tax-engine';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 export const taxProfileRegister = functions.https.onCall(async (data, context) => {
   if (!context.auth) {

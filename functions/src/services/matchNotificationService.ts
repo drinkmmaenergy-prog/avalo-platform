@@ -7,6 +7,7 @@
 
 import * as admin from 'firebase-admin';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
+import { FieldValue, arrayRemove, functions } from '../runtime';
 
 const db = admin.firestore();
 

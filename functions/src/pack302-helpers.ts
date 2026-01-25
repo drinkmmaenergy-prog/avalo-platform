@@ -24,6 +24,7 @@ import {
   REGION_DEFAULT_CURRENCY,
   CURRENCY_CONFIGS,
 } from './pack302-types';
+import { admin, functions, timestamp } from './runtime';
 
 // ============================================================================
 // USER BENEFITS RESOLUTION

@@ -8,6 +8,7 @@ import { RegionCode, LawUpdateScanResult } from './types';
 import { REGIONAL_RULES } from './regional-rules';
 import { Timestamp } from 'firebase-admin/firestore';
 import { MarketplaceFilter } from './marketplace-filter';
+import { admin, functions, timestamp } from '../runtime';
 
 export async function lawUpdateScanner(): Promise<LawUpdateScanResult> {
   const scannedAt = Timestamp.now();

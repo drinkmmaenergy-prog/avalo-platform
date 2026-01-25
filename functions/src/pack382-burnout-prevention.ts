@@ -13,6 +13,7 @@ import {
   CreatorEarningProfile,
 } from './types/pack382-types';
 import { v4 as uuidv4 } from 'uuid';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 const db = getFirestore();
 

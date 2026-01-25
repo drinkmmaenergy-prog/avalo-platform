@@ -4,6 +4,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from '../runtime';
 
 export type TwoFactorMethod = 'NONE' | 'SMS' | 'EMAIL';
 export type Platform = 'android' | 'ios' | 'web' | 'other';

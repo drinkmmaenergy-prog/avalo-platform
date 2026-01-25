@@ -12,6 +12,7 @@ import {
   GrowthThrottleEvent,
   Pack441Config,
 } from './types';
+import { admin, db, increment, serverTimestamp, timestamp } from '../runtime';
 
 export class AdaptiveGrowthThrottle {
   private db: Firestore;

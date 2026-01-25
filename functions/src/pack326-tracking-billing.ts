@@ -18,6 +18,7 @@ import {
   AdsClick,
   AdsCampaign,
 } from './types/pack326-ads.types';
+import { admin, auth, functions, increment, onCall } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

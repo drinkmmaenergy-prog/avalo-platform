@@ -10,6 +10,8 @@
 // TYPES
 // ============================================================================
 
+import { functions } from './runtime';
+
 export interface AmlInputMetrics {
   // Token activity (rolling windows)
   tokensPurchased7d: number;

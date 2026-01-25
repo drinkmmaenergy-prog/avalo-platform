@@ -33,6 +33,7 @@ import {
   hasPermission,
 } from './pack119-types';
 import { logEvent } from './observability';
+import { admin, auth, functions, timestamp } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

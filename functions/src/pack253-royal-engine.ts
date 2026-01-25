@@ -15,6 +15,7 @@ import {
   ROYAL_NOTIFICATION_THRESHOLDS,
 } from './pack253-royal-types';
 
+
 /**
  * Calculate Royal metrics for a user over the last 90 days
  */

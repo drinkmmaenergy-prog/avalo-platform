@@ -7,6 +7,7 @@ import * as functions from 'firebase-functions';
 import { db, generateId, serverTimestamp } from './init';
 import { logAdminAction } from './pack296-audit-helpers';
 import type { AdminUser, AdminRole } from './types/audit.types';
+import { HttpsError, auth, onCall } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

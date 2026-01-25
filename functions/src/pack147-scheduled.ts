@@ -7,6 +7,7 @@
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import * as logger from 'firebase-functions/logger';
 import { autoReleaseExpiredEscrows } from './pack147-escrow-engine';
+import { functions } from './runtime';
 
 /**
  * Auto-release expired escrows

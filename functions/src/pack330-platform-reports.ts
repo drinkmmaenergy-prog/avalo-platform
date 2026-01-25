@@ -13,6 +13,7 @@ import {
   GetPlatformTaxReportResponse,
   TAX_CONFIG,
 } from './types/pack330-tax.types';
+import { admin, functions, onCall, onSchedule, timestamp } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

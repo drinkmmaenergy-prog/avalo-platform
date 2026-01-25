@@ -1,4 +1,5 @@
 import { HttpsError } from 'firebase-functions/v2/https';
+import { auth, db, functions, onCall, serverTimestamp } from './runtime';
 ;
 
 export const likePostV1 = onCall({ region: "europe-west3" }, async (req) => {

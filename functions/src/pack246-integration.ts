@@ -10,6 +10,7 @@ import {
   ValidationResult,
 } from './pack246-contract-types';
 import { logger } from 'firebase-functions/v2';
+import { functions, timestamp } from './runtime';
 
 // ============================================================================
 // CHAT MONETIZATION INTEGRATION

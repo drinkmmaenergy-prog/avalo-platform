@@ -23,6 +23,7 @@ import type {
   GoodwillRefundRequest,
   CompleteMeetingRequest,
 } from '../../shared/src/types/calendar';
+import { HttpsError, auth, db, onCall } from './runtime';
 
 /**
  * Create a new calendar booking

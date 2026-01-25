@@ -187,6 +187,7 @@ export const hourlyLeaderboardCleanup = onSchedule(
 // ============================================================================
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { Timestamp, admin, auth, db, functions, serverTimestamp, timestamp } from './runtime';
 
 /**
  * Manual weekly reset trigger (admin only)

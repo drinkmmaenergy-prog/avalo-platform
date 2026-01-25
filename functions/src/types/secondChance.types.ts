@@ -4,6 +4,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, functions, timestamp } from '../runtime';
 
 /**
  * Reason why Second Chance was triggered

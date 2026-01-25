@@ -5,6 +5,7 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { deliverPendingNotifications } from "./notificationHub";
+import { functions } from './runtime';
 
 /**
  * Scheduled function to deliver pending notifications

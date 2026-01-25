@@ -11,6 +11,7 @@ import {
 } from '../../shared/types/contentModeration';
 import { getFirestore } from 'firebase-admin/firestore';
 import { logEvent } from './observability';
+import { admin, functions } from './runtime';
 
 const db = getFirestore();
 

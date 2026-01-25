@@ -19,6 +19,7 @@ import {
   RegionalViolation,
 } from './pack122-types';
 import { getRegionPolicy } from './pack122-region-policy';
+import { Timestamp, functions } from './runtime';
 
 // ============================================================================
 // CULTURAL SAFETY PATTERNS

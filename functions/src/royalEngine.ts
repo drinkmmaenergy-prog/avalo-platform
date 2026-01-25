@@ -9,6 +9,7 @@
 
 import { db, serverTimestamp, increment, admin } from './init';
 import type { Timestamp as FirestoreTimestamp, FieldValue } from 'firebase-admin/firestore';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

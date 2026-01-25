@@ -16,6 +16,7 @@ import { db, serverTimestamp, increment } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { EarningSourceType } from './creatorEarnings';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // TYPES

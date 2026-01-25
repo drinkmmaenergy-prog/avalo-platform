@@ -4,6 +4,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from '../runtime';
 
 /**
  * Preference categories that CAN be shared between AIs

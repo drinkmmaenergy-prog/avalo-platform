@@ -7,6 +7,7 @@
 
 import { db, serverTimestamp, generateId } from './init.js';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, auth, functions, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

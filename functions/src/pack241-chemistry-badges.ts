@@ -7,6 +7,7 @@
 
 import { db, serverTimestamp, increment } from './init';
 import { logger } from 'firebase-functions/v2';
+import { Timestamp, functions } from './runtime';
 
 // Badge type definitions
 type ChemistryBadgeType = 

@@ -20,6 +20,7 @@ import {
   PrivacyActionLogSchema,
   LegalHoldSchema
 } from '../schemas/data-retention.schema';
+import { admin, functions, timestamp } from '../runtime';
 
 /**
  * Schedule data for deletion based on retention policy

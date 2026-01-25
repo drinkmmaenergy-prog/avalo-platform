@@ -35,6 +35,7 @@ import {
   getCrisisMode,
   evaluateCrisisAutoDeactivation,
 } from './pack429-crisis-mode';
+import { Timestamp } from './runtime';
 
 const db = admin.firestore();
 

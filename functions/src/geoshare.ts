@@ -15,6 +15,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { db, serverTimestamp, generateId, admin } from './init.js';
 import { logger } from 'firebase-functions/v2';
 import Stripe from 'stripe';
+import { FieldValue, Timestamp, auth, functions, storage, timestamp } from './runtime';
 
 // ==========================================
 // CONFIGURATION

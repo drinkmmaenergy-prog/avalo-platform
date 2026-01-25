@@ -13,6 +13,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { CreatorPortfolio, AgencySaaSError, AgencySaaSErrorCode } from './pack119-types';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // PORTFOLIO OPERATIONS

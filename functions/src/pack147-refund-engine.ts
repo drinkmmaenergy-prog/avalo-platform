@@ -26,6 +26,7 @@ import {
 } from './pack147-types';
 import { getEscrowByTransaction, canRefundEscrow, disputeEscrow, refundEscrow } from './pack147-escrow-engine';
 import { detectFraudPattern } from './pack147-fraud-detection';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // REFUND REQUEST FUNCTIONS

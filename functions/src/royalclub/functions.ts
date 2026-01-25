@@ -22,6 +22,7 @@ import {
   ROYAL_CLUB_LEVELS,
   FORBIDDEN_MISSION_PATTERNS
 } from './types';
+import { admin, functions, timestamp } from '../runtime';
 
 /**
  * Get Royal Club status for a user

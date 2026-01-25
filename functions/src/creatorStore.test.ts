@@ -3,6 +3,8 @@
  * Focus on revenue splits, pricing, and purchase flow
  */
 
+import { storage } from './runtime';
+
 describe("Creator Marketplace", () => {
   enum ProductType {
     PHOTO_PACK = "photo_pack",

@@ -18,6 +18,7 @@ import type {
   ProcessAiMessageResponse,
   BotEarningRecord,
 } from './types/aiBot.js';
+import { HttpsError, timestamp } from './runtime';
 
 // Simple error class
 class HttpsError extends Error {

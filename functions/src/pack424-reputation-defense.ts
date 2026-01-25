@@ -10,6 +10,7 @@ import {
   ReviewBurst,
   ReviewDetectionResult,
 } from './pack424-store-reviews.types';
+import { FieldValue, arrayUnion, logger, timestamp } from './runtime';
 
 const db = admin.firestore();
 

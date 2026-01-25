@@ -7,6 +7,7 @@
 
 import * as admin from 'firebase-admin';
 import { EventConfig, EventAttendee, AttendeeStatus, TicketTier } from './pack435-event-types';
+import { FieldValue, Timestamp, increment } from './runtime';
 
 // ============================================================================
 // PAYMENT INTERFACES

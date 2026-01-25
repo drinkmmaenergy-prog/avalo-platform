@@ -16,6 +16,7 @@ import {
   logNotificationSuccess,
   logNotificationFailure,
 } from './pack293-notification-service';
+import { Timestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 

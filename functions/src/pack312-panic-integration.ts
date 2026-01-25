@@ -9,6 +9,7 @@ import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { db, serverTimestamp, generateId } from './init';
 import { logger } from 'firebase-functions/v2';
 import { SupportTicket } from './pack312-support-types';
+import { Timestamp, functions, timestamp } from './runtime';
 
 /**
  * Auto-create CRITICAL support ticket when panic button is triggered

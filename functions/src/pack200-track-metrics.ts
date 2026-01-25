@@ -13,6 +13,7 @@
 import { db, serverTimestamp, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 export type MetricLayer = 
   | 'MOBILE' 

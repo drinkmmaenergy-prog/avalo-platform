@@ -7,6 +7,7 @@ import * as functions from 'firebase-functions';
 import { guardianService } from './services/guardian.service';
 import { guardianRewriteService } from './services/guardianRewrite.service';
 import { RewriteIntent } from './types/guardian.types';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ============================================================================
 // Message Analysis Trigger

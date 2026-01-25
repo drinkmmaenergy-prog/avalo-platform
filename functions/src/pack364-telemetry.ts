@@ -16,6 +16,7 @@ import {
   TELEMETRY_OPERATIONS,
   TELEMETRY_ERROR_CODES
 } from "./pack364-telemetry-types";
+import { timestamp } from './runtime';
 
 /**
  * Telemetry configuration

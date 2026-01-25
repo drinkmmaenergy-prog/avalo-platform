@@ -6,6 +6,7 @@
 import { db, serverTimestamp, generateId } from './init';
 import { logger } from 'firebase-functions/v2';
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // NOTIFICATION TYPES

@@ -8,6 +8,7 @@
 import { db } from '../init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { RemoteConfigDocument } from '../types/remoteConfig';
+import { admin, functions } from '../runtime';
 
 async function initRemoteConfig() {
   console.log('🚀 Initializing Remote Config documents...\n');

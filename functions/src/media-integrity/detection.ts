@@ -8,6 +8,7 @@ import {
   SyntheticMediaFlag,
   DeepfakeAttempt
 } from './types';
+import { FieldValue, db, serverTimestamp, timestamp } from '../runtime';
 
 export class MediaIntegrityDetection {
   private db: admin.firestore.Firestore;

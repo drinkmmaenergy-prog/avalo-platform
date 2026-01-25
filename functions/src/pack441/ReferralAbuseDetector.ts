@@ -12,6 +12,7 @@ import {
   Pack441Config,
   GrowthAbuseAlert,
 } from './types';
+import { FieldValue, admin, arrayUnion, db, serverTimestamp, timestamp } from '../runtime';
 
 export class ReferralAbuseDetector {
   private db: Firestore;

@@ -5,6 +5,7 @@
  */
 
 import { logger } from 'firebase-functions';
+import { functions } from '../runtime';
 
 // ============================================================================
 // TYPES

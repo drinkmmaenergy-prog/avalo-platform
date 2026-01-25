@@ -11,6 +11,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, storage, timestamp } from '../runtime';
 
 // ============================================================================
 // VAULT TYPES

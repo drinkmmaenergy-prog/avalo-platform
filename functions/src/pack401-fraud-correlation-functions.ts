@@ -13,6 +13,7 @@ import {
   recomputeFraudProfileForUser,
   recomputeFraudProfilesForWindow,
 } from './pack401-fraud-correlation-service';
+import { admin, auth, functions } from './runtime';
 
 /**
  * Callable function to recompute fraud profile for a specific user

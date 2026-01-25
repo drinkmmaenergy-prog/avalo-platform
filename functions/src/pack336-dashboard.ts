@@ -21,6 +21,7 @@
 import * as functions from 'firebase-functions';
 import { db } from './init.js';
 import type { KpiDashboardData } from './pack336-types.js';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ============================================================================
 // DASHBOARD OVERVIEW

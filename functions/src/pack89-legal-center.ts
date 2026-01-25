@@ -24,6 +24,7 @@ import {
   UploadLegalDocumentResponse,
   LegalValidationError
 } from './types/legal.types';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 // =======================================================
 // 🔍 HELPER FUNCTIONS

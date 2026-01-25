@@ -10,6 +10,7 @@ import {
   DeletionStatus,
   PrivacyActionType 
 } from '../types/data-retention.types';
+import { Timestamp, timestamp } from '../runtime';
 
 /**
  * Collection: data_retention_logs

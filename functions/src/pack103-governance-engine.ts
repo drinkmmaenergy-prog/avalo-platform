@@ -30,6 +30,7 @@ import {
   ModerationReasonCode,
   VisibilityTierRestriction,
 } from './pack103-types';
+import { admin, functions, timestamp } from './runtime';
 
 // ============================================================================
 // COLLECTIONS

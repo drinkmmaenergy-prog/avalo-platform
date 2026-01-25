@@ -7,6 +7,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db, serverTimestamp, increment } from './init';
 import { FunctionResponse } from './types';
 import { AppearanceComplaint, RefundTransaction, VoluntaryRefund, TrustSafetyIncident } from './pack209-refund-complaint-types';
+import { admin, auth, functions } from './runtime';
 
 /**
  * Check if user is admin or moderator

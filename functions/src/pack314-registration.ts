@@ -16,6 +16,7 @@ import {
   validateAppVersion,
 } from "./middleware/countryGuards";
 import { FUNCTIONS_REGION } from "./config";
+import { admin, auth, functions, increment, timestamp } from './runtime';
 
 const db = getFirestore();
 

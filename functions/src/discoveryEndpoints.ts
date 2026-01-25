@@ -17,6 +17,7 @@ import {
   DiscoveryFeedResponse,
   SearchProfilesResponse,
 } from './types/discovery.types';
+import { HttpsError, admin, auth, onCall, onRequest } from './runtime';
 
 // ============================================================================
 // CALLABLE FUNCTIONS

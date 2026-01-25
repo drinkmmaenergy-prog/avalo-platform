@@ -18,6 +18,7 @@ import {
   TrustRiskError,
   EnforcementLevel,
 } from "./types/trustRisk.types";
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ============================================================================
 // USER FUNCTIONS

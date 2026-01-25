@@ -14,6 +14,7 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { db, auth, storage, admin, serverTimestamp, increment, generateId } from "./init";
 import { v4 as uuidv4 } from "uuid";
 import { Timestamp } from "firebase-admin/firestore";
+import { functions, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

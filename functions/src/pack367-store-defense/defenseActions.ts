@@ -11,6 +11,7 @@ import {
   DefenseActionType,
   Platform,
 } from './types';
+import { FieldValue, Timestamp, admin, arrayUnion, db, functions, timestamp } from '../runtime';
 
 const db = firestore();
 

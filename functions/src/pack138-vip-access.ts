@@ -51,6 +51,7 @@ import {
   VIPErrorCode,
   VIPChatEnhancements,
 } from './pack138-types';
+import { admin, auth, functions, storage } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

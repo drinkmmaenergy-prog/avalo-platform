@@ -3,6 +3,8 @@
  * Shared types for support ticket system
  */
 
+import { Timestamp } from './runtime';
+
 export type TicketType =
   | "TECHNICAL"
   | "PAYMENT"

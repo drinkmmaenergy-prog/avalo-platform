@@ -7,6 +7,8 @@
  * and Creator visibility are ranked — without touching tokenomics, refunds, or safety law.
  */
 
+import { timestamp } from '../runtime';
+
 export interface RankingEngineConfig {
   discovery: {
     distanceWeight: number;

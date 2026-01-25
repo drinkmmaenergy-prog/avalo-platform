@@ -3,6 +3,8 @@
  * GDPR, CCPA, LGPD, PDPA compliant data retention system
  */
 
+import { timestamp } from '../runtime';
+
 export enum DataCategory {
   CHATS_CALLS = 'chats_calls',
   PUBLIC_POSTS = 'public_posts',

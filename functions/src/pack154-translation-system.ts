@@ -25,6 +25,7 @@ import {
   RomanceLevel,
 } from './types/translation.types';
 import { evaluateMessageSafety } from './pack153-safety-system';
+import { FieldValue, arrayUnion, increment, z } from './runtime';
 
 // ============================================================================
 // Language Detection

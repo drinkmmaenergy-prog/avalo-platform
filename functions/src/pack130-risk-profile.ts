@@ -19,6 +19,7 @@ import {
 import { detectBehaviorPatterns } from './pack130-patrol-engine';
 import { pauseConsent } from './pack126-consent-protocol';
 import { activateHarassmentShield } from './pack126-harassment-shield';
+import { admin, arrayUnion } from './runtime';
 
 const RISK_PROFILE_COLLECTION = 'patrol_risk_profiles';
 

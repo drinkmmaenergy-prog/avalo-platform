@@ -11,6 +11,7 @@ import {
   recordGrowthAction,
   defaultConfig,
 } from '../index';
+import { admin } from '../../runtime';
 
 // Mock Firestore
 const mockFirestore = {

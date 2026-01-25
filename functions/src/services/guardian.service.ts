@@ -20,6 +20,7 @@ import {
   RiskLevel,
   GuardianSettings
 } from '../types/guardian.types';
+import { admin, timestamp } from '../runtime';
 
 // ============================================================================
 // Guardian Service

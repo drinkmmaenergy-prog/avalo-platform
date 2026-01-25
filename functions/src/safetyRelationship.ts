@@ -11,6 +11,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp } from './init.js';
 import { getRelationshipRiskHint, RiskLevel, RiskSignal } from './relationshipRiskEngine.js';
+import { HttpsError, auth, onCall } from './runtime';
 
 // ============================================================================
 // TYPES

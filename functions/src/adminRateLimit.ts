@@ -8,6 +8,7 @@ import { onCall } from 'firebase-functions/v2/https';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { getRateLimitStats, getRateLimitConfig } from './rateLimit.js';
 import { db } from './init.js';
+import { admin, auth, functions } from './runtime';
 
 /**
  * Check if user is admin

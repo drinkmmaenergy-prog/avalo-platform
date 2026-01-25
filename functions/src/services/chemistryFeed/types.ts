@@ -3,6 +3,8 @@
  * Type definitions for adaptive attraction ranking
  */
 
+import { timestamp } from '../../runtime';
+
 export interface UserProfile {
   userId: string;
   name: string;

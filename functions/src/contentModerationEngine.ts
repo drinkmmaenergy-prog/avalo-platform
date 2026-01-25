@@ -12,6 +12,7 @@
  */
 
 import { db, serverTimestamp, increment, generateId, arrayUnion } from './init';
+import { Timestamp } from './runtime';
 
 // Simple logger
 const logger = {

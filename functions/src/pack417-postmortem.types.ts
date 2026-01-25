@@ -5,6 +5,7 @@
  */
 
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
+import { admin } from './runtime';
 
 /**
  * Postmortem document structure

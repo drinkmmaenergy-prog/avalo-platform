@@ -24,6 +24,7 @@ import {
   UserFeedbackEvent,
 } from './pack110-types';
 import { storage } from './init';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

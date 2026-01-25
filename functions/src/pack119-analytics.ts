@@ -15,6 +15,7 @@ import { logger } from 'firebase-functions/v2';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { AgencyDashboardAnalytics } from './pack119-types';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // ANALYTICS COMPUTATION

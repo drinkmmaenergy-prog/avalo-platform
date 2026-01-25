@@ -19,6 +19,7 @@ import {
   ALLOWED_PLACEMENTS,
 } from './pack145-types';
 import { AdTargetingValidator } from './pack145-targeting-validator';
+import { admin, timestamp } from './runtime';
 
 export class AdPlacementEngine {
   static async getEligibleAdsForUser(

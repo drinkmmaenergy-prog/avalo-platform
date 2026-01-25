@@ -20,6 +20,7 @@ import {
   PriceRange,
   DurationRange
 } from '../types/search.types';
+import { timestamp } from '../runtime';
 
 const BANNED_TERMS: BannedSearchTerm[] = [
   // Explicit sexual content

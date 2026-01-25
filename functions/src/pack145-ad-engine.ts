@@ -24,6 +24,7 @@ import {
 } from './pack145-types';
 import { AdSafetyValidator } from './pack145-safety-validator';
 import { AdTargetingValidator } from './pack145-targeting-validator';
+import { admin, timestamp } from './runtime';
 
 export class AdEngine {
   static async createCampaign(

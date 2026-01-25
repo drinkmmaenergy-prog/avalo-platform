@@ -5,6 +5,7 @@
 
 import { db, serverTimestamp } from '../init';
 import { SyncConflict } from './types';
+import { timestamp } from '../runtime';
 
 export class SyncMiddleware {
   

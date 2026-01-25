@@ -38,6 +38,7 @@ import {
   WithdrawalAuditLog,
   WithdrawalTransaction,
 } from './types/pack289-withdrawals.types';
+import { Timestamp, auth, onCall, timestamp } from './runtime';
 
 const db = admin.firestore();
 

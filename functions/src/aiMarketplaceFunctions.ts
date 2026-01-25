@@ -12,6 +12,7 @@ import type {
   MarketplaceResponse,
   OwnerAvatarsResponse
 } from './aiMarketplaceTypes.js';
+import { admin, auth, functions, timestamp } from './runtime';
 
 /**
  * Get AI Marketplace - Global discovery

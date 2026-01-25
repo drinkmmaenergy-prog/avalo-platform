@@ -6,6 +6,7 @@
 import { db, admin } from './init';
 import * as crypto from 'crypto';
 import { Timestamp } from 'firebase-admin/firestore';
+import { functions, timestamp } from './runtime';
 
 export interface EncryptionKeyMetadata {
   userId: string;

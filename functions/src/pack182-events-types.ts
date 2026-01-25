@@ -11,6 +11,7 @@
  */
 
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { admin } from './runtime';
 
 // ============================================================================
 // EVENT CATEGORIES & TYPES

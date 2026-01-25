@@ -13,6 +13,7 @@
  */
 
 import { db, serverTimestamp, increment, generateId, timestamp as Timestamp } from './init';
+import { Timestamp, arrayUnion } from './runtime';
 
 const FieldValue = db.constructor.FieldValue;
 

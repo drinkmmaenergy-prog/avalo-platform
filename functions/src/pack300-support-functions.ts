@@ -33,6 +33,7 @@ import {
   AuditIntegrationPayload,
   RiskIntegrationPayload,
 } from '../../shared/types/support-300b';
+import { FieldValue, HttpsError, arrayUnion, auth, increment, onCall, timestamp } from './runtime';
 
 const db = admin.firestore();
 

@@ -7,6 +7,7 @@ import { db } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { SuccessSuggestion } from './pack101-success-types';
+import { admin, functions } from './runtime';
 
 /**
  * Send gentle insight notification to creator

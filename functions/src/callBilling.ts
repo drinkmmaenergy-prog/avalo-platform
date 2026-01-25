@@ -10,6 +10,7 @@
 import { db, serverTimestamp } from './init.js';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logEvent } from './observability.js';
+import { admin, functions } from './runtime';
 
 interface CallSession {
   callId: string;

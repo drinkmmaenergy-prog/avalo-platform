@@ -24,6 +24,7 @@ import {
   logModeratorAction,
   incrementMetric,
 } from './pack90-logging';
+import { functions, increment } from './runtime';
 
 // ============================================================================
 // MONETIZATION INTEGRATION (chatMonetization.ts, callMonetization.ts, etc.)

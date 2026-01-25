@@ -31,6 +31,7 @@ import {
 
 // PACK 87 Integration - Import enforcement recalculation
 import { recalculateEnforcementState } from "./enforcementEngine";
+import { admin } from './runtime';
 
 // Simple logger
 const logger = {

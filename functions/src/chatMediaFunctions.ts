@@ -26,6 +26,7 @@ import {
   type MediaBilling,
   type ReportReason
 } from './chatMediaMonetization.js';
+import { auth, functions } from './runtime';
 
 // ============================================================================
 // CALLABLE FUNCTIONS (Client → Cloud)

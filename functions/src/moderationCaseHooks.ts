@@ -12,6 +12,7 @@ import {
   CasePriority,
 } from './types/moderation.types';
 import { determineCasePriority } from './moderationUtils';
+import { admin } from './runtime';
 
 // ============================================================================
 // KYC SUBMISSION HOOK

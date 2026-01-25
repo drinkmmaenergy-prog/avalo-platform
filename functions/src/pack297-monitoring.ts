@@ -4,6 +4,8 @@
  * Unified logging interface for error tracking and monitoring
  */
 
+import { auth, timestamp } from './runtime';
+
 export interface LogContext {
   userId?: string;
   sessionId?: string;

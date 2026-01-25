@@ -10,6 +10,8 @@
  * - No ranking influence
  */
 
+import { timestamp } from '../runtime';
+
 export enum IntegrationCategory {
   SCHEDULING = 'scheduling',
   ANALYTICS = 'analytics',

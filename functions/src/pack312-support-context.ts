@@ -20,6 +20,7 @@ import {
   SafetyContextSummary,
   AdminRole,
 } from './pack312-support-types';
+import { admin, auth, functions, timestamp } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

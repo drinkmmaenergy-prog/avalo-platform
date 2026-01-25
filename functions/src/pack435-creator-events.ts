@@ -7,6 +7,7 @@
 
 import * as admin from 'firebase-admin';
 import { EventConfig, TicketTier } from './pack435-event-types';
+import { FieldValue, Timestamp, arrayUnion, increment } from './runtime';
 
 // ============================================================================
 // CREATOR EVENT INTERFACES

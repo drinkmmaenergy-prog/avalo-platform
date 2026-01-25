@@ -21,6 +21,7 @@ import {
   TransactionType,
   RELEASE_CONDITIONS
 } from './pack147-types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // CONSTANTS

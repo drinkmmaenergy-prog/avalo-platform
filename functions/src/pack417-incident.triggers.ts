@@ -9,6 +9,7 @@ import { https } from 'firebase-functions';
 import { createIncident, linkRelatedEntities } from './pack417-incident.service';
 import { notifyIncidentCreated } from './pack417-incident.notifications';
 import type { CreateIncidentInput, IncidentSource, IncidentSeverity } from './pack417-incident.types';
+import { HttpsError, admin, auth, functions, getFirestore, onCall } from './runtime';
 
 /**
  * Callable function: Create incident from support ticket

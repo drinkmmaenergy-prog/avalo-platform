@@ -31,6 +31,7 @@ import {
   PartnershipErrorCode,
   PartnershipError,
 } from './pack109-types';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

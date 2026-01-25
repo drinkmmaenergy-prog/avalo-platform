@@ -32,6 +32,7 @@ import {
   SUPPORTED_CURRENCIES,
   VAT_RULES_BY_COUNTRY,
 } from './pack106-types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // CONFIGURATION

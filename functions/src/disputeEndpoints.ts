@@ -21,6 +21,7 @@ import {
   TransactionIssueReasonCode,
   TransactionIssueStatus,
 } from './types/dispute.types';
+import { admin, auth, functions } from './runtime';
 
 /**
  * Callable function: Create a new transaction issue report

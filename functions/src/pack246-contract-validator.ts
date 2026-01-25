@@ -16,6 +16,7 @@ import {
   AuditLogEntry,
   SuspiciousAnomaly,
 } from './pack246-contract-types';
+import { admin, functions, timestamp } from './runtime';
 
 // ============================================================================
 // MAIN CONTRACT VALIDATOR

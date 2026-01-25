@@ -35,6 +35,7 @@ import {
 import { recordRiskEvent, evaluateUserRisk } from './trustEngine.js';
 import { recordRankingAction } from './rankingEngine.js';
 import { isAccountActive } from './accountLifecycle.js';
+import { HttpsError, Timestamp, timestamp } from './runtime';
 
 // Simple error class
 class HttpsError extends Error {

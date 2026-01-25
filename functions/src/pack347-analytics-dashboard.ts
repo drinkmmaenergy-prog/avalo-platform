@@ -11,6 +11,7 @@
 
 import * as functions from'firebase-functions';
 import { db } from './init';
+import { HttpsError, admin, auth } from './runtime';
 
 // ============================================================================
 // TYPES

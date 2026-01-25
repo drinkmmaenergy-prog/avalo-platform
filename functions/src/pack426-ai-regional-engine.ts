@@ -13,6 +13,7 @@
 import { https, logger } from 'firebase-functions/v2';
 import { getFirestore } from 'firebase-admin/firestore';
 import { Region, routeRegion } from './pack426-global-router';
+import { admin, functions, onRequest, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

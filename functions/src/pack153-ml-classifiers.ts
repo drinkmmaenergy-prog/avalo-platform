@@ -15,6 +15,7 @@ import {
 } from './types/safety.types';
 import { serverTimestamp } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // TEXT SENTIMENT ANALYSIS

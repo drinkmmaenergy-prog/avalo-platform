@@ -20,6 +20,7 @@ import {
   RoyalPricing,
   ROYAL_BENEFITS,
 } from './pack253-royal-types';
+import { auth, functions } from './runtime';
 
 /**
  * Get user's Royal status

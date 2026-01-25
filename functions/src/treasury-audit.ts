@@ -18,6 +18,7 @@ import {
 } from './types/treasury.types';
 import { verifyTreasuryIntegrity } from './treasury-helpers';
 import { AUDIT_POLICY } from './config/treasury.config';
+import { admin, functions, onCall, onSchedule, timestamp } from './runtime';
 
 // ============================================================================
 // AUDIT REPORT GENERATION

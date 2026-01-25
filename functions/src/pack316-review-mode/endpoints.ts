@@ -19,6 +19,7 @@ import {
   canAccessFeatureInReviewMode,
   logReviewModeEvent,
 } from "./service";
+import { admin, auth, db, functions, timestamp } from '../runtime';
 
 const db = getFirestore();
 

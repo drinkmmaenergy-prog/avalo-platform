@@ -5,6 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, admin } from './init';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall } from './runtime';
 
 // ============================================================================
 // TYPE DEFINITIONS

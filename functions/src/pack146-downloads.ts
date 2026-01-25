@@ -19,6 +19,7 @@ import {
 } from './pack146-types';
 import { getWatermarkForDownload } from './pack146-watermarking';
 import { registerContentHash } from './pack146-hashing';
+import { auth, storage } from './runtime';
 
 // ============================================================================
 // DOWNLOAD CONTROL

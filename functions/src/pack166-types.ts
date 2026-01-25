@@ -17,6 +17,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // A/B PRICING TEST TYPES

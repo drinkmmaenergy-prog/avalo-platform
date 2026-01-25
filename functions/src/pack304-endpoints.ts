@@ -40,6 +40,7 @@ import {
   exportMonthlyFinanceData,
   exportCreatorSummaryData,
 } from './pack304-exports';
+import { auth } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

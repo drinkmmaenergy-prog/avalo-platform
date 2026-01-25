@@ -25,6 +25,7 @@ import {
 } from "./integrations/wise";
 import { createAmlEvent } from "./amlMonitoring";
 import { checkPayoutHold } from "./fraudEngine";
+import { FieldValue, HttpsError, Timestamp } from './runtime';
 
 // Types
 export type PayoutRail = "STRIPE" | "WISE" | "AUTO";
@@ -686,4 +687,9 @@ export async function getPayoutRequests(params: {
     items,
     nextCursor,
   };
+}
+// Stub export for missing function
+export async function getPendingWithdrawals(userId: string): Promise<any[]> {
+  // TODO: Implement
+  return [];
 }

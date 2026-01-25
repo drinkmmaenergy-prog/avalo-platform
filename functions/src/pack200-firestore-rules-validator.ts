@@ -16,6 +16,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import * as fs from 'fs';
 import * as path from 'path';
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 export type RuleViolationType = 
   | 'OPEN_READ'

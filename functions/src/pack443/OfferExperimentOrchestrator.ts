@@ -10,6 +10,7 @@ import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions/v2';
 import * as crypto from 'crypto';
 import { HoldoutCohortManager } from './HoldoutCohortManager';
+import { db, functions, timestamp } from '../runtime';
 
 export interface ExperimentHypothesis {
   statement: string;

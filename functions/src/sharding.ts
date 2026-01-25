@@ -19,6 +19,7 @@
 ;
 ;
 import * as crypto from "crypto";
+import { logger, timestamp } from './runtime';
 
 // =================================================================
 // SHARD CONFIGURATION

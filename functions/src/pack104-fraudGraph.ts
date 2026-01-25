@@ -16,6 +16,7 @@ import {
   EdgeType,
   EdgeUpdateInput,
 } from './pack104-types';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // CONSTANTS

@@ -8,6 +8,7 @@ import { logger } from 'firebase-functions/v2';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { enqueueNotification } from './enqueue';
 import { NotificationType } from './types';
+import { admin, db, functions } from '../runtime';
 
 // ============================================================================
 // Configuration

@@ -25,6 +25,7 @@ import {
   logKycRejected,
   logKycBlocked,
 } from './pack105-audit-logger';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // KYC AUDIT RECORD CREATION

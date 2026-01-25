@@ -6,6 +6,7 @@
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { db } from './init';
 import * as logger from 'firebase-functions/logger';
+import { functions } from './runtime';
 
 /**
  * Notify creator when their product is purchased

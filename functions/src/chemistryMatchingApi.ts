@@ -11,6 +11,7 @@ import {
   updateInteractionMetrics,
   calculateChemistryScoresForFeed,
 } from './chemistryMatchingEngine';
+import { HttpsError, auth, increment, onCall } from './runtime';
 
 // ============================================================================
 // CALLABLE FUNCTIONS

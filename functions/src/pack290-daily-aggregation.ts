@@ -18,6 +18,7 @@ import {
   mapTransactionToFeature,
   isEarningTransaction,
 } from './types/pack290-creator-analytics.types';
+import { functions } from './runtime';
 
 // ============================================================================
 // SCHEDULED FUNCTION: Daily Aggregation

@@ -11,6 +11,7 @@ import {
   RegulatorOverviewSnapshot,
   InternalComplianceSnapshot,
 } from './types';
+import { timestamp } from '../runtime';
 
 /**
  * Generate PDF content for INVESTOR_OVERVIEW

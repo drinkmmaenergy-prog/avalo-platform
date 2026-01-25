@@ -19,6 +19,7 @@ import type {
   RankingQuery,
   LeaderboardResponse,
 } from './types/ranking';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // SCORING TABLE (Business Rules)

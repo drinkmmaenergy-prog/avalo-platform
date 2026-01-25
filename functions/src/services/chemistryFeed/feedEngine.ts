@@ -18,6 +18,7 @@ import {
   applyDiscoveryBoost,
   sortByChemistry,
 } from './rankingModel';
+import { timestamp } from '../../runtime';
 
 // Cache configuration
 const FEED_CACHE_TTL_MS = 3 * 60 * 60 * 1000; // 3 hours

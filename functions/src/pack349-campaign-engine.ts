@@ -12,6 +12,7 @@ import {
   AdViolation,
 } from './pack349-types';
 import { AdSafetyGate } from './pack349-safety';
+import { admin } from './runtime';
 
 export class BrandCampaignEngine {
   /**

@@ -17,6 +17,7 @@ import {
   DayPattern,
   InterestCategory,
 } from './types/pack134-types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // TIME PATTERN TRACKING

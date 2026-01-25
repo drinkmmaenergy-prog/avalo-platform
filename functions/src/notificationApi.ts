@@ -7,6 +7,7 @@ import { onRequest } from "firebase-functions/v2/https";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { NotificationSettings, PushToken } from "./types/notification.types";
 import { markNotificationRead, markAllNotificationsRead } from "./notificationHub";
+import { admin, functions } from './runtime';
 
 const db = getFirestore();
 

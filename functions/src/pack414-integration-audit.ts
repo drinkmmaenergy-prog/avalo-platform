@@ -17,6 +17,7 @@ import {
   getGreenlightStatus,
   CRITICAL_LAUNCH_REQUIREMENTS 
 } from '../../shared/integration/pack414-registry';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 

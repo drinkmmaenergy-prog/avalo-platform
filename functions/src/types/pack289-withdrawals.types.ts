@@ -13,6 +13,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from '../runtime';
 
 // ============================================================================
 // WALLET EXTENSIONS (for PACK 289)

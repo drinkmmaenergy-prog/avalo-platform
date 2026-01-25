@@ -3,6 +3,7 @@ import { pricingElasticityModel } from './pricingElasticityModel';
 import { dynamicOfferOrchestrator } from './dynamicOfferOrchestrator';
 import { paywallGuardrailService } from './paywallGuardrailService';
 import { regionalPriceComplianceAdapter } from './regionalPriceComplianceAdapter';
+import { Timestamp, db, timestamp } from '../runtime';
 
 export interface ElasticityCurveData {
   cohort: string;

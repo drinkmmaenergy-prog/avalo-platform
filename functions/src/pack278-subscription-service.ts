@@ -15,6 +15,7 @@ import {
   FREE_PERKS,
   SubscriptionPerks,
 } from './types/pack278-subscription.types';
+import { admin, functions, serverTimestamp, timestamp } from './runtime';
 
 const db = getFirestore();
 

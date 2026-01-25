@@ -23,6 +23,7 @@ import {
   validateRoadmap,
   validateInsight,
 } from './safetyMiddleware';
+import { functions, timestamp } from '../runtime';
 
 /**
  * Generate a comprehensive brand strategy profile for a creator

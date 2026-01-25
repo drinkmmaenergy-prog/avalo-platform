@@ -7,6 +7,7 @@ import * as functions from "firebase-functions";
 import { db, serverTimestamp, increment, generateId } from "./init.js";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 import { DailyKPI, HourlyMetrics } from "./pack346-types";
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 /**
  * Scheduled daily aggregation at 00:05 UTC

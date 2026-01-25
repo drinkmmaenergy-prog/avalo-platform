@@ -7,6 +7,7 @@
 
 import * as admin from 'firebase-admin';
 import { EventAttendee, AttendeeStatus } from './pack435-event-types';
+import { FieldValue, Timestamp, increment, timestamp } from './runtime';
 
 // ============================================================================
 // SPEED DATING INTERFACES

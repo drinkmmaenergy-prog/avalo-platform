@@ -5,6 +5,7 @@
 
 import { db, serverTimestamp } from './init';
 import { LoadMetrics } from './pack183-traffic-monitor';
+import { Timestamp } from './runtime';
 
 export interface LatencyPrediction {
   timestamp: FirebaseFirestore.Timestamp;

@@ -37,6 +37,7 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 ;
 ;
 import Stripe from "stripe";
+import { admin, auth, functions, functionsConfig, getFirestore, logger, onCall, serverTimestamp, z } from './runtime';
 
 // ============================================================================
 // INIT FIRESTORE

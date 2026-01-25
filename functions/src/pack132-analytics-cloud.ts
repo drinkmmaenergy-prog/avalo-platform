@@ -30,6 +30,7 @@ import {
   PrivacyValidationResult,
   AnalyticsErrorCode,
 } from './pack132-types';
+import { admin, functions, timestamp } from './runtime';
 
 // ============================================================================
 // CONFIGURATION

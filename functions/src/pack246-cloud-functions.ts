@@ -17,6 +17,7 @@ import {
   ContractViolation,
   AuditLogEntry,
 } from './pack246-contract-types';
+import { admin, auth, functions, timestamp } from './runtime';
 
 // ============================================================================
 // CALLABLE FUNCTION: Validate Transaction

@@ -26,6 +26,7 @@ import {
 } from './types/safety.types';
 import { trackHarassmentDetected, trackSafetyViolation } from './reputation-integrations';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // CORE SAFETY EVALUATION

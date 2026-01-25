@@ -6,6 +6,7 @@
 import { getFirestore } from "firebase-admin/firestore";
 import { NotificationDocument, PushToken } from "./types/notification.types";
 import fetch from "node-fetch";
+import { admin } from './runtime';
 
 const db = getFirestore();
 

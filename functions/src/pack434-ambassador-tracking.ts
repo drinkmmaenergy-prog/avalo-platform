@@ -7,6 +7,7 @@
 
 import { firestore } from 'firebase-admin';
 import { AmbassadorProfile } from './pack434-ambassador-types';
+import { FieldValue, Timestamp, admin, arrayUnion, db, timestamp } from './runtime';
 
 // ============================================================================
 // TRACKING TYPES

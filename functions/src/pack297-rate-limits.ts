@@ -6,6 +6,7 @@
  */
 
 import { RateLimitRuleConfig } from './rateLimit.js';
+import { auth } from './runtime';
 
 /**
  * PACK 297 Rate Limit Configuration

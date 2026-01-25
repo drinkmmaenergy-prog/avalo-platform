@@ -29,6 +29,7 @@ import {
   GetAdPreferencesResponse,
 } from './pack121-types';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { admin, auth, functions, timestamp } from './runtime';
 
 // ============================================================================
 // Helper Functions

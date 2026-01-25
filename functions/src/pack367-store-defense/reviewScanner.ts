@@ -13,6 +13,7 @@ import {
   ReviewScanResult,
   Platform,
 } from './types';
+import { Timestamp, db, functions, timestamp } from '../runtime';
 
 /**
  * AI Sentiment Analysis using natural language processing

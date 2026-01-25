@@ -25,6 +25,7 @@ import {
   RoyalBenchmark,
   DashboardFilters,
 } from './types/pack257-types';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp } from './runtime';
 
 const db = admin.firestore();
 

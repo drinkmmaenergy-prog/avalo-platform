@@ -14,6 +14,7 @@ import {
   GLOBAL_MINIMUM_AGE_NSFW,
 } from './pack108-types';
 import { resolveUserPolicyContext } from './pack91-policy-engine';
+import { admin } from './runtime';
 
 // ============================================================================
 // COMPLIANCE CHECKS

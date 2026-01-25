@@ -35,6 +35,9 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 ;
 // ;
 import type { CallableRequest } from "firebase-functions/v2/https";
+import { admin, arrayUnion, functions, getFirestore, logger, onCall, onSchedule, serverTimestamp, timestamp } from './runtime';
+
+import { getAuth } from 'firebase-admin/auth';
 
 // Redis client placeholder - requires redis package installation
 const createClient = (config: any) => ({

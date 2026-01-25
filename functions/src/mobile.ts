@@ -9,6 +9,7 @@ import { onCall } from 'firebase-functions/v2/https';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { z } from 'zod';
 import { enforceFeatureAccess } from './pack314-feature-guards';
+import { functions, timestamp } from './runtime';
 
 /**
  * Get swipe candidates

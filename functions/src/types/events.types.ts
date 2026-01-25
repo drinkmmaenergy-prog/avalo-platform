@@ -11,6 +11,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from '../runtime';
 
 // ============================================================================
 // EVENT TYPES (SAFE ONLY)

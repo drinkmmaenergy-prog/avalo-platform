@@ -16,6 +16,7 @@ import {
 } from "./pack365-launch-checklist.types";
 import { FeatureFlagService, CRITICAL_KILL_SWITCHES } from "./pack365-feature-flags.service";
 import { FeatureEnvironment } from "./pack365-feature-flags.types";
+import { timestamp } from './runtime';
 
 const db = admin.firestore();
 

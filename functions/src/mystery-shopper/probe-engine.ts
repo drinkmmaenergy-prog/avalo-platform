@@ -15,6 +15,7 @@ import {
   PROBE_SCENARIOS
 } from '../types/mystery-shopper.types';
 import { logComplianceIncident } from './compliance-cases';
+import { timestamp } from '../runtime';
 
 const COLLECTIONS = {
   MYSTERY_SHOPPERS: 'mystery_shopper_profiles',

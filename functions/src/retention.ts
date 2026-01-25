@@ -8,6 +8,7 @@
  */
 
 import { db, serverTimestamp, generateId } from './init.js';
+import { Timestamp, admin } from './runtime';
 
 // ============================================================================
 // TYPES

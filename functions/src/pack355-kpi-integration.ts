@@ -13,6 +13,7 @@
 import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions';
 import { getReferralStats, getReferralHistory, calculateViralCoefficient } from './pack355-referral-service';
+import { Timestamp, functions } from './runtime';
 
 const db = admin.firestore();
 

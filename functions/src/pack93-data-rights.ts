@@ -25,6 +25,7 @@ import * as functions from 'firebase-functions/v2';
 import { onCall } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { HttpsError } from 'firebase-functions/v2/https';
+import { admin } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES

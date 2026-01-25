@@ -1,3 +1,5 @@
+import { timestamp } from '../runtime';
+
 export enum MediaIntegrityViolationType {
   DEEPFAKE_FACE = 'deepfake_face',
   AI_NUDE_GENERATOR = 'ai_nude_generator',

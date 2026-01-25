@@ -16,6 +16,7 @@ import {
   EscalationPattern,
   HarassmentPattern
 } from '../types/guardian.types';
+import { admin, timestamp } from '../runtime';
 
 // ============================================================================
 // Risk Detection Patterns

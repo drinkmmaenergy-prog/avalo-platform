@@ -17,6 +17,7 @@ import {
   CollusionRing,
   CommercialSpamCluster,
 } from './pack104-types';
+import { admin } from './runtime';
 
 // ============================================================================
 // CONSTANTS

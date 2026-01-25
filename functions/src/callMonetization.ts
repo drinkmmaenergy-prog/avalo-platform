@@ -20,6 +20,7 @@ import { recordRiskEvent, evaluateUserRisk } from './trustEngine.js';
 import { isAccountActive } from './accountLifecycle.js';
 // PACK 220: Fan & Kiss Economy
 import { trackTokenSpend } from './fanKissEconomy.js';
+import { Timestamp, timestamp } from './runtime';
 
 // Simple error class for compatibility
 class HttpsError extends Error {

@@ -35,6 +35,7 @@ import { updateCaseStatus, updateCaseLastAction } from './moderationCaseHooks';
 // Import functions from other modules
 import { setManualEnforcementState } from './enforcementEngine';
 import { updateDisputeStatus } from './disputes';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // CASE LISTING & FILTERING

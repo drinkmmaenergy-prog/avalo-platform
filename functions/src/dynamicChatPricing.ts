@@ -15,6 +15,7 @@
  */
 
 import { db, serverTimestamp, increment, generateId } from './init.js';
+import { Timestamp, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

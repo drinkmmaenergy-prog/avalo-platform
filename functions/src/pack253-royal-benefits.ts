@@ -6,6 +6,7 @@
 import { db } from './init';
 import { logger } from 'firebase-functions/v2';
 import { ROYAL_BENEFITS } from './pack253-royal-types';
+import { functions } from './runtime';
 
 /**
  * Calculate tokens for chat message based on Royal status

@@ -15,7 +15,8 @@ import type {
   TriggerPanicRequest,
   SessionType,
   PanicContext,
-} from '../../shared/src/types/safety';
+} from './types/safety';
+import { admin, timestamp } from './runtime';
 
 const db = getFirestore();
 

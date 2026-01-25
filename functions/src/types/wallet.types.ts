@@ -4,6 +4,7 @@
  */
 
 import { Timestamp } from "firebase-admin/firestore";
+import { admin, timestamp } from '../runtime';
 
 export enum Blockchain {
   ETHEREUM = "ethereum",

@@ -23,6 +23,7 @@ import {
   CommercialSpamCluster,
 } from './pack104-types';
 import { recalculateEnforcementState } from './enforcementEngine';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // CONSTANTS

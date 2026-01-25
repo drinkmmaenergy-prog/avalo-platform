@@ -13,6 +13,7 @@
 import { logger } from 'firebase-functions/v2';
 import { db, serverTimestamp, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // ALERT TYPES

@@ -16,6 +16,7 @@ import {
   setBreakupCooldown,
   setToxicCooldown,
 } from './pack-227-desire-loop-engine.js';
+import { HttpsError, admin, auth, db, onCall } from './runtime';
 
 // ============================================================================
 // SCHEDULED FUNCTIONS (CRON JOBS)

@@ -11,6 +11,7 @@ import {
   processRetentionTriggers,
   resetMonthlySpending,
 } from './supporterAnalytics';
+import { HttpsError, auth, logger, onCall, timestamp } from './runtime';
 
 // ============================================================================
 // FIRESTORE TRIGGERS

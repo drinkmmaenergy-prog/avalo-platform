@@ -7,6 +7,7 @@
 import { db, serverTimestamp, increment, arrayUnion } from './init';
 import * as functions from 'firebase-functions';
 import { isUserInSleepMode } from './pack228-sleep-mode';
+import { HttpsError, Timestamp, auth, onCall } from './runtime';
 
 // ============================================================================
 // INTERFACES

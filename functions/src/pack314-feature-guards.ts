@@ -12,6 +12,7 @@ import {
   validateFeatureAccess,
   validateFeatureAccessFull,
 } from "./middleware/countryGuards";
+import { auth, functions } from './runtime';
 
 /**
  * Feature guard wrapper for callable functions

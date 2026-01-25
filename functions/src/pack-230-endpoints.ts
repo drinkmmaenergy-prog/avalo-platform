@@ -14,6 +14,7 @@ import {
   trackSuggestionInteraction,
   expireOldGlowStates
 } from './pack-230-post-meeting-glow.js';
+import { functions } from './runtime';
 
 // ============================================================================
 // HTTP ENDPOINTS

@@ -8,6 +8,7 @@ import { Timestamp } from "firebase-admin/firestore";
 ;
 import { CHAT_EXPIRY_MS, ChatStatus, BookingStatus, TransactionType, ROYAL_INSTAGRAM_FOLLOWERS_MIN, ROYAL_MONTHLY_EARNINGS_MIN_TOKENS, ROYAL_QUALITY_SCORE_MIN } from './config.js';
 import { Chat, CalendarBooking, Transaction, UserProfile } from "./types.js";
+import { admin, db, generateId, increment, onSchedule, serverTimestamp } from './runtime';
 
 /**
  * Expire stale chats (48h inactivity)

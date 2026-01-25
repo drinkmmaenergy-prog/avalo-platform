@@ -20,6 +20,7 @@ import {
   APIAuditLog,
   ExternalApp,
 } from './pack113-types';
+import { admin, functions, timestamp } from './runtime';
 
 // ============================================================================
 // ABUSE DETECTION PATTERNS

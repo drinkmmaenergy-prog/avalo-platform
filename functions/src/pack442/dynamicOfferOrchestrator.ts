@@ -2,6 +2,7 @@ import * as admin from 'firebase-admin';
 import { pricingElasticityModel } from './pricingElasticityModel';
 import { paywallGuardrailService } from './paywallGuardrailService';
 import { getPack299Analytics } from '../pack299/analyticsEngine';
+import { FieldValue, Timestamp, db, increment, serverTimestamp } from '../runtime';
 
 export enum OfferType {
   INTRO_OFFER = 'intro_offer',

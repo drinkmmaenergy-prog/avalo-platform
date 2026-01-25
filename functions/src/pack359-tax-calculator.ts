@@ -14,6 +14,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { getJurisdictionProfile, getUserJurisdiction } from './pack359-jurisdiction-engine';
+import { FieldValue, HttpsError, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 

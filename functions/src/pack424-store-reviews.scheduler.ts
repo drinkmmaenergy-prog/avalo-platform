@@ -6,6 +6,7 @@
 import * as functions from 'firebase-functions';
 import { storeReviewService } from './pack424-store-reviews.service';
 import { reputationDefenseService } from './pack424-reputation-defense';
+import { HttpsError, admin, auth, logger, onCall, onRequest, timestamp } from './runtime';
 
 // Configuration
 const APP_CONFIG = {

@@ -1,3 +1,5 @@
+import { timestamp } from '../runtime';
+
 export interface AIStrategyProfile {
   id: string;
   creatorId: string;

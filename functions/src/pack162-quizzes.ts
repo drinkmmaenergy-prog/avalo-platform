@@ -13,6 +13,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db, generateId, serverTimestamp, increment } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import * as logger from 'firebase-functions/logger';
+import { admin, auth, functions } from './runtime';
 
 interface Quiz {
   quizId: string;

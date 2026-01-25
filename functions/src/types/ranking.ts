@@ -3,6 +3,8 @@
  * Type definitions for global ranking and creator dashboard
  */
 
+import { timestamp } from '../runtime';
+
 export type RankingPeriod = 'daily' | 'weekly' | 'monthly' | 'lifetime';
 export type RankingSegment = 'worldwide' | 'country' | 'city';
 export type GenderFilter = 'all' | 'women' | 'men' | 'other';

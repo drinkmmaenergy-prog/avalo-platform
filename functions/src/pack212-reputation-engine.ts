@@ -28,6 +28,7 @@ import {
   getReputationMultipliers,
   calculateEffectiveRiskScore,
 } from './pack212-reputation-types';
+import { Timestamp } from './runtime';
 
 const db = admin.firestore();
 

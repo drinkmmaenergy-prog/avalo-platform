@@ -15,6 +15,7 @@ import {
   PatrolLogEventInput,
   DEFAULT_PATROL_CONFIG,
 } from './types/pack130-types';
+import { admin, storage } from './runtime';
 
 const BEHAVIOR_LOG_COLLECTION = 'patrol_behavior_log';
 const RISK_PROFILE_COLLECTION = 'patrol_risk_profiles';

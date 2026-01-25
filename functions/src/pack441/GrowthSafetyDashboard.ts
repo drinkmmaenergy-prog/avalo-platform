@@ -18,6 +18,7 @@ import { ViralLoopRiskScorer } from './ViralLoopRiskScorer';
 import { ReferralAbuseDetector } from './ReferralAbuseDetector';
 import { AdaptiveGrowthThrottle } from './AdaptiveGrowthThrottle';
 import { AbuseRetentionCorrelationModel } from './AbuseRetentionCorrelationModel';
+import { admin, db, timestamp } from '../runtime';
 
 export class GrowthSafetyDashboard {
   private db: Firestore;

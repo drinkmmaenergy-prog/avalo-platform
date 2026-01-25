@@ -3,6 +3,8 @@
  * Types and interfaces for store defense operations
  */
 
+import { Timestamp, admin, timestamp } from '../runtime';
+
 export type Platform = 'ios' | 'android';
 export type FlagLevel = 'none' | 'low' | 'medium' | 'high' | 'critical';
 export type ReviewClassification = 'fake_review' | 'emotional_rage' | 'coordinated_attack' | 'fair_criticism' | 'positive';

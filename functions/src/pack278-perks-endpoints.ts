@@ -14,6 +14,7 @@ import {
   checkDiscoveryLimit,
   getPassportLocation,
 } from './pack278-perks-service';
+import { auth, functions } from './runtime';
 
 /**
  * Toggle Passport feature

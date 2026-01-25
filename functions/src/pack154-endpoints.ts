@@ -17,6 +17,7 @@ import {
   AppealDecision,
   TranslationPreferences,
 } from './types/translation.types';
+import { HttpsError, auth, onCall, timestamp } from './runtime';
 
 // ============================================================================
 // Translation Functions

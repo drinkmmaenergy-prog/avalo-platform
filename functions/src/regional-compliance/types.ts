@@ -4,6 +4,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from '../runtime';
 
 export interface ImmutableCoreRules {
   minimumAge: 18;

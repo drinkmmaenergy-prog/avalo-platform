@@ -6,6 +6,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { FieldValue, db, serverTimestamp } from './runtime';
 
 export const GLOBAL_POLICY_MATRIX = {
   id: 'GLOBAL_POLICY_MATRIX',

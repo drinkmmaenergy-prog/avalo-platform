@@ -15,6 +15,7 @@ import {
   SafetyPenaltyConfig,
   TierRoutingConfig,
 } from './types';
+import { db, timestamp } from '../runtime';
 
 export class RankingConfigResolver {
   private configCache: Map<string, { config: RankingEngineConfig; timestamp: number }> = new Map();

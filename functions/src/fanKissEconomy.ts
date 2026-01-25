@@ -13,6 +13,7 @@
  */
 
 import { db, serverTimestamp, increment, generateId } from './init.js';
+import { Timestamp } from './runtime';
 
 // Simple error class for compatibility
 class HttpsError extends Error {

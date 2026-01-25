@@ -25,6 +25,7 @@ import { HttpsError } from 'firebase-functions/v2/https';
 ;
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import Stripe from "stripe";
+import { admin, auth, functions, getFirestore, increment, logger, onCall, onRequest, onSchedule, serverTimestamp } from './runtime';
 ;
 ;
 ;

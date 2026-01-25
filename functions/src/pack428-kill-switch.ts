@@ -10,6 +10,7 @@
 
 import * as admin from 'firebase-admin';
 import { KillSwitch, KillSwitchKey } from './pack428-flags-types';
+import { Timestamp, functions, timestamp } from './runtime';
 
 const db = admin.firestore();
 

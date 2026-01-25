@@ -4,6 +4,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { Timestamp } from './runtime';
 
 export type MarketSegment = 
   | 'YOUNG_DIGITAL'          // Gen Z heavy, mobile-first

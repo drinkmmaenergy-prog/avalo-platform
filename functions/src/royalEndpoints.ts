@@ -9,6 +9,7 @@ import {
   getRoyalPreview,
   recomputeRoyalMembership,
 } from './royalEngine';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 /**
  * GET /royal/state?userId=...

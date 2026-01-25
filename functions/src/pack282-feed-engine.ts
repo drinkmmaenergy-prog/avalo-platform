@@ -29,6 +29,7 @@ import {
 } from './pack282-feed-types';
 import { moderateImage, moderateText, ModerationResult } from './aiModeration';
 import { getEnforcementState } from './moderationEngine';
+import { admin, auth, functions, increment } from './runtime';
 
 // ============================================================================
 // SCHEMAS

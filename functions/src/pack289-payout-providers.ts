@@ -22,6 +22,7 @@ import {
   PayoutMethod,
   WithdrawalProvider,
 } from './types/pack289-withdrawals.types';
+import { Timestamp, auth, onCall, onRequest, timestamp } from './runtime';
 
 const db = admin.firestore();
 

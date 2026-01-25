@@ -22,6 +22,7 @@ import {
   isScoreChangeSuspicious,
 } from './pack115-types';
 import { logBusinessAudit } from './pack105-audit-logger';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // CONSTANTS

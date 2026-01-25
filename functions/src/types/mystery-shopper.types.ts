@@ -3,6 +3,8 @@
  * Decoy Users · Marketplace Fraud Catching · NSFW/Romance Trap Detection
  */
 
+import { timestamp } from '../runtime';
+
 export type DecoyUserType =
   | 'new_user'
   | 'high_spender'

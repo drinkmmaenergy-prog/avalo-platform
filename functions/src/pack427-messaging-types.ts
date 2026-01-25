@@ -12,6 +12,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from './runtime';
 
 /**
  * Supported regions aligned with PACK 426

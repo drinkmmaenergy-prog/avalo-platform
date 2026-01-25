@@ -13,6 +13,7 @@ import {
   AD_EXCLUSION_SURFACES,
 } from './pack349-types';
 import { AdBillingEngine } from './pack349-billing';
+import { admin, timestamp } from './runtime';
 
 export class AdPlacementEngine {
   /**

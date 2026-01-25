@@ -8,6 +8,7 @@
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { getFirestore } from 'firebase-admin/firestore';
 import { ProfileSearchIndex } from './pack294-discovery-types';
+import { admin, functions } from './runtime';
 
 const db = getFirestore();
 

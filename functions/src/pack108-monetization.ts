@@ -19,6 +19,7 @@ import {
 import { checkNSFWMonetization } from './pack108-compliance';
 import { getUserSafetyPreferences } from './pack108-safety-preferences';
 import { detectNSFWViolation } from './pack108-classification';
+import { admin, increment, timestamp } from './runtime';
 
 // Token economy constants (from core system - NEVER CHANGED)
 const TOKEN_PRICE_USD = 0.10; // $0.10 per token

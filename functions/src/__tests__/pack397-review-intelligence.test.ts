@@ -13,6 +13,7 @@ import {
   ReviewRecoveryEngine,
   StoreReview,
 } from '../pack397-review-intelligence';
+import { FieldValue, Timestamp, increment, serverTimestamp } from '../runtime';
 
 // Mock Firestore
 const mockFirestore = {

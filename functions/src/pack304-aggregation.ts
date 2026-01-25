@@ -20,6 +20,7 @@ import {
   MonthlyAggregationResult,
   FINANCE_CONSTANTS,
 } from './types/pack304-admin-finance.types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

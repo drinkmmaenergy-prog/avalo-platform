@@ -17,6 +17,7 @@ import {
 } from './pack368-referral-types';
 import { ReferralFraudDetector } from './pack368-fraud-detection';
 import { spendTokens, earnTokens } from './pack277-wallet-service';
+import { admin, increment } from './runtime';
 
 const fraudDetector = new ReferralFraudDetector(db);
 

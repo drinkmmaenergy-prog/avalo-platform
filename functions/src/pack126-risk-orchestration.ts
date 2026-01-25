@@ -15,6 +15,7 @@ import {
 } from './types/pack126-types';
 import { activateHarassmentShield } from './pack126-harassment-shield';
 import { pauseConsent } from './pack126-consent-protocol';
+import { admin, timestamp } from './runtime';
 
 const SAFETY_AUDIT_COLLECTION = 'safety_audit_logs';
 

@@ -12,6 +12,7 @@
 
 import { Timestamp } from 'firebase-admin/firestore';
 import { TransactionType } from './treasury.types';
+import { admin } from '../runtime';
 
 // ============================================================================
 // ENTITY TYPES

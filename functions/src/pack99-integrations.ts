@@ -9,6 +9,7 @@ import {
   buildContextFromUser,
 } from './pack99-featureConfig';
 import { FeatureContext } from './pack99-types';
+import { auth } from './runtime';
 
 // ============================================================================
 // DISCOVERY ENGINE V2 INTEGRATION (PACK 94)

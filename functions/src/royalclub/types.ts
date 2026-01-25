@@ -9,6 +9,8 @@
  * - No creator earning boosts
  */
 
+import { timestamp } from '../runtime';
+
 export enum RoyalClubLevel {
   RC1_BRONZE = 'RC1_BRONZE',
   RC2_SILVER = 'RC2_SILVER',

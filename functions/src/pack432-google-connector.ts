@@ -8,6 +8,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import axios from 'axios';
+import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
 
 const db = admin.firestore();
 

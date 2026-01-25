@@ -7,6 +7,7 @@
 import { db, generateId, serverTimestamp } from './init';
 import { FieldValue } from 'firebase-admin/firestore';
 import { TokenPack, PurchaseRequest, PurchaseResponse } from './types/pack277-wallet.types';
+import { admin, increment, timestamp } from './runtime';
 
 // PACK 321: FINAL Token Pack Definitions (immutable)
 // Sale prices ONLY - payout rate remains 0.20 PLN/token regardless of purchase price

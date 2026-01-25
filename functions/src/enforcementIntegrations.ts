@@ -175,6 +175,7 @@ export async function exampleWithErrorHandling(userId: string) {
  * Use hasPermission() when you need to conditionally enable/disable features
  */
 import { hasPermission } from './enforcementHelpers';
+import { HttpsError } from './runtime';
 
 export async function exampleConditionalFeature(userId: string) {
   const canSendGifts = await hasPermission(userId, 'ACTION_SEND_GIFT');

@@ -20,6 +20,7 @@ import {
   PROHIBITED_KEYWORDS,
   ALLOWED_SUGGESTION_TEMPLATES,
 } from './pack265-ai-earn-assist-types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // BEHAVIOR PREDICTION MODEL

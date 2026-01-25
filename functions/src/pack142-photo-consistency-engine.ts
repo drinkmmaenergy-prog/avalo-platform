@@ -27,6 +27,7 @@ import {
   IDENTITY_THRESHOLDS,
   shouldBlockUpload,
 } from './types/pack142-types';
+import { admin, logger } from './runtime';
 
 const db = getFirestore();
 

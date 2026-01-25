@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
+import { Timestamp, arrayUnion, increment } from '../runtime';
 
 interface CreatorMetrics {
   creatorId: string;

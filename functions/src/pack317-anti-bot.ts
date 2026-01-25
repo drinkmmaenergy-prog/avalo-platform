@@ -14,6 +14,7 @@ import { db, serverTimestamp, generateId, increment, arrayUnion } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logTechEvent } from './pack90-logging';
 import { writeAuditLog } from './auditLogger';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // DISPOSABLE EMAIL DETECTION

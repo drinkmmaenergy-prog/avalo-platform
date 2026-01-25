@@ -15,6 +15,7 @@ import {
   NewCreatorBoostProfile,
   DEFAULT_RECOMMENDATION_CONFIG,
 } from './types/pack134-types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // NEW CREATOR IDENTIFICATION

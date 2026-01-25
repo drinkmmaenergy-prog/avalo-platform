@@ -18,6 +18,7 @@ import {
   RevenueSplitConfig,
   RefundPolicyCheck
 } from './pack345-types';
+import { HttpsError, Timestamp, auth, onCall } from './runtime';
 
 const db = admin.firestore();
 

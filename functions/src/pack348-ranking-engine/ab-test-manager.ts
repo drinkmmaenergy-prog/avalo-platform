@@ -6,6 +6,7 @@
 
 import * as admin from 'firebase-admin';
 import { ABTestConfig } from './types';
+import { db, timestamp } from '../runtime';
 
 export class ABTestManager {
   constructor(private db: admin.firestore.Firestore) {}

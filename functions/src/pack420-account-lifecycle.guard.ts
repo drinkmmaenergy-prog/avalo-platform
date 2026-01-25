@@ -13,6 +13,7 @@ import {
   DataRightsError,
   DataRightsErrorCode,
 } from '../../shared/types/pack420-data-rights.types';
+import { auth } from './runtime';
 
 const db = admin.firestore();
 

@@ -27,6 +27,7 @@ import {
   sanitizeAIResponse,
   formatTimeRange,
 } from './types/pack291-ai-assist.types';
+import { admin, functions } from './runtime';
 
 const db = getFirestore();
 

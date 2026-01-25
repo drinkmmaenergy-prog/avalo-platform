@@ -7,6 +7,7 @@
  */
 
 import * as admin from "firebase-admin";
+import { storage } from './runtime';
 
 /**
  * Metric types

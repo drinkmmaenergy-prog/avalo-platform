@@ -38,6 +38,7 @@ import {
   AudienceGrowthError,
   AudienceGrowthErrorCode,
 } from './pack102-audience-types';
+import { auth, functions } from './runtime';
 
 // ============================================================================
 // PUBLIC TRACKING ENDPOINT

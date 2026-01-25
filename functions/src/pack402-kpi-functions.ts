@@ -14,6 +14,7 @@ import {
   backfillDailyKpis,
 } from './pack402-kpi-service';
 import { KpiType, KpiInterval } from './pack402-kpi-types';
+import { HttpsError, auth, onCall, onRequest } from './runtime';
 
 /**
  * Scheduled function: Build hourly KPIs

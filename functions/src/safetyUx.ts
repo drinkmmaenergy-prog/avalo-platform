@@ -7,6 +7,7 @@ import { db } from "./init";
 import { Request, Response } from "express";
 import { FieldValue } from "firebase-admin/firestore";
 import { getSafetyHintForPair } from "./safetySignals";
+import { Timestamp, admin, increment, serverTimestamp } from './runtime';
 
 export interface SafetyProfile {
   userId: string;

@@ -8,6 +8,8 @@
  * Country Launch Configuration Model
  * Stored in: /ops/countryLaunch/{isoCode}
  */
+import { Timestamp, admin, timestamp } from './runtime';
+
 export interface CountryLaunchConfig {
   isoCode: string;              // "PL", "DE", "UA", etc.
   enabled: boolean;             // Can users register & pay

@@ -18,6 +18,7 @@ import {
   addDemoTransaction,
 } from "./service";
 import { ReviewModeContext } from "./types";
+import { functions } from '../runtime';
 
 /**
  * Guard for token purchase

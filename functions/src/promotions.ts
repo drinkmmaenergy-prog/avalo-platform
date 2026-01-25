@@ -26,6 +26,7 @@ import {
   checkCampaignOwnerEligibility
 } from './promotionEngine';
 import { createAmlEvent } from './amlMonitoring';
+import { FieldValue, Timestamp, increment, onRequest } from './runtime';
 
 const db = admin.firestore();
 

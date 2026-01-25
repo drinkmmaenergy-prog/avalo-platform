@@ -11,6 +11,7 @@ import {
   AdminPermissions, 
   AdminRole 
 } from './types/adminTypes';
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 // ============================================================================
 // ROLE-BASED DEFAULT PERMISSIONS

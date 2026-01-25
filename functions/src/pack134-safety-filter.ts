@@ -18,6 +18,7 @@ import {
   ExploitationCheckResult,
   ExploitationConcern,
 } from './types/pack134-types';
+import { functions } from './runtime';
 
 // ============================================================================
 // SAFETY FILTER CORE

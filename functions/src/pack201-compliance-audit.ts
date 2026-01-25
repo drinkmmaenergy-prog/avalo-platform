@@ -14,6 +14,7 @@ import {
   RiskLevel,
   ComplianceCategory,
 } from './types/pack201-compliance.types';
+import { admin, functions, timestamp } from './runtime';
 
 // ============================================================================
 // GLOBAL COMPLIANCE AUDIT

@@ -17,6 +17,7 @@ import {
 import { evaluateVoiceSafety, logSafetyIncident } from './pack153-safety-system';
 import { classifyContent } from './pack153-ml-classifiers';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // VOICE/VIDEO CALL MONITORING

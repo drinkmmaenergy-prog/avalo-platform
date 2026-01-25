@@ -17,6 +17,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { PayoutReconciliationResult } from './pack105-types';
 import { createFinanceCase } from './pack105-finance-cases';
 import { logReconciliationMismatch } from './pack105-audit-logger';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // RECONCILIATION ENGINE

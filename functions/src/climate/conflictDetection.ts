@@ -10,6 +10,7 @@ import {
   ConflictDetectionResult,
   TrendVelocity
 } from './types';
+import { admin, increment, timestamp } from '../runtime';
 
 export async function detectConflictTrend(
   contentId: string,

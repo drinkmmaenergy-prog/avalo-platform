@@ -8,6 +8,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { LEGAL_VERSIONS } from './config/legalVersions';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp } from './runtime';
 
 const db = admin.firestore();
 

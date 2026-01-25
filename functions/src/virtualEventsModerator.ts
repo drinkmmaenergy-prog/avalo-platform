@@ -14,6 +14,7 @@ import {
   ModeratorActionRequest,
   ModeratorAction,
 } from './types/virtualEvents.types';
+import { admin, arrayRemove, arrayUnion, auth, functions, serverTimestamp, timestamp } from './runtime';
 
 const db = getFirestore();
 

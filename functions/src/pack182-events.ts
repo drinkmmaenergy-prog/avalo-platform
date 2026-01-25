@@ -33,6 +33,7 @@ import {
   EVENT_CONFIG,
 } from './pack182-events-types';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

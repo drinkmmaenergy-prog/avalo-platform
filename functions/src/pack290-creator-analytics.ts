@@ -33,6 +33,7 @@ import {
  TimeGranularity,
 } from './types/pack290-creator-analytics.types';
 import { WalletDataExtended } from './types/pack289-withdrawals.types';
+import { auth, functions } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

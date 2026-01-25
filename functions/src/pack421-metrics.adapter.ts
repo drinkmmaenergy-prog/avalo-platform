@@ -17,6 +17,7 @@ import {
   MetricName,
   MetricTag,
 } from '../../shared/types/pack421-observability.types';
+import { db, logger, timestamp } from './runtime';
 
 /**
  * Observability provider types

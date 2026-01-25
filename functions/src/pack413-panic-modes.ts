@@ -16,6 +16,7 @@ import {
   DeactivatePanicModeRequest,
   LaunchStage,
 } from '../../shared/types/pack413-kpi';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 

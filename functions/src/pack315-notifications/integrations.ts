@@ -16,6 +16,7 @@ import {
   enqueueNotification
 } from './enqueue';
 import { logger } from 'firebase-functions/v2';
+import { admin, db, functions } from '../runtime';
 
 // ============================================================================
 // Chat & Social Integrations

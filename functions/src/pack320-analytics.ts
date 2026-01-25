@@ -15,6 +15,7 @@ import type {
   ModerationRiskLevel,
   ModerationActionType
 } from './pack320-moderation-types';
+import { admin, auth, functions, timestamp } from './runtime';
 
 const db = getFirestore();
 

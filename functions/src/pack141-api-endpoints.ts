@@ -41,6 +41,7 @@ import {
   SAFE_PERSONALITY_CATEGORIES,
   FORBIDDEN_PERSONALITY_TYPES,
 } from './types/pack141-types';
+import { auth, functions } from './runtime';
 
 // ============================================================================
 // AI COMPANION MESSAGING

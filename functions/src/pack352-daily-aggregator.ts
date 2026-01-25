@@ -18,6 +18,7 @@ import {
   DEFAULT_FRAUD_BY_SEVERITY,
   KpiEventType,
 } from '../../shared/types/kpi';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp } from './runtime';
 
 const db = admin.firestore();
 

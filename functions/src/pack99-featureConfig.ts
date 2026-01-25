@@ -13,6 +13,7 @@ import {
   TargetingRule,
   FeatureExposureEvent,
 } from './pack99-types';
+import { admin, functions, timestamp } from './runtime';
 
 // ============================================================================
 // CACHE FOR PERFORMANCE

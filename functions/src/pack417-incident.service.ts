@@ -27,6 +27,7 @@ import type {
   IncidentOperationResult,
   IncidentStatus,
 } from './pack417-incident.types';
+import { admin, arrayUnion, functions } from './runtime';
 
 const db = getFirestore();
 

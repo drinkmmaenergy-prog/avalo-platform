@@ -11,6 +11,7 @@ import {
   getInternalReputationScore,
 } from './pack115-reputation-engine';
 import { getReputationDisclaimer } from './pack115-types';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ============================================================================
 // USER-FACING ENDPOINTS

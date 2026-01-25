@@ -5,6 +5,7 @@ import {
   AiSeed,
   AiSeedMarketplaceListing,
 } from '../types/pack189-ai-federation.types';
+import { timestamp } from '../runtime';
 
 export class AiSeedSafetyScreening {
   private static forbiddenPatterns = new RegExp(

@@ -14,6 +14,7 @@ import { logger } from 'firebase-functions/v2';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { onCall } from 'firebase-functions/v2/https';
 import * as crypto from 'crypto';
+import { admin, arrayUnion, auth, functions, increment } from './runtime';
 
 // ============================================================================
 // Configuration Constants

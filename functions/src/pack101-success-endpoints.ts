@@ -13,6 +13,7 @@ import {
 } from './pack101-success-types';
 import { rebuildSuccessSignalsForUser } from './pack101-success-engine';
 import { logTechEvent } from './pack90-logging';
+import { auth, functions } from './runtime';
 
 /**
  * Get creator success signals for authenticated user

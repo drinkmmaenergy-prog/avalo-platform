@@ -23,6 +23,7 @@ import {
 } from './types/fraudTypes';
 import { writeAuditLog } from './auditLogger';
 import { logEvent } from './observability';
+import { functions } from './runtime';
 
 // ============================================================================
 // CONFIGURATION & WEIGHTS

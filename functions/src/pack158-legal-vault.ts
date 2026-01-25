@@ -27,6 +27,7 @@ import {
   generateVaultId,
   generateAccessSignature,
 } from './pack158-evidence-encryption';
+import { admin, arrayUnion, storage, timestamp } from './runtime';
 
 const VAULT_COLLECTION = 'legal_evidence_vaults';
 const EXPORT_REQUESTS_COLLECTION = 'legal_export_requests';

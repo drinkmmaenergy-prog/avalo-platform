@@ -24,6 +24,7 @@ import {
   monitorEventChatMessage,
   detectCoordinatedHarassment,
 } from './pack153-realtime-monitoring';
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 // ============================================================================
 // USER FUNCTIONS

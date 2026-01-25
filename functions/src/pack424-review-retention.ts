@@ -7,6 +7,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { StoreReview } from './pack424-store-reviews.types';
+import { FieldValue, HttpsError, arrayUnion, auth, increment, logger, onCall, timestamp } from './runtime';
 
 const db = admin.firestore();
 

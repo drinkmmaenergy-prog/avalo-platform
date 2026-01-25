@@ -14,6 +14,7 @@ import {
   IAPReceiptValidation,
 } from './types/pack278-subscription.types';
 import { updateSubscription } from './pack278-subscription-service';
+import { admin, timestamp } from './runtime';
 
 const db = getFirestore();
 

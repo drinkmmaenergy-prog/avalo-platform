@@ -13,6 +13,7 @@ import {
   AdminRole,
   SnapshotAuditLog,
 } from './types';
+import { FieldValue, HttpsError, auth, db, onCall, serverTimestamp, timestamp } from '../runtime';
 
 const db = admin.firestore();
 

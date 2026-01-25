@@ -9,6 +9,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from './runtime';
 
 /**
  * User Segment Types for Targeting

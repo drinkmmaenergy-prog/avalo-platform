@@ -15,6 +15,7 @@ import {
   FraudProfileInput,
   FraudProfileComputation,
 } from './pack401-fraud-correlation-types';
+import { admin, functions, timestamp } from './runtime';
 
 /**
  * Clamp value between 0 and 1

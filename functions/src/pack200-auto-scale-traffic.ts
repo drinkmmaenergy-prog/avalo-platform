@@ -15,6 +15,7 @@ import { db, serverTimestamp, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import { trackMetric } from './pack200-track-metrics';
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 export type RegionStatus = 'ACTIVE' | 'DEGRADED' | 'COLD' | 'DISABLED';
 export type TrafficAction = 'ROUTE' | 'REROUTE' | 'SCALE_UP' | 'SCALE_DOWN' | 'COLD_SHUTDOWN';

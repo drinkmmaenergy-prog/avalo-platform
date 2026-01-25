@@ -6,6 +6,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { FieldValue, increment, serverTimestamp, timestamp } from './runtime';
 
 type ServiceName =
   | 'wallet'

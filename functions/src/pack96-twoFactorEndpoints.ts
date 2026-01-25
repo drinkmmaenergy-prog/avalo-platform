@@ -19,6 +19,7 @@ import {
   VerifyStepUpChallengeRequest,
   SensitiveAction,
 } from './types/twoFactor.types';
+import { Timestamp, admin, auth, functions, getFirestore } from './runtime';
 
 // ============================================================================
 // User-Facing Functions

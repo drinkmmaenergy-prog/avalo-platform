@@ -15,6 +15,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
+import { admin, arrayUnion, functions, increment, timestamp } from './runtime';
 
 const db = getFirestore();
 

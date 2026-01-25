@@ -24,6 +24,7 @@ import {
   LegalEvidenceCategory,
   LegalViolationSeverity,
 } from './types/pack158-legal-evidence.types';
+import { admin, auth, functions, timestamp } from './runtime';
 
 export const pack158_captureMessageEvidence = onCall(async (request) => {
   const userId = request.auth?.uid;

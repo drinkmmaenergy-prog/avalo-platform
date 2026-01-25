@@ -34,6 +34,7 @@ import {
   XP_EARNING_CONFIG,
 } from './pack112-types';
 import { createNotification } from './notificationHub';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

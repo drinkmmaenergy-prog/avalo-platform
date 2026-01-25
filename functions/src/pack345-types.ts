@@ -11,6 +11,7 @@
  */
 
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { admin, auth, timestamp } from './runtime';
 
 /**
  * Launch Readiness Status Object (Global Singleton)

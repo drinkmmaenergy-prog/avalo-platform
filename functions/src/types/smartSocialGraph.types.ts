@@ -12,6 +12,7 @@
  */
 
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { admin, timestamp } from '../runtime';
 
 // ============================================================================
 // DISCOVERY CATEGORIES

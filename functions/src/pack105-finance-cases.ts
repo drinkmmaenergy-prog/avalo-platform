@@ -19,6 +19,7 @@ import {
   FinanceCaseStatus,
 } from './pack105-types';
 import { logBusinessAudit } from './pack105-audit-logger';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // FINANCE CASE CREATION

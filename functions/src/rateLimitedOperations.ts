@@ -5,6 +5,7 @@
  */
 
 import { checkAndIncrementRateLimit, hashIpAddress, createRateLimitError, RateLimitContext } from './rateLimit.js';
+import { functions } from './runtime';
 
 /**
  * Get environment from project ID

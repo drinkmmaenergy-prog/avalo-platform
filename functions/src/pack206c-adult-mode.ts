@@ -21,6 +21,7 @@ import {
   AdultModeReportReason,
   AgeVerificationStatus,
 } from './pack206c-types';
+import { auth, functions, timestamp } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

@@ -6,6 +6,7 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import { HttpsError, db } from '../../../runtime';
 
 export async function verifyTwoFactor(userId: string): Promise<void> {
   const db = admin.firestore();

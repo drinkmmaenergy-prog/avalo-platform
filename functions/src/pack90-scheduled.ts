@@ -14,6 +14,7 @@ import {
   MetricKey,
   logTechEvent,
 } from './pack90-logging';
+import { admin } from './runtime';
 
 // ============================================================================
 // SCHEDULED: REBUILD DAILY METRICS

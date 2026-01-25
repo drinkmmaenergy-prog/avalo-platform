@@ -5,6 +5,8 @@
 
 // Note: Timestamp type is available through firebase-admin
 // at runtime through init.ts
+import { admin, timestamp } from '../runtime';
+
 type Timestamp = any;
 
 // ============================================================================

@@ -13,6 +13,7 @@ import {
   PolicyAction,
   Platform,
 } from './types/pack201-compliance.types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // PRODUCT POLICY SCANNING

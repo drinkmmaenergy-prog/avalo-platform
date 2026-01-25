@@ -8,6 +8,7 @@ import { db, admin } from './init';
 import * as functions from 'firebase-functions';
 import { collectAndAnalyzeFraudSignals } from './fraudEngine';
 import { logEvent } from './observability';
+import { HttpsError, Timestamp, auth, onCall } from './runtime';
 
 // ============================================================================
 // WEEKLY FRAUD RECALCULATION

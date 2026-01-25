@@ -19,6 +19,7 @@ import {
   ReasonCode,
   ActionCode,
 } from './types/enforcement.types';
+import { admin, auth, functions } from './runtime';
 
 // ========================================================================
 // USER-FACING FUNCTIONS

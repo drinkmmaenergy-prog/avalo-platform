@@ -21,6 +21,7 @@ import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/fire
 import { db, auth, storage, generateId, serverTimestamp, increment, arrayUnion, timestamp } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import * as logger from 'firebase-functions/logger';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES

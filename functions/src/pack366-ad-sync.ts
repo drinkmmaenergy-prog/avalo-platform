@@ -7,6 +7,7 @@ import * as admin from "firebase-admin";
 import { AdLaunchWindow } from "./pack366-country-launch.types";
 import { CountryLaunchService } from "./pack366-country-launch.service";
 import { TrafficProtectionService } from "./pack366-traffic-protection";
+import { timestamp } from './runtime';
 
 const db = admin.firestore();
 

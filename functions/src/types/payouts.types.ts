@@ -5,6 +5,7 @@
 
 import { Timestamp } from 'firebase-admin/firestore';
 import { PayoutMethodType, PayoutStatus, PayoutCurrency } from '../config/payouts.config';
+import { admin } from '../runtime';
 
 // ============================================================================
 // PAYOUT METHOD TYPES

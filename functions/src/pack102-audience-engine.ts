@@ -24,6 +24,7 @@ import {
   AudienceGrowthError,
   AudienceGrowthErrorCode,
 } from './pack102-audience-types';
+import { admin, functions, timestamp } from './runtime';
 
 // ============================================================================
 // CONSTANTS

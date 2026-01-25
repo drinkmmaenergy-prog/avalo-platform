@@ -8,6 +8,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { levenshtein } from './utils/string-similarity';
+import { HttpsError, Timestamp, auth, increment, onCall, timestamp } from './runtime';
 
 // Mock functions for dependencies (will be replaced with actual implementations)
 async function sendTrustTeamAlert(data: any): Promise<void> {

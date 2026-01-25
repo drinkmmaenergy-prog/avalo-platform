@@ -8,6 +8,7 @@
 
 import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions/v2';
+import { db, functions, timestamp } from '../runtime';
 
 export interface BiasAdjustment {
   type: 'FRAUD' | 'ABNORMAL_USAGE' | 'REGIONAL_POLICY' | 'SEASONALITY';

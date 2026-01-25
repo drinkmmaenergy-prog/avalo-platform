@@ -8,6 +8,7 @@
 import { db } from './init.js';
 import { Timestamp } from 'firebase-admin/firestore';
 import { createHash } from 'crypto';
+import { admin } from './runtime';
 
 export type FeatureFlagKey = 
   | 'chat_paid_v1'

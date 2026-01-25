@@ -19,6 +19,7 @@ import {
   LIFETIME_BADGE_THRESHOLDS,
   PERK_MAPPINGS,
 } from './pack264-supporters-types';
+import { admin, functions } from './runtime';
 
 /**
  * Process token spending event and update supporter rankings

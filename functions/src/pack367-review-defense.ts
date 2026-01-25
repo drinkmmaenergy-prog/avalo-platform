@@ -13,6 +13,7 @@ import {
   StorePlatform,
 } from "./pack367-aso.types";
 import { asoService } from "./pack367-aso.service";
+import { admin, timestamp } from './runtime';
 
 // Initialize without importing admin (avoid module issues)
 const db = firestore();

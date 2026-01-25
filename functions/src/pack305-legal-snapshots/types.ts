@@ -4,6 +4,8 @@
  */
 
 // Snapshot types
+import { timestamp } from '../runtime';
+
 export type SnapshotType = 
   | 'INVESTOR_OVERVIEW' 
   | 'REGULATOR_OVERVIEW' 

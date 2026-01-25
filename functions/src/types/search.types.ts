@@ -3,6 +3,8 @@
  * Interest-Driven Search · Utility-First Index · Zero Attractiveness Scoring
  */
 
+import { timestamp } from '../runtime';
+
 export enum SearchCategory {
   CREATORS = 'creators',
   CONTENT = 'content',

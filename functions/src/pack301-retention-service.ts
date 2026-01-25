@@ -14,6 +14,7 @@ import {
   RETENTION_CONSTANTS,
   RetentionAuditEvent,
 } from './pack301-retention-types';
+import { timestamp } from './runtime';
 
 const db = admin.firestore();
 

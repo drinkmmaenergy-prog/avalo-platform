@@ -4,6 +4,7 @@
  */
 
 import { Timestamp } from "firebase-admin/firestore";
+import { admin, timestamp } from './runtime';
 
 export interface FarmingCase {
   caseId: string;

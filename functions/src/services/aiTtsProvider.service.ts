@@ -7,6 +7,7 @@
  */
 
 import { storage } from '../init';
+import { timestamp } from '../runtime';
 
 // ============================================================================
 // TYPES

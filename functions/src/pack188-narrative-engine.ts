@@ -16,6 +16,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { db, serverTimestamp, increment, arrayUnion } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, auth, functions, timestamp } from './runtime';
 
 // ==================== TYPES & INTERFACES ====================
 

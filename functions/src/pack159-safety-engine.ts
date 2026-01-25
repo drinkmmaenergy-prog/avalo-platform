@@ -25,6 +25,7 @@ import {
   ManipulationPattern,
 } from './pack159-safety-types';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { admin, arrayUnion, functions } from './runtime';
 
 // ============================================================================
 // CONSENT STATE MACHINE

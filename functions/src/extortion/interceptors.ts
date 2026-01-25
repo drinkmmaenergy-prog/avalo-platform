@@ -8,6 +8,7 @@ import {
   CaseStatus,
   BlackmailMessage
 } from './types';
+import { FieldValue, db, serverTimestamp, timestamp } from '../runtime';
 
 export class MessageInterceptor {
   private db: admin.firestore.Firestore;

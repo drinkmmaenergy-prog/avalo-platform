@@ -14,6 +14,7 @@
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { db } from "./init";
+import { admin, functions, increment } from './runtime';
 
 export type ReviewTrigger =
   | "FIRST_SUCCESSFUL_CHAT"

@@ -11,6 +11,7 @@ import {
   InvasiveMediaRequestType,
   BlockedMediaRequest,
 } from './types/cyberstalking.types';
+import { FieldValue, Timestamp, arrayUnion, increment, timestamp } from './runtime';
 
 const db = admin.firestore();
 

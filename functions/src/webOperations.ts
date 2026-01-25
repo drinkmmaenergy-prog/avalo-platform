@@ -6,6 +6,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { db, serverTimestamp, increment, generateId } from "./init";
 import { PAID_CONTENT_CONFIG } from "./config/monetization";
+import { auth, functions } from './runtime';
 
 interface FunctionResponse<T = any> {
   ok: boolean;

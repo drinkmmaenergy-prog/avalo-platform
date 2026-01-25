@@ -39,6 +39,7 @@ import {
   calculateRetentionRate,
 } from './types/clubs.types';
 import { Timestamp } from 'firebase-admin/firestore';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ============================================
 // CLUB MANAGEMENT FUNCTIONS

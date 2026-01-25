@@ -5,6 +5,7 @@
  */
 
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
+import { logger } from './runtime';
 ;
 
 // Initialize Secret Manager client

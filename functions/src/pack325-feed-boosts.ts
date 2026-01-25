@@ -24,6 +24,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { logger } from 'firebase-functions/v2';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { spendTokens } from './pack277-wallet-service';
+import { admin, auth, functions, increment } from './runtime';
 
 const db = getFirestore();
 

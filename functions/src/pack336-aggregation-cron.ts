@@ -17,6 +17,7 @@ import {
   calculateViralityMetrics,
   getYesterdayDate,
 } from './pack336-kpi-engine.js';
+import { HttpsError, admin, onCall } from './runtime';
 
 /**
  * Daily KPI aggregation job

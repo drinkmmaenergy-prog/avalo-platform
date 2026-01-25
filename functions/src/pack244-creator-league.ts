@@ -30,6 +30,7 @@ import type {
   LeaguePrivileges,
   HallOfFameAchievement,
 } from '../../shared/src/types/creatorLeague';
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 const logger = functions.logger;
 

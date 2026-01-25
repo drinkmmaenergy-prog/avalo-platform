@@ -6,6 +6,7 @@
 import * as functions from "firebase-functions";
 import { db, admin } from "./init";
 import { SupportTicket, SupportTicketMessage, SupportSystemSettings } from "./pack335-support-types";
+import { Timestamp, timestamp } from './runtime';
 
 /**
  * Auto-close old tickets that have been resolved/rejected with no response

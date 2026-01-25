@@ -25,6 +25,7 @@ import { logger } from 'firebase-functions/v2';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { canAppearInDiscovery } from './moderationEngine';
 import { createOrUpdateCaseFromReport } from './moderationEngine';
+import { admin, auth, functions, increment, serverTimestamp } from './runtime';
 
 const db = getFirestore();
 

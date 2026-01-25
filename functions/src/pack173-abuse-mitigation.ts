@@ -21,6 +21,7 @@ import {
   CreatorShieldSettings,
   ContentType,
 } from './pack173-types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // MITIGATION ACTIONS

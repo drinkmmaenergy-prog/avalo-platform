@@ -4,6 +4,7 @@
  */
 
 import { db } from '../init';
+import { timestamp } from '../runtime';
 
 export interface MessageCheckResult {
   allowed: boolean;

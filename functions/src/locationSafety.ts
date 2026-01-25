@@ -12,6 +12,7 @@ import {
   LocationViolationType,
   LocationSafetyLog,
 } from './types/cyberstalking.types';
+import { Timestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 

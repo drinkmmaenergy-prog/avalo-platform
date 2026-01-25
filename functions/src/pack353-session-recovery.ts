@@ -6,6 +6,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { FieldValue, increment, serverTimestamp, timestamp } from './runtime';
 
 interface SessionData {
   sessionId: string;

@@ -4,6 +4,8 @@
  */
 
 // Supporter Rank Tiers
+import { Timestamp, timestamp } from './runtime';
+
 export enum SupporterRank {
   NONE = 'none',
   SUPPORTER = 'supporter',

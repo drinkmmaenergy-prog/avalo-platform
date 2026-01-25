@@ -17,6 +17,7 @@
 import { db, serverTimestamp, increment, arrayUnion } from './init.js';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // CONFIGURATION CONSTANTS

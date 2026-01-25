@@ -13,6 +13,7 @@ import {
 import { COLLECTION_NAMES } from '../schemas/data-retention.schema';
 import { executeDataDeletion } from '../services/data-retention.service';
 import { cleanupExpiredExports } from '../services/data-export.service';
+import { admin, functions, timestamp } from '../runtime';
 
 /**
  * Scheduled job: Execute retention policy deletions

@@ -9,6 +9,7 @@ import {
   GuardianRewriteRequest,
   RewriteIntent
 } from '../types/guardian.types';
+import { admin } from '../runtime';
 
 // ============================================================================
 // Rewrite Templates and Strategies

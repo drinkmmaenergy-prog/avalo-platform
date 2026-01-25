@@ -8,6 +8,7 @@
 
 import { logger } from 'firebase-functions';
 import { ModelMetadata } from './AIModelRegistry';
+import { db, functions } from '../runtime';
 
 export enum RegulatoryFramework {
   EU_AI_ACT = 'EU_AI_ACT',

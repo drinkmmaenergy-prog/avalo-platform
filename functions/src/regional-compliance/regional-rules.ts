@@ -5,6 +5,7 @@
 
 import { RegionalRule, RegionCode } from './types';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from '../runtime';
 
 const currentTimestamp = Timestamp.now();
 

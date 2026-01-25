@@ -15,6 +15,7 @@ import {
   isFeatureEnabled,
   FeaturesConfig,
 } from "../services/configService";
+import { admin, db, functions } from '../runtime';
 
 const db = getFirestore();
 

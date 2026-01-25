@@ -7,6 +7,7 @@
  */
 
 import { db, serverTimestamp } from './init.js';
+import { HttpsError } from './runtime';
 
 // Simple error class
 class HttpsError extends Error {

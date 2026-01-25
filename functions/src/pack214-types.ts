@@ -4,6 +4,7 @@
  */
 
 import { Timestamp } from "firebase-admin/firestore";
+import { admin } from './runtime';
 
 /**
  * Event types that trigger re-engagement

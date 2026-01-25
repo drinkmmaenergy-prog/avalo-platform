@@ -17,6 +17,7 @@ import {
   EnforcementStateInput,
   ModerationCaseUpdate,
 } from './moderationTypes';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ============================================================================
 // ADMIN-ONLY ENDPOINTS

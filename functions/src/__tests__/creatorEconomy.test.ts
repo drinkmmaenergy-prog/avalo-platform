@@ -3,6 +3,8 @@
  * Comprehensive tests for Creator Shop and Creator Hub
  */
 
+import { FieldValue, Timestamp, admin, arrayUnion, getFirestore, increment, serverTimestamp, storage, timestamp } from '../runtime';
+
 ;
 
 // ============================================================================

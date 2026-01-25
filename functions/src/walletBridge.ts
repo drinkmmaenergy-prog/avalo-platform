@@ -11,6 +11,9 @@
 
 import { HttpsError } from 'firebase-functions/v2/https';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, auth, ethers, functions, getFirestore, logger, onCall, z } from './runtime';
+import { getFeatureFlag } from './featureFlags';
+
 ;
 ;
 ;
@@ -44,7 +47,7 @@ export const connectWalletV1 = onCall(
     }
 
     // Check feature flag
-    const enabled = await getFeatureFlag(uid, "crypto_wallet_enabled", false);
+    const enabled = await getFeatureFlag(uid, "crypto_wallet_enabled");
     if (!enabled) {
       throw new HttpsError("failed-precondition", "Crypto wallet not enabled");
     }

@@ -16,6 +16,7 @@
 
 import { db, serverTimestamp, increment, generateId } from './init.js';
 import type { UserProfile } from './types.js';
+import { timestamp } from './runtime';
 
 // Simple error class for compatibility
 class HttpsError extends Error {

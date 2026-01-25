@@ -22,6 +22,7 @@
 
 import { db, serverTimestamp, increment, generateId } from './init.js';
 import type { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

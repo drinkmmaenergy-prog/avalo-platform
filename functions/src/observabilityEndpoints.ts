@@ -9,6 +9,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { db, serverTimestamp, generateId } from './init.js';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logEvent, LogLevel } from './observability.js';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // RATE LIMITING

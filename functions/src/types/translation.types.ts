@@ -7,6 +7,8 @@
 // Core Translation Types
 // ============================================================================
 
+import { timestamp } from '../runtime';
+
 export interface TranslationRequest {
   content: string;
   sourceLanguage?: string; // Auto-detect if not provided

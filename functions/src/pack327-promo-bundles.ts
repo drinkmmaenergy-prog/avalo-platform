@@ -30,6 +30,7 @@ import {
   PACK327_CONFIG,
   SubscriptionType,
 } from './pack327-types';
+import { admin, auth, functions, increment } from './runtime';
 
 const db = getFirestore();
 

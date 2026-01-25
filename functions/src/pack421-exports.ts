@@ -19,6 +19,8 @@
  */
 
 // Re-export all health endpoints for convenience
+import { functions } from './runtime';
+
 export {
   pack421_health_public,
   pack421_health_internal,

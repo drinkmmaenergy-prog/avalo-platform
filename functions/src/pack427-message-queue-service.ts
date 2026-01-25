@@ -21,6 +21,7 @@ import {
 import { auditLog } from './pack296-audit-service'; // PACK 296 audit logging
 import { checkFraudLimits } from './pack302-fraud-detection'; // PACK 302 fraud checks
 import { routeRegion } from './pack426-region-router'; // PACK 426 region routing
+import { admin, timestamp } from './runtime';
 
 const db = getFirestore();
 

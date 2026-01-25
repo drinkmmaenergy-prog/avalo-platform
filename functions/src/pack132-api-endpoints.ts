@@ -33,6 +33,7 @@ import {
   generatePredictiveInsights,
   validatePrivacy,
 } from './pack132-analytics-cloud';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // RATE LIMITING

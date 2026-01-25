@@ -14,6 +14,7 @@ import {
   ambassadorTypeService,
   REGIONAL_CONFIGS,
 } from './pack434-ambassador-types';
+import { FieldValue, Timestamp, admin, arrayUnion, db } from './runtime';
 
 // ============================================================================
 // APPLICATION TYPES

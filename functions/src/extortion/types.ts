@@ -1,3 +1,5 @@
+import { admin, timestamp } from '../runtime';
+
 export enum ExtortionSeverity {
   LOW = 1,
   MEDIUM = 2,

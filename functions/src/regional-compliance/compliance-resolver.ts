@@ -15,6 +15,7 @@ import {
 } from './types';
 import { REGIONAL_RULES } from './regional-rules';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from '../runtime';
 
 export class ComplianceResolver {
   private config: RegionalComplianceConfig;

@@ -6,6 +6,8 @@
  */
 
 // Profile Search Index Document
+import { timestamp } from './runtime';
+
 export interface ProfileSearchIndex {
   userId: string;
   

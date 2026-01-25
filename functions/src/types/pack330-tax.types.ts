@@ -7,6 +7,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from '../runtime';
 
 // ============================================================================
 // TAX PROFILE TYPES

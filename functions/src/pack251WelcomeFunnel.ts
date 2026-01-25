@@ -13,6 +13,7 @@
 
 import { db, serverTimestamp, increment, generateId, arrayUnion } from './init.js';
 import { getUserContext } from './chatMonetization.js';
+import { admin } from './runtime';
 
 // ============================================================================
 // TYPES

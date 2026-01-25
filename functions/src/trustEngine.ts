@@ -13,6 +13,7 @@
  */
 
 import { db, serverTimestamp, increment, generateId, arrayUnion } from './init.js';
+import { Timestamp } from './runtime';
 
 // Simple logger (no-op for now, can be replaced with actual logger later)
 const logger = {

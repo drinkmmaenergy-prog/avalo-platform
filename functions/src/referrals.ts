@@ -14,6 +14,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, generateId, increment } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ============================================================================
 // TYPES

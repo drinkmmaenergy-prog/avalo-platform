@@ -8,6 +8,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { AdEngine } from './pack145-ad-engine';
 import { AdPlacementEngine } from './pack145-placement-engine';
 import { db } from './init';
+import { auth, functions } from './runtime';
 
 export const createAdCampaign = onCall(async (request) => {
   const uid = request.auth?.uid;

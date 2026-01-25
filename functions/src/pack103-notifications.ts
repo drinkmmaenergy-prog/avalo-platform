@@ -16,6 +16,7 @@
 import { logger } from 'firebase-functions/v2';
 import { sendNotification } from './pack92-notifications';
 import { getTransparencyMessage } from './pack103-types';
+import { functions } from './runtime';
 
 // ============================================================================
 // ENFORCEMENT NOTIFICATIONS

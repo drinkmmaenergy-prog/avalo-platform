@@ -9,6 +9,8 @@
 // ERROR CODES
 // ============================================================================
 
+import { Timestamp } from './runtime';
+
 export type Pack100ErrorCode =
   | 'RATE_LIMITED'
   | 'LAUNCH_MODE_RESTRICTED'

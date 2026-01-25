@@ -3,6 +3,8 @@
  * TypeScript type definitions for creator analytics
  */
 
+import { Timestamp, timestamp } from '../runtime';
+
 export interface CreatorDashboard {
   profileViews: number;
   profileViewsChange: number; // % change from previous period

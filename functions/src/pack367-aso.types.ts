@@ -6,6 +6,8 @@
  * localized listings, metadata, and review snapshots.
  */
 
+import { Timestamp } from './runtime';
+
 export type StorePlatform = "android" | "ios";
 
 /**

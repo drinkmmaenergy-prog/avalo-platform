@@ -15,6 +15,7 @@
 import { db, serverTimestamp, increment, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logTechEvent } from './pack90-logging';
+import { admin, storage, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

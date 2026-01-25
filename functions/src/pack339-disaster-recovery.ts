@@ -19,6 +19,7 @@ import * as functions from 'firebase-functions';
 import { db, admin } from './init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { Storage } from '@google-cloud/storage';
+import { HttpsError, auth, functionsConfig, onCall, storage, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

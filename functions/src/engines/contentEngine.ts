@@ -15,6 +15,7 @@ import * as functions from "firebase-functions/v2";
 import { HttpsError } from 'firebase-functions/v2/https';
 ;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { admin, auth, db, getFirestore, onCall, onDocumentCreated, serverTimestamp, timestamp } from '../runtime';
 
 const db = getFirestore();
 

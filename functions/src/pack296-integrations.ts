@@ -21,6 +21,7 @@ import {
   logPolicyAcceptance,
   logLegalDocUpdate,
 } from './pack296-audit-helpers';
+import { admin } from './runtime';
 
 // ============================================================================
 // IDENTITY & ACCESS EXAMPLES

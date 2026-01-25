@@ -8,6 +8,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { LEGAL_DOCS, type LegalLang } from '../../../shared/legal/legalRegistry';
+import { FieldValue, HttpsError, auth, db, onCall, serverTimestamp, timestamp } from '../runtime';
 
 interface AcceptLegalRequest {
   lang: LegalLang;

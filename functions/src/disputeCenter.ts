@@ -28,6 +28,7 @@ import {
   isValidStatusTransition,
 } from './types/dispute.types';
 import { logTrustEvent, recalculateUserRisk } from './trustRiskEngine';
+import { admin, functions } from './runtime';
 
 /**
  * Validates that reporter is actually party to the transaction

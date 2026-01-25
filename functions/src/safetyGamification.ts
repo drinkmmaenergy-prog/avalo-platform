@@ -38,6 +38,7 @@
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 ;
 import type { CallableRequest } from "firebase-functions/v2/https";
+import { admin, arrayRemove, arrayUnion, auth, functions, getFirestore, increment, logger, onCall, serverTimestamp } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES

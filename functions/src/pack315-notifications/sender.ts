@@ -18,6 +18,7 @@ import {
   NotificationConfig
 } from './types';
 import { getLocalizedText } from './templates';
+import { admin, db, functions, timestamp } from '../runtime';
 
 // ============================================================================
 // Configuration

@@ -11,6 +11,7 @@ import {
   AuditAction,
   AuditSeverity,
 } from './types/adminTypes';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // AUDIT LOG INPUT INTERFACE

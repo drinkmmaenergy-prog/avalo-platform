@@ -15,6 +15,7 @@ import {
   AD_VALIDATION_RULES,
 } from './pack349-types';
 import { AdSafetyGate } from './pack349-safety';
+import { admin, timestamp } from './runtime';
 
 export class AdEngine {
   /**

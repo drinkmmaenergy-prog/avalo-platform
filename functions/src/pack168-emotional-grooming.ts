@@ -13,6 +13,7 @@ import {
   ProtectionPhase
 } from "./pack168-types";
 import { applyWealthProtection } from "./pack168-anti-farming-engine";
+import { admin, timestamp } from './runtime';
 
 const EMOTIONAL_GROOMING_PATTERNS_COLLECTION = "emotional_grooming_patterns";
 const FARMING_CASES_COLLECTION = "farming_cases";

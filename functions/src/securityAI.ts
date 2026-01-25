@@ -12,6 +12,9 @@
 ;
 import { HttpsError } from 'firebase-functions/v2/https';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, auth, functions, getFirestore, logger, onCall, timestamp } from './runtime';
+import { getFeatureFlag } from './featureFlags';
+
 ;
 ;
 ;
@@ -62,7 +65,7 @@ export async function calculateFraudRisk(
 ): Promise<RiskAssessment> {
   try {
     // Check feature flag
-    const enabled = await getFeatureFlag(userId, "security_ai_enabled", true);
+    const enabled = await getFeatureFlag(userId, "security_ai_enabled");
     if (!enabled) {
       return {
         userId,

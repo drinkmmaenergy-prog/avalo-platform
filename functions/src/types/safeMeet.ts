@@ -6,6 +6,7 @@
  */
 
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { admin } from '../runtime';
 
 /**
  * Safe-Meet Session Status

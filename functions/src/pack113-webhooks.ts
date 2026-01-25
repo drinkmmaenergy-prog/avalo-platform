@@ -23,6 +23,7 @@ import {
   AccessToken,
 } from './pack113-types';
 import { validateAccessToken, hasScope } from './pack113-api-gateway';
+import { admin, auth, functions, increment } from './runtime';
 
 const crypto = require('crypto');
 const fetch = require('node-fetch');

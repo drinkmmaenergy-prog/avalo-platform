@@ -15,6 +15,7 @@ import {
   VaultAccessGrant,
   SafetyAuditLog,
 } from './types/pack126-types';
+import { admin, arrayUnion, storage, timestamp } from './runtime';
 
 const VAULT_COLLECTION = 'evidence_vaults';
 const SAFETY_AUDIT_COLLECTION = 'safety_audit_logs';

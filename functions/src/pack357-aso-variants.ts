@@ -10,6 +10,7 @@
 import { Timestamp, FieldValue, Query } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { db } from "./init";
+import { admin, functions } from './runtime';
 
 export type ASOPlatform = "IOS" | "ANDROID";
 
