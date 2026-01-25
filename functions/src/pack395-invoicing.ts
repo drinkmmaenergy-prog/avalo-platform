@@ -114,12 +114,13 @@ function generateStatementId(creatorId: string, year: number, month: number): st
 /**
  * Generate purchase invoice
  */
-export const generatePurchaseInvoice = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const generatePurchaseInvoice = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { purchaseId } = data;
   
   if (!purchaseId) {
@@ -209,12 +210,13 @@ export const generatePurchaseInvoice = functions.https.onCall(async (data, conte
 /**
  * Generate creator payout statement
  */
-export const generateCreatorPayoutStatement = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const generateCreatorPayoutStatement = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
   let { month, year } = data;
   
   // Default to previous month if not specified
@@ -380,12 +382,13 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (data
 /**
  * Email invoice to user
  */
-export const emailInvoiceToUser = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const emailInvoiceToUser = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { invoiceId } = data;
   
   if (!invoiceId) {
@@ -416,12 +419,13 @@ export const emailInvoiceToUser = functions.https.onCall(async (data, context) =
 /**
  * Get user's invoices
  */
-export const getUserInvoices = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getUserInvoices = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { limit = 20 } = data;
   
   const invoicesQuery = await db.collection('purchaseInvoices')
@@ -444,12 +448,13 @@ export const getUserInvoices = functions.https.onCall(async (data, context) => {
 /**
  * Get creator's payout statements
  */
-export const getCreatorPayoutStatements = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCreatorPayoutStatements = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
   const { limit = 12 } = data;
   
   const statementsQuery = await db.collection('creatorPayoutStatements')

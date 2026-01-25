@@ -100,13 +100,13 @@ async function checkRateLimit(
 // IMAGE ENHANCEMENT ENDPOINT
 // ============================================================================
 
-export const pack133_enhanceImage = functions.https.onCall(
-  async (data: EnhanceImageRequest, context): Promise<EnhanceImageResponse> => {
-    if (!context.auth) {
+export const pack133_enhanceImage = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // Rate limit check
@@ -168,13 +168,13 @@ export const pack133_enhanceImage = functions.https.onCall(
 // VIDEO ENHANCEMENT ENDPOINT
 // ============================================================================
 
-export const pack133_enhanceVideo = functions.https.onCall(
-  async (data: EnhanceVideoRequest, context): Promise<EnhanceVideoResponse> => {
-    if (!context.auth) {
+export const pack133_enhanceVideo = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const rateCheck = await checkRateLimit(userId, 'VIDEO');
@@ -230,13 +230,13 @@ export const pack133_enhanceVideo = functions.https.onCall(
 // AUDIO ENHANCEMENT ENDPOINT
 // ============================================================================
 
-export const pack133_enhanceAudio = functions.https.onCall(
-  async (data: EnhanceAudioRequest, context): Promise<EnhanceAudioResponse> => {
-    if (!context.auth) {
+export const pack133_enhanceAudio = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const rateCheck = await checkRateLimit(userId, 'AUDIO');
@@ -297,13 +297,13 @@ export const pack133_enhanceAudio = functions.https.onCall(
 // TEXT GENERATION ENDPOINTS
 // ============================================================================
 
-export const pack133_generateCaption = functions.https.onCall(
-  async (data: GenerateCaptionRequest, context): Promise<GenerateCaptionResponse> => {
-    if (!context.auth) {
+export const pack133_generateCaption = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const rateCheck = await checkRateLimit(userId, 'TEXT');
@@ -343,13 +343,13 @@ export const pack133_generateCaption = functions.https.onCall(
   }
 );
 
-export const pack133_translateText = functions.https.onCall(
-  async (data: TranslateTextRequest, context): Promise<TranslateTextResponse> => {
-    if (!context.auth) {
+export const pack133_translateText = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const rateCheck = await checkRateLimit(userId, 'TEXT');
@@ -394,13 +394,13 @@ export const pack133_translateText = functions.https.onCall(
 // DASHBOARD ENDPOINT
 // ============================================================================
 
-export const pack133_getAIStudioDashboard = functions.https.onCall(
-  async (data: GetAIStudioDashboardRequest, context): Promise<GetAIStudioDashboardResponse> => {
-    if (!context.auth) {
+export const pack133_getAIStudioDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // Aggregate stats
@@ -503,13 +503,13 @@ export const pack133_getAIStudioDashboard = functions.https.onCall(
 // AI BADGE TOGGLE ENDPOINT
 // ============================================================================
 
-export const pack133_toggleAIBadge = functions.https.onCall(
-  async (data: ToggleAIBadgeRequest, context): Promise<ToggleAIBadgeResponse> => {
-    if (!context.auth) {
+export const pack133_toggleAIBadge = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       if (!data.mediaId) {

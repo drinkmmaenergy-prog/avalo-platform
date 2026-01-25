@@ -560,13 +560,13 @@ async function createAlert(alert: { type: string; severity: string; message: str
 
 export const pack393_manualOrchestration = functions
   .runWith({ timeoutSeconds: 540, memory: '2GB' })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
     // Require admin authentication
-    if (!context.auth || context.auth.token.role !== 'admin') {
+    if (!request.auth || request.auth.token.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
     
-    functions.logger.info('🔧 Manual orchestration triggered by admin:', context.auth.uid);
+    functions.logger.info('🔧 Manual orchestration triggered by admin:', request.auth.uid);
     
     // Run orchestration immediately
     const result = await pack393_marketingOrchestrator(null as any);
@@ -578,13 +578,14 @@ export const pack393_manualOrchestration = functions
 // GET ORCHESTRATION STATUS
 // ============================================
 
-export const pack393_getOrchestrationStatus = functions.https.onCall(async (data, context) => {
+export const pack393_getOrchestrationStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require marketing manager or admin
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
   
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userRole = userDoc.data()?.role;
   
   if (!['admin', 'marketing_manager'].includes(userRole)) {

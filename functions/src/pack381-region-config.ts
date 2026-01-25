@@ -125,17 +125,17 @@ export interface RegionConfig {
 /**
  * Admin-only: Update or create region configuration
  */
-export const pack381_updateRegionConfig = functions.https.onCall(
-  async (data: Partial<RegionConfig>, context) => {
+export const pack381_updateRegionConfig = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated to update region config'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'admin' && userData?.role !== 'super_admin') {
@@ -162,7 +162,7 @@ export const pack381_updateRegionConfig = functions.https.onCall(
       metadata: {
         ...data.metadata,
         updatedAt: now,
-        updatedBy: context.auth.uid,
+        updatedBy: request.auth.uid,
         ...(existingConfig.exists ? {} : { createdAt: now }),
       },
     };
@@ -172,11 +172,11 @@ export const pack381_updateRegionConfig = functions.https.onCall(
     // Log the configuration change
     await db.collection('auditLogs').add({
       type: 'region_config_update',
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       regionId,
       changes: data,
       timestamp: now,
-      ipAddress: context.rawRequest.ip,
+      ipAddress: request.rawRequest.ip,
     });
 
     return {
@@ -192,8 +192,8 @@ export const pack381_updateRegionConfig = functions.https.onCall(
 /**
  * Get region configuration for client use
  */
-export const pack381_getRegionConfig = functions.https.onCall(
-  async (data: { regionId?: string; countryCode?: string }, context) => {
+export const pack381_getRegionConfig = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { regionId, countryCode } = data;
 
     if (!regionId && !countryCode) {
@@ -260,8 +260,8 @@ export const pack381_getRegionConfig = functions.https.onCall(
 /**
  * Get all available regions (public list)
  */
-export const pack381_listAvailableRegions = functions.https.onCall(
-  async (data, context) => {
+export const pack381_listAvailableRegions = functions.https.onCall(async (request) => {
+  const data = request.data;
     const regionsSnapshot = await db
       .collection('regionConfigs')
       .where('enabled', '==', true)
@@ -286,17 +286,17 @@ export const pack381_listAvailableRegions = functions.https.onCall(
 /**
  * Admin: Get full region configuration with sensitive data
  */
-export const pack381_adminGetRegionConfig = functions.https.onCall(
-  async (data: { regionId: string }, context) => {
+export const pack381_adminGetRegionConfig = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'admin' && userData?.role !== 'super_admin') {
@@ -323,9 +323,9 @@ export const pack381_adminGetRegionConfig = functions.https.onCall(
 /**
  * Auto-detect user region based on IP and device settings
  */
-export const pack381_detectUserRegion = functions.https.onCall(
-  async (data: { countryCode?: string; language?: string }, context) => {
-    if (!context.auth) {
+export const pack381_detectUserRegion = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -356,7 +356,7 @@ export const pack381_detectUserRegion = functions.https.onCall(
     const config = snapshot.docs[0].data() as RegionConfig;
     
     // Update user's region preference
-    await db.collection('users').doc(context.auth.uid).update({
+    await db.collection('users').doc(request.auth.uid).update({
       detectedRegion: config.regionId,
       detectedAt: new Date().toISOString(),
     });
@@ -373,9 +373,9 @@ export const pack381_detectUserRegion = functions.https.onCall(
 /**
  * Validate if a feature is available in user's region
  */
-export const pack381_validateFeatureAvailability = functions.https.onCall(
-  async (data: { featureName: string; regionId?: string }, context) => {
-    if (!context.auth) {
+export const pack381_validateFeatureAvailability = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -388,7 +388,7 @@ export const pack381_validateFeatureAvailability = functions.https.onCall(
     
     // If no regionId provided, get from user profile
     if (!userRegionId) {
-      const userDoc = await db.collection('users').doc(context.auth.uid).get();
+      const userDoc = await db.collection('users').doc(request.auth.uid).get();
       const userData = userDoc.data();
       userRegionId = userData?.detectedRegion || 'GLOBAL';
     }

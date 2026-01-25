@@ -479,17 +479,13 @@ async function processSignal(signal: MarketingFraudSignal): Promise<void> {
 // MANUAL REVIEW AND UNBLOCK
 // ============================================================================
 
-export const pack386_reviewFraudSignal = functions.https.onCall(
-  async (data: {
-    signalId: string;
-    action: 'APPROVE' | 'REJECT' | 'UNBLOCK';
-    notes?: string;
-  }, context) => {
-    if (!context.auth) {
+export const pack386_reviewFraudSignal = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(userId).get();
@@ -538,13 +534,13 @@ export const pack386_reviewFraudSignal = functions.https.onCall(
 // GET FRAUD DASHBOARD DATA
 // ============================================================================
 
-export const pack386_getFraudDashboard = functions.https.onCall(
-  async (data: { period?: 'day' | 'week' | 'month' }, context) => {
-    if (!context.auth) {
+export const pack386_getFraudDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(userId).get();

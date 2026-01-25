@@ -355,9 +355,9 @@ export const retention_handleUserDeletion = functions.firestore
 /**
  * Manual cleanup trigger for specific user (admin use)
  */
-export const admin_triggerUserDataCleanup = functions.https.onCall(
-  async (data: { userId: string; deleteAll?: boolean }, context) => {
-    if (!context.auth) {
+export const admin_triggerUserDataCleanup = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 

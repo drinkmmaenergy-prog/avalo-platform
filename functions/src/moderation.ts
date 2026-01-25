@@ -25,17 +25,18 @@ const db = getFirestore();
  * Callable function: Moderate content
  * Called after content upload to classify and make decision
  */
-export const moderateContentFunction = functions.https.onCall(async (data, context) => {
+export const moderateContentFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated to moderate content'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const {
       contentId,
       mediaUrl,
@@ -109,10 +110,11 @@ export const moderateContentFunction = functions.https.onCall(async (data, conte
  * Callable function: Get moderation status
  * Check if content has been moderated and its status
  */
-export const getModerationStatusFunction = functions.https.onCall(async (data, context) => {
+export const getModerationStatusFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'

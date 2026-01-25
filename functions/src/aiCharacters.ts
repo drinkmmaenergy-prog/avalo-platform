@@ -231,21 +231,22 @@ const SIMILARITY_THRESHOLD = 0.85; // For duplicate detection
 /**
  * Generate a complete AI character
  */
-export const generateAICharacter = functions.https.onCall(async (data, context) => {
+export const generateAICharacter = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError(
       'unauthenticated',
       'User must be authenticated'
     );
   }
 
-  const userId = context.auth.uid;
-  const request: CharacterGenerationRequest = data;
+  const userId = request.auth.uid;
+  const generationRequest: CharacterGenerationRequest = data;
 
   try {
     // Generate character profile
-    const character = await createCharacterProfile(request, userId);
+    const character = await createCharacterProfile(generationRequest, userId);
     
     // Safety check
     const safetyCheck = await performSafetyCheck(character);
@@ -593,8 +594,9 @@ async function validateLoreSafety(lore: AILore): Promise<void> {
 /**
  * Attach photoset to character
  */
-export const attachPhotoset = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const attachPhotoset = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -665,8 +667,9 @@ export const attachPhotoset = functions.https.onCall(async (data, context) => {
 /**
  * Attach voice profile to character
  */
-export const attachVoice = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const attachVoice = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -736,8 +739,9 @@ export const attachVoice = functions.https.onCall(async (data, context) => {
 /**
  * Update AI character identity
  */
-export const updateAIIdentity = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateAIIdentity = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -792,8 +796,9 @@ export const updateAIIdentity = functions.https.onCall(async (data, context) => 
 /**
  * Delete AI character
  */
-export const deleteAICharacter = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const deleteAICharacter = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 

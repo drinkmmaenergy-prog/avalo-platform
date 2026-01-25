@@ -199,9 +199,9 @@ export async function collectServiceMetrics(
 /**
  * Update service metrics
  */
-export const updateMetrics = functions.https.onCall(
-  async (data: ScalingMetrics, context) => {
-    if (!context.auth) {
+export const updateMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -430,12 +430,9 @@ async function getBurstProtection(): Promise<BurstProtection> {
 /**
  * Enable burst protection
  */
-export const enableBurstProtection = functions.https.onCall(
-  async (
-    data: { trigger: keyof BurstProtection["triggers"] },
-    context
-  ) => {
-    if (!context.auth) {
+export const enableBurstProtection = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -468,9 +465,8 @@ export const enableBurstProtection = functions.https.onCall(
 /**
  * Disable burst protection
  */
-export const disableBurstProtection = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const disableBurstProtection = functions.https.onCall(async (request) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -592,8 +588,8 @@ export const detectViralTraffic = functions.pubsub
 /**
  * Get scaling status for all services
  */
-export const getScalingStatus = functions.https.onCall(
-  async (data, context) => {
+export const getScalingStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
     
     const services = Object.keys(SCALING_RULES);
@@ -630,8 +626,8 @@ export const getScalingStatus = functions.https.onCall(
 /**
  * Get scaling history
  */
-export const getScalingHistory = functions.https.onCall(
-  async (data: { serviceName?: string; limit?: number }, context) => {
+export const getScalingHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
     
     let query = db
@@ -652,15 +648,9 @@ export const getScalingHistory = functions.https.onCall(
 /**
  * Manual scaling trigger (admin only)
  */
-export const manualScale = functions.https.onCall(
-  async (
-    data: {
-      serviceName: string;
-      instances: number;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const manualScale = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -668,7 +658,7 @@ export const manualScale = functions.https.onCall(
     }
     
     const db = admin.firestore();
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     const isAdmin = userDoc.data()?.role === "admin";
     
     if (!isAdmin) {
@@ -703,7 +693,7 @@ export const manualScale = functions.https.onCall(
         {
           instances: data.instances,
           lastScaled: Date.now(),
-          scaledBy: context.auth.uid,
+          scaledBy: request.auth.uid,
           manual: true,
         },
         { merge: true }

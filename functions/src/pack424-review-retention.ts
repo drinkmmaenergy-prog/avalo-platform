@@ -381,9 +381,9 @@ export const processNewReviewForRetention = functions.firestore
 /**
  * HTTP endpoint: Manually trigger retention flow for review
  */
-export const triggerRetentionForReview = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth?.token?.admin) {
+export const triggerRetentionForReview = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth?.token?.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can trigger retention flows'

@@ -253,10 +253,10 @@ export const sendDailyChemistryReminders = functions.pubsub
 /**
  * Callable: Manually trigger chemistry detection
  */
-export const triggerChemistryDetection = functions.https.onCall(
-  async (data, context) => {
+export const triggerChemistryDetection = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Verify authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -264,7 +264,7 @@ export const triggerChemistryDetection = functions.https.onCall(
     }
 
     const { conversationId } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     if (!conversationId) {
       throw new functions.https.HttpsError(
@@ -340,9 +340,9 @@ export const triggerChemistryDetection = functions.https.onCall(
 /**
  * Callable: Disable Chemistry Lock-In notifications for a conversation
  */
-export const disableChemistryNotifications = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const disableChemistryNotifications = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -350,7 +350,7 @@ export const disableChemistryNotifications = functions.https.onCall(
     }
 
     const { conversationId } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     if (!conversationId) {
       throw new functions.https.HttpsError(

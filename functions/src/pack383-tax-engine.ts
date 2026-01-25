@@ -55,9 +55,9 @@ interface TaxCalculation {
 /**
  * Calculate withholding for payout
  */
-export const pack383_calculateWithholding = functions.https.onCall(
-  async (data: { userId: string; grossAmount: number; currency?: string }, context) => {
-    if (!context.auth) {
+export const pack383_calculateWithholding = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -114,19 +114,13 @@ export const pack383_calculateWithholding = functions.https.onCall(
 /**
  * Submit tax profile
  */
-export const pack383_submitTaxProfile = functions.https.onCall(
-  async (data: {
-    residencyCountry: string;
-    taxClassification: 'individual' | 'business' | 'exempt';
-    taxId?: string;
-    vatGstNumber?: string;
-    autoWithholding?: boolean;
-  }, context) => {
-    if (!context.auth) {
+export const pack383_submitTaxProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const withholdingRate = getWithholdingRate(
@@ -179,18 +173,18 @@ export const pack383_submitTaxProfile = functions.https.onCall(
  * Generate tax report for user
  * Annual tax document generation
  */
-export const pack383_generateTaxReport = functions.https.onCall(
-  async (data: { userId: string; year: number }, context) => {
-    if (!context.auth) {
+export const pack383_generateTaxReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
     const { userId, year } = data;
 
     // Verify user can access this report
-    if (context.auth.uid !== userId) {
+    if (request.auth.uid !== userId) {
       // Check if admin
-      const userDoc = await db.collection('users').doc(context.auth.uid).get();
+      const userDoc = await db.collection('users').doc(request.auth.uid).get();
       if (!userDoc.exists || userDoc.data()!.role !== 'admin') {
         throw new functions.https.HttpsError('permission-denied', 'Cannot access another user\'s tax report');
       }

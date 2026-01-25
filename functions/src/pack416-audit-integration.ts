@@ -344,9 +344,10 @@ export const onFeatureFlagChanged = functions.firestore
  * Cloud Function: Get feature flag statistics
  * API endpoint for admin dashboard
  */
-export const getFeatureFlagStatsAPI = functions.https.onCall(async (data, context) => {
+export const getFeatureFlagStatsAPI = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Verify admin access
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   

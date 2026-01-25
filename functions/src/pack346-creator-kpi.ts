@@ -312,9 +312,9 @@ export const refreshCreatorKPIs = functions.pubsub
 /**
  * Get creator KPI (callable function)
  */
-export const getCreatorKPI = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getCreatorKPI = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"

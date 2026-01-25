@@ -390,18 +390,18 @@ export const payouts_genericWebhook = functions.https.onRequest(async (req, res)
 /**
  * Get all pending manual payouts (ADMIN)
  */
-export const payouts_admin_getPendingManual = functions.https.onCall(
-  async (data, context) => {
+export const payouts_admin_getPendingManual = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Check admin auth
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
         };
       }
 
-      const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+      const adminDoc = await db.collection('users').doc(request.auth.uid).get();
       if (!adminDoc.exists || adminDoc.data()?.role !== 'admin') {
         return {
           success: false,

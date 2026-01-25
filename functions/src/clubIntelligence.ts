@@ -42,14 +42,14 @@ import { HttpsError, auth, onCall } from './runtime';
  * Record a contribution to a club
  * Validates contribution type and calculates impact score
  */
-export const recordContribution = functions.https.onCall(
-  async (data: RecordContributionRequest, context): Promise<RecordContributionResponse> => {
-    if (!context.auth) {
+export const recordContribution = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     const { clubId, contributionType, description, relatedContentId } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       if (!isValidContributionType(contributionType)) {
@@ -198,9 +198,9 @@ async function updateContributionScore(
 /**
  * Get contribution scores for a club
  */
-export const getContributionScores = functions.https.onCall(
-  async (data: { clubId: string; limit?: number }, context) => {
-    if (!context.auth) {
+export const getContributionScores = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -231,14 +231,14 @@ export const getContributionScores = functions.https.onCall(
 /**
  * Assign a functional role to a club member
  */
-export const assignClubRole = functions.https.onCall(
-  async (data: AssignRoleRequest, context): Promise<AssignRoleResponse> => {
-    if (!context.auth) {
+export const assignClubRole = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     const { clubId, userId, role, description } = data;
-    const assignerId = context.auth.uid;
+    const assignerId = request.auth.uid;
 
     try {
       if (!isValidRoleType(role)) {
@@ -309,14 +309,14 @@ export const assignClubRole = functions.https.onCall(
 /**
  * Create a safe challenge for club members
  */
-export const createClubChallenge = functions.https.onCall(
-  async (data: CreateChallengeRequest, context): Promise<CreateChallengeResponse> => {
-    if (!context.auth) {
+export const createClubChallenge = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     const { clubId, title, description, type, difficulty, startDate, endDate } = data;
-    const creatorId = context.auth.uid;
+    const creatorId = request.auth.uid;
 
     try {
       if (isForbiddenChallengeType(type)) {
@@ -385,9 +385,9 @@ export const createClubChallenge = functions.https.onCall(
 /**
  * Detect clique formation patterns in a club
  */
-export const detectCliqueFormation = functions.https.onCall(
-  async (data: { clubId: string }, context) => {
-    if (!context.auth) {
+export const detectCliqueFormation = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -659,14 +659,14 @@ async function analyzeToxicity(content: string): Promise<{
 /**
  * Resolve a toxicity event
  */
-export const resolveToxicityEvent = functions.https.onCall(
-  async (data: { eventId: string; resolution: string; actions: string[] }, context) => {
-    if (!context.auth) {
+export const resolveToxicityEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     const { eventId, resolution, actions } = data;
-    const moderatorId = context.auth.uid;
+    const moderatorId = request.auth.uid;
 
     try {
       const eventRef = db.collection('club_toxicity_events').doc(eventId);
@@ -699,9 +699,9 @@ export const resolveToxicityEvent = functions.https.onCall(
 /**
  * Calculate and return club health metrics
  */
-export const getClubHealth = functions.https.onCall(
-  async (data: { clubId: string }, context) => {
-    if (!context.auth) {
+export const getClubHealth = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 

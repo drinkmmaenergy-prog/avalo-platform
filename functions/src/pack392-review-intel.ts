@@ -716,8 +716,9 @@ function identifySuspiciousPatterns(reviews: any[]): string[] {
 
 export const pack392_analyzeReviewManual = functions
   .https
-  .onCall(async (data, context) => {
-    if (!context.auth?.token.admin) {
+  .onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth?.token.admin) {
       throw new functions.https.HttpsError('permission-denied', 'Admin required');
     }
 
@@ -736,8 +737,9 @@ export const pack392_analyzeReviewManual = functions
 
 export const pack392_getReviewThreats = functions
   .https
-  .onCall(async (data, context) => {
-    if (!context.auth?.token.admin) {
+  .onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth?.token.admin) {
       throw new functions.https.HttpsError('permission-denied', 'Admin required');
     }
 
@@ -753,8 +755,9 @@ export const pack392_getReviewThreats = functions
 
 export const pack392_escalateReviews = functions
   .https
-  .onCall(async (data, context) => {
-    if (!context.auth?.token.admin) {
+  .onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth?.token.admin) {
       throw new functions.https.HttpsError('permission-denied', 'Admin required');
     }
 

@@ -128,7 +128,8 @@ function calculateAge(dateOfBirth: string): number {
 /**
  * Get age verification state for a user
  */
-export const getAgeState = functions.https.onCall(async (data, context) => {
+export const getAgeState = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { userId } = data;
 
   if (!userId) {
@@ -167,8 +168,9 @@ export const getAgeState = functions.https.onCall(async (data, context) => {
 /**
  * Submit soft age verification (self-declaration)
  */
-export const ageSoftVerify = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const ageSoftVerify = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -179,7 +181,7 @@ export const ageSoftVerify = functions.https.onCall(async (data, context) => {
   }
 
   // Verify user can only set their own age
-  if (userId !== context.auth.uid) {
+  if (userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Can only verify own age');
   }
 
@@ -371,7 +373,8 @@ async function handleFlaggedMedia(
 /**
  * Get media safety scan status (callable)
  */
-export const getMediaScanStatus = functions.https.onCall(async (data, context) => {
+export const getMediaScanStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { mediaId } = data;
 
   if (!mediaId) {
@@ -409,7 +412,8 @@ export const getMediaScanStatus = functions.https.onCall(async (data, context) =
 /**
  * Get AML state for a user
  */
-export const getAMLState = functions.https.onCall(async (data, context) => {
+export const getAMLState = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { userId } = data;
 
   if (!userId) {
@@ -578,8 +582,9 @@ export const amlDailyMonitor = functions.pubsub
 /**
  * Request data erasure (GDPR right to be forgotten)
  */
-export const requestDataErasure = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const requestDataErasure = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -590,7 +595,7 @@ export const requestDataErasure = functions.https.onCall(async (data, context) =
   }
 
   // Verify user can only request their own data erasure
-  if (userId !== context.auth.uid) {
+  if (userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Can only request own data erasure');
   }
 
@@ -625,8 +630,9 @@ export const requestDataErasure = functions.https.onCall(async (data, context) =
 /**
  * Request data export (GDPR right to data portability)
  */
-export const requestDataExport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const requestDataExport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -637,7 +643,7 @@ export const requestDataExport = functions.https.onCall(async (data, context) =>
   }
 
   // Verify user can only request their own data export
-  if (userId !== context.auth.uid) {
+  if (userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Can only request own data export');
   }
 
@@ -708,7 +714,8 @@ async function fetchPoliciesForLocale(targetLocale: string): Promise<PolicyDocum
 /**
  * Get latest active policies
  */
-export const getLatestPolicies = functions.https.onCall(async (data, context) => {
+export const getLatestPolicies = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { locale } = data;
   const targetLocale = locale || 'en';
 
@@ -733,7 +740,8 @@ export const getLatestPolicies = functions.https.onCall(async (data, context) =>
 /**
  * Get user's policy acceptances
  */
-export const getUserPolicyAcceptances = functions.https.onCall(async (data, context) => {
+export const getUserPolicyAcceptances = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { userId } = data;
 
   if (!userId) {
@@ -773,8 +781,9 @@ export const getUserPolicyAcceptances = functions.https.onCall(async (data, cont
 /**
  * Accept a policy
  */
-export const acceptPolicy = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const acceptPolicy = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -785,7 +794,7 @@ export const acceptPolicy = functions.https.onCall(async (data, context) => {
   }
 
   // Verify user can only accept policies for themselves
-  if (userId !== context.auth.uid) {
+  if (userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Can only accept policies for own account');
   }
 

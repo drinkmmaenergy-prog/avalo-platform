@@ -22,8 +22,9 @@ import { HttpsError, admin, auth, onCall } from './runtime';
 /**
  * Upload a product (creators only)
  */
-export const marketplace_uploadProduct = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const marketplace_uploadProduct = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -43,7 +44,7 @@ export const marketplace_uploadProduct = functions.https.onCall(async (data, con
 
   try {
     const result = await uploadProduct({
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       name,
       description,
       category,
@@ -67,8 +68,9 @@ export const marketplace_uploadProduct = functions.https.onCall(async (data, con
 /**
  * Purchase a product
  */
-export const marketplace_purchaseProduct = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const marketplace_purchaseProduct = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -80,7 +82,7 @@ export const marketplace_purchaseProduct = functions.https.onCall(async (data, c
 
   try {
     const result = await purchaseProduct({
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       productId,
       shippingAddress
     });
@@ -99,8 +101,9 @@ export const marketplace_purchaseProduct = functions.https.onCall(async (data, c
 /**
  * Submit product review
  */
-export const marketplace_logProductReview = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const marketplace_logProductReview = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -112,7 +115,7 @@ export const marketplace_logProductReview = functions.https.onCall(async (data, 
 
   try {
     const result = await logProductReview({
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       productId,
       rating,
       review
@@ -132,7 +135,8 @@ export const marketplace_logProductReview = functions.https.onCall(async (data, 
 /**
  * Get product discovery feed
  */
-export const marketplace_getProductFeed = functions.https.onCall(async (data, context) => {
+export const marketplace_getProductFeed = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { category, sortBy, limit = 20, offset = 0 } = data;
 
   try {
@@ -181,7 +185,8 @@ export const marketplace_getProductFeed = functions.https.onCall(async (data, co
 /**
  * Get creator shop
  */
-export const marketplace_getCreatorShop = functions.https.onCall(async (data, context) => {
+export const marketplace_getCreatorShop = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { creatorId } = data;
 
   if (!creatorId) {
@@ -247,8 +252,9 @@ export const marketplace_getCreatorShop = functions.https.onCall(async (data, co
 /**
  * Create affiliate link for product
  */
-export const marketplace_assignAffiliateLink = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const marketplace_assignAffiliateLink = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -260,7 +266,7 @@ export const marketplace_assignAffiliateLink = functions.https.onCall(async (dat
 
   try {
     const result = await assignAffiliateLink({
-      creatorId: context.auth.uid,
+      creatorId: request.auth.uid,
       productId
     });
 
@@ -278,7 +284,8 @@ export const marketplace_assignAffiliateLink = functions.https.onCall(async (dat
 /**
  * Track affiliate click
  */
-export const marketplace_trackAffiliateClick = functions.https.onCall(async (data, context) => {
+export const marketplace_trackAffiliateClick = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { linkId } = data;
 
   if (!linkId) {
@@ -306,8 +313,9 @@ export const marketplace_trackAffiliateClick = functions.https.onCall(async (dat
 /**
  * Disclose sponsored content
  */
-export const marketplace_discloseSponsoredContent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const marketplace_discloseSponsoredContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -319,7 +327,7 @@ export const marketplace_discloseSponsoredContent = functions.https.onCall(async
 
   try {
     const result = await discloseSponsoredContent({
-      creatorId: context.auth.uid,
+      creatorId: request.auth.uid,
       dealId,
       postId,
       streamId
@@ -343,8 +351,9 @@ export const marketplace_discloseSponsoredContent = functions.https.onCall(async
 /**
  * Get user orders (as buyer or seller)
  */
-export const marketplace_getUserOrders = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const marketplace_getUserOrders = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -354,7 +363,7 @@ export const marketplace_getUserOrders = functions.https.onCall(async (data, con
     const field = role === 'buyer' ? 'buyerId' : 'sellerId';
     
     const ordersQuery = await db.collection('product_orders')
-      .where(field, '==', context.auth.uid)
+      .where(field, '==', request.auth.uid)
       .orderBy('createdAt', 'desc')
       .limit(limit)
       .offset(offset)
@@ -379,8 +388,9 @@ export const marketplace_getUserOrders = functions.https.onCall(async (data, con
 /**
  * Update order shipping status (seller only)
  */
-export const marketplace_updateOrderShipping = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const marketplace_updateOrderShipping = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -399,7 +409,7 @@ export const marketplace_updateOrderShipping = functions.https.onCall(async (dat
     }
 
     const order = orderDoc.data();
-    if (order?.sellerId !== context.auth.uid) {
+    if (order?.sellerId !== request.auth.uid) {
       throw new functions.https.HttpsError('permission-denied', 'Only the seller can update shipping status');
     }
 
@@ -428,8 +438,9 @@ export const marketplace_updateOrderShipping = functions.https.onCall(async (dat
 /**
  * Detect romantic selling (internal/admin)
  */
-export const marketplace_detectRomanticSelling = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const marketplace_detectRomanticSelling = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -451,13 +462,14 @@ export const marketplace_detectRomanticSelling = functions.https.onCall(async (d
 /**
  * Resolve marketplace dispute (admin only)
  */
-export const marketplace_resolveDispute = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const marketplace_resolveDispute = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // TODO: Add admin check
-  // const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  // const userDoc = await db.collection('users').doc(request.auth.uid).get();
   // if (!userDoc.data()?.isAdmin) {
   //   throw new functions.https.HttpsError('permission-denied', 'Admin only');
   // }

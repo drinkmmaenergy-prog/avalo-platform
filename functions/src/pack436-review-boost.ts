@@ -364,12 +364,13 @@ async function applyCreatorIncentive(incentive: CreatorIncentive) {
 /**
  * Track when users respond to review nudges
  */
-export const trackReviewResponse = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const trackReviewResponse = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { platform, rating, responded } = data;
   
   const db = admin.firestore();

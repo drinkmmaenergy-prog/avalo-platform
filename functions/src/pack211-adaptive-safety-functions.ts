@@ -36,13 +36,13 @@ const db = admin.firestore();
  * Calculate and set user's safety category
  * Called during profile setup or when preferences change
  */
-export const pack211_updateUserSafetyCategory = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack211_updateUserSafetyCategory = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { datingPreferences, followerCount } = data as {
       datingPreferences: DatingPreferences;
       followerCount?: number;
@@ -94,13 +94,12 @@ export const pack211_updateUserSafetyCategory = functions.https.onCall(
 /**
  * Get user's current risk profile (limited view for user)
  */
-export const pack211_getMyRiskProfile = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack211_getMyRiskProfile = functions.https.onCall(async (request) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const profile = await getUserRiskProfile(userId);
@@ -141,13 +140,13 @@ export const pack211_getMyRiskProfile = functions.https.onCall(
  * Check if user can book another user (anti-stalking)
  * Called before allowing booking request
  */
-export const pack211_checkBookingPermission = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack211_checkBookingPermission = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const requesterId = context.auth.uid;
+    const requesterId = request.auth.uid;
     const { targetId } = data as { targetId: string };
 
     if (!targetId) {
@@ -172,9 +171,9 @@ export const pack211_checkBookingPermission = functions.https.onCall(
  * Record booking outcome (for tracking rejections)
  * Called after booking is accepted, rejected, or completed
  */
-export const pack211_recordBookingOutcome = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack211_recordBookingOutcome = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -200,7 +199,7 @@ export const pack211_recordBookingOutcome = functions.https.onCall(
       const booking = bookingDoc.data()!;
       
       // Verify caller is involved in booking
-      if (booking.bookerId !== context.auth.uid && booking.creatorId !== context.auth.uid) {
+      if (booking.bookerId !== request.auth.uid && booking.creatorId !== request.auth.uid) {
         throw new functions.https.HttpsError('permission-denied', 'Not authorized');
       }
 
@@ -209,14 +208,14 @@ export const pack211_recordBookingOutcome = functions.https.onCall(
       // Update risk scores based on outcome
       if (outcome === 'PANIC_ENDED') {
         // Panic alert triggered - update risk score of other party
-        const otherId = booking.bookerId === context.auth.uid 
+        const otherId = booking.bookerId === request.auth.uid 
           ? booking.creatorId 
           : booking.bookerId;
         
         await updateRiskScore({
           userId: otherId,
           event: 'PANIC_ALERT_TRIGGERED_BY_OTHER',
-          relatedUserId: context.auth.uid,
+          relatedUserId: request.auth.uid,
           metadata: { bookingId, outcome },
         });
       } else if (outcome === 'COMPLETED_NORMAL') {
@@ -251,13 +250,13 @@ export const pack211_recordBookingOutcome = functions.https.onCall(
  * Record swipe action and check for obsessive patterns
  * Called after each swipe
  */
-export const pack211_recordSwipe = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack211_recordSwipe = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const swiperId = context.auth.uid;
+    const swiperId = request.auth.uid;
     const { targetId, isRightSwipe, matchHappened, wasBlockedByTarget } = data as {
       targetId: string;
       isRightSwipe: boolean;
@@ -296,13 +295,13 @@ export const pack211_recordSwipe = functions.https.onCall(
  * Check if profile should be hidden from user
  * Called when generating match suggestions
  */
-export const pack211_shouldShowProfile = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack211_shouldShowProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const swiperId = context.auth.uid;
+    const swiperId = request.auth.uid;
     const { targetId } = data as { targetId: string };
 
     if (!targetId) {
@@ -332,9 +331,9 @@ export const pack211_shouldShowProfile = functions.https.onCall(
  * Assess location safety for meeting/event
  * Called when creating booking or selecting event venue
  */
-export const pack211_assessMeetingLocation = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack211_assessMeetingLocation = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -361,7 +360,7 @@ export const pack211_assessMeetingLocation = functions.https.onCall(
         bookingId,
         eventId,
         location,
-        requestedBy: context.auth.uid,
+        requestedBy: request.auth.uid,
       });
 
       return {
@@ -387,14 +386,14 @@ export const pack211_assessMeetingLocation = functions.https.onCall(
 /**
  * Get all high-risk users (admin only)
  */
-export const pack211_admin_getHighRiskUsers = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack211_admin_getHighRiskUsers = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     // Check admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const isAdmin = userDoc.data()?.roles?.admin === true;
     
     if (!isAdmin) {
@@ -435,14 +434,14 @@ export const pack211_admin_getHighRiskUsers = functions.https.onCall(
 /**
  * Get adaptive safety events for review (admin/safety team)
  */
-export const pack211_admin_getSafetyEvents = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack211_admin_getSafetyEvents = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     // Check admin or safety team role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     const isAuthorized = userData?.roles?.admin === true || userData?.roles?.safety_team === true;
     
@@ -489,14 +488,14 @@ export const pack211_admin_getSafetyEvents = functions.https.onCall(
 /**
  * Get booking cooldown statistics (admin)
  */
-export const pack211_admin_getCooldownStats = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack211_admin_getCooldownStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     // Check admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const isAdmin = userDoc.data()?.roles?.admin === true;
     
     if (!isAdmin) {
@@ -538,14 +537,14 @@ export const pack211_admin_getCooldownStats = functions.https.onCall(
 /**
  * Manually adjust user risk score (admin emergency override)
  */
-export const pack211_admin_adjustRiskScore = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack211_admin_adjustRiskScore = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     // Check admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const isAdmin = userDoc.data()?.roles?.admin === true;
     
     if (!isAdmin) {
@@ -594,11 +593,11 @@ export const pack211_admin_adjustRiskScore = functions.https.onCall(
         previousRiskScore: oldScore,
         newRiskScore: newScore,
         riskScoreDelta: newScore - oldScore,
-        actionsTaken: [`Manual admin adjustment by ${context.auth.uid}`],
+        actionsTaken: [`Manual admin adjustment by ${request.auth.uid}`],
         requiresReview: false,
         severity: 'WARNING',
-        description: `Admin ${context.auth.uid} manually adjusted risk score: ${reason}`,
-        metadata: { reason, adjustedBy: context.auth.uid },
+        description: `Admin ${request.auth.uid} manually adjusted risk score: ${reason}`,
+        metadata: { reason, adjustedBy: request.auth.uid },
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 

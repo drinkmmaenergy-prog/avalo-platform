@@ -880,13 +880,14 @@ async function getResponseSpeedContext(userId: string): Promise<{ previousAverag
 /**
  * HTTP callable function to manually trigger dashboard calculation for a specific creator
  */
-export const triggerDashboardCalculation = functions.https.onCall(async (data, context) => {
+export const triggerDashboardCalculation = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Verify authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = data.userId || context.auth.uid;
+  const userId = data.userId || request.auth.uid;
 
   // Verify the user is a creator
   const userDoc = await db.collection('users').doc(userId).get();
@@ -906,13 +907,14 @@ export const triggerDashboardCalculation = functions.https.onCall(async (data, c
 /**
  * HTTP callable function to dismiss a motivational nudge
  */
-export const dismissNudge = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const dismissNudge = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { nudgeId } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   await db
     .collection('creatorDashboard')
@@ -930,13 +932,14 @@ export const dismissNudge = functions.https.onCall(async (data, context) => {
 /**
  * HTTP callable function to mark an action suggestion as completed
  */
-export const completeActionSuggestion = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const completeActionSuggestion = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { suggestionId } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   await db
     .collection('creatorDashboard')

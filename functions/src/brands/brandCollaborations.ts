@@ -34,15 +34,9 @@ function hasRomanceContent(text: string): boolean {
   return ROMANCE_KEYWORDS.some(keyword => lowerText.includes(keyword));
 }
 
-export const proposeCollaboration = functions.https.onCall(
-  async (data: {
-    brand_id: string;
-    creator_id: string;
-    type: string;
-    terms?: any;
-    message?: string;
-  }, context) => {
-    if (!context.auth) {
+export const proposeCollaboration = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -75,7 +69,7 @@ export const proposeCollaboration = functions.https.onCall(
     }
 
     const brandData = brandDoc.data();
-    if (brandData?.owner_id !== context.auth.uid && creator_id !== context.auth.uid) {
+    if (brandData?.owner_id !== request.auth.uid && creator_id !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to propose this collaboration'
@@ -111,7 +105,7 @@ export const proposeCollaboration = functions.https.onCall(
     const collabRef = await db.collection('brand_collaborations').add(collaboration);
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'collaboration_proposed',
       collaboration_id: collabRef.id,
       timestamp: now,
@@ -122,7 +116,7 @@ export const proposeCollaboration = functions.https.onCall(
       }
     });
 
-    const notifyUserId = brandData?.owner_id === context.auth.uid ? creator_id : brand_id;
+    const notifyUserId = brandData?.owner_id === request.auth.uid ? creator_id : brand_id;
     await db.collection('notifications').add({
       user_id: notifyUserId,
       type: 'collaboration_proposal',
@@ -130,7 +124,7 @@ export const proposeCollaboration = functions.https.onCall(
       message: `You have a new collaboration proposal`,
       data: {
         collaboration_id: collabRef.id,
-        proposer_id: context.auth.uid
+        proposer_id: request.auth.uid
       },
       read: false,
       created_at: now
@@ -144,11 +138,9 @@ export const proposeCollaboration = functions.https.onCall(
   }
 );
 
-export const approveCollaboration = functions.https.onCall(
-  async (data: {
-    collaboration_id: string;
-  }, context) => {
-    if (!context.auth) {
+export const approveCollaboration = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -186,7 +178,7 @@ export const approveCollaboration = functions.https.onCall(
     const brandDoc = await db.collection('brand_profiles').doc(collabData.brand_id).get();
     const brandData = brandDoc.data();
 
-    if (brandData?.owner_id !== context.auth.uid && collabData.creator_id !== context.auth.uid) {
+    if (brandData?.owner_id !== request.auth.uid && collabData.creator_id !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to approve this collaboration'
@@ -205,13 +197,13 @@ export const approveCollaboration = functions.https.onCall(
     });
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'collaboration_approved',
       collaboration_id,
       timestamp: now
     });
 
-    const notifyUserId = brandData?.owner_id === context.auth.uid 
+    const notifyUserId = brandData?.owner_id === request.auth.uid 
       ? collabData.creator_id 
       : collabData.brand_id;
       
@@ -234,12 +226,9 @@ export const approveCollaboration = functions.https.onCall(
   }
 );
 
-export const updateCollaborationStatus = functions.https.onCall(
-  async (data: {
-    collaboration_id: string;
-    status: string;
-  }, context) => {
-    if (!context.auth) {
+export const updateCollaborationStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -278,7 +267,7 @@ export const updateCollaborationStatus = functions.https.onCall(
     const brandDoc = await db.collection('brand_profiles').doc(collabData.brand_id).get();
     const brandData = brandDoc.data();
 
-    if (brandData?.owner_id !== context.auth.uid && collabData.creator_id !== context.auth.uid) {
+    if (brandData?.owner_id !== request.auth.uid && collabData.creator_id !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to update this collaboration'
@@ -291,7 +280,7 @@ export const updateCollaborationStatus = functions.https.onCall(
     });
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'collaboration_status_updated',
       collaboration_id,
       timestamp: Timestamp.now(),
@@ -305,9 +294,9 @@ export const updateCollaborationStatus = functions.https.onCall(
   }
 );
 
-export const getCollaboration = functions.https.onCall(
-  async (data: { collaboration_id: string }, context) => {
-    if (!context.auth) {
+export const getCollaboration = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -337,8 +326,8 @@ export const getCollaboration = functions.https.onCall(
     const brandDoc = await db.collection('brand_profiles').doc(collabData.brand_id).get();
     const brandData = brandDoc.data();
 
-    if (brandData?.owner_id !== context.auth.uid && collabData.creator_id !== context.auth.uid) {
-      const isAdmin = await db.collection('admin_users').doc(context.auth.uid).get()
+    if (brandData?.owner_id !== request.auth.uid && collabData.creator_id !== request.auth.uid) {
+      const isAdmin = await db.collection('admin_users').doc(request.auth.uid).get()
         .then(doc => doc.exists);
       if (!isAdmin) {
         throw new functions.https.HttpsError(
@@ -361,23 +350,19 @@ export const getCollaboration = functions.https.onCall(
   }
 );
 
-export const listUserCollaborations = functions.https.onCall(
-  async (data: {
-    user_id?: string;
-    status?: string;
-    limit?: number;
-  }, context) => {
-    if (!context.auth) {
+export const listUserCollaborations = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const { user_id = context.auth.uid, status, limit = 20 } = data;
+    const { user_id = request.auth.uid, status, limit = 20 } = data;
 
-    if (user_id !== context.auth.uid) {
-      const isAdmin = await db.collection('admin_users').doc(context.auth.uid).get()
+    if (user_id !== request.auth.uid) {
+      const isAdmin = await db.collection('admin_users').doc(request.auth.uid).get()
         .then(doc => doc.exists);
       if (!isAdmin) {
         throw new functions.https.HttpsError(

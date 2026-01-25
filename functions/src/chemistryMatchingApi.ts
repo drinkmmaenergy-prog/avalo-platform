@@ -23,16 +23,17 @@ import { HttpsError, auth, increment, onCall } from './runtime';
  */
 export const calculateChemistryScoreCallable = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { targetUserId } = data;
 
       if (!targetUserId) {
@@ -66,16 +67,17 @@ export const calculateChemistryScoreCallable = functions
  */
 export const evaluateChemistryBoostCallable = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { targetUserId } = data;
 
       if (!targetUserId) {
@@ -113,16 +115,17 @@ export const evaluateChemistryBoostCallable = functions
  */
 export const trackInteractionCallable = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const {
         targetUserId,
         interactionType,
@@ -222,16 +225,17 @@ export const trackInteractionCallable = functions
  */
 export const checkSpamStatusCallable = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { targetUserId } = data;
 
       if (!targetUserId) {
@@ -268,16 +272,17 @@ export const checkSpamStatusCallable = functions
  */
 export const getChemistryFeedScoresCallable = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { candidateIds } = data;
 
       if (!candidateIds || !Array.isArray(candidateIds)) {

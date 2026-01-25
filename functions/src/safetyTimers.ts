@@ -18,12 +18,13 @@ const TTL_DAYS = 30;
 /**
  * Create a new safety timer
  */
-export const createSafetyTimer = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createSafetyTimer = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { durationMinutes, note, trustedContacts } = data;
 
   // Validate input
@@ -140,12 +141,13 @@ export const createSafetyTimer = functions.https.onCall(async (data, context) =>
 /**
  * Check in on a safety timer (mark as completed_ok)
  */
-export const checkInSafetyTimer = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const checkInSafetyTimer = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { timerId } = data;
 
   if (!timerId) {
@@ -209,12 +211,13 @@ export const checkInSafetyTimer = functions.https.onCall(async (data, context) =
 /**
  * Cancel a safety timer
  */
-export const cancelSafetyTimer = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const cancelSafetyTimer = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { timerId } = data;
 
   if (!timerId) {
@@ -267,12 +270,13 @@ export const cancelSafetyTimer = functions.https.onCall(async (data, context) =>
 /**
  * Trigger panic button
  */
-export const triggerPanic = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const triggerPanic = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { lastKnownLocation } = data;
 
   try {
@@ -346,12 +350,13 @@ export const triggerPanic = functions.https.onCall(async (data, context) => {
 /**
  * Get user's safety timers
  */
-export const getUserSafetyTimers = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getUserSafetyTimers = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { limit = 10, includeArchived = true } = data;
 
   try {
@@ -398,12 +403,13 @@ export const getUserSafetyTimers = functions.https.onCall(async (data, context) 
 /**
  * Get safety alerts for trusted contacts
  */
-export const getSafetyAlerts = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getSafetyAlerts = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { limit = 20 } = data;
 
   try {

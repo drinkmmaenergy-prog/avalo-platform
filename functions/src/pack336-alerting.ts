@@ -313,8 +313,9 @@ async function sendSlackNotification(alert: KpiAlert): Promise<void> {
 /**
  * Get recent alerts (admin only)
  */
-export const pack336_getRecentAlerts = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getRecentAlerts = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -334,8 +335,9 @@ export const pack336_getRecentAlerts = functions.https.onCall(async (data, conte
 /**
  * Acknowledge an alert (admin only)
  */
-export const pack336_acknowledgeAlert = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_acknowledgeAlert = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -348,7 +350,7 @@ export const pack336_acknowledgeAlert = functions.https.onCall(async (data, cont
   }
   
   try {
-    await acknowledgeAlert(alertId, context.auth.uid);
+    await acknowledgeAlert(alertId, request.auth.uid);
     return { success: true };
   } catch (error: any) {
     console.error('[PACK 336] Error acknowledging alert:', error);
@@ -359,8 +361,9 @@ export const pack336_acknowledgeAlert = functions.https.onCall(async (data, cont
 /**
  * Resolve an alert (admin only)
  */
-export const pack336_resolveAlert = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_resolveAlert = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -373,7 +376,7 @@ export const pack336_resolveAlert = functions.https.onCall(async (data, context)
   }
   
   try {
-    await resolveAlert(alertId, context.auth.uid);
+    await resolveAlert(alertId, request.auth.uid);
     return { success: true };
   } catch (error: any) {
     console.error('[PACK 336] Error resolving alert:', error);
@@ -384,8 +387,9 @@ export const pack336_resolveAlert = functions.https.onCall(async (data, context)
 /**
  * Get current alert thresholds configuration (admin only)
  */
-export const pack336_getAlertThresholds = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getAlertThresholds = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -408,8 +412,9 @@ export const pack336_getAlertThresholds = functions.https.onCall(async (data, co
 /**
  * Update alert thresholds configuration (admin only)
  */
-export const pack336_updateAlertThresholds = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_updateAlertThresholds = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -425,10 +430,10 @@ export const pack336_updateAlertThresholds = functions.https.onCall(async (data,
     await db.collection('systemConfig').doc('pack336_alertThresholds').set({
       ...thresholds,
       updatedAt: serverTimestamp(),
-      updatedBy: context.auth.uid,
+      updatedBy: request.auth.uid,
     });
     
-    console.log('[PACK 336] Alert thresholds updated by', context.auth.uid);
+    console.log('[PACK 336] Alert thresholds updated by', request.auth.uid);
     
     return { success: true, thresholds };
   } catch (error: any) {

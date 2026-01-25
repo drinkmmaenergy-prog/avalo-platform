@@ -44,12 +44,13 @@ export interface CreatorEarningsEvent {
 // ENDPOINT: GET /creator/earnings/summary
 // ============================================================================
 
-export const getCreatorEarningsSummary = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCreatorEarningsSummary = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const requestedUserId = data.userId;
   
   // Security: users can only view their own earnings
@@ -112,12 +113,13 @@ export const getCreatorEarningsSummary = functions.https.onCall(async (data, con
 // ENDPOINT: GET /creator/earnings/activity
 // ============================================================================
 
-export const getCreatorEarningsActivity = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCreatorEarningsActivity = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const requestedUserId = data.userId;
   const limit = data.limit || 20;
   const cursor = data.cursor;

@@ -20,14 +20,15 @@ const db = getFirestore();
  * 
  * Usage in existing PPM upload handler:
  * 
- * export const uploadPPMMedia = functions.https.onCall(async (data, context) => {
+ * export const uploadPPMMedia = functions.https.onCall(async (request) => {
+  const data = request.data;
  *   // ... existing upload logic ...
  *   
  *   // After upload to storage, before publishing:
  *   const moderationResult = await moderatePPMMedia({
  *     messageId: data.messageId,
  *     chatId: data.chatId,
- *     userId: context.auth.uid,
+ *     userId: request.auth.uid,
  *     mediaUrl: uploadedMediaUrl,
  *   });
  *   
@@ -79,14 +80,15 @@ export async function moderatePPMMedia(params: {
  * 
  * Usage in existing feed post upload:
  * 
- * export const createPost = functions.https.onCall(async (data, context) => {
+ * export const createPost = functions.https.onCall(async (request) => {
+  const data = request.data;
  *   // ... create post document ...
  *   
  *   // If post has media, moderate each one:
  *   if (data.mediaUrls && data.mediaUrls.length > 0) {
  *     const moderationResults = await moderatePostMedia({
  *       postId,
- *       userId: context.auth.uid,
+ *       userId: request.auth.uid,
  *       mediaUrls: data.mediaUrls,
  *     });
  *     
@@ -155,11 +157,12 @@ export async function moderatePostMedia(params: {
  * 
  * Usage in profile photo update:
  * 
- * export const updateProfilePhoto = functions.https.onCall(async (data, context) => {
+ * export const updateProfilePhoto = functions.https.onCall(async (request) => {
+  const data = request.data;
  *   // ... upload photo to storage ...
  *   
  *   const moderationResult = await moderateProfilePhoto({
- *     userId: context.auth.uid,
+ *     userId: request.auth.uid,
  *     photoUrl: uploadedPhotoUrl,
  *     photoIndex: data.photoIndex || 0,
  *   });
@@ -174,7 +177,7 @@ export async function moderatePostMedia(params: {
  *   }
  *   
  *   // Add to profile photos
- *   await db.collection('users').doc(context.auth.uid).update({
+ *   await db.collection('users').doc(request.auth.uid).update({
  *     'profile.photos': FieldValue.arrayUnion(uploadedPhotoUrl),
  *   });
  * });
@@ -212,11 +215,12 @@ export async function moderateProfilePhoto(params: {
  * 
  * Usage in carousel upload:
  * 
- * export const uploadCarouselPhotos = functions.https.onCall(async (data, context) => {
+ * export const uploadCarouselPhotos = functions.https.onCall(async (request) => {
+  const data = request.data;
  *   // ... upload photos to storage ...
  *   
  *   const moderationResults = await moderateCarouselPhotos({
- *     userId: context.auth.uid,
+ *     userId: request.auth.uid,
  *     photoUrls: uploadedPhotoUrls,
  *     carouselId: data.carouselId,
  *   });
@@ -280,12 +284,13 @@ export async function moderateCarouselPhotos(params: {
  * 
  * Usage in AI companion creation/update:
  * 
- * export const createAICompanion = functions.https.onCall(async (data, context) => {
+ * export const createAICompanion = functions.https.onCall(async (request) => {
+  const data = request.data;
  *   // ... upload avatar to storage ...
  *   
  *   if (data.avatarUrl) {
  *     const moderationResult = await moderateAICompanionAvatar({
- *       userId: context.auth.uid,
+ *       userId: request.auth.uid,
  *       avatarUrl: data.avatarUrl,
  *       companionId: companionId,
  *     });
@@ -337,12 +342,13 @@ export async function moderateAICompanionAvatar(params: {
  * 
  * Usage in KYC verification submission:
  * 
- * export const submitKYCVerification = functions.https.onCall(async (data, context) => {
+ * export const submitKYCVerification = functions.https.onCall(async (request) => {
+  const data = request.data;
  *   // ... existing KYC logic ...
  *   
  *   // Secondary moderation check on verification photos
  *   const moderationResult = await moderateVerificationPhotos({
- *     userId: context.auth.uid,
+ *     userId: request.auth.uid,
  *     verificationId: data.verificationId,
  *     photoUrls: {
  *       idFront: data.idFrontUrl,
@@ -440,14 +446,15 @@ export async function moderateVerificationPhotos(params: {
  * 
  * Usage in chat message with media:
  * 
- * export const sendMessageWithMedia = functions.https.onCall(async (data, context) => {
+ * export const sendMessageWithMedia = functions.https.onCall(async (request) => {
+  const data = request.data;
  *   // ... upload media to storage ...
  *   
  *   if (data.mediaUrl) {
  *     const moderationResult = await moderateMessageMedia({
  *       messageId: messageId,
  *       chatId: data.chatId,
- *       userId: context.auth.uid,
+ *       userId: request.auth.uid,
  *       mediaUrl: data.mediaUrl,
  *       mediaType: data.mediaType,
  *     });

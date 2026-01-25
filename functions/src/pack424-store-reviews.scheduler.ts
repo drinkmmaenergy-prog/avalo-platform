@@ -83,9 +83,10 @@ export const scheduledReviewSync = functions.pubsub
 /**
  * Manual trigger for immediate review sync
  */
-export const triggerReviewSync = functions.https.onCall(async (data, context) => {
+export const triggerReviewSync = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Verify admin access
-  if (!context.auth?.token?.admin) {
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError(
       'permission-denied',
       'Only admins can trigger manual review sync'
@@ -93,7 +94,7 @@ export const triggerReviewSync = functions.https.onCall(async (data, context) =>
   }
 
   functions.logger.info('Manual review sync triggered', {
-    userId: context.auth.uid,
+    userId: request.auth.uid,
   });
 
   try {

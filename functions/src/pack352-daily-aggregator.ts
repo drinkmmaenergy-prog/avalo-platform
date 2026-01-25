@@ -81,10 +81,10 @@ export const aggregateDailyKpis = functions.pubsub
  * On-demand aggregation for a specific date
  * Useful for backfilling or recomputing
  */
-export const aggregateKpisForDate = functions.https.onCall(
-  async (data: { date: string }, context) => {
+export const aggregateKpisForDate = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Only admins can trigger on-demand aggregation
-    if (!context.auth || context.auth.token.role !== 'admin') {
+    if (!request.auth || request.auth.token.role !== 'admin') {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can trigger on-demand aggregation'

@@ -106,16 +106,9 @@ const CACHE_TTL = {
 /**
  * Upload and optimize image
  */
-export const uploadImage = functions.https.onCall(
-  async (
-    data: {
-      imageData: string; // Base64
-      type: MediaAsset["type"];
-      userId: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const uploadImage = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -257,16 +250,9 @@ async function distributeToCdn(
 /**
  * Upload and optimize video
  */
-export const uploadVideo = functions.https.onCall(
-  async (
-    data: {
-      videoUrl: string;
-      userId: string;
-      title: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const uploadVideo = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -356,8 +342,8 @@ async function generateVideoPreview(videoId: string): Promise<string> {
 /**
  * Get progressive image variants
  */
-export const getProgressiveImage = functions.https.onCall(
-  async (data: { assetId: string }, context) => {
+export const getProgressiveImage = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
     
     const assetDoc = await db
@@ -396,16 +382,9 @@ export const getProgressiveImage = functions.https.onCall(
 /**
  * Optimize voice message
  */
-export const optimizeVoice = functions.https.onCall(
-  async (
-    data: {
-      audioData: string; // Base64
-      userId: string;
-      chatId: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const optimizeVoice = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -450,14 +429,8 @@ export const optimizeVoice = functions.https.onCall(
 /**
  * Cache AI avatar globally
  */
-export const cacheAiAvatar = functions.https.onCall(
-  async (
-    data: {
-      avatarId: string;
-      imageUrl: string;
-    },
-    context
-  ) => {
+export const cacheAiAvatar = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
     
     console.log(`🤖 Caching AI avatar ${data.avatarId}...`);
@@ -493,8 +466,8 @@ export const cacheAiAvatar = functions.https.onCall(
 /**
  * Get CDN statistics
  */
-export const getCdnStats = functions.https.onCall(
-  async (data, context) => {
+export const getCdnStats = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
     
     // Get all assets
@@ -593,9 +566,9 @@ export const updateCdnMetrics = functions.pubsub
 /**
  * Purge asset from CDN cache
  */
-export const purgeCache = functions.https.onCall(
-  async (data: { assetId: string }, context) => {
-    if (!context.auth) {
+export const purgeCache = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -622,9 +595,9 @@ export const purgeCache = functions.https.onCall(
 /**
  * Purge all cached assets (admin only)
  */
-export const purgeAllCache = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const purgeAllCache = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -632,7 +605,7 @@ export const purgeAllCache = functions.https.onCall(
     }
     
     const db = admin.firestore();
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     const isAdmin = userDoc.data()?.role === "admin";
     
     if (!isAdmin) {

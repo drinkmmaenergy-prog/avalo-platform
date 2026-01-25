@@ -277,15 +277,9 @@ async function cleanupOldBackups(
 /**
  * Recover wallet snapshot
  */
-export const recoverWallet = functions.https.onCall(
-  async (
-    data: {
-      userId: string;
-      targetTime?: number;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const recoverWallet = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -321,15 +315,9 @@ export const recoverWallet = functions.https.onCall(
 /**
  * Recover chat history
  */
-export const recoverChat = functions.https.onCall(
-  async (
-    data: {
-      chatId: string;
-      targetTime?: number;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const recoverChat = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -365,15 +353,9 @@ export const recoverChat = functions.https.onCall(
 /**
  * Recover support ticket
  */
-export const recoverSupportTicket = functions.https.onCall(
-  async (
-    data: {
-      ticketId: string;
-      targetTime?: number;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const recoverSupportTicket = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -409,15 +391,9 @@ export const recoverSupportTicket = functions.https.onCall(
 /**
  * Recover AI session
  */
-export const recoverAiSession = functions.https.onCall(
-  async (
-    data: {
-      sessionId: string;
-      targetTime?: number;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const recoverAiSession = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -561,16 +537,9 @@ function getCollectionsForType(type: RecoveryOperation["type"]): string[] {
 /**
  * Initiate region failover
  */
-export const initiateRegionFailover = functions.https.onCall(
-  async (
-    data: {
-      fromRegion: string;
-      toRegion: string;
-      services: string[];
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const initiateRegionFailover = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -580,7 +549,7 @@ export const initiateRegionFailover = functions.https.onCall(
     const db = admin.firestore();
     
     // Check admin permission
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     const isAdmin = userDoc.data()?.role === "admin";
     
     if (!isAdmin) {

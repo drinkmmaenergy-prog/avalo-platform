@@ -552,7 +552,8 @@ async function refundEscrowToClient(escrowId: string, reservationId: string): Pr
  * GET /reservations/availability
  * Fetch creator availability and available slots
  */
-export const getAvailability = functions.https.onCall(async (data, context) => {
+export const getAvailability = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { creatorUserId, from, to } = data;
 
   if (!creatorUserId || !from || !to) {
@@ -616,12 +617,13 @@ export const getAvailability = functions.https.onCall(async (data, context) => {
  * POST /reservations/availability/set
  * Set or update creator availability
  */
-export const setAvailability = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const setAvailability = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const {
     timezone,
     weeklySlots,
@@ -678,12 +680,13 @@ export const setAvailability = functions.https.onCall(async (data, context) => {
  * POST /reservations/create
  * Create a new reservation with token escrow
  */
-export const createReservation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createReservation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const clientUserId = context.auth.uid;
+  const clientUserId = request.auth.uid;
   const { creatorUserId, startTimeUtc, endTimeUtc, meetingMode } = data;
 
   if (!creatorUserId || !startTimeUtc || !endTimeUtc) {
@@ -831,12 +834,13 @@ export const createReservation = functions.https.onCall(async (data, context) =>
  * POST /reservations/cancel
  * Cancel a reservation
  */
-export const cancelReservation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const cancelReservation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { reservationId, reason } = data;
 
   if (!reservationId) {
@@ -926,12 +930,13 @@ export const cancelReservation = functions.https.onCall(async (data, context) =>
  * POST /reservations/confirm
  * Confirm meeting outcome (confirm or mark no-show)
  */
-export const confirmReservation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const confirmReservation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { reservationId, outcome } = data;
 
   if (!reservationId || !outcome) {
@@ -1130,12 +1135,13 @@ export const confirmReservation = functions.https.onCall(async (data, context) =
  * GET /reservations/list
  * List reservations for a user
  */
-export const listReservations = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const listReservations = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { role, from, to } = data;
 
   if (!role || !['creator', 'client'].includes(role)) {

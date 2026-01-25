@@ -47,7 +47,7 @@ interface PRIncident {
 export const pack387_createIncident = functions.https.onCall(
   async (data: Omit<PRIncident, 'id' | 'createdAt' | 'updatedAt'>, context) => {
     // Verify admin/staff auth
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -64,7 +64,7 @@ export const pack387_createIncident = functions.https.onCall(
       await db.collection('crisisResponseLogs').add({
         incidentId: incidentRef.id,
         actionType: 'INCIDENT_CREATED',
-        performedBy: context.auth.uid,
+        performedBy: request.auth.uid,
         timestamp: admin.firestore.Timestamp.now(),
         metadata: { incident },
       });
@@ -88,9 +88,9 @@ export const pack387_createIncident = functions.https.onCall(
 /**
  * Update incident status
  */
-export const pack387_updateIncidentStatus = functions.https.onCall(
-  async (data: { incidentId: string; status: IncidentStatus; notes?: string }, context) => {
-    if (!context.auth) {
+export const pack387_updateIncidentStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -113,7 +113,7 @@ export const pack387_updateIncidentStatus = functions.https.onCall(
       await db.collection('crisisResponseLogs').add({
         incidentId: data.incidentId,
         actionType: 'STATUS_CHANGED',
-        performedBy: context.auth.uid,
+        performedBy: request.auth.uid,
         timestamp: admin.firestore.Timestamp.now(),
         metadata: {
           oldStatus: incident.data()!.status,
@@ -143,17 +143,9 @@ export const pack387_updateIncidentStatus = functions.https.onCall(
 /**
  * Close incident with detailed report
  */
-export const pack387_closeIncidentWithReport = functions.https.onCall(
-  async (
-    data: {
-      incidentId: string;
-      resolutionSummary: string;
-      lessonsLearned: string;
-      preventativeMeasures: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const pack387_closeIncidentWithReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -173,7 +165,7 @@ export const pack387_closeIncidentWithReport = functions.https.onCall(
           summary: data.resolutionSummary,
           lessonsLearned: data.lessonsLearned,
           preventativeMeasures: data.preventativeMeasures,
-          closedBy: context.auth.uid,
+          closedBy: request.auth.uid,
           closedAt: admin.firestore.Timestamp.now(),
         },
       });
@@ -182,7 +174,7 @@ export const pack387_closeIncidentWithReport = functions.https.onCall(
       await db.collection('crisisResponseLogs').add({
         incidentId: data.incidentId,
         actionType: 'INCIDENT_CLOSED',
-        performedBy: context.auth.uid,
+        performedBy: request.auth.uid,
         timestamp: admin.firestore.Timestamp.now(),
         metadata: {
           resolutionSummary: data.resolutionSummary,
@@ -204,16 +196,9 @@ export const pack387_closeIncidentWithReport = functions.https.onCall(
 /**
  * Add legal review to incident
  */
-export const pack387_addLegalReview = functions.https.onCall(
-  async (
-    data: {
-      incidentId: string;
-      approved: boolean;
-      notes: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const pack387_addLegalReview = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -226,7 +211,7 @@ export const pack387_addLegalReview = functions.https.onCall(
       await incidentRef.update({
         legalReview: {
           approved: data.approved,
-          reviewedBy: context.auth.uid,
+          reviewedBy: request.auth.uid,
           reviewedAt: admin.firestore.Timestamp.now(),
           notes: data.notes,
         },
@@ -237,7 +222,7 @@ export const pack387_addLegalReview = functions.https.onCall(
       await db.collection('crisisResponseLogs').add({
         incidentId: data.incidentId,
         actionType: 'LEGAL_REVIEW_ADDED',
-        performedBy: context.auth.uid,
+        performedBy: request.auth.uid,
         timestamp: admin.firestore.Timestamp.now(),
         metadata: {
           approved: data.approved,
@@ -256,9 +241,9 @@ export const pack387_addLegalReview = functions.https.onCall(
 /**
  * Link support tickets to incident
  */
-export const pack387_linkSupportTickets = functions.https.onCall(
-  async (data: { incidentId: string; ticketIds: string[] }, context) => {
-    if (!context.auth) {
+export const pack387_linkSupportTickets = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -281,9 +266,9 @@ export const pack387_linkSupportTickets = functions.https.onCall(
 /**
  * Link fraud cases to incident
  */
-export const pack387_linkFraudCases = functions.https.onCall(
-  async (data: { incidentId: string; fraudCaseIds: string[] }, context) => {
-    if (!context.auth) {
+export const pack387_linkFraudCases = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -306,9 +291,9 @@ export const pack387_linkFraudCases = functions.https.onCall(
 /**
  * Get incident details with all linked data
  */
-export const pack387_getIncidentDetails = functions.https.onCall(
-  async (data: { incidentId: string }, context) => {
-    if (!context.auth) {
+export const pack387_getIncidentDetails = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 

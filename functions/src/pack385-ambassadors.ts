@@ -87,9 +87,10 @@ const TIER_CONFIGS = {
  * Assign user as launch ambassador
  * Admin-only function
  */
-export const pack385_assignLaunchAmbassador = functions.https.onCall(async (data, context) => {
+export const pack385_assignLaunchAmbassador = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin authentication required
-  if (!context.auth || !context.auth.token?.admin) {
+  if (!request.auth || !request.auth.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -119,7 +120,7 @@ export const pack385_assignLaunchAmbassador = functions.https.onCall(async (data
     userId,
     tier: tier as AmbassadorTier,
     assignedAt: admin.firestore.FieldValue.serverTimestamp() as admin.firestore.Timestamp,
-    assignedBy: context.auth.uid,
+    assignedBy: request.auth.uid,
     region,
     country,
     benefits: {
@@ -151,7 +152,7 @@ export const pack385_assignLaunchAmbassador = functions.https.onCall(async (data
   await db.collection('auditLogs').add({
     type: 'AMBASSADOR_ASSIGNED',
     severity: 'MEDIUM',
-    userId: context.auth.uid,
+    userId: request.auth.uid,
     data: {
       ambassadorUserId: userId,
       tier,
@@ -172,12 +173,13 @@ export const pack385_assignLaunchAmbassador = functions.https.onCall(async (data
 /**
  * Get ambassador data
  */
-export const pack385_getAmbassadorData = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_getAmbassadorData = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = data.userId || context.auth.uid;
+  const userId = data.userId || request.auth.uid;
 
   const ambassadorDoc = await db.collection('launchAmbassadors').doc(userId).get();
 
@@ -196,8 +198,9 @@ export const pack385_getAmbassadorData = functions.https.onCall(async (data, con
 /**
  * Apply revenue multiplier for ambassador
  */
-export const pack385_applyAmbassadorMultiplier = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_applyAmbassadorMultiplier = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -238,12 +241,13 @@ export const pack385_applyAmbassadorMultiplier = functions.https.onCall(async (d
 /**
  * Activate boosted discovery for ambassador
  */
-export const pack385_activateAmbassadorBoost = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_activateAmbassadorBoost = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Get ambassador data
   const ambassadorDoc = await db.collection('launchAmbassadors').doc(userId).get();
@@ -295,8 +299,9 @@ export const pack385_activateAmbassadorBoost = functions.https.onCall(async (dat
 /**
  * Track ambassador performance
  */
-export const pack385_trackAmbassadorPerformance = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_trackAmbassadorPerformance = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -324,8 +329,9 @@ export const pack385_trackAmbassadorPerformance = functions.https.onCall(async (
 /**
  * Get ambassador leaderboard
  */
-export const pack385_getAmbassadorLeaderboard = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_getAmbassadorLeaderboard = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -366,9 +372,10 @@ export const pack385_getAmbassadorLeaderboard = functions.https.onCall(async (da
 /**
  * Remove ambassador status
  */
-export const pack385_removeAmbassador = functions.https.onCall(async (data, context) => {
+export const pack385_removeAmbassador = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin authentication required
-  if (!context.auth || !context.auth.token?.admin) {
+  if (!request.auth || !request.auth.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -400,7 +407,7 @@ export const pack385_removeAmbassador = functions.https.onCall(async (data, cont
   await db.collection('auditLogs').add({
     type: 'AMBASSADOR_REMOVED',
     severity: 'MEDIUM',
-    userId: context.auth.uid,
+    userId: request.auth.uid,
     data: {
       ambassadorUserId: userId,
       reason

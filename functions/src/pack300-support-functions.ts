@@ -41,18 +41,18 @@ const db = admin.firestore();
 // TICKET CREATION WITH SAFETY CLASSIFICATION
 // ============================================================================
 
-export const createTicket = functions.https.onCall(
-  async (data: CreateTicketRequest, context) => {
+export const createTicket = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Authentication check
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const ticketId = db.collection('supportTickets').doc().id;
       const now = new Date().toISOString();
 
@@ -160,17 +160,17 @@ export const createTicket = functions.https.onCall(
 // ADD MESSAGE TO TICKET
 // ============================================================================
 
-export const addMessage = functions.https.onCall(
-  async (data: AddMessageRequest, context) => {
+export const addMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { ticketId, body, internal = false } = data;
 
       // Get ticket
@@ -274,17 +274,17 @@ export const addMessage = functions.https.onCall(
 // UPDATE TICKET (STATUS, PRIORITY, ASSIGNMENT)
 // ============================================================================
 
-export const updateTicket = functions.https.onCall(
-  async (data: UpdateTicketRequest, context) => {
+export const updateTicket = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { ticketId, status, priority, adminAssignedId, adminNotes } = data;
 
       // Get ticket
@@ -456,17 +456,17 @@ async function handleCriticalEscalation(
 // ACCOUNT ACTIONS (WARN, FREEZE, BAN)
 // ============================================================================
 
-export const executeAccountAction = functions.https.onCall(
-  async (data: AccountActionRequest, context) => {
+export const executeAccountAction = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'Admin must be authenticated'
         );
       }
 
-      const adminId = context.auth.uid;
+      const adminId = request.auth.uid;
 
       // Verify admin permissions (must be super_admin for bans)
       const isAdmin = await checkAdminPermission(adminId);
@@ -573,17 +573,17 @@ export const executeAccountAction = functions.https.onCall(
 // ADMIN METRICS & ANALYTICS
 // ============================================================================
 
-export const getSupportMetrics = functions.https.onCall(
-  async (data: {}, context) => {
+export const getSupportMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'Admin must be authenticated'
         );
       }
 
-      const isAdmin = await checkAdminPermission(context.auth.uid);
+      const isAdmin = await checkAdminPermission(request.auth.uid);
       if (!isAdmin) {
         throw new functions.https.HttpsError(
           'permission-denied',

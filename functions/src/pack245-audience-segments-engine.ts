@@ -859,9 +859,9 @@ export const scheduledSegmentUpdate = functions.pubsub
 /**
  * HTTP endpoint to trigger segment computation
  */
-export const triggerSegmentComputation = functions.https.onCall(
-  async (data: SegmentUpdateTrigger, context) => {
-    if (!context.auth) {
+export const triggerSegmentComputation = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -891,18 +891,18 @@ export const triggerSegmentComputation = functions.https.onCall(
 /**
  * HTTP endpoint to get creator analytics
  */
-export const getCreatorAudienceAnalytics = functions.https.onCall(
-  async (data: { creatorId: string }, context) => {
-    if (!context.auth) {
+export const getCreatorAudienceAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
     const { creatorId } = data;
 
     // Check authorization
-    if (context.auth.uid !== creatorId) {
+    if (request.auth.uid !== creatorId) {
       // Check if user is admin
-      const userDoc = await db.collection('users').doc(context.auth.uid).get();
+      const userDoc = await db.collection('users').doc(request.auth.uid).get();
       const userData = userDoc.data();
       if (!userData?.roles?.admin) {
         throw new functions.https.HttpsError('permission-denied', 'Not authorized');

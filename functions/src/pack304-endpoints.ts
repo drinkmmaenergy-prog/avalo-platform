@@ -40,7 +40,7 @@ import {
   exportMonthlyFinanceData,
   exportCreatorSummaryData,
 } from './pack304-exports';
-import { auth } from './runtime';
+import { auth , CallableRequest} from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -49,12 +49,12 @@ import { auth } from './runtime';
 /**
  * Check if user has FINANCE or SUPERADMIN role
  */
-async function checkFinanceAdminAccess(context: functions.https.CallableContext): Promise<void> {
-  if (!context.auth) {
+async function checkFinanceAdminAccess(request: CallableRequest<any>): Promise<void> {
+  if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Authentication required');
   }
 
-  const adminDoc = await db.collection('adminUsers').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('adminUsers').doc(request.auth.uid).get();
 
   if (!adminDoc.exists) {
     throw new HttpsError('permission-denied', 'Not an admin user');

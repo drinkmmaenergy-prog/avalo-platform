@@ -28,25 +28,25 @@ import {
   ExportStatementRequest,
   isValidYearMonth,
 } from './types/pack303-creator-earnings.types';
-import { HttpsError, admin, auth, onCall, onRequest } from './runtime';
+import { HttpsError, admin, auth, onCall, onRequest , CallableRequest} from './runtime';
 
 // ============================================================================
 // AUTHENTICATION HELPERS
 // ============================================================================
 
-function requireAuth(context: functions.https.CallableContext): string {
-  if (!context.auth) {
+function requireAuth(request: CallableRequest<any>): string {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
-  return context.auth.uid;
+  return request.auth.uid;
 }
 
-function requireFinanceAdmin(context: functions.https.CallableContext): void {
-  if (!context.auth) {
+function requireFinanceAdmin(request: CallableRequest<any>): void {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const roles = context.auth.token.roles || [];
+  const roles = request.auth.token.roles || [];
   if (!roles.includes('FINANCE_ADMIN')) {
     throw new functions.https.HttpsError('permission-denied', 'User must be FINANCE_ADMIN');
   }
@@ -61,8 +61,9 @@ function requireFinanceAdmin(context: functions.https.CallableContext): void {
  */
 export const getEarningsDashboardCallable = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
-    const userId = requireAuth(context);
+  .https.onCall(async (request) => {
+  const data = request.data;
+    const userId = requireAuth(request);
     
     const { year, month } = data;
     
@@ -91,8 +92,9 @@ export const getEarningsDashboardCallable = functions
  */
 export const getMonthlyStatementCallable = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
-    const userId = requireAuth(context);
+  .https.onCall(async (request) => {
+  const data = request.data;
+    const userId = requireAuth(request);
     
     const { year, month } = data;
     
@@ -128,8 +130,9 @@ export const getMonthlyStatementCallable = functions
 export const exportStatementCallable = functions
   .region('europe-west3')
   .runWith({ timeoutSeconds: 60, memory: '512MB' })
-  .https.onCall(async (data, context) => {
-    const userId = requireAuth(context);
+  .https.onCall(async (request) => {
+  const data = request.data;
+    const userId = requireAuth(request);
     
     const { year, month, format } = data;
     
@@ -166,8 +169,8 @@ export const exportStatementCallable = functions
  */
 export const checkEarningsCapabilityCallable = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
-    const userId = requireAuth(context);
+  .https.onCall(async (request) => {
+    const userId = requireAuth(request);
     
     const hasCapability = await hasEarningsCapability(userId);
     const availableMonths = await getAvailableEarningsMonths(userId);
@@ -188,7 +191,8 @@ export const checkEarningsCapabilityCallable = functions
  */
 export const adminTriggerAggregation = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     requireFinanceAdmin(context);
     
     const { userId, year, month } = data;
@@ -215,7 +219,8 @@ export const adminTriggerAggregation = functions
 export const adminBackfillAggregation = functions
   .region('europe-west3')
   .runWith({ timeoutSeconds: 540, memory: '512MB' })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     requireFinanceAdmin(context);
     
     const { userId, startYear, startMonth, endYear, endMonth } = data;
@@ -247,9 +252,10 @@ export const adminBackfillAggregation = functions
  */
 export const adminViewUserEarnings = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     requireFinanceAdmin(context);
-    const adminId = context.auth!.uid;
+    const adminId = request.auth!.uid;
     
     const { userId, year, month } = data;
     

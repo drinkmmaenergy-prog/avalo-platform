@@ -236,7 +236,8 @@ function getTodayDateString(): string {
 /**
  * Manual trigger for churn recalculation (admin only)
  */
-export const triggerChurnRecalculation = functions.https.onCall(async (data, context) => {
+export const triggerChurnRecalculation = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Optional: Add admin authentication check here
   
   const { userId } = data;
@@ -266,7 +267,8 @@ export const triggerChurnRecalculation = functions.https.onCall(async (data, con
 /**
  * Get churn statistics (admin only)
  */
-export const getChurnStatistics = functions.https.onCall(async (data, context) => {
+export const getChurnStatistics = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Optional: Add admin authentication check here
 
   try {

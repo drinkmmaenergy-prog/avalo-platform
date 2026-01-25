@@ -25,12 +25,13 @@ import { HttpsError, Timestamp, auth, onCall } from './runtime';
  * Generate or get user's referral code
  * POST /api/referral/get-code
  */
-export const getReferralCode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getReferralCode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const type = data.type || 'USER';
 
   try {
@@ -45,12 +46,13 @@ export const getReferralCode = functions.https.onCall(async (data, context) => {
  * Apply referral code during registration
  * POST /api/referral/apply-code
  */
-export const applyReferralCode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const applyReferralCode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { code, countryCode, deviceFingerprint, ipAddress } = data;
 
   if (!code || !countryCode) {
@@ -69,12 +71,12 @@ export const applyReferralCode = functions.https.onCall(async (data, context) =>
  * Get referral stats for current user
  * GET /api/referral/stats
  */
-export const getMyReferralStats = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getMyReferralStats = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const stats = await getReferralStats(userId);
@@ -89,12 +91,13 @@ export const getMyReferralStats = functions.https.onCall(async (data, context) =
  * Get referral history for current user
  * GET /api/referral/history
  */
-export const getMyReferralHistory = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getMyReferralHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const limit = data.limit || 50;
 
   try {
@@ -109,12 +112,12 @@ export const getMyReferralHistory = functions.https.onCall(async (data, context)
  * Manually trigger referral activation check (called after user completes milestones)
  * POST /api/referral/check-activation
  */
-export const checkReferralActivation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const checkReferralActivation = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const result = await activateReferral(userId);
@@ -128,7 +131,8 @@ export const checkReferralActivation = functions.https.onCall(async (data, conte
  * Get top referrers leaderboard
  * GET /api/referral/leaderboard
  */
-export const getReferralLeaderboard = functions.https.onCall(async (data, context) => {
+export const getReferralLeaderboard = functions.https.onCall(async (request) => {
+  const data = request.data;
   const limit = data.limit || 100;
 
   try {
@@ -147,12 +151,13 @@ export const getReferralLeaderboard = functions.https.onCall(async (data, contex
  * Generate influencer referral code
  * POST /api/referral/influencer/get-code
  */
-export const getInfluencerReferralCode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getInfluencerReferralCode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Check if user is influencer
   const userDoc = await admin.firestore().collection('users').doc(userId).get();
@@ -172,12 +177,13 @@ export const getInfluencerReferralCode = functions.https.onCall(async (data, con
  * Get influencer referral analytics
  * GET /api/referral/influencer/analytics
  */
-export const getInfluencerReferralAnalytics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getInfluencerReferralAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Check if user is influencer
   const userDoc = await admin.firestore().collection('users').doc(userId).get();
@@ -231,13 +237,14 @@ export const getInfluencerReferralAnalytics = functions.https.onCall(async (data
  * Get global referral metrics
  * GET /api/referral/admin/metrics
  */
-export const getGlobalReferralMetrics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getGlobalReferralMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Check admin role
-  const userDoc = await admin.firestore().collection('users').doc(context.auth.uid).get();
+  const userDoc = await admin.firestore().collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -298,14 +305,14 @@ export const getGlobalReferralMetrics = functions.https.onCall(async (data, cont
  * Get referral metrics by region
  * GET /api/referral/admin/metrics-by-region
  */
-export const getReferralMetricsByRegionEndpoint = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getReferralMetricsByRegionEndpoint = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     // Check admin role
-    const userDoc = await admin.firestore().collection('users').doc(context.auth.uid).get();
+    const userDoc = await admin.firestore().collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -328,13 +335,14 @@ export const getReferralMetricsByRegionEndpoint = functions.https.onCall(
  * Disable referral code (admin)
  * POST /api/referral/admin/disable-code
  */
-export const adminDisableReferralCode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminDisableReferralCode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Check admin role
-  const userDoc = await admin.firestore().collection('users').doc(context.auth.uid).get();
+  const userDoc = await admin.firestore().collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -356,13 +364,14 @@ export const adminDisableReferralCode = functions.https.onCall(async (data, cont
  * Freeze user referrals (admin)
  * POST /api/referral/admin/freeze-user
  */
-export const adminFreezeUserReferrals = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminFreezeUserReferrals = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Check admin role
-  const userDoc = await admin.firestore().collection('users').doc(context.auth.uid).get();
+  const userDoc = await admin.firestore().collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -384,13 +393,14 @@ export const adminFreezeUserReferrals = functions.https.onCall(async (data, cont
  * Create campaign referral code (admin)
  * POST /api/referral/admin/create-campaign
  */
-export const adminCreateCampaignCode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminCreateCampaignCode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Check admin role
-  const userDoc = await admin.firestore().collection('users').doc(context.auth.uid).get();
+  const userDoc = await admin.firestore().collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -409,12 +419,12 @@ export const adminCreateCampaignCode = functions.https.onCall(async (data, conte
       campaignId,
       name: campaignName,
       createdAt: admin.firestore.Timestamp.now(),
-      createdBy: context.auth.uid,
+      createdBy: request.auth.uid,
       active: true,
     });
 
     // Generate campaign code
-    const code = await generateReferralCode(context.auth.uid, 'CAMPAIGN', campaignId);
+    const code = await generateReferralCode(request.auth.uid, 'CAMPAIGN', campaignId);
     return { success: true, code };
   } catch (error) {
     throw new functions.https.HttpsError('internal', 'Failed to create campaign code');

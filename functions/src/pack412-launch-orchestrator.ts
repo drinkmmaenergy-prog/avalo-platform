@@ -512,13 +512,14 @@ async function handleGuardrailViolation(
 /**
  * Create or update region config
  */
-export const pack412_createOrUpdateRegionConfig = functions.https.onCall(async (data, context) => {
+export const pack412_createOrUpdateRegionConfig = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Check admin auth
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -552,7 +553,7 @@ export const pack412_createOrUpdateRegionConfig = functions.https.onCall(async (
       regionId: regionConfig.id,
       eventType: 'MANUAL_ACTION',
       description: `Region config updated`,
-      actor: context.auth.uid,
+      actor: request.auth.uid,
       metadata: { updates },
       createdAt: now,
     });
@@ -578,7 +579,7 @@ export const pack412_createOrUpdateRegionConfig = functions.https.onCall(async (
       regionId: regionConfig.id,
       eventType: 'MANUAL_ACTION',
       description: `Region created`,
-      actor: context.auth.uid,
+      actor: request.auth.uid,
       metadata: { region: newRegion },
       createdAt: now,
     });
@@ -587,7 +588,7 @@ export const pack412_createOrUpdateRegionConfig = functions.https.onCall(async (
   // Create audit log
   await db.collection('auditLogs').add({
     action: existing.exists ? 'LAUNCH_REGION_UPDATED' : 'LAUNCH_REGION_CREATED',
-    actor: context.auth.uid,
+    actor: request.auth.uid,
     resourceType: 'LaunchRegion',
     resourceId: regionConfig.id,
     metadata: { regionConfig },
@@ -600,13 +601,14 @@ export const pack412_createOrUpdateRegionConfig = functions.https.onCall(async (
 /**
  * Set region stage
  */
-export const pack412_setRegionStage = functions.https.onCall(async (data, context) => {
+export const pack412_setRegionStage = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Check admin auth
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -637,7 +639,7 @@ export const pack412_setRegionStage = functions.https.onCall(async (data, contex
     stage,
     lastStageChangeAt: now,
     lastStageChangeReason: reason,
-    lastStageChangeBy: context.auth.uid,
+    lastStageChangeBy: request.auth.uid,
     updatedAt: now,
   });
   
@@ -646,7 +648,7 @@ export const pack412_setRegionStage = functions.https.onCall(async (data, contex
     regionId,
     eventType: 'STAGE_CHANGE',
     description: `Stage changed from ${region.stage} to ${stage}: ${reason}`,
-    actor: context.auth.uid,
+    actor: request.auth.uid,
     metadata: { oldStage: region.stage, newStage: stage, reason },
     createdAt: now,
   });
@@ -654,7 +656,7 @@ export const pack412_setRegionStage = functions.https.onCall(async (data, contex
   // Create audit log
   await db.collection('auditLogs').add({
     action: 'LAUNCH_STAGE_CHANGED',
-    actor: context.auth.uid,
+    actor: request.auth.uid,
     resourceType: 'LaunchRegion',
     resourceId: regionId,
     metadata: { oldStage: region.stage, newStage: stage, reason },
@@ -667,13 +669,14 @@ export const pack412_setRegionStage = functions.https.onCall(async (data, contex
 /**
  * Update region traffic cap
  */
-export const pack412_updateRegionTrafficCap = functions.https.onCall(async (data, context) => {
+export const pack412_updateRegionTrafficCap = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Check admin auth
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -705,7 +708,7 @@ export const pack412_updateRegionTrafficCap = functions.https.onCall(async (data
     regionId,
     eventType: 'TRAFFIC_CAP_CHANGE',
     description: `Traffic cap changed from ${oldCap}% to ${trafficCapPct}%`,
-    actor: context.auth.uid,
+    actor: request.auth.uid,
     metadata: { oldCap, newCap: trafficCapPct },
     createdAt: now,
   });
@@ -713,7 +716,7 @@ export const pack412_updateRegionTrafficCap = functions.https.onCall(async (data
   // Create audit log
   await db.collection('auditLogs').add({
     action: 'LAUNCH_TRAFFIC_CAP_CHANGED',
-    actor: context.auth.uid,
+    actor: request.auth.uid,
     resourceType: 'LaunchRegion',
     resourceId: regionId,
     metadata: { oldCap, newCap: trafficCapPct },
@@ -726,13 +729,14 @@ export const pack412_updateRegionTrafficCap = functions.https.onCall(async (data
 /**
  * Update guardrail thresholds
  */
-export const pack412_updateGuardrailThresholds = functions.https.onCall(async (data, context) => {
+export const pack412_updateGuardrailThresholds = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Check admin auth
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -758,7 +762,7 @@ export const pack412_updateGuardrailThresholds = functions.https.onCall(async (d
   // Create audit log
   await db.collection('auditLogs').add({
     action: existing.exists ? 'LAUNCH_THRESHOLDS_UPDATED' : 'LAUNCH_THRESHOLDS_CREATED',
-    actor: context.auth.uid,
+    actor: request.auth.uid,
     resourceType: 'LaunchGuardrailThresholds',
     resourceId: thresholds.id,
     metadata: { thresholds: finalThresholds },
@@ -831,13 +835,13 @@ export const pack412_monitorLaunchGuardrails = functions.pubsub.schedule('every 
 /**
  * Propose next launch regions
  */
-export const pack412_proposeNextLaunchRegions = functions.https.onCall(async (data, context) => {
+export const pack412_proposeNextLaunchRegions = functions.https.onCall(async (request) => {
   // Check admin auth
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }

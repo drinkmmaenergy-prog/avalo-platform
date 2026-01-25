@@ -95,13 +95,14 @@ export const syncFXRates = functions.pubsub
 /**
  * Manual trigger for FX rate sync (for testing/admin use)
  */
-export const pack390_syncFXRates = functions.https.onCall(async (data, context) => {
+export const pack390_syncFXRates = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Only admins can manually trigger
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Only admins can sync FX rates');
   }
@@ -129,7 +130,7 @@ export const pack390_syncFXRates = functions.https.onCall(async (data, context) 
         source: 'ECB',
         timestamp: timestamp,
         updatedAt: timestamp,
-        triggeredBy: context.auth.uid
+        triggeredBy: request.auth.uid
       });
     }
     
@@ -154,8 +155,9 @@ export const pack390_syncFXRates = functions.https.onCall(async (data, context) 
 /**
  * Convert tokens to fiat currency
  */
-export const pack390_convertTokenToFiat = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_convertTokenToFiat = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -196,7 +198,7 @@ export const pack390_convertTokenToFiat = functions.https.onCall(async (data, co
     
     // Log conversion
     await db.collection('currencyConversions').add({
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       fromAmount: tokens,
       fromCurrency: 'TOKENS',
       toAmount: fiatAmount,
@@ -224,8 +226,9 @@ export const pack390_convertTokenToFiat = functions.https.onCall(async (data, co
 /**
  * Convert fiat currency to tokens
  */
-export const pack390_convertFiatToTokens = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_convertFiatToTokens = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -260,7 +263,7 @@ export const pack390_convertFiatToTokens = functions.https.onCall(async (data, c
     
     // Log conversion
     await db.collection('currencyConversions').add({
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       fromAmount: amount,
       fromCurrency: currency,
       toAmount: tokens,
@@ -292,7 +295,8 @@ export const pack390_convertFiatToTokens = functions.https.onCall(async (data, c
 /**
  * Get current FX rates for all supported currencies
  */
-export const pack390_getCurrentRates = functions.https.onCall(async (data, context) => {
+export const pack390_getCurrentRates = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     const ratesSnapshot = await db.collection('fxRates')
       .where('baseCurrency', '==', 'PLN')
@@ -333,7 +337,8 @@ export const pack390_getCurrentRates = functions.https.onCall(async (data, conte
 /**
  * Get FX rate for specific currency pair
  */
-export const pack390_getRate = functions.https.onCall(async (data, context) => {
+export const pack390_getRate = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { from, to } = data;
   
   if (!from || !to) {

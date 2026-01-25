@@ -69,13 +69,13 @@ interface AttributionValidateRequest {
 // VALIDATE ATTRIBUTION
 // ============================================================================
 
-export const pack386_validateAttribution = functions.https.onCall(
-  async (data: AttributionValidateRequest, context) => {
-    if (!context.auth) {
+export const pack386_validateAttribution = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Validate userId matches
     if (userId !== data.userId) {
@@ -368,17 +368,13 @@ export const pack386_detectChurn = functions.pubsub
 // BLOCK ATTRIBUTION SOURCE
 // ============================================================================
 
-export const pack386_blockAttributionSource = functions.https.onCall(
-  async (data: {
-    sourceType: 'campaign' | 'influencer' | 'ip' | 'device';
-    sourceId: string;
-    reason: string;
-  }, context) => {
-    if (!context.auth) {
+export const pack386_blockAttributionSource = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(userId).get();
@@ -446,13 +442,13 @@ export const pack386_blockAttributionSource = functions.https.onCall(
 // GET ATTRIBUTION ANALYTICS
 // ============================================================================
 
-export const pack386_getAttributionAnalytics = functions.https.onCall(
-  async (data: { source?: string; period?: 'day' | 'week' | 'month' }, context) => {
-    if (!context.auth) {
+export const pack386_getAttributionAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(userId).get();

@@ -166,17 +166,17 @@ async function getKycStatusWithComputed(userId: string): Promise<KycStatusRespon
  * Submit KYC Application
  * Callable function for users to submit identity verification
  */
-export const kyc_submitApplication_callable = functions.https.onCall(
-  async (data, context) => {
+export const kyc_submitApplication_callable = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // PACK 96: Step-up verification for KYC submission
@@ -270,17 +270,16 @@ export const kyc_submitApplication_callable = functions.https.onCall(
  * Get KYC Status
  * Fetch current KYC status for user
  */
-export const kyc_getStatus_callable = functions.https.onCall(
-  async (data, context) => {
+export const kyc_getStatus_callable = functions.https.onCall(async (request) => {
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const status = await getKycStatusWithComputed(userId);
@@ -300,17 +299,17 @@ export const kyc_getStatus_callable = functions.https.onCall(
  * Get KYC Documents
  * Fetch user's submitted KYC documents (without sensitive image URLs)
  */
-export const kyc_getDocuments_callable = functions.https.onCall(
-  async (data, context) => {
+export const kyc_getDocuments_callable = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const documentsSnapshot = await db
@@ -356,10 +355,10 @@ export const kyc_getDocuments_callable = functions.https.onCall(
  * Approve KYC Application
  * Admin function to approve a KYC submission
  */
-export const kyc_approve_callable = functions.https.onCall(
-  async (data: ApproveKycPayload, context) => {
+export const kyc_approve_callable = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Admin authentication check (simplified for now)
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"
@@ -368,7 +367,7 @@ export const kyc_approve_callable = functions.https.onCall(
 
     // TODO: Add proper admin role check
     // For now, any authenticated user can call this (should be restricted to admins)
-    const reviewerId = context.auth.uid;
+    const reviewerId = request.auth.uid;
 
     try {
       const { userId, documentId } = data;
@@ -466,17 +465,17 @@ export const kyc_approve_callable = functions.https.onCall(
  * Reject KYC Application
  * Admin function to reject a KYC submission
  */
-export const kyc_reject_callable = functions.https.onCall(
-  async (data: RejectKycPayload, context) => {
+export const kyc_reject_callable = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Admin authentication check
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"
       );
     }
 
-    const reviewerId = context.auth.uid;
+    const reviewerId = request.auth.uid;
 
     try {
       const { userId, documentId, reason } = data;
@@ -585,17 +584,17 @@ export const kyc_reject_callable = functions.https.onCall(
  * Block User from KYC
  * Admin function to permanently block a user from payouts
  */
-export const kyc_block_callable = functions.https.onCall(
-  async (data: BlockKycPayload, context) => {
+export const kyc_block_callable = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Admin authentication check
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"
       );
     }
 
-    const reviewerId = context.auth.uid;
+    const reviewerId = request.auth.uid;
 
     try {
       const { userId, reason } = data;

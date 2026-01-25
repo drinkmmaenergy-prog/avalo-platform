@@ -330,9 +330,10 @@ async function sendPushNotification(
 }
 
 // Batch send notifications (for admin broadcasts)
-export const batchNotifyCreators = functions.https.onCall(async (data, context) => {
+export const batchNotifyCreators = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Only admin can send batch notifications
-  if (!context.auth || context.auth.token.admin !== true) {
+  if (!request.auth || request.auth.token.admin !== true) {
     throw new functions.https.HttpsError('permission-denied', 'Only admins can send batch notifications');
   }
 
@@ -401,8 +402,9 @@ export const batchNotifyCreators = functions.https.onCall(async (data, context) 
 });
 
 // Mark notification as read
-export const markNotificationRead = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const markNotificationRead = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -417,13 +419,13 @@ export const markNotificationRead = functions.https.onCall(async (data, context)
 });
 
 // Get unread notifications count
-export const getUnreadCount = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getUnreadCount = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const snapshot = await db.collection('notifications')
-    .where('userId', '==', context.auth.uid)
+    .where('userId', '==', request.auth.uid)
     .where('read', '==', false)
     .get();
 

@@ -94,12 +94,13 @@ const PAYOUT_LIMITS: Record<string, PayoutLimits> = {
 /**
  * Submit KYC Level 1 (Basic Identity)
  */
-export const submitKYCLevel1 = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const submitKYCLevel1 = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { governmentIdUrl, governmentIdType, taxResidency, dateOfBirth, nationality } = data;
   
   if (!governmentIdUrl || !governmentIdType || !taxResidency) {
@@ -156,12 +157,13 @@ export const submitKYCLevel1 = functions.https.onCall(async (data, context) => {
 /**
  * Submit KYC Level 2 (Proof of Residence)
  */
-export const submitKYCLevel2 = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const submitKYCLevel2 = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { addressProofUrl, addressDetails } = data;
   
   if (!addressProofUrl || !addressDetails) {
@@ -199,12 +201,13 @@ export const submitKYCLevel2 = functions.https.onCall(async (data, context) => {
 /**
  * Submit KYB (Business Verification)
  */
-export const submitKYB = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const submitKYB = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const {
     companyName,
     companyRegistration,
@@ -369,12 +372,13 @@ async function createComplianceFlag(
 /**
  * Request payout
  */
-export const requestPayout = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const requestPayout = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
   const { amount, paymentMethod } = data;
   
   if (!amount || !paymentMethod) {
@@ -506,12 +510,13 @@ export const requestPayout = functions.https.onCall(async (data, context) => {
 /**
  * Validate payment method
  */
-export const validatePaymentMethod = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const validatePaymentMethod = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { type, details } = data;
   
   if (!type || !details) {
@@ -565,12 +570,13 @@ export const validatePaymentMethod = functions.https.onCall(async (data, context
 /**
  * Get creator verification status
  */
-export const getVerificationStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getVerificationStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   
   const verificationDoc = await db.collection('creatorVerification').doc(userId).get();
   if (!verificationDoc.exists) {

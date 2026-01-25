@@ -610,7 +610,8 @@ async function logAuditEvent(userId: string, action: string, metadata: any): Pro
  * Callable function: Recompute catfish risk for a specific user
  * Can be called by admins or triggered by system events
  */
-export const recomputeCatfishRisk = functions.https.onCall(async (data, context) => {
+export const recomputeCatfishRisk = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { userId } = data;
   
   if (!userId) {
@@ -618,8 +619,8 @@ export const recomputeCatfishRisk = functions.https.onCall(async (data, context)
   }
   
   // Allow admins or the user themselves
-  const isAdmin = context.auth?.token?.admin === true;
-  const isSelf = context.auth?.uid === userId;
+  const isAdmin = request.auth?.token?.admin === true;
+  const isSelf = request.auth?.uid === userId;
   
   if (!isAdmin && !isSelf) {
     throw new functions.https.HttpsError('permission-denied', 'Not authorized to recompute risk');
@@ -816,9 +817,10 @@ export const onCatfishReport = functions.firestore
 /**
  * Admin callable: Override risk assessment
  */
-export const adminOverrideCatfishRisk = functions.https.onCall(async (data, context) => {
+export const adminOverrideCatfishRisk = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Verify admin
-  if (!context.auth?.token?.admin) {
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
   
@@ -837,7 +839,7 @@ export const adminOverrideCatfishRisk = functions.https.onCall(async (data, cont
           autoHiddenFromSwipe: false,
           'adminOverride.confirmed': true,
           'adminOverride.notes': notes,
-          'adminOverride.by': context.auth.uid,
+          'adminOverride.by': request.auth.uid,
           'adminOverride.at': admin.firestore.Timestamp.now(),
         });
         await releaseRestrictions(userId, { autoHiddenFromDiscovery: true } as CatfishRiskProfile);
@@ -855,7 +857,7 @@ export const adminOverrideCatfishRisk = functions.https.onCall(async (data, cont
           status: 'BANNED',
           bannedReason: 'Confirmed fake profile / catfish',
           bannedAt: admin.firestore.Timestamp.now(),
-          bannedBy: context.auth.uid,
+          bannedBy: request.auth.uid,
         });
         break;
         
@@ -865,7 +867,7 @@ export const adminOverrideCatfishRisk = functions.https.onCall(async (data, cont
     
     // Log admin action
     await db.collection('adminActions').add({
-      adminId: context.auth.uid,
+      adminId: request.auth.uid,
       actionType: `CATFISH_RISK_${action.toUpperCase()}`,
       targetUserId: userId,
       notes,
@@ -883,9 +885,10 @@ export const adminOverrideCatfishRisk = functions.https.onCall(async (data, cont
 /**
  * Admin callable: Get catfish risk dashboard data
  */
-export const getCatfishRiskDashboard = functions.https.onCall(async (data, context) => {
+export const getCatfishRiskDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Verify admin
-  if (!context.auth?.token?.admin) {
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
   

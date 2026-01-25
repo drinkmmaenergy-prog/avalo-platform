@@ -69,12 +69,13 @@ const DEFAULT_REWARD_CONFIG: RewardConfig = {
 /**
  * Generate referral link for user
  */
-export const pack385_generateReferralLink = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_generateReferralLink = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Check if user is eligible for referrals
   const userDoc = await db.collection('users').doc(userId).get();
@@ -130,8 +131,9 @@ export const pack385_generateReferralLink = functions.https.onCall(async (data, 
 /**
  * Process referral when new user signs up
  */
-export const pack385_attributeReferral = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_attributeReferral = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -141,7 +143,7 @@ export const pack385_attributeReferral = functions.https.onCall(async (data, con
     throw new functions.https.HttpsError('invalid-argument', 'Referral code required');
   }
 
-  const invitedUserId = context.auth.uid;
+  const invitedUserId = request.auth.uid;
 
   // Check if referral code exists
   const linkDoc = await db.collection('referralLinks').doc(referralCode).get();
@@ -172,7 +174,7 @@ export const pack385_attributeReferral = functions.https.onCall(async (data, con
     inviterId,
     invitedUserId,
     deviceInfo,
-    ipAddress: context.rawRequest?.ip || 'unknown'
+    ipAddress: request.rawRequest?.ip || 'unknown'
   });
 
   // Create attribution record
@@ -185,7 +187,7 @@ export const pack385_attributeReferral = functions.https.onCall(async (data, con
     rewardPaid: false,
     fraudFlags,
     deviceFingerprint: deviceInfo?.fingerprint || 'unknown',
-    ipAddress: context.rawRequest?.ip || 'unknown'
+    ipAddress: request.rawRequest?.ip || 'unknown'
   };
 
   await db.collection('referralAttribution').add(attribution);
@@ -261,8 +263,9 @@ async function checkReferralFraud(data: {
 /**
  * Process referral reward after conditions are met
  */
-export const pack385_processReferralReward = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_processReferralReward = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -407,12 +410,13 @@ async function checkReferralUnlockConditions(userId: string): Promise<{ eligible
 /**
  * Get user's referral stats
  */
-export const pack385_getReferralStats = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_getReferralStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Get all referrals
   const attributions = await db.collection('referralAttribution')

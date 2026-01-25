@@ -175,17 +175,17 @@ async function createAuditLog(
  * Get legal requirements for a specific action
  * Returns which documents are required and which versions are pending
  */
-export const getLegalRequirementsForUser = functions.https.onCall(
-  async (data: GetLegalRequirementsRequest, context) => {
+export const getLegalRequirementsForUser = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Must be authenticated
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { action } = data;
 
     // Validate action
@@ -210,17 +210,17 @@ export const getLegalRequirementsForUser = functions.https.onCall(
  * Accept a legal document
  * Stores acceptance for user and creates audit entry
  */
-export const acceptLegalDocument = functions.https.onCall(
-  async (data: AcceptLegalDocumentRequest, context) => {
+export const acceptLegalDocument = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Must be authenticated
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { type, version, platform } = data;
 
     // Validate input
@@ -277,8 +277,8 @@ export const acceptLegalDocument = functions.https.onCall(
         type,
         version,
         platform,
-        context.rawRequest?.ip,
-        context.rawRequest?.headers?.['user-agent']
+        request.rawRequest?.ip,
+        request.rawRequest?.headers?.['user-agent']
       );
 
       console.log(`User ${userId} accepted ${type} v${version} on ${platform}`);
@@ -309,10 +309,10 @@ export const acceptLegalDocument = functions.https.onCall(
  * Upload a new legal document (Admin only)
  * Creates a new version of a legal document
  */
-export const admin_uploadLegalDocument = functions.https.onCall(
-  async (data: UploadLegalDocumentRequest, context) => {
+export const admin_uploadLegalDocument = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Must be authenticated
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -320,7 +320,7 @@ export const admin_uploadLegalDocument = functions.https.onCall(
     }
 
     // Must be admin
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const isAdmin = userDoc.exists && userDoc.data()?.roles?.admin === true;
 
     if (!isAdmin) {
@@ -358,7 +358,7 @@ export const admin_uploadLegalDocument = functions.https.onCall(
       const docRef = await db.collection('legal_documents').add(newDoc);
 
       console.log(
-        `Admin ${context.auth.uid} uploaded ${type} v${newVersion} (${language})`
+        `Admin ${request.auth.uid} uploaded ${type} v${newVersion} (${language})`
       );
 
       const response: UploadLegalDocumentResponse = {
@@ -382,8 +382,8 @@ export const admin_uploadLegalDocument = functions.https.onCall(
 /**
  * Get all legal documents (for displaying in Legal Center)
  */
-export const getAllLegalDocuments = functions.https.onCall(
-  async (data: { language?: string }, context) => {
+export const getAllLegalDocuments = functions.https.onCall(async (request) => {
+  const data = request.data;
     const language = data?.language || 'en';
 
     try {
@@ -404,17 +404,17 @@ export const getAllLegalDocuments = functions.https.onCall(
 /**
  * Get user's current legal acceptance status
  */
-export const getUserLegalStatus = functions.https.onCall(
-  async (data: { language?: string }, context) => {
+export const getUserLegalStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Must be authenticated
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const language = data?.language || 'en';
 
     try {

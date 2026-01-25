@@ -102,8 +102,9 @@ const db = admin.firestore();
 /**
  * Create ASO A/B Test
  */
-export const createASOTest = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const createASOTest = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -142,7 +143,7 @@ export const createASOTest = functions.https.onCall(async (data, context) => {
     currentSampleSize: 0,
     confidenceLevel: 0,
     createdAt: admin.firestore.Timestamp.now(),
-    createdBy: context.auth.uid,
+    createdBy: request.auth.uid,
     notes: data.notes || '',
   };
 
@@ -154,8 +155,9 @@ export const createASOTest = functions.https.onCall(async (data, context) => {
 /**
  * Start ASO A/B Test
  */
-export const startASOTest = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const startASOTest = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -176,8 +178,9 @@ export const startASOTest = functions.https.onCall(async (data, context) => {
 /**
  * Pause ASO A/B Test
  */
-export const pauseASOTest = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const pauseASOTest = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -193,8 +196,9 @@ export const pauseASOTest = functions.https.onCall(async (data, context) => {
 /**
  * Complete ASO A/B Test and declare winner
  */
-export const completeASOTest = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const completeASOTest = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -225,8 +229,9 @@ export const completeASOTest = functions.https.onCall(async (data, context) => {
 /**
  * Record ASO test impression/conversion
  */
-export const recordASOTestEvent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const recordASOTestEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
@@ -295,8 +300,9 @@ export const recordASOTestEvent = functions.https.onCall(async (data, context) =
 /**
  * Track keyword performance
  */
-export const trackKeywordPerformance = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const trackKeywordPerformance = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -338,8 +344,9 @@ export const trackKeywordPerformance = functions.https.onCall(async (data, conte
 /**
  * Record store performance metrics
  */
-export const recordStoreMetrics = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const recordStoreMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -388,8 +395,9 @@ export const recordStoreMetrics = functions.https.onCall(async (data, context) =
 /**
  * Get ASO performance dashboard data
  */
-export const getASODashboard = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const getASODashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 

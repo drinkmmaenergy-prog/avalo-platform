@@ -26,12 +26,13 @@ import { HttpsError, auth, onCall, timestamp } from './runtime';
 /**
  * Translate message with safety checks
  */
-export const pack154_translateMessage = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_translateMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const request: TranslationRequest = {
     content: data.content,
@@ -71,12 +72,13 @@ export const pack154_translateMessage = functions.https.onCall(async (data, cont
 /**
  * Translate voice transcript with audio safety checks
  */
-export const pack154_translateVoice = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_translateVoice = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const request = {
     transcript: data.transcript,
@@ -109,8 +111,9 @@ export const pack154_translateVoice = functions.https.onCall(async (data, contex
 /**
  * Detect language of text
  */
-export const pack154_detectLanguage = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_detectLanguage = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -136,12 +139,13 @@ export const pack154_detectLanguage = functions.https.onCall(async (data, contex
 /**
  * Get user translation preferences
  */
-export const pack154_getPreferences = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_getPreferences = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const doc = await db.collection('translation_preferences').doc(userId).get();
 
   if (!doc.exists) {
@@ -160,12 +164,13 @@ export const pack154_getPreferences = functions.https.onCall(async (data, contex
 /**
  * Update user translation preferences
  */
-export const pack154_updatePreferences = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_updatePreferences = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const preferences: Partial<TranslationPreferences> = {
     userId,
@@ -199,12 +204,13 @@ export const pack154_updatePreferences = functions.https.onCall(async (data, con
 /**
  * Get user's translation history
  */
-export const pack154_getTranslationHistory = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_getTranslationHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const limit = data.limit || 50;
 
   const snapshot = await db
@@ -234,12 +240,13 @@ export const pack154_getTranslationHistory = functions.https.onCall(async (data,
 /**
  * Get blocked translations for user
  */
-export const pack154_getBlockedTranslations = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_getBlockedTranslations = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const limit = data.limit || 20;
 
   const snapshot = await db
@@ -274,12 +281,13 @@ export const pack154_getBlockedTranslations = functions.https.onCall(async (data
 /**
  * Submit appeal for blocked translation
  */
-export const pack154_submitAppeal = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_submitAppeal = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { translationId, reason, evidence } = data;
 
   if (!translationId || !reason) {
@@ -341,12 +349,13 @@ export const pack154_submitAppeal = functions.https.onCall(async (data, context)
 /**
  * Get user's appeal history
  */
-export const pack154_getMyAppeals = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_getMyAppeals = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const snapshot = await db
     .collection('translation_appeals')
@@ -375,12 +384,13 @@ export const pack154_getMyAppeals = functions.https.onCall(async (data, context)
 /**
  * Check if translation is eligible for appeal
  */
-export const pack154_checkAppealEligibility = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_checkAppealEligibility = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { translationId } = data;
 
   if (!translationId) {
@@ -427,13 +437,14 @@ export const pack154_checkAppealEligibility = functions.https.onCall(async (data
 /**
  * Review translation appeal (admin only)
  */
-export const pack154_admin_reviewAppeal = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_admin_reviewAppeal = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Check if user is admin
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userData = userDoc.data();
   
   if (!userData || userData.role !== 'admin') {
@@ -470,7 +481,7 @@ export const pack154_admin_reviewAppeal = functions.https.onCall(async (data, co
     status,
     decision,
     reviewedAt: Date.now(),
-    reviewedBy: context.auth.uid,
+    reviewedBy: request.auth.uid,
     reviewerNotes: reviewerNotes || '',
   });
 
@@ -485,13 +496,14 @@ export const pack154_admin_reviewAppeal = functions.https.onCall(async (data, co
 /**
  * Get pending appeals (admin only)
  */
-export const pack154_admin_getPendingAppeals = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_admin_getPendingAppeals = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Check if user is admin
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userData = userDoc.data();
   
   if (!userData || userData.role !== 'admin') {
@@ -513,13 +525,14 @@ export const pack154_admin_getPendingAppeals = functions.https.onCall(async (dat
 /**
  * Get translation statistics (admin only)
  */
-export const pack154_admin_getStats = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack154_admin_getStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Check if user is admin
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userData = userDoc.data();
   
   if (!userData || userData.role !== 'admin') {

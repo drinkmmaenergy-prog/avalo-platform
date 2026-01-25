@@ -32,19 +32,17 @@ export const rewriteFirstMessage = functions
     memory: '512MB'
   })
   .https
-  .onCall(async (
-    data: RewriteFirstMessageRequest,
-    context
-  ): Promise<RewriteFirstMessageResponse> => {
+  .onCall(async (request) => {
+  const data = request.data;
     // Verify authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated to rewrite first message'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { matchId, newMessage } = data;
 
     // Validate input
@@ -346,15 +344,16 @@ async function sendRewriteNotification(
  */
 export const getArchivedConversations = functions
   .https
-  .onCall(async (data: { matchId: string }, context) => {
-    if (!context.auth) {
+  .onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { matchId } = data;
 
     try {

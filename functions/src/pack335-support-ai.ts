@@ -17,16 +17,16 @@ import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
  * AI Support Assistant (Stub implementation)
  * Provides FAQ search and basic support
  */
-export const pack335_aiSupportAssistant = functions.https.onCall(
-  async (data: AiSupportRequest, context): Promise<AiSupportResponse> => {
-    if (!context.auth) {
+export const pack335_aiSupportAssistant = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be authenticated");
     }
     
     const { userId, message, locale } = data;
     
     // Verify user
-    if (userId !== context.auth.uid) {
+    if (userId !== request.auth.uid) {
       throw new functions.https.HttpsError("permission-denied", "Invalid user");
     }
     
@@ -137,12 +137,9 @@ export const pack335_aiSupportAssistant = functions.https.onCall(
 /**
  * Search FAQ articles
  */
-export const pack335_searchFaqArticles = functions.https.onCall(
-  async (
-    data: { query: string; category?: string; language?: string; limit?: number },
-    context
-  ) => {
-    if (!context.auth) {
+export const pack335_searchFaqArticles = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be authenticated");
     }
     
@@ -195,9 +192,9 @@ export const pack335_searchFaqArticles = functions.https.onCall(
 /**
  * Get FAQ article by ID
  */
-export const pack335_getFaqArticle = functions.https.onCall(
-  async (data: { articleId: string }, context) => {
-    if (!context.auth) {
+export const pack335_getFaqArticle = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be authenticated");
     }
     
@@ -212,7 +209,7 @@ export const pack335_getFaqArticle = functions.https.onCall(
     const article = doc.data() as SupportFaqArticle;
     
     // Only return published articles to non-admins
-    const isAdmin = await db.collection("adminUsers").doc(context.auth.uid).get();
+    const isAdmin = await db.collection("adminUsers").doc(request.auth.uid).get();
     
     if (!article.isPublished && !isAdmin.exists) {
       throw new functions.https.HttpsError("not-found", "Article not found");
@@ -221,7 +218,7 @@ export const pack335_getFaqArticle = functions.https.onCall(
     // Track view
     await db.collection("supportFaqViews").add({
       articleId,
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       timestamp: new Date(),
     });
     
@@ -232,9 +229,9 @@ export const pack335_getFaqArticle = functions.https.onCall(
 /**
  * Get FAQ categories with article counts
  */
-export const pack335_getFaqCategories = functions.https.onCall(
-  async (data: { language?: string }, context) => {
-    if (!context.auth) {
+export const pack335_getFaqCategories = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be authenticated");
     }
     
@@ -262,25 +259,14 @@ export const pack335_getFaqCategories = functions.https.onCall(
 /**
  * Admin: Create or update FAQ article
  */
-export const pack335_manageFaqArticle = functions.https.onCall(
-  async (
-    data: {
-      articleId?: string;
-      title: string;
-      bodyMarkdown: string;
-      category: string;
-      tags: string[];
-      language: string;
-      isPublished: boolean;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const pack335_manageFaqArticle = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be authenticated");
     }
     
     // Verify admin
-    const isAdmin = await db.collection("adminUsers").doc(context.auth.uid).get();
+    const isAdmin = await db.collection("adminUsers").doc(request.auth.uid).get();
     if (!isAdmin.exists) {
       throw new functions.https.HttpsError("permission-denied", "Admin only");
     }
@@ -323,14 +309,14 @@ export const pack335_manageFaqArticle = functions.https.onCall(
 /**
  * Admin: Delete FAQ article
  */
-export const pack335_deleteFaqArticle = functions.https.onCall(
-  async (data: { articleId: string }, context) => {
-    if (!context.auth) {
+export const pack335_deleteFaqArticle = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be authenticated");
     }
     
     // Verify admin
-    const isAdmin = await db.collection("adminUsers").doc(context.auth.uid).get();
+    const isAdmin = await db.collection("adminUsers").doc(request.auth.uid).get();
     if (!isAdmin.exists) {
       throw new functions.https.HttpsError("permission-denied", "Admin only");
     }

@@ -251,12 +251,13 @@ export const onReputationChange = functions.firestore
 /**
  * Callable function to check user policy
  */
-export const checkUserPolicy = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const checkUserPolicy = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { action } = data;
   
   if (action) {

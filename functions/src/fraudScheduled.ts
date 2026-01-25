@@ -281,9 +281,10 @@ export const onAmlProfileUpdateFraudCheck = functions.firestore
 /**
  * Manual trigger for fraud recalculation (callable function)
  */
-export const triggerFraudRecalculation = functions.https.onCall(async (data, context) => {
+export const triggerFraudRecalculation = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Verify admin authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError(
       'unauthenticated',
       'Must be authenticated to trigger fraud recalculation'
@@ -291,7 +292,7 @@ export const triggerFraudRecalculation = functions.https.onCall(async (data, con
   }
   
   // Check if user is admin (simplified check)
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists) {
     throw new functions.https.HttpsError(
       'permission-denied',

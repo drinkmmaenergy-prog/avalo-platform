@@ -114,13 +114,14 @@ export const expireCoolingSessions = functions.pubsub
 /**
  * Request message rewrite assistance
  */
-export const requestMessageRewrite = functions.https.onCall(async (data, context) => {
+export const requestMessageRewrite = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Verify authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { conversationId, originalMessage, rewriteIntent } = data;
   
   // Validate inputs
@@ -164,8 +165,9 @@ export const requestMessageRewrite = functions.https.onCall(async (data, context
 /**
  * Accept a rewritten message
  */
-export const acceptRewrite = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const acceptRewrite = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -188,8 +190,9 @@ export const acceptRewrite = functions.https.onCall(async (data, context) => {
 /**
  * Reject a rewritten message
  */
-export const rejectRewrite = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const rejectRewrite = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -212,8 +215,9 @@ export const rejectRewrite = functions.https.onCall(async (data, context) => {
 /**
  * Resolve an intervention
  */
-export const resolveIntervention = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const resolveIntervention = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -236,12 +240,13 @@ export const resolveIntervention = functions.https.onCall(async (data, context) 
 /**
  * Check if user has active cooling in conversation
  */
-export const checkCoolingStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const checkCoolingStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { conversationId } = data;
   
   if (!conversationId) {
@@ -266,12 +271,13 @@ export const checkCoolingStatus = functions.https.onCall(async (data, context) =
 /**
  * Update guardian settings
  */
-export const updateGuardianSettings = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateGuardianSettings = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { enabled, interventionLevel, autoRewriteSuggestions, notifyOnIntervention } = data;
   
   try {
@@ -310,12 +316,13 @@ export const updateGuardianSettings = functions.https.onCall(async (data, contex
 /**
  * Get guardian settings
  */
-export const getGuardianSettings = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getGuardianSettings = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   
   try {
     const db = require('./init').db;

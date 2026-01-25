@@ -28,8 +28,9 @@ import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 // Memory Management Endpoints
 // ======================
 
-export const createAIMemory = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createAIMemory = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -41,7 +42,7 @@ export const createAIMemory = functions.https.onCall(async (data, context) => {
 
   try {
     const memory = await recordAIMemory(
-      context.auth.uid,
+      request.auth.uid,
       characterId,
       category as MemoryCategory,
       content,
@@ -62,8 +63,9 @@ export const createAIMemory = functions.https.onCall(async (data, context) => {
   }
 });
 
-export const getUserAIMemories = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getUserAIMemories = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -75,7 +77,7 @@ export const getUserAIMemories = functions.https.onCall(async (data, context) =>
 
   try {
     const memories = await getAIMemories(
-      context.auth.uid,
+      request.auth.uid,
       characterId,
       category as MemoryCategory | undefined
     );
@@ -98,8 +100,9 @@ export const getUserAIMemories = functions.https.onCall(async (data, context) =>
   }
 });
 
-export const deleteAIMemory = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const deleteAIMemory = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -110,7 +113,7 @@ export const deleteAIMemory = functions.https.onCall(async (data, context) => {
   }
 
   try {
-    await forgetMemory(context.auth.uid, memoryId);
+    await forgetMemory(request.auth.uid, memoryId);
 
     return {
       success: true,
@@ -121,8 +124,9 @@ export const deleteAIMemory = functions.https.onCall(async (data, context) => {
   }
 });
 
-export const deleteAllAIMemories = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const deleteAllAIMemories = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -133,7 +137,7 @@ export const deleteAllAIMemories = functions.https.onCall(async (data, context) 
   }
 
   try {
-    const deletedCount = await forgetAllMemories(context.auth.uid, characterId);
+    const deletedCount = await forgetAllMemories(request.auth.uid, characterId);
 
     return {
       success: true,
@@ -149,8 +153,9 @@ export const deleteAllAIMemories = functions.https.onCall(async (data, context) 
 // Character Growth Endpoints
 // ======================
 
-export const createLoreUpdate = functions.https.onCall(async (data, context) => {
-  if (!context.auth || !context.auth.token.admin) {
+export const createLoreUpdate = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth || !request.auth.token.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -183,8 +188,9 @@ export const createLoreUpdate = functions.https.onCall(async (data, context) => 
   }
 });
 
-export const getCharacterGrowth = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCharacterGrowth = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -213,8 +219,9 @@ export const getCharacterGrowth = functions.https.onCall(async (data, context) =
   }
 });
 
-export const getGrowthMetrics = functions.https.onCall(async (data, context) => {
-  if (!context.auth || !context.auth.token.admin) {
+export const getGrowthMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth || !request.auth.token.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -241,8 +248,9 @@ export const getGrowthMetrics = functions.https.onCall(async (data, context) => 
 // Safety & Dependency Detection Endpoints
 // ======================
 
-export const checkDependencyRisk = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const checkDependencyRisk = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -253,7 +261,7 @@ export const checkDependencyRisk = functions.https.onCall(async (data, context) 
   }
 
   try {
-    const signal = await detectDependencyRisk(context.auth.uid, characterId);
+    const signal = await detectDependencyRisk(request.auth.uid, characterId);
 
     if (signal) {
       return {
@@ -277,8 +285,9 @@ export const checkDependencyRisk = functions.https.onCall(async (data, context) 
   }
 });
 
-export const activateStabilityMode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const activateStabilityMode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -290,7 +299,7 @@ export const activateStabilityMode = functions.https.onCall(async (data, context
 
   try {
     const session = await applyStabilityTone(
-      context.auth.uid,
+      request.auth.uid,
       characterId,
       reason || 'User requested stability mode'
     );
@@ -308,8 +317,9 @@ export const activateStabilityMode = functions.https.onCall(async (data, context
   }
 });
 
-export const deactivateStabilityMode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const deactivateStabilityMode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -331,8 +341,9 @@ export const deactivateStabilityMode = functions.https.onCall(async (data, conte
   }
 });
 
-export const getStabilityStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getStabilityStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -343,7 +354,7 @@ export const getStabilityStatus = functions.https.onCall(async (data, context) =
   }
 
   try {
-    const session = await getActiveStabilitySession(context.auth.uid, characterId);
+    const session = await getActiveStabilitySession(request.auth.uid, characterId);
 
     if (session) {
       return {
@@ -372,8 +383,9 @@ export const getStabilityStatus = functions.https.onCall(async (data, context) =
 // Memory Permission Endpoints
 // ======================
 
-export const updateMemoryPermissions = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateMemoryPermissions = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -384,7 +396,7 @@ export const updateMemoryPermissions = functions.https.onCall(async (data, conte
   }
 
   try {
-    await setMemoryPermissions(context.auth.uid, characterId, memoryTypes);
+    await setMemoryPermissions(request.auth.uid, characterId, memoryTypes);
 
     return {
       success: true,
@@ -395,8 +407,9 @@ export const updateMemoryPermissions = functions.https.onCall(async (data, conte
   }
 });
 
-export const getMemoryPermissionsStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getMemoryPermissionsStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -407,7 +420,7 @@ export const getMemoryPermissionsStatus = functions.https.onCall(async (data, co
   }
 
   try {
-    const permissions = await getMemoryPermissions(context.auth.uid, characterId);
+    const permissions = await getMemoryPermissions(request.auth.uid, characterId);
 
     return {
       success: true,

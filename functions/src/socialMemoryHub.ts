@@ -69,16 +69,17 @@ async function getOrCreateMemoryPermissions(
  */
 export const sharePreferenceAcrossAis = functions
   .region('europe-west3')
-  .https.onCall(async (data: SharePreferenceRequest, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const callerId = context.auth.uid;
+      const callerId = request.auth.uid;
       if (callerId !== data.userId) {
         throw new functions.https.HttpsError(
           'permission-denied',
@@ -175,17 +176,17 @@ export const sharePreferenceAcrossAis = functions
  */
 export const getSharedPreferencesForAi = functions
   .region('europe-west3')
-  .https.onCall(
-    async (data: GetSharedPreferencesRequest, context): Promise<GetSharedPreferencesResponse> => {
+  .https.onCall(async (request) => {
+  const data = request.data;
       try {
-        if (!context.auth) {
+        if (!request.auth) {
           throw new functions.https.HttpsError(
             'unauthenticated',
             'User must be authenticated'
           );
         }
 
-        const callerId = context.auth.uid;
+        const callerId = request.auth.uid;
         if (callerId !== data.userId) {
           throw new functions.https.HttpsError(
             'permission-denied',
@@ -305,27 +306,17 @@ export const getSharedPreferencesForAi = functions
  */
 export const storeUserStoryProgress = functions
   .region('europe-west3')
-  .https.onCall(
-    async (
-      data: {
-        userId: string;
-        storyId: string;
-        storyName: string;
-        currentChapter: number;
-        totalChapters: number;
-        lastPosition: string;
-      },
-      context
-    ) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
       try {
-        if (!context.auth) {
+        if (!request.auth) {
           throw new functions.https.HttpsError(
             'unauthenticated',
             'User must be authenticated'
           );
         }
 
-        const callerId = context.auth.uid;
+        const callerId = request.auth.uid;
         if (callerId !== data.userId) {
           throw new functions.https.HttpsError(
             'permission-denied',
@@ -393,25 +384,17 @@ export const storeUserStoryProgress = functions
  */
 export const updateMemoryPermissions = functions
   .region('europe-west3')
-  .https.onCall(
-    async (
-      data: {
-        userId: string;
-        crossAiSharingEnabled?: boolean;
-        allowedCategories?: AllowedPreferenceCategory[];
-        excludedAiIds?: string[];
-      },
-      context
-    ) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
       try {
-        if (!context.auth) {
+        if (!request.auth) {
           throw new functions.https.HttpsError(
             'unauthenticated',
             'User must be authenticated'
           );
         }
 
-        const callerId = context.auth.uid;
+        const callerId = request.auth.uid;
         if (callerId !== data.userId) {
           throw new functions.https.HttpsError(
             'permission-denied',
@@ -462,17 +445,17 @@ export const updateMemoryPermissions = functions
  */
 export const blockPreferenceSharing = functions
   .region('europe-west3')
-  .https.onCall(
-    async (data: { userId: string; preferenceId: string }, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
       try {
-        if (!context.auth) {
+        if (!request.auth) {
           throw new functions.https.HttpsError(
             'unauthenticated',
             'User must be authenticated'
           );
         }
 
-        const callerId = context.auth.uid;
+        const callerId = request.auth.uid;
         if (callerId !== data.userId) {
           throw new functions.https.HttpsError(
             'permission-denied',
@@ -517,25 +500,17 @@ export const blockPreferenceSharing = functions
  */
 export const resolvePreferenceConflict = functions
   .region('europe-west3')
-  .https.onCall(
-    async (
-      data: {
-        userId: string;
-        category: string;
-        key: string;
-        preferredValue: any;
-      },
-      context
-    ) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
       try {
-        if (!context.auth) {
+        if (!request.auth) {
           throw new functions.https.HttpsError(
             'unauthenticated',
             'User must be authenticated'
           );
         }
 
-        const callerId = context.auth.uid;
+        const callerId = request.auth.uid;
         if (callerId !== data.userId) {
           throw new functions.https.HttpsError(
             'permission-denied',
@@ -576,16 +551,17 @@ export const resolvePreferenceConflict = functions
  */
 export const getMemoryAnalytics = functions
   .region('europe-west3')
-  .https.onCall(async (data: { userId: string }, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const callerId = context.auth.uid;
+      const callerId = request.auth.uid;
       if (callerId !== data.userId) {
         throw new functions.https.HttpsError(
           'permission-denied',
@@ -643,16 +619,17 @@ export const getMemoryAnalytics = functions
  */
 export const wipeUserMemory = functions
   .region('europe-west3')
-  .https.onCall(async (data: { userId: string }, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const callerId = context.auth.uid;
+      const callerId = request.auth.uid;
       if (callerId !== data.userId) {
         throw new functions.https.HttpsError(
           'permission-denied',

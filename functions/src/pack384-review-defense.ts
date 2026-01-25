@@ -89,8 +89,9 @@ function analyzeReviewSignal(signal: Partial<ReviewSignal>): { suspicious: boole
 /**
  * Detect review bombing patterns
  */
-export const detectReviewBombing = functions.https.onCall(async (data, context) => {
-  if (!context.auth || !context.auth.token.admin) {
+export const detectReviewBombing = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth || !request.auth.token.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -241,12 +242,13 @@ export const detectReviewBombing = functions.https.onCall(async (data, context) 
 /**
  * Record a store review signal
  */
-export const recordStoreReviewSignal = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const recordStoreReviewSignal = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     // Get user account data
@@ -327,12 +329,13 @@ export const recordStoreReviewSignal = functions.https.onCall(async (data, conte
 /**
  * Safe automated review request
  */
-export const requestStoreReview = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const requestStoreReview = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const actionType = data.actionType; // 'completed_chat', 'completed_meeting', 'successful_payout', '7d_retention'
 
   try {

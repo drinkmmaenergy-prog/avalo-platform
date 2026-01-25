@@ -69,11 +69,11 @@ export const trackAdEvent = functions.https.onCall(
     source?: string;
     metadata?: Record<string, any>;
   }, context) => {
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // Check feature flag
@@ -254,11 +254,11 @@ async function updateCampaignPerformance(
 export const createAdCampaign = functions.https.onCall(
   async (data: Omit<AdCampaign, "createdAt">, context) => {
     // Verify admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     if (userDoc.data()?.role !== "admin") {
       throw new functions.https.HttpsError("permission-denied", "Admin access required");
     }
@@ -296,14 +296,14 @@ export const createAdCampaign = functions.https.onCall(
 /**
  * Admin: Update campaign status
  */
-export const updateCampaignStatus = functions.https.onCall(
-  async (data: { campaignId: string; status: CampaignStatus }, context) => {
+export const updateCampaignStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     if (userDoc.data()?.role !== "admin") {
       throw new functions.https.HttpsError("permission-denied", "Admin access required");
     }
@@ -325,14 +325,14 @@ export const updateCampaignStatus = functions.https.onCall(
 /**
  * Admin: Update campaign budget
  */
-export const updateCampaignBudget = functions.https.onCall(
-  async (data: { campaignId: string; dailyBudget: number; totalBudget: number }, context) => {
+export const updateCampaignBudget = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     if (userDoc.data()?.role !== "admin") {
       throw new functions.https.HttpsError("permission-denied", "Admin access required");
     }

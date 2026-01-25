@@ -608,17 +608,18 @@ Return ONLY valid JSON in this exact format:
  */
 export const getAiUserMemory = functions
   .region('europe-west3')
-  .https.onCall(async (data: { userId: string; companionId: string }, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify authentication
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const callerId = context.auth.uid;
+      const callerId = request.auth.uid;
       const { userId, companionId } = data;
 
       // Verify the caller is requesting their own memory
@@ -671,17 +672,18 @@ export const getAiUserMemory = functions
  */
 export const rebuildAiUserMemoryEndpoint = functions
   .region('europe-west3')
-  .https.onCall(async (data: { userId: string; companionId: string }, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify authentication
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const callerId = context.auth.uid;
+      const callerId = request.auth.uid;
       const { userId, companionId } = data;
 
       // Verify the caller is acting on their own behalf

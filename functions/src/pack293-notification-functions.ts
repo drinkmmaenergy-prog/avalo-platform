@@ -36,12 +36,13 @@ const db = admin.firestore();
  * Get notifications for activity center
  * Supports pagination and filtering
  */
-export const getNotifications = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getNotifications = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const limit = data.limit || 50;
   const cursor = data.cursor || null;
   const type = data.type || null; // Optional filter by type
@@ -102,8 +103,9 @@ export const getNotifications = functions.https.onCall(async (data, context) => 
 /**
  * Mark notification as read
  */
-export const markNotificationRead = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const markNotificationRead = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -114,7 +116,7 @@ export const markNotificationRead = functions.https.onCall(async (data, context)
   }
 
   try {
-    await markNotificationAsRead(context.auth.uid, notificationId);
+    await markNotificationAsRead(request.auth.uid, notificationId);
     return { success: true };
   } catch (error: any) {
     console.error('Error marking notification as read:', error);
@@ -125,13 +127,13 @@ export const markNotificationRead = functions.https.onCall(async (data, context)
 /**
  * Mark all notifications as read
  */
-export const markAllNotificationsRead = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const markAllNotificationsRead = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    await markAllNotificationsAsRead(context.auth.uid);
+    await markAllNotificationsAsRead(request.auth.uid);
     return { success: true };
   } catch (error: any) {
     console.error('Error marking all notifications as read:', error);
@@ -142,8 +144,9 @@ export const markAllNotificationsRead = functions.https.onCall(async (data, cont
 /**
  * Dismiss notification
  */
-export const dismissNotificationFunc = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const dismissNotificationFunc = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -154,7 +157,7 @@ export const dismissNotificationFunc = functions.https.onCall(async (data, conte
   }
 
   try {
-    await dismissNotification(context.auth.uid, notificationId);
+    await dismissNotification(request.auth.uid, notificationId);
     return { success: true };
   } catch (error: any) {
     console.error('Error dismissing notification:', error);
@@ -169,13 +172,13 @@ export const dismissNotificationFunc = functions.https.onCall(async (data, conte
 /**
  * Get user notification settings
  */
-export const getNotificationSettings = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getNotificationSettings = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    const settings = await getUserNotificationSettings(context.auth.uid);
+    const settings = await getUserNotificationSettings(request.auth.uid);
     return settings;
   } catch (error: any) {
     console.error('Error getting notification settings:', error);
@@ -186,13 +189,14 @@ export const getNotificationSettings = functions.https.onCall(async (data, conte
 /**
  * Update user notification settings
  */
-export const updateNotificationSettings = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateNotificationSettings = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    await updateUserNotificationSettings(context.auth.uid, data);
+    await updateUserNotificationSettings(request.auth.uid, data);
     return { success: true };
   } catch (error: any) {
     console.error('Error updating notification settings:', error);
@@ -207,8 +211,9 @@ export const updateNotificationSettings = functions.https.onCall(async (data, co
 /**
  * Register device for push notifications
  */
-export const registerDeviceForPush = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const registerDeviceForPush = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -222,7 +227,7 @@ export const registerDeviceForPush = functions.https.onCall(async (data, context
   }
 
   try {
-    await registerDevice(context.auth.uid, deviceId, platform, pushToken);
+    await registerDevice(request.auth.uid, deviceId, platform, pushToken);
     return { success: true };
   } catch (error: any) {
     console.error('Error registering device:', error);
@@ -233,8 +238,9 @@ export const registerDeviceForPush = functions.https.onCall(async (data, context
 /**
  * Unregister device
  */
-export const unregisterDeviceFromPush = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const unregisterDeviceFromPush = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -256,8 +262,9 @@ export const unregisterDeviceFromPush = functions.https.onCall(async (data, cont
 /**
  * Update device last seen
  */
-export const updateDeviceActivity = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateDeviceActivity = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -427,13 +434,14 @@ export const cleanupOldNotifications = functions.pubsub
  * Send notification to user (admin only)
  * Used for system alerts and manual notifications
  */
-export const sendNotificationToUser = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const sendNotificationToUser = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Check if user is admin
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Only admins can send notifications');
   }
@@ -460,13 +468,14 @@ export const sendNotificationToUser = functions.https.onCall(async (data, contex
 /**
  * Get notification analytics (admin only)
  */
-export const getNotificationAnalytics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getNotificationAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Check if user is admin
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Only admins can view analytics');
   }

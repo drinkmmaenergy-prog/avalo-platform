@@ -27,10 +27,11 @@ import { HttpsError, admin, auth, onCall } from './runtime';
  * Update moderation case (admin-only)
  * POST /moderation/case/update
  */
-export const moderation_updateCase = functions.https.onCall(async (data, context) => {
+export const moderation_updateCase = functions.https.onCall(async (request) => {
+  const data = request.data;
   // TODO: Add proper admin authentication check
   // For now, require authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin authentication required');
   }
 
@@ -62,10 +63,11 @@ export const moderation_updateCase = functions.https.onCall(async (data, context
  * Apply enforcement action (admin-only)
  * POST /moderation/enforce
  */
-export const moderation_enforce = functions.https.onCall(async (data, context) => {
+export const moderation_enforce = functions.https.onCall(async (request) => {
+  const data = request.data;
   // TODO: Add proper admin authentication check
   // For now, require authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin authentication required');
   }
 
@@ -112,9 +114,10 @@ export const moderation_enforce = functions.https.onCall(async (data, context) =
 /**
  * Get moderation case details (admin-only)
  */
-export const moderation_getCase = functions.https.onCall(async (data, context) => {
+export const moderation_getCase = functions.https.onCall(async (request) => {
+  const data = request.data;
   // TODO: Add proper admin authentication check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin authentication required');
   }
 
@@ -149,9 +152,10 @@ export const moderation_getCase = functions.https.onCall(async (data, context) =
 /**
  * Get moderation actions for a case (admin-only)
  */
-export const moderation_getCaseActions = functions.https.onCall(async (data, context) => {
+export const moderation_getCaseActions = functions.https.onCall(async (request) => {
+  const data = request.data;
   // TODO: Add proper admin authentication check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin authentication required');
   }
 
@@ -182,7 +186,8 @@ export const moderation_getCaseActions = functions.https.onCall(async (data, con
  * Get enforcement state for a user (read-only)
  * GET /enforcement/state?userId=...
  */
-export const enforcement_getState = functions.https.onCall(async (data, context) => {
+export const enforcement_getState = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { userId } = data;
 
   if (!userId) {
@@ -210,12 +215,12 @@ export const enforcement_getState = functions.https.onCall(async (data, context)
  * Get effective enforcement restrictions for current user
  * Includes computed flags for what user can/cannot do
  */
-export const enforcement_getRestrictions = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const enforcement_getRestrictions = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const restrictions = await getEffectiveRestrictions(userId);

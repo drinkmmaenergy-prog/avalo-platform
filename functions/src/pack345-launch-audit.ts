@@ -953,15 +953,14 @@ export const pack345_runLaunchAudit = functions.pubsub
 /**
  * Manual audit trigger (callable)
  */
-export const pack345_triggerManualAudit = functions.https.onCall(
-  async (data, context) => {
+export const pack345_triggerManualAudit = functions.https.onCall(async (request) => {
     // Require authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    console.log(`[Pack345] Manual audit triggered by ${context.auth.uid}`);
-    const result = await runLaunchAudit('manual', context.auth.uid);
+    console.log(`[Pack345] Manual audit triggered by ${request.auth.uid}`);
+    const result = await runLaunchAudit('manual', request.auth.uid);
 
     return {
       success: true,
@@ -981,10 +980,10 @@ export const pack345_triggerManualAudit = functions.https.onCall(
 /**
  * Get current launch readiness status
  */
-export const pack345_getLaunchReadinessStatus = functions.https.onCall(
-  async (data, context) => {
+export const pack345_getLaunchReadinessStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -1000,10 +999,10 @@ export const pack345_getLaunchReadinessStatus = functions.https.onCall(
 /**
  * Get recent audit logs
  */
-export const pack345_getAuditLogs = functions.https.onCall(
-  async (data, context) => {
+export const pack345_getAuditLogs = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -1025,15 +1024,15 @@ export const pack345_getAuditLogs = functions.https.onCall(
 /**
  * Force launch (super-admin only)
  */
-export const pack345_forceLaunch = functions.https.onCall(
-  async (data, context) => {
+export const pack345_forceLaunch = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require super-admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     // Check if user is super-admin
-    const userDoc = await db.doc(`users/${context.auth.uid}`).get();
+    const userDoc = await db.doc(`users/${request.auth.uid}`).get();
     const userData = userDoc.data();
     if (userData?.role !== 'super_admin') {
       throw new functions.https.HttpsError(
@@ -1053,8 +1052,8 @@ export const pack345_forceLaunch = functions.https.onCall(
     const overrideLog: LaunchOverrideLog = {
       overrideId,
       timestamp: admin.firestore.Timestamp.now(),
-      adminUserId: context.auth.uid,
-      adminEmail: context.auth.token.email || 'unknown',
+      adminUserId: request.auth.uid,
+      adminEmail: request.auth.token.email || 'unknown',
       action: 'force_launch',
       reason,
       previousState: {
@@ -1075,13 +1074,13 @@ export const pack345_forceLaunch = functions.https.onCall(
       blockingReasons: [],
       'manualOverride': {
         forced: true,
-        by: context.auth.uid,
+        by: request.auth.uid,
         at: admin.firestore.Timestamp.now(),
         reason
       }
     });
 
-    console.log(`[Pack345] Launch forced by admin ${context.auth.uid}: ${reason}`);
+    console.log(`[Pack345] Launch forced by admin ${request.auth.uid}: ${reason}`);
 
     return {
       success: true,

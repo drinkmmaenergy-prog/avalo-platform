@@ -88,16 +88,16 @@ export interface RegionalPricePolicy {
 /**
  * Admin: Update regional price policy
  */
-export const pack381_updateRegionalPricing = functions.https.onCall(
-  async (data: Partial<RegionalPricePolicy>, context) => {
-    if (!context.auth) {
+export const pack381_updateRegionalPricing = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'admin' && userData?.role !== 'super_admin') {
@@ -124,7 +124,7 @@ export const pack381_updateRegionalPricing = functions.https.onCall(
       metadata: {
         ...data.metadata,
         updatedAt: now,
-        updatedBy: context.auth.uid,
+        updatedBy: request.auth.uid,
         ...(existingPolicy.exists ? {} : { createdAt: now }),
       },
     };
@@ -134,7 +134,7 @@ export const pack381_updateRegionalPricing = functions.https.onCall(
     // Log the price update
     await db.collection('auditLogs').add({
       type: 'regional_pricing_update',
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       regionId,
       changes: data,
       timestamp: now,
@@ -151,9 +151,9 @@ export const pack381_updateRegionalPricing = functions.https.onCall(
 /**
  * Apply regional pricing to token packs
  */
-export const pack381_applyRegionalPricing = functions.https.onCall(
-  async (data: { regionId: string; basePrices?: any }, context) => {
-    if (!context.auth) {
+export const pack381_applyRegionalPricing = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -235,14 +235,9 @@ export const pack381_applyRegionalPricing = functions.https.onCall(
 /**
  * Calculate final price for any transaction with tax and fees
  */
-export const pack381_calculateFinalPrice = functions.https.onCall(
-  async (data: {
-    regionId: string;
-    baseAmount: number;
-    includeConversionFee?: boolean;
-    transactionType?: 'purchase' | 'payout';
-  }, context) => {
-    if (!context.auth) {
+export const pack381_calculateFinalPrice = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -310,9 +305,9 @@ export const pack381_calculateFinalPrice = functions.https.onCall(
 /**
  * Convert tokens to local currency value
  */
-export const pack381_convertTokensToLocal = functions.https.onCall(
-  async (data: { tokens: number; regionId: string }, context) => {
-    if (!context.auth) {
+export const pack381_convertTokensToLocal = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -356,16 +351,16 @@ export const pack381_convertTokensToLocal = functions.https.onCall(
 /**
  * Get payout eligibility and restrictions for region
  */
-export const pack381_getPayoutEligibility = functions.https.onCall(
-  async (data: { regionId?: string }, context) => {
-    if (!context.auth) {
+export const pack381_getPayoutEligibility = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     let { regionId } = data;
 
     // Get user's region if not provided
@@ -419,23 +414,16 @@ export const pack381_getPayoutEligibility = functions.https.onCall(
 /**
  * Admin: Bulk update currency conversion rates
  */
-export const pack381_updateConversionRates = functions.https.onCall(
-  async (data: {
-    rates: Array<{
-      regionId: string;
-      rateToPLN: number;
-      rateToUSD: number;
-      rateToEUR: number;
-    }>;
-  }, context) => {
-    if (!context.auth) {
+export const pack381_updateConversionRates = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'admin' && userData?.role !== 'super_admin') {
@@ -457,7 +445,7 @@ export const pack381_updateConversionRates = functions.https.onCall(
         'conversion.rateToEUR': rate.rateToEUR,
         'conversion.lastUpdated': now,
         'metadata.updatedAt': now,
-        'metadata.updatedBy': context.auth.uid,
+        'metadata.updatedBy': request.auth.uid,
       });
     });
 

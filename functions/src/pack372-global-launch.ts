@@ -62,11 +62,11 @@ interface PaymentSafetyGate {
 // 1️⃣ FEATURE ACCESS CHECKER
 // ============================================
 
-export const checkFeatureAccess = functions.https.onCall(
-  async (data: { userId: string; featureKey: string }, context) => {
+export const checkFeatureAccess = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { userId, featureKey } = data;
 
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -165,17 +165,11 @@ export const checkFeatureAccess = functions.https.onCall(
 // 2️⃣ COUNTRY TRAFFIC THROTTLER
 // ============================================
 
-export const throttleCountryTraffic = functions.https.onCall(
-  async (
-    data: {
-      countryCode: string;
-      action: 'registration' | 'chat' | 'payment' | 'payout';
-    },
-    context
-  ) => {
+export const throttleCountryTraffic = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { countryCode, action } = data;
 
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -297,16 +291,16 @@ export const throttleCountryTraffic = functions.https.onCall(
 // 3️⃣ EMERGENCY FREEZE
 // ============================================
 
-export const emergencyFreeze = functions.https.onCall(
-  async (data: { countryCode: string; reason: string }, context) => {
+export const emergencyFreeze = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { countryCode, reason } = data;
 
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
     // Verify admin/superadmin
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
 
     if (!userData || (userData.role !== 'admin' && userData.role !== 'superadmin')) {
@@ -359,7 +353,7 @@ export const emergencyFreeze = functions.https.onCall(
       batch.set(freezeLogRef, {
         countryCode,
         reason,
-        triggeredBy: context.auth.uid,
+        triggeredBy: request.auth.uid,
         triggeredAt: admin.firestore.FieldValue.serverTimestamp(),
         disabledFeatures: [
           'registration',
@@ -379,7 +373,7 @@ export const emergencyFreeze = functions.https.onCall(
         countryCode,
         previousState: 'unknown', // Will be filled by trigger
         newState: 'frozen',
-        approvedBy: context.auth.uid,
+        approvedBy: request.auth.uid,
         approvedAt: admin.firestore.FieldValue.serverTimestamp(),
         reason: `EMERGENCY FREEZE: ${reason}`,
       });
@@ -393,7 +387,7 @@ export const emergencyFreeze = functions.https.onCall(
         title: `Emergency Freeze: ${countryCode}`,
         message: reason,
         countryCode,
-        triggeredBy: context.auth.uid,
+        triggeredBy: request.auth.uid,
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
         read: false,
       });
@@ -413,17 +407,11 @@ export const emergencyFreeze = functions.https.onCall(
 // 4️⃣ PAYMENT SAFETY CHECK
 // ============================================
 
-export const checkPaymentSafety = functions.https.onCall(
-  async (
-    data: {
-      countryCode: string;
-      action: 'payout' | 'tokenSale';
-    },
-    context
-  ) => {
+export const checkPaymentSafety = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { countryCode, action } = data;
 
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -479,23 +467,16 @@ export const checkPaymentSafety = functions.https.onCall(
 // 5️⃣ UPDATE LAUNCH STATUS (with logging)
 // ============================================
 
-export const updateLaunchStatus = functions.https.onCall(
-  async (
-    data: {
-      countryCode: string;
-      newStatus: LaunchStatus;
-      reason: string;
-    },
-    context
-  ) => {
+export const updateLaunchStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { countryCode, newStatus, reason } = data;
 
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
     // Verify admin
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
 
     if (!userData || (userData.role !== 'admin' && userData.role !== 'superadmin')) {
@@ -530,7 +511,7 @@ export const updateLaunchStatus = functions.https.onCall(
         countryCode,
         previousState: previousStatus,
         newState: newStatus,
-        approvedBy: context.auth.uid,
+        approvedBy: request.auth.uid,
         approvedAt: admin.firestore.FieldValue.serverTimestamp(),
         reason,
       });
@@ -542,7 +523,7 @@ export const updateLaunchStatus = functions.https.onCall(
         title: `Launch Status Updated: ${countryCode}`,
         message: `${previousStatus} → ${newStatus}: ${reason}`,
         countryCode,
-        approvedBy: context.auth.uid,
+        approvedBy: request.auth.uid,
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
         read: false,
       });
@@ -590,8 +571,8 @@ export const cleanupOldTrafficMetrics = functions.pubsub
 // 7️⃣ CHECK COUNTRY AVAILABILITY
 // ============================================
 
-export const checkCountryAvailability = functions.https.onCall(
-  async (data: { countryCode: string }, context) => {
+export const checkCountryAvailability = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { countryCode } = data;
 
     try {

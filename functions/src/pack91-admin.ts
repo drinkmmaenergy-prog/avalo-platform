@@ -26,13 +26,13 @@ import { admin, auth, functions } from './runtime';
 /**
  * Verify that the caller has admin role
  */
-async function verifyAdminRole(context: any): Promise<void> {
-  if (!context.auth) {
+async function verifyAdminRole(request: any): Promise<void> {
+  if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Authentication required');
   }
   
   const adminDoc = await db.collection('admin_roles')
-    .doc(context.auth.uid)
+    .doc(request.auth.uid)
     .get();
   
   if (!adminDoc.exists || !adminDoc.data()?.active) {

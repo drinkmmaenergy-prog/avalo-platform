@@ -68,13 +68,13 @@ export async function requireCompliance(userId: string): Promise<{
 /**
  * Accept latest Terms of Service
  */
-export const pack345_acceptTerms = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack345_acceptTerms = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { version } = data;
 
     // Get latest terms version
@@ -135,13 +135,13 @@ export const pack345_acceptTerms = functions.https.onCall(
 /**
  * Accept latest Privacy Policy
  */
-export const pack345_acceptPrivacy = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack345_acceptPrivacy = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Get latest privacy policy version
     const privacySnapshot = await db.collection('legal_privacy')
@@ -201,13 +201,13 @@ export const pack345_acceptPrivacy = functions.https.onCall(
 /**
  * Verify age (18+)
  */
-export const pack345_verifyAge = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack345_verifyAge = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { birthDate, idVerificationData } = data;
 
     if (!birthDate) {
@@ -276,14 +276,13 @@ export const pack345_verifyAge = functions.https.onCall(
 /**
  * Get user compliance status
  */
-export const pack345_getComplianceStatus = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack345_getComplianceStatus = functions.https.onCall(async (request) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const status = await checkUserCompliance(context.auth.uid);
-    const complianceCheck = await requireCompliance(context.auth.uid);
+    const status = await checkUserCompliance(request.auth.uid);
+    const complianceCheck = await requireCompliance(request.auth.uid);
 
     return {
       status,

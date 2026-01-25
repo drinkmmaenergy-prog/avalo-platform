@@ -85,11 +85,11 @@ export const pack386_registerInfluencer = functions.https.onCall(
     socialHandles: Record<string, string>;
     tier: 'NANO' | 'MICRO' | 'MID' | 'MACRO' | 'MEGA';
   }, context) => {
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const adminUserId = context.auth.uid;
+    const adminUserId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(adminUserId).get();
@@ -145,20 +145,13 @@ export const pack386_registerInfluencer = functions.https.onCall(
 // ASSIGN INFLUENCER CAMPAIGN
 // ============================================================================
 
-export const pack386_assignInfluencerCampaign = functions.https.onCall(
-  async (data: {
-    influencerId: string;
-    name: string;
-    startDate: string;
-    endDate?: string;
-    targetInstalls: number;
-    bonusThreshold?: number;
-  }, context) => {
-    if (!context.auth) {
+export const pack386_assignInfluencerCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const adminUserId = context.auth.uid;
+    const adminUserId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(adminUserId).get();
@@ -214,17 +207,13 @@ export const pack386_assignInfluencerCampaign = functions.https.onCall(
 // SET INFLUENCER PAYOUT MODEL
 // ============================================================================
 
-export const pack386_setInfluencerPayoutModel = functions.https.onCall(
-  async (data: {
-    influencerId: string;
-    payoutModel: 'CPI' | 'REVENUE_SHARE' | 'HYBRID';
-    payoutRate: number;
-  }, context) => {
-    if (!context.auth) {
+export const pack386_setInfluencerPayoutModel = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const adminUserId = context.auth.uid;
+    const adminUserId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(adminUserId).get();
@@ -437,13 +426,13 @@ export const pack386_calculateInfluencerROI = functions.pubsub
 // GET INFLUENCER ANALYTICS
 // ============================================================================
 
-export const pack386_getInfluencerAnalytics = functions.https.onCall(
-  async (data: { influencerId?: string }, context) => {
-    if (!context.auth) {
+export const pack386_getInfluencerAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(userId).get();

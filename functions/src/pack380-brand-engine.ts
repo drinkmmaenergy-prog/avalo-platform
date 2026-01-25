@@ -123,13 +123,14 @@ interface TypographySystem {
 /**
  * Upload brand asset
  */
-export const uploadBrandAsset = functions.https.onCall(async (data, context) => {
+export const uploadBrandAsset = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Admin check
   const userDoc = await db.collection('users').doc(userId).get();
@@ -205,9 +206,10 @@ export const uploadBrandAsset = functions.https.onCall(async (data, context) => 
 /**
  * Get brand assets
  */
-export const getBrandAssets = functions.https.onCall(async (data, context) => {
+export const getBrandAssets = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -258,7 +260,8 @@ export const getBrandAssets = functions.https.onCall(async (data, context) => {
 /**
  * Get brand style guide
  */
-export const getBrandStyleGuide = functions.https.onCall(async (data, context) => {
+export const getBrandStyleGuide = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     // Get or create style guide
     const styleGuideDoc = await db.collection('brandConfig').doc('styleGuide').get();
@@ -357,7 +360,8 @@ function createDefaultStyleGuide() {
 /**
  * Scan content for brand compliance
  */
-export const scanBrandCompliance = functions.https.onCall(async (data, context) => {
+export const scanBrandCompliance = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { sourceType, sourceId, content } = data;
 
   if (!sourceType || !sourceId) {
@@ -475,13 +479,14 @@ function checkRule(content: any, rule: any): any {
 /**
  * Create brand guideline
  */
-export const createBrandGuideline = functions.https.onCall(async (data, context) => {
+export const createBrandGuideline = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Admin check
   const userDoc = await db.collection('users').doc(userId).get();
@@ -536,13 +541,14 @@ export const createBrandGuideline = functions.https.onCall(async (data, context)
 /**
  * Initialize default brand guidelines
  */
-export const initializeDefaultGuidelines = functions.https.onCall(async (data, context) => {
+export const initializeDefaultGuidelines = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Admin check
   const userDoc = await db.collection('users').doc(userId).get();
@@ -654,9 +660,10 @@ export const initializeDefaultGuidelines = functions.https.onCall(async (data, c
 /**
  * Get brand audit history
  */
-export const getBrandAuditHistory = functions.https.onCall(async (data, context) => {
+export const getBrandAuditHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 

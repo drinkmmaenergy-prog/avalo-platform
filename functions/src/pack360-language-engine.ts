@@ -184,7 +184,8 @@ const SUPPORTED_LANGUAGES: LanguageProfile[] = [
 ];
 
 // Get supported languages
-export const getSupportedLanguages = functions.https.onCall(async (data, context) => {
+export const getSupportedLanguages = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     const db = admin.firestore();
     
@@ -212,14 +213,15 @@ export const getSupportedLanguages = functions.https.onCall(async (data, context
 });
 
 // Auto-detect user language
-export const detectUserLanguage = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const detectUserLanguage = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   try {
     const { deviceLanguage, countryCode, browserLanguage } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const db = admin.firestore();
     
     // Priority order: manual > device > country > browser
@@ -296,14 +298,15 @@ export const detectUserLanguage = functions.https.onCall(async (data, context) =
 });
 
 // Set user language (manual)
-export const setUserLanguage = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const setUserLanguage = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   try {
     const { languageCode } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const db = admin.firestore();
     
     // Validate language is supported
@@ -337,7 +340,8 @@ export const setUserLanguage = functions.https.onCall(async (data, context) => {
 });
 
 // Get translation phrases (with caching)
-export const getTranslationPhrases = functions.https.onCall(async (data, context) => {
+export const getTranslationPhrases = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     const { languageCode, category, phraseIds } = data;
     const db = admin.firestore();
@@ -394,8 +398,9 @@ export const getTranslationPhrases = functions.https.onCall(async (data, context
 });
 
 // Admin: Add or update translation phrase
-export const adminUpdateTranslationPhrase = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminUpdateTranslationPhrase = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -403,7 +408,7 @@ export const adminUpdateTranslationPhrase = functions.https.onCall(async (data, 
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -430,8 +435,9 @@ export const adminUpdateTranslationPhrase = functions.https.onCall(async (data, 
 });
 
 // Admin: Toggle language enabled status
-export const adminToggleLanguage = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminToggleLanguage = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -439,7 +445,7 @@ export const adminToggleLanguage = functions.https.onCall(async (data, context) 
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }

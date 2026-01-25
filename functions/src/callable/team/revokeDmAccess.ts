@@ -20,22 +20,19 @@ interface RevokeDmAccessResponse {
   error?: string;
 }
 
-export const revokeDmAccess = functions.https.onCall(
-  async (
-    data: RevokeDmAccessRequest,
-    context: functions.https.CallableContext
-  ): Promise<RevokeDmAccessResponse> => {
+export const revokeDmAccess = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
 
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { membershipId, reason } = data;
 
       if (!membershipId) {
@@ -108,8 +105,8 @@ export const revokeDmAccess = functions.https.onCall(
     } catch (error: any) {
       // Log failed attempt
       await logTeamActivity({
-        userId: context.auth?.uid || 'unknown',
-        memberUserId: context.auth?.uid || 'unknown',
+        userId: request.auth?.uid || 'unknown',
+        memberUserId: request.auth?.uid || 'unknown',
         action: 'revoke_dm_access',
         target: data.membershipId,
         metadata: {

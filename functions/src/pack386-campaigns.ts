@@ -62,13 +62,13 @@ interface CampaignUpdateRequest {
 // CREATE CAMPAIGN
 // ============================================================================
 
-export const pack386_createCampaign = functions.https.onCall(
-  async (data: CampaignCreateRequest, context) => {
-    if (!context.auth) {
+export const pack386_createCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(userId).get();
@@ -142,13 +142,13 @@ export const pack386_createCampaign = functions.https.onCall(
 // UPDATE CAMPAIGN BUDGET
 // ============================================================================
 
-export const pack386_updateCampaignBudget = functions.https.onCall(
-  async (data: CampaignUpdateRequest, context) => {
-    if (!context.auth) {
+export const pack386_updateCampaignBudget = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(userId).get();
@@ -362,13 +362,13 @@ export const pack386_updateCampaignMetrics = functions.https.onRequest(
 // GET CAMPAIGN ANALYTICS
 // ============================================================================
 
-export const pack386_getCampaignAnalytics = functions.https.onCall(
-  async (data: { campaignId?: string }, context) => {
-    if (!context.auth) {
+export const pack386_getCampaignAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(userId).get();

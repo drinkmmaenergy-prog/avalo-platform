@@ -41,20 +41,17 @@ const db = admin.firestore();
  * Create a new brand campaign
  * Admin/Brand Panel only
  */
-export const createBrandCampaign = functions.https.onCall(
-  async (
-    data: CreateBrandCampaignRequest,
-    context
-  ): Promise<CreateBrandCampaignResponse> => {
+export const createBrandCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // Validate required fields
@@ -139,9 +136,9 @@ export const createBrandCampaign = functions.https.onCall(
  * Update an existing brand campaign
  * Admin/Brand Panel only
  */
-export const updateBrandCampaign = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const updateBrandCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -213,9 +210,9 @@ export const updateBrandCampaign = functions.https.onCall(
  * Cancel a brand campaign
  * Admin/Brand Panel only
  */
-export const cancelBrandCampaign = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const cancelBrandCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -254,11 +251,8 @@ export const cancelBrandCampaign = functions.https.onCall(
  * List available brand campaigns
  * Public endpoint
  */
-export const listBrandCampaigns = functions.https.onCall(
-  async (
-    data: ListBrandCampaignsRequest,
-    context
-  ): Promise<ListBrandCampaignsResponse> => {
+export const listBrandCampaigns = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       const { status, theme, limit = 20, offset = 0 } = data;
 
@@ -314,19 +308,16 @@ export const listBrandCampaigns = functions.https.onCall(
  * Submit content to a brand challenge
  * User endpoint
  */
-export const submitChallengeContent = functions.https.onCall(
-  async (
-    data: SubmitChallengeContentRequest,
-    context
-  ): Promise<SubmitChallengeContentResponse> => {
-    if (!context.auth) {
+export const submitChallengeContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { campaignId, contentId } = data;
 
     if (!campaignId || !contentId) {
@@ -445,12 +436,9 @@ export const submitChallengeContent = functions.https.onCall(
  * Approve a campaign submission
  * Admin/Brand Panel only
  */
-export const approveChallengeSubmission = functions.https.onCall(
-  async (
-    data: ApproveSubmissionRequest,
-    context
-  ): Promise<ApproveSubmissionResponse> => {
-    if (!context.auth) {
+export const approveChallengeSubmission = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -474,7 +462,7 @@ export const approveChallengeSubmission = functions.https.onCall(
       const updates: any = {
         status: isWinner ? 'WINNER' : 'APPROVED',
         moderatedAt: admin.firestore.Timestamp.now(),
-        moderatedBy: context.auth.uid,
+        moderatedBy: request.auth.uid,
       };
 
       await submissionRef.update(updates);
@@ -492,7 +480,7 @@ export const approveChallengeSubmission = functions.https.onCall(
           userId: submission.userId,
           submissionId,
           selectedAt: admin.firestore.Timestamp.now(),
-          selectedBy: context.auth.uid,
+          selectedBy: request.auth.uid,
           deliveryStatus: 'PENDING',
         });
       }
@@ -509,12 +497,9 @@ export const approveChallengeSubmission = functions.https.onCall(
  * Reject a campaign submission
  * Admin/Brand Panel only
  */
-export const rejectChallengeSubmission = functions.https.onCall(
-  async (
-    data: RejectSubmissionRequest,
-    context
-  ): Promise<RejectSubmissionResponse> => {
-    if (!context.auth) {
+export const rejectChallengeSubmission = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -538,7 +523,7 @@ export const rejectChallengeSubmission = functions.https.onCall(
           status: 'REJECTED',
           rejectionReason: reason,
           moderatedAt: admin.firestore.Timestamp.now(),
-          moderatedBy: context.auth.uid,
+          moderatedBy: request.auth.uid,
         });
 
       return { success: true };
@@ -557,12 +542,9 @@ export const rejectChallengeSubmission = functions.https.onCall(
  * Get campaign performance statistics
  * Admin/Brand Panel only
  */
-export const getCampaignPerformance = functions.https.onCall(
-  async (
-    data: GetCampaignPerformanceRequest,
-    context
-  ): Promise<GetCampaignPerformanceResponse> => {
-    if (!context.auth) {
+export const getCampaignPerformance = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'

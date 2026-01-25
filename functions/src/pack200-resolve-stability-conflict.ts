@@ -452,12 +452,13 @@ export const scheduled_resolveConflicts = functions.pubsub
 /**
  * Admin endpoint to view conflicts
  */
-export const admin_getStabilityConflicts = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const admin_getStabilityConflicts = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || !['ADMIN', 'ENGINEER'].includes(adminDoc.data()?.role)) {
     throw new functions.https.HttpsError('permission-denied', 'Engineering access required');
   }

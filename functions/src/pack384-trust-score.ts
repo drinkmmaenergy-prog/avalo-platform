@@ -37,15 +37,16 @@ interface PublicTrustScore {
 /**
  * Compute public trust score for a user
  */
-export const computePublicTrustScore = functions.https.onCall(async (data, context) => {
-  const targetUserId = data.userId || context.auth?.uid;
+export const computePublicTrustScore = functions.https.onCall(async (request) => {
+  const data = request.data;
+  const targetUserId = data.userId || request.auth?.uid;
   
   if (!targetUserId) {
     throw new functions.https.HttpsError('invalid-argument', 'User ID required');
   }
 
   // Admin can compute for anyone, users can only compute for themselves
-  if (context.auth?.uid !== targetUserId && !context.auth?.token?.admin) {
+  if (request.auth?.uid !== targetUserId && !request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Not authorized');
   }
 
@@ -254,7 +255,8 @@ export const batchRecomputeTrustScores = functions.pubsub.schedule('every 24 hou
 /**
  * Get trust score for display
  */
-export const getPublicTrustScore = functions.https.onCall(async (data, context) => {
+export const getPublicTrustScore = functions.https.onCall(async (request) => {
+  const data = request.data;
   const targetUserId = data.userId;
   
   if (!targetUserId) {
@@ -268,7 +270,7 @@ export const getPublicTrustScore = functions.https.onCall(async (data, context) 
       // Compute if not exists
       const result = await computePublicTrustScore.run({ 
         data: { userId: targetUserId },
-        auth: context.auth as any
+        auth: request.auth as any
       } as any);
       return result;
     }
@@ -281,7 +283,7 @@ export const getPublicTrustScore = functions.https.onCall(async (data, context) 
       // Recompute in background
       computePublicTrustScore.run({ 
         data: { userId: targetUserId },
-        auth: context.auth as any
+        auth: request.auth as any
       } as any).catch(err => console.error('Background trust score update failed:', err));
     }
 
@@ -295,8 +297,9 @@ export const getPublicTrustScore = functions.https.onCall(async (data, context) 
 /**
  * Apply trust score to user rankings
  */
-export const applyTrustScoreToRankings = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const applyTrustScoreToRankings = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 

@@ -28,13 +28,13 @@ import { HttpsError, admin, auth, onCall } from '../runtime';
 /**
  * Generate QR profile for authenticated user
  */
-export const generateUserQRProfile = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const generateUserQRProfile = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   try {
-    const qrProfile = await getOrCreateQRProfile(context.auth.uid);
+    const qrProfile = await getOrCreateQRProfile(request.auth.uid);
     return { success: true, qrProfile };
   } catch (error: any) {
     console.error('Error generating QR profile:', error);
@@ -45,13 +45,13 @@ export const generateUserQRProfile = functions.https.onCall(async (data, context
 /**
  * Get QR variations (multiple sizes/formats)
  */
-export const getQRVariations = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getQRVariations = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   try {
-    const variations = await generateQRVariations(context.auth.uid);
+    const variations = await generateQRVariations(request.auth.uid);
     return { success: true, variations };
   } catch (error: any) {
     console.error('Error generating QR variations:', error);
@@ -62,13 +62,13 @@ export const getQRVariations = functions.https.onCall(async (data, context) => {
 /**
  * Regenerate QR profile (after username change)
  */
-export const regenerateUserQRProfile = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const regenerateUserQRProfile = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   try {
-    const qrProfile = await regenerateQRProfile(context.auth.uid);
+    const qrProfile = await regenerateQRProfile(request.auth.uid);
     return { success: true, qrProfile };
   } catch (error: any) {
     console.error('Error regenerating QR profile:', error);
@@ -79,8 +79,9 @@ export const regenerateUserQRProfile = functions.https.onCall(async (data, conte
 /**
  * Generate poster/print material
  */
-export const createPoster = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createPoster = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -97,7 +98,7 @@ export const createPoster = functions.https.onCall(async (data, context) => {
 
   try {
     const poster = await generatePoster(
-      context.auth.uid,
+      request.auth.uid,
       format as PosterFormat,
       {
         displayName,
@@ -117,8 +118,9 @@ export const createPoster = functions.https.onCall(async (data, context) => {
 /**
  * Generate event poster bundle
  */
-export const createEventPosterBundle = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createEventPosterBundle = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -145,8 +147,9 @@ export const createEventPosterBundle = functions.https.onCall(async (data, conte
 /**
  * Submit poster for moderation review
  */
-export const submitPosterForReview = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const submitPosterForReview = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -157,7 +160,7 @@ export const submitPosterForReview = functions.https.onCall(async (data, context
   }
 
   const assetDoc = await db.collection('offline_assets').doc(assetId).get();
-  if (!assetDoc.exists || assetDoc.data()?.userId !== context.auth.uid) {
+  if (!assetDoc.exists || assetDoc.data()?.userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Asset not found or access denied');
   }
 
@@ -173,12 +176,13 @@ export const submitPosterForReview = functions.https.onCall(async (data, context
 /**
  * Moderate poster (admin only)
  */
-export const moderatePoster = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const moderatePoster = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -190,7 +194,7 @@ export const moderatePoster = functions.https.onCall(async (data, context) => {
   }
 
   try {
-    await moderatePosterAsset(assetId, context.auth.uid, decision, rejectionReason);
+    await moderatePosterAsset(assetId, request.auth.uid, decision, rejectionReason);
     return { success: true };
   } catch (error: any) {
     console.error('Error moderating poster:', error);
@@ -201,13 +205,13 @@ export const moderatePoster = functions.https.onCall(async (data, context) => {
 /**
  * Get user's offline assets
  */
-export const getMyOfflineAssets = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getMyOfflineAssets = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   try {
-    const assets = await getUserAssets(context.auth.uid);
+    const assets = await getUserAssets(request.auth.uid);
     return { success: true, assets };
   } catch (error: any) {
     console.error('Error getting offline assets:', error);
@@ -218,7 +222,8 @@ export const getMyOfflineAssets = functions.https.onCall(async (data, context) =
 /**
  * Log QR scan event (public endpoint - no auth required)
  */
-export const recordQRScan = functions.https.onCall(async (data, context) => {
+export const recordQRScan = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { profileUserId, assetId, deviceInfo, location } = data;
 
   if (!profileUserId) {
@@ -243,8 +248,9 @@ export const recordQRScan = functions.https.onCall(async (data, context) => {
 /**
  * Get scan analytics for authenticated user
  */
-export const getMyScanAnalytics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getMyScanAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -258,7 +264,7 @@ export const getMyScanAnalytics = functions.https.onCall(async (data, context) =
     const start = startDate ? new Date(startDate) : new Date();
     const end = endDate ? new Date(endDate) : new Date();
 
-    const analytics = await getScanAnalytics(context.auth.uid, period, start, end);
+    const analytics = await getScanAnalytics(request.auth.uid, period, start, end);
     return { success: true, analytics };
   } catch (error: any) {
     console.error('Error getting scan analytics:', error);
@@ -269,8 +275,9 @@ export const getMyScanAnalytics = functions.https.onCall(async (data, context) =
 /**
  * Get scan summary dashboard
  */
-export const getMyScanSummary = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getMyScanSummary = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -279,10 +286,10 @@ export const getMyScanSummary = functions.https.onCall(async (data, context) => 
 
   try {
     const [totalScans, recentSummary, topCities, deviceBreakdown] = await Promise.all([
-      getTotalScans(context.auth.uid),
-      getRecentScansSummary(context.auth.uid, daysToAnalyze),
-      getScansByCity(context.auth.uid, 5),
-      getScansByDevice(context.auth.uid),
+      getTotalScans(request.auth.uid),
+      getRecentScansSummary(request.auth.uid, daysToAnalyze),
+      getScansByCity(request.auth.uid, 5),
+      getScansByDevice(request.auth.uid),
     ]);
 
     return {

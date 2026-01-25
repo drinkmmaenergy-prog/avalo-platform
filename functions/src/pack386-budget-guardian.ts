@@ -49,13 +49,13 @@ const CRITICAL_THRESHOLD = 0.95; // 95% triggers automatic pause
 // INITIALIZE BUDGET RULES
 // ============================================================================
 
-export const pack386_initializeBudgetRules = functions.https.onCall(
-  async (data: {}, context) => {
-    if (!context.auth) {
+export const pack386_initializeBudgetRules = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(userId).get();
@@ -114,13 +114,9 @@ export const pack386_initializeBudgetRules = functions.https.onCall(
 // CHECK BUDGET LIMITS (CALLED BEFORE SPENDING)
 // ============================================================================
 
-export const pack386_checkBudgetLimit = functions.https.onCall(
-  async (data: {
-    campaignId: string;
-    amount: number;
-    geo?: string;
-  }, context) => {
-    if (!context.auth) {
+export const pack386_checkBudgetLimit = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -207,13 +203,9 @@ export const pack386_checkBudgetLimit = functions.https.onCall(
 // RECORD SPEND (CALLED AFTER SPENDING)
 // ============================================================================
 
-export const pack386_recordSpend = functions.https.onCall(
-  async (data: {
-    campaignId: string;
-    amount: number;
-    geo?: string;
-  }, context) => {
-    if (!context.auth) {
+export const pack386_recordSpend = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -342,16 +334,13 @@ export const pack386_monitorBudgets = functions.pubsub
 // EMERGENCY KILL SWITCH
 // ============================================================================
 
-export const pack386_budgetKillSwitch = functions.https.onCall(
-  async (data: {
-    reason: string;
-    geo?: string;
-  }, context) => {
-    if (!context.auth) {
+export const pack386_budgetKillSwitch = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(userId).get();
@@ -473,13 +462,13 @@ export const pack386_resetDailyBudgets = functions.pubsub
 // GET BUDGET DASHBOARD
 // ============================================================================
 
-export const pack386_getBudgetDashboard = functions.https.onCall(
-  async (data: { date?: string }, context) => {
-    if (!context.auth) {
+export const pack386_getBudgetDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(userId).get();

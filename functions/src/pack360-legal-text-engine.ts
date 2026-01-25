@@ -47,8 +47,9 @@ export interface LegalUpdateNotification {
 }
 
 // Get legal documents for user's country and language
-export const getUserLegalDocuments = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getUserLegalDocuments = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -61,7 +62,7 @@ export const getUserLegalDocuments = functions.https.onCall(async (data, context
     let userLanguage = languageCode;
     
     if (!userCountry || !userLanguage) {
-      const userDoc = await db.collection('users').doc(context.auth.uid).get();
+      const userDoc = await db.collection('users').doc(request.auth.uid).get();
       userCountry = userCountry || userDoc.data()?.country || 'GLOBAL';
       userLanguage = userLanguage || userDoc.data()?.language || 'en';
     }
@@ -112,14 +113,15 @@ export const getUserLegalDocuments = functions.https.onCall(async (data, context
 });
 
 // Accept legal document
-export const acceptLegalDocument = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const acceptLegalDocument = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   try {
     const { documentId, ipAddress, userAgent } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const db = admin.firestore();
     
     // Get document
@@ -206,13 +208,14 @@ export const checkMandatoryAcceptances = async (userId: string, country: string)
 };
 
 // Check user legal compliance status
-export const checkUserLegalCompliance = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const checkUserLegalCompliance = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   try {
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const db = admin.firestore();
     
     // Get user's country
@@ -234,8 +237,9 @@ export const checkUserLegalCompliance = functions.https.onCall(async (data, cont
 });
 
 // Admin: Create or update legal document
-export const adminCreateLegalDocument = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminCreateLegalDocument = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -243,7 +247,7 @@ export const adminCreateLegalDocument = functions.https.onCall(async (data, cont
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -271,7 +275,7 @@ export const adminCreateLegalDocument = functions.https.onCall(async (data, cont
       effectiveDate: effectiveDate || Date.now(),
       lastUpdated: Date.now(),
       mandatory: mandatory !== undefined ? mandatory : true,
-      updatedBy: context.auth.uid,
+      updatedBy: request.auth.uid,
       status: status || 'draft'
     };
     
@@ -354,8 +358,9 @@ const notifyUsersOfLegalUpdate = async (
 };
 
 // Admin: Get all legal documents
-export const adminGetAllLegalDocuments = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminGetAllLegalDocuments = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -363,7 +368,7 @@ export const adminGetAllLegalDocuments = functions.https.onCall(async (data, con
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -400,8 +405,9 @@ export const adminGetAllLegalDocuments = functions.https.onCall(async (data, con
 });
 
 // Admin: Get legal acceptance statistics
-export const adminGetLegalAcceptanceStats = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminGetLegalAcceptanceStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -409,7 +415,7 @@ export const adminGetLegalAcceptanceStats = functions.https.onCall(async (data, 
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -456,13 +462,14 @@ export const adminGetLegalAcceptanceStats = functions.https.onCall(async (data, 
 });
 
 // Trigger: Check legal compliance on user login
-export const onUserLogin = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const onUserLogin = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   try {
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const db = admin.firestore();
     
     // Get user's country

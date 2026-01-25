@@ -1194,9 +1194,10 @@ export class ReviewRecoveryEngine {
 /**
  * Process incoming store review
  */
-export const processStoreReview = functions.https.onCall(async (data, context) => {
+export const processStoreReview = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin only
-  if (!context.auth || !context.auth.token.admin) {
+  if (!request.auth || !request.auth.token.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
   
@@ -1209,15 +1210,16 @@ export const processStoreReview = functions.https.onCall(async (data, context) =
 /**
  * Calculate user reputation score
  */
-export const calculateUserReputation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const calculateUserReputation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = data.userId || context.auth.uid;
+  const userId = data.userId || request.auth.uid;
   
   // Users can only check their own score, unless admin
-  if (userId !== context.auth.uid && !context.auth.token.admin) {
+  if (userId !== request.auth.uid && !request.auth.token.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Cannot access other user scores');
   }
   
@@ -1230,8 +1232,9 @@ export const calculateUserReputation = functions.https.onCall(async (data, conte
 /**
  * Create verified review
  */
-export const createVerifiedReview = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createVerifiedReview = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -1243,7 +1246,7 @@ export const createVerifiedReview = functions.https.onCall(async (data, context)
   
   const system = new VerifiedReviewSystem();
   const review = await system.createVerifiedReview(
-    context.auth.uid,
+    request.auth.uid,
     rating,
     title,
     text

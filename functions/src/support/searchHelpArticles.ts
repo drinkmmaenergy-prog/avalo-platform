@@ -96,11 +96,11 @@ function calculateRelevance(article: HelpArticle, query: string): {
   };
 }
 
-export const searchHelpArticles = functions.https.onCall(
-  async (data: SearchHelpArticlesRequest, context): Promise<SearchHelpArticlesResponse> => {
+export const searchHelpArticles = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Authentication check
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated to search articles'
@@ -195,7 +195,7 @@ export const searchHelpArticles = functions.https.onCall(
     } catch (error: any) {
       functions.logger.error('Error searching help articles', {
         error: error.message,
-        userId: context.auth?.uid,
+        userId: request.auth?.uid,
       });
 
       if (error instanceof functions.https.HttpsError) {

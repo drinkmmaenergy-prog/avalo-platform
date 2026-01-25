@@ -21,9 +21,10 @@ import { HttpsError, admin, auth, onCall } from './runtime';
  * Get public reputation profile for authenticated user or specified user
  * Returns only public display information (level, badge, disclaimer)
  */
-export const reputation_getPublicProfile = functions.https.onCall(async (data, context) => {
+export const reputation_getPublicProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
-    const userId = data?.userId || context.auth?.uid;
+    const userId = data?.userId || request.auth?.uid;
 
     if (!userId) {
       throw new functions.https.HttpsError('invalid-argument', 'User ID is required');
@@ -45,12 +46,13 @@ export const reputation_getPublicProfile = functions.https.onCall(async (data, c
  * Update reputation display settings (show/hide badge)
  * User privacy control
  */
-export const reputation_updateDisplaySettings = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reputation_updateDisplaySettings = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { displayBadge } = data;
 
   if (typeof displayBadge !== 'boolean') {
@@ -80,7 +82,7 @@ export const reputation_updateDisplaySettings = functions.https.onCall(async (da
  * Get reputation disclaimer (what does NOT affect reputation)
  * Public endpoint, no auth required
  */
-export const reputation_getDisclaimer = functions.https.onCall(async (data, context) => {
+export const reputation_getDisclaimer = functions.https.onCall(async (request) => {
   try {
     const disclaimer = getReputationDisclaimer();
 
@@ -98,12 +100,12 @@ export const reputation_getDisclaimer = functions.https.onCall(async (data, cont
  * Manual trigger to recalculate user's reputation
  * User can request their score to be updated
  */
-export const reputation_recalculateMyScore = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reputation_recalculateMyScore = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const score = await calculateReputationScore(userId);
@@ -129,8 +131,9 @@ export const reputation_recalculateMyScore = functions.https.onCall(async (data,
  * Get internal reputation score (admin/staff only)
  * Returns full score breakdown with components and penalties
  */
-export const reputation_admin_getInternalScore = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reputation_admin_getInternalScore = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
@@ -163,8 +166,9 @@ export const reputation_admin_getInternalScore = functions.https.onCall(async (d
 /**
  * Manually recalculate reputation for a specific user (admin only)
  */
-export const reputation_admin_recalculateUser = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reputation_admin_recalculateUser = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
@@ -196,8 +200,9 @@ export const reputation_admin_recalculateUser = functions.https.onCall(async (da
 /**
  * Get reputation abuse attempts (admin only)
  */
-export const reputation_admin_getAbuseAttempts = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reputation_admin_getAbuseAttempts = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 

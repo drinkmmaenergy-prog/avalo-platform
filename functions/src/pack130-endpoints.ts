@@ -45,8 +45,9 @@ import { HttpsError, admin, auth, db, onCall } from './runtime';
 /**
  * Log a patrol event
  */
-export const pack130_patrolLogEvent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_patrolLogEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
@@ -66,17 +67,18 @@ export const pack130_patrolLogEvent = functions.https.onCall(async (data, contex
 /**
  * Get behavior patterns for a user
  */
-export const pack130_getBehaviorPatterns = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_getBehaviorPatterns = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const userId = data.userId || context.auth.uid;
+  const userId = data.userId || request.auth.uid;
   const lookbackMonths = data.lookbackMonths || 12;
   
   // Admin or self only
-  const isAdmin = await checkIsAdmin(context.auth.uid);
-  if (!isAdmin && userId !== context.auth.uid) {
+  const isAdmin = await checkIsAdmin(request.auth.uid);
+  if (!isAdmin && userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Cannot view other users behavior');
   }
   
@@ -92,15 +94,16 @@ export const pack130_getBehaviorPatterns = functions.https.onCall(async (data, c
 /**
  * Evaluate user's risk profile
  */
-export const pack130_evaluateRiskProfile = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_evaluateRiskProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
   const userId = data.userId;
   
   // Admin only
-  const isAdmin = await checkIsAdmin(context.auth.uid);
+  const isAdmin = await checkIsAdmin(request.auth.uid);
   if (!isAdmin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin only');
   }
@@ -122,16 +125,17 @@ export const pack130_evaluateRiskProfile = functions.https.onCall(async (data, c
 /**
  * Get user's risk profile (limited info for user, full for admin)
  */
-export const pack130_getRiskProfile = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_getRiskProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const userId = data.userId || context.auth.uid;
-  const isAdmin = await checkIsAdmin(context.auth.uid);
+  const userId = data.userId || request.auth.uid;
+  const isAdmin = await checkIsAdmin(request.auth.uid);
   
   // Users can only see their own limited profile
-  if (!isAdmin && userId !== context.auth.uid) {
+  if (!isAdmin && userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Cannot view other users profile');
   }
   
@@ -156,12 +160,13 @@ export const pack130_getRiskProfile = functions.https.onCall(async (data, contex
 /**
  * Get users by risk level (admin only)
  */
-export const pack130_getUsersByRiskLevel = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_getUsersByRiskLevel = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isAdmin = await checkIsAdmin(context.auth.uid);
+  const isAdmin = await checkIsAdmin(request.auth.uid);
   if (!isAdmin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin only');
   }
@@ -181,15 +186,16 @@ export const pack130_getUsersByRiskLevel = functions.https.onCall(async (data, c
 /**
  * Record device fingerprint
  */
-export const pack130_recordDeviceFingerprint = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_recordDeviceFingerprint = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  await recordDeviceFingerprint(context.auth.uid, data.deviceData);
+  await recordDeviceFingerprint(request.auth.uid, data.deviceData);
   
   // Automatically check for ban evasion
-  const evasionRecord = await checkForBanEvasion(context.auth.uid, data.deviceData.deviceId);
+  const evasionRecord = await checkForBanEvasion(request.auth.uid, data.deviceData.deviceId);
   
   return { 
     success: true,
@@ -200,12 +206,13 @@ export const pack130_recordDeviceFingerprint = functions.https.onCall(async (dat
 /**
  * Check for ban evasion (admin only)
  */
-export const pack130_checkBanEvasion = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_checkBanEvasion = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isAdmin = await checkIsAdmin(context.auth.uid);
+  const isAdmin = await checkIsAdmin(request.auth.uid);
   if (!isAdmin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin only');
   }
@@ -220,12 +227,13 @@ export const pack130_checkBanEvasion = functions.https.onCall(async (data, conte
 /**
  * Get ban evasion records (admin only)
  */
-export const pack130_getBanEvasionRecords = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_getBanEvasionRecords = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isAdmin = await checkIsAdmin(context.auth.uid);
+  const isAdmin = await checkIsAdmin(request.auth.uid);
   if (!isAdmin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin only');
   }
@@ -238,12 +246,13 @@ export const pack130_getBanEvasionRecords = functions.https.onCall(async (data, 
 /**
  * Resolve ban evasion case (admin only)
  */
-export const pack130_resolveBanEvasionCase = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_resolveBanEvasionCase = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isAdmin = await checkIsAdmin(context.auth.uid);
+  const isAdmin = await checkIsAdmin(request.auth.uid);
   if (!isAdmin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin only');
   }
@@ -260,12 +269,13 @@ export const pack130_resolveBanEvasionCase = functions.https.onCall(async (data,
 /**
  * Record moderation feedback (moderator only)
  */
-export const pack130_recordModerationFeedback = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_recordModerationFeedback = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isModerator = await checkIsModerator(context.auth.uid);
+  const isModerator = await checkIsModerator(request.auth.uid);
   if (!isModerator) {
     throw new functions.https.HttpsError('permission-denied', 'Moderator only');
   }
@@ -274,7 +284,7 @@ export const pack130_recordModerationFeedback = functions.https.onCall(async (da
     data.caseId,
     data.flaggedViolation,
     data.confirmed,
-    context.auth.uid,
+    request.auth.uid,
     data.moderatorNotes
   );
   
@@ -284,12 +294,12 @@ export const pack130_recordModerationFeedback = functions.https.onCall(async (da
 /**
  * Get AI confidence rules (admin only)
  */
-export const pack130_getConfidenceRules = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_getConfidenceRules = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isAdmin = await checkIsAdmin(context.auth.uid);
+  const isAdmin = await checkIsAdmin(request.auth.uid);
   if (!isAdmin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin only');
   }
@@ -302,12 +312,13 @@ export const pack130_getConfidenceRules = functions.https.onCall(async (data, co
 /**
  * Get feedback statistics (admin only)
  */
-export const pack130_getFeedbackStatistics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_getFeedbackStatistics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isAdmin = await checkIsAdmin(context.auth.uid);
+  const isAdmin = await checkIsAdmin(request.auth.uid);
   if (!isAdmin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin only');
   }
@@ -324,12 +335,13 @@ export const pack130_getFeedbackStatistics = functions.https.onCall(async (data,
 /**
  * Create patrol case (admin/moderator only)
  */
-export const pack130_createPatrolCase = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_createPatrolCase = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isModerator = await checkIsModerator(context.auth.uid);
+  const isModerator = await checkIsModerator(request.auth.uid);
   if (!isModerator) {
     throw new functions.https.HttpsError('permission-denied', 'Moderator only');
   }
@@ -338,7 +350,7 @@ export const pack130_createPatrolCase = functions.https.onCall(async (data, cont
     subjectUserId: data.subjectUserId,
     category: data.category,
     detectionSignals: data.detectionSignals,
-    reportedBy: context.auth.uid,
+    reportedBy: request.auth.uid,
     behaviorLogIds: data.behaviorLogIds || [],
   });
   
@@ -348,12 +360,13 @@ export const pack130_createPatrolCase = functions.https.onCall(async (data, cont
 /**
  * Get cases by priority (moderator only)
  */
-export const pack130_getCasesByPriority = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_getCasesByPriority = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isModerator = await checkIsModerator(context.auth.uid);
+  const isModerator = await checkIsModerator(request.auth.uid);
   if (!isModerator) {
     throw new functions.https.HttpsError('permission-denied', 'Moderator only');
   }
@@ -366,17 +379,18 @@ export const pack130_getCasesByPriority = functions.https.onCall(async (data, co
 /**
  * Assign case (moderator only)
  */
-export const pack130_assignCase = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_assignCase = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isModerator = await checkIsModerator(context.auth.uid);
+  const isModerator = await checkIsModerator(request.auth.uid);
   if (!isModerator) {
     throw new functions.https.HttpsError('permission-denied', 'Moderator only');
   }
   
-  await assignCase(data.caseId, context.auth.uid);
+  await assignCase(data.caseId, request.auth.uid);
   
   return { success: true };
 });
@@ -384,12 +398,13 @@ export const pack130_assignCase = functions.https.onCall(async (data, context) =
 /**
  * Resolve case (moderator only)
  */
-export const pack130_resolveCase = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_resolveCase = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isModerator = await checkIsModerator(context.auth.uid);
+  const isModerator = await checkIsModerator(request.auth.uid);
   if (!isModerator) {
     throw new functions.https.HttpsError('permission-denied', 'Moderator only');
   }
@@ -402,12 +417,13 @@ export const pack130_resolveCase = functions.https.onCall(async (data, context) 
 /**
  * Freeze conversation (moderator only)
  */
-export const pack130_freezeConversation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_freezeConversation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isModerator = await checkIsModerator(context.auth.uid);
+  const isModerator = await checkIsModerator(request.auth.uid);
   if (!isModerator) {
     throw new functions.https.HttpsError('permission-denied', 'Moderator only');
   }
@@ -425,12 +441,13 @@ export const pack130_freezeConversation = functions.https.onCall(async (data, co
 /**
  * Unfreeze conversation (moderator only)
  */
-export const pack130_unfreezeConversation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_unfreezeConversation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isModerator = await checkIsModerator(context.auth.uid);
+  const isModerator = await checkIsModerator(request.auth.uid);
   if (!isModerator) {
     throw new functions.https.HttpsError('permission-denied', 'Moderator only');
   }
@@ -443,12 +460,13 @@ export const pack130_unfreezeConversation = functions.https.onCall(async (data, 
 /**
  * Get case statistics (admin only)
  */
-export const pack130_getCaseStatistics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack130_getCaseStatistics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const isAdmin = await checkIsAdmin(context.auth.uid);
+  const isAdmin = await checkIsAdmin(request.auth.uid);
   if (!isAdmin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin only');
   }

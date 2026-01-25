@@ -121,18 +121,18 @@ async function getUserActivityMetrics(userId: string): Promise<{
 /**
  * Determine if user should be prompted for rating
  */
-export const pack411_ratingPromptDecision = functions.https.onCall(
-  async (data, context) => {
+export const pack411_ratingPromptDecision = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Must be authenticated
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const appVersion = data.appVersion as string;
 
       if (!appVersion) {
@@ -298,17 +298,17 @@ export const pack411_ratingPromptDecision = functions.https.onCall(
 /**
  * Log a rating prompt event
  */
-export const pack411_logRatingPrompt = functions.https.onCall(
-  async (data, context) => {
+export const pack411_logRatingPrompt = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const {
         appVersion,
         decision,
@@ -360,17 +360,17 @@ export const pack411_logRatingPrompt = functions.https.onCall(
 /**
  * Create support ticket from negative rating feedback
  */
-export const pack411_createFeedbackTicket = functions.https.onCall(
-  async (data, context) => {
+export const pack411_createFeedbackTicket = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { rating, feedback, appVersion, screenshot } = data;
 
       const ticketData = {

@@ -64,9 +64,10 @@ interface MarketConfig {
  * Activate a market for launch
  * Admin-only function
  */
-export const pack385_activateMarket = functions.https.onCall(async (data, context) => {
+export const pack385_activateMarket = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin authentication required
-  if (!context.auth || !context.auth.token?.admin) {
+  if (!request.auth || !request.auth.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -124,7 +125,7 @@ export const pack385_activateMarket = functions.https.onCall(async (data, contex
       localTaxWithholding: config.compliance?.localTaxWithholding ?? false
     },
     activatedAt: admin.firestore.FieldValue.serverTimestamp() as admin.firestore.Timestamp,
-    activatedBy: context.auth.uid
+    activatedBy: request.auth.uid
   };
 
   await db.collection('marketActivation').doc(countryCode).set(marketConfig);
@@ -133,7 +134,7 @@ export const pack385_activateMarket = functions.https.onCall(async (data, contex
   await db.collection('auditLogs').add({
     type: 'MARKET_ACTIVATED',
     severity: 'HIGH',
-    userId: context.auth.uid,
+    userId: request.auth.uid,
     data: {
       countryCode,
       config: marketConfig
@@ -212,8 +213,9 @@ async function checkKYCReady(countryCode: string, level: KYCLevel): Promise<{ re
 /**
  * Get market configuration for user's country
  */
-export const pack385_getMarketConfig = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_getMarketConfig = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -254,8 +256,9 @@ export const pack385_getMarketConfig = functions.https.onCall(async (data, conte
 /**
  * Check if a feature is available in user's market
  */
-export const pack385_checkMarketFeature = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_checkMarketFeature = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -289,9 +292,10 @@ export const pack385_checkMarketFeature = functions.https.onCall(async (data, co
 /**
  * Suspend a market (emergency use)
  */
-export const pack385_suspendMarket = functions.https.onCall(async (data, context) => {
+export const pack385_suspendMarket = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin authentication required
-  if (!context.auth || !context.auth.token?.admin) {
+  if (!request.auth || !request.auth.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -304,7 +308,7 @@ export const pack385_suspendMarket = functions.https.onCall(async (data, context
   await db.collection('marketActivation').doc(countryCode).update({
     status: MarketStatus.SUSPENDED,
     suspendedAt: admin.firestore.FieldValue.serverTimestamp(),
-    suspendedBy: context.auth.uid,
+    suspendedBy: request.auth.uid,
     suspensionReason: reason || 'No reason provided'
   });
 
@@ -312,7 +316,7 @@ export const pack385_suspendMarket = functions.https.onCall(async (data, context
   await db.collection('auditLogs').add({
     type: 'MARKET_SUSPENDED',
     severity: 'CRITICAL',
-    userId: context.auth.uid,
+    userId: request.auth.uid,
     data: {
       countryCode,
       reason
@@ -330,8 +334,9 @@ export const pack385_suspendMarket = functions.https.onCall(async (data, context
 /**
  * Get all active markets
  */
-export const pack385_getActiveMarkets = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_getActiveMarkets = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 

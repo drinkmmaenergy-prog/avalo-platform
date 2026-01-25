@@ -20,7 +20,7 @@ import {
   calculateRolloutBucket,
   SAFE_DEFAULTS,
 } from '../../shared/config/pack416-feature-flags';
-import { HttpsError, admin, auth, onCall, onRequest, serverTimestamp, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, onRequest, serverTimestamp, timestamp , CallableRequest} from './runtime';
 
 const db = getFirestore();
 
@@ -70,15 +70,15 @@ async function getFeatureFlag(key: FeatureFlagKey): Promise<FeatureFlagConfig | 
 /**
  * Build user context from Firebase Auth context and additional data
  * 
- * @param context Firebase CallableContext
+ * @param context Firebase CallableRequest<any>
  * @param additionalContext Additional context data
  * @returns User context for feature evaluation
  */
 async function buildUserContext(
-  context: functions.https.CallableContext,
+  request: CallableRequest<any>,
   additionalContext?: Partial<FeatureFlagUserContext>
 ): Promise<FeatureFlagUserContext> {
-  const userId = context.auth?.uid;
+  const userId = request.auth?.uid;
   
   // In production, fetch user profile data here
   // For now, use provided context or defaults
@@ -99,18 +99,18 @@ async function buildUserContext(
  * USE THIS to guard critical endpoints
  * 
  * @param key Feature flag key to check
- * @param context Firebase CallableContext
+ * @param context Firebase CallableRequest<any>
  * @param contextInfo Additional context for feature evaluation
  * @throws functions.https.HttpsError if feature is disabled
  */
 export async function assertFeatureEnabled(
   key: FeatureFlagKey,
-  context: functions.https.CallableContext,
+  request: CallableRequest<any>,
   contextInfo?: Partial<FeatureFlagUserContext>
 ): Promise<void> {
   try {
     const config = await getFeatureFlag(key);
-    const userContext = await buildUserContext(context, contextInfo);
+    const userContext = await buildUserContext(request, contextInfo);
     
     let enabled: boolean;
     
@@ -123,16 +123,16 @@ export async function assertFeatureEnabled(
     
     if (!enabled) {
       // Log the blocked attempt
-      await logFeatureBlock(key, context.auth?.uid, userContext);
+      await logFeatureBlock(key, request.auth?.uid, userContext);
       
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'failed-precondition',
         `Feature '${key}' is currently disabled`,
         { featureKey: key, enabled: false }
       );
     }
   } catch (error) {
-    if (error instanceof functions.https.HttpsError) {
+    if (error instanceof HttpsError) {
       throw error;
     }
     
@@ -141,7 +141,7 @@ export async function assertFeatureEnabled(
     
     if (!safeDefault) {
       console.error(`[FeatureGuard] Error checking feature ${key}, blocking by default:`, error);
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         'Error checking feature availability',
         { featureKey: key }
@@ -157,18 +157,18 @@ export async function assertFeatureEnabled(
  * Use this when you want to conditionally enable functionality without blocking
  * 
  * @param key Feature flag key to check
- * @param context Firebase CallableContext
+ * @param context Firebase CallableRequest<any>
  * @param contextInfo Additional context for feature evaluation
  * @returns Promise resolving to enabled status
  */
 export async function isFeatureEnabled(
   key: FeatureFlagKey,
-  context: functions.https.CallableContext,
+  request: CallableRequest<any>,
   contextInfo?: Partial<FeatureFlagUserContext>
 ): Promise<boolean> {
   try {
     const config = await getFeatureFlag(key);
-    const userContext = await buildUserContext(context, contextInfo);
+    const userContext = await buildUserContext(request, contextInfo);
     
     if (config) {
       return checkFeatureEnabled(config, userContext);
@@ -185,20 +185,20 @@ export async function isFeatureEnabled(
  * Check multiple features at once
  * 
  * @param keys Feature flag keys to check
- * @param context Firebase CallableContext
+ * @param context Firebase CallableRequest<any>
  * @param contextInfo Additional context for feature evaluation
  * @returns Promise resolving to map of key -> enabled status
  */
 export async function checkFeatures(
   keys: FeatureFlagKey[],
-  context: functions.https.CallableContext,
+  request: CallableRequest<any>,
   contextInfo?: Partial<FeatureFlagUserContext>
 ): Promise<Record<FeatureFlagKey, boolean>> {
   const results: Record<string, boolean> = {};
   
   await Promise.all(
     keys.map(async (key) => {
-      results[key] = await isFeatureEnabled(key, context, contextInfo);
+      results[key] = await isFeatureEnabled(key, request, contextInfo);
     })
   );
   
@@ -242,14 +242,15 @@ async function logFeatureBlock(
  */
 export function guardFeature<T = any, R = any>(
   featureKey: FeatureFlagKey,
-  handler: (data: T, context: functions.https.CallableContext) => R | Promise<R>
+  handler: (data: T, request: CallableRequest<any>) => R | Promise<R>
 ) {
-  return functions.https.onCall(async (data: T, context) => {
+  return onCall(async (request) => {
+    const data = request.data;
     // Check feature flag before executing handler
-    await assertFeatureEnabled(featureKey, context);
+    await assertFeatureEnabled(featureKey, request);
     
     // Execute original handler
-    return handler(data, context);
+    return handler(data, request);
   });
 }
 

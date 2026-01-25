@@ -44,9 +44,9 @@ interface AuditCheck {
  */
 export const pack414_runFullAudit = functions
   .runWith({ timeoutSeconds: 540, memory: '2GB' })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
     // Require admin authentication
-    if (!context.auth?.token?.admin) {
+    if (!request.auth?.token?.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can run integration audits'
@@ -158,7 +158,7 @@ export const pack414_runFullAudit = functions
         ...result,
         completedAt: admin.firestore.FieldValue.serverTimestamp(),
         duration: Date.now() - startTime,
-        runBy: context.auth.uid
+        runBy: request.auth.uid
       });
 
       // Update registry document
@@ -185,9 +185,10 @@ export const pack414_runFullAudit = functions
  */
 export const pack414_runPackAudit = functions
   .runWith({ timeoutSeconds: 60 })
-  .https.onCall(async (data: { packId: number }, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Require admin authentication
-    if (!context.auth?.token?.admin) {
+    if (!request.auth?.token?.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can run pack audits'
@@ -258,9 +259,10 @@ export const pack414_runPackAudit = functions
  * Returns complete launch readiness matrix
  */
 export const pack414_getGreenlightMatrix = functions
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Require admin authentication
-    if (!context.auth?.token?.admin) {
+    if (!request.auth?.token?.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can view greenlight matrix'

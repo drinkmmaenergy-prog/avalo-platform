@@ -267,9 +267,8 @@ export const onUserCreated = functions.firestore
 /**
  * Update user activity when they open the app
  */
-export const onUserActivity = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const onUserActivity = functions.https.onCall(async (request) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "User must be authenticated"
@@ -277,8 +276,8 @@ export const onUserActivity = functions.https.onCall(
     }
 
     try {
-      await updateUserActivity(context.auth.uid);
-      await resetBreakTracking(context.auth.uid);
+      await updateUserActivity(request.auth.uid);
+      await resetBreakTracking(request.auth.uid);
 
       return { success: true };
     } catch (error) {
@@ -363,9 +362,9 @@ export const scheduledStatsCleanup = functions.pubsub
 /**
  * Manually trigger a return event (for testing/admin)
  */
-export const triggerReturnEvent = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const triggerReturnEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "User must be authenticated"
@@ -376,7 +375,7 @@ export const triggerReturnEvent = functions.https.onCall(
 
     try {
       const result = await createReturnTrigger({
-        userId: userId || context.auth.uid,
+        userId: userId || request.auth.uid,
         eventType,
         context: eventContext,
         forceDelivery: forceDelivery || false,
@@ -393,9 +392,9 @@ export const triggerReturnEvent = functions.https.onCall(
 /**
  * Set panic mode for user
  */
-export const setUserPanicMode = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const setUserPanicMode = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "User must be authenticated"
@@ -405,7 +404,7 @@ export const setUserPanicMode = functions.https.onCall(
     const { enabled, cooldownHours } = data;
 
     try {
-      await setPanicMode(context.auth.uid, enabled, cooldownHours);
+      await setPanicMode(request.auth.uid, enabled, cooldownHours);
 
       return { success: true };
     } catch (error) {
@@ -418,9 +417,9 @@ export const setUserPanicMode = functions.https.onCall(
 /**
  * Get user's return trigger stats
  */
-export const getReturnTriggerStats = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getReturnTriggerStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "User must be authenticated"
@@ -430,7 +429,7 @@ export const getReturnTriggerStats = functions.https.onCall(
     try {
       const statsDoc = await db
         .collection("return_trigger_stats")
-        .doc(context.auth.uid)
+        .doc(request.auth.uid)
         .get();
 
       if (!statsDoc.exists) {
@@ -452,9 +451,9 @@ export const getReturnTriggerStats = functions.https.onCall(
 /**
  * Update user return trigger settings
  */
-export const updateReturnTriggerSettings = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const updateReturnTriggerSettings = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "User must be authenticated"
@@ -478,7 +477,7 @@ export const updateReturnTriggerSettings = functions.https.onCall(
 
       await db
         .collection("return_trigger_settings")
-        .doc(context.auth.uid)
+        .doc(request.auth.uid)
         .update(updates);
 
       return { success: true };
@@ -492,9 +491,9 @@ export const updateReturnTriggerSettings = functions.https.onCall(
 /**
  * Process single user cold-start (for testing)
  */
-export const processSingleUserColdStart = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const processSingleUserColdStart = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "User must be authenticated"
@@ -504,7 +503,7 @@ export const processSingleUserColdStart = functions.https.onCall(
     try {
       const settingsDoc = await db
         .collection("return_trigger_settings")
-        .doc(context.auth.uid)
+        .doc(request.auth.uid)
         .get();
 
       if (!settingsDoc.exists) {
@@ -514,7 +513,7 @@ export const processSingleUserColdStart = functions.https.onCall(
       const settings = settingsDoc.data();
 
       await processColdStartSequence(
-        context.auth.uid,
+        request.auth.uid,
         settings?.accountCreatedAt || Timestamp.now()
       );
 

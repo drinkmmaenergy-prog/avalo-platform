@@ -316,14 +316,15 @@ async function getDiscoveryIndexStatus(): Promise<DiscoveryIndexStatus> {
  * Get comprehensive system health summary
  * Moderator-only endpoint
  */
-export const getSystemHealthSummary = functions.https.onCall(async (data, context) => {
+export const getSystemHealthSummary = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
   // Check moderator privileges
-  const modDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const modDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!modDoc.exists || !['ADMIN', 'MODERATOR'].includes(modDoc.data()?.role)) {
     throw new functions.https.HttpsError('permission-denied', 'Moderator access required');
   }
@@ -413,14 +414,15 @@ export const healthCheck = functions.https.onRequest((req, res) => {
  * Get detailed system diagnostics
  * Admin-only endpoint with more detailed information
  */
-export const admin_getSystemDiagnostics = functions.https.onCall(async (data, context) => {
+export const admin_getSystemDiagnostics = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
   // Check admin privileges
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }

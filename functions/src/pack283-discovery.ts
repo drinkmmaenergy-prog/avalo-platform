@@ -172,9 +172,9 @@ function calculateDiscoveryScore(
 // DISCOVERY BROWSE API
 // ============================================================================
 
-export const discoveryBrowse = functions.https.onCall(
-  async (data: DiscoveryBrowseParams, context) => {
-    if (!context.auth) {
+export const discoveryBrowse = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -193,7 +193,7 @@ export const discoveryBrowse = functions.https.onCall(
       nsfwFilter = ['safe', 'soft'],
     } = data;
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // PACK 309: Check 18+ verification requirement
@@ -323,9 +323,9 @@ export const discoveryBrowse = functions.https.onCall(
 // PROFILE VIEW TRACKING
 // ============================================================================
 
-export const trackProfileView = functions.https.onCall(
-  async (data: { targetId: string; source: string }, context) => {
-    if (!context.auth) {
+export const trackProfileView = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -333,7 +333,7 @@ export const trackProfileView = functions.https.onCall(
     }
 
     const { targetId, source } = data;
-    const viewerId = context.auth.uid;
+    const viewerId = request.auth.uid;
 
     // Validate source
     const validSources = ['discovery', 'feed', 'match', 'search', 'profile'];
@@ -411,16 +411,16 @@ export const trackProfileView = functions.https.onCall(
 // GET PROFILE VISITORS
 // ============================================================================
 
-export const getProfileVisitors = functions.https.onCall(
-  async (data: { limit?: number; cursor?: string }, context) => {
-    if (!context.auth) {
+export const getProfileVisitors = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { limit = 50, cursor } = data;
 
     try {

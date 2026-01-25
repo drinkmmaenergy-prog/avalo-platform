@@ -295,9 +295,9 @@ export const scheduledTrustScoreCalculation = functions.pubsub
 /**
  * HTTP endpoint to get current trust score
  */
-export const getTrustScore = functions.https.onCall(async (data, context) => {
+export const getTrustScore = functions.https.onCall(async (request) => {
   // Verify admin or authorized access
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError(
       'unauthenticated',
       'Must be authenticated to view trust score'

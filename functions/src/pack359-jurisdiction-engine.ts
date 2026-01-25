@@ -593,12 +593,12 @@ export const onPaymentMethodUpdate = functions.firestore
 /**
  * HTTP endpoint to get user's jurisdiction
  */
-export const getJurisdiction = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getJurisdiction = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const jurisdiction = await getUserJurisdiction(userId);
   
   return jurisdiction;
@@ -607,12 +607,12 @@ export const getJurisdiction = functions.https.onCall(async (data, context) => {
 /**
  * HTTP endpoint to check compliance requirements
  */
-export const checkCompliance = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const checkCompliance = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { profile } = await getUserJurisdiction(userId);
   
   const payoutEligibility = await checkPayoutEligibility(userId);

@@ -48,16 +48,16 @@ const db = admin.firestore();
  * Log user activity and update retention profile
  * Updates last-activity timestamps, recomputes churn risk and segment
  */
-export const pack301_logUserActivity = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack301_logUserActivity = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { activityType, metadata } = data;
 
     // Validate input
@@ -126,16 +126,16 @@ export const pack301_logUserActivity = functions.https.onCall(
  * Update user's onboarding stage
  * Only moves forward, stores timestamps, resets nudge counters
  */
-export const pack301_updateOnboardingStage = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack301_updateOnboardingStage = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { stage } = data;
 
     // Validate input
@@ -570,16 +570,16 @@ export const pack301_onboardingNudgeSweep = functions.pubsub
  * Rebuild retention profile for a user (admin only)
  * Recomputes full retention profile from historical data
  */
-export const pack301_rebuildRetentionProfile = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack301_rebuildRetentionProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const adminId = context.auth.uid;
+    const adminId = request.auth.uid;
     const { userId } = data;
 
     if (!userId) {

@@ -49,14 +49,14 @@ import { HttpsError, admin, auth, onCall } from './runtime';
  * Create a new club
  * Verified creators only
  */
-export const createClub = functions.https.onCall(
-  async (data: CreateClubRequest, context): Promise<ClubResponse<{ clubId: string }>> => {
+export const createClub = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
 
       // Get user profile
       const userDoc = await db.collection('users').doc(userId).get();
@@ -196,14 +196,14 @@ export const createClub = functions.https.onCall(
  * Update club details
  * Owner only
  */
-export const updateClubDetails = functions.https.onCall(
-  async (data: UpdateClubRequest, context): Promise<ClubResponse> => {
+export const updateClubDetails = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { clubId } = data;
 
       // Get club
@@ -289,14 +289,14 @@ export const updateClubDetails = functions.https.onCall(
  * Join a club
  * Handles payment for token-gated clubs
  */
-export const joinClub = functions.https.onCall(
-  async (data: JoinClubRequest, context): Promise<ClubResponse<{ memberId: string }>> => {
+export const joinClub = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { clubId } = data;
 
       // Get club
@@ -446,14 +446,14 @@ export const joinClub = functions.https.onCall(
  * Leave a club
  * No refund policy
  */
-export const leaveClub = functions.https.onCall(
-  async (data: LeaveClubRequest, context): Promise<ClubResponse> => {
+export const leaveClub = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { clubId } = data;
 
       const memberId = `${userId}_${clubId}`;
@@ -499,14 +499,14 @@ export const leaveClub = functions.https.onCall(
  * Post to club
  * Members only, with NSFW validation
  */
-export const postToClub = functions.https.onCall(
-  async (data: CreateClubPostRequest, context): Promise<ClubResponse<{ postId: string }>> => {
+export const postToClub = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { clubId, type, content, mediaUrl, resourceUrl, pollQuestion, pollOptions } = data;
 
       // Verify membership
@@ -597,14 +597,14 @@ export const postToClub = functions.https.onCall(
  * Host a club event
  * Integration with PACK 117
  */
-export const hostClubEvent = functions.https.onCall(
-  async (data: HostClubEventRequest, context): Promise<ClubResponse<{ eventId: string }>> => {
+export const hostClubEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { clubId, title, description, startTime, endTime, maxAttendees } = data;
 
       // Verify membership and moderator/owner status
@@ -684,14 +684,14 @@ export const hostClubEvent = functions.https.onCall(
  * Ban user from club
  * Owner and moderators only
  */
-export const banClubUser = functions.https.onCall(
-  async (data: BanClubUserRequest, context): Promise<ClubResponse> => {
+export const banClubUser = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const requesterId = context.auth.uid;
+      const requesterId = request.auth.uid;
       const { clubId, userId, reason } = data;
 
       // Verify requester is owner or moderator
@@ -750,14 +750,14 @@ export const banClubUser = functions.https.onCall(
  * Assign moderator role
  * Owner only
  */
-export const assignClubModerator = functions.https.onCall(
-  async (data: AssignModeratorRequest, context): Promise<ClubResponse> => {
+export const assignClubModerator = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const ownerId = context.auth.uid;
+      const ownerId = request.auth.uid;
       const { clubId, userId } = data;
 
       // Verify requester is owner
@@ -816,10 +816,10 @@ export const assignClubModerator = functions.https.onCall(
 /**
  * Get club details
  */
-export const getClubDetails = functions.https.onCall(
-  async (data: { clubId: string }, context): Promise<ClubResponse<Club>> => {
+export const getClubDetails = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -849,13 +849,10 @@ export const getClubDetails = functions.https.onCall(
 /**
  * List clubs by category
  */
-export const listClubs = functions.https.onCall(
-  async (
-    data: { category?: ClubCategory; limit?: number },
-    context
-  ): Promise<ClubResponse<Club[]>> => {
+export const listClubs = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -893,14 +890,14 @@ export const listClubs = functions.https.onCall(
 /**
  * Get user's clubs
  */
-export const getMyClubs = functions.https.onCall(
-  async (data: {}, context): Promise<ClubResponse<ClubMember[]>> => {
+export const getMyClubs = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
 
       const snapshot = await db
         .collection('club_members')
@@ -928,13 +925,10 @@ export const getMyClubs = functions.https.onCall(
 /**
  * Get club posts (feed)
  */
-export const getClubPosts = functions.https.onCall(
-  async (
-    data: { clubId: string; limit?: number },
-    context
-  ): Promise<ClubResponse<ClubPost[]>> => {
+export const getClubPosts = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -942,7 +936,7 @@ export const getClubPosts = functions.https.onCall(
       const actualLimit = Math.min(Math.max(limit, 1), 100);
 
       // Verify membership
-      const memberId = `${context.auth.uid}_${clubId}`;
+      const memberId = `${request.auth.uid}_${clubId}`;
       const memberDoc = await db.collection('club_members').doc(memberId).get();
 
       if (!memberDoc.exists) {
@@ -976,14 +970,14 @@ export const getClubPosts = functions.https.onCall(
 /**
  * Get club analytics (owner only, non-competitive)
  */
-export const getClubAnalytics = functions.https.onCall(
-  async (data: { clubId: string }, context): Promise<ClubResponse<ClubAnalytics>> => {
+export const getClubAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { clubId } = data;
 
       // Verify owner

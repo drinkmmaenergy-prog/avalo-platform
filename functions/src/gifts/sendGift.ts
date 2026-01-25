@@ -83,9 +83,10 @@ function calculateCommission(priceTokens: number): {
 /**
  * Send Gift Callable Function
  */
-export const sendGift = functions.https.onCall(async (data, context) => {
+export const sendGift = functions.https.onCall(async (request) => {
+  const data = request.data;
   // 1. Verify authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError(
       'unauthenticated',
       'User must be authenticated to send gifts',
@@ -93,7 +94,7 @@ export const sendGift = functions.https.onCall(async (data, context) => {
     );
   }
 
-  const senderId = context.auth.uid;
+  const senderId = request.auth.uid;
   const { giftId, receiverId, chatId } = data;
 
   // 2. Validate input parameters

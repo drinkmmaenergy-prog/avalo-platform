@@ -41,17 +41,9 @@ interface PublicStatement {
 /**
  * Prepare a public statement draft
  */
-export const pack387_preparePublicStatement = functions.https.onCall(
-  async (
-    data: {
-      incidentId: string;
-      platform: Platform;
-      title: string;
-      content: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const pack387_preparePublicStatement = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -71,7 +63,7 @@ export const pack387_preparePublicStatement = functions.https.onCall(
         legalApproval: false,
         executiveApproval: false,
         safetyValidation: false,
-        createdBy: context.auth.uid,
+        createdBy: request.auth.uid,
         createdAt: admin.firestore.Timestamp.now(),
         updatedAt: admin.firestore.Timestamp.now(),
       };
@@ -82,7 +74,7 @@ export const pack387_preparePublicStatement = functions.https.onCall(
       await db.collection('crisisResponseLogs').add({
         incidentId: data.incidentId,
         actionType: 'STATEMENT_DRAFTED',
-        performedBy: context.auth.uid,
+        performedBy: request.auth.uid,
         timestamp: admin.firestore.Timestamp.now(),
         metadata: { statementId: statementRef.id, platform: data.platform },
       });
@@ -101,16 +93,9 @@ export const pack387_preparePublicStatement = functions.https.onCall(
 /**
  * Update statement content (only in DRAFT status)
  */
-export const pack387_updateStatement = functions.https.onCall(
-  async (
-    data: {
-      statementId: string;
-      title?: string;
-      content?: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const pack387_updateStatement = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -151,9 +136,9 @@ export const pack387_updateStatement = functions.https.onCall(
 /**
  * Submit statement for legal review
  */
-export const pack387_submitForLegalReview = functions.https.onCall(
-  async (data: { statementId: string }, context) => {
-    if (!context.auth) {
+export const pack387_submitForLegalReview = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -198,16 +183,9 @@ export const pack387_submitForLegalReview = functions.https.onCall(
 /**
  * Legal approval
  */
-export const pack387_legalApproveStatement = functions.https.onCall(
-  async (
-    data: {
-      statementId: string;
-      approved: boolean;
-      notes?: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const pack387_legalApproveStatement = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -224,7 +202,7 @@ export const pack387_legalApproveStatement = functions.https.onCall(
       if (data.approved) {
         await statementRef.update({
           legalApproval: true,
-          legalReviewedBy: context.auth.uid,
+          legalReviewedBy: request.auth.uid,
           legalReviewedAt: admin.firestore.Timestamp.now(),
           legalNotes: data.notes,
           status: 'PENDING_EXECUTIVE',
@@ -254,7 +232,7 @@ export const pack387_legalApproveStatement = functions.https.onCall(
         // Rejected by legal, return to draft
         await statementRef.update({
           legalApproval: false,
-          legalReviewedBy: context.auth.uid,
+          legalReviewedBy: request.auth.uid,
           legalReviewedAt: admin.firestore.Timestamp.now(),
           legalNotes: data.notes,
           status: 'DRAFT',
@@ -273,16 +251,9 @@ export const pack387_legalApproveStatement = functions.https.onCall(
 /**
  * Executive approval
  */
-export const pack387_executiveApproveStatement = functions.https.onCall(
-  async (
-    data: {
-      statementId: string;
-      approved: boolean;
-      notes?: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const pack387_executiveApproveStatement = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -308,7 +279,7 @@ export const pack387_executiveApproveStatement = functions.https.onCall(
       if (data.approved) {
         await statementRef.update({
           executiveApproval: true,
-          executiveApprovedBy: context.auth.uid,
+          executiveApprovedBy: request.auth.uid,
           executiveApprovedAt: admin.firestore.Timestamp.now(),
           executiveNotes: data.notes,
           status: 'APPROVED',
@@ -318,7 +289,7 @@ export const pack387_executiveApproveStatement = functions.https.onCall(
         // Rejected, return to draft
         await statementRef.update({
           executiveApproval: false,
-          executiveApprovedBy: context.auth.uid,
+          executiveApprovedBy: request.auth.uid,
           executiveApprovedAt: admin.firestore.Timestamp.now(),
           executiveNotes: data.notes,
           status: 'DRAFT',
@@ -337,9 +308,9 @@ export const pack387_executiveApproveStatement = functions.https.onCall(
 /**
  * Publish statement (requires all approvals)
  */
-export const pack387_releasePublicStatement = functions.https.onCall(
-  async (data: { statementId: string }, context) => {
-    if (!context.auth) {
+export const pack387_releasePublicStatement = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -379,7 +350,7 @@ export const pack387_releasePublicStatement = functions.https.onCall(
       await statementRef.update({
         status: 'PUBLISHED',
         publishedAt: admin.firestore.Timestamp.now(),
-        publishedBy: context.auth.uid,
+        publishedBy: request.auth.uid,
         updatedAt: admin.firestore.Timestamp.now(),
       });
 
@@ -387,7 +358,7 @@ export const pack387_releasePublicStatement = functions.https.onCall(
       await db.collection('crisisResponseLogs').add({
         incidentId: statementData.incidentId,
         actionType: 'STATEMENT_PUBLISHED',
-        performedBy: context.auth.uid,
+        performedBy: request.auth.uid,
         timestamp: admin.firestore.Timestamp.now(),
         metadata: {
           statementId: data.statementId,
@@ -410,9 +381,9 @@ export const pack387_releasePublicStatement = functions.https.onCall(
 /**
  * Get all statements for an incident
  */
-export const pack387_getIncidentStatements = functions.https.onCall(
-  async (data: { incidentId: string }, context) => {
-    if (!context.auth) {
+export const pack387_getIncidentStatements = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -439,9 +410,9 @@ export const pack387_getIncidentStatements = functions.https.onCall(
 /**
  * Get statements pending approval
  */
-export const pack387_getPendingStatements = functions.https.onCall(
-  async (data: { userRole: 'legal' | 'executive' }, context) => {
-    if (!context.auth) {
+export const pack387_getPendingStatements = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 

@@ -24,7 +24,8 @@ const db = admin.firestore();
  * Evaluate and send appropriate nudges for inactive users
  * Called by scheduled function or manually triggered
  */
-export const evaluateUserNudges = functions.https.onCall(async (data, context) => {
+export const evaluateUserNudges = functions.https.onCall(async (request) => {
+  const data = request.data;
   // This function can be called by system or admin
   // No auth required for scheduled jobs
   
@@ -273,12 +274,12 @@ async function sendNudge(
 /**
  * User opt-out from retention nudges
  */
-export const optOutFromNudges = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const optOutFromNudges = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const historyRef = db.collection('nudgeHistory').doc(userId);
@@ -307,12 +308,12 @@ export const optOutFromNudges = functions.https.onCall(async (data, context) => 
 /**
  * User opt back in to retention nudges
  */
-export const optInToNudges = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const optInToNudges = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const historyRef = db.collection('nudgeHistory').doc(userId);

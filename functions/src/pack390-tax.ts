@@ -47,8 +47,9 @@ const PLATFORM_FEES = {
 /**
  * Calculate VAT for a transaction
  */
-export const pack390_calculateVAT = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_calculateVAT = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -98,8 +99,9 @@ export const pack390_calculateVAT = functions.https.onCall(async (data, context)
 /**
  * Calculate platform fee for a transaction
  */
-export const pack390_calculatePlatformFee = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_calculatePlatformFee = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -136,17 +138,18 @@ export const pack390_calculatePlatformFee = functions.https.onCall(async (data, 
 /**
  * Generate tax report for a user
  */
-export const pack390_generateTaxReport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_generateTaxReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = data.userId || context.auth.uid;
+  const userId = data.userId || request.auth.uid;
   const { year, quarter } = data;
   
   // Check if user can access this report
-  if (userId !== context.auth.uid) {
-    const requesterDoc = await db.collection('users').doc(context.auth.uid).get();
+  if (userId !== request.auth.uid) {
+    const requesterDoc = await db.collection('users').doc(request.auth.uid).get();
     const isAuthorized = requesterDoc.exists && 
       (requesterDoc.data()?.role === 'admin' || requesterDoc.data()?.permissions?.finance === true);
     
@@ -214,7 +217,7 @@ export const pack390_generateTaxReport = functions.https.onCall(async (data, con
       incomeByType,
       incomeByCountry,
       generatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      generatedBy: context.auth.uid
+      generatedBy: request.auth.uid
     });
     
     return {
@@ -239,13 +242,14 @@ export const pack390_generateTaxReport = functions.https.onCall(async (data, con
 /**
  * Generate VAT statement for a country
  */
-export const pack390_generateVATStatement = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_generateVATStatement = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   // Only finance team can generate VAT statements
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const isAuthorized = userDoc.exists && 
     (userDoc.data()?.role === 'admin' || userDoc.data()?.permissions?.finance === true);
   
@@ -302,7 +306,7 @@ export const pack390_generateVATStatement = functions.https.onCall(async (data, 
       reverseChargeSales,
       vatRate: VAT_RATES[countryCode] || VAT_RATES.DEFAULT,
       generatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      generatedBy: context.auth.uid
+      generatedBy: request.auth.uid
     });
     
     return {
@@ -327,13 +331,14 @@ export const pack390_generateVATStatement = functions.https.onCall(async (data, 
 /**
  * Generate country revenue breakdown
  */
-export const pack390_generateCountryRevenue = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_generateCountryRevenue = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   // Only finance team can generate revenue reports
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const isAuthorized = userDoc.exists && 
     (userDoc.data()?.role === 'admin' || userDoc.data()?.permissions?.finance === true);
   
@@ -392,7 +397,7 @@ export const pack390_generateCountryRevenue = functions.https.onCall(async (data
         (sum: number, country: any) => sum + country.transactionCount, 0
       ),
       generatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      generatedBy: context.auth.uid
+      generatedBy: request.auth.uid
     });
     
     return {
@@ -505,8 +510,9 @@ function isEUCountry(countryCode: string): boolean {
 /**
  * Get tax information for a user's country
  */
-export const pack390_getTaxInfo = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_getTaxInfo = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   

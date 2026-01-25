@@ -458,10 +458,10 @@ async function calculateHourlyMetrics(hour: string): Promise<HourlyMetrics> {
 /**
  * Manual trigger for KPI calculation (for testing or backfill)
  */
-export const triggerKPIAggregation = functions.https.onCall(
-  async (data, context) => {
+export const triggerKPIAggregation = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require admin auth
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         "permission-denied",
         "Admin access required"

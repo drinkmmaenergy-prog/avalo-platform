@@ -28,9 +28,9 @@ import {
   calculateTax,
 } from './invoicingTax';
 
-export const generateContractFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const generateContractFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -39,7 +39,7 @@ export const generateContractFunction = functions.https.onCall(
 
     try {
       const result = await generateContract({
-        creatorId: context.auth.uid,
+        creatorId: request.auth.uid,
         type: data.type,
         creator: data.creator,
         counterparty: data.counterparty,
@@ -54,9 +54,9 @@ export const generateContractFunction = functions.https.onCall(
   }
 );
 
-export const signContractFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const signContractFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -66,7 +66,7 @@ export const signContractFunction = functions.https.onCall(
     try {
       const result = await signContract({
         contractId: data.contractId,
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         ipAddress: data.ipAddress || 'unknown',
       });
 
@@ -77,9 +77,9 @@ export const signContractFunction = functions.https.onCall(
   }
 );
 
-export const getContractFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getContractFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -94,8 +94,8 @@ export const getContractFunction = functions.https.onCall(
       }
 
       if (
-        contract.creatorId !== context.auth.uid &&
-        contract.counterparty.userId !== context.auth.uid
+        contract.creatorId !== request.auth.uid &&
+        contract.counterparty.userId !== request.auth.uid
       ) {
         throw new Error('Unauthorized access to contract');
       }
@@ -107,9 +107,9 @@ export const getContractFunction = functions.https.onCall(
   }
 );
 
-export const getCreatorContractsFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getCreatorContractsFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -118,7 +118,7 @@ export const getCreatorContractsFunction = functions.https.onCall(
 
     try {
       const contracts = await getCreatorContracts({
-        creatorId: context.auth.uid,
+        creatorId: request.auth.uid,
         status: data.status,
         limit: data.limit || 50,
       });
@@ -130,9 +130,9 @@ export const getCreatorContractsFunction = functions.https.onCall(
   }
 );
 
-export const cancelContractFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const cancelContractFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -142,7 +142,7 @@ export const cancelContractFunction = functions.https.onCall(
     try {
       const result = await cancelContract({
         contractId: data.contractId,
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         reason: data.reason,
       });
 
@@ -153,9 +153,9 @@ export const cancelContractFunction = functions.https.onCall(
   }
 );
 
-export const raiseContractDisputeFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const raiseContractDisputeFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -165,7 +165,7 @@ export const raiseContractDisputeFunction = functions.https.onCall(
     try {
       const result = await raiseContractDispute({
         contractId: data.contractId,
-        raisedBy: context.auth.uid,
+        raisedBy: request.auth.uid,
         reason: data.reason,
         description: data.description,
         evidence: data.evidence || [],
@@ -178,9 +178,9 @@ export const raiseContractDisputeFunction = functions.https.onCall(
   }
 );
 
-export const updateContractTermsFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const updateContractTermsFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -190,7 +190,7 @@ export const updateContractTermsFunction = functions.https.onCall(
     try {
       const result = await updateContractTerms({
         contractId: data.contractId,
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         terms: data.terms,
       });
 
@@ -201,9 +201,9 @@ export const updateContractTermsFunction = functions.https.onCall(
   }
 );
 
-export const checkContractExploitationFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const checkContractExploitationFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -223,9 +223,9 @@ export const checkContractExploitationFunction = functions.https.onCall(
   }
 );
 
-export const generateInvoiceFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const generateInvoiceFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -234,7 +234,7 @@ export const generateInvoiceFunction = functions.https.onCall(
 
     try {
       const result = await generateInvoice({
-        creatorId: context.auth.uid,
+        creatorId: request.auth.uid,
         customerId: data.customerId,
         items: data.items,
         currency: data.currency || 'USD',
@@ -250,9 +250,9 @@ export const generateInvoiceFunction = functions.https.onCall(
   }
 );
 
-export const markInvoicePaidFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const markInvoicePaidFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -272,9 +272,9 @@ export const markInvoicePaidFunction = functions.https.onCall(
   }
 );
 
-export const getInvoiceFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getInvoiceFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -289,8 +289,8 @@ export const getInvoiceFunction = functions.https.onCall(
       }
 
       if (
-        invoice.creatorId !== context.auth.uid &&
-        invoice.customerId !== context.auth.uid
+        invoice.creatorId !== request.auth.uid &&
+        invoice.customerId !== request.auth.uid
       ) {
         throw new Error('Unauthorized access to invoice');
       }
@@ -302,9 +302,9 @@ export const getInvoiceFunction = functions.https.onCall(
   }
 );
 
-export const getCreatorInvoicesFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getCreatorInvoicesFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -313,7 +313,7 @@ export const getCreatorInvoicesFunction = functions.https.onCall(
 
     try {
       const invoices = await getCreatorInvoices({
-        creatorId: context.auth.uid,
+        creatorId: request.auth.uid,
         status: data.status,
         limit: data.limit || 50,
       });
@@ -325,9 +325,9 @@ export const getCreatorInvoicesFunction = functions.https.onCall(
   }
 );
 
-export const createTaxProfileFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const createTaxProfileFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -336,7 +336,7 @@ export const createTaxProfileFunction = functions.https.onCall(
 
     try {
       const result = await createTaxProfile({
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         legalName: data.legalName,
         businessName: data.businessName,
         taxRegion: data.taxRegion,
@@ -353,9 +353,9 @@ export const createTaxProfileFunction = functions.https.onCall(
   }
 );
 
-export const updateTaxProfileFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const updateTaxProfileFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -364,7 +364,7 @@ export const updateTaxProfileFunction = functions.https.onCall(
 
     try {
       const result = await updateTaxProfile({
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         updates: data.updates,
       });
 
@@ -375,9 +375,8 @@ export const updateTaxProfileFunction = functions.https.onCall(
   }
 );
 
-export const getTaxProfileFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getTaxProfileFunction = functions.https.onCall(async (request) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -385,7 +384,7 @@ export const getTaxProfileFunction = functions.https.onCall(
     }
 
     try {
-      const profile = await getTaxProfile(context.auth.uid);
+      const profile = await getTaxProfile(request.auth.uid);
       return profile;
     } catch (error: any) {
       throw new functions.https.HttpsError('internal', error.message);
@@ -393,9 +392,9 @@ export const getTaxProfileFunction = functions.https.onCall(
   }
 );
 
-export const generateTaxReportFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const generateTaxReportFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -404,7 +403,7 @@ export const generateTaxReportFunction = functions.https.onCall(
 
     try {
       const result = await generateTaxReport({
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         reportType: data.reportType,
         period: {
           start: new Date(data.period.start),
@@ -419,9 +418,9 @@ export const generateTaxReportFunction = functions.https.onCall(
   }
 );
 
-export const generateEarningsCertificateFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const generateEarningsCertificateFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -430,7 +429,7 @@ export const generateEarningsCertificateFunction = functions.https.onCall(
 
     try {
       const result = await generateEarningsCertificate({
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         periodStart: new Date(data.periodStart),
         periodEnd: new Date(data.periodEnd),
       });
@@ -442,9 +441,9 @@ export const generateEarningsCertificateFunction = functions.https.onCall(
   }
 );
 
-export const calculateTaxFunction = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const calculateTaxFunction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'

@@ -371,7 +371,8 @@ const COUNTRY_SAFETY_PROFILES: Record<string, Partial<CulturalSafetyProfile>> = 
 };
 
 // Get cultural safety profile for country
-export const getCulturalSafetyProfile = functions.https.onCall(async (data, context) => {
+export const getCulturalSafetyProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     const { country } = data;
     const db = admin.firestore();
@@ -407,8 +408,9 @@ export const getCulturalSafetyProfile = functions.https.onCall(async (data, cont
 });
 
 // Moderate content based on cultural rules
-export const moderateContent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const moderateContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -471,7 +473,7 @@ export const moderateContent = functions.https.onCall(async (data, context) => {
     
     // Log moderation result
     await db.collection('content-moderation-logs').add({
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       country,
       contentType,
       result,
@@ -486,8 +488,9 @@ export const moderateContent = functions.https.onCall(async (data, context) => {
 });
 
 // Check if feature is allowed in country
-export const checkFeatureAvailability = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const checkFeatureAvailability = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -498,7 +501,7 @@ export const checkFeatureAvailability = functions.https.onCall(async (data, cont
     // Get user country if not provided
     let userCountry = country;
     if (!userCountry) {
-      const userDoc = await db.collection('users').doc(context.auth.uid).get();
+      const userDoc = await db.collection('users').doc(request.auth.uid).get();
       userCountry = userDoc.data()?.country || 'GLOBAL';
     }
     
@@ -548,8 +551,9 @@ export const checkFeatureAvailability = functions.https.onCall(async (data, cont
 });
 
 // Admin: Update cultural safety profile
-export const adminUpdateCulturalSafetyProfile = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminUpdateCulturalSafetyProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -557,7 +561,7 @@ export const adminUpdateCulturalSafetyProfile = functions.https.onCall(async (da
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -568,7 +572,7 @@ export const adminUpdateCulturalSafetyProfile = functions.https.onCall(async (da
       country,
       ...updates,
       reason: reason || 'Admin update',
-      updatedBy: context.auth.uid,
+      updatedBy: request.auth.uid,
       lastUpdated: Date.now()
     }, { merge: true });
     
@@ -580,8 +584,9 @@ export const adminUpdateCulturalSafetyProfile = functions.https.onCall(async (da
 });
 
 // Get all safety profiles (for admin dashboard)
-export const adminGetAllSafetyProfiles = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminGetAllSafetyProfiles = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -589,7 +594,7 @@ export const adminGetAllSafetyProfiles = functions.https.onCall(async (data, con
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }

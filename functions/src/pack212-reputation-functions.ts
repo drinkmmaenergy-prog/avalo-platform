@@ -41,9 +41,8 @@ const db = admin.firestore();
  * Get user's reputation hint (positive only)
  * Users can call this to see if they have any positive feedback
  */
-export const pack212_getMyReputationHint = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack212_getMyReputationHint = functions.https.onCall(async (request) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated to get reputation hint'
@@ -51,7 +50,7 @@ export const pack212_getMyReputationHint = functions.https.onCall(
     }
 
     const request: GetReputationHintRequest = {
-      userId: context.auth.uid,
+      userId: request.auth.uid,
     };
 
     try {
@@ -70,14 +69,9 @@ export const pack212_getMyReputationHint = functions.https.onCall(
 /**
  * Submit chat feedback (optional thumbs up/down after chat)
  */
-export const pack212_submitChatFeedback = functions.https.onCall(
-  async (data: {
-    chatId: string;
-    receiverId: string;
-    isPositive: boolean;
-    comment?: string;
-  }, context) => {
-    if (!context.auth) {
+export const pack212_submitChatFeedback = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -100,7 +94,7 @@ export const pack212_submitChatFeedback = functions.https.onCall(
 
       // Check if user was part of the chat
       const participants = chat.participants || [];
-      if (!participants.includes(context.auth.uid) || !participants.includes(receiverId)) {
+      if (!participants.includes(request.auth.uid) || !participants.includes(receiverId)) {
         throw new functions.https.HttpsError(
           'permission-denied',
           'Not a participant in this chat'
@@ -111,7 +105,7 @@ export const pack212_submitChatFeedback = functions.https.onCall(
       const existingFeedback = await db
         .collection('chat_feedback')
         .where('chatId', '==', chatId)
-        .where('giverId', '==', context.auth.uid)
+        .where('giverId', '==', request.auth.uid)
         .limit(1)
         .get();
 
@@ -127,7 +121,7 @@ export const pack212_submitChatFeedback = functions.https.onCall(
       today.setHours(0, 0, 0, 0);
       const feedbackToday = await db
         .collection('chat_feedback')
-        .where('giverId', '==', context.auth.uid)
+        .where('giverId', '==', request.auth.uid)
         .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(today))
         .get();
 
@@ -139,7 +133,7 @@ export const pack212_submitChatFeedback = functions.https.onCall(
       }
 
       // Get giver name
-      const giverDoc = await db.collection('users').doc(context.auth.uid).get();
+      const giverDoc = await db.collection('users').doc(request.auth.uid).get();
       const giverName = giverDoc.data()?.displayName || 'Anonymous';
 
       // Get receiver name
@@ -151,7 +145,7 @@ export const pack212_submitChatFeedback = functions.https.onCall(
       const feedback: ChatFeedback = {
         feedbackId,
         chatId,
-        giverId: context.auth.uid,
+        giverId: request.auth.uid,
         giverName,
         receiverId,
         receiverName,
@@ -169,7 +163,7 @@ export const pack212_submitChatFeedback = functions.https.onCall(
         await updateReputationScore({
           userId: receiverId,
           eventType: 'POSITIVE_FEEDBACK_RECEIVED',
-          relatedUserId: context.auth.uid,
+          relatedUserId: request.auth.uid,
           contextId: chatId,
         });
       }
@@ -188,16 +182,9 @@ export const pack212_submitChatFeedback = functions.https.onCall(
 /**
  * Submit meeting feedback (optional vibe rating after meeting)
  */
-export const pack212_submitMeetingFeedback = functions.https.onCall(
-  async (data: {
-    bookingId: string;
-    receiverId: string;
-    vibeRating: 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE';
-    showedUp: boolean;
-    wouldMeetAgain: boolean;
-    comment?: string;
-  }, context) => {
-    if (!context.auth) {
+export const pack212_submitMeetingFeedback = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -219,7 +206,7 @@ export const pack212_submitMeetingFeedback = functions.https.onCall(
       }
 
       // Check if user was part of the booking
-      if (booking.bookerId !== context.auth.uid && booking.creatorId !== context.auth.uid) {
+      if (booking.bookerId !== request.auth.uid && booking.creatorId !== request.auth.uid) {
         throw new functions.https.HttpsError(
           'permission-denied',
           'Not a participant in this booking'
@@ -238,7 +225,7 @@ export const pack212_submitMeetingFeedback = functions.https.onCall(
       const existingFeedback = await db
         .collection('meeting_feedback')
         .where('bookingId', '==', bookingId)
-        .where('giverId', '==', context.auth.uid)
+        .where('giverId', '==', request.auth.uid)
         .limit(1)
         .get();
 
@@ -250,7 +237,7 @@ export const pack212_submitMeetingFeedback = functions.https.onCall(
       }
 
       // Get names
-      const giverDoc = await db.collection('users').doc(context.auth.uid).get();
+      const giverDoc = await db.collection('users').doc(request.auth.uid).get();
       const giverName = giverDoc.data()?.displayName || 'Anonymous';
 
       const receiverDoc = await db.collection('users').doc(receiverId).get();
@@ -261,7 +248,7 @@ export const pack212_submitMeetingFeedback = functions.https.onCall(
       const feedback: MeetingFeedback = {
         feedbackId,
         bookingId,
-        giverId: context.auth.uid,
+        giverId: request.auth.uid,
         giverName,
         receiverId,
         receiverName,
@@ -283,14 +270,14 @@ export const pack212_submitMeetingFeedback = functions.https.onCall(
         await updateReputationScore({
           userId: receiverId,
           eventType: 'MEETING_ATTENDED',
-          relatedUserId: context.auth.uid,
+          relatedUserId: request.auth.uid,
           contextId: bookingId,
         });
       } else {
         await updateReputationScore({
           userId: receiverId,
           eventType: 'MEETING_NO_SHOW',
-          relatedUserId: context.auth.uid,
+          relatedUserId: request.auth.uid,
           contextId: bookingId,
         });
       }
@@ -299,7 +286,7 @@ export const pack212_submitMeetingFeedback = functions.https.onCall(
         await updateReputationScore({
           userId: receiverId,
           eventType: 'POSITIVE_VIBE_RATING',
-          relatedUserId: context.auth.uid,
+          relatedUserId: request.auth.uid,
           contextId: bookingId,
         });
       }
@@ -318,18 +305,9 @@ export const pack212_submitMeetingFeedback = functions.https.onCall(
 /**
  * Submit event guest rating (organizer only)
  */
-export const pack212_rateEventGuest = functions.https.onCall(
-  async (data: {
-    eventId: string;
-    attendeeId: string;
-    guestId: string;
-    isGoodGuest: boolean;
-    showedUp: boolean;
-    respectful: boolean;
-    engaged: boolean;
-    comment?: string;
-  }, context) => {
-    if (!context.auth) {
+export const pack212_rateEventGuest = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -350,7 +328,7 @@ export const pack212_rateEventGuest = functions.https.onCall(
         throw new functions.https.HttpsError('not-found', 'Event data not found');
       }
 
-      if (event.organizerId !== context.auth.uid) {
+      if (event.organizerId !== request.auth.uid) {
         throw new functions.https.HttpsError(
           'permission-denied',
           'Only event organizer can rate guests'
@@ -362,7 +340,7 @@ export const pack212_rateEventGuest = functions.https.onCall(
         .collection('event_guest_ratings')
         .where('eventId', '==', eventId)
         .where('attendeeId', '==', attendeeId)
-        .where('organizerId', '==', context.auth.uid)
+        .where('organizerId', '==', request.auth.uid)
         .limit(1)
         .get();
 
@@ -374,7 +352,7 @@ export const pack212_rateEventGuest = functions.https.onCall(
       }
 
       // Get names
-      const organizerDoc = await db.collection('users').doc(context.auth.uid).get();
+      const organizerDoc = await db.collection('users').doc(request.auth.uid).get();
       const organizerName = organizerDoc.data()?.displayName || 'Anonymous';
 
       const guestDoc = await db.collection('users').doc(guestId).get();
@@ -386,7 +364,7 @@ export const pack212_rateEventGuest = functions.https.onCall(
         ratingId,
         eventId,
         attendeeId,
-        organizerId: context.auth.uid,
+        organizerId: request.auth.uid,
         organizerName,
         guestId,
         guestName,
@@ -409,7 +387,7 @@ export const pack212_rateEventGuest = functions.https.onCall(
         await updateReputationScore({
           userId: guestId,
           eventType: 'EVENT_ATTENDED',
-          relatedUserId: context.auth.uid,
+          relatedUserId: request.auth.uid,
           contextId: eventId,
         });
       }
@@ -418,7 +396,7 @@ export const pack212_rateEventGuest = functions.https.onCall(
         await updateReputationScore({
           userId: guestId,
           eventType: 'GOOD_GUEST_RATING',
-          relatedUserId: context.auth.uid,
+          relatedUserId: request.auth.uid,
           contextId: eventId,
         });
       }
@@ -442,9 +420,9 @@ export const pack212_rateEventGuest = functions.https.onCall(
  * Update reputation score (called by other systems)
  * This is the main integration point for all reputation events
  */
-export const pack212_updateReputation = functions.https.onCall(
-  async (data: UpdateReputationRequest, context) => {
-    if (!context.auth) {
+export const pack212_updateReputation = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -452,7 +430,7 @@ export const pack212_updateReputation = functions.https.onCall(
     }
 
     // Verify caller has admin or system role
-    const callerDoc = await db.collection('users').doc(context.auth.uid).get();
+    const callerDoc = await db.collection('users').doc(request.auth.uid).get();
     const roles = callerDoc.data()?.roles || {};
     
     if (!roles.admin && !roles.system) {
@@ -476,9 +454,9 @@ export const pack212_updateReputation = functions.https.onCall(
  * Get ranking multiplier for use in discovery/feed
  * Called by discovery engines to boost/limit users
  */
-export const pack212_getRankingMultiplier = functions.https.onCall(
-  async (data: GetRankingMultiplierRequest, context) => {
-    if (!context.auth) {
+export const pack212_getRankingMultiplier = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -502,9 +480,9 @@ export const pack212_getRankingMultiplier = functions.https.onCall(
 /**
  * Get reputation statistics (admin only)
  */
-export const pack212_admin_getStats = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack212_admin_getStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -512,7 +490,7 @@ export const pack212_admin_getStats = functions.https.onCall(
     }
 
     // Verify admin
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const roles = userDoc.data()?.roles || {};
     
     if (!roles.admin) {
@@ -535,9 +513,9 @@ export const pack212_admin_getStats = functions.https.onCall(
 /**
  * Recalculate all adjustments (admin only)
  */
-export const pack212_admin_recalculateAdjustments = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack212_admin_recalculateAdjustments = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -545,7 +523,7 @@ export const pack212_admin_recalculateAdjustments = functions.https.onCall(
     }
 
     // Verify admin
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const roles = userDoc.data()?.roles || {};
     
     if (!roles.admin) {
@@ -568,9 +546,9 @@ export const pack212_admin_recalculateAdjustments = functions.https.onCall(
 /**
  * Get user's full reputation profile (admin only)
  */
-export const pack212_admin_getUserReputation = functions.https.onCall(
-  async (data: { userId: string }, context) => {
-    if (!context.auth) {
+export const pack212_admin_getUserReputation = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -578,7 +556,7 @@ export const pack212_admin_getUserReputation = functions.https.onCall(
     }
 
     // Verify admin
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const roles = userDoc.data()?.roles || {};
     
     if (!roles.admin && !roles.safety_team) {

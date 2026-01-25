@@ -19,23 +19,20 @@ const db = getFirestore();
 /**
  * Recommend optimal pricing for a service
  */
-export const pack382_recommendOptimalPricing = functions.https.onCall(
-  async (
-    data: RecommendOptimalPricingInput,
-    context
-  ): Promise<RecommendOptimalPricingOutput> => {
-    if (!context.auth) {
+export const pack382_recommendOptimalPricing = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const { userId = context.auth.uid, serviceType, regionCode } = data;
+    const { userId = request.auth.uid, serviceType, regionCode } = data;
 
     // Only allow users to get their own recommendations (or admins)
-    const isAdmin = context.auth.token?.role === 'admin';
-    if (userId !== context.auth.uid && !isAdmin) {
+    const isAdmin = request.auth.token?.role === 'admin';
+    if (userId !== request.auth.uid && !isAdmin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Can only get own pricing recommendations'
@@ -398,9 +395,9 @@ function calculateOptimalPrice(params: {
 /**
  * Apply pricing recommendation
  */
-export const pack382_applyPricingRecommendation = functions.https.onCall(
-  async (data: { recommendationId: string }, context) => {
-    if (!context.auth) {
+export const pack382_applyPricingRecommendation = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -408,7 +405,7 @@ export const pack382_applyPricingRecommendation = functions.https.onCall(
     }
 
     const { recommendationId } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // Get recommendation

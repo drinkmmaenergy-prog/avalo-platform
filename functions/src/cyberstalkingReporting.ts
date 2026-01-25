@@ -27,12 +27,13 @@ const db = admin.firestore();
 /**
  * Report stalking behavior
  */
-export const reportStalking = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reportStalking = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const victimId = context.auth.uid;
+  const victimId = request.auth.uid;
   const { stalkerId, reportType, description, evidence } = data;
   
   if (!stalkerId || !reportType) {
@@ -73,12 +74,13 @@ export const reportStalking = functions.https.onCall(async (data, context) => {
 /**
  * Report obsessive attention
  */
-export const reportObsession = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reportObsession = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const victimId = context.auth.uid;
+  const victimId = request.auth.uid;
   const { observerId, description } = data;
   
   if (!observerId) {
@@ -110,12 +112,13 @@ export const reportObsession = functions.https.onCall(async (data, context) => {
 /**
  * Report location harassment/abuse
  */
-export const reportLocationHarassment = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reportLocationHarassment = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const victimId = context.auth.uid;
+  const victimId = request.auth.uid;
   const { harasserId, description, evidence } = data;
   
   if (!harasserId) {
@@ -152,12 +155,13 @@ export const reportLocationHarassment = functions.https.onCall(async (data, cont
 /**
  * Request immediate protection (for urgent cases)
  */
-export const requestImmediateProtection = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const requestImmediateProtection = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const victimId = context.auth.uid;
+  const victimId = request.auth.uid;
   const { threateningUserId, urgencyReason } = data;
   
   if (!threateningUserId) {
@@ -195,12 +199,12 @@ export const requestImmediateProtection = functions.https.onCall(async (data, co
 /**
  * Get legal resources for victim
  */
-export const getLegalResources = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getLegalResources = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   
   try {
     const resources = await getLegalResourcesForVictim(userId);
@@ -221,12 +225,13 @@ export const getLegalResources = functions.https.onCall(async (data, context) =>
 /**
  * Get victim's help requests
  */
-export const getMyHelpRequests = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getMyHelpRequests = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const victimId = context.auth.uid;
+  const victimId = request.auth.uid;
   
   try {
     const requestsSnapshot = await db.collection('victim_help_requests')
@@ -658,8 +663,9 @@ function generateId(): string {
 /**
  * Resolve stalking case (admin function)
  */
-export const resolveStalkingCase = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const resolveStalkingCase = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -682,7 +688,7 @@ export const resolveStalkingCase = functions.https.onCall(async (data, context) 
       resolvedAt: admin.firestore.Timestamp.now(),
       reviewedByModerator: true,
       reviewedAt: admin.firestore.Timestamp.now(),
-      reviewedBy: context.auth.uid,
+      reviewedBy: request.auth.uid,
       moderatorNotes,
       resolution,
     });

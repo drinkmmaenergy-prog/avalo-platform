@@ -239,8 +239,9 @@ export async function aggregateMetrics(
 /**
  * Track mobile client metrics (FPS, memory, crashes)
  */
-export const trackMobileMetrics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const trackMobileMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
@@ -287,12 +288,13 @@ export const trackMobileMetrics = functions.https.onCall(async (data, context) =
  * Get metrics dashboard data
  * Engineering-only endpoint
  */
-export const getMetricsDashboard = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getMetricsDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || !['ADMIN', 'ENGINEER'].includes(adminDoc.data()?.role)) {
     throw new functions.https.HttpsError('permission-denied', 'Engineering access required');
   }

@@ -23,9 +23,9 @@ const db = getFirestore();
 /**
  * Enroll user in a course
  */
-export const pack382_enrollInCourse = functions.https.onCall(
-  async (data: { courseId: string }, context) => {
-    if (!context.auth) {
+export const pack382_enrollInCourse = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -33,7 +33,7 @@ export const pack382_enrollInCourse = functions.https.onCall(
     }
 
     const { courseId } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // Check if course exists
@@ -110,17 +110,9 @@ export const pack382_enrollInCourse = functions.https.onCall(
 /**
  * Mark lesson as completed
  */
-export const pack382_completeLesson = functions.https.onCall(
-  async (
-    data: {
-      courseId: string;
-      lessonId: string;
-      quizScore?: number;
-      timeSpentMinutes?: number;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const pack382_completeLesson = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -128,7 +120,7 @@ export const pack382_completeLesson = functions.https.onCall(
     }
 
     const { courseId, lessonId, quizScore, timeSpentMinutes = 0 } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // Get progress record
@@ -313,12 +305,9 @@ async function updateCourseCompletionRate(courseId: string): Promise<void> {
 /**
  * Rate a course
  */
-export const pack382_rateCourse = functions.https.onCall(
-  async (
-    data: { courseId: string; rating: number; feedback?: string },
-    context
-  ) => {
-    if (!context.auth) {
+export const pack382_rateCourse = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -326,7 +315,7 @@ export const pack382_rateCourse = functions.https.onCall(
     }
 
     const { courseId, rating, feedback } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     if (rating < 1 || rating > 5) {
       throw new functions.https.HttpsError(
@@ -391,12 +380,9 @@ export const pack382_rateCourse = functions.https.onCall(
 /**
  * Get localized academy content for a region
  */
-export const pack382_getLocalizedAcademyContent = functions.https.onCall(
-  async (
-    data: GetLocalizedAcademyContentInput,
-    context
-  ): Promise<GetLocalizedAcademyContentOutput> => {
-    if (!context.auth) {
+export const pack382_getLocalizedAcademyContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -496,16 +482,16 @@ function getDefaultRegionalContent(regionCode: string): RegionalAcademyContent {
 /**
  * Get user's course progress
  */
-export const pack382_getUserProgress = functions.https.onCall(
-  async (data: { courseId?: string }, context) => {
-    if (!context.auth) {
+export const pack382_getUserProgress = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { courseId } = data;
 
     try {

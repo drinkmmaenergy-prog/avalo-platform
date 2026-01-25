@@ -192,9 +192,9 @@ export const cleanupOldDataJob = functions.pubsub
 /**
  * Manually trigger ring detection (admin only)
  */
-export const triggerRingDetection = functions.https.onCall(async (data, context) => {
+export const triggerRingDetection = functions.https.onCall(async (request) => {
   // Verify admin
-  if (!context.auth || !context.auth.token.admin) {
+  if (!request.auth || !request.auth.token.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
   
@@ -217,9 +217,9 @@ export const triggerRingDetection = functions.https.onCall(async (data, context)
 /**
  * Manually trigger spam cluster detection (admin only)
  */
-export const triggerSpamDetection = functions.https.onCall(async (data, context) => {
+export const triggerSpamDetection = functions.https.onCall(async (request) => {
   // Verify admin
-  if (!context.auth || !context.auth.token.admin) {
+  if (!request.auth || !request.auth.token.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
   

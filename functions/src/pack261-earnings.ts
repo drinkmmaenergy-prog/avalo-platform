@@ -55,8 +55,9 @@ interface EarningSummary {
 }
 
 // Record earning when a user spends tokens on creator content
-export const recordEarning = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const recordEarning = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -72,7 +73,7 @@ export const recordEarning = functions.https.onCall(async (data, context) => {
     const netTokens = grossTokens - commission;
 
     // Get payer info
-    const payerDoc = await db.collection('users').doc(context.auth.uid).get();
+    const payerDoc = await db.collection('users').doc(request.auth.uid).get();
     const payerData = payerDoc.data();
 
     const earningRecord: EarningRecord = {
@@ -81,7 +82,7 @@ export const recordEarning = functions.https.onCall(async (data, context) => {
       grossTokens,
       commission,
       netTokens,
-      payerId: context.auth.uid,
+      payerId: request.auth.uid,
       payerAvatar: payerData?.photoURL,
       payerUsernameHidden: payerData?.incognitoMode || false,
       feature,
@@ -102,7 +103,7 @@ export const recordEarning = functions.https.onCall(async (data, context) => {
     await updateEarningSummary(creatorId, netTokens);
 
     // Update top supporters
-    await updateTopSupporter(creatorId, context.auth.uid, grossTokens);
+    await updateTopSupporter(creatorId, request.auth.uid, grossTokens);
 
     // Check for milestones
     await checkMilestones(creatorId);
@@ -279,8 +280,9 @@ async function sendMilestoneNotification(creatorId: string, milestone: any): Pro
 }
 
 // Request payout
-export const requestPayout = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const requestPayout = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -291,7 +293,7 @@ export const requestPayout = functions.https.onCall(async (data, context) => {
   }
 
   try {
-    const creatorId = context.auth.uid;
+    const creatorId = request.auth.uid;
 
     // Check KYC status
     const userDoc = await db.collection('users').doc(creatorId).get();
@@ -494,13 +496,14 @@ async function generateEarningTips(creatorId: string): Promise<void> {
 }
 
 // Get earnings dashboard data
-export const getEarningsDashboard = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getEarningsDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    const creatorId = context.auth.uid;
+    const creatorId = request.auth.uid;
 
     // Get summary
     const summaryDoc = await db.collection('creators').doc(creatorId)

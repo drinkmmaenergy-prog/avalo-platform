@@ -8,7 +8,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, generateId } from './init';
-import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp , CallableRequest} from './runtime';
 
 // ============================================================================
 // TYPES
@@ -50,12 +50,12 @@ type AssignedTeam =
  * Check if user is admin with appropriate permissions
  * TODO: Integrate with PACK 65 admin permissions
  */
-async function requireAdmin(context: functions.https.CallableContext): Promise<string> {
-  if (!context.auth) {
+async function requireAdmin(request: CallableRequest<any>): Promise<string> {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const adminId = context.auth.uid;
+  const adminId = request.auth.uid;
 
   // Check if user is admin
   const adminDoc = await db.collection('users').doc(adminId).get();
@@ -108,8 +108,9 @@ async function writeAuditLog(
 /**
  * Search/list tickets with filters (Admin)
  */
-export const searchTickets = functions.https.onCall(async (data, context) => {
-  const adminId = await requireAdmin(context);
+export const searchTickets = functions.https.onCall(async (request) => {
+  const data = request.data;
+  const adminId = await requireAdmin(request);
 
   const {
     status,
@@ -205,8 +206,9 @@ export const searchTickets = functions.https.onCall(async (data, context) => {
 /**
  * Get ticket detail with full context (Admin)
  */
-export const getTicketDetail = functions.https.onCall(async (data, context) => {
-  const adminId = await requireAdmin(context);
+export const getTicketDetail = functions.https.onCall(async (request) => {
+  const data = request.data;
+  const adminId = await requireAdmin(request);
 
   const { ticketId } = data;
 
@@ -297,8 +299,9 @@ export const getTicketDetail = functions.https.onCall(async (data, context) => {
 /**
  * Admin reply and update ticket (Admin)
  */
-export const replyAndUpdate = functions.https.onCall(async (data, context) => {
-  const adminId = await requireAdmin(context);
+export const replyAndUpdate = functions.https.onCall(async (request) => {
+  const data = request.data;
+  const adminId = await requireAdmin(request);
 
   const {
     ticketId,
@@ -397,8 +400,9 @@ export const replyAndUpdate = functions.https.onCall(async (data, context) => {
 /**
  * Link ticket to related entity (dispute, payout, etc.) (Admin)
  */
-export const linkTicket = functions.https.onCall(async (data, context) => {
-  const adminId = await requireAdmin(context);
+export const linkTicket = functions.https.onCall(async (request) => {
+  const data = request.data;
+  const adminId = await requireAdmin(request);
 
   const {
     ticketId,
@@ -464,8 +468,9 @@ export const linkTicket = functions.https.onCall(async (data, context) => {
 /**
  * Get ticket statistics (Admin dashboard)
  */
-export const getTicketStats = functions.https.onCall(async (data, context) => {
-  await requireAdmin(context);
+export const getTicketStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+  await requireAdmin(request);
 
   try {
     // Get counts by status

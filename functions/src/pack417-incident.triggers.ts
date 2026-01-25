@@ -16,9 +16,10 @@ import { HttpsError, admin, auth, functions, getFirestore, onCall } from './runt
  * 
  * Used by support admins to escalate tickets to incidents.
  */
-export const pack417_createIncidentFromTicket = https.onCall(async (data, context) => {
+export const pack417_createIncidentFromTicket = https.onCall(async (request) => {
+  const data = request.data;
   // Verify authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -38,7 +39,7 @@ export const pack417_createIncidentFromTicket = https.onCall(async (data, contex
     description,
     severity,
     source: 'SUPPORT_TICKET' as IncidentSource,
-    createdBy: context.auth.uid,
+    createdBy: request.auth.uid,
     relatedTicketIds: [ticketId],
   };
 
@@ -57,9 +58,10 @@ export const pack417_createIncidentFromTicket = https.onCall(async (data, contex
  * 
  * Used by admins to create incidents directly.
  */
-export const pack417_createIncident = https.onCall(async (data, context) => {
+export const pack417_createIncident = https.onCall(async (request) => {
+  const data = request.data;
   // Verify authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -86,7 +88,7 @@ export const pack417_createIncident = https.onCall(async (data, context) => {
     description,
     severity,
     source,
-    createdBy: context.auth.uid,
+    createdBy: request.auth.uid,
     affectedFeatures,
     relatedPacks,
     fraudRelated,

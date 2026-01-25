@@ -93,16 +93,15 @@ export const monitorTrendVelocity = functions.pubsub
     }
   });
 
-export const createUserSafetyProfile = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const createUserSafetyProfile = functions.https.onCall(async (request) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
     
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     
     const defaultProfile: Omit<CultureSafetyProfile, 'userId'> = {
       filters: {
@@ -128,16 +127,16 @@ export const createUserSafetyProfile = functions.https.onCall(
   }
 );
 
-export const updateUserSafetyProfile = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const updateUserSafetyProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
     
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { filters, preferences } = data;
     
     await db.collection('culture_safety_profiles').doc(userId).update({
@@ -150,16 +149,16 @@ export const updateUserSafetyProfile = functions.https.onCall(
   }
 );
 
-export const getUserSafetyProfile = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getUserSafetyProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
     
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const profileDoc = await db.collection('culture_safety_profiles').doc(userId).get();
     
     if (!profileDoc.exists) {
@@ -170,9 +169,9 @@ export const getUserSafetyProfile = functions.https.onCall(
   }
 );
 
-export const reportConflictContent = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const reportConflictContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -189,7 +188,7 @@ export const reportConflictContent = functions.https.onCall(
     }
     
     await db.collection('climate_reports').add({
-      reporterId: context.auth.uid,
+      reporterId: request.auth.uid,
       contentId,
       contentType,
       reportType,
@@ -203,9 +202,9 @@ export const reportConflictContent = functions.https.onCall(
   }
 );
 
-export const appealContentDecision = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const appealContentDecision = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -232,7 +231,7 @@ export const appealContentDecision = functions.https.onCall(
     
     const caseData = caseDoc.data();
     
-    if (caseData?.userId !== context.auth.uid) {
+    if (caseData?.userId !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to appeal this case'
@@ -247,7 +246,7 @@ export const appealContentDecision = functions.https.onCall(
     }
     
     await db.collection('climate_appeals').add({
-      creatorId: context.auth.uid,
+      creatorId: request.auth.uid,
       contentId,
       caseId,
       reason,
@@ -260,8 +259,8 @@ export const appealContentDecision = functions.https.onCall(
   }
 );
 
-export const getPositiveContentRedirects = functions.https.onCall(
-  async (data, context) => {
+export const getPositiveContentRedirects = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { category } = data;
     
     const redirectsSnapshot = await db
@@ -279,9 +278,9 @@ export const getPositiveContentRedirects = functions.https.onCall(
   }
 );
 
-export const checkContentAllowedInFeed = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const checkContentAllowedInFeed = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -297,22 +296,22 @@ export const checkContentAllowedInFeed = functions.https.onCall(
       );
     }
     
-    const allowed = await isContentAllowedInFeed(contentId, context.auth.uid);
+    const allowed = await isContentAllowedInFeed(contentId, request.auth.uid);
     
     return { allowed };
   }
 );
 
-export const getClimateStatistics = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getClimateStatistics = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
     
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const role = userDoc.data()?.role;
     
     if (role !== 'admin' && role !== 'moderator') {

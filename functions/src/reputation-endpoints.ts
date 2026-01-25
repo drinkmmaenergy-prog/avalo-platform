@@ -31,17 +31,17 @@ import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
 /**
  * Get user's reputation score
  */
-export const pack140_getReputationScore = functions.https.onCall(
-  async (data, context) => {
+export const pack140_getReputationScore = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const score = await getReputationScore(userId);
@@ -63,17 +63,17 @@ export const pack140_getReputationScore = functions.https.onCall(
 /**
  * Get user's reputation insights (with recent changes and suggestions)
  */
-export const pack140_getReputationInsights = functions.https.onCall(
-  async (data, context) => {
+export const pack140_getReputationInsights = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const insights = await getReputationInsights(userId);
@@ -96,10 +96,10 @@ export const pack140_getReputationInsights = functions.https.onCall(
  * Check reputation requirement for booking/purchase
  * Used by other systems before allowing transactions
  */
-export const pack140_checkReputationRequirement = functions.https.onCall(
-  async (data, context) => {
+export const pack140_checkReputationRequirement = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -138,17 +138,17 @@ export const pack140_checkReputationRequirement = functions.https.onCall(
 /**
  * Start reputation recovery program
  */
-export const pack140_startRecovery = functions.https.onCall(
-  async (data, context) => {
+export const pack140_startRecovery = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { dimension } = data;
 
     if (!dimension || !Object.values(ReputationDimension).includes(dimension)) {
@@ -184,10 +184,10 @@ export const pack140_startRecovery = functions.https.onCall(
  * Record reputation event from other systems
  * Called by mentorship, events, clubs, safety systems
  */
-export const pack140_recordEvent = functions.https.onCall(
-  async (data, context) => {
+export const pack140_recordEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
     // System authentication required (or admin)
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Authentication required'
@@ -254,10 +254,10 @@ export const pack140_recordEvent = functions.https.onCall(
 /**
  * Recalculate reputation score (admin or scheduled task)
  */
-export const pack140_recalculateScore = functions.https.onCall(
-  async (data, context) => {
+export const pack140_recalculateScore = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Admin authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Authentication required'
@@ -265,7 +265,7 @@ export const pack140_recalculateScore = functions.https.onCall(
     }
 
     const db = admin.firestore();
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
 
     if (!userData?.isAdmin) {
@@ -309,10 +309,10 @@ export const pack140_recalculateScore = functions.https.onCall(
 /**
  * Block a reporter from affecting user's reputation
  */
-export const pack140_admin_blockReporter = functions.https.onCall(
-  async (data, context) => {
+export const pack140_admin_blockReporter = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Admin authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Authentication required'
@@ -320,7 +320,7 @@ export const pack140_admin_blockReporter = functions.https.onCall(
     }
 
     const db = admin.firestore();
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
 
     if (!userData?.isAdmin && !userData?.isModerator) {
@@ -345,7 +345,7 @@ export const pack140_admin_blockReporter = functions.https.onCall(
       // Log action
       await db.collection('admin_actions').add({
         action: 'block_reporter',
-        adminId: context.auth.uid,
+        adminId: request.auth.uid,
         targetUserId: userId,
         reporterId,
         reason: reason || 'Weaponized reporting',
@@ -369,10 +369,10 @@ export const pack140_admin_blockReporter = functions.https.onCall(
 /**
  * Add AI Patrol flag pending human verification
  */
-export const pack140_admin_addFlagPendingVerification = functions.https.onCall(
-  async (data, context) => {
+export const pack140_admin_addFlagPendingVerification = functions.https.onCall(async (request) => {
+  const data = request.data;
     // System or admin authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Authentication required'
@@ -408,10 +408,10 @@ export const pack140_admin_addFlagPendingVerification = functions.https.onCall(
 /**
  * Verify and process AI Patrol flag
  */
-export const pack140_admin_verifyFlag = functions.https.onCall(
-  async (data, context) => {
+export const pack140_admin_verifyFlag = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Admin authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Authentication required'
@@ -419,7 +419,7 @@ export const pack140_admin_verifyFlag = functions.https.onCall(
     }
 
     const db = admin.firestore();
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
 
     if (!userData?.isAdmin) {
@@ -439,12 +439,12 @@ export const pack140_admin_verifyFlag = functions.https.onCall(
     }
 
     try {
-      await verifyAndProcessFlag(userId, flagId, approved, context.auth.uid);
+      await verifyAndProcessFlag(userId, flagId, approved, request.auth.uid);
 
       // Log action
       await db.collection('admin_actions').add({
         action: 'verify_flag',
-        adminId: context.auth.uid,
+        adminId: request.auth.uid,
         targetUserId: userId,
         flagId,
         approved,
@@ -468,10 +468,10 @@ export const pack140_admin_verifyFlag = functions.https.onCall(
 /**
  * Get reputation history for admin review
  */
-export const pack140_admin_getReputationHistory = functions.https.onCall(
-  async (data, context) => {
+export const pack140_admin_getReputationHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Admin authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Authentication required'
@@ -479,7 +479,7 @@ export const pack140_admin_getReputationHistory = functions.https.onCall(
     }
 
     const db = admin.firestore();
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
 
     if (!userData?.isAdmin && !userData?.isModerator) {

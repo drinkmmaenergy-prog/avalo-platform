@@ -73,8 +73,9 @@ export interface CreatorSubmission {
 // UGC INGESTION
 // ===========================
 
-export const submitUGCCreative = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const submitUGCCreative = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Auth required');
   }
 
@@ -94,7 +95,7 @@ export const submitUGCCreative = functions.https.onCall(async (data, context) =>
   }
 
   // Check if user is a creator
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists) {
     throw new functions.https.HttpsError('not-found', 'User not found');
   }
@@ -105,7 +106,7 @@ export const submitUGCCreative = functions.https.onCall(async (data, context) =>
   // Create submission
   const submission: Partial<CreatorSubmission> = {
     id: db.collection('ugc_submissions').doc().id,
-    creatorId: context.auth.uid,
+    creatorId: request.auth.uid,
     creativeType: type,
     fileUrl: url,
     caption: caption || text,
@@ -188,8 +189,9 @@ async function autoApproveUGC(submissionId: string) {
 // MANUAL REVIEW
 // ===========================
 
-export const reviewUGCSubmission = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reviewUGCSubmission = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -208,7 +210,7 @@ export const reviewUGCSubmission = functions.https.onCall(async (data, context) 
     await db.collection('ugc_submissions').doc(submissionId).update({
       status: 'rejected',
       reviewedAt: admin.firestore.Timestamp.now(),
-      reviewedBy: context.auth.uid,
+      reviewedBy: request.auth.uid,
       rejectedReason
     });
 
@@ -230,8 +232,9 @@ export const reviewUGCSubmission = functions.https.onCall(async (data, context) 
 // A/B/C TESTING
 // ===========================
 
-export const startCreativeTesting = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const startCreativeTesting = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -372,7 +375,8 @@ export const rotateTopCreatives = functions.pubsub
 // CREATIVE PERFORMANCE UPDATE
 // ===========================
 
-export const updateCreativePerformance = functions.https.onCall(async (data, context) => {
+export const updateCreativePerformance = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { creativeId, impressions, clicks, installs, spend } = data;
 
   const creativeDoc = await db.collection('ua_creatives').doc(creativeId).get();
@@ -410,8 +414,9 @@ export const updateCreativePerformance = functions.https.onCall(async (data, con
 // AI CREATIVE GENERATION
 // ===========================
 
-export const generateAICreative = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const generateAICreative = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -427,7 +432,7 @@ export const generateAICreative = functions.https.onCall(async (data, context) =
     platform,
     type,
     status: 'pending',
-    createdBy: context.auth.uid,
+    createdBy: request.auth.uid,
     createdAt: admin.firestore.Timestamp.now()
   });
 
@@ -447,8 +452,9 @@ export const generateAICreative = functions.https.onCall(async (data, context) =
 // BULK IMPORT FROM UGC PLATFORMS
 // ===========================
 
-export const importFromUGCPlatform = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const importFromUGCPlatform = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -498,8 +504,9 @@ export const importFromUGCPlatform = functions.https.onCall(async (data, context
 // CREATIVE ANALYTICS
 // ===========================
 
-export const getCreativeAnalytics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCreativeAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 

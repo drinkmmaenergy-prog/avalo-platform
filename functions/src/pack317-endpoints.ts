@@ -34,7 +34,8 @@ import { HttpsError, admin, auth, logger, onCall } from './runtime';
 /**
  * Check rate limit for action (internal use)
  */
-export const pack317_checkRateLimit = functions.https.onCall(async (data, context) => {
+export const pack317_checkRateLimit = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { action, identifier, type } = data;
 
   if (!action || !identifier || !type) {
@@ -62,7 +63,8 @@ export const pack317_checkRateLimit = functions.https.onCall(async (data, contex
 /**
  * Check registration for abuse (called during signup flow)
  */
-export const pack317_checkRegistration = functions.https.onCall(async (data, context) => {
+export const pack317_checkRegistration = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { email, ipAddress, deviceId } = data;
 
   if (!email || !ipAddress) {
@@ -95,8 +97,9 @@ export const pack317_checkRegistration = functions.https.onCall(async (data, con
 /**
  * Check message for spam (called before sending message)
  */
-export const pack317_checkMessageSpam = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack317_checkMessageSpam = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -108,7 +111,7 @@ export const pack317_checkMessageSpam = functions.https.onCall(async (data, cont
 
   try {
     const result = await checkMessageSpam({
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       messageText,
       recipientId,
     });
@@ -117,7 +120,7 @@ export const pack317_checkMessageSpam = functions.https.onCall(async (data, cont
     if (result.isSpam) {
       await logSecurityEvent({
         eventType: 'MESSAGE_SPAM_DETECTED',
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         metadata: {
           action: result.action,
           reason: result.reason,
@@ -125,7 +128,7 @@ export const pack317_checkMessageSpam = functions.https.onCall(async (data, cont
       });
 
       // Flag user as spam suspect
-      await flagSpamSuspect(context.auth.uid, result.reason || 'Spam message detected');
+      await flagSpamSuspect(request.auth.uid, result.reason || 'Spam message detected');
     }
 
     return result;
@@ -142,7 +145,7 @@ export const pack317_checkMessageSpam = functions.https.onCall(async (data, cont
 /**
  * Get current launch configuration (public)
  */
-export const pack317_getLaunchConfig = functions.https.onCall(async (data, context) => {
+export const pack317_getLaunchConfig = functions.https.onCall(async (request) => {
   try {
     const config = await getLaunchConfig();
     
@@ -162,13 +165,14 @@ export const pack317_getLaunchConfig = functions.https.onCall(async (data, conte
 /**
  * Update launch configuration (admin only)
  */
-export const pack317_updateLaunchConfig = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack317_updateLaunchConfig = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // TODO: Add admin role check
-  const adminId = context.auth.uid;
+  const adminId = request.auth.uid;
 
   try {
     const config = await updateLaunchConfig({
@@ -186,8 +190,9 @@ export const pack317_updateLaunchConfig = functions.https.onCall(async (data, co
 /**
  * Get launch configuration history (admin only)
  */
-export const pack317_getLaunchConfigHistory = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack317_getLaunchConfigHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -224,8 +229,9 @@ export const pack317_launchCheckCallable = launchCheckCallable;
 /**
  * Query security events (admin only)
  */
-export const pack317_querySecurityEvents = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack317_querySecurityEvents = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -243,8 +249,8 @@ export const pack317_querySecurityEvents = functions.https.onCall(async (data, c
 /**
  * Get security dashboard stats (admin only)
  */
-export const pack317_getSecurityStats = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack317_getSecurityStats = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -266,8 +272,9 @@ export const pack317_getSecurityStats = functions.https.onCall(async (data, cont
 /**
  * Test log sanitization (dev/testing only)
  */
-export const pack317_testSanitization = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack317_testSanitization = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 

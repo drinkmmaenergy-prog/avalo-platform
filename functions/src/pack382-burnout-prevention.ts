@@ -20,23 +20,20 @@ const db = getFirestore();
 /**
  * Detect burnout risk for a creator
  */
-export const pack382_detectCreatorBurnout = functions.https.onCall(
-  async (
-    data: DetectBurnoutInput,
-    context
-  ): Promise<DetectBurnoutOutput> => {
-    if (!context.auth) {
+export const pack382_detectCreatorBurnout = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const { userId = context.auth.uid, checkIntervalDays = 7 } = data;
+    const { userId = request.auth.uid, checkIntervalDays = 7 } = data;
 
     // Only allow users to check their own burnout (or admins)
-    const isAdmin = context.auth.token?.role === 'admin';
-    if (userId !== context.auth.uid && !isAdmin) {
+    const isAdmin = request.auth.token?.role === 'admin';
+    if (userId !== request.auth.uid && !isAdmin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Can only check own burnout status'
@@ -527,9 +524,9 @@ async function applyAutomatedActions(
 /**
  * Resolve burnout assessment
  */
-export const pack382_resolveBurnout = functions.https.onCall(
-  async (data: { assessmentId: string }, context) => {
-    if (!context.auth) {
+export const pack382_resolveBurnout = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'

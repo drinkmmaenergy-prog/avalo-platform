@@ -44,16 +44,13 @@ interface ReviewEligibility {
 // TRIGGER SMART REVIEW PROMPT
 // ============================================================================
 
-export const pack386_triggerSmartReviewPrompt = functions.https.onCall(
-  async (data: {
-    userId: string;
-    trigger: 'SUCCESSFUL_CHAT' | 'FIRST_MEETING' | 'FIRST_PAYOUT' | 'MILESTONE_REACHED';
-  }, context) => {
-    if (!context.auth) {
+export const pack386_triggerSmartReviewPrompt = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const callerId = context.auth.uid;
+    const callerId = request.auth.uid;
 
     // Verify caller is user or admin
     if (callerId !== data.userId) {
@@ -196,13 +193,13 @@ async function checkReviewEligibility(userId: string): Promise<ReviewEligibility
 // MARK REVIEW PROMPT AS SHOWN
 // ============================================================================
 
-export const pack386_markReviewShown = functions.https.onCall(
-  async (data: { promptId: string }, context) => {
-    if (!context.auth) {
+export const pack386_markReviewShown = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     if (!data.promptId) {
       throw new functions.https.HttpsError('invalid-argument', 'Prompt ID required');
@@ -242,13 +239,13 @@ export const pack386_markReviewShown = functions.https.onCall(
 // MARK REVIEW PROMPT AS COMPLETED
 // ============================================================================
 
-export const pack386_markReviewCompleted = functions.https.onCall(
-  async (data: { promptId: string }, context) => {
-    if (!context.auth) {
+export const pack386_markReviewCompleted = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     if (!data.promptId) {
       throw new functions.https.HttpsError('invalid-argument', 'Prompt ID required');
@@ -429,13 +426,13 @@ export const pack386_autoTriggerOnPayout = functions.firestore
 // GET REVIEW PROMPT ANALYTICS
 // ============================================================================
 
-export const pack386_getReviewAnalytics = functions.https.onCall(
-  async (data: { period?: 'day' | 'week' | 'month' }, context) => {
-    if (!context.auth) {
+export const pack386_getReviewAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(userId).get();

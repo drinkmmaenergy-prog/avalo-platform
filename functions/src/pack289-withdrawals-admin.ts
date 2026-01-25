@@ -161,21 +161,18 @@ async function updateMonthlyStats(
 /**
  * Approve a withdrawal request (ADMIN ONLY)
  */
-export const withdrawals_admin_approve = functions.https.onCall(
-  async (
-    data: ApproveWithdrawalRequest,
-    context
-  ): Promise<ApproveWithdrawalResponse> => {
+export const withdrawals_admin_approve = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Check admin auth
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
         };
       }
 
-      const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+      const adminDoc = await db.collection('users').doc(request.auth.uid).get();
       if (!adminDoc.exists || adminDoc.data()?.role !== 'admin') {
         return {
           success: false,
@@ -244,7 +241,7 @@ export const withdrawals_admin_approve = functions.https.onCall(
         withdrawalId,
         withdrawal.userId,
         'APPROVED',
-        context.auth.uid,
+        request.auth.uid,
         'PENDING_REVIEW',
         'APPROVED',
         adminNotes || `Approved ${finalApprovedTokens} tokens`
@@ -334,21 +331,18 @@ export const withdrawals_admin_approve = functions.https.onCall(
 /**
  * Reject a withdrawal request (ADMIN ONLY)
  */
-export const withdrawals_admin_reject = functions.https.onCall(
-  async (
-    data: RejectWithdrawalRequest,
-    context
-  ): Promise<RejectWithdrawalResponse> => {
+export const withdrawals_admin_reject = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Check admin auth
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
         };
       }
 
-      const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+      const adminDoc = await db.collection('users').doc(request.auth.uid).get();
       if (!adminDoc.exists || adminDoc.data()?.role !== 'admin') {
         return {
           success: false,
@@ -399,7 +393,7 @@ export const withdrawals_admin_reject = functions.https.onCall(
         withdrawalId,
         withdrawal.userId,
         'REJECTED',
-        context.auth.uid,
+        request.auth.uid,
         withdrawal.status,
         'REJECTED',
         rejectionReason
@@ -422,21 +416,18 @@ export const withdrawals_admin_reject = functions.https.onCall(
 /**
  * List withdrawal requests for admin review
  */
-export const withdrawals_admin_list = functions.https.onCall(
-  async (
-    data: AdminWithdrawalListRequest,
-    context
-  ): Promise<AdminWithdrawalListResponse> => {
+export const withdrawals_admin_list = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Check admin auth
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
         };
       }
 
-      const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+      const adminDoc = await db.collection('users').doc(request.auth.uid).get();
       if (!adminDoc.exists || adminDoc.data()?.role !== 'admin') {
         return {
           success: false,
@@ -510,21 +501,18 @@ export const withdrawals_admin_list = functions.https.onCall(
 /**
  * Mark withdrawal as paid (ADMIN or WEBHOOK)
  */
-export const withdrawals_markAsPaid = functions.https.onCall(
-  async (
-    data: { withdrawalId: string; paidAt?: string },
-    context
-  ): Promise<{ success: boolean; error?: string }> => {
+export const withdrawals_markAsPaid = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Check admin auth
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
         };
       }
 
-      const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+      const adminDoc = await db.collection('users').doc(request.auth.uid).get();
       if (!adminDoc.exists || adminDoc.data()?.role !== 'admin') {
         return {
           success: false,
@@ -567,7 +555,7 @@ export const withdrawals_markAsPaid = functions.https.onCall(
         withdrawalId,
         withdrawal.userId,
         'PAID',
-        context.auth.uid,
+        request.auth.uid,
         withdrawal.status,
         'PAID',
         'Withdrawal marked as paid'

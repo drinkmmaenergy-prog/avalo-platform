@@ -41,16 +41,9 @@ function hasRomanceContent(text: string): boolean {
   return ROMANCE_KEYWORDS.some(keyword => lowerText.includes(keyword));
 }
 
-export const createBrandProfile = functions.https.onCall(
-  async (data: {
-    name: string;
-    category: string;
-    description: string;
-    logo_url?: string;
-    website_url?: string;
-    contact_email?: string;
-  }, context) => {
-    if (!context.auth) {
+export const createBrandProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -113,7 +106,7 @@ export const createBrandProfile = functions.https.onCall(
       name,
       category,
       description,
-      owner_id: context.auth.uid,
+      owner_id: request.auth.uid,
       status: 'pending',
       created_at: now,
       updated_at: now,
@@ -131,7 +124,7 @@ export const createBrandProfile = functions.https.onCall(
     const brandRef = await db.collection('brand_profiles').add(brandProfile);
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'brand_profile_created',
       brand_id: brandRef.id,
       timestamp: now,
@@ -149,16 +142,9 @@ export const createBrandProfile = functions.https.onCall(
   }
 );
 
-export const updateBrandProfile = functions.https.onCall(
-  async (data: {
-    brand_id: string;
-    name?: string;
-    description?: string;
-    logo_url?: string;
-    website_url?: string;
-    contact_email?: string;
-  }, context) => {
-    if (!context.auth) {
+export const updateBrandProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -186,10 +172,10 @@ export const updateBrandProfile = functions.https.onCall(
 
     const brandData = brandDoc.data() as BrandProfile;
 
-    const isAdmin = await db.collection('admin_users').doc(context.auth.uid).get()
+    const isAdmin = await db.collection('admin_users').doc(request.auth.uid).get()
       .then(doc => doc.exists);
 
-    if (brandData.owner_id !== context.auth.uid && !isAdmin) {
+    if (brandData.owner_id !== request.auth.uid && !isAdmin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to update this brand profile'
@@ -233,7 +219,7 @@ export const updateBrandProfile = functions.https.onCall(
     await brandRef.update(updateData);
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'brand_profile_updated',
       brand_id,
       timestamp: Timestamp.now(),
@@ -247,8 +233,8 @@ export const updateBrandProfile = functions.https.onCall(
   }
 );
 
-export const getBrandProfile = functions.https.onCall(
-  async (data: { brand_id: string }, context) => {
+export const getBrandProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { brand_id } = data;
 
     if (!brand_id) {
@@ -281,13 +267,8 @@ export const getBrandProfile = functions.https.onCall(
   }
 );
 
-export const searchBrands = functions.https.onCall(
-  async (data: {
-    category?: string;
-    search_term?: string;
-    limit?: number;
-    offset?: number;
-  }, context) => {
+export const searchBrands = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { category, search_term, limit = 20, offset = 0 } = data;
 
     let query = db.collection('brand_profiles')

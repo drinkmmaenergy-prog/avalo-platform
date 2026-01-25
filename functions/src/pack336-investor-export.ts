@@ -266,8 +266,9 @@ function generateReportId(): string {
 /**
  * Generate and export investor report (admin only)
  */
-export const pack336_exportInvestorReport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_exportInvestorReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -302,7 +303,7 @@ export const pack336_exportInvestorReport = functions.https.onCall(async (data, 
     const reportRef = await db.collection('investorReports').add({
       ...reportData,
       format,
-      requestedBy: context.auth.uid,
+      requestedBy: request.auth.uid,
       status: 'generated',
     });
     
@@ -324,7 +325,7 @@ export const pack336_exportInvestorReport = functions.https.onCall(async (data, 
           contentType: 'text/csv',
           metadata: {
             reportId: reportData.reportId,
-            generatedBy: context.auth.uid,
+            generatedBy: request.auth.uid,
           },
         });
         
@@ -369,8 +370,9 @@ export const pack336_exportInvestorReport = functions.https.onCall(async (data, 
 /**
  * Get list of generated investor reports (admin only)
  */
-export const pack336_getInvestorReports = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getInvestorReports = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -405,8 +407,9 @@ export const pack336_getInvestorReports = functions.https.onCall(async (data, co
 /**
  * Get specific investor report by ID (admin only)
  */
-export const pack336_getInvestorReport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getInvestorReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -447,8 +450,9 @@ export const pack336_getInvestorReport = functions.https.onCall(async (data, con
  * Quick investor summary (admin only)
  * Returns key metrics without generating full report
  */
-export const pack336_getInvestorSummary = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getInvestorSummary = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   

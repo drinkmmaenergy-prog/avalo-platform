@@ -560,12 +560,13 @@ export const enforceRetentionPolicies = functions.pubsub
 /**
  * Request data erasure (right to be forgotten)
  */
-export const requestErasure = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const requestErasure = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { reason } = data;
   
   // Check if user has pending erasure request
@@ -590,12 +591,13 @@ export const requestErasure = functions.https.onCall(async (data, context) => {
 /**
  * Request data export (right to access)
  */
-export const requestExport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const requestExport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { format } = data;
   
   const request = await requestDataExport(userId, format || 'json');
@@ -609,12 +611,13 @@ export const requestExport = functions.https.onCall(async (data, context) => {
 /**
  * Check status of data request
  */
-export const checkDataRequestStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const checkDataRequestStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { type } = data; // 'erasure' or 'export'
   
   const collection = type === 'erasure' ? 'data_erasure_requests' : 'data_export_requests';

@@ -77,8 +77,8 @@ const db = admin.firestore();
 /**
  * Initialize launch control document
  */
-export const initializeLaunchControl = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const initializeLaunchControl = functions.https.onCall(async (request) => {
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -91,7 +91,7 @@ export const initializeLaunchControl = functions.https.onCall(async (data, conte
     globalBudgetSpentToday: 0,
     lastBudgetReset: admin.firestore.Timestamp.now(),
     updatedAt: admin.firestore.Timestamp.now(),
-    updatedBy: context.auth.uid,
+    updatedBy: request.auth.uid,
   };
 
   await db.collection('launch_control').doc('global').set(launchControl);
@@ -102,8 +102,9 @@ export const initializeLaunchControl = functions.https.onCall(async (data, conte
 /**
  * Add or update country rollout config
  */
-export const configureCountryRollout = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const configureCountryRollout = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -135,7 +136,7 @@ export const configureCountryRollout = functions.https.onCall(async (data, conte
   await db.collection('launch_control').doc('global').update({
     [`countries.${countryCode}`]: countryConfig,
     updatedAt: admin.firestore.Timestamp.now(),
-    updatedBy: context.auth.uid,
+    updatedBy: request.auth.uid,
   });
 
   // Log event
@@ -154,8 +155,9 @@ export const configureCountryRollout = functions.https.onCall(async (data, conte
 /**
  * Update launch state for a country
  */
-export const updateCountryState = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const updateCountryState = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -180,7 +182,7 @@ export const updateCountryState = functions.https.onCall(async (data, context) =
     [`countries.${countryCode}.state`]: newState,
     [`countries.${countryCode}.lastStateChange`]: admin.firestore.Timestamp.now(),
     updatedAt: admin.firestore.Timestamp.now(),
-    updatedBy: context.auth.uid,
+    updatedBy: request.auth.uid,
   });
 
   // Log event
@@ -200,8 +202,9 @@ export const updateCountryState = functions.https.onCall(async (data, context) =
 /**
  * Emergency stop - halt all launches
  */
-export const emergencyStopLaunch = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const emergencyStopLaunch = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -211,7 +214,7 @@ export const emergencyStopLaunch = functions.https.onCall(async (data, context) 
     emergencyStop: true,
     automationEnabled: false,
     updatedAt: admin.firestore.Timestamp.now(),
-    updatedBy: context.auth.uid,
+    updatedBy: request.auth.uid,
   });
 
   // Log critical event
@@ -228,15 +231,15 @@ export const emergencyStopLaunch = functions.https.onCall(async (data, context) 
 /**
  * Resume from emergency stop
  */
-export const resumeLaunch = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const resumeLaunch = functions.https.onCall(async (request) => {
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
   await db.collection('launch_control').doc('global').update({
     emergencyStop: false,
     updatedAt: admin.firestore.Timestamp.now(),
-    updatedBy: context.auth.uid,
+    updatedBy: request.auth.uid,
   });
 
   await logLaunchEvent({
@@ -500,8 +503,9 @@ async function logLaunchEvent(event: LaunchEvent) {
 /**
  * Get launch status
  */
-export const getLaunchStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const getLaunchStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 

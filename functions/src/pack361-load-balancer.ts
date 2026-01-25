@@ -480,16 +480,16 @@ export async function performFailover(
 /**
  * Get routing information for user
  */
-export const getRouting = functions.https.onCall(
-  async (data: { userId: string; location?: { lat: number; lon: number } }, context) => {
-    if (!context.auth) {
+export const getRouting = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
       );
     }
     
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const location = data.location || { lat: 52.52, lon: 13.405 }; // Default to Berlin
     
     const region = await getOptimalRegion(location, userId);
@@ -510,9 +510,9 @@ export const getRouting = functions.https.onCall(
 /**
  * Force failover (admin only)
  */
-export const forceFailover = functions.https.onCall(
-  async (data: { userId: string; fromRegion: Region }, context) => {
-    if (!context.auth) {
+export const forceFailover = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -521,7 +521,7 @@ export const forceFailover = functions.https.onCall(
     
     // Check admin permission
     const db = admin.firestore();
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     const isAdmin = userDoc.data()?.role === "admin";
     
     if (!isAdmin) {
@@ -538,8 +538,7 @@ export const forceFailover = functions.https.onCall(
 /**
  * Get all region statuses
  */
-export const getRegionStatuses = functions.https.onCall(
-  async (data, context) => {
+export const getRegionStatuses = functions.https.onCall(async (request) => {
     const healthChecks = await Promise.all([
       getRegionHealth("EU"),
       getRegionHealth("US"),
@@ -563,9 +562,8 @@ export const getRegionStatuses = functions.https.onCall(
 /**
  * Initialize region nodes in Firestore
  */
-export const initializeRegions = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const initializeRegions = functions.https.onCall(async (request) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"

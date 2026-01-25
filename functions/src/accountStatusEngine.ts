@@ -13,7 +13,7 @@
 
 import { db, serverTimestamp, increment } from './init';
 import * as functions from 'firebase-functions';
-import { HttpsError, Timestamp, auth } from './runtime';
+import { HttpsError, Timestamp, auth , CallableRequest} from './runtime';
 
 // Simple logger
 const logger = {
@@ -322,14 +322,14 @@ export async function getAccountStatusRecord(uid: string): Promise<AccountStatus
  */
 export const account_getStatus = async (
   data: any,
-  context: functions.https.CallableContext
+  request: CallableRequest<any>
 ): Promise<{ status: AccountStatus; statusExpiresAt: number | null }> => {
   
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const uid = context.auth.uid;
+  const uid = request.auth.uid;
   
   try {
     const record = await getAccountStatusRecord(uid);

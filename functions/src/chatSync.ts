@@ -63,12 +63,13 @@ interface ConversationMetadata {
  * Idempotent message write - uses messageId as document ID
  * Sets status to "synced" and returns serverCreatedAt timestamp
  */
-export const syncMessage = functions.https.onCall(async (data: ChatMessagePayload, context) => {
-  if (!context.auth) {
+export const syncMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const {
     messageId,
     senderId,
@@ -193,12 +194,13 @@ export const syncMessage = functions.https.onCall(async (data: ChatMessagePayloa
  * GET /conversations/{conversationId}/messages
  * Returns message history in descending order by createdAt
  */
-export const getConversationMessages = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getConversationMessages = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { conversationId, limit = 50, before } = data;
 
   if (!conversationId) {
@@ -250,12 +252,13 @@ export const getConversationMessages = functions.https.onCall(async (data, conte
  * POST /conversations/{conversationId}/messages/{messageId}/status
  * Update message status (delivered/read)
  */
-export const updateMessageStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateMessageStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { conversationId, messageId, status } = data;
 
   if (!conversationId || !messageId || !status) {
@@ -323,12 +326,13 @@ export const updateMessageStatus = functions.https.onCall(async (data, context) 
 /**
  * Mark multiple messages as delivered for a user
  */
-export const markMessagesDelivered = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const markMessagesDelivered = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { conversationId, messageIds } = data;
 
   if (!conversationId || !Array.isArray(messageIds) || messageIds.length === 0) {
@@ -375,12 +379,13 @@ export const markMessagesDelivered = functions.https.onCall(async (data, context
 /**
  * Mark all messages in a conversation as read for current user
  */
-export const markConversationRead = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const markConversationRead = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { conversationId } = data;
 
   if (!conversationId) {

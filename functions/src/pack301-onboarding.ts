@@ -32,16 +32,16 @@ interface OnboardingTrackRequest {
  * Track onboarding stage change
  * Called by client when user completes onboarding steps
  */
-export const trackOnboardingStage = functions.https.onCall(
-  async (data: OnboardingTrackRequest, context) => {
-    if (!context.auth) {
+export const trackOnboardingStage = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     const { userId, stage, metadata } = data;
 
     // Verify user is tracking their own onboarding
-    if (userId !== context.auth.uid) {
+    if (userId !== request.auth.uid) {
       throw new functions.https.HttpsError('permission-denied', 'Cannot track onboarding for other users');
     }
 
@@ -209,15 +209,16 @@ async function maybeTriggerOnboardingNudge(
 /**
  * Get user's onboarding progress
  */
-export const getOnboardingProgress = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getOnboardingProgress = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = data.userId || context.auth.uid;
+  const userId = data.userId || request.auth.uid;
 
   // Users can only check their own progress
-  if (userId !== context.auth.uid) {
+  if (userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Cannot view other users\' onboarding');
   }
 

@@ -40,13 +40,14 @@ interface InviteCodeData {
 /**
  * Generate unique invite code for user
  */
-export const pack374_generateInviteCode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack374_generateInviteCode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { channel, maxUses = 10 } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     // Check rate limiting - max 5 codes per hour per user
@@ -110,13 +111,14 @@ export const pack374_generateInviteCode = functions.https.onCall(async (data, co
 /**
  * Register invite acceptance and validate
  */
-export const pack374_registerInviteAcceptance = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack374_registerInviteAcceptance = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { inviteCode, deviceFingerprint, ipAddress } = data;
-  const newUserId = context.auth.uid;
+  const newUserId = request.auth.uid;
 
   try {
     // Get invite code
@@ -227,8 +229,9 @@ export const pack374_registerInviteAcceptance = functions.https.onCall(async (da
 /**
  * Reward inviter after successful conversion
  */
-export const pack374_rewardInviteSuccess = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack374_rewardInviteSuccess = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -327,13 +330,14 @@ interface BoostConfig {
 /**
  * Apply boost to user
  */
-export const pack374_applyBoost = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack374_applyBoost = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { boostType, durationMinutes, strength, paid = true } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     // Get boost configuration
@@ -565,13 +569,14 @@ export const pack374_processSocialLoop = functions.firestore
 /**
  * Track share event
  */
-export const pack374_trackShareEvent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack374_trackShareEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { shareType, shareChannel, contentId, externalPlatform } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     // Check for spam pattern (max 10 shares per hour)
@@ -634,7 +639,8 @@ export const pack374_trackShareEvent = functions.https.onCall(async (data, conte
 /**
  * Process share conversion
  */
-export const pack374_processShareConversion = functions.https.onCall(async (data, context) => {
+export const pack374_processShareConversion = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { shareId, newUserId, revenue = 0 } = data;
 
   try {

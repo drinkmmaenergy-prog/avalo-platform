@@ -40,13 +40,14 @@ const db = admin.firestore();
  * Enable sexuality consent for user
  * Requires age verification
  */
-export const enableSexualityConsent = functions.https.onCall(async (data, context) => {
+export const enableSexualityConsent = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Authentication required
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     // Check age verification
@@ -77,8 +78,8 @@ export const enableSexualityConsent = functions.https.onCall(async (data, contex
       },
       {
         metadata: {
-          ipAddress: context.rawRequest.ip,
-          userAgent: context.rawRequest.headers['user-agent']
+          ipAddress: request.rawRequest.ip,
+          userAgent: request.rawRequest.headers['user-agent']
         }
       }
     );
@@ -101,12 +102,13 @@ export const enableSexualityConsent = functions.https.onCall(async (data, contex
  * Disable sexuality consent for user
  * Can be done anytime
  */
-export const disableSexualityConsent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const disableSexualityConsent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     // Update consent preferences
@@ -164,8 +166,8 @@ export const disableSexualityConsent = functions.https.onCall(async (data, conte
       },
       {
         metadata: {
-          ipAddress: context.rawRequest.ip,
-          userAgent: context.rawRequest.headers['user-agent']
+          ipAddress: request.rawRequest.ip,
+          userAgent: request.rawRequest.headers['user-agent']
         }
       }
     );
@@ -192,13 +194,14 @@ export const disableSexualityConsent = functions.https.onCall(async (data, conte
  * Initiate sexy mode session with another user
  * Requires both users to have consent enabled
  */
-export const initiateSexyModeSession = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const initiateSexyModeSession = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { otherUserId, expirationHours = DEFAULT_SESSION_EXPIRATION_HOURS } = data;
-  const initiatorId = context.auth.uid;
+  const initiatorId = request.auth.uid;
 
   if (!otherUserId) {
     throw new functions.https.HttpsError('invalid-argument', 'otherUserId is required');
@@ -272,8 +275,8 @@ export const initiateSexyModeSession = functions.https.onCall(async (data, conte
       {
         sessionId,
         metadata: {
-          ipAddress: context.rawRequest.ip,
-          userAgent: context.rawRequest.headers['user-agent']
+          ipAddress: request.rawRequest.ip,
+          userAgent: request.rawRequest.headers['user-agent']
         }
       }
     );
@@ -299,13 +302,14 @@ export const initiateSexyModeSession = functions.https.onCall(async (data, conte
 /**
  * Accept or reject sexy mode session invitation
  */
-export const respondToSexyModeInvitation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const respondToSexyModeInvitation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { sessionId, accept } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   if (!sessionId || typeof accept !== 'boolean') {
     throw new functions.https.HttpsError('invalid-argument', 'sessionId and accept are required');
@@ -354,8 +358,8 @@ export const respondToSexyModeInvitation = functions.https.onCall(async (data, c
       {
         sessionId,
         metadata: {
-          ipAddress: context.rawRequest.ip,
-          userAgent: context.rawRequest.headers['user-agent']
+          ipAddress: request.rawRequest.ip,
+          userAgent: request.rawRequest.headers['user-agent']
         }
       }
     );
@@ -380,13 +384,14 @@ export const respondToSexyModeInvitation = functions.https.onCall(async (data, c
 /**
  * End sexy mode session (either user can end)
  */
-export const endSexyModeSession = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const endSexyModeSession = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { sessionId } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const sessionRef = db.collection('sexy_mode_sessions').doc(sessionId);
@@ -431,8 +436,8 @@ export const endSexyModeSession = functions.https.onCall(async (data, context) =
       {
         sessionId,
         metadata: {
-          ipAddress: context.rawRequest.ip,
-          userAgent: context.rawRequest.headers['user-agent']
+          ipAddress: request.rawRequest.ip,
+          userAgent: request.rawRequest.headers['user-agent']
         }
       }
     );
@@ -458,13 +463,14 @@ export const endSexyModeSession = functions.https.onCall(async (data, context) =
  * Validate and send sexy content
  * Triggered when user attempts to send sexy content
  */
-export const sendSexyContent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const sendSexyContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { receiverId, contentType, content, sessionId } = data;
-  const senderId = context.auth.uid;
+  const senderId = request.auth.uid;
 
   try {
     // Validate session exists and is active
@@ -536,8 +542,8 @@ export const sendSexyContent = functions.https.onCall(async (data, context) => {
         sessionId,
         contentId: contentRef.id,
         metadata: {
-          ipAddress: context.rawRequest.ip,
-          userAgent: context.rawRequest.headers['user-agent']
+          ipAddress: request.rawRequest.ip,
+          userAgent: request.rawRequest.headers['user-agent']
         }
       }
     );
@@ -559,13 +565,14 @@ export const sendSexyContent = functions.https.onCall(async (data, context) => {
 /**
  * Report inappropriate sexy content
  */
-export const reportSexyContent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reportSexyContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { contentId, reportType, description } = data;
-  const reporterId = context.auth.uid;
+  const reporterId = request.auth.uid;
 
   try {
     // Verify content exists and reporter has access

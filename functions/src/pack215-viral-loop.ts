@@ -229,12 +229,12 @@ async function awardBadge(userId: string, badgeType: string, metadata: any = {})
 /**
  * Generate unique referral link
  */
-export const generateReferralLink = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const generateReferralLink = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Check safety approval
   if (!await isSafetyApproved(userId)) {
@@ -488,12 +488,13 @@ export const onMeetingBooked = functions.firestore
 /**
  * Process audience import for creators
  */
-export const processAudienceImport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const processAudienceImport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { platform, followerCount } = data;
 
   if (!['instagram', 'tiktok', 'telegram', 'snapchat'].includes(platform)) {
@@ -538,12 +539,13 @@ export const processAudienceImport = functions.https.onCall(async (data, context
 /**
  * Process viral moment for payers (men)
  */
-export const processPayerViralMoment = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const processPayerViralMoment = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Check if user has spending history
   const spendingQuery = await db.collection('transactions')
@@ -584,12 +586,13 @@ export const processPayerViralMoment = functions.https.onCall(async (data, conte
 /**
  * Claim viral reward
  */
-export const claimViralReward = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const claimViralReward = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { rewardId } = data;
 
   const rewardDoc = await db.collection('viral_rewards').doc(rewardId).get();

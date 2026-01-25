@@ -31,12 +31,13 @@ const db = admin.firestore();
 // Incident Creation and Classification
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const createIncident = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createIncident = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const user = await db.collection('users').doc(context.auth.uid).get();
+  const user = await db.collection('users').doc(request.auth.uid).get();
   if (!['admin', 'incident_manager', 'cto', 'ciso'].includes(user.data()?.role)) {
     throw new functions.https.HttpsError('permission-denied', 'Insufficient permissions');
   }
@@ -88,14 +89,14 @@ export const createIncident = functions.https.onCall(async (data, context) => {
   // Log audit trail
   await logAuditEntry({
     incidentId: incident.id,
-    actor: context.auth.uid,
+    actor: request.auth.uid,
     actorRole: user.data()?.role || 'unknown',
     action: 'incident_created',
     resource: 'incident',
     resourceId: incident.id,
     after: incident,
-    ipAddress: context.rawRequest?.ip || 'unknown',
-    userAgent: context.rawRequest?.headers['user-agent'] || 'unknown',
+    ipAddress: request.rawRequest?.ip || 'unknown',
+    userAgent: request.rawRequest?.headers['user-agent'] || 'unknown',
     success: true,
     metadata: {},
   });
@@ -103,7 +104,7 @@ export const createIncident = functions.https.onCall(async (data, context) => {
   // Create initial timeline entry
   await addTimelineEntry(incident.id, {
     action: 'Incident created',
-    actor: context.auth.uid,
+    actor: request.auth.uid,
     actorRole: user.data()?.role || 'unknown',
     details: `Incident created: ${title}`,
     automated: false,
@@ -415,12 +416,13 @@ async function executeAutomatedHandler(
 // Regulator Interaction Mode
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const activateRegulatorMode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const activateRegulatorMode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const user = await db.collection('users').doc(context.auth.uid).get();
+  const user = await db.collection('users').doc(request.auth.uid).get();
   if (!['admin', 'legal', 'compliance', 'cto'].includes(user.data()?.role)) {
     throw new functions.https.HttpsError('permission-denied', 'Insufficient permissions');
   }
@@ -446,7 +448,7 @@ export const activateRegulatorMode = functions.https.onCall(async (data, context
     status: 'active',
     lockMode,
     lockActivatedAt: admin.firestore.Timestamp.now(),
-    lockActivatedBy: context.auth.uid,
+    lockActivatedBy: request.auth.uid,
     scope: data.scope || [],
     responsibleTeam: data.responsibleTeam || [],
     internalCaseId: `REG-${Date.now()}`,
@@ -533,9 +535,9 @@ async function activateCommunicationFreeze(
   return freezeRef.id;
 }
 
-export const deactivateCommunicationFreeze = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const deactivateCommunicationFreeze = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -610,9 +612,9 @@ async function notifyCrisisActivation(state: CrisisModeState) {
 // Post-Incident Review Automation
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const generatePostIncidentReview = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const generatePostIncidentReview = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -629,7 +631,7 @@ export const generatePostIncidentReview = functions.https.onCall(
     const pir: PostIncidentReview = {
       id: '',
       incidentId,
-      conductedBy: [context.auth.uid],
+      conductedBy: [request.auth.uid],
       reviewTeam: [],
       startedAt: admin.firestore.Timestamp.now(),
       status: 'in_progress',

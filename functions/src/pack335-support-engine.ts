@@ -167,16 +167,16 @@ function determinePriority(type: TicketType, context: any): TicketPriority {
 /**
  * Create a support ticket
  */
-export const pack335_createSupportTicket = functions.https.onCall(
-  async (data: CreateTicketRequest, context) => {
-    if (!context.auth) {
+export const pack335_createSupportTicket = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be authenticated");
     }
     
     const { userId, type, context: ticketContext, initialMessage, attachments } = data;
     
     // Validate user matches auth
-    if (userId !== context.auth.uid) {
+    if (userId !== request.auth.uid) {
       throw new functions.https.HttpsError("permission-denied", "Can only create tickets for yourself");
     }
     
@@ -271,9 +271,9 @@ export const pack335_createSupportTicket = functions.https.onCall(
 /**
  * Add message to ticket
  */
-export const pack335_addTicketMessage = functions.https.onCall(
-  async (data: AddMessageRequest, context) => {
-    if (!context.auth) {
+export const pack335_addTicketMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be authenticated");
     }
     
@@ -289,8 +289,8 @@ export const pack335_addTicketMessage = functions.https.onCall(
     const ticket = ticketDoc.data() as SupportTicket;
     
     // Check if user owns ticket or is admin
-    const isAdmin = await db.collection("adminUsers").doc(context.auth.uid).get();
-    const isOwner = ticket.userId === context.auth.uid;
+    const isAdmin = await db.collection("adminUsers").doc(request.auth.uid).get();
+    const isOwner = ticket.userId === request.auth.uid;
     
     if (!isOwner && !isAdmin.exists) {
       throw new functions.https.HttpsError("permission-denied", "Not authorized for this ticket");
@@ -309,8 +309,8 @@ export const pack335_addTicketMessage = functions.https.onCall(
       id: messageRef.id,
       ticketId,
       senderType: isAdmin.exists ? "AGENT" : "USER",
-      senderUserId: isOwner ? context.auth.uid : undefined,
-      agentId: isAdmin.exists ? context.auth.uid : undefined,
+      senderUserId: isOwner ? request.auth.uid : undefined,
+      agentId: isAdmin.exists ? request.auth.uid : undefined,
       messageText,
       attachments: attachments || [],
       createdAt: now,
@@ -345,14 +345,14 @@ export const pack335_addTicketMessage = functions.https.onCall(
 /**
  * Update ticket status (admin only)
  */
-export const pack335_updateTicketStatus = functions.https.onCall(
-  async (data: UpdateTicketStatusRequest, context) => {
-    if (!context.auth) {
+export const pack335_updateTicketStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be authenticated");
     }
     
     // Verify admin
-    const isAdmin = await db.collection("adminUsers").doc(context.auth.uid).get();
+    const isAdmin = await db.collection("adminUsers").doc(request.auth.uid).get();
     if (!isAdmin.exists) {
       throw new functions.https.HttpsError("permission-denied", "Admin only");
     }
@@ -398,7 +398,7 @@ export const pack335_updateTicketStatus = functions.https.onCall(
     // Log audit
     await db.collection("auditLogs").add({
       action: "SUPPORT_TICKET_STATUS_UPDATED",
-      agentId: context.auth.uid,
+      agentId: request.auth.uid,
       ticketId,
       oldStatus: ticketDoc.data()!.status,
       newStatus: status,
@@ -414,14 +414,14 @@ export const pack335_updateTicketStatus = functions.https.onCall(
  * Handle refund dispute (admin only)
  * Loads context and provides decision support
  */
-export const pack335_handleRefundDispute = functions.https.onCall(
-  async (data: RefundDisputeContext, context) => {
-    if (!context.auth) {
+export const pack335_handleRefundDispute = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "Must be authenticated");
     }
     
     // Verify admin
-    const isAdmin = await db.collection("adminUsers").doc(context.auth.uid).get();
+    const isAdmin = await db.collection("adminUsers").doc(request.auth.uid).get();
     if (!isAdmin.exists) {
       throw new functions.https.HttpsError("permission-denied", "Admin only");
     }
@@ -523,8 +523,9 @@ export const pack335_handleRefundDispute = functions.https.onCall(
 /**
  * Close user's own ticket
  */
-export const pack335_closeTicket = functions.https.onCall(async (data: { ticketId: string }, context) => {
-  if (!context.auth) {
+export const pack335_closeTicket = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be authenticated");
   }
   
@@ -539,7 +540,7 @@ export const pack335_closeTicket = functions.https.onCall(async (data: { ticketI
   const ticket = ticketDoc.data() as SupportTicket;
   
   // Check ownership
-  if (ticket.userId !== context.auth.uid) {
+  if (ticket.userId !== request.auth.uid) {
     throw new functions.https.HttpsError("permission-denied", "Not your ticket");
   }
   

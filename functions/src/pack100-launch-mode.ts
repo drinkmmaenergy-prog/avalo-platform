@@ -167,13 +167,14 @@ export const getLaunchMode_callable = functions.https.onCall(async () => {
  * Set launch mode (admin only)
  * Records transition history for audit trail
  */
-export const admin_setLaunchMode = functions.https.onCall(async (data, context) => {
+export const admin_setLaunchMode = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminUserId = context.auth.uid;
+  const adminUserId = request.auth.uid;
   
   // Check admin privileges
   const adminDoc = await db.collection('admin_users').doc(adminUserId).get();
@@ -402,14 +403,15 @@ export async function recordSignup(): Promise<void> {
 /**
  * Get launch mode transition history (admin only)
  */
-export const admin_getLaunchModeHistory = functions.https.onCall(async (data, context) => {
+export const admin_getLaunchModeHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
   // Check admin privileges
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }

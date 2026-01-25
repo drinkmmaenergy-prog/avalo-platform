@@ -21,8 +21,9 @@ import { HttpsError, admin, auth, db, onCall, serverTimestamp } from './runtime'
 /**
  * Get system health overview (admin only)
  */
-export const pack183_getSystemHealth = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack183_getSystemHealth = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
@@ -41,8 +42,9 @@ export const pack183_getSystemHealth = functions.https.onCall(async (data, conte
 /**
  * Get scaling history for region (admin only)
  */
-export const pack183_getScalingHistory = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack183_getScalingHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
@@ -67,8 +69,9 @@ export const pack183_getScalingHistory = functions.https.onCall(async (data, con
 /**
  * Get shard configurations (admin only)
  */
-export const pack183_getShardConfigs = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack183_getShardConfigs = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
@@ -87,8 +90,9 @@ export const pack183_getShardConfigs = functions.https.onCall(async (data, conte
 /**
  * Get shard distribution statistics (admin only)
  */
-export const pack183_getShardStats = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack183_getShardStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
@@ -113,8 +117,9 @@ export const pack183_getShardStats = functions.https.onCall(async (data, context
 /**
  * Predict latency for component (internal use)
  */
-export const pack183_predictLatency = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack183_predictLatency = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
@@ -144,8 +149,9 @@ export const pack183_predictLatency = functions.https.onCall(async (data, contex
 /**
  * Validate prediction accuracy (admin only)
  */
-export const pack183_validatePredictions = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack183_validatePredictions = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
@@ -170,7 +176,8 @@ export const pack183_validatePredictions = functions.https.onCall(async (data, c
 /**
  * Check if approaching peak hours (public)
  */
-export const pack183_isApproachingPeak = functions.https.onCall(async (data, context) => {
+export const pack183_isApproachingPeak = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { minutesAhead } = data;
 
   try {
@@ -192,7 +199,8 @@ export const pack183_isApproachingPeak = functions.https.onCall(async (data, con
  * Get optimal server region for user (public)
  * Used by client for latency-based routing
  */
-export const pack183_getOptimalRegion = functions.https.onCall(async (data, context) => {
+export const pack183_getOptimalRegion = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { userRegion, userLat, userLon } = data;
 
   try {
@@ -241,8 +249,9 @@ export const pack183_getOptimalRegion = functions.https.onCall(async (data, cont
 /**
  * Report client latency (for monitoring)
  */
-export const pack183_reportClientLatency = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack183_reportClientLatency = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
@@ -259,7 +268,7 @@ export const pack183_reportClientLatency = functions.https.onCall(async (data, c
     const { db, serverTimestamp } = await import('./init');
     
     await db.collection('client_latency_reports').add({
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       region,
       component,
       latencyMs,

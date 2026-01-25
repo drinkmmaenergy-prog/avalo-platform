@@ -20,17 +20,17 @@ interface AcceptLegalDocumentsData {
  * Accept legal documents
  * Creates or updates legalAcceptance/{userId} with current versions
  */
-export const acceptLegalDocuments = functions.https.onCall(
-  async (data: AcceptLegalDocumentsData, context) => {
+export const acceptLegalDocuments = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Prevent unauthenticated calls
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated to accept legal documents'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { platform } = data;
 
     // Validate platform

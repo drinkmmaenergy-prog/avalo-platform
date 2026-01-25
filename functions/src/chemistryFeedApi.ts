@@ -16,17 +16,18 @@ import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
  */
 export const getChemistryFeed = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Authentication check
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { limit = 20, offset = 0, refreshCache = false } = data;
 
       // Validate inputs
@@ -93,17 +94,18 @@ export const getChemistryFeed = functions
  */
 export const trackFeedInteraction = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Authentication check
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const {
         eventType,
         targetUserId,
@@ -163,17 +165,17 @@ export const trackFeedInteraction = functions
  */
 export const refreshFeedCache = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
     try {
       // Authentication check
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
 
       // Invalidate cache
       invalidateCache(userId);
@@ -208,17 +210,18 @@ export const refreshFeedCache = functions
  */
 export const getFeedStats = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Authentication check
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
 
       // Get analytics for last 24 hours
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);

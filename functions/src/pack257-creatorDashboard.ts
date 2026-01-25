@@ -78,17 +78,17 @@ function anonymizeUserId(userId: string): string {
 /**
  * Get complete creator dashboard data
  */
-export const getCreatorDashboard = functions.https.onCall(
-  async (data: { filters?: DashboardFilters }, context) => {
+export const getCreatorDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Verify authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const filters = data.filters || { timeframe: '7d', includeRoyalFeatures: false };
 
     try {
@@ -140,12 +140,12 @@ export const getCreatorDashboard = functions.https.onCall(
 // EARNINGS OVERVIEW
 // ============================================================================
 
-export const getEarningsOverview = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getEarningsOverview = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const overview = await getEarningsOverviewInternal(context.auth.uid);
+  const overview = await getEarningsOverviewInternal(request.auth.uid);
   return overview;
 });
 
@@ -277,12 +277,12 @@ async function getEscrowBreakdown(userId: string): Promise<EscrowItem[]> {
 // ENGAGEMENT METRICS
 // ============================================================================
 
-export const getEngagementMetrics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getEngagementMetrics = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const metrics = await getEngagementMetricsInternal(context.auth.uid);
+  const metrics = await getEngagementMetricsInternal(request.auth.uid);
   return metrics;
 });
 
@@ -454,12 +454,12 @@ async function calculateTopViewers(
 // CONVERSATION ANALYTICS
 // ============================================================================
 
-export const getConversationAnalytics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getConversationAnalytics = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const analytics = await getConversationAnalyticsInternal(context.auth.uid);
+  const analytics = await getConversationAnalyticsInternal(request.auth.uid);
   return analytics;
 });
 
@@ -579,12 +579,12 @@ async function getConversationAnalyticsInternal(
 // MEDIA SALES ANALYTICS
 // ============================================================================
 
-export const getMediaSalesAnalytics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getMediaSalesAnalytics = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const analytics = await getMediaSalesAnalyticsInternal(context.auth.uid);
+  const analytics = await getMediaSalesAnalyticsInternal(request.auth.uid);
   return analytics;
 });
 
@@ -702,12 +702,12 @@ async function getTopSellingMedia(
 // PERFORMANCE LEVEL
 // ============================================================================
 
-export const getPerformanceLevel = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getPerformanceLevel = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const level = await getPerformanceLevelInternal(context.auth.uid);
+  const level = await getPerformanceLevelInternal(request.auth.uid);
   return level;
 });
 
@@ -771,9 +771,9 @@ async function getPerformanceLevelInternal(userId: string): Promise<PerformanceL
 // OPTIMIZATION SUGGESTIONS
 // ============================================================================
 
-export const getOptimizationSuggestions = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getOptimizationSuggestions = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -781,7 +781,7 @@ export const getOptimizationSuggestions = functions.https.onCall(
     }
 
     // Get required data
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const [earnings, engagement, conversations, mediaSales] = await Promise.all([
       getEarningsOverviewInternal(userId),
       getEngagementMetricsInternal(userId),
@@ -884,16 +884,15 @@ async function generateOptimizationSuggestions(
 // ROYAL ADVANCED ANALYTICS
 // ============================================================================
 
-export const getRoyalAdvancedAnalytics = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getRoyalAdvancedAnalytics = functions.https.onCall(async (request) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Verify Royal status
     const performanceLevel = await getPerformanceLevelInternal(userId);
@@ -969,13 +968,14 @@ async function getRoyalAdvancedAnalyticsInternal(
 // SUGGESTION ACTIONS
 // ============================================================================
 
-export const dismissSuggestion = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const dismissSuggestion = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { suggestionId } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   await db
     .collection('dismissed_suggestions')
@@ -989,13 +989,14 @@ export const dismissSuggestion = functions.https.onCall(async (data, context) =>
   return { success: true };
 });
 
-export const actOnSuggestion = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const actOnSuggestion = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { suggestionId } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   await db
     .collection('suggestion_actions')

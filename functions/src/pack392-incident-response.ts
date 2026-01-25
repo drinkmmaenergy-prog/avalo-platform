@@ -648,8 +648,9 @@ async function calculateResponseImpact(storeId: string, actions: ResponseAction[
 
 export const pack392_getIncidentResponse = functions
   .https
-  .onCall(async (data, context) => {
-    if (!context.auth?.token.admin) {
+  .onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth?.token.admin) {
       throw new functions.https.HttpsError('permission-denied', 'Admin required');
     }
 
@@ -665,8 +666,9 @@ export const pack392_getIncidentResponse = functions
 
 export const pack392_resolveIncident = functions
   .https
-  .onCall(async (data, context) => {
-    if (!context.auth?.token.admin) {
+  .onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth?.token.admin) {
       throw new functions.https.HttpsError('permission-denied', 'Admin required');
     }
 
@@ -677,7 +679,7 @@ export const pack392_resolveIncident = functions
       status: 'RESOLVED',
       resolution,
       resolvedAt: admin.firestore.Timestamp.now(),
-      resolvedBy: context.auth.uid
+      resolvedBy: request.auth.uid
     });
     
     // Find and update response
@@ -699,8 +701,9 @@ export const pack392_resolveIncident = functions
 
 export const pack392_disableSafeMode = functions
   .https
-  .onCall(async (data, context) => {
-    if (!context.auth?.token.admin) {
+  .onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth?.token.admin) {
       throw new functions.https.HttpsError('permission-denied', 'Admin required');
     }
 
@@ -709,14 +712,14 @@ export const pack392_disableSafeMode = functions
     await db.collection('safeModeConfig').doc(storeId).update({
       enabled: false,
       disabledAt: admin.firestore.Timestamp.now(),
-      disabledBy: context.auth.uid
+      disabledBy: request.auth.uid
     });
     
     // Unfreeze payouts
     await db.collection('payoutSettings').doc(storeId).update({
       frozen: false,
       unfrozenAt: admin.firestore.Timestamp.now(),
-      unfrozenBy: context.auth.uid
+      unfrozenBy: request.auth.uid
     });
 
     return { success: true };

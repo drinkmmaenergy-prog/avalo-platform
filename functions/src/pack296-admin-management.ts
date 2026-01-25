@@ -7,7 +7,7 @@ import * as functions from 'firebase-functions';
 import { db, generateId, serverTimestamp } from './init';
 import { logAdminAction } from './pack296-audit-helpers';
 import type { AdminUser, AdminRole } from './types/audit.types';
-import { HttpsError, auth, onCall } from './runtime';
+import { HttpsError, auth, onCall , CallableRequest} from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -16,12 +16,12 @@ import { HttpsError, auth, onCall } from './runtime';
 /**
  * Check if requesting user is a SUPERADMIN
  */
-async function requireSuperAdmin(context: functions.https.CallableContext): Promise<string> {
-  if (!context.auth) {
+async function requireSuperAdmin(request: CallableRequest<any>): Promise<string> {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
-  const adminId = context.auth.uid;
+  const adminId = request.auth.uid;
   const adminDoc = await db.collection('adminUsers').doc(adminId).get();
 
   if (!adminDoc.exists) {
@@ -45,14 +45,14 @@ async function requireSuperAdmin(context: functions.https.CallableContext): Prom
  * Check if user is an admin with minimum role
  */
 async function requireMinimumRole(
-  context: functions.https.CallableContext,
+  request: CallableRequest<any>,
   minRole: AdminRole
 ): Promise<{ adminId: string; role: AdminRole }> {
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
-  const adminId = context.auth.uid;
+  const adminId = request.auth.uid;
   const adminDoc = await db.collection('adminUsers').doc(adminId).get();
 
   if (!adminDoc.exists) {
@@ -89,9 +89,9 @@ async function requireMinimumRole(
 /**
  * Create a new admin user (SUPERADMIN only)
  */
-export const admin_createAdmin = functions.https.onCall(
-  async (data: { email: string; role: AdminRole; permissions?: any[] }, context) => {
-    const superAdminId = await requireSuperAdmin(context);
+export const admin_createAdmin = functions.https.onCall(async (request) => {
+  const data = request.data;
+    const superAdminId = await requireSuperAdmin(request);
 
     try {
       const { email, role, permissions = [] } = data;
@@ -146,9 +146,9 @@ export const admin_createAdmin = functions.https.onCall(
 /**
  * Update admin user role or permissions (SUPERADMIN only)
  */
-export const admin_updateAdmin = functions.https.onCall(
-  async (data: { adminId: string; role?: AdminRole; permissions?: any[]; disabled?: boolean }, context) => {
-    const superAdminId = await requireSuperAdmin(context);
+export const admin_updateAdmin = functions.https.onCall(async (request) => {
+  const data = request.data;
+    const superAdminId = await requireSuperAdmin(request);
 
     try {
       const { adminId, role, permissions, disabled } = data;
@@ -215,9 +215,9 @@ export const admin_updateAdmin = functions.https.onCall(
 /**
  * Delete admin user (SUPERADMIN only)
  */
-export const admin_deleteAdmin = functions.https.onCall(
-  async (data: { adminId: string }, context) => {
-    const superAdminId = await requireSuperAdmin(context);
+export const admin_deleteAdmin = functions.https.onCall(async (request) => {
+  const data = request.data;
+    const superAdminId = await requireSuperAdmin(request);
 
     try {
       const { adminId } = data;
@@ -262,8 +262,9 @@ export const admin_deleteAdmin = functions.https.onCall(
 /**
  * List all admin users (SUPERADMIN only)
  */
-export const admin_listAdmins = functions.https.onCall(async (data, context) => {
-  await requireSuperAdmin(context);
+export const admin_listAdmins = functions.https.onCall(async (request) => {
+  const data = request.data;
+  await requireSuperAdmin(request);
 
   try {
     const adminsSnapshot = await db.collection('adminUsers').orderBy('createdAt', 'desc').get();
@@ -294,7 +295,8 @@ export const admin_listAdmins = functions.https.onCall(async (data, context) => 
 /**
  * Get current admin profile
  */
-export const admin_getProfile = functions.https.onCall(async (data, context) => {
+export const admin_getProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { adminId } = await requireMinimumRole(context, 'VIEWER');
 
   try {

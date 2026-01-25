@@ -262,7 +262,7 @@ async function checkMonitoring(): Promise<'ENABLED' | 'DISABLED'> {
 /**
  * Callable version of launch check (admin only)
  */
-export const launchCheckCallable = functions.https.onCall(async (data, context) => {
+export const launchCheckCallable = functions.https.onCall(async (request) => {
   // Optional: Add admin authentication here
   
   try {

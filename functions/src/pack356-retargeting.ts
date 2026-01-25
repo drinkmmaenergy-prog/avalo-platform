@@ -327,14 +327,14 @@ async function sendRetargetingEmail(
 /**
  * Admin: Get retargeting audiences
  */
-export const getRetargetingAudiences = functions.https.onCall(
-  async (data, context) => {
+export const getRetargetingAudiences = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     if (userDoc.data()?.role !== "admin") {
       throw new functions.https.HttpsError("permission-denied", "Admin access required");
     }
@@ -360,14 +360,14 @@ export const getRetargetingAudiences = functions.https.onCall(
 /**
  * Admin: Export audience for ad platform
  */
-export const exportRetargetingAudience = functions.https.onCall(
-  async (data: { audienceType: RetargetingAudienceType; platform: string }, context) => {
+export const exportRetargetingAudience = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     if (userDoc.data()?.role !== "admin") {
       throw new functions.https.HttpsError("permission-denied", "Admin access required");
     }

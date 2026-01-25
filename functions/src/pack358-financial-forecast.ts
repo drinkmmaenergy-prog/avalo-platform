@@ -496,9 +496,10 @@ export const forecastRevenueNext12Months = functions
  */
 export const generateForecastOnDemand = functions
   .region('europe-west1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can generate forecasts on demand'
@@ -528,9 +529,10 @@ export const generateForecastOnDemand = functions
  */
 export const getLatestForecast = functions
   .region('europe-west1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can view forecasts'

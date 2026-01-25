@@ -275,14 +275,15 @@ export async function recordRestoreMetadata(
 /**
  * Get backup strategy documentation (admin only)
  */
-export const admin_getBackupStrategy = functions.https.onCall(async (data, context) => {
+export const admin_getBackupStrategy = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
   // Check admin privileges
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -296,14 +297,15 @@ export const admin_getBackupStrategy = functions.https.onCall(async (data, conte
 /**
  * Get backup history (admin only)
  */
-export const admin_getBackupHistory = functions.https.onCall(async (data, context) => {
+export const admin_getBackupHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
   // Check admin privileges
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -328,14 +330,15 @@ export const admin_getBackupHistory = functions.https.onCall(async (data, contex
 /**
  * Validate backup integrity (admin only)
  */
-export const admin_validateBackupIntegrity = functions.https.onCall(async (data, context) => {
+export const admin_validateBackupIntegrity = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
   // Check admin privileges
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }

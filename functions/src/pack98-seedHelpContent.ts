@@ -13,14 +13,15 @@ const db = admin.firestore();
  * Seed initial help categories and placeholder articles
  * Should be called once during initial setup
  */
-export const seedHelpContent = functions.https.onCall(async (data, context) => {
+export const seedHelpContent = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Check authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   // TODO: Add admin role check in production
-  // const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  // const userDoc = await db.collection('users').doc(request.auth.uid).get();
   // if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
   //   throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   // }

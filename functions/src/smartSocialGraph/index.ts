@@ -39,21 +39,18 @@ const logger = {
  * Get personalized discovery feed
  * Multi-mode, interest-driven, NO matchmaking bias
  */
-export const getSmartDiscoveryFeed = functions.https.onCall(
-  async (
-    data: SmartSocialGraphRequest,
-    context: functions.https.CallableContext
-  ): Promise<SmartSocialGraphResponse> => {
+export const getSmartDiscoveryFeed = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Validate authentication
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
       
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       
       // Validate request
       if (!data.mode) {
@@ -102,20 +99,17 @@ export const getSmartDiscoveryFeed = functions.https.onCall(
  * Switch discovery mode
  * User-controlled personalization
  */
-export const switchDiscoveryMode = functions.https.onCall(
-  async (
-    data: { mode: DiscoveryMode },
-    context: functions.https.CallableContext
-  ): Promise<{ success: boolean; mode: DiscoveryMode }> => {
+export const switchDiscoveryMode = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
       
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { mode } = data;
       
       if (!mode) {
@@ -169,24 +163,17 @@ export const switchDiscoveryMode = functions.https.onCall(
  * Track content viewing to update interest vector
  * Called when user views/completes content
  */
-export const trackContentView = functions.https.onCall(
-  async (
-    data: {
-      category: string;
-      sessionDurationSec: number;
-      completed: boolean;
-    },
-    context: functions.https.CallableContext
-  ): Promise<{ success: boolean }> => {
+export const trackContentView = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
       
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { category, sessionDurationSec, completed } = data;
       
       if (!category || sessionDurationSec === undefined) {
@@ -225,20 +212,17 @@ export const trackContentView = functions.https.onCall(
 /**
  * Get recommendations for a specific topic
  */
-export const getTopicBasedRecommendations = functions.https.onCall(
-  async (
-    data: { topic: string; limit?: number },
-    context: functions.https.CallableContext
-  ): Promise<{ items: CreatorCard[] }> => {
+export const getTopicBasedRecommendations = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
       
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { topic, limit = 10 } = data;
       
       if (!topic) {
@@ -271,20 +255,17 @@ export const getTopicBasedRecommendations = functions.https.onCall(
 /**
  * Get follow recommendations (interest-aligned only)
  */
-export const getEthicalFollowRecommendations = functions.https.onCall(
-  async (
-    data: { limit?: number },
-    context: functions.https.CallableContext
-  ): Promise<{ items: CreatorCard[] }> => {
+export const getEthicalFollowRecommendations = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
       
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { limit = 10 } = data;
       
       logger.info(`Getting follow recommendations for user ${userId}`);
@@ -315,20 +296,17 @@ export const getEthicalFollowRecommendations = functions.https.onCall(
  * Manually refresh creator relevance score
  * For creators who want to update their discovery profile
  */
-export const refreshCreatorScore = functions.https.onCall(
-  async (
-    data: { creatorId?: string },
-    context: functions.https.CallableContext
-  ): Promise<{ success: boolean; message: string }> => {
+export const refreshCreatorScore = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
       
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const creatorId = data.creatorId || userId;
       
       // Users can only refresh their own score
@@ -369,19 +347,10 @@ export const refreshCreatorScore = functions.https.onCall(
 /**
  * Scan content for flirt manipulation (Admin/Moderator only)
  */
-export const scanContentForFlirtManipulation = functions.https.onCall(
-  async (
-    data: {
-      contentId: string;
-      creatorId: string;
-      caption?: string;
-      title?: string;
-      thumbnailUrl?: string;
-    },
-    context: functions.https.CallableContext
-  ): Promise<{ flags: any; actionTaken: string }> => {
+export const scanContentForFlirtManipulation = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
@@ -390,8 +359,8 @@ export const scanContentForFlirtManipulation = functions.https.onCall(
       
       // Check for admin/moderator role
       // This would integrate with your existing admin system
-      const isModerator = context.auth.token?.roles?.moderator || false;
-      const isAdmin = context.auth.token?.roles?.admin || false;
+      const isModerator = request.auth.token?.roles?.moderator || false;
+      const isAdmin = request.auth.token?.roles?.admin || false;
       
       if (!isModerator && !isAdmin) {
         throw new functions.https.HttpsError(
@@ -444,20 +413,16 @@ export const scanContentForFlirtManipulation = functions.https.onCall(
 /**
  * Get shadow density statistics (Admin only)
  */
-export const getShadowDensityStats_Admin = functions.https.onCall(
-  async (
-    data: {},
-    context: functions.https.CallableContext
-  ): Promise<any> => {
+export const getShadowDensityStats_Admin = functions.https.onCall(async (request) => {
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
       
-      const isAdmin = context.auth.token?.roles?.admin || false;
+      const isAdmin = request.auth.token?.roles?.admin || false;
       
       if (!isAdmin) {
         throw new functions.https.HttpsError(

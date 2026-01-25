@@ -78,8 +78,9 @@ interface RegulatoryIncident {
 /**
  * Open regulatory incident
  */
-export const pack388_openRegulatoryIncident = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_openRegulatoryIncident = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin must be authenticated');
   }
 
@@ -280,8 +281,9 @@ export const pack388_executeFreezeActions = async (data: {
 /**
  * Generate legal report
  */
-export const pack388_generateLegalReport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_generateLegalReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin must be authenticated');
   }
 
@@ -322,7 +324,7 @@ export const pack388_generateLegalReport = functions.https.onCall(async (data, c
       incidentId,
       reportType,
       generatedAt: admin.firestore.Timestamp.now(),
-      generatedBy: context.auth.uid,
+      generatedBy: request.auth.uid,
       data: report
     });
 
@@ -502,8 +504,9 @@ async function exportKYCRecords(incidentId: string, userIds: string[]): Promise<
 /**
  * Update incident status
  */
-export const pack388_updateIncidentStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_updateIncidentStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin must be authenticated');
   }
 
@@ -520,7 +523,7 @@ export const pack388_updateIncidentStatus = functions.https.onCall(async (data, 
     const updates: any = {
       status,
       updatedAt: admin.firestore.Timestamp.now(),
-      updatedBy: context.auth.uid
+      updatedBy: request.auth.uid
     };
 
     if (status === IncidentStatus.RESOLVED) {
@@ -536,7 +539,7 @@ export const pack388_updateIncidentStatus = functions.https.onCall(async (data, 
       from: incidentDoc.data()?.status,
       to: status,
       notes,
-      createdBy: context.auth.uid,
+      createdBy: request.auth.uid,
       createdAt: admin.firestore.Timestamp.now()
     });
 
@@ -554,7 +557,8 @@ export const pack388_updateIncidentStatus = functions.https.onCall(async (data, 
 /**
  * Get jurisdiction compliance requirements
  */
-export const pack388_getJurisdictionRequirements = functions.https.onCall(async (data, context) => {
+export const pack388_getJurisdictionRequirements = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { countryCode } = data;
 
   try {

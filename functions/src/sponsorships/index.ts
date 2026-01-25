@@ -22,12 +22,13 @@ import {
 } from './types';
 import { SponsorshipSafetyGuard, createSafetyCheck } from './safety';
 
-export const createSponsorship = functions.https.onCall(async (data: CreateSponsorshipOfferInput, context) => {
-  if (!context.auth) {
+export const createSponsorship = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   if (data.brandId !== userId) {
     throw new functions.https.HttpsError('permission-denied', 'Can only create sponsorships for own brand');
@@ -93,12 +94,13 @@ export const createSponsorship = functions.https.onCall(async (data: CreateSpons
   return { success: true, offerId };
 });
 
-export const applyToSponsorship = functions.https.onCall(async (data: ApplyToSponsorshipInput, context) => {
-  if (!context.auth) {
+export const applyToSponsorship = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   if (data.creatorId !== userId) {
     throw new functions.https.HttpsError('permission-denied', 'Can only apply as yourself');
@@ -162,15 +164,13 @@ export const applyToSponsorship = functions.https.onCall(async (data: ApplyToSpo
   return { success: true, applicationId };
 });
 
-export const approveSponsorshipCreator = functions.https.onCall(async (data: {
-  applicationId: string;
-  approved: boolean;
-}, context) => {
-  if (!context.auth) {
+export const approveSponsorshipCreator = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const applicationDoc = await db.collection('sponsorship_applications').doc(data.applicationId).get();
   if (!applicationDoc.exists) {
@@ -268,12 +268,13 @@ export const approveSponsorshipCreator = functions.https.onCall(async (data: {
   return { success: true, approved: true, contractId };
 });
 
-export const submitDeliverable = functions.https.onCall(async (data: SubmitDeliverableInput, context) => {
-  if (!context.auth) {
+export const submitDeliverable = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const contractDoc = await db.collection('sponsorship_contracts').doc(data.contractId).get();
   if (!contractDoc.exists) {
@@ -359,12 +360,13 @@ export const submitDeliverable = functions.https.onCall(async (data: SubmitDeliv
   return { success: true, deliverableId };
 });
 
-export const approveDeliverable = functions.https.onCall(async (data: ReviewDeliverableInput, context) => {
-  if (!context.auth) {
+export const approveDeliverable = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const deliverableDoc = await db.collection('sponsorship_deliverables').doc(data.deliverableId).get();
   if (!deliverableDoc.exists) {
@@ -449,14 +451,13 @@ async function releaseEscrowForContract(contractId: string): Promise<void> {
   });
 }
 
-export const releaseEscrowForSponsorship = functions.https.onCall(async (data: {
-  contractId: string;
-}, context) => {
-  if (!context.auth) {
+export const releaseEscrowForSponsorship = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const contractDoc = await db.collection('sponsorship_contracts').doc(data.contractId).get();
   if (!contractDoc.exists) {
@@ -487,12 +488,13 @@ export const releaseEscrowForSponsorship = functions.https.onCall(async (data: {
   return { success: true };
 });
 
-export const rateSponsorship = functions.https.onCall(async (data: RateSponsorshipInput, context) => {
-  if (!context.auth) {
+export const rateSponsorship = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   if (data.reviewerId !== userId) {
     throw new functions.https.HttpsError('permission-denied', 'Can only submit reviews as yourself');
@@ -565,14 +567,13 @@ export const rateSponsorship = functions.https.onCall(async (data: RateSponsorsh
   return { success: true, reviewId };
 });
 
-export const getSponsorshipAnalytics = functions.https.onCall(async (data: {
-  contractId: string;
-}, context) => {
-  if (!context.auth) {
+export const getSponsorshipAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const contractDoc = await db.collection('sponsorship_contracts').doc(data.contractId).get();
   if (!contractDoc.exists) {
@@ -637,17 +638,13 @@ export const getSponsorshipAnalytics = functions.https.onCall(async (data: {
   return analytics;
 });
 
-export const moderateSponsorship = functions.https.onCall(async (data: {
-  targetId: string;
-  targetType: 'offer' | 'contract' | 'deliverable' | 'review';
-  action: string;
-  reason?: string;
-}, context) => {
-  if (!context.auth) {
+export const moderateSponsorship = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userData = userDoc.data();
 
   if (!userData?.roles?.moderator && !userData?.roles?.admin) {
@@ -671,7 +668,7 @@ export const moderateSponsorship = functions.https.onCall(async (data: {
   const moderation: SponsorshipModeration = {
     targetId: data.targetId,
     targetType: data.targetType,
-    moderatorId: context.auth.uid,
+    moderatorId: request.auth.uid,
     action: data.action as any,
     reason: data.reason,
     escalationLevel: 1,
@@ -688,7 +685,7 @@ export const moderateSponsorship = functions.https.onCall(async (data: {
       status: 'rejected',
       'metadata.moderationAction': data.action,
       'metadata.moderatedAt': new Date(),
-      'metadata.moderatedBy': context.auth.uid
+      'metadata.moderatedBy': request.auth.uid
     });
   }
 

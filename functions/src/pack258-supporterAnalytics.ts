@@ -291,12 +291,13 @@ export const resetMonthlySpendingScheduled = functions.pubsub
 /**
  * Get supporter analytics (callable from client)
  */
-export const getSupporterAnalytics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getSupporterAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const analyticsDoc = await db
@@ -318,12 +319,13 @@ export const getSupporterAnalytics = functions.https.onCall(async (data, context
 /**
  * Get fan level with a specific creator (callable from client)
  */
-export const getFanLevel = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getFanLevel = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const supporterId = context.auth.uid;
+  const supporterId = request.auth.uid;
   const { creatorId } = data;
 
   if (!creatorId) {
@@ -351,12 +353,13 @@ export const getFanLevel = functions.https.onCall(async (data, context) => {
 /**
  * Mark notification as read (callable from client)
  */
-export const markNotificationRead = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const markNotificationRead = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { notificationId } = data;
 
   if (!notificationId) {

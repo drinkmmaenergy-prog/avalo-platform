@@ -49,13 +49,14 @@ interface PayoutRequest {
 /**
  * Apply launch payout safety filter
  */
-export const pack385_launchPayoutSafetyFilter = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_launchPayoutSafetyFilter = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { amount, currency, marketCode } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   if (!amount || !currency || !marketCode) {
     throw new functions.https.HttpsError('invalid-argument', 'Amount, currency, and market code required');
@@ -384,9 +385,10 @@ function getPayoutMessage(safetyChecks: PayoutRequest['safetyChecks'], releaseDa
  * Approve payout request
  * Admin-only function
  */
-export const pack385_approvePayoutRequest = functions.https.onCall(async (data, context) => {
+export const pack385_approvePayoutRequest = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin authentication required
-  if (!context.auth || !context.auth.token?.admin) {
+  if (!request.auth || !request.auth.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -411,7 +413,7 @@ export const pack385_approvePayoutRequest = functions.https.onCall(async (data, 
   await requestDoc.ref.update({
     status: 'APPROVED',
     approvedAt: admin.firestore.FieldValue.serverTimestamp(),
-    approvedBy: context.auth.uid,
+    approvedBy: request.auth.uid,
     adminNotes: notes || ''
   });
 
@@ -419,7 +421,7 @@ export const pack385_approvePayoutRequest = functions.https.onCall(async (data, 
   await db.collection('auditLogs').add({
     type: 'PAYOUT_APPROVED',
     severity: 'MEDIUM',
-    userId: context.auth.uid,
+    userId: request.auth.uid,
     data: {
       requestId,
       payoutUserId: request.userId,
@@ -436,9 +438,10 @@ export const pack385_approvePayoutRequest = functions.https.onCall(async (data, 
  * Reject payout request
  * Admin-only function
  */
-export const pack385_rejectPayoutRequest = functions.https.onCall(async (data, context) => {
+export const pack385_rejectPayoutRequest = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin authentication required
-  if (!context.auth || !context.auth.token?.admin) {
+  if (!request.auth || !request.auth.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -458,14 +461,14 @@ export const pack385_rejectPayoutRequest = functions.https.onCall(async (data, c
     status: 'REJECTED',
     rejectionReason: reason,
     rejectedAt: admin.firestore.FieldValue.serverTimestamp(),
-    rejectedBy: context.auth.uid
+    rejectedBy: request.auth.uid
   });
 
   // Log rejection
   await db.collection('auditLogs').add({
     type: 'PAYOUT_REJECTED',
     severity: 'MEDIUM',
-    userId: context.auth.uid,
+    userId: request.auth.uid,
     data: {
       requestId,
       reason

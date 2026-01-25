@@ -389,8 +389,9 @@ async function sendPayoutNotification(
 }
 
 // Verify payout method (callable function)
-export const verifyPayoutMethod = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const verifyPayoutMethod = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -423,7 +424,7 @@ export const verifyPayoutMethod = functions.https.onCall(async (data, context) =
 
     if (verified) {
       // Save verified payout method
-      await db.collection('creators').doc(context.auth.uid)
+      await db.collection('creators').doc(request.auth.uid)
         .collection('payoutMethods').add({
           type: method,
           details: methodDetails,
@@ -473,8 +474,9 @@ async function verifySWIFTAccount(details: any): Promise<boolean> {
 }
 
 // Cancel payout (callable function)
-export const cancelPayout = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const cancelPayout = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -493,7 +495,7 @@ export const cancelPayout = functions.https.onCall(async (data, context) => {
 
     const payout = payoutDoc.data() as PayoutRequest;
 
-    if (payout.creatorId !== context.auth.uid) {
+    if (payout.creatorId !== request.auth.uid) {
       throw new functions.https.HttpsError('permission-denied', 'Not authorized');
     }
 

@@ -518,12 +518,13 @@ export async function cleanupTestData(): Promise<void> {
 /**
  * Run full system stress test
  */
-export const admin_runStressTest = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const admin_runStressTest = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -577,12 +578,13 @@ export const admin_runStressTest = functions.https.onCall(async (data, context) 
 /**
  * Cleanup test data endpoint
  */
-export const admin_cleanupStressTestData = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const admin_cleanupStressTestData = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -603,12 +605,13 @@ export const admin_cleanupStressTestData = functions.https.onCall(async (data, c
 /**
  * Get stress test results
  */
-export const admin_getStressTestResults = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const admin_getStressTestResults = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || !['ADMIN', 'ENGINEER'].includes(adminDoc.data()?.role)) {
     throw new functions.https.HttpsError('permission-denied', 'Engineering access required');
   }

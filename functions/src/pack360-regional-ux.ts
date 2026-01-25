@@ -384,7 +384,8 @@ const COUNTRY_RULES_OVERRIDES: Record<string, Partial<RegionalUXRules>> = {
 };
 
 // Get regional UX rules for a country
-export const getRegionalUXRules = functions.https.onCall(async (data, context) => {
+export const getRegionalUXRules = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     const { country } = data;
     const db = admin.firestore();
@@ -420,13 +421,14 @@ export const getRegionalUXRules = functions.https.onCall(async (data, context) =
 });
 
 // Get user UX configuration
-export const getUserUXConfig = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getUserUXConfig = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   try {
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const db = admin.firestore();
     
     // Get user profile
@@ -472,14 +474,15 @@ export const getUserUXConfig = functions.https.onCall(async (data, context) => {
 });
 
 // Apply regional limits to user action
-export const checkRegionalLimit = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const checkRegionalLimit = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   try {
     const { action, value } = data; // action: 'swipe', 'discovery_radius', etc.
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const db = admin.firestore();
     
     // Get user data
@@ -554,8 +557,9 @@ export const checkRegionalLimit = functions.https.onCall(async (data, context) =
 });
 
 // Admin: Set regional UX override
-export const adminSetRegionalUXOverride = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminSetRegionalUXOverride = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -563,7 +567,7 @@ export const adminSetRegionalUXOverride = functions.https.onCall(async (data, co
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -574,7 +578,7 @@ export const adminSetRegionalUXOverride = functions.https.onCall(async (data, co
       country,
       ...overrides,
       reason: reason || 'Admin override',
-      updatedBy: context.auth.uid,
+      updatedBy: request.auth.uid,
       lastUpdated: Date.now()
     }, { merge: true });
     
@@ -586,8 +590,9 @@ export const adminSetRegionalUXOverride = functions.https.onCall(async (data, co
 });
 
 // Admin: Set user-specific UX override (e.g., VIP bypass)
-export const adminSetUserUXOverride = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminSetUserUXOverride = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -595,7 +600,7 @@ export const adminSetUserUXOverride = functions.https.onCall(async (data, contex
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -606,7 +611,7 @@ export const adminSetUserUXOverride = functions.https.onCall(async (data, contex
       userId,
       overrides,
       reason: reason || 'Admin override',
-      updatedBy: context.auth.uid,
+      updatedBy: request.auth.uid,
       lastUpdated: Date.now()
     }, { merge: true });
     
@@ -618,8 +623,9 @@ export const adminSetUserUXOverride = functions.https.onCall(async (data, contex
 });
 
 // Get all country rules (for admin dashboard)
-export const adminGetAllCountryRules = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminGetAllCountryRules = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -627,7 +633,7 @@ export const adminGetAllCountryRules = functions.https.onCall(async (data, conte
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }

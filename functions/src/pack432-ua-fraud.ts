@@ -65,8 +65,9 @@ export interface FraudBlock {
 // DEVICE FINGERPRINTING
 // ===========================
 
-export const captureDeviceFingerprint = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const captureDeviceFingerprint = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Auth required');
   }
 
@@ -81,7 +82,7 @@ export const captureDeviceFingerprint = functions.https.onCall(async (data, cont
     language
   } = data;
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Check if device is already fingerprinted
   const existingFP = await db.collection('ua_device_fingerprints')
@@ -585,8 +586,9 @@ async function getTimezoneFromIP(ipAddress: string): Promise<string | null> {
 // FRAUD REVIEW & RESOLUTION
 // ===========================
 
-export const reviewFraudSignal = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reviewFraudSignal = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -600,7 +602,7 @@ export const reviewFraudSignal = functions.https.onCall(async (data, context) =>
   await db.collection('ua_fraud_signals').doc(signalId).update({
     resolved: true,
     resolution,
-    resolvedBy: context.auth.uid,
+    resolvedBy: request.auth.uid,
     resolvedAt: admin.firestore.Timestamp.now()
   });
 
@@ -629,8 +631,9 @@ export const reviewFraudSignal = functions.https.onCall(async (data, context) =>
   return { success: true };
 });
 
-export const getFraudDashboard = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getFraudDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -682,7 +685,8 @@ export const getFraudDashboard = functions.https.onCall(async (data, context) =>
 // CHECK IF SOURCE IS BLOCKED
 // ===========================
 
-export const checkFraudBlock = functions.https.onCall(async (data, context) => {
+export const checkFraudBlock = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { type, value } = data;
 
   const blockSnap = await db.collection('ua_fraud_blocks')

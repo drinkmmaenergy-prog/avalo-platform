@@ -439,13 +439,14 @@ export const pack379_reviewVelocityGuard = functions.pubsub
 /**
  * Generates store dispute packets with legal references
  */
-export const pack379_storeDisputeGenerator = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack379_storeDisputeGenerator = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
   // Verify admin
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || !['admin', 'trust_team'].includes(userDoc.data()?.role)) {
     throw new functions.https.HttpsError('permission-denied', 'Must be admin or trust team');
   }
@@ -470,7 +471,7 @@ export const pack379_storeDisputeGenerator = functions.https.onCall(async (data,
       legalReferences: generateLegalReferences(platform)
     },
     generatedAt: admin.firestore.Timestamp.now(),
-    generatedBy: context.auth.uid,
+    generatedBy: request.auth.uid,
     status: 'draft'
   };
   
@@ -483,8 +484,9 @@ export const pack379_storeDisputeGenerator = functions.https.onCall(async (data,
 /**
  * Auto-submits dispute appeals to store APIs (when available)
  */
-export const pack379_storeAppealAutoSubmit = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack379_storeAppealAutoSubmit = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
@@ -503,13 +505,13 @@ export const pack379_storeAppealAutoSubmit = functions.https.onCall(async (data,
   await bundleDoc.ref.update({
     status: 'ready_for_submission',
     preparedAt: admin.firestore.Timestamp.now(),
-    preparedBy: context.auth.uid
+    preparedBy: request.auth.uid
   });
   
   // Log audit
   await logAuditEvent({
     eventType: 'dispute_prepared',
-    userId: context.auth.uid,
+    userId: request.auth.uid,
     metadata: { bundleId, platform: bundle.platform }
   });
   
@@ -722,8 +724,9 @@ async function generateASOOptimizations(platform: string, metrics: any): Promise
 /**
  * Keyword clustering engine for ASO
  */
-export const pack379_keywordClusteringEngine = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack379_keywordClusteringEngine = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
@@ -1069,8 +1072,8 @@ async function runComplianceChecks(): Promise<any[]> {
 /**
  * Preemptive risk alert system
  */
-export const pack379_preemptiveRiskAlert = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack379_preemptiveRiskAlert = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
@@ -1224,13 +1227,14 @@ async function triggerCrisisMode(type: string, metadata: any) {
 /**
  * Crisis reputation shield callable function
  */
-export const pack379_crisisReputationShield = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack379_crisisReputationShield = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
   // Verify admin
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Must be admin');
   }
@@ -1239,13 +1243,13 @@ export const pack379_crisisReputationShield = functions.https.onCall(async (data
   
   if (action === 'activate') {
     const result = await triggerCrisisMode('manual_activation', {
-      activatedBy: context.auth.uid,
+      activatedBy: request.auth.uid,
       reason: data.reason
     });
     return result;
   } else if (action === 'deactivate') {
     // Deactivate crisis mode
-    await deactivateCrisisMode(crisisId, context.auth.uid);
+    await deactivateCrisisMode(crisisId, request.auth.uid);
     return { success: true, message: 'Crisis mode deactivated' };
   }
   
@@ -1298,12 +1302,13 @@ async function deactivateCrisisMode(crisisId: string, adminId: string) {
 /**
  * Store-compliant review prompt system
  */
-export const pack379_storeSafeReviewTrigger = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack379_storeSafeReviewTrigger = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { platform, triggerEvent } = data;
   
   // Check if prompts are enabled
@@ -1385,12 +1390,13 @@ function getReviewPromptMessage(trigger: string): string {
 /**
  * Records when user completes review
  */
-export const pack379_recordReviewCompletion = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack379_recordReviewCompletion = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { platform, completed } = data;
   
   await db.collection('reviewPromptHistory').doc(userId).update({
@@ -1409,13 +1415,14 @@ export const pack379_recordReviewCompletion = functions.https.onCall(async (data
 /**
  * Generates executive reputation dashboard data
  */
-export const pack379_execReputationDashboard = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack379_execReputationDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
   // Verify admin
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || !['admin', 'executive'].includes(userDoc.data()?.role)) {
     throw new functions.https.HttpsError('permission-denied', 'Must be admin or executive');
   }

@@ -14,13 +14,14 @@ import { HttpsError, admin, auth, onCall } from './runtime';
 /**
  * Create Ad
  */
-export const createAd = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createAd = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    const ad = await AdEngine.createAd(context.auth.uid, {
+    const ad = await AdEngine.createAd(request.auth.uid, {
       type: data.type,
       countryScopes: data.countryScopes,
       media: data.media,
@@ -42,13 +43,14 @@ export const createAd = functions.https.onCall(async (data, context) => {
 /**
  * Update Ad
  */
-export const updateAd = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateAd = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    await AdEngine.updateAd(data.adId, context.auth.uid, data.updates);
+    await AdEngine.updateAd(data.adId, request.auth.uid, data.updates);
     return { success: true };
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -58,13 +60,14 @@ export const updateAd = functions.https.onCall(async (data, context) => {
 /**
  * Delete Ad
  */
-export const deleteAd = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const deleteAd = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    await AdEngine.deleteAd(data.adId, context.auth.uid);
+    await AdEngine.deleteAd(data.adId, request.auth.uid);
     return { success: true };
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -74,13 +77,14 @@ export const deleteAd = functions.https.onCall(async (data, context) => {
 /**
  * Activate Ad
  */
-export const activateAd = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const activateAd = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    await AdEngine.activateAd(data.adId, context.auth.uid);
+    await AdEngine.activateAd(data.adId, request.auth.uid);
     return { success: true };
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -90,13 +94,14 @@ export const activateAd = functions.https.onCall(async (data, context) => {
 /**
  * Pause Ad
  */
-export const pauseAd = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pauseAd = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    await AdEngine.pauseAd(data.adId, context.auth.uid);
+    await AdEngine.pauseAd(data.adId, request.auth.uid);
     return { success: true };
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -106,15 +111,16 @@ export const pauseAd = functions.https.onCall(async (data, context) => {
 /**
  * Report Ad
  */
-export const reportAd = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reportAd = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
     await AdEngine.reportAd(
       data.adId,
-      context.auth.uid,
+      request.auth.uid,
       data.reason,
       data.category,
       data.description
@@ -128,13 +134,14 @@ export const reportAd = functions.https.onCall(async (data, context) => {
 /**
  * Create Brand Campaign
  */
-export const createBrandCampaign = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createBrandCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    const campaign = await BrandCampaignEngine.createCampaign(context.auth.uid, {
+    const campaign = await BrandCampaignEngine.createCampaign(request.auth.uid, {
       brandName: data.brandName,
       startAt: new Date(data.startAt),
       endAt: new Date(data.endAt),
@@ -152,8 +159,9 @@ export const createBrandCampaign = functions.https.onCall(async (data, context) 
 /**
  * Add Ad to Campaign
  */
-export const addAdToCampaign = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const addAdToCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -161,7 +169,7 @@ export const addAdToCampaign = functions.https.onCall(async (data, context) => {
     await BrandCampaignEngine.addAdToCampaign(
       data.campaignId,
       data.adId,
-      context.auth.uid
+      request.auth.uid
     );
     return { success: true };
   } catch (error: any) {
@@ -172,13 +180,14 @@ export const addAdToCampaign = functions.https.onCall(async (data, context) => {
 /**
  * Activate Campaign
  */
-export const activateCampaign = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const activateCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    await BrandCampaignEngine.activateCampaign(data.campaignId, context.auth.uid);
+    await BrandCampaignEngine.activateCampaign(data.campaignId, request.auth.uid);
     return { success: true };
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -188,15 +197,16 @@ export const activateCampaign = functions.https.onCall(async (data, context) => 
 /**
  * Pause Campaign
  */
-export const pauseCampaign = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pauseCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
     await BrandCampaignEngine.pauseCampaign(
       data.campaignId,
-      context.auth.uid,
+      request.auth.uid,
       data.reason
     );
     return { success: true };
@@ -208,13 +218,14 @@ export const pauseCampaign = functions.https.onCall(async (data, context) => {
 /**
  * End Campaign
  */
-export const endCampaign = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const endCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    await BrandCampaignEngine.endCampaign(data.campaignId, context.auth.uid);
+    await BrandCampaignEngine.endCampaign(data.campaignId, request.auth.uid);
     return { success: true };
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -224,15 +235,16 @@ export const endCampaign = functions.https.onCall(async (data, context) => {
 /**
  * Get Campaign Analytics
  */
-export const getCampaignAnalytics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCampaignAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
     const analytics = await BrandCampaignEngine.getCampaignAnalytics(
       data.campaignId,
-      context.auth.uid
+      request.auth.uid
     );
     return analytics;
   } catch (error: any) {
@@ -243,14 +255,15 @@ export const getCampaignAnalytics = functions.https.onCall(async (data, context)
 /**
  * Get Ad for Feed
  */
-export const getAdForFeed = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getAdForFeed = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
     const ad = await AdPlacementEngine.getAdForFeed(
-      context.auth.uid,
+      request.auth.uid,
       data.countryCode,
       data.postPosition
     );
@@ -263,14 +276,15 @@ export const getAdForFeed = functions.https.onCall(async (data, context) => {
 /**
  * Get Ads for Discovery
  */
-export const getAdsForDiscovery = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getAdsForDiscovery = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
     const ads = await AdPlacementEngine.getAdsForDiscovery(
-      context.auth.uid,
+      request.auth.uid,
       data.countryCode,
       data.count || 3
     );
@@ -283,15 +297,16 @@ export const getAdsForDiscovery = functions.https.onCall(async (data, context) =
 /**
  * Record Ad Placement
  */
-export const recordAdPlacement = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const recordAdPlacement = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
     const placementId = await AdPlacementEngine.recordPlacement(
       data.adId,
-      context.auth.uid,
+      request.auth.uid,
       data.surface,
       data.position,
       data.countryCode
@@ -305,13 +320,14 @@ export const recordAdPlacement = functions.https.onCall(async (data, context) =>
 /**
  * Record Ad Click
  */
-export const recordAdClick = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const recordAdClick = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    await AdPlacementEngine.recordClick(data.placementId, context.auth.uid);
+    await AdPlacementEngine.recordClick(data.placementId, request.auth.uid);
     return { success: true };
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -321,15 +337,16 @@ export const recordAdClick = functions.https.onCall(async (data, context) => {
 /**
  * Record Ad View
  */
-export const recordAdView = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const recordAdView = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
     await AdPlacementEngine.recordView(
       data.placementId,
-      context.auth.uid,
+      request.auth.uid,
       data.viewDuration
     );
     return { success: true };
@@ -341,15 +358,16 @@ export const recordAdView = functions.https.onCall(async (data, context) => {
 /**
  * Record Ad Conversion
  */
-export const recordAdConversion = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const recordAdConversion = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
     await AdPlacementEngine.recordConversion(
       data.placementId,
-      context.auth.uid,
+      request.auth.uid,
       data.conversionType,
       data.value
     );
@@ -362,14 +380,15 @@ export const recordAdConversion = functions.https.onCall(async (data, context) =
 /**
  * Create Advertiser Account
  */
-export const createAdvertiserAccount = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createAdvertiserAccount = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
     const account = await AdEngine.createAdvertiserAccount(
-      context.auth.uid,
+      request.auth.uid,
       data.businessName,
       data.contactEmail
     );
@@ -382,8 +401,9 @@ export const createAdvertiserAccount = functions.https.onCall(async (data, conte
 /**
  * Add Tokens to Advertiser (Admin only)
  */
-export const addAdvertiserTokens = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const addAdvertiserTokens = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -395,7 +415,7 @@ export const addAdvertiserTokens = functions.https.onCall(async (data, context) 
       data.advertiserId,
       data.amount,
       data.reason || 'Admin credit',
-      context.auth.uid
+      request.auth.uid
     );
     return { success: true };
   } catch (error: any) {
@@ -406,14 +426,15 @@ export const addAdvertiserTokens = functions.https.onCall(async (data, context) 
 /**
  * Create Creator Sponsorship
  */
-export const createCreatorSponsorship = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createCreatorSponsorship = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
     const sponsorship = await SponsoredCreatorEngine.createSponsorship(
-      data.userId || context.auth.uid,
+      data.userId || request.auth.uid,
       {
         sponsorshipType: data.sponsorshipType,
         brandName: data.brandName,
@@ -437,13 +458,14 @@ export const createCreatorSponsorship = functions.https.onCall(async (data, cont
 /**
  * End Creator Sponsorship
  */
-export const endCreatorSponsorship = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const endCreatorSponsorship = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    await SponsoredCreatorEngine.endSponsorship(data.userId || context.auth.uid);
+    await SponsoredCreatorEngine.endSponsorship(data.userId || request.auth.uid);
     return { success: true };
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -453,14 +475,15 @@ export const endCreatorSponsorship = functions.https.onCall(async (data, context
 /**
  * Get Creator Analytics
  */
-export const getCreatorAnalytics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCreatorAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
     const analytics = await SponsoredCreatorEngine.getCreatorAnalytics(
-      data.userId || context.auth.uid
+      data.userId || request.auth.uid
     );
     return analytics;
   } catch (error: any) {
@@ -471,14 +494,15 @@ export const getCreatorAnalytics = functions.https.onCall(async (data, context) 
 /**
  * Request Creator Payout
  */
-export const requestCreatorPayout = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const requestCreatorPayout = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
     const amount = await SponsoredCreatorEngine.payoutEarnings(
-      context.auth.uid,
+      request.auth.uid,
       data.amount
     );
     return { success: true, amount };

@@ -81,9 +81,9 @@ interface CulturalSafetyCheck {
 /**
  * Detect the language of user input
  */
-export const detectUserLanguage = functions.https.onCall(
-  async (data: { text: string; userId: string }, context) => {
-    if (!context.auth) {
+export const detectUserLanguage = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -123,9 +123,9 @@ export const detectUserLanguage = functions.https.onCall(
 /**
  * Switch AI companion's active language
  */
-export const switchAiLanguage = functions.https.onCall(
-  async (data: { aiId: string; targetLanguage: string; userId: string }, context) => {
-    if (!context.auth) {
+export const switchAiLanguage = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -182,19 +182,9 @@ export const switchAiLanguage = functions.https.onCall(
 /**
  * Translate AI message with cultural safety checks
  */
-export const translateAiMessage = functions.https.onCall(
-  async (
-    data: {
-      text: string;
-      sourceLanguage: string;
-      targetLanguage: string;
-      aiId: string;
-      userId: string;
-      context?: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const translateAiMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -259,9 +249,9 @@ export const translateAiMessage = functions.https.onCall(
 /**
  * Check cultural safety of text
  */
-export const applyCulturalSafetyRules = functions.https.onCall(
-  async (data: { text: string; language: string; context?: string }, context) => {
-    if (!context.auth) {
+export const applyCulturalSafetyRules = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -280,18 +270,9 @@ export const applyCulturalSafetyRules = functions.https.onCall(
 /**
  * Resolve language conflict in code-switching scenarios
  */
-export const resolveLanguageConflictCase = functions.https.onCall(
-  async (
-    data: {
-      userId: string;
-      aiId: string;
-      detectedLanguages: string[];
-      userPreference?: string;
-      messageContext: string;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const resolveLanguageConflictCase = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 

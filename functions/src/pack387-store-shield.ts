@@ -12,18 +12,9 @@ const db = admin.firestore();
 /**
  * Store Crisis Shield - prevents review requests during crises
  */
-export const pack387_storeCrisisShield = functions.https.onCall(
-  async (
-    data: {
-      incidentId: string;
-      active: boolean;
-      geo?: string;
-      suppressReviewPrompts?: boolean;
-      suppressRatingRequests?: boolean;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const pack387_storeCrisisShield = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -37,7 +28,7 @@ export const pack387_storeCrisisShield = functions.https.onCall(
           suppressRatingRequests: data.suppressRatingRequests ?? true,
           geo: data.geo || 'GLOBAL',
           activatedAt: admin.firestore.Timestamp.now(),
-          activatedBy: context.auth.uid,
+          activatedBy: request.auth.uid,
         };
 
         const shieldRef = await db.collection('storeCrisisShields').add(shield);
@@ -46,7 +37,7 @@ export const pack387_storeCrisisShield = functions.https.onCall(
         await db.collection('crisisResponseLogs').add({
           incidentId: data.incidentId,
           actionType: 'STORE_SHIELD_ACTIVATED',
-          performedBy: context.auth.uid,
+          performedBy: request.auth.uid,
           timestamp: admin.firestore.Timestamp.now(),
           metadata: { shieldId: shieldRef.id, geo: data.geo },
         });
@@ -64,7 +55,7 @@ export const pack387_storeCrisisShield = functions.https.onCall(
           doc.ref.update({
             active: false,
             deactivatedAt: admin.firestore.Timestamp.now(),
-            deactivatedBy: context.auth.uid,
+            deactivatedBy: request.auth.uid,
           })
         );
 
@@ -74,7 +65,7 @@ export const pack387_storeCrisisShield = functions.https.onCall(
         await db.collection('crisisResponseLogs').add({
           incidentId: data.incidentId,
           actionType: 'STORE_SHIELD_DEACTIVATED',
-          performedBy: context.auth.uid,
+          performedBy: request.auth.uid,
           timestamp: admin.firestore.Timestamp.now(),
           metadata: { shieldCount: shields.size },
         });
@@ -91,9 +82,9 @@ export const pack387_storeCrisisShield = functions.https.onCall(
 /**
  * Check if review prompts should be suppressed for a user
  */
-export const pack387_shouldSuppressReviewPrompt = functions.https.onCall(
-  async (data: { userId: string; geo?: string }, context) => {
-    if (!context.auth) {
+export const pack387_shouldSuppressReviewPrompt = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -195,9 +186,9 @@ export const pack387_detectNegativeReviewClustering = functions.firestore
 /**
  * Store reply macros for common crisis scenarios
  */
-export const pack387_getStoreReplyMacro = functions.https.onCall(
-  async (data: { topic: 'safety' | 'fraud' | 'billing' | 'moderation' }, context) => {
-    if (!context.auth) {
+export const pack387_getStoreReplyMacro = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
