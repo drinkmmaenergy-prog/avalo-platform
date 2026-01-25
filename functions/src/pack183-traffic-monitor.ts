@@ -5,6 +5,7 @@
 
 import { db, serverTimestamp } from './init';
 import * as functions from 'firebase-functions';
+import { Timestamp, timestamp } from './runtime';
 
 export interface LoadMetrics {
   timestamp: FirebaseFirestore.Timestamp;

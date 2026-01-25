@@ -6,6 +6,7 @@
  */
 
 import { NSFWDetectionResult, NSFWCategory, ForbiddenRecruitmentPattern, FORBIDDEN_PATTERNS } from '../types/ambassador.types';
+import { timestamp } from '../runtime';
 
 /**
  * Detect NSFW content in text

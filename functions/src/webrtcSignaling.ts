@@ -11,6 +11,9 @@
 
 import { HttpsError } from 'firebase-functions/v2/https';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { admin, auth, functions, getFirestore, increment, logger, onCall, z } from './runtime';
+import { getFeatureFlag } from './featureFlags';
+
 ;
 ;
 ;
@@ -68,7 +71,7 @@ export const startCallV1 = onCall(
     }
 
     // Check feature flag
-    const enabled = await getFeatureFlag(uid, "voice_video_enabled", false);
+    const enabled = await getFeatureFlag(uid, "voice_video_enabled");
     if (!enabled) {
       throw new HttpsError("failed-precondition", "Voice/video not enabled");
     }

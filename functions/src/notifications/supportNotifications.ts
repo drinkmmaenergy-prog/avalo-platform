@@ -5,6 +5,7 @@
 
 import { db } from '../init';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from '../runtime';
 
 /**
  * Notification types for support system

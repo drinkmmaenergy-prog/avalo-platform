@@ -26,6 +26,7 @@ import {
   PayoutRequest,
   PayoutResponse,
 } from './types/pack277-wallet.types';
+import { admin, functions, onCall } from './runtime';
 
 // ============================================================================
 // TOKEN PACKS ENDPOINTS

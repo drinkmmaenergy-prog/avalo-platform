@@ -5,6 +5,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from '../runtime';
 
 /**
  * Subscription tier identifiers

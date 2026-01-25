@@ -11,6 +11,7 @@ import {
   DocumentType,
   VerificationProvider,
 } from './pack328a-identity-verification-types';
+import { auth } from './runtime';
 
 // ============================================================================
 // Base Provider (Abstract)

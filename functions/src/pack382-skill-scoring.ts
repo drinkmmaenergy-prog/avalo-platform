@@ -11,6 +11,7 @@ import {
   CalculateSkillScoreInput,
   CalculateSkillScoreOutput,
 } from './types/pack382-types';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 const db = getFirestore();
 

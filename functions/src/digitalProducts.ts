@@ -23,6 +23,7 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db, storage, generateId, increment, serverTimestamp } from './init';
 import * as crypto from 'crypto';
 import * as logger from 'firebase-functions/logger';
+import { admin, auth, functions, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES

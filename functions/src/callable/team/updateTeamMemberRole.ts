@@ -10,6 +10,7 @@ import { TeamRole, ROLE_PERMISSIONS } from '../../types/team';
 import { logTeamActivity } from './utils/activityLogger';
 import { verifyTwoFactor } from './utils/twoFactorVerification';
 import { requireTwoFactorForRole } from './utils/twoFactorVerification';
+import { FieldValue, HttpsError, auth, db, onCall, serverTimestamp } from '../../runtime';
 
 interface UpdateTeamMemberRoleRequest {
   membershipId: string;

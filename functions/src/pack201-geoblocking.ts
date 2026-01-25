@@ -13,6 +13,7 @@ import {
   GeoblockCheck,
 } from './types/pack201-compliance.types';
 import { getRegionPolicy } from './pack122-region-policy';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // GEO-BLOCKING RULES MANAGEMENT

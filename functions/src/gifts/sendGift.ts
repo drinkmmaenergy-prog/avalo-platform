@@ -8,6 +8,7 @@ import * as functions from 'firebase-functions';
 import { v4 as uuidv4 } from 'uuid';
 import { db, admin, serverTimestamp, increment } from '../init';
 import { recordGiftEarning } from '../earningsIntegration';
+import { FieldValue, HttpsError, auth, onCall, timestamp } from '../runtime';
 
 const FieldValue = { serverTimestamp, increment };
 

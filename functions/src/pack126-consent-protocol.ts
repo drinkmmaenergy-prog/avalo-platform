@@ -15,6 +15,7 @@ import {
   ConsentCheckResult,
   SafetyAuditLog,
 } from './types/pack126-types';
+import { admin, arrayRemove, arrayUnion, timestamp } from './runtime';
 
 const CONSENT_COLLECTION = 'user_consent_records';
 const SAFETY_AUDIT_COLLECTION = 'safety_audit_logs';

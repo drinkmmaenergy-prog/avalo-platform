@@ -27,6 +27,7 @@
 ;
 ;
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { admin, functions, getFirestore, logger, serverTimestamp, timestamp } from './runtime';
 ;
 
 const db = getFirestore();

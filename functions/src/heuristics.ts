@@ -10,6 +10,7 @@
  */
 
 import { Timestamp } from "firebase-admin/firestore";
+import { admin } from './runtime';
 
 /**
  * Risk levels for content/user assessment

@@ -33,6 +33,7 @@ import {
   CreatorCapability,
   CreatorGender,
 } from './pack354-influencer-service';
+import { admin, auth, functions } from './runtime';
 
 const db = getFirestore();
 

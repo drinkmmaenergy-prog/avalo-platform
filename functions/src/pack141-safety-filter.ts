@@ -20,6 +20,7 @@ import {
   WELLNESS_TRIGGER_PHRASES,
   WellnessEscalation,
 } from './types/pack141-types';
+import { functions, timestamp } from './runtime';
 
 // ============================================================================
 // SAFETY FILTER ENGINE

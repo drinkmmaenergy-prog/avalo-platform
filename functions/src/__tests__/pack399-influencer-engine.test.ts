@@ -6,6 +6,7 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions-test';
+import { Timestamp, auth, db } from '../runtime';
 
 // Initialize test environment
 const test = functions({

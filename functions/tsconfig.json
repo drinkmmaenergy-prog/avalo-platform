@@ -19,8 +19,7 @@
     "isolatedModules": false
   },
   "include": [
-    "src/index.ts",
-    "src/init.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",

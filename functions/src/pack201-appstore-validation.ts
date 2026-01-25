@@ -13,6 +13,7 @@ import {
   ValidationIssue,
   Platform,
 } from './types/pack201-compliance.types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // APP STORE VALIDATION

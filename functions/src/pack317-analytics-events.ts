@@ -11,6 +11,7 @@
 import { db, serverTimestamp, generateId, increment } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logBusinessEvent, incrementMetric } from './pack90-logging';
+import { admin } from './runtime';
 
 // ============================================================================
 // ANALYTICS EVENT TYPES

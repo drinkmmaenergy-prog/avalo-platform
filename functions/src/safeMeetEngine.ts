@@ -36,6 +36,7 @@ import {
   isEmergencyRegionSupported,
 } from './config/safeMeet.js';
 
+
 // Simple logger
 const logger = {
   info: (..._args: any[]) => {},

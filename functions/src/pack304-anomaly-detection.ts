@@ -23,6 +23,7 @@ import {
   UserFinancialSummary,
   FINANCE_CONSTANTS,
 } from './types/pack304-admin-finance.types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // USER-LEVEL ANOMALY DETECTION

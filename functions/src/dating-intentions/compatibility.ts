@@ -12,6 +12,7 @@ import {
   BADGE_COMPATIBILITY,
   BADGE_METADATA,
 } from './types';
+import { admin } from '../runtime';
 
 /**
  * Calculate compatibility score between two users based on their dating intentions

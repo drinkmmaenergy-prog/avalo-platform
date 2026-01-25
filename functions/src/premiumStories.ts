@@ -11,6 +11,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { logger } from 'firebase-functions/v2';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { recordStoryEarning } from './earningsIntegration';
+import { functions, increment } from './runtime';
 
 // ============================================================================
 // CONFIGURATION

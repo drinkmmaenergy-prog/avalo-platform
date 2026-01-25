@@ -15,6 +15,7 @@
 
 import { db, serverTimestamp, increment, generateId } from './init.js';
 import { HttpsError } from 'firebase-functions/v2/https';
+import { functions } from './runtime';
 
 // ============================================================================
 // TYPES

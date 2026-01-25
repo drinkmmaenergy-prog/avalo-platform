@@ -13,6 +13,7 @@ import {
   TIER_REQUIREMENTS,
 } from './pack434-ambassador-types';
 import { ReferralTracking } from './pack434-ambassador-tracking';
+import { FieldValue, Timestamp, admin, arrayUnion, db, increment } from './runtime';
 
 // ============================================================================
 // COMPENSATION TYPES

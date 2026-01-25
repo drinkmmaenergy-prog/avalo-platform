@@ -22,6 +22,7 @@
 ;
 ;
 import { FieldValue } from 'firebase-admin/firestore';
+import { admin, getFirestore, logger, serverTimestamp } from './runtime';
 
 // ============================================================================
 // CONFIGURATION

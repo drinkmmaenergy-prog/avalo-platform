@@ -7,6 +7,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from './runtime';
 
 /**
  * Risk levels for fraud detection

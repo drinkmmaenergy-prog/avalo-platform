@@ -32,6 +32,7 @@ import {
   CRMActionType,
   SAFETY_RULES
 } from './pack266-supporter-crm-types.js';
+import { admin, db, timestamp } from './runtime';
 
 // ============================================================================
 // Constants & Configuration

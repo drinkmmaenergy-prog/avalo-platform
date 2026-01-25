@@ -18,6 +18,7 @@ import {
   FeatureFlagChangeEvent,
   CRITICAL_FEATURES,
 } from '../../shared/config/pack416-feature-flags';
+import { HttpsError, admin, auth, increment, onCall, onRequest, serverTimestamp, timestamp } from './runtime';
 
 const db = getFirestore();
 

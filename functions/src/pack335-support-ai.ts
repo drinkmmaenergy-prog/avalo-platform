@@ -11,6 +11,7 @@ import {
   SupportFaqArticle,
   SupportSystemSettings,
 } from "./pack335-support-types";
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 /**
  * AI Support Assistant (Stub implementation)

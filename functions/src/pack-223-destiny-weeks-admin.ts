@@ -12,6 +12,7 @@ import {
   type WeeklyThemeSlug 
 } from './pack-223-destiny-weeks.js';
 import type { Timestamp } from 'firebase-admin/firestore';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // THEME MANAGEMENT

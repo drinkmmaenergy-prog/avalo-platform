@@ -21,6 +21,7 @@ import {
   DISCOVERY_CONSTANTS,
   ProfileSearchIndex,
 } from './pack294-discovery-types';
+import { admin, functions, serverTimestamp, timestamp } from './runtime';
 
 const db = getFirestore();
 

@@ -28,6 +28,7 @@ import {
   REVENUE_CATEGORY_MAPPING,
 } from './types/tax.types';
 import { getEarningsSummaryWithTax } from './tax-treasury-integration';
+import { admin, functions, onCall } from './runtime';
 
 // ============================================================================
 // DOCUMENT NUMBER GENERATION

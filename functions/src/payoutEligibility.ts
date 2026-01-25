@@ -5,6 +5,8 @@
  * Integrates with PACK 55 (AML/KYC) and PACK 54 (Enforcement).
  */
 
+import { functions } from './runtime';
+
 export interface PayoutEligibilityContext {
   ageVerified: boolean;
   enforcement: {

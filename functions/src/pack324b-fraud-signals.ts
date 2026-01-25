@@ -18,6 +18,7 @@ import {
   FRAUD_CONFIG,
   DETECTION_THRESHOLDS,
 } from './pack324b-fraud-types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // CORE SIGNAL EMISSION

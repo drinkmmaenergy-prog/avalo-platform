@@ -15,6 +15,7 @@ import {
   KpiEventType,
   KpiEventContext,
 } from '../../shared/types/kpi';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp } from './runtime';
 
 // Initialize Firestore
 const db = admin.firestore();

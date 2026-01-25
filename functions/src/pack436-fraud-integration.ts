@@ -6,6 +6,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

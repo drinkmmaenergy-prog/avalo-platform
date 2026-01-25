@@ -33,6 +33,7 @@ import {
   getMyHelpRequests,
   resolveStalkingCase,
 } from './cyberstalkingReporting';
+import { HttpsError, Timestamp, auth, onCall } from './runtime';
 
 const db = admin.firestore();
 

@@ -3,6 +3,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { db, admin } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
+import { auth, functions, timestamp } from './runtime';
 
 interface EmotionalState {
   userId: string;

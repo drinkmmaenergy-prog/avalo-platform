@@ -8,6 +8,7 @@
  */
 
 import { evaluateTextForCsamRisk } from '../csamShield';
+import { functions } from '../runtime';
 
 describe('CSAM Shield - Text Detection', () => {
   

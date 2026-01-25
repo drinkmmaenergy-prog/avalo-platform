@@ -8,6 +8,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { generateLocalEncryptionKeys, destroyLocalEncryptionKeys } from './pack160-encryption-keys';
 import { logSecurityEvent } from './pack160-device-security';
 import * as crypto from 'crypto';
+import { storage, timestamp } from './runtime';
 
 export interface EncryptedMessage {
   id: string;

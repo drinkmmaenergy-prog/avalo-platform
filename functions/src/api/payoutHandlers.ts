@@ -11,6 +11,7 @@ import {
   requestPayout,
   getPayoutRequests,
 } from "../payouts";
+import { auth, functions } from '../runtime';
 
 /**
  * Get payout state for authenticated user.

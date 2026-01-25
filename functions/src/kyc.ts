@@ -32,6 +32,7 @@ import {
   KycStatus,
   DocumentStatus,
 } from "./types/kyc.types";
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

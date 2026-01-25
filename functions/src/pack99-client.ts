@@ -12,6 +12,7 @@ import {
   logFeatureExposure,
 } from './pack99-featureConfig';
 import { ClientFeatureConfigBundle, PlatformType } from './pack99-types';
+import { functions } from './runtime';
 
 // ============================================================================
 // WHITELISTED CONFIGS FOR MOBILE

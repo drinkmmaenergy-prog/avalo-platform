@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { ConsentVerification } from './types';
+import { FieldValue, db, serverTimestamp, timestamp } from '../runtime';
 
 export class ConsentVerificationEngine {
   private db: admin.firestore.Firestore;

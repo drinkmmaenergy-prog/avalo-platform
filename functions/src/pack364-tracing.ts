@@ -8,6 +8,7 @@
 
 import { v4 as uuidv4 } from "uuid";
 import * as admin from "firebase-admin";
+import { timestamp } from './runtime';
 
 /**
  * Trace context for correlating related operations

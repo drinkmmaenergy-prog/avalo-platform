@@ -18,6 +18,7 @@
 
 import { Timestamp } from 'firebase-admin/firestore';
 import { BusinessAuditEventType } from './pack105-types';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // MEMBERSHIP TIERS

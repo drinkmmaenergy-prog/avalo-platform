@@ -3,6 +3,8 @@
  * Focus on scoring algorithm, signal calculation, and risk dampening
  */
 
+import { timestamp } from './runtime';
+
 ;
 
 describe("Discovery Ranking v2 - Scoring Algorithm", () => {

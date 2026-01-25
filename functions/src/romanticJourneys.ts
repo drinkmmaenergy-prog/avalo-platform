@@ -16,6 +16,7 @@
 import { db, serverTimestamp, increment, generateId } from './init.js';
 import type { Timestamp } from 'firebase-admin/firestore';
 import { onJourneyEnded } from './pack-222-breakup-recovery-integration.js';
+import { admin } from './runtime';
 
 // ============================================================================
 // TYPES

@@ -9,6 +9,7 @@ import {
   FieldValue
 } from "firebase-admin/firestore";
 import { Gender, ChatStatus, TransactionType, VerificationStatus, BookingStatus } from './config.js';
+import { admin } from './runtime';
 
 // =======================================================
 // 🧍 USER PROFILE

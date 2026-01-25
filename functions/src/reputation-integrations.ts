@@ -7,6 +7,7 @@
 
 import { recordReputationEvent } from './reputation-system';
 import { ReputationEventType } from './types/reputation.types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // PACK 136: MENTORSHIP INTEGRATION

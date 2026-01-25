@@ -31,6 +31,7 @@ import {
 import { getTrustProfile } from './trustRiskEngine';
 import { getEnforcementState } from './enforcementEngine';
 import { resolveUserPolicyContext, canUserViewContent } from './pack91-policy-engine';
+import { admin } from './runtime';
 
 // ============================================================================
 // LOGGER

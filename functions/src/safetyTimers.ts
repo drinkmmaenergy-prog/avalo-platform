@@ -5,6 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
 
 const db = admin.firestore();
 

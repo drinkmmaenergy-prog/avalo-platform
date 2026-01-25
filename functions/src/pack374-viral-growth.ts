@@ -17,6 +17,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
 import * as crypto from 'crypto';
+import { FieldValue, HttpsError, Timestamp, increment, onCall } from './runtime';
 
 const db = admin.firestore();
 const auth = getAuth();

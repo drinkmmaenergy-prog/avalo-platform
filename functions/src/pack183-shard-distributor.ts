@@ -4,6 +4,7 @@
  */
 
 import { db, serverTimestamp } from './init';
+import { Timestamp, storage } from './runtime';
 
 export interface ShardConfig {
   module: 'CHAT' | 'AI' | 'FEED' | 'TOKENS' | 'EVENTS' | 'MEDIA';

@@ -22,6 +22,7 @@ import type {
   Pack328bCallFraudSignal,
 } from './pack328b-chat-session-timeouts-types.js';
 import { PACK_328B_TIMEOUTS } from './pack328b-chat-session-timeouts-types.js';
+import { HttpsError } from './runtime';
 
 // Simple error class
 class HttpsError extends Error {

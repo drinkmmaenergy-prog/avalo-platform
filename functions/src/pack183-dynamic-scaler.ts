@@ -6,6 +6,7 @@
 import { db, serverTimestamp } from './init';
 import * as functions from 'firebase-functions';
 import { LoadMetrics, TrafficAlert } from './pack183-traffic-monitor';
+import { Timestamp, timestamp } from './runtime';
 
 export interface ScalingDecision {
   component: 'CHAT' | 'AI' | 'FEED' | 'EVENTS' | 'PAYMENTS' | 'MEDIA';

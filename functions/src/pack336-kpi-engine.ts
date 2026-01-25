@@ -23,6 +23,7 @@ import type {
   KpiRevenueStreams,
   KpiAggregationOptions,
 } from './pack336-types.js';
+import { functions } from './runtime';
 
 const TOKEN_TO_PLN = 0.20; // 1 token = 0.20 PLN
 

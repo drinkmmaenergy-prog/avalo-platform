@@ -11,6 +11,7 @@ import { getUserEscrowBalance } from './pack147-escrow-engine';
 import { getUserFraudHistory } from './pack147-fraud-detection';
 import { db } from './init';
 import { RefundReason, DisputeOutcome, TransactionType } from './pack147-types';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // USER FUNCTIONS

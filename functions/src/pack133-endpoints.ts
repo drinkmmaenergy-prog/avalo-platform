@@ -35,6 +35,7 @@ import {
   AIStudioErrorCode,
 } from './pack133-types';
 import { Timestamp } from 'firebase-admin/firestore';
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 // ============================================================================
 // RATE LIMITING

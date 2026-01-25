@@ -11,6 +11,7 @@ import {
   ReviewRating,
   ReviewDetectionResult,
 } from './pack424-store-reviews.types';
+import { logger } from './runtime';
 
 const db = admin.firestore();
 

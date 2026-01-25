@@ -9,6 +9,7 @@
 
 import * as admin from "firebase-admin";
 import { logTelemetry } from "./pack364-telemetry";
+import { timestamp } from './runtime';
 
 /**
  * Alert severity levels

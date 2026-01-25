@@ -10,6 +10,7 @@
  */
 
 import { db, serverTimestamp, generateId, timestamp } from './init.js';
+import { Timestamp } from './runtime';
 
 type Timestamp = ReturnType<typeof timestamp.now>;
 

@@ -20,6 +20,7 @@ import {
   AdSafetyScanResult,
 } from './pack121-types';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // Safety Scanning Functions

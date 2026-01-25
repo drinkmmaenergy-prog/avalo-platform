@@ -9,6 +9,7 @@ import { RankingCalculator } from './ranking-calculator';
 import { RankingConfigResolver } from './config-resolver';
 import { ABTestManager } from './ab-test-manager';
 import { RankingMetrics, CreatorRankingScore } from './types';
+import { db } from '../runtime';
 
 export class RankingService {
   private configResolver: RankingConfigResolver;

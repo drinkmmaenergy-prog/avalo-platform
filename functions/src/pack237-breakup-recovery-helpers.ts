@@ -12,6 +12,7 @@ import type {
   BreakupSafetyIncident,
   RestartStage
 } from './pack237-breakup-recovery-types.js';
+import { functions } from './runtime';
 
 // ============================================================================
 // NOTIFICATION HELPERS

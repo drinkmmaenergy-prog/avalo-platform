@@ -6,6 +6,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from './runtime';
 
 // ============================================================================
 // FRAUD SIGNAL TYPES

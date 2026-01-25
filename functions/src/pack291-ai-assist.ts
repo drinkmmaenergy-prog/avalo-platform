@@ -42,6 +42,7 @@ import {
   GetProfileHealthResponse,
   AI_ASSIST_CONSTANTS,
 } from './types/pack291-ai-assist.types';
+import { admin, auth, functions } from './runtime';
 
 const db = getFirestore();
 

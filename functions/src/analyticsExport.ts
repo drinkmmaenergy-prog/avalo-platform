@@ -12,6 +12,7 @@
 
 ;
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, getFirestore, logger, onSchedule, serverTimestamp } from './runtime';
 // import { BigQuery } from "@google-cloud/bigquery"; // Requires @google-cloud/bigquery package
 // BigQuery placeholder - requires package installation
 class BigQuery {

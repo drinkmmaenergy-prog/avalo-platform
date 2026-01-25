@@ -13,6 +13,7 @@
 import { db, storage, auth } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
+import { HttpsError, admin, onCall, onRequest, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

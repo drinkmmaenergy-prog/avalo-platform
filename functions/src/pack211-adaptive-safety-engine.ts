@@ -28,6 +28,7 @@ import {
   AssessLocationSafetyRequest,
   LOCATION_CATEGORIES,
 } from './pack211-adaptive-safety-types';
+import { FieldValue, Timestamp, serverTimestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 

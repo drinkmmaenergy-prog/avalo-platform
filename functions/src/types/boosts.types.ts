@@ -3,6 +3,8 @@
  * Types and interfaces for visibility boost system
  */
 
+import { timestamp } from '../runtime';
+
 export enum BoostType {
   SPOTLIGHT = 'spotlight',
   SUPER_VISIBILITY = 'super_visibility',

@@ -1,3 +1,5 @@
+import { storage } from './runtime';
+
 ;
 ;
 /**

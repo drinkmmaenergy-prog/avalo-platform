@@ -19,6 +19,7 @@ import {
   ACTION_TO_FEATURE_MAP,
 } from './types/enforcement.types';
 import type { Timestamp } from 'firebase-admin/firestore';
+import { admin } from './runtime';
 
 // ========================================================================
 // CONSTANTS

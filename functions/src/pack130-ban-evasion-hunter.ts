@@ -15,6 +15,7 @@ import {
   DEFAULT_PATROL_CONFIG,
 } from './types/pack130-types';
 import { patrolLogEvent } from './pack130-patrol-engine';
+import { admin } from './runtime';
 
 const DEVICE_FINGERPRINT_COLLECTION = 'user_devices';
 const BAN_EVASION_COLLECTION = 'patrol_ban_evasion_records';

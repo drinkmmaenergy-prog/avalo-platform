@@ -5,6 +5,7 @@
 
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { db, serverTimestamp, generateId } from '../init';
+import { functions, timestamp } from '../runtime';
 
 /**
  * Periodic fraud pattern scan (runs daily)

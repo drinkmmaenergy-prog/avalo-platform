@@ -29,6 +29,7 @@ import {
   containsBlockedKeywords,
 } from './types/events.types';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { admin, auth, functions, timestamp } from './runtime';
 
 // Import from Trust & Risk Engine (PACK 85)
 interface TrustProfile {

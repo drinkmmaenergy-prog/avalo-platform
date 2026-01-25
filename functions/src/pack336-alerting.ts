@@ -14,6 +14,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp } from './init.js';
 import type { KpiAlert, AlertSeverity, AlertThresholds } from './pack336-types.js';
+import { HttpsError, auth, onCall } from './runtime';
 
 // Default alert thresholds
 const DEFAULT_THRESHOLDS: AlertThresholds = {

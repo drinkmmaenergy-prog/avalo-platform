@@ -9,6 +9,7 @@ import {
   DefenseEventType,
   EventSeverity,
 } from './pack429-store-defense.types';
+import { Timestamp } from './runtime';
 
 const db = admin.firestore();
 

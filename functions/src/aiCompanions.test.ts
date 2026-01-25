@@ -27,6 +27,7 @@ jest.mock("firebase-functions", () => ({
 ;
 ;
 import { AISubscription } from "./types.js";
+import { Timestamp, admin, db, functions, increment, onCall, serverTimestamp, timestamp } from './runtime';
 
 describe("AI Companions - Daily Limit Reset Logic", () => {
   beforeEach(() => {

@@ -15,6 +15,7 @@ import {
   handleSelfieTimeout,
   cancelBookingBeforeSelfie,
 } from './pack328c-selfie-verification-engine';
+import { auth, functions, timestamp } from './runtime';
 
 /**
  * Scheduled function to check for bookings that should start selfie verification

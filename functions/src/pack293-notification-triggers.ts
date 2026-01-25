@@ -8,6 +8,7 @@ import {
   NotificationPayload,
   NotificationContext,
 } from './pack293-notification-types';
+import { functions } from './runtime';
 
 // ============================================================================
 // MATCHING & DISCOVERY NOTIFICATIONS

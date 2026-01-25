@@ -17,6 +17,7 @@ import {
 } from '../types/support.types';
 import { aiSupportTriage } from './aiSupportTriage';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from '../runtime';
 
 /**
  * Support Service

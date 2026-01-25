@@ -10,6 +10,7 @@ import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions/v2';
 import { BiasCorrectedAnalytics } from './BiasCorrectedAnalytics';
 import { OfferExperimentOrchestrator } from './OfferExperimentOrchestrator';
+import { db, functions, timestamp } from '../runtime';
 
 export interface RolloutStage {
   percentage: number;

@@ -24,7 +24,8 @@ import type {
   SessionType,
   PanicContext,
   LocationData,
-} from '../../shared/src/types/safety';
+} from './types/safety';
+import { admin, arrayUnion, timestamp } from './runtime';
 
 const db = getFirestore();
 

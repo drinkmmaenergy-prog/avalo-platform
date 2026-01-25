@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { OfferType } from './dynamicOfferOrchestrator';
+import { FieldValue, Timestamp, db, serverTimestamp, timestamp } from '../runtime';
 
 export interface GuardrailConfig {
   minARPU: number; // Minimum Average Revenue Per User

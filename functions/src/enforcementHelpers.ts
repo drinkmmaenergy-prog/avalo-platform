@@ -6,6 +6,7 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 import { canUserPerformAction } from './enforcementEngine';
 import { ActionCode } from './types/enforcement.types';
+import { functions } from './runtime';
 
 // ========================================================================
 // ERROR CODES

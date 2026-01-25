@@ -15,6 +15,7 @@ import {
   LeaderboardBadge,
   MonthlySummary,
 } from './types/leaderboard.types';
+import { auth, functions } from './runtime';
 
 // ============================================================================
 // GET LEADERBOARD RANKINGS

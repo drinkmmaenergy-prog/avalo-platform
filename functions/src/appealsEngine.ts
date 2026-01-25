@@ -12,6 +12,7 @@
 
 import { db, serverTimestamp } from './init';
 import * as functions from 'firebase-functions';
+import { HttpsError, admin, auth } from './runtime';
 
 // ============================================================================
 // TYPES

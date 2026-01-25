@@ -1,4 +1,5 @@
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from '../runtime';
 
 export type MeetType = 'real_meet' | 'social_meet';
 export type MeetStatus = 'booked' | 'waiting' | 'completed' | 'cancelled' | 'dispute';

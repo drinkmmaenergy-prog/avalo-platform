@@ -20,6 +20,7 @@ import {
   AIStudioErrorCode,
 } from './pack133-types';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // SAFETY THRESHOLDS (NON-NEGOTIABLE)

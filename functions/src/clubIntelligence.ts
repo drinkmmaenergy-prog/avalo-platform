@@ -32,6 +32,7 @@ import {
   isValidRoleType,
   isForbiddenRoleType,
 } from './types/clubIntelligence';
+import { HttpsError, auth, onCall } from './runtime';
 
 // ============================================
 // CONTRIBUTION MANAGEMENT

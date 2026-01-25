@@ -23,6 +23,7 @@ import {
   getRecentScansSummary,
   PosterFormat,
 } from '../services/offline-presence';
+import { HttpsError, admin, auth, onCall } from '../runtime';
 
 /**
  * Generate QR profile for authenticated user

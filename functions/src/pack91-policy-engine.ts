@@ -30,6 +30,7 @@ import {
   MonetizationDenialReason,
   DEFAULT_GLOBAL_POLICY,
 } from './pack91-types';
+import { admin } from './runtime';
 
 // ============================================================================
 // POLICY RESOLUTION

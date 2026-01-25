@@ -8,6 +8,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { TeamPermission, ROLE_PERMISSIONS } from '../types/team';
+import { HttpsError, auth, db } from '../runtime';
 
 export interface TeamContext {
   isOwner: boolean;

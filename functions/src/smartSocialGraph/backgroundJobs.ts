@@ -19,6 +19,7 @@ import {
   identifyGuaranteedSlotCreators,
   grantGuaranteedSlots,
 } from './shadowDensityControl';
+import { admin, timestamp } from '../runtime';
 
 // ============================================================================
 // LOGGER

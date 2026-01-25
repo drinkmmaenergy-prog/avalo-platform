@@ -16,6 +16,7 @@
 
 import { getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/v2";
+import { admin, functions, timestamp, z } from '../runtime';
 
 const db = getFirestore();
 

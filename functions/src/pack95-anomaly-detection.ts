@@ -17,6 +17,7 @@ import {
   LoginAnomaly 
 } from './pack95-types';
 import { logger } from 'firebase-functions/v2';
+import { Timestamp, functions } from './runtime';
 
 // ============================================================================
 // CONFIGURATION

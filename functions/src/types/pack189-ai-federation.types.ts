@@ -1,3 +1,5 @@
+import { timestamp } from '../runtime';
+
 export interface AiSeed {
   id: string;
   ownerId: string;

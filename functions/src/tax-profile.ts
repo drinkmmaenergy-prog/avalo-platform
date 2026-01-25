@@ -23,6 +23,7 @@ import {
   TaxComplianceCheck,
   isValidEntityType,
 } from './types/tax.types';
+import { functions, onCall } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

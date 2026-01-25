@@ -4,6 +4,7 @@
  */
 
 import { triggerMediaSafetyScan, MediaSource } from './compliancePack55';
+import { admin } from './runtime';
 
 /**
  * Hook to call after media upload (from PACK 47)

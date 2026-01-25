@@ -17,6 +17,7 @@ import {
   SecondChanceSettings
 } from '../types/secondChance.types';
 import { selectSecondChanceTemplate } from '../services/secondChanceTemplates';
+import { HttpsError, auth, increment, onCall, timestamp } from '../runtime';
 
 /**
  * Main scheduled function - runs daily at 03:00 local time

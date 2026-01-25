@@ -9,6 +9,7 @@ import * as admin from 'firebase-admin';
 import { logTeamActivity } from './utils/activityLogger';
 import { checkMemberEligibility } from './utils/complianceCheck';
 import { requireTwoFactorForRole } from './utils/twoFactorVerification';
+import { FieldValue, HttpsError, auth, db, onCall, serverTimestamp } from '../../runtime';
 
 interface AcceptTeamInviteRequest {
   inviteToken: string;

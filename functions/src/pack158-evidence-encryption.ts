@@ -9,6 +9,7 @@ import * as crypto from 'crypto';
 import { db } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { SealedLegalEvidence } from './types/pack158-legal-evidence.types';
+import { admin, timestamp } from './runtime';
 
 const ENCRYPTION_ALGORITHM = 'aes-256-gcm';
 const KEY_LENGTH = 32;

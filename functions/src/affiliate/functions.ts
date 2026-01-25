@@ -23,6 +23,7 @@ import {
   PAYOUT_CONFIG,
 } from './types';
 import { detectFraud, checkPayoutEligibility } from './fraud-detection';
+import { admin, arrayUnion, functions, increment } from '../runtime';
 
 /**
  * Generate a unique affiliate code

@@ -31,6 +31,7 @@ import {
   SupporterSegment,
   SmartAlert
 } from './pack266-supporter-crm-types.js';
+import { admin, auth, functions, timestamp } from './runtime';
 
 const db = getFirestore();
 

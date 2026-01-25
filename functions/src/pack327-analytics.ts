@@ -8,6 +8,7 @@
 import { logger } from 'firebase-functions/v2';
 import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { admin, arrayUnion, auth, functions, increment } from './runtime';
 
 const db = getFirestore();
 

@@ -5,6 +5,7 @@
 
 import { db, admin } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
+import { timestamp } from './runtime';
 
 export interface DeviceSecurityProfile {
   userId: string;

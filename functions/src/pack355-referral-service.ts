@@ -15,6 +15,7 @@
 import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions';
 import * as crypto from 'crypto';
+import { FieldValue, Timestamp, arrayUnion, functions, increment, timestamp } from './runtime';
 
 const db = admin.firestore();
 

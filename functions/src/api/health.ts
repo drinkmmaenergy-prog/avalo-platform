@@ -9,6 +9,7 @@ import { initializeApp, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { getStorage } from 'firebase-admin/storage';
+import { admin, auth, db, onRequest, storage, timestamp } from '../runtime';
 
 // Initialize Firebase Admin if not already initialized
 if (getApps().length === 0) {

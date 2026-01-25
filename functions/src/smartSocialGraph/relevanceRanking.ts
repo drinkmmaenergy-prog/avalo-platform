@@ -15,6 +15,7 @@ import {
   DEFAULT_RANKING_WEIGHTS,
   FORBIDDEN_KEYWORDS,
 } from '../types/smartSocialGraph.types';
+import { admin, timestamp } from '../runtime';
 
 // ============================================================================
 // LOGGER

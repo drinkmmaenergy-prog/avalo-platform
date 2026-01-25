@@ -24,6 +24,7 @@ import type {
   DatingPreferences,
   MeetingOutcome,
 } from './pack211-adaptive-safety-types';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp } from './runtime';
 
 const db = admin.firestore();
 

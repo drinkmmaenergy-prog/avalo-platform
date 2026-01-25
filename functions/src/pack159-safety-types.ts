@@ -17,6 +17,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from './runtime';
 
 // ============================================================================
 // CONSENT STATE MACHINE

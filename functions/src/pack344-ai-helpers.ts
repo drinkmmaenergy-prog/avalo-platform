@@ -13,6 +13,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp } from './init.js';
+import { HttpsError, Timestamp, auth, onCall, timestamp, z } from './runtime';
 
 // Configuration
 const PACK344_CONFIG = {

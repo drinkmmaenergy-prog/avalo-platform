@@ -17,6 +17,7 @@ import {
   PolicyScope,
 } from './pack91-types';
 import { logBusinessEvent } from './pack90-logging';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // ADMIN VERIFICATION

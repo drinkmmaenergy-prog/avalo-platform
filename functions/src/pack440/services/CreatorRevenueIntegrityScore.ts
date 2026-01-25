@@ -13,6 +13,7 @@
 
 import * as admin from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
+import { db, timestamp } from '../../runtime';
 
 type Firestore = admin.firestore.Firestore;
 

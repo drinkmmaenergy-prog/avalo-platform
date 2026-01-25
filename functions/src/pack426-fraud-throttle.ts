@@ -11,6 +11,7 @@ import { https, logger } from 'firebase-functions/v2';
 import { getFirestore } from 'firebase-admin/firestore';
 import { Region } from './pack426-global-router';
 import { checkRateLimit, RateLimitAction } from './pack426-rate-limit';
+import { admin, auth, functions, onRequest, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

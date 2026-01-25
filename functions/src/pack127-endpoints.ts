@@ -55,6 +55,7 @@ import {
   sendExpiryReminders,
   getLicensingStats,
 } from './pack127-licensing-engine';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // FINGERPRINT ENDPOINTS

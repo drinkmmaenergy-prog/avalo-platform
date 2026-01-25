@@ -8,6 +8,7 @@
  */
 
 import type { Timestamp } from 'firebase-admin/firestore';
+import { admin } from './runtime';
 
 // ============================================================================
 // NORTH STAR METRIC

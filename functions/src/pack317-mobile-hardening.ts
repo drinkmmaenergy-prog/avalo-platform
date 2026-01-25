@@ -12,6 +12,8 @@
 // BUILD VERIFICATION
 // ============================================================================
 
+import { admin, storage } from './runtime';
+
 export interface MobileBuildInfo {
   isProduction: boolean;
   debugMode: boolean;

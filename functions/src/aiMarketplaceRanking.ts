@@ -13,6 +13,7 @@ import type {
   TrustLevel,
   RiskLevel
 } from './aiMarketplaceTypes.js';
+import { timestamp } from './runtime';
 
 /**
  * Calculate ranking score for an AI avatar

@@ -14,6 +14,7 @@ import {
   MitigationAction,
   MitigationType,
 } from './types/cyberstalking.types';
+import { Timestamp } from './runtime';
 
 const db = admin.firestore();
 

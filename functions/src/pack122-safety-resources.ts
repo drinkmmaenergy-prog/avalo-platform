@@ -7,6 +7,7 @@ import { db, timestamp as Timestamp } from './init';
 import { logger } from 'firebase-functions/v2';
 import { SafetyResource, CRISIS_RESOURCES_BY_COUNTRY } from './pack122-types';
 import { getRegionPolicy } from './pack122-region-policy';
+import { Timestamp, admin, functions } from './runtime';
 
 // ============================================================================
 // SAFETY RESOURCES RETRIEVAL

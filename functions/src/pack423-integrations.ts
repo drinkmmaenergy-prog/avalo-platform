@@ -8,6 +8,7 @@ import { UserRatingSummary } from '../../shared/types/pack423-ratings.types';
 import { getAggregatedUserRatings } from './pack423-ratings.service';
 import { isRecentDetractor } from './pack423-nps.service';
 
+
 const db = admin.firestore();
 
 /**

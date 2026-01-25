@@ -17,6 +17,7 @@ import {
 } from "./pack214-types";
 import { getMessageTemplate, validateMessageTone, personalizeTemplate } from "./pack214-templates";
 import { createNotification } from "./notificationHub";
+import { admin, increment, timestamp } from './runtime';
 
 const db = getFirestore();
 

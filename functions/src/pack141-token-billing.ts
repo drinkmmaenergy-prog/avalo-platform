@@ -14,6 +14,7 @@ import {
   AI_COMPANION_PRICING,
   UserCompanionSession,
 } from './types/pack141-types';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // TOKEN CHARGING

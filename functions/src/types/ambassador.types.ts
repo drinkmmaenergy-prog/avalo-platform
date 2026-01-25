@@ -5,6 +5,8 @@
  * No free tokens, no romantic recruitment, no sexualized marketing.
  */
 
+import { timestamp } from '../runtime';
+
 export interface Ambassador {
   id: string;
   userId: string;

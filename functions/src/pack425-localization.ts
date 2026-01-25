@@ -4,6 +4,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { Timestamp } from './runtime';
 
 export interface LocalizationBundle {
   languageCode: string;      // en, pl, es, de, pt-BR, etc.

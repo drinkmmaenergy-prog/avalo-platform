@@ -4,6 +4,7 @@
  */
 
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { admin, timestamp } from '../runtime';
 
 // ============================================================================
 // Risk Detection Types

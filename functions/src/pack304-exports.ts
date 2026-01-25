@@ -17,6 +17,7 @@ import {
   FINANCE_CONSTANTS,
 } from './types/pack304-admin-finance.types';
 import { getMonthlyAggregation } from './pack304-aggregation';
+import { admin, functions } from './runtime';
 
 const storage = new Storage();
 const BUCKET_NAME = process.env.FINANCE_EXPORT_BUCKET || 'avalo-finance-exports';

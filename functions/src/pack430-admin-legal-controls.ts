@@ -20,6 +20,7 @@ import AgeGateEnforcer, { AgeVerificationMethod } from './pack430-age-gate';
 import JurisdictionEngine from './pack430-jurisdiction-engine';
 import LegalConsentEngine, { ConsentType } from './pack430-legal-consent';
 import ContentAccessEngine from './pack430-content-access-engine';
+import { FieldValue, Timestamp, db, functions, serverTimestamp, timestamp } from './runtime';
 
 // ─────────────────────────────────────────────────────────────────
 // TYPES

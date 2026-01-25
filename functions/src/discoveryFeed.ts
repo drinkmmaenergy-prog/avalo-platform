@@ -10,6 +10,7 @@ import * as functions from 'firebase-functions';
 import { db, serverTimestamp } from './init';
 import { getUserRiskProfile } from './trustEngine';
 import { getRoyalState, RoyalTier } from './royalEngine';
+import { HttpsError, auth, onCall } from './runtime';
 
 // ============================================================================
 // TYPES

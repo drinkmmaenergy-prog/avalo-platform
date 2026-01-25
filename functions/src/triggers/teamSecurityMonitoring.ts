@@ -7,6 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { FieldValue, HttpsError, arrayUnion, auth, db, onCall, serverTimestamp, timestamp } from '../runtime';
 
 /**
  * Monitor team activity for suspicious patterns

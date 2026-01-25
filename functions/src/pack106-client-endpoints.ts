@@ -26,6 +26,7 @@ import {
   UserCurrencyPreference,
   CurrencyProfile,
 } from './pack106-types';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // CONFIGURATION

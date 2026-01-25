@@ -24,6 +24,7 @@ import { logger } from 'firebase-functions/v2';
 import AgeGateEnforcer from './pack430-age-gate';
 import JurisdictionEngine from './pack430-jurisdiction-engine';
 import LegalConsentEngine from './pack430-legal-consent';
+import { FieldValue, Timestamp, db, functions, serverTimestamp, timestamp } from './runtime';
 
 // ─────────────────────────────────────────────────────────────────
 // TYPES

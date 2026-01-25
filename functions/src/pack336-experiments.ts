@@ -11,6 +11,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp } from './init.js';
 import type { KpiExperiment, ExperimentResult } from './pack336-types.js';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ============================================================================
 // EXPERIMENT CREATION & MANAGEMENT

@@ -23,6 +23,7 @@ import {
   aggregateCurrentHourKpi,
   cleanupOldHourlyKpi,
 } from './pack324a-kpi-aggregation';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // HELPER: ADMIN CHECK

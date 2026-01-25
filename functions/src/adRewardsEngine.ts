@@ -15,6 +15,7 @@
 import { db, serverTimestamp, increment, generateId } from './init';
 import { recordRiskEvent } from './trustEngine';
 import { recordRankingAction } from './rankingEngine';
+import { HttpsError, timestamp } from './runtime';
 
 // Simple logger (Node.js compatible)
 const logger = {

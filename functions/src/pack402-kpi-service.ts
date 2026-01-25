@@ -18,6 +18,7 @@ import {
   KPI_COLLECTIONS,
   KpiType,
 } from './pack402-kpi-types';
+import { Timestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 

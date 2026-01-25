@@ -24,6 +24,7 @@ import {
   TokenPackageId,
   SubscriptionTier,
 } from './pack302-types';
+import { auth, functions } from './runtime';
 
 // ============================================================================
 // MOBILE TOKEN PURCHASE VERIFICATION

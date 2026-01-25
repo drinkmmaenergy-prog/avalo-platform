@@ -17,6 +17,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, increment, generateId } from './init';
 import { FieldValue } from 'firebase-admin/firestore';
+import { HttpsError, Timestamp, admin, arrayUnion, auth, onCall } from './runtime';
 
 // Types
 

@@ -6,6 +6,7 @@
 import { db, generateId, serverTimestamp } from './init';
 import { FieldValue } from 'firebase-admin/firestore';
 import { WalletData, WalletTransaction } from './types/pack277-wallet.types';
+import { admin, timestamp } from './runtime';
 
 // Demo mode configuration
 const DEMO_INITIAL_BALANCE = 1000; // Demo users start with 1000 tokens

@@ -3,6 +3,8 @@
  * Type definitions for privacy-first settings management
  */
 
+import { storage, timestamp } from './runtime';
+
 export enum PermissionType {
   CAMERA = 'camera',
   MICROPHONE = 'microphone',

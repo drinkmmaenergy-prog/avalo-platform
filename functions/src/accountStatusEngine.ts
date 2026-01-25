@@ -13,6 +13,7 @@
 
 import { db, serverTimestamp, increment } from './init';
 import * as functions from 'firebase-functions';
+import { HttpsError, Timestamp, auth } from './runtime';
 
 // Simple logger
 const logger = {

@@ -8,6 +8,7 @@
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { getIncident } from './pack417-incident.service';
 import type { Incident, OnCallConfig, IncidentSeverity } from './pack417-incident.types';
+import { admin } from './runtime';
 
 const db = getFirestore();
 

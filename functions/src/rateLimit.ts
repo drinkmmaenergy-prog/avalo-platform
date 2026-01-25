@@ -11,6 +11,7 @@
 import { db, serverTimestamp } from './init.js';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logEvent } from './observability.js';
+import { admin, functions, increment, storage } from './runtime';
 
 export type RateLimitScope = 'USER' | 'IP' | 'DEVICE';
 

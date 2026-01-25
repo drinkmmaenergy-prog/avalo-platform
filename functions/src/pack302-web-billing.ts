@@ -24,6 +24,7 @@ import {
   TokenPackageId,
   SubscriptionTier,
 } from './pack302-types';
+import { functions } from './runtime';
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {

@@ -11,6 +11,7 @@ import {
   detectMomentumAbuse,
   getMomentumState
 } from './pack-224-romantic-momentum.js';
+import { db, functions, timestamp } from './runtime';
 
 // ============================================================================
 // CHAT & MESSAGING INTEGRATION

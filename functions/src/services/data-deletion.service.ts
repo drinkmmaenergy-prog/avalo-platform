@@ -20,6 +20,7 @@ import {
   logPrivacyAction,
   hasActiveLegalHold
 } from './data-retention.service';
+import { admin } from '../runtime';
 
 /**
  * Request account deletion

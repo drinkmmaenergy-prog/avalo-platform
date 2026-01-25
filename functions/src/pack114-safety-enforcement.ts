@@ -22,6 +22,7 @@ import {
   DEFAULT_AGENCY_RULES,
 } from './pack114-types';
 import { updateAgencyStatus } from './pack114-agency-engine';
+import { admin, functions } from './runtime';
 // Note: Integration with moderation system - implement if moderationEngine has this function
 // import { createModerationCase } from './moderationEngine';
 

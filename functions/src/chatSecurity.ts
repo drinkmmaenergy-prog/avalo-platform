@@ -23,6 +23,7 @@
 ;
 import { HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { admin, auth, functions, getFirestore, increment, logger, onCall, serverTimestamp } from './runtime';
 ;
 ;
 

@@ -57,6 +57,7 @@ import {
   validateAutomation,
   validateDiscount,
 } from './pack166-safety';
+import { admin, auth, functions, timestamp } from './runtime';
 
 // ============================================================================
 // CONSTANTS

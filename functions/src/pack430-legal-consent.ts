@@ -15,6 +15,7 @@
 
 import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions/v2';
+import { FieldValue, Timestamp, arrayUnion, db, functions, serverTimestamp, timestamp } from './runtime';
 
 // ─────────────────────────────────────────────────────────────────
 // TYPES

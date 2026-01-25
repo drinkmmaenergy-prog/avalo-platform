@@ -13,6 +13,7 @@ import {
   PatrolEventType,
   DEFAULT_PATROL_CONFIG,
 } from './types/pack130-types';
+import { admin, timestamp } from './runtime';
 
 const FEEDBACK_COLLECTION = 'patrol_feedback_loop';
 const CONFIDENCE_RULES_COLLECTION = 'patrol_ai_confidence_rules';

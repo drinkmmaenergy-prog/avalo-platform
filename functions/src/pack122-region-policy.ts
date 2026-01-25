@@ -19,6 +19,7 @@ import {
   SupportedLanguage,
   REGION_GROUPS,
 } from './pack122-types';
+import { Timestamp, functions } from './runtime';
 
 // ============================================================================
 // REGION POLICY RESOLUTION

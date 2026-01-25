@@ -5,6 +5,7 @@
 
 import { db, admin } from './init';
 import { PolicyDocument, PolicyType } from './compliancePack55';
+import { Timestamp, storage } from './runtime';
 
 // ============================================================================
 // POLICY CONTENT (STUB - Replace with actual legal text)

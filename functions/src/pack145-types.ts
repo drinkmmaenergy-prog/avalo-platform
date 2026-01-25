@@ -11,6 +11,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from './runtime';
 
 export type AdCampaignStatus = 'draft' | 'pending_review' | 'active' | 'paused' | 'completed' | 'rejected' | 'banned';
 export type AdAssetStatus = 'pending' | 'approved' | 'rejected' | 'banned';

@@ -19,6 +19,7 @@ import {
   detectScamClaims,
   validateUpsell
 } from '../middleware/educationCompliance';
+import { HttpsError, admin, auth, onCall } from '../runtime';
 
 export const uploadCourse = functions.https.onCall(async (data: CourseUploadRequest, context) => {
   if (!context.auth) {

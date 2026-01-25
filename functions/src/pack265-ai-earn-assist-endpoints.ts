@@ -24,6 +24,7 @@ import {
   ContentOptimizationTip,
   FeatureAwarenessPrompt,
 } from './pack265-ai-earn-assist-types';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // SUGGESTION GENERATION

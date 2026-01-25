@@ -1,6 +1,7 @@
 import { admin, db } from '../init';
 import * as functions from 'firebase-functions';
 import { Timestamp } from 'firebase-admin/firestore';
+import { HttpsError, auth, onCall, timestamp } from '../runtime';
 
 const NSFW_KEYWORDS = [
   'lingerie', 'erotic', 'sexy', 'sensual', 'seductive',

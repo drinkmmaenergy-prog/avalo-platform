@@ -3,6 +3,8 @@
  * Type definitions
  */
 
+import { Timestamp, timestamp } from '../runtime';
+
 export type CountryStatus = 'DISABLED' | 'BETA' | 'OPEN' | 'LOCKED';
 
 export type AdSource = 'GOOGLE' | 'META' | 'TIKTOK' | 'ORGANIC' | 'REFERRAL';

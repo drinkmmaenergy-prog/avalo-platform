@@ -6,6 +6,7 @@
 import * as functions from "firebase-functions";
 import { db, serverTimestamp } from "./init.js";
 import { Alert, AlertType, AlertSeverity, AlertChannel } from "./pack346-types";
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 /**
  * Trigger an alert

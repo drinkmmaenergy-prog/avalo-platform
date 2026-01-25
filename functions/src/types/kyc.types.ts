@@ -4,6 +4,8 @@
  */
 
 // KYC Status Types
+import { Timestamp, admin } from '../runtime';
+
 export type KycStatus = 
   | "NOT_STARTED"   // User has not submitted KYC
   | "PENDING"       // KYC submitted, awaiting review

@@ -18,6 +18,7 @@ import { HttpsError } from 'firebase-functions/v2/https';
 ;
 import { FieldValue } from 'firebase-admin/firestore';
 import Stripe from "stripe";
+import { admin, auth, getFirestore, increment, onCall, onRequest, serverTimestamp } from './runtime';
 // ; // Requires axios package
 ;
 ;

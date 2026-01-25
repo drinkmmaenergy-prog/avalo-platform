@@ -26,6 +26,7 @@ import {
   runDeepfakeDetection,
 } from './pack142-stolen-photo-deepfake-engine';
 import { analyzeSocialGraphFraud } from './pack142-identity-fraud-engine';
+import { admin, auth, functions } from './runtime';
 
 const db = getFirestore();
 

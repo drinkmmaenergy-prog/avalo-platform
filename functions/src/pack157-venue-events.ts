@@ -27,6 +27,7 @@ import {
 import { Timestamp } from 'firebase-admin/firestore';
 import { moderateText } from './aiModeration';
 import * as crypto from 'crypto';
+import { admin, auth, functions, timestamp } from './runtime';
 
 // ============================================================================
 // RISK SCREENING (copied from events.ts for venue events)

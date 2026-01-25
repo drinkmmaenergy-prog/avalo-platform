@@ -21,6 +21,7 @@ import {
   generateAnonymizedRevenueSources
 } from './tax-calculation';
 import { getReportType } from './tax-rules';
+import { admin, increment, serverTimestamp, timestamp } from '../runtime';
 
 export async function generateTaxReport(
   request: TaxReportGenerationRequest

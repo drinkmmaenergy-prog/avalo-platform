@@ -9,6 +9,7 @@
 
 import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
+import { admin, functions, increment, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES

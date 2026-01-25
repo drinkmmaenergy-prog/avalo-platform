@@ -6,6 +6,7 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { CRMEngine } from './pack143-crm-engine';
 import { db, serverTimestamp } from './init';
+import { auth, functions } from './runtime';
 
 export const createCRMContact = onCall(async (request) => {
   const uid = request.auth?.uid;

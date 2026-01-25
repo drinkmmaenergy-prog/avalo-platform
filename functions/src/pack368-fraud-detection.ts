@@ -6,6 +6,7 @@
 import { db } from './init';
 import { FieldValue } from 'firebase-admin/firestore';
 import { ReferralFraudSignal, Referral } from './pack368-referral-types';
+import { admin, serverTimestamp } from './runtime';
 
 export class ReferralFraudDetector {
   private db: FirebaseFirestore.Firestore;

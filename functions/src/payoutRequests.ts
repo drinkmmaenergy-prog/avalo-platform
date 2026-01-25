@@ -31,6 +31,7 @@ import type {
   PayoutConfigResponse,
   validatePayoutMethodDetails,
 } from './types/payouts.types';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // PAYOUT METHODS MANAGEMENT

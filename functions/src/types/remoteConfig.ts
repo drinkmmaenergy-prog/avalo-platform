@@ -4,6 +4,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { Timestamp } from '../runtime';
 
 export type PlatformType = 'android' | 'ios' | 'web';
 export type EnvironmentType = 'GLOBAL' | 'PROD' | 'STAGE';

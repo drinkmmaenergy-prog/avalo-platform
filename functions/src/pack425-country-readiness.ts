@@ -4,6 +4,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { Timestamp } from './runtime';
 
 export interface CountryRolloutProfile {
   countryCode: string;       // PL, DE, ES, MX, BR, JP...

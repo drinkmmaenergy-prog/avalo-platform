@@ -12,6 +12,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from './runtime';
 
 // ============================================================================
 // REPUTATION LEVELS (PUBLIC DISPLAY)

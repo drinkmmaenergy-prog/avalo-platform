@@ -7,6 +7,7 @@ import * as functions from "firebase-functions";
 import { db, serverTimestamp } from "./init.js";
 import { Timestamp } from "firebase-admin/firestore";
 import { ChurnRecord, ChurnCause } from "./pack346-types";
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 /**
  * Track user activity and update churn score

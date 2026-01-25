@@ -14,6 +14,7 @@ import {
   SyncResponse,
   SyncConflict
 } from './types';
+import { timestamp } from '../runtime';
 
 export class SyncService {
   

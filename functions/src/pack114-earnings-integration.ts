@@ -13,6 +13,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { applyAgencyEarningsSplit } from './pack114-agency-engine';
 import { EarningSourceType } from './creatorEarnings';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // EXTENDED CREATOR BALANCE WITH AGENCY TRACKING

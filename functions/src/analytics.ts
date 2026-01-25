@@ -12,6 +12,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, auth } from './init';
+import { onRequest } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES

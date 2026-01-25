@@ -6,6 +6,7 @@ import {
   ExtortionPattern,
   EmotionalBlackmailPattern
 } from './types';
+import { FieldValue, db, serverTimestamp, timestamp } from '../runtime';
 
 const EXTORTION_KEYWORDS = [
   'send tokens or i leak',

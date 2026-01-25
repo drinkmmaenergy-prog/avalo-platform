@@ -5,6 +5,7 @@
 
 import * as admin from 'firebase-admin';
 import type { LaunchStage, LaunchRegionConfig } from '../../shared/types/pack412-launch';
+import { functions, timestamp } from './runtime';
 
 const db = admin.firestore();
 

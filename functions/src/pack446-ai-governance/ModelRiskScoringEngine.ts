@@ -8,6 +8,7 @@
 
 import { logger } from 'firebase-functions';
 import { RiskLevel } from './AIModelRegistry';
+import { db, functions, timestamp } from '../runtime';
 
 export enum RiskCategory {
   BIAS = 'BIAS',

@@ -6,6 +6,7 @@
 import { db, serverTimestamp } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { SponsoredCreatorProfile, AD_CONSTANTS } from './pack349-types';
+import { admin, timestamp } from './runtime';
 
 export class SponsoredCreatorEngine {
   /**

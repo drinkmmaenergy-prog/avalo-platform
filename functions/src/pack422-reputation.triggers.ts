@@ -9,6 +9,7 @@ import * as functions from 'firebase-functions';
 import admin from 'firebase-admin';
 import { recalculateReputation } from './pack422-reputation.service';
 import { sendMetric } from './pack421-metrics.service';
+import { HttpsError, auth, onCall } from './runtime';
 
 const db = admin.firestore();
 

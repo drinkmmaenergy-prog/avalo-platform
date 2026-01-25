@@ -13,6 +13,7 @@ import {
   type SuggestionContext,
   type SuggestionTrigger,
 } from './pack256AiReplySuggestions.js';
+import { auth, functions } from './runtime';
 
 // ============================================================================
 // CALLABLE: Generate Reply Suggestions

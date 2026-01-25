@@ -26,6 +26,7 @@ import {
   detectMassReportCampaign,
   calculateReviewImpact,
 } from './types/reputation.types';
+import { Timestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 

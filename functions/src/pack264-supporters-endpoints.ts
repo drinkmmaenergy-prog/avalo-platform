@@ -20,6 +20,7 @@ import {
   recalculateRankings,
   checkNearRankup,
 } from './pack264-supporters-engine';
+import { admin, auth, functions, timestamp } from './runtime';
 
 /**
  * Get supporter ranking for a creator

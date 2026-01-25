@@ -24,6 +24,7 @@ import {
   unregisterDevice,
   updateDeviceLastSeen,
 } from './pack293-notification-delivery';
+import { HttpsError, Timestamp, auth, onCall } from './runtime';
 
 const db = admin.firestore();
 

@@ -29,6 +29,7 @@ import {
   GetCampaignPerformanceResponse,
   CampaignPerformanceStats,
 } from './pack120-types';
+import { HttpsError, Timestamp, auth, onCall } from './runtime';
 
 const db = admin.firestore();
 

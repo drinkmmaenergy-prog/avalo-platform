@@ -15,6 +15,8 @@
 /**
  * Extended chat status including expiration states
  */
+import { Timestamp, timestamp } from './runtime';
+
 export type Pack328bChatStatus = 
   | 'ACTIVE'      // Chat is currently active
   | 'ENDED'       // Chat was manually ended by user

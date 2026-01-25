@@ -16,6 +16,7 @@ import {
   ChallengeResult,
   DEFAULT_2FA_CONFIG,
 } from './types/twoFactor.types';
+import { admin, auth, increment, storage, timestamp } from './runtime';
 
 const db = getFirestore();
 

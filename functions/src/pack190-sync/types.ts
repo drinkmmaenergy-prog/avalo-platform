@@ -3,6 +3,8 @@
  * Type definitions for sync infrastructure
  */
 
+import { Timestamp } from '../runtime';
+
 export interface SyncState {
   userId: string;
   deviceId: string;

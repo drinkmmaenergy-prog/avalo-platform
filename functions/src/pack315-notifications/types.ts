@@ -7,6 +7,8 @@
 // Device Management
 // ============================================================================
 
+import { timestamp } from '../runtime';
+
 export type DevicePlatform = 'ANDROID' | 'IOS' | 'WEB';
 
 export interface UserDevice {

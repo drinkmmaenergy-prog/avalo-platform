@@ -17,6 +17,7 @@ import type {
   AIFlags,
   AutoFlagTrigger
 } from './pack320-moderation-types';
+import { admin, auth, functions, serverTimestamp } from './runtime';
 
 const db = getFirestore();
 

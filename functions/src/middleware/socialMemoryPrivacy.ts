@@ -9,6 +9,7 @@ import type {
   PrivacyFilterResult,
   AllowedPreferenceCategory,
 } from '../types/socialMemory.js';
+import { functions, timestamp } from '../runtime';
 
 /**
  * Forbidden keywords and patterns that indicate sensitive data

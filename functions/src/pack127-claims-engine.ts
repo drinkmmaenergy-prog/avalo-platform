@@ -22,6 +22,7 @@ import {
   STRIKE_IMPACTS,
 } from './pack127-types';
 import { getFingerprint, getFingerprintMatches } from './pack127-fingerprint-engine';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // CLAIM SUBMISSION

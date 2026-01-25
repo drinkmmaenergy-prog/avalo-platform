@@ -16,6 +16,7 @@ import type {
   CaseExportParams,
   CaseExportResponse,
 } from './types/audit.types';
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 // ============================================================================
 // AUDIT SEARCH API

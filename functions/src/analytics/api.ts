@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, auth } from '../init';
+import { admin, onRequest, timestamp } from '../runtime';
 
 // Get analytics dashboard data for mobile/web
 export const getAnalyticsDashboard = functions.https.onRequest(async (req, res) => {

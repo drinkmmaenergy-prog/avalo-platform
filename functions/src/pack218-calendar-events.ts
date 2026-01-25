@@ -13,6 +13,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { db, serverTimestamp, generateId, increment } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { admin, auth, functions, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

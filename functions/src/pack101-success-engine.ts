@@ -15,6 +15,7 @@ import {
 } from './pack101-success-types';
 import { logTechEvent } from './pack90-logging';
 import { processSuccessNotifications } from './pack101-success-notifications';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // SCORECARD CALCULATION

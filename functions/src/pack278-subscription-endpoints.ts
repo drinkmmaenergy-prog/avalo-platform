@@ -25,6 +25,7 @@ import {
   checkPurchaseFrequency,
 } from './pack278-purchase-validation';
 import { updateSubscription } from './pack278-subscription-service';
+import { admin, auth, functions } from './runtime';
 
 /**
  * Get current user's subscription status

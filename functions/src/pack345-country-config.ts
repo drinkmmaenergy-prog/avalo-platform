@@ -6,6 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { CountryLaunchConfig, INITIAL_LAUNCH_COUNTRIES } from './pack345-types';
+import { HttpsError, Timestamp, auth, onCall } from './runtime';
 
 const db = admin.firestore();
 

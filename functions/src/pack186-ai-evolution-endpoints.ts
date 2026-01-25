@@ -22,6 +22,7 @@ import {
   MemoryCategory,
   GrowthEventType
 } from './pack186-ai-evolution';
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 // ======================
 // Memory Management Endpoints

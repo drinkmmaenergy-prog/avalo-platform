@@ -6,6 +6,7 @@
 import { db, admin } from './init';
 import { updateAMLProfile } from './compliancePack55';
 import { onMediaUploaded } from './mediaComplianceIntegration';
+import { FieldValue, HttpsError, auth, functions, onCall, serverTimestamp, storage } from './runtime';
 
 // ============================================================================
 // EXAMPLE 1: Age Gate Check in Discovery Feed (PACK 51)

@@ -29,6 +29,7 @@ import {
   FEEDBACK_LIMITS,
   FEEDBACK_ELIGIBILITY,
 } from './pack212-reputation-types';
+import { HttpsError, Timestamp, auth, onCall } from './runtime';
 
 const db = admin.firestore();
 

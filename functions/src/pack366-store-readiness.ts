@@ -9,6 +9,7 @@ import {
   AppVersionEnforcement,
 } from "./pack366-country-launch.types";
 
+
 const db = admin.firestore();
 
 export class StoreReadinessService {

@@ -3,6 +3,8 @@
  * Focus on trust scoring, multi-account detection, and risk flags
  */
 
+import { increment } from './runtime';
+
 describe("Device Trust & Fingerprinting", () => {
   enum DeviceTrustLevel {
     TRUSTED = "trusted",

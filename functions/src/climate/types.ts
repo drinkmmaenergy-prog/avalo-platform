@@ -1,3 +1,5 @@
+import { timestamp } from '../runtime';
+
 export enum ConflictType {
   POLITICAL_CAMPAIGNING = 'political_campaigning',
   PARTY_ENDORSEMENT = 'party_endorsement',

@@ -11,6 +11,8 @@
 /**
  * Telemetry domains representing different parts of the Avalo platform
  */
+import { admin, auth, timestamp } from './runtime';
+
 export type TelemetryDomain =
   | "auth"
   | "chat"

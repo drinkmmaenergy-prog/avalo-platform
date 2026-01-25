@@ -19,6 +19,7 @@ import {
   FanBehaviorProfile,
   IndependenceSystemConfig
 } from '../types/pack181-independence.types';
+import { admin, timestamp } from '../runtime';
 
 const db = getFirestore();
 

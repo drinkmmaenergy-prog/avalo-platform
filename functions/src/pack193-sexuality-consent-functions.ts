@@ -28,6 +28,7 @@ import {
   CONSENT_VERSION,
   DEFAULT_SESSION_EXPIRATION_HOURS
 } from './pack193-sexuality-consent';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp } from './runtime';
 
 const db = admin.firestore();
 

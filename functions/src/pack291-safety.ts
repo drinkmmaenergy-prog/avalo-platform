@@ -9,6 +9,7 @@
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { DEFAULT_SAFETY_CONSTRAINTS } from './types/pack291-ai-assist.types';
+import { admin, functions, timestamp, z } from './runtime';
 
 const db = getFirestore();
 

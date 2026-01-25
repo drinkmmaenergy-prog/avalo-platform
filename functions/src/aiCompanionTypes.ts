@@ -3,6 +3,8 @@
  * Type definitions for AI avatar system
  */
 
+import { storage, timestamp } from './runtime';
+
 export type AvatarStatus = 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'BANNED';
 
 export type AvatarTone = 'SOFT_FLIRTY' | 'FRIENDLY' | 'COACH' | 'CONFIDANT';

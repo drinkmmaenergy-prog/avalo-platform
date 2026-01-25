@@ -13,6 +13,7 @@ import {
   ReputationPolicyAction,
 } from '../../shared/types/pack422-reputation.types';
 import { getReputationProfile } from './pack422-reputation.service';
+import { HttpsError, auth, onCall } from './runtime';
 
 const db = admin.firestore();
 

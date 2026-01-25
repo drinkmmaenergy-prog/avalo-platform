@@ -6,6 +6,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { db } from '../../../runtime';
 
 export interface ComplianceStatus {
   canManageTeam: boolean;

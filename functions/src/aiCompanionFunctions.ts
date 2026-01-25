@@ -16,6 +16,7 @@ import type {
   AIGenerationRequest,
   AIAvatarEvent
 } from './aiCompanionTypes.js';
+import { auth, functions, timestamp } from './runtime';
 
 // Configuration
 const MAX_AVATARS_PER_USER = 3;

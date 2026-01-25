@@ -4,6 +4,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { Timestamp, z } from './runtime';
 
 export interface CurrencyInfo {
   code: string;           // PLN, EUR, USD, MXN, BRL, INR, AED...

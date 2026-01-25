@@ -13,6 +13,7 @@ import {
   getTrustProfile,
 } from "./trustRiskEngine";
 import { TrustEventType } from "./types/trustRisk.types";
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // REPORT & BLOCK INTEGRATIONS

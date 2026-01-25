@@ -7,6 +7,7 @@
 
 import { db, serverTimestamp } from '../init.js';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from '../runtime';
 
 interface RateLimitRuleConfig {
   perUser?: {

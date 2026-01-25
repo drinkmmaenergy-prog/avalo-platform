@@ -6,6 +6,7 @@
 import { FieldValue, QuerySnapshot } from 'firebase-admin/firestore';
 import { db } from '../init';
 import { FRAUD_DETECTION_CONFIG, FraudFlag, AffiliateReferral } from './types';
+import { admin, arrayUnion, increment } from '../runtime';
 
 export interface FraudDetectionResult {
   fraudScore: number;

@@ -1,4 +1,5 @@
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from '../runtime';
 
 export type CourseCategory =
   | 'business_fundamentals'

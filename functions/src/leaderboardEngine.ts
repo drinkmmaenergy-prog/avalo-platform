@@ -32,6 +32,7 @@ import {
   PopularInCityMetric,
   SafeDatesMetric,
 } from './types/leaderboard.types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // CONSTANTS

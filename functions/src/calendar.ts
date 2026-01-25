@@ -15,6 +15,7 @@ import { CalendarBooking, UserWallet, Transaction, FunctionResponse } from './ty
 import { withErrorLogging, logReservationError } from './observability.js';
 import { calculateMeetingRefund } from './pack209-refund-complaint-engine.js';
 import { RefundTransaction, RefundTrigger } from './pack209-refund-complaint-types.js';
+import { admin, auth, functions } from './runtime';
 
 /**
  * Book a calendar slot

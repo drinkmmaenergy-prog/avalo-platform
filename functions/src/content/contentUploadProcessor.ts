@@ -9,6 +9,7 @@ const db = admin.firestore();
 
 // Reuse NSFW classifier from PACK 287
 import { classifyNSFW, NSFWFlag } from '../media/nsfwClassifier';
+import { FieldValue, HttpsError, Timestamp, auth, db, increment, onCall, storage } from '../runtime';
 
 /**
  * Content Policy Rules (from PACK 267, 268):

@@ -23,6 +23,7 @@ import type {
   CreateIncidentRequest,
   CsamShieldConfig,
 } from './types/csam.js';
+import { arrayUnion, storage } from './runtime';
 
 // Simple logger (matches pattern from other modules)
 const logger = {

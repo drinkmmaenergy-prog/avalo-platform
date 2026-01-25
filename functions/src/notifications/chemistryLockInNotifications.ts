@@ -6,6 +6,7 @@
 
 import { db } from '../init';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from '../runtime';
 
 // ============================================================================
 // TYPES

@@ -17,6 +17,7 @@ import { spendTokens } from './pack277-wallet-service';
 import { generateAIReply } from './services/aiProvider.service';
 import { moderateText, logModerationIncident } from './contentModerationEngine';
 import { canSendMessage } from './moderationEngine';
+import { functions, onCall } from './runtime';
 
 // ============================================================================
 // TYPES

@@ -15,6 +15,7 @@ import {
   NotifyModerationTeamInput,
   DEFAULT_PATROL_CONFIG,
 } from './types/pack130-types';
+import { admin } from './runtime';
 
 const PATROL_CASES_COLLECTION = 'patrol_cases';
 const FROZEN_CONVERSATIONS_COLLECTION = 'patrol_frozen_conversations';

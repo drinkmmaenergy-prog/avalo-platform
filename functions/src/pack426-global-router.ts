@@ -8,6 +8,7 @@
 
 import { https, logger } from 'firebase-functions/v2';
 import { getFirestore } from 'firebase-admin/firestore';
+import { admin, functions, onRequest, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

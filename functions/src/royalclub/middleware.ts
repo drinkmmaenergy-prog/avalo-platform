@@ -11,6 +11,7 @@
  */
 
 import { FORBIDDEN_MISSION_PATTERNS, ALLOWED_CHANNEL_CATEGORIES } from './types';
+import { functions } from '../runtime';
 
 /**
  * Validate mission content for safety

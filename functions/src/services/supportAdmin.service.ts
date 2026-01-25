@@ -13,6 +13,7 @@ import {
   CaseResolution
 } from '../types/support.types';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, functions, timestamp } from '../runtime';
 
 /**
  * Support Admin Service

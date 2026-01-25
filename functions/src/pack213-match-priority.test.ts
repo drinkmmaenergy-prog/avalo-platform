@@ -20,6 +20,7 @@ import {
   UserEconomicProfile,
   BoostTriggerAction,
 } from './types/pack213-types';
+import { admin, db, increment, serverTimestamp } from './runtime';
 
 // Mock Firestore
 const mockDb = {

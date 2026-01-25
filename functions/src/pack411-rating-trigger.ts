@@ -10,6 +10,7 @@ import {
   RatingPromptLog,
   InAppRatingConfig,
 } from '../../shared/types/pack411-reviews';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 

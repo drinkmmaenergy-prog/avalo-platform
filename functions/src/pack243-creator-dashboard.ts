@@ -22,6 +22,7 @@ import {
   NUDGE_TEMPLATES,
   SUGGESTION_TEMPLATES,
 } from './types/pack243-creator-dashboard';
+import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
 
 /**
  * Scheduled function: Calculate dashboard analytics for all creators

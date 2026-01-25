@@ -26,6 +26,7 @@ import {
   calculateEventRevenueSplit,
   containsBlockedKeywords,
 } from './types/virtualEvents.types';
+import { admin, arrayUnion, auth, functions, increment, serverTimestamp, timestamp } from './runtime';
 
 const db = getFirestore();
 

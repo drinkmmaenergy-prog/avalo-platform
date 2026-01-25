@@ -3,6 +3,8 @@
  * Testing cryptographic signature verification and on-chain transaction verification
  */
 
+import { FieldValue, Timestamp, admin, ethers, functions, getFirestore, increment, logger, serverTimestamp, timestamp } from '../runtime';
+
 ;
 
 // Mock Firebase Admin

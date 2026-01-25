@@ -10,6 +10,7 @@ import { onCall } from 'firebase-functions/v2/https';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { z } from 'zod';
 import { db, serverTimestamp, increment, admin } from './init.js';
+import { FieldValue, Timestamp, auth, functions } from './runtime';
 
 // ============================================================================
 // LLM CONFIGURATION

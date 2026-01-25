@@ -5,6 +5,7 @@
 
 import * as logger from 'firebase-functions/logger';
 import { SafeScope } from './pack99-types';
+import { functions, timestamp } from './runtime';
 
 // ============================================================================
 // FORBIDDEN KEYWORDS

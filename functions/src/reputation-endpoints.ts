@@ -22,6 +22,7 @@ import {
   ReputationEventType,
   ReputationDimension,
 } from './types/reputation.types';
+import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
 
 // ============================================================================
 // USER-FACING FUNCTIONS

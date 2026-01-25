@@ -3,6 +3,8 @@
  * Type definitions for drop products, purchases, and related entities
  */
 
+import { functions } from '../runtime';
+
 export type DropType = 'STANDARD_DROP' | 'FLASH_DROP' | 'LOOTBOX_DROP' | 'COOP_DROP';
 
 export type DropVisibility = 'public' | 'followers_only' | 'test_only';

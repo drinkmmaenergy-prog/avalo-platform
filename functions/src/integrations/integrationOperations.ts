@@ -15,6 +15,7 @@ import {
   FORBIDDEN_DATA_TYPES,
   CONSENT_REFRESH_MS
 } from '../types/integrations';
+import { FieldValue, HttpsError, arrayUnion, auth, db, functions, onCall } from '../runtime';
 
 const db = admin.firestore();
 

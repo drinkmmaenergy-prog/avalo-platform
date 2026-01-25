@@ -22,6 +22,7 @@ import {
 } from './types/treasury.types';
 import { PAYOUT_POLICY } from './config/treasury.config';
 import { createLedgerEntry } from './treasury-helpers';
+import { admin, functions, onCall, timestamp } from './runtime';
 
 // ============================================================================
 // PAYOUT SAFETY CHECKS

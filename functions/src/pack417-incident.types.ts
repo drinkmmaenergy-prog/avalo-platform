@@ -7,6 +7,7 @@
  */
 
 import type { Timestamp } from 'firebase-admin/firestore';
+import { admin } from './runtime';
 
 /**
  * Incident severity levels

@@ -6,6 +6,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, timestamp } from '../runtime';
 
 // Allowed badge types - only positive achievements
 export enum BadgeType {

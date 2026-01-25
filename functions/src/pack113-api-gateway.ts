@@ -32,6 +32,7 @@ import {
 } from './pack113-types';
 import { checkAndIncrementRateLimit, hashIpAddress } from './rateLimit';
 import { logEvent } from './observability';
+import { admin, functions, increment, storage, timestamp } from './runtime';
 
 const crypto = require('crypto');
 

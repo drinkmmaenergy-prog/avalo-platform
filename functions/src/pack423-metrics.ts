@@ -4,6 +4,7 @@
  */
 
 import { InteractionType } from '../../shared/types/pack423-ratings.types';
+import { timestamp } from './runtime';
 
 /**
  * Emit metrics through the unified telemetry pipeline (PACK 421)

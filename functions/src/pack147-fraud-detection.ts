@@ -17,6 +17,7 @@ import { db, serverTimestamp, generateId, increment } from './init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import * as logger from 'firebase-functions/logger';
 import { FraudPattern, FraudDetectionRecord } from './pack147-types';
+import { admin, arrayUnion, functions, timestamp } from './runtime';
 
 // ============================================================================
 // CONSTANTS

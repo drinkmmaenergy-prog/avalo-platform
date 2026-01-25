@@ -6,6 +6,7 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db, serverTimestamp, generateId } from '../init';
 import { ScamType, CryptoScamLog } from './types';
+import { admin, auth, functions, timestamp } from '../runtime';
 
 const CRYPTO_SCAM_PATTERNS = [
   /invest.*(?:crypto|bitcoin|btc|eth|token|coin)/i,

@@ -26,6 +26,7 @@ import {
   FraudSignalSource,
 } from './pack324b-fraud-types';
 import { recalculateUserRiskScore, getHighRiskUsers } from './pack324b-risk-engine';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

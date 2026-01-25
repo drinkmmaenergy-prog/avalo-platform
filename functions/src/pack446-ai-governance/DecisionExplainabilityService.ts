@@ -7,6 +7,7 @@
  */
 
 import { logger } from 'firebase-functions';
+import { Timestamp, db, functions, storage, timestamp } from '../runtime';
 
 export enum ExplanationLevel {
   INTERNAL = 'INTERNAL',           // Full technical details

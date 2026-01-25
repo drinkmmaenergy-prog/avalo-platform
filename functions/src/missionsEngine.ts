@@ -7,6 +7,7 @@
  */
 
 import { db, serverTimestamp, increment, generateId } from './init';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

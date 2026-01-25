@@ -8,6 +8,7 @@
 
 import { firestore } from 'firebase-admin';
 import { AmbassadorProfile } from './pack434-ambassador-types';
+import { Timestamp, admin, db, timestamp } from './runtime';
 
 // ============================================================================
 // FRAUD DETECTION TYPES

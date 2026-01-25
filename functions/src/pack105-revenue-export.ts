@@ -16,6 +16,7 @@ import { logger } from 'firebase-functions/v2';
 import { Timestamp } from 'firebase-admin/firestore';
 import { CreatorRevenueExport, VATInvoiceData } from './pack105-types';
 import { logRevenueExportRequested, logVatInvoiceGenerated } from './pack105-audit-logger';
+import { auth, functions, storage, z } from './runtime';
 
 // ============================================================================
 // REVENUE EXPORT API

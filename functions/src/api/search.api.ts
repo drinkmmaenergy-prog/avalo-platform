@@ -11,6 +11,7 @@ import {
   SearchFilters,
   DEFAULT_SEARCH_CONFIG
 } from '../types/search.types';
+import { admin, timestamp } from '../runtime';
 
 /**
  * Universal search endpoint

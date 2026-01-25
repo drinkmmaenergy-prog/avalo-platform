@@ -9,6 +9,7 @@ import {
   updateUserActivity,
   updateUserSegmentAndChurnScore,
 } from './pack301-retention-service';
+import { HttpsError, auth, onCall, timestamp } from './runtime';
 
 const db = admin.firestore();
 

@@ -11,6 +11,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, auth } from './runtime';
 
 // ============================================================================
 // REGIONAL POLICY PROFILES

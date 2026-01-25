@@ -14,6 +14,7 @@ import { https } from 'firebase-functions';
 import { db, serverTimestamp, increment, generateId } from './init';
 import { spendTokens } from './pack277-wallet-service';
 import { getAiVoicePricePerMinuteTokens, AiVoiceTier } from './pack279-ai-voice-pricing';
+import { functions, onCall } from './runtime';
 
 // ============================================================================
 // TYPES

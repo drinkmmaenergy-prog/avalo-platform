@@ -20,6 +20,7 @@ import {
   IntentTracking,
   MonetizationIntent
 } from './types/pack238-chat-motivation';
+import { FieldValue, Timestamp, increment, timestamp } from './runtime';
 
 const db = admin.firestore();
 

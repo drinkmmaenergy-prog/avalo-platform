@@ -26,6 +26,7 @@ import {
   getASOPerformanceSummary,
   compareASOVariants,
 } from "./pack357-aso-performance";
+import { admin, functions } from './runtime';
 
 export interface ASOBenchmark {
   platform: "IOS" | "ANDROID";

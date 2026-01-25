@@ -5,6 +5,7 @@ import {
   MediaIntegrityViolationType,
   MediaIntegritySeverity
 } from './types';
+import { FieldValue, arrayUnion, db, increment, serverTimestamp, timestamp } from '../runtime';
 
 export class MediaIntegritySafetyIntegration {
   private db: admin.firestore.Firestore;

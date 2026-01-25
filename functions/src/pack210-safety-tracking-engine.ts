@@ -24,6 +24,7 @@ import {
   SafetyEventSeverity,
   DEFAULT_SAFETY_TRACKING_CONFIG,
 } from './pack210-safety-tracking-types';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // SAFETY SESSION MANAGEMENT

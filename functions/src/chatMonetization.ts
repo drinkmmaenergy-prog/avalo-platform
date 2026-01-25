@@ -27,6 +27,7 @@ import { trackTokenSpend } from './fanKissEconomy.js';
 // PACK 221: Romantic Journeys
 import { onChatMessageSent } from './romanticJourneysIntegration.js';
 
+
 // Simple error class for compatibility
 class HttpsError extends Error {
   constructor(public code: string, message: string) {

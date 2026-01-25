@@ -34,6 +34,7 @@ import {
   validatePostContent,
 } from './types/challenges.types';
 import { Timestamp } from 'firebase-admin/firestore';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ============================================
 // CALLABLE FUNCTIONS

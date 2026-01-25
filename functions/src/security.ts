@@ -18,6 +18,7 @@ import {
 } from './types/security';
 import { evaluateSecurityContext, generateRiskFlags, isNewLocation as checkNewLocation } from './securityEngine';
 import { db, serverTimestamp, increment, generateId, admin } from './init';
+import { Timestamp, auth, functions, storage, timestamp } from './runtime';
 
 const FieldValue = admin.firestore.FieldValue;
 

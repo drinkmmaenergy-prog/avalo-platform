@@ -4,6 +4,7 @@
  */
 
 import { NotificationTemplate, NotificationType } from './types';
+import { z } from '../runtime';
 
 // ============================================================================
 // Notification Templates Registry

@@ -5,6 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, admin, serverTimestamp } from './init';
+import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
 
 // Supported languages matrix
 const SUPPORTED_LANGUAGES = [

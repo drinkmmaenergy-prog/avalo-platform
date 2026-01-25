@@ -22,6 +22,7 @@ import {
   MobilePurchaseResponse,
   VerifyReceiptResponse,
 } from './types/pack288-token-store.types';
+import { admin, functions, increment, onCall, timestamp } from './runtime';
 // Token package configuration (must match app-mobile/lib/token-store-config.ts)
 const TOKEN_PACKAGES = [
   { id: 'mini', tokens: 100, basePricePLN: 31.99 },

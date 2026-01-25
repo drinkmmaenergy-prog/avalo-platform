@@ -10,6 +10,7 @@
 
 import * as functions from 'firebase-functions';
 import { applyTop10Bonuses, cleanupOldScores } from './rankingEngine';
+import { timestamp } from './runtime';
 
 /**
  * Main scheduler - runs every 10 minutes

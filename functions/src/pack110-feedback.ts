@@ -36,6 +36,7 @@ import {
   FeedbackErrorCode,
   FeedbackError,
 } from './pack110-types';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

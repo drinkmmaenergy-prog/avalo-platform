@@ -3,6 +3,8 @@
  * Focus on anomaly detection thresholds and incident management
  */
 
+import { timestamp } from './runtime';
+
 describe("Security Operations Center", () => {
   enum IncidentType {
     UNUSUAL_TOKEN_DRAIN = "unusual_token_drain",

@@ -20,6 +20,7 @@ import {
   NSFWModerationReasonCode,
   NSFW_VIOLATION_SEVERITY,
 } from './pack108-types';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // CLASSIFICATION ENGINE

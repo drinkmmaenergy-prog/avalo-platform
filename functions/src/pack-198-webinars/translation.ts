@@ -6,6 +6,7 @@
 import * as admin from 'firebase-admin';
 import { EventTranslation } from './types';
 import { validateTranslationIntegrity } from './validation';
+import { Timestamp, db, timestamp } from '../runtime';
 
 const db = admin.firestore();
 

@@ -19,6 +19,7 @@ import {
   DocumentType,
 } from './pack328a-identity-verification-types';
 import { VerificationProviderFactory } from './pack328a-verification-providers';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // Verification Request Management

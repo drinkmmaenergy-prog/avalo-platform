@@ -20,6 +20,7 @@ import {
   DataRequestType,
   VisibilityLevel,
 } from './pack171-settings-types';
+import { auth, functions, timestamp } from './runtime';
 
 export const updateSettings = onCall(async (request) => {
   const userId = request.auth?.uid;

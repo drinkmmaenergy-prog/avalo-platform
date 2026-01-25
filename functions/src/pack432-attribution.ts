@@ -7,6 +7,7 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 

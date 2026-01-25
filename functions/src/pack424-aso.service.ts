@@ -6,6 +6,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { ASOMetrics } from './pack424-store-reviews.types';
+import { FieldValue, HttpsError, auth, increment, logger, onCall, timestamp } from './runtime';
 
 const db = admin.firestore();
 

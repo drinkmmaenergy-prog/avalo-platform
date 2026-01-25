@@ -12,6 +12,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, auth, functions, timestamp } from './runtime';
 
 /**
  * Social platforms supported for tracking

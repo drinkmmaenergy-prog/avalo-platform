@@ -9,6 +9,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { logTeamActivity } from './utils/activityLogger';
 import { verifyTwoFactor } from './utils/twoFactorVerification';
+import { FieldValue, HttpsError, auth, db, onCall, serverTimestamp, timestamp } from '../../runtime';
 
 interface GrantDmAccessRequest {
   membershipId: string;

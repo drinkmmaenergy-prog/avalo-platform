@@ -26,6 +26,7 @@ import * as functions from 'firebase-functions';
 import { db, serverTimestamp, increment, FieldValue } from './init';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { Timestamp, admin, auth, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES

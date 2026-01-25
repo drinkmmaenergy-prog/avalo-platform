@@ -12,6 +12,7 @@ import {
   resumeJourneyAfterSafety,
   getJourneyBetweenUsers,
 } from './romanticJourneys.js';
+import { db, serverTimestamp } from './runtime';
 
 // ============================================================================
 // CHAT INTEGRATION HOOKS

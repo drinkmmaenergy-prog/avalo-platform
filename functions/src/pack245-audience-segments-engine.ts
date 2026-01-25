@@ -28,6 +28,7 @@ import {
   ProximityThresholds,
   PassionThresholds
 } from './pack245-audience-segments-types';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ========================================================================
 // Configuration and Constants

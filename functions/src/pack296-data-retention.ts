@@ -7,6 +7,7 @@ import * as functions from 'firebase-functions';
 import { db, serverTimestamp } from './init';
 import { DATA_RETENTION } from './pack296-audit-helpers';
 import type { RetentionJobResult } from './types/audit.types';
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 // ============================================================================
 // DATA RETENTION JOB (Runs daily)

@@ -16,6 +16,7 @@ import {
   validatePredictions,
   isApproachingPeak,
 } from './pack183-latency-predictor';
+import { HttpsError, admin, auth, db, onCall, serverTimestamp } from './runtime';
 
 /**
  * Get system health overview (admin only)

@@ -11,6 +11,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from './runtime';
 
 // ============================================================================
 // FRAUD GRAPH EDGE TYPES

@@ -29,6 +29,7 @@ import {
   ContentCategoryProfile,
   FORBIDDEN_SIGNALS,
 } from './types/pack134-types';
+import { admin, functions, timestamp } from './runtime';
 
 // ============================================================================
 // INTEREST GRAPH CORE

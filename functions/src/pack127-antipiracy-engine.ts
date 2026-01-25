@@ -20,6 +20,7 @@ import {
 } from './pack127-types';
 import { createHash, createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { getFingerprint } from './pack127-fingerprint-engine';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // WATERMARK GENERATION & EMBEDDING

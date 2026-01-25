@@ -12,6 +12,7 @@ import Stripe from "stripe";
 ;
 import { TransactionType } from './config.js';
 import { Transaction, FunctionResponse } from "./types.js";
+import { auth, db, functions, generateId, increment, onCall, onRequest, serverTimestamp } from './runtime';
 ;
 
 // Lazy Stripe initialization with Secret Manager

@@ -1,6 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as crypto from 'crypto';
 import { SafetyVaultRecord } from './types';
+import { FieldValue, arrayUnion, db, serverTimestamp, storage, timestamp } from '../runtime';
 
 const ENCRYPTION_ALGORITHM = 'aes-256-gcm';
 const KEY_LENGTH = 32;

@@ -18,6 +18,7 @@ import {
   DefamationReport,
   TraumaSafetyViolation,
 } from './pack173-types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // DETECTION CONSTANTS

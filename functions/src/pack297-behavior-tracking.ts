@@ -8,6 +8,7 @@
 
 import { db } from './init.js';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { admin, increment } from './runtime';
 
 export interface UserBehaviorStats {
   userId: string;

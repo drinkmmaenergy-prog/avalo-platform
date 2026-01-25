@@ -19,6 +19,7 @@ import { Timestamp, FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { z } from 'zod';
 import * as crypto from "crypto";
+import { admin, auth, functions, increment, timestamp } from './runtime';
 
 const db = getFirestore();
 

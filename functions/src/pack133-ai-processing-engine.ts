@@ -30,6 +30,7 @@ import {
 } from './pack133-types';
 import { Timestamp } from 'firebase-admin/firestore';
 import * as crypto from 'crypto';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // IMAGE ENHANCEMENT

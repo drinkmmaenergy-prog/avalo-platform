@@ -13,6 +13,8 @@
 /**
  * Sources where CSAM risk can be detected
  */
+import { Timestamp } from '../runtime';
+
 export type CsamRiskSource = 
   | 'chat'
   | 'ai_chat'

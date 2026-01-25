@@ -33,6 +33,7 @@ import {
   PAYOUT_RATE_PLN,
 } from './pack289-withdrawals';
 import { startPayout } from './pack289-payout-providers';
+import { Timestamp, auth, onCall, timestamp } from './runtime';
 
 const db = admin.firestore();
 

@@ -11,6 +11,7 @@ import {
   FraudEvidence,
   UserFraudRiskProfile,
 } from './types';
+import { admin, auth, functions, timestamp } from '../runtime';
 
 /**
  * Detect and log fraudulent payment activity

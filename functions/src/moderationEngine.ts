@@ -18,6 +18,7 @@ import {
   EarningStatus,
 } from './moderationTypes';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin } from './runtime';
 
 // ============================================================================
 // ENFORCEMENT STATE MANAGEMENT

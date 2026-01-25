@@ -8,6 +8,7 @@
 import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import type { ConnectionSession, MeetingVerification, PaidTimeBooking, FunnelProgress } from './datingFunnel';
+import { admin, functions, increment, timestamp } from './runtime';
 
 // Configuration from main file
 const FUNNEL_CONFIG = {

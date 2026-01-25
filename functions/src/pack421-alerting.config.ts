@@ -15,6 +15,7 @@ import {
   AlertChannel,
   MetricName,
 } from '../../shared/types/pack421-observability.types';
+import { db, timestamp } from './runtime';
 
 /**
  * Core alert rules for production monitoring

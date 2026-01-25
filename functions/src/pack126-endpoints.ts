@@ -30,6 +30,7 @@ import {
   cleanupExpiredVaults,
 } from './pack126-evidence-vault';
 import { getSafetyDashboard } from './pack126-safety-dashboard';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // UNIVERSAL CONSENT PROTOCOL ENDPOINTS

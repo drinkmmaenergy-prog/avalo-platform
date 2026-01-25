@@ -5,6 +5,8 @@
  * Phase: ETAP B — Pre-Launch Hardening
  */
 
+import { auth, timestamp } from './runtime';
+
 export type FeatureEnvironment = "dev" | "staging" | "prod";
 
 export type FeatureDomain =

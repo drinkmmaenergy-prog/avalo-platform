@@ -13,6 +13,7 @@ import {
   getReferralStats,
   revokeReferralPrivileges,
 } from './pack368-referral-engine';
+import { admin, auth, db, functions, timestamp } from './runtime';
 
 /**
  * Generate invite code for user

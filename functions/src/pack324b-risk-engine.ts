@@ -17,6 +17,7 @@ import {
   SIGNAL_DECAY_CONFIG,
   FRAUD_CONFIG,
 } from './pack324b-fraud-types';
+import { admin, functions } from './runtime';
 
 // ============================================================================
 // RISK SCORE CALCULATION

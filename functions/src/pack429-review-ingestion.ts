@@ -14,6 +14,7 @@ import {
 } from './pack429-store-defense.types';
 import { auditLog } from './pack296-audit-log';
 import { notifyOps } from './pack293-notifications';
+import { Timestamp } from './runtime';
 
 const db = admin.firestore();
 

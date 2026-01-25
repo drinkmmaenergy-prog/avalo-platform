@@ -34,6 +34,7 @@ import {
   UserPersonalizationSettings,
   PersonalizationDashboard,
 } from './types/pack134-types';
+import { admin, auth, functions, timestamp } from './runtime';
 
 // ============================================================================
 // PERSONALIZED FEED ENDPOINTS

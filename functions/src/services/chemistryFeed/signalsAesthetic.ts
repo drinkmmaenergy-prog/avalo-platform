@@ -4,6 +4,7 @@
  */
 
 import { UserProfile } from './types';
+import { timestamp } from '../../runtime';
 
 /**
  * Calculate photo attractiveness score based on aesthetic signals

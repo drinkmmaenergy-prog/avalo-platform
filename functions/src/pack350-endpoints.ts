@@ -17,6 +17,7 @@ import {
   isRoyalTier,
   getTierPerks,
 } from './pack350-subscriptions.js';
+import { HttpsError, auth, onCall, onRequest } from './runtime';
 
 // ============================================================================
 // CALLABLE FUNCTIONS (for mobile/web apps)

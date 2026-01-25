@@ -8,6 +8,8 @@
 /**
  * Result of successful data export generation
  */
+import { Timestamp, admin, storage, timestamp } from './runtime';
+
 export interface DataExportResult {
   /** User ID whose data was exported */
   userId: string;

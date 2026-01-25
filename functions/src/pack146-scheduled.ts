@@ -13,6 +13,7 @@ import { logger } from './common';
 import { scanUserContentForDuplicates } from './pack146-hashing';
 import { detectPiracyNetworks } from './pack146-piracy-watchlist';
 import { db } from './init';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // DUPLICATE CONTENT SCAN

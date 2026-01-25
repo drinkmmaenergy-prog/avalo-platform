@@ -7,6 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, increment, serverTimestamp } from '../init';
+import { timestamp } from '../runtime';
 
 /**
  * Firestore trigger on gift_transactions creation

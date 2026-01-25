@@ -8,6 +8,7 @@
 
 import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions';
+import { FieldValue, arrayUnion, db, functions, timestamp } from '../runtime';
 
 export enum ModelType {
   ML = 'ML',

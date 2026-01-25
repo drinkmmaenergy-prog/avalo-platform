@@ -12,6 +12,7 @@ import {
   Pack441Config,
   SourceQualityMetrics,
 } from './types';
+import { admin, db, serverTimestamp, timestamp } from '../runtime';
 
 export class AbuseRetentionCorrelationModel {
   private db: Firestore;

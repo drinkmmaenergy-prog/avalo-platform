@@ -15,6 +15,7 @@ import {
   trackMonthlyEarningsForPack242,
   type Pack242PriceTier
 } from './pack242DynamicChatPricing.js';
+import { admin, auth, db, functions, serverTimestamp, timestamp } from './runtime';
 
 // ============================================================================
 // CALLABLE FUNCTIONS

@@ -15,6 +15,7 @@
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, storage } from './runtime';
 
 // ============================================================================
 // VIP SUBSCRIPTION (extends PACK 107)

@@ -13,6 +13,7 @@ import type {
   ResourceType,
   AuditLogMetadata,
 } from './types/audit.types';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // CONFIGURATION

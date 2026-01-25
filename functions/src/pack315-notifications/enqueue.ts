@@ -15,6 +15,7 @@ import {
 } from './types';
 import { getTemplate, getLocalizedText } from './templates';
 import { logger } from 'firebase-functions/v2';
+import { admin, db, functions, timestamp } from '../runtime';
 
 // ============================================================================
 // Enqueue Notification

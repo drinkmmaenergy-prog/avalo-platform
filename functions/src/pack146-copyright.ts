@@ -19,6 +19,7 @@ import {
   CopyrightNotification 
 } from './pack146-types';
 import { scanForDuplicateContent } from './pack146-hashing';
+import { auth } from './runtime';
 
 // ============================================================================
 // COPYRIGHT CLAIM FILING

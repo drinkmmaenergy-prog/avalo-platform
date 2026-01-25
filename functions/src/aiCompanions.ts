@@ -11,6 +11,7 @@
 import type { CallableRequest } from "firebase-functions/v2/https";
 ;
 import { FunctionResponse, AICompanion, AISubscription, AIChat } from "./types.js";
+import { auth, db, functions, increment, onCall, serverTimestamp, z } from './runtime';
 ;
 
 // Rate limiting constants

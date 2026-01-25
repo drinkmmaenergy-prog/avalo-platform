@@ -13,6 +13,7 @@ import {
   AdStats,
   AD_CONSTANTS,
 } from './pack349-types';
+import { admin, timestamp } from './runtime';
 
 export class AdBillingEngine {
   /**

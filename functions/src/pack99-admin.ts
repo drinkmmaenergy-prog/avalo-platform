@@ -21,6 +21,7 @@ import {
   logValidationFailure,
 } from './pack99-validation';
 import { clearCachedConfig } from './pack99-featureConfig';
+import { auth, functions } from './runtime';
 
 // ============================================================================
 // AUTHENTICATION HELPER

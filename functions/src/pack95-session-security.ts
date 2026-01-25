@@ -28,6 +28,7 @@ import { evaluateLoginAnomaly, logLoginAnomaly } from './pack95-anomaly-detectio
 import { sendNotification } from './pack92-notifications';
 import { recordRiskEvent, FraudFlagReason } from './trustEngine';
 import { enforceStepUpForLogoutAll } from './pack96-twoFactorIntegrations';
+import { Timestamp, auth, functions } from './runtime';
 
 // ============================================================================
 // CONFIGURATION

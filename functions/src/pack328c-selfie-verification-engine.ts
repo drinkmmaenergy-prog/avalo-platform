@@ -7,6 +7,7 @@ import { db, FieldValue, Timestamp } from './firebase';
 import { logger } from 'firebase-functions/v2';
 import type { CalendarBooking, BookingStatus } from '../../shared/src/types/calendar';
 import { emitFraudSignal } from './pack324b-fraud-signals';
+import { functions, serverTimestamp } from './runtime';
 
 /**
  * Constants

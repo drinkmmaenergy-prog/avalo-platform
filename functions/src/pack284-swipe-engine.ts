@@ -19,6 +19,7 @@ import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { checkSwipeVerificationRequirements, throwVerificationError } from './pack309-swipe-verification';
 import { logSwipeAnalyticsEvent, updateRetentionProfileSwipe } from './pack309-analytics-integration';
+import { Timestamp, auth, increment, timestamp } from './runtime';
 
 const db = admin.firestore();
 const FieldValue = admin.firestore.FieldValue;

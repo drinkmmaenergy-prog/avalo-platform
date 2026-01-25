@@ -29,6 +29,7 @@ import {
   SpendingThreshold,
   EarningThreshold
 } from "./pack168-types";
+import { admin, arrayUnion, increment, timestamp } from './runtime';
 
 const FARMING_CASES_COLLECTION = "farming_cases";
 const WEALTH_PROTECTION_PROFILES_COLLECTION = "wealth_protection_profiles";

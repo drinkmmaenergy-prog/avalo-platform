@@ -7,6 +7,7 @@ import { onCall } from "firebase-functions/v2/https";
 import { HttpsError } from "firebase-functions/v2/https";
 import { getFirestore, Timestamp, FieldValue } from "firebase-admin/firestore";
 import { z } from "zod";
+import { admin, auth, functions, serverTimestamp, timestamp } from './runtime';
 
 const db = getFirestore();
 

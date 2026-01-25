@@ -12,6 +12,7 @@
 import * as admin from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
 import { CreatorRevenueIntegrityScoreService } from './CreatorRevenueIntegrityScore';
+import { FieldValue, arrayUnion, db, timestamp } from '../../runtime';
 
 type Firestore = admin.firestore.Firestore;
 

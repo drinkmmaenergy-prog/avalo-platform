@@ -19,6 +19,7 @@ import { logBusinessAudit } from './pack105-audit-logger';
 // Import existing systems
 import { requestMeetingRefund } from './meetingMonetization';
 import { setManualEnforcementState } from './enforcementEngine';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

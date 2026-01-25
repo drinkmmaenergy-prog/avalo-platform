@@ -18,6 +18,7 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 ;
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, auth, functions, getFirestore, logger, onCall, onSchedule, timestamp, z } from './runtime';
 ;
 ;
 ;

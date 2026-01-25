@@ -7,6 +7,7 @@
 import * as functions from 'firebase-functions';
 import { forgetOldAIMemories, generateLoreUpdate, GrowthEventType, recordGrowthMetric } from './pack186-ai-evolution';
 import { db } from './init';
+import { timestamp } from './runtime';
 
 // ======================
 // Memory Decay Scheduler

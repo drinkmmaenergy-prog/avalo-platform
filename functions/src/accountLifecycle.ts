@@ -15,6 +15,7 @@
 import { db, serverTimestamp, generateId } from './init.js';
 import { canWithdraw, getUserRiskProfile } from './trustEngine.js';
 import { getPendingWithdrawals } from './payouts.js';
+import { Timestamp, timestamp } from './runtime';
 
 // Simple logger (no-op for now, can be replaced with actual logger later)
 const logger = {

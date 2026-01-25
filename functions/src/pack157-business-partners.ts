@@ -28,6 +28,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 
 // Import AI moderation
 import { moderateText, moderateImage } from './aiModeration';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

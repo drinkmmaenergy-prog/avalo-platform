@@ -30,6 +30,7 @@ import {
   resolveAbuseCase,
   checkHarassmentRestrictions,
 } from './pack173-abuse-mitigation';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // REPORT ABUSE

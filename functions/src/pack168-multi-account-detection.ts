@@ -12,6 +12,7 @@ import {
   FarmingCaseStatus
 } from "./pack168-types";
 import { calculateFarmingRiskScore } from "./pack168-anti-farming-engine";
+import { admin, timestamp } from './runtime';
 
 const MULTI_ACCOUNT_CLUSTERS_COLLECTION = "multi_account_clusters";
 const FARMING_CASES_COLLECTION = "farming_cases";

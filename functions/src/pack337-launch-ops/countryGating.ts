@@ -11,6 +11,7 @@ import {
   CountryAccessCheck,
   CountryRegistrationQuota,
 } from './types';
+import { FieldValue, Timestamp, admin, increment, serverTimestamp } from '../runtime';
 
 /**
  * Resolve user's country using majority vote logic

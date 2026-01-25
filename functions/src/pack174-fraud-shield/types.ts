@@ -2,6 +2,8 @@
  * PACK 174 - Type Definitions
  */
 
+import { timestamp } from '../runtime';
+
 export type FraudType = 
   | 'payment_fraud'
   | 'token_laundering'

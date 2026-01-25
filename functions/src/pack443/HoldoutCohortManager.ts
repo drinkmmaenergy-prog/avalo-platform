@@ -9,6 +9,7 @@
 import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions/v2';
 import * as crypto from 'crypto';
+import { db, functions, timestamp } from '../runtime';
 
 export interface HoldoutCohort {
   id: string;

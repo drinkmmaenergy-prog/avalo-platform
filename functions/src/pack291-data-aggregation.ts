@@ -23,6 +23,7 @@ import {
   AI_ASSIST_CONSTANTS,
 } from './types/pack291-ai-assist.types';
 import { CREATOR_ANALYTICS_CONSTANTS } from './types/pack290-creator-analytics.types';
+import { admin, functions } from './runtime';
 
 const db = getFirestore();
 

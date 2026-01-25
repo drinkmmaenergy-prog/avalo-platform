@@ -15,6 +15,7 @@
 ;
 import * as admin from "firebase-admin";
 import { AICompanion } from "./types.js";
+import { Timestamp, functions } from './runtime';
 
 // Initialize Firebase Admin if not already initialized
 if (admin.apps.length === 0) {

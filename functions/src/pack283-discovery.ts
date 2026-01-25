@@ -19,6 +19,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { checkSwipeVerificationRequirements, throwVerificationError } from './pack309-swipe-verification';
 import { logDiscoveryAnalyticsEvent } from './pack309-analytics-integration';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp } from './runtime';
 
 const db = admin.firestore();
 

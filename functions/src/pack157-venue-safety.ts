@@ -21,6 +21,7 @@ import {
   VENUE_CONFIG,
 } from './types/pack157-business-partners.types';
 import { Timestamp } from 'firebase-admin/firestore';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // VIOLATION DETECTION

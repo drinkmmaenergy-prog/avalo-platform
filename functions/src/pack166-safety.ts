@@ -25,6 +25,7 @@ import {
   ProductDiscount,
 } from './pack166-types';
 import * as logger from 'firebase-functions/logger';
+import { functions } from './runtime';
 
 // ============================================================================
 // FORBIDDEN KEYWORDS & PATTERNS

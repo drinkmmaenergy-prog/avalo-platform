@@ -14,6 +14,7 @@ import {
 } from './types/discovery.types';
 import { getTrustProfile } from './trustRiskEngine';
 import { getEnforcementState } from './enforcementEngine';
+import { admin } from './runtime';
 
 // ============================================================================
 // LOGGER

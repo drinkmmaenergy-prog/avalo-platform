@@ -7,6 +7,7 @@
 import { checkAndIncrementRateLimit, hashIpAddress, createRateLimitError } from './rateLimit.js';
 import { trackLoginSession } from './security.js';
 import { RateLimitContext } from './rateLimit.js';
+import { functions } from './runtime';
 
 /**
  * Track login session with rate limiting

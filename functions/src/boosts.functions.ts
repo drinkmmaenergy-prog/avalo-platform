@@ -12,6 +12,7 @@ import {
   getBoostStats
 } from './services/boosts.service';
 import type { BoostPurchaseRequest } from './types/boosts.types';
+import { auth, functions } from './runtime';
 
 /**
  * Purchase a boost

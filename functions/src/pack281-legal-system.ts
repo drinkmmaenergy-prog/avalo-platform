@@ -6,6 +6,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, increment } from './init.js';
 import { Timestamp } from 'firebase-admin/firestore';
+import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 
 // Types
 type LegalLanguage = 'en' | 'pl';

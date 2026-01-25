@@ -7,6 +7,7 @@
 
 import * as admin from 'firebase-admin';
 import { SafetyCheckResult } from './types/pack238-chat-motivation';
+import { Timestamp } from './runtime';
 
 const db = admin.firestore();
 

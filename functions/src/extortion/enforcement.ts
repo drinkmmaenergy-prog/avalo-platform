@@ -6,6 +6,7 @@ import {
   EnforcementActionRecord,
   CaseStatus
 } from './types';
+import { FieldValue, db, serverTimestamp, timestamp } from '../runtime';
 
 export class EnforcementEngine {
   private db: admin.firestore.Firestore;

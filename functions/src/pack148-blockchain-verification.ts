@@ -12,6 +12,7 @@ import {
   BlockchainVerificationError,
   BLOCKCHAIN_HASH_ALGORITHM,
 } from './pack148-types';
+import { timestamp } from './runtime';
 
 /**
  * Verify blockchain hash matches content

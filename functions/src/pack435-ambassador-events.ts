@@ -6,6 +6,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { FieldValue, Timestamp, increment } from './runtime';
 
 // ============================================================================
 // AMBASSADOR EVENT INTERFACES

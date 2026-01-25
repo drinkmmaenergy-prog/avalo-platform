@@ -29,6 +29,7 @@ import {
   blockAiGossip,
   detectManipulativeBehavior,
 } from './middleware/socialMemoryPrivacy.js';
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 /**
  * Get or create memory permissions for user

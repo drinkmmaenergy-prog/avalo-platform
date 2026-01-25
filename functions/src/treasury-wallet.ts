@@ -18,6 +18,7 @@ import {
 } from './types/treasury.types';
 import { WALLET_POLICY } from './config/treasury.config';
 import { createLedgerEntry } from './treasury-helpers';
+import { admin, functions, onCall, onSchedule, storage, timestamp } from './runtime';
 
 // ============================================================================
 // WALLET INITIALIZATION

@@ -13,6 +13,7 @@
 import { db } from './init';
 import { getLaunchConfig } from './pack317-launch-gate';
 import * as functions from 'firebase-functions';
+import { HttpsError, auth, onCall, onRequest, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES

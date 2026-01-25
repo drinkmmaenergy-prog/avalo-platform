@@ -7,6 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, generateId } from './init';
+import { HttpsError, Timestamp, auth, onCall } from './runtime';
 
 // ============================================================================
 // TYPES

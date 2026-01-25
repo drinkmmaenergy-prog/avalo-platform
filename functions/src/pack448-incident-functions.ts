@@ -23,6 +23,7 @@ import {
   PlaybookTriggeredEvent,
   CrisisActivatedEvent,
 } from './pack448-incident-types';
+import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
 
 const db = admin.firestore();
 

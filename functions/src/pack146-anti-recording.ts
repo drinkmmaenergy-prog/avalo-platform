@@ -18,6 +18,7 @@ import {
 } from './pack146-types';
 import { strengthenWatermark } from './pack146-watermarking';
 import { addToPiracyWatchlist } from './pack146-piracy-watchlist';
+import { auth } from './runtime';
 
 // ============================================================================
 // SCREEN CAPTURE DETECTION

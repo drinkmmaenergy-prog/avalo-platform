@@ -28,6 +28,7 @@ import {
   BADGE_DEFINITIONS,
   FORBIDDEN_BADGE_FIELDS
 } from './types/reputation.types';
+import { admin, auth, onCall, timestamp } from './runtime';
 
 const COLLECTIONS = {
   REPUTATION_BADGES: 'reputation_badges',

@@ -28,6 +28,7 @@ import {
   getCreatorRankingHistory,
   getCreatorRankingForDate,
 } from './pack324c-ranking-engine';
+import { admin, auth, functions } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS

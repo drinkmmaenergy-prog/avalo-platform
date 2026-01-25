@@ -6,6 +6,7 @@
 
 import { db, serverTimestamp, increment } from './init';
 import * as functions from 'firebase-functions';
+import { HttpsError, Timestamp, auth, onCall } from './runtime';
 
 // ============================================================================
 // INTERFACES

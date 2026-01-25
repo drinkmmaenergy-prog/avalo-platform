@@ -12,6 +12,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp } from './init.js';
 import type { InvestorReportData, ExportOptions } from './pack336-types.js';
+import { HttpsError, auth, onCall, storage } from './runtime';
 
 // ============================================================================
 // REPORT GENERATION

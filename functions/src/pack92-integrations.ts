@@ -22,6 +22,7 @@ import {
   sendSafetyNotification,
 } from './pack92-notifications';
 import { logger } from 'firebase-functions/v2';
+import { db, functions, onCall } from './runtime';
 
 // ============================================================================
 // EARNINGS INTEGRATION (PACK 81)

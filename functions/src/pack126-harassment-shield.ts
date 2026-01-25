@@ -15,6 +15,7 @@ import {
   SafetyAuditLog,
 } from './types/pack126-types';
 import { revokeConsent } from './pack126-consent-protocol';
+import { admin, arrayUnion, timestamp } from './runtime';
 
 const SHIELD_COLLECTION = 'harassment_shields';
 const SAFETY_AUDIT_COLLECTION = 'safety_audit_logs';

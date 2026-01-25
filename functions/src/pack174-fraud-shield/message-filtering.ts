@@ -6,6 +6,7 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db, generateId } from '../init';
 import { MessageFilterResult } from './types';
+import { auth, functions } from '../runtime';
 
 const FORBIDDEN_PATTERNS = [
   /send.*tokens?.*outside.*avalo/i,

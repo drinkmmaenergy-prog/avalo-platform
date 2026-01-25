@@ -11,6 +11,7 @@ import {
   NSFW_VIOLATION_SEVERITY,
 } from './pack108-types';
 import { ModerationCase, ModerationCaseHistoryEntry } from './pack103-types';
+import { admin, timestamp } from './runtime';
 
 // ============================================================================
 // NSFW MODERATION CASE CREATION

@@ -18,6 +18,7 @@ import {
   TaxReportUser,
   TaxReportPlatform,
 } from './types/pack330-tax.types';
+import { admin, functions, onCall } from './runtime';
 
 // ============================================================================
 // USER REPORT EXPORT (STUB)

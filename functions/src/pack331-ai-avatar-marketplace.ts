@@ -28,6 +28,7 @@ import {
   AvatarStyle,
   GenderPresentation,
 } from './types/pack331-ai-avatar-template.types';
+import { admin, auth, functions, onCall } from './runtime';
 
 // ============================================================================
 // VALIDATION SCHEMAS

@@ -18,6 +18,7 @@ import { Timestamp, FieldValue, Query } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { db } from "./init";
 import { ASOPlatform } from "./pack357-aso-variants";
+import { admin, functions, timestamp } from './runtime';
 
 export interface ASOPerformance {
   variantId: string;

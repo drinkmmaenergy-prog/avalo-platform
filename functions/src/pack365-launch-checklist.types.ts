@@ -5,6 +5,8 @@
  * Phase: ETAP B — Pre-Launch Hardening
  */
 
+import { Timestamp, auth, timestamp } from './runtime';
+
 export type LaunchDomain =
   | "auth"
   | "chat"

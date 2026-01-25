@@ -6,6 +6,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, increment, auth } from './init';
 import { recordPaidMediaEarning } from './earningsIntegration';
+import { onCall } from './runtime';
 // Push notifications - implement based on your notification service
 async function sendPushNotification(
   userId: string,

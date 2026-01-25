@@ -34,6 +34,7 @@ import { getUserInterests } from './pack134-interest-graph';
 import { getTimeOfDayRelevance } from './pack134-time-relevance';
 import { checkSafetyFilters } from './pack134-safety-filter';
 import { calculateNewCreatorBoost } from './pack134-fairness-boost';
+import { admin, functions, timestamp } from './runtime';
 
 // ============================================================================
 // FEED GENERATION CORE

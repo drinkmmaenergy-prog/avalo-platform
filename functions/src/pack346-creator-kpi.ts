@@ -7,6 +7,7 @@ import * as functions from "firebase-functions";
 import { db, serverTimestamp, increment } from "./init.js";
 import { Timestamp } from "firebase-admin/firestore";
 import { CreatorKPI } from "./pack346-types";
+import { HttpsError, admin, auth, onCall } from './runtime';
 
 /**
  * Update creator KPI on chat completion

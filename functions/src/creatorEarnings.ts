@@ -14,6 +14,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { db, admin, serverTimestamp, increment, generateId } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
+import { auth, functions, storage } from './runtime';
 
 // ============================================================================
 // CONFIGURATION

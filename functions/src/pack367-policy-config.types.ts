@@ -7,6 +7,7 @@
  */
 
 import { StorePlatform } from "./pack367-aso.types";
+import { timestamp } from './runtime';
 
 /**
  * Store policy configuration for compliance enforcement

@@ -1,3 +1,5 @@
+import { admin, getFirestore, logger } from './runtime';
+
 ;
 /**
  * PHASE 19 - Feature Flags System

@@ -13,6 +13,7 @@ import {
 } from "./types/notification.types";
 import { sendPushNotification } from "./notificationPush";
 import { sendEmailNotification } from "./notificationEmail";
+import { admin } from './runtime';
 
 const db = getFirestore();
 

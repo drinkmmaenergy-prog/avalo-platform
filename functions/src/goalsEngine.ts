@@ -26,6 +26,7 @@ import {
   GoalCategory,
   GoalStatus,
 } from './types/goals';
+import { timestamp } from './runtime';
 
 // Simple error class for compatibility
 class HttpsError extends Error {

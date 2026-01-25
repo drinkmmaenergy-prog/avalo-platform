@@ -8,6 +8,7 @@ import {
   ReviewRecoveryPrompt,
   Platform,
 } from './pack429-store-defense.types';
+import { Timestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 

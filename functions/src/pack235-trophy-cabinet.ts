@@ -14,6 +14,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { db, serverTimestamp, increment } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { admin, arrayUnion, auth, functions } from './runtime';
 
 // ============================================================================
 // TYPESCRIPT TYPES

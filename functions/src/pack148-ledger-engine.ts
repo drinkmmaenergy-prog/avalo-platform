@@ -17,6 +17,7 @@ import {
   BLOCKCHAIN_HASH_ALGORITHM,
   PRIVACY_HASH_ALGORITHM,
 } from './pack148-types';
+import { timestamp } from './runtime';
 
 /**
  * Hash data for privacy using SHA256

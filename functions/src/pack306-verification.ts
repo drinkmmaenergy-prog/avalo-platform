@@ -6,6 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { Storage } from '@google-cloud/storage';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
 const storage = new Storage();

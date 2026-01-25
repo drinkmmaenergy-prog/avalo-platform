@@ -18,6 +18,7 @@ import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { z } from 'zod';
 import { logger } from 'firebase-functions/v2';
+import { admin, auth, functions, increment, serverTimestamp, timestamp } from './runtime';
 
 const db = getFirestore();
 

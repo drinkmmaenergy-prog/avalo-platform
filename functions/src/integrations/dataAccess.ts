@@ -14,6 +14,7 @@ import {
   RateLimitStatus
 } from '../types/integrations';
 import * as crypto from 'crypto';
+import { FieldValue, HttpsError, auth, db, functions, increment, onCall, timestamp } from '../runtime';
 
 const db = admin.firestore();
 

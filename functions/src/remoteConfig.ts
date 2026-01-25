@@ -19,6 +19,7 @@ import {
   assignExperimentVariant,
   mergeConfigs,
 } from './remoteConfigEngine';
+import { admin, functions } from './runtime';
 
 /**
  * Fetch and merge global + environment config documents

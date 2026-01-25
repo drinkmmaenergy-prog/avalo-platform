@@ -10,6 +10,7 @@ import {
   canStartNewChat,
   canEarnFromChat,
 } from './moderationEngine';
+import { functions } from './runtime';
 
 // ============================================================================
 // DISCOVERY FEED INTEGRATION

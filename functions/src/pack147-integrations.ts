@@ -12,6 +12,7 @@
 import { db, serverTimestamp, generateId } from './init';
 import * as logger from 'firebase-functions/logger';
 import { RefundRequest, DisputeOutcome, ReputationImpactRecord } from './pack147-types';
+import { functions } from './runtime';
 
 // ============================================================================
 // REPUTATION INTEGRATION (PACK 140)

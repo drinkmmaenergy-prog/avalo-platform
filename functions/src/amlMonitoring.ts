@@ -12,6 +12,7 @@ import {
   AmlInputMetrics,
   AmlRiskResult 
 } from './amlRiskEngine';
+import { onRequest } from './runtime';
 
 const FieldValue = admin.firestore.FieldValue;
 const Timestamp = admin.firestore.Timestamp;

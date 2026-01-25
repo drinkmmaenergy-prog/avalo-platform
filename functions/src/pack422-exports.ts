@@ -5,6 +5,8 @@
  */
 
 // Reputation Service
+import { functions } from './runtime';
+
 export {
   recalculateReputation,
   getReputationProfile,

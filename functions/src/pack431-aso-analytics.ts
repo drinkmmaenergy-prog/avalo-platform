@@ -6,6 +6,7 @@
 
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions";
+import { FieldValue, db, functions, increment, serverTimestamp, timestamp } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
