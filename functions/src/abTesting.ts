@@ -14,10 +14,10 @@
  * Region: europe-west3
  */
 
-import { HttpsError } from 'firebase-functions/v2/https';
-import { Timestamp, FieldValue } from 'firebase-admin/firestore';
-;
-;
+import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { Timestamp, FieldValue, getFirestore } from 'firebase-admin/firestore';
+import { logger } from 'firebase-functions/v2';
+import { z } from 'zod';
 import * as crypto from "crypto";
 
 const db = getFirestore();
