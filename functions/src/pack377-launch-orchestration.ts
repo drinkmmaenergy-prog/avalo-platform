@@ -207,7 +207,7 @@ export const pack377_enforceCountryCaps = async (
   }
 
   return true;
-});
+};
 
 // ========================================
 // 2️⃣ INFRASTRUCTURE LOAD CONTROL
