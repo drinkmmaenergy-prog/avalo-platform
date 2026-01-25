@@ -131,7 +131,7 @@ export async function checkRegistrationAbuse(params: {
 // SPAM MESSAGE DETECTION
 // ============================================================================
 
-interface SpamCheckResult {
+export interface SpamCheckResult {
   isSpam: boolean;
   reason?: string;
   action: 'ALLOW' | 'THROTTLE' | 'SOFT_BLOCK';
