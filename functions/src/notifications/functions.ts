@@ -15,18 +15,19 @@ import { HttpsError, admin, auth, onCall } from '../runtime';
 /**
  * Send a notification
  */
-export const sendNotification = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const sendNotification = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { category, priority, title, body, targetUserId, actionUrl, imageUrl, channels } = data;
 
   // If targetUserId is provided, only admins can send to other users
-  const recipientId = targetUserId || context.auth.uid;
-  if (targetUserId && context.auth.uid !== targetUserId) {
+  const recipientId = targetUserId || request.auth.uid;
+  if (targetUserId && request.auth.uid !== targetUserId) {
     // Check admin status
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || !userDoc.data()?.isAdmin) {
       throw new functions.https.HttpsError(
         'permission-denied',
@@ -56,8 +57,9 @@ export const sendNotification = functions.https.onCall(async (data, context) => 
 /**
  * Get user notifications
  */
-export const getUserNotifications = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getUserNotifications = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -65,7 +67,7 @@ export const getUserNotifications = functions.https.onCall(async (data, context)
 
   let query = db
     .collection('notifications')
-    .where('userId', '==', context.auth.uid)
+    .where('userId', '==', request.auth.uid)
     .where('archived', '==', false)
     .orderBy('createdAt', 'desc')
     .limit(limit);
@@ -85,8 +87,9 @@ export const getUserNotifications = functions.https.onCall(async (data, context)
 /**
  * Mark notification as read
  */
-export const markNotificationRead = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const markNotificationRead = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -100,7 +103,7 @@ export const markNotificationRead = functions.https.onCall(async (data, context)
   }
 
   const notification = notificationDoc.data() as Notification;
-  if (notification.userId !== context.auth.uid) {
+  if (notification.userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Not your notification');
   }
 
@@ -115,14 +118,14 @@ export const markNotificationRead = functions.https.onCall(async (data, context)
 /**
  * Mark all notifications as read
  */
-export const markAllNotificationsRead = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const markAllNotificationsRead = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const snapshot = await db
     .collection('notifications')
-    .where('userId', '==', context.auth.uid)
+    .where('userId', '==', request.auth.uid)
     .where('read', '==', false)
     .limit(100)
     .get();
@@ -145,8 +148,9 @@ export const markAllNotificationsRead = functions.https.onCall(async (data, cont
 /**
  * Archive notification
  */
-export const archiveNotification = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const archiveNotification = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -160,7 +164,7 @@ export const archiveNotification = functions.https.onCall(async (data, context) 
   }
 
   const notification = notificationDoc.data() as Notification;
-  if (notification.userId !== context.auth.uid) {
+  if (notification.userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Not your notification');
   }
 
@@ -174,65 +178,69 @@ export const archiveNotification = functions.https.onCall(async (data, context) 
 /**
  * Get notification settings
  */
-export const getNotificationSettings = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getNotificationSettings = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const settings = await settingsManager.getSettings(context.auth.uid);
+  const settings = await settingsManager.getSettings(request.auth.uid);
   return settings;
 });
 
 /**
  * Update notification settings
  */
-export const updateNotificationSettings = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateNotificationSettings = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  await settingsManager.updateSettings(context.auth.uid, data.updates);
+  await settingsManager.updateSettings(request.auth.uid, data.updates);
   return { success: true };
 });
 
 /**
  * Toggle category notifications
  */
-export const toggleCategoryNotifications = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const toggleCategoryNotifications = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { category, enabled } = data;
 
-  await settingsManager.toggleCategory(context.auth.uid, category, enabled);
+  await settingsManager.toggleCategory(request.auth.uid, category, enabled);
   return { success: true };
 });
 
 /**
  * Set snooze mode
  */
-export const setSnoozeMode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const setSnoozeMode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { duration } = data;
 
-  await settingsManager.setSnoozeMode(context.auth.uid, duration || null);
+  await settingsManager.setSnoozeMode(request.auth.uid, duration || null);
   return { success: true };
 });
 
 /**
  * Create reminder
  */
-export const createReminder = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createReminder = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const reminderId = await reminderEngine.createReminder({
-    userId: context.auth.uid,
+    userId: request.auth.uid,
     ...data,
   });
 
@@ -242,20 +250,21 @@ export const createReminder = functions.https.onCall(async (data, context) => {
 /**
  * Get user reminders
  */
-export const getUserReminders = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getUserReminders = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const reminders = await reminderEngine.getUserReminders(context.auth.uid);
+  const reminders = await reminderEngine.getUserReminders(request.auth.uid);
   return reminders;
 });
 
 /**
  * Update reminder
  */
-export const updateReminder = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateReminder = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -268,7 +277,7 @@ export const updateReminder = functions.https.onCall(async (data, context) => {
   }
 
   const reminder = reminderDoc.data();
-  if (reminder?.userId !== context.auth.uid) {
+  if (reminder?.userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Not your reminder');
   }
 
@@ -279,8 +288,9 @@ export const updateReminder = functions.https.onCall(async (data, context) => {
 /**
  * Delete reminder
  */
-export const deleteReminder = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const deleteReminder = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -293,7 +303,7 @@ export const deleteReminder = functions.https.onCall(async (data, context) => {
   }
 
   const reminder = reminderDoc.data();
-  if (reminder?.userId !== context.auth.uid) {
+  if (reminder?.userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Not your reminder');
   }
 
@@ -304,13 +314,14 @@ export const deleteReminder = functions.https.onCall(async (data, context) => {
 /**
  * Get user digests
  */
-export const getUserDigests = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getUserDigests = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { limit = 10 } = data;
-  const digests = await digestEngine.getUserDigests(context.auth.uid, limit);
+  const digests = await digestEngine.getUserDigests(request.auth.uid, limit);
   return digests;
 });
 

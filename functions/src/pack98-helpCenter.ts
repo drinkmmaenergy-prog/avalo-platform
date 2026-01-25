@@ -38,11 +38,8 @@ const db = admin.firestore();
  * Get all help categories
  * Public endpoint - returns categories in specified language
  */
-export const getHelpCategories = functions.https.onCall(
-  async (
-    data: GetHelpCategoriesRequest,
-    context
-  ): Promise<GetHelpCategoriesResponse> => {
+export const getHelpCategories = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { language } = data;
 
     try {
@@ -68,11 +65,8 @@ export const getHelpCategories = functions.https.onCall(
  * Get articles by category
  * Public endpoint with pagination
  */
-export const getHelpArticlesByCategory = functions.https.onCall(
-  async (
-    data: GetHelpArticlesByCategoryRequest,
-    context
-  ): Promise<GetHelpArticlesByCategoryResponse> => {
+export const getHelpArticlesByCategory = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { categorySlug, language, limit = 20, cursor } = data;
 
     try {
@@ -138,11 +132,8 @@ export const getHelpArticlesByCategory = functions.https.onCall(
  * Search help articles
  * Public endpoint with text search and pagination
  */
-export const searchHelpArticles = functions.https.onCall(
-  async (
-    data: SearchHelpArticlesRequest,
-    context
-  ): Promise<SearchHelpArticlesResponse> => {
+export const searchHelpArticles = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { query, language, limit = 20, cursor } = data;
 
     if (!query || query.trim().length === 0) {
@@ -204,11 +195,8 @@ export const searchHelpArticles = functions.https.onCall(
  * Get single article by slug
  * Public endpoint
  */
-export const getHelpArticleBySlug = functions.https.onCall(
-  async (
-    data: GetHelpArticleBySlugRequest,
-    context
-  ): Promise<GetHelpArticleBySlugResponse> => {
+export const getHelpArticleBySlug = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { slug, language } = data;
 
     try {
@@ -244,15 +232,15 @@ export const getHelpArticleBySlug = functions.https.onCall(
 /**
  * Create or update help article (admin only)
  */
-export const admin_createOrUpdateHelpArticle = functions.https.onCall(
-  async (data: CreateOrUpdateHelpArticleRequest, context) => {
+export const admin_createOrUpdateHelpArticle = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Check authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
     // TODO: Add admin role check
-    // const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    // const userDoc = await db.collection('users').doc(request.auth.uid).get();
     // if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     //   throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     // }
@@ -304,15 +292,15 @@ export const admin_createOrUpdateHelpArticle = functions.https.onCall(
 /**
  * Create or update help category (admin only)
  */
-export const admin_createOrUpdateHelpCategory = functions.https.onCall(
-  async (data: CreateOrUpdateHelpCategoryRequest, context) => {
+export const admin_createOrUpdateHelpCategory = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Check authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
     // TODO: Add admin role check
-    // const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    // const userDoc = await db.collection('users').doc(request.auth.uid).get();
     // if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     //   throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     // }
@@ -354,14 +342,14 @@ export const admin_createOrUpdateHelpCategory = functions.https.onCall(
 /**
  * Dismiss a contextual tip
  */
-export const dismissContextualTip = functions.https.onCall(
-  async (data: DismissTipRequest, context) => {
-    if (!context.auth) {
+export const dismissContextualTip = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
     const { tipId } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const tipsStateRef = db.collection('user_tips_state').doc(userId);
@@ -393,12 +381,13 @@ export const dismissContextualTip = functions.https.onCall(
 /**
  * Get user's dismissed tips state
  */
-export const getUserTipsState = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getUserTipsState = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const tipsStateDoc = await db.collection('user_tips_state').doc(userId).get();
@@ -418,14 +407,14 @@ export const getUserTipsState = functions.https.onCall(async (data, context) => 
 /**
  * Mark onboarding as complete
  */
-export const markOnboardingComplete = functions.https.onCall(
-  async (data: MarkOnboardingCompleteRequest, context) => {
-    if (!context.auth) {
+export const markOnboardingComplete = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
     const { type } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     if (!['general', 'monetization'].includes(type)) {
       throw new functions.https.HttpsError('invalid-argument', 'Invalid onboarding type');
@@ -461,13 +450,13 @@ export const markOnboardingComplete = functions.https.onCall(
 /**
  * Get user's onboarding state
  */
-export const getOnboardingState = functions.https.onCall(
-  async (data, context): Promise<GetOnboardingStateResponse> => {
-    if (!context.auth) {
+export const getOnboardingState = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const onboardingDoc = await db.collection('user_onboarding_state').doc(userId).get();

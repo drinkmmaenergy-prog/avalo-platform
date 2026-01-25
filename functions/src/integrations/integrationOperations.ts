@@ -22,9 +22,10 @@ const db = admin.firestore();
 /**
  * Request integration permission from creator
  */
-export const requestIntegrationPermission = https.onCall(async (data, context) => {
+export const requestIntegrationPermission = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth) {
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'Authentication required');
     }
 
@@ -138,9 +139,10 @@ export const requestIntegrationPermission = https.onCall(async (data, context) =
 /**
  * Approve integration request (creator only)
  */
-export const approveIntegrationRequest = https.onCall(async (data, context) => {
+export const approveIntegrationRequest = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth) {
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'Authentication required');
     }
 
@@ -159,7 +161,7 @@ export const approveIntegrationRequest = https.onCall(async (data, context) => {
 
     const request = requestDoc.data() as IntegrationRequest;
 
-    if (request.creatorId !== context.auth.uid) {
+    if (request.creatorId !== request.auth.uid) {
       throw new https.HttpsError(
         'permission-denied',
         'Only the creator can approve this request'
@@ -215,7 +217,7 @@ export const approveIntegrationRequest = https.onCall(async (data, context) => {
       transaction.update(requestRef, {
         status: 'approved',
         reviewedAt: now,
-        reviewedBy: context.auth!.uid,
+        reviewedBy: request.auth!.uid,
         updatedAt: now
       });
 
@@ -251,9 +253,10 @@ export const approveIntegrationRequest = https.onCall(async (data, context) => {
 /**
  * Deny integration request
  */
-export const denyIntegrationRequest = https.onCall(async (data, context) => {
+export const denyIntegrationRequest = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth) {
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'Authentication required');
     }
 
@@ -272,7 +275,7 @@ export const denyIntegrationRequest = https.onCall(async (data, context) => {
 
     const request = requestDoc.data() as IntegrationRequest;
 
-    if (request.creatorId !== context.auth.uid) {
+    if (request.creatorId !== request.auth.uid) {
       throw new https.HttpsError(
         'permission-denied',
         'Only the creator can deny this request'
@@ -289,7 +292,7 @@ export const denyIntegrationRequest = https.onCall(async (data, context) => {
     await requestRef.update({
       status: 'denied',
       reviewedAt: new Date(),
-      reviewedBy: context.auth.uid,
+      reviewedBy: request.auth.uid,
       denialReason: reason || 'No reason provided',
       updatedAt: new Date()
     });
@@ -314,9 +317,10 @@ export const denyIntegrationRequest = https.onCall(async (data, context) => {
 /**
  * Revoke integration permission
  */
-export const revokeIntegrationPermission = https.onCall(async (data, context) => {
+export const revokeIntegrationPermission = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth) {
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'Authentication required');
     }
 
@@ -335,7 +339,7 @@ export const revokeIntegrationPermission = https.onCall(async (data, context) =>
 
     const integration = integrationDoc.data() as APIIntegration;
 
-    if (integration.creatorId !== context.auth.uid && !context.auth.token.admin) {
+    if (integration.creatorId !== request.auth.uid && !request.auth.token.admin) {
       throw new https.HttpsError(
         'permission-denied',
         'Only the creator or admin can revoke this integration'
@@ -391,9 +395,10 @@ export const revokeIntegrationPermission = https.onCall(async (data, context) =>
 /**
  * Renew integration consent
  */
-export const renewIntegrationConsent = https.onCall(async (data, context) => {
+export const renewIntegrationConsent = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth) {
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'Authentication required');
     }
 
@@ -412,7 +417,7 @@ export const renewIntegrationConsent = https.onCall(async (data, context) => {
 
     const integration = integrationDoc.data() as APIIntegration;
 
-    if (integration.creatorId !== context.auth.uid) {
+    if (integration.creatorId !== request.auth.uid) {
       throw new https.HttpsError(
         'permission-denied',
         'Only the creator can renew consent'
@@ -479,16 +484,17 @@ export const renewIntegrationConsent = https.onCall(async (data, context) => {
 /**
  * List creator integrations
  */
-export const listCreatorIntegrations = https.onCall(async (data, context) => {
+export const listCreatorIntegrations = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth) {
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'Authentication required');
     }
 
     const { creatorId, status } = data;
-    const queryCreatorId = creatorId || context.auth.uid;
+    const queryCreatorId = creatorId || request.auth.uid;
 
-    if (queryCreatorId !== context.auth.uid && !context.auth.token.admin) {
+    if (queryCreatorId !== request.auth.uid && !request.auth.token.admin) {
       throw new https.HttpsError(
         'permission-denied',
         'Cannot list integrations for other users'
@@ -523,9 +529,10 @@ export const listCreatorIntegrations = https.onCall(async (data, context) => {
 /**
  * Get integration details
  */
-export const getIntegrationDetails = https.onCall(async (data, context) => {
+export const getIntegrationDetails = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth) {
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'Authentication required');
     }
 
@@ -546,7 +553,7 @@ export const getIntegrationDetails = https.onCall(async (data, context) => {
 
     const integration = integrationDoc.data() as APIIntegration;
 
-    if (integration.creatorId !== context.auth.uid && !context.auth.token.admin) {
+    if (integration.creatorId !== request.auth.uid && !request.auth.token.admin) {
       throw new https.HttpsError(
         'permission-denied',
         'Cannot view this integration'
@@ -580,9 +587,10 @@ export const getIntegrationDetails = https.onCall(async (data, context) => {
 /**
  * Update auto-renew setting
  */
-export const updateAutoRenew = https.onCall(async (data, context) => {
+export const updateAutoRenew = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth) {
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'Authentication required');
     }
 
@@ -601,7 +609,7 @@ export const updateAutoRenew = https.onCall(async (data, context) => {
 
     const integration = integrationDoc.data() as APIIntegration;
 
-    if (integration.creatorId !== context.auth.uid) {
+    if (integration.creatorId !== request.auth.uid) {
       throw new https.HttpsError(
         'permission-denied',
         'Only the creator can update auto-renew'

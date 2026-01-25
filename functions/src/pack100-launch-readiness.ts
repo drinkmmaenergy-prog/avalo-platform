@@ -589,14 +589,15 @@ export async function performLaunchReadinessCheck(): Promise<LaunchReadinessRepo
 /**
  * Get launch readiness report (admin only)
  */
-export const admin_getLaunchReadiness = functions.https.onCall(async (data, context) => {
+export const admin_getLaunchReadiness = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
   // Check admin privileges
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }

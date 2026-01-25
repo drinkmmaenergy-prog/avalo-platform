@@ -42,17 +42,17 @@ interface RepeatMessagePattern {
  * pack344_getMessageSuggestions
  * Generate 2-3 short message suggestions based on context
  */
-export const pack344_getMessageSuggestions = functions.https.onCall(
-  async (data, context) => {
+export const pack344_getMessageSuggestions = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const {
       sessionId,
       receiverProfileSummary,
@@ -131,16 +131,16 @@ export const pack344_getMessageSuggestions = functions.https.onCall(
  * pack344_flagRepeatedMessagePattern
  * Backend detection of spam-like repeated messages
  */
-export const pack344_flagRepeatedMessagePattern = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack344_flagRepeatedMessagePattern = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { messageHash, chatId } = data;
 
     if (!messageHash || !chatId) {
@@ -228,16 +228,16 @@ export const pack344_flagRepeatedMessagePattern = functions.https.onCall(
  * pack344_getProfileAndDiscoveryTips
  * Generate personalized tips for profile improvement and discovery success
  */
-export const pack344_getProfileAndDiscoveryTips = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack344_getProfileAndDiscoveryTips = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { profileSummary, statsSummary, locale = 'en', countryCode } = data;
 
     if (!profileSummary) {

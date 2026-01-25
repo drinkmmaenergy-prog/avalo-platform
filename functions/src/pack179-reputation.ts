@@ -71,10 +71,10 @@ async function logReputationAction(
 /**
  * Assign a reputation badge to a user
  */
-export const assignReputationBadge = functions.https.onCall(
-  async (data: AssignBadgeRequest, context): Promise<AssignBadgeResponse> => {
+export const assignReputationBadge = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         return { success: false, error: 'Unauthorized' };
       }
 
@@ -117,7 +117,7 @@ export const assignReputationBadge = functions.https.onCall(
         userId,
         'badge_assigned',
         { badgeId, badgeType },
-        context.auth.uid
+        request.auth.uid
       );
 
       await updatePublicReputation(userId);
@@ -133,14 +133,14 @@ export const assignReputationBadge = functions.https.onCall(
 /**
  * Remove a reputation badge (fraud cases only)
  */
-export const removeReputationBadge = functions.https.onCall(
-  async (data: RemoveBadgeRequest, context): Promise<RemoveBadgeResponse> => {
+export const removeReputationBadge = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         return { success: false, error: 'Unauthorized' };
       }
 
-      const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+      const adminDoc = await db.collection('users').doc(request.auth.uid).get();
       const userRole = adminDoc.data()?.role;
 
       if (userRole !== 'admin' && userRole !== 'moderator') {
@@ -169,7 +169,7 @@ export const removeReputationBadge = functions.https.onCall(
         userId,
         'badge_removed',
         { badgeId, reason },
-        context.auth.uid
+        request.auth.uid
       );
 
       await updatePublicReputation(userId);
@@ -185,10 +185,10 @@ export const removeReputationBadge = functions.https.onCall(
 /**
  * Track an achievement milestone
  */
-export const trackAchievementMilestone = functions.https.onCall(
-  async (data: TrackMilestoneRequest, context): Promise<TrackMilestoneResponse> => {
+export const trackAchievementMilestone = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         return { success: false, error: 'Unauthorized' };
       }
 
@@ -198,7 +198,7 @@ export const trackAchievementMilestone = functions.https.onCall(
         return { success: false, error: 'Missing required fields' };
       }
 
-      if (context.auth.uid !== userId) {
+      if (request.auth.uid !== userId) {
         return { success: false, error: 'Cannot create milestone for another user' };
       }
 
@@ -231,7 +231,7 @@ export const trackAchievementMilestone = functions.https.onCall(
         userId,
         'milestone_added',
         { milestoneId, category, title },
-        context.auth.uid
+        request.auth.uid
       );
 
       await updatePublicReputation(userId);
@@ -247,10 +247,10 @@ export const trackAchievementMilestone = functions.https.onCall(
 /**
  * Get public reputation for a user
  */
-export const getPublicReputation = functions.https.onCall(
-  async (data: GetPublicReputationRequest, context): Promise<GetPublicReputationResponse> => {
+export const getPublicReputation = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         return { success: false, error: 'Unauthorized' };
       }
 
@@ -291,10 +291,10 @@ export const getPublicReputation = functions.https.onCall(
 /**
  * Update reputation display settings
  */
-export const updateReputationDisplaySettings = functions.https.onCall(
-  async (data: UpdateDisplaySettingsRequest, context): Promise<UpdateDisplaySettingsResponse> => {
+export const updateReputationDisplaySettings = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         return { success: false, error: 'Unauthorized' };
       }
 
@@ -304,7 +304,7 @@ export const updateReputationDisplaySettings = functions.https.onCall(
         return { success: false, error: 'Missing required fields' };
       }
 
-      if (context.auth.uid !== userId) {
+      if (request.auth.uid !== userId) {
         return { success: false, error: 'Cannot update settings for another user' };
       }
 
@@ -405,14 +405,14 @@ async function updatePublicReputation(userId: string): Promise<void> {
 /**
  * Verify achievement milestone (admin only)
  */
-export const verifyAchievementMilestone = functions.https.onCall(
-  async (data: { milestoneId: string; verified: boolean }, context) => {
+export const verifyAchievementMilestone = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         return { success: false, error: 'Unauthorized' };
       }
 
-      const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+      const adminDoc = await db.collection('users').doc(request.auth.uid).get();
       const userRole = adminDoc.data()?.role;
 
       if (userRole !== 'admin' && userRole !== 'moderator') {
@@ -443,7 +443,7 @@ export const verifyAchievementMilestone = functions.https.onCall(
         milestone.userId,
         'milestone_verified',
         { milestoneId, verified },
-        context.auth.uid
+        request.auth.uid
       );
 
       await updatePublicReputation(milestone.userId);
@@ -460,14 +460,14 @@ export const verifyAchievementMilestone = functions.https.onCall(
  * Separation enforcement: Prevent exposure of private data
  * This function validates that no safety/risk data is exposed in reputation
  */
-export const validateReputationSeparation = functions.https.onCall(
-  async (data: { userId: string }, context) => {
+export const validateReputationSeparation = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         return { success: false, error: 'Unauthorized' };
       }
 
-      const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+      const adminDoc = await db.collection('users').doc(request.auth.uid).get();
       const userRole = adminDoc.data()?.role;
 
       if (userRole !== 'admin') {

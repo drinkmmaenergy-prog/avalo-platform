@@ -26,14 +26,14 @@ import { HttpsError, auth, onCall } from './runtime';
 /**
  * Create or update an interaction rating
  */
-export const pack423_createInteractionRating = functions.https.onCall(
-  async (data: CreateRatingInput, context) => {
+export const pack423_createInteractionRating = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Ensure rater is the authenticated user
     if (data.raterUserId !== userId) {
@@ -64,14 +64,14 @@ export const pack423_createInteractionRating = functions.https.onCall(
 /**
  * Get user's own interaction ratings
  */
-export const pack423_getMyInteractionRatings = functions.https.onCall(
-  async (data: { limit?: number }, context) => {
-    if (!context.auth) {
+export const pack423_getMyInteractionRatings = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     try {
-      const ratings = await getMyInteractionRatings(context.auth.uid, data.limit);
+      const ratings = await getMyInteractionRatings(request.auth.uid, data.limit);
       return { ratings };
     } catch (error: any) {
       console.error('[PACK423] Error getting ratings:', error);
@@ -83,19 +83,19 @@ export const pack423_getMyInteractionRatings = functions.https.onCall(
 /**
  * Get aggregated user rating summary (admin/internal only)
  */
-export const pack423_getUserRatingSummary = functions.https.onCall(
-  async (data: { userId: string }, context) => {
-    if (!context.auth) {
+export const pack423_getUserRatingSummary = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     // Check if admin or requesting own summary
-    const userRef = admin.firestore().collection('users').doc(context.auth.uid);
+    const userRef = admin.firestore().collection('users').doc(request.auth.uid);
     const userSnap = await userRef.get();
     const userData = userSnap.data();
     const isAdmin = userData?.role === 'ADMIN' || userData?.isAdmin === true;
 
-    if (!isAdmin && context.auth.uid !== data.userId) {
+    if (!isAdmin && request.auth.uid !== data.userId) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can view other users rating summaries'
@@ -115,9 +115,9 @@ export const pack423_getUserRatingSummary = functions.https.onCall(
 /**
  * Get aggregated companion rating summary
  */
-export const pack423_getCompanionRatingSummary = functions.https.onCall(
-  async (data: { companionId: string }, context) => {
-    if (!context.auth) {
+export const pack423_getCompanionRatingSummary = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -134,9 +134,9 @@ export const pack423_getCompanionRatingSummary = functions.https.onCall(
 /**
  * Check rating eligibility
  */
-export const pack423_checkRatingEligibility = functions.https.onCall(
-  async (data: { interactionId: string; interactionType: string }, context) => {
-    if (!context.auth) {
+export const pack423_checkRatingEligibility = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -144,7 +144,7 @@ export const pack423_checkRatingEligibility = functions.https.onCall(
       const eligibility = await checkRatingEligibility(
         data.interactionId,
         data.interactionType as any,
-        context.auth.uid
+        request.auth.uid
       );
       return eligibility;
     } catch (error: any) {
@@ -157,15 +157,16 @@ export const pack423_checkRatingEligibility = functions.https.onCall(
 /**
  * Create NPS survey response
  */
-export const pack423_createNpsResponse = functions.https.onCall(
-  async (data: Omit<CreateNpsInput, 'userId'>, context) => {
-    if (!context.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+export const pack423_createNpsResponse = onCall(
+  async (request) => {
+    const data = request.data as Omit<CreateNpsInput, 'userId'>;
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     const payload: CreateNpsInput = {
       ...data,
-      userId: context.auth.uid,
+      userId: request.auth.uid,
     };
 
     try {
@@ -181,7 +182,7 @@ export const pack423_createNpsResponse = functions.https.onCall(
       return { success: true };
     } catch (error: any) {
       console.error('[PACK423] Error creating NPS response:', error);
-      throw new functions.https.HttpsError('internal', error.message || 'Failed to create NPS response');
+      throw new HttpsError('internal', error.message || 'Failed to create NPS response');
     }
   }
 );
@@ -189,14 +190,13 @@ export const pack423_createNpsResponse = functions.https.onCall(
 /**
  * Check NPS eligibility
  */
-export const pack423_checkNpsEligibility = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack423_checkNpsEligibility = functions.https.onCall(async (request) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     try {
-      const eligibility = await checkNpsEligibility(context.auth.uid);
+      const eligibility = await checkNpsEligibility(request.auth.uid);
       return eligibility;
     } catch (error: any) {
       console.error('[PACK423] Error checking NPS eligibility:', error);
@@ -208,14 +208,13 @@ export const pack423_checkNpsEligibility = functions.https.onCall(
 /**
  * Get user's NPS history
  */
-export const pack423_getUserNpsHistory = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack423_getUserNpsHistory = functions.https.onCall(async (request) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     try {
-      const history = await getUserNpsHistory(context.auth.uid);
+      const history = await getUserNpsHistory(request.auth.uid);
       return { history };
     } catch (error: any) {
       console.error('[PACK423] Error getting NPS history:', error);
@@ -227,14 +226,14 @@ export const pack423_getUserNpsHistory = functions.https.onCall(
 /**
  * Get NPS analytics (admin only)
  */
-export const pack423_getNpsAnalytics = functions.https.onCall(
-  async (data: { startTime: number; endTime: number }, context) => {
-    if (!context.auth) {
+export const pack423_getNpsAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     // Check if admin
-    const userRef = admin.firestore().collection('users').doc(context.auth.uid);
+    const userRef = admin.firestore().collection('users').doc(request.auth.uid);
     const userSnap = await userRef.get();
     const userData = userSnap.data();
     const isAdmin = userData?.role === 'ADMIN' || userData?.isAdmin === true;
@@ -256,14 +255,14 @@ export const pack423_getNpsAnalytics = functions.https.onCall(
 /**
  * Flag rating as abuse (internal/admin)
  */
-export const pack423_flagRatingAsAbuse = functions.https.onCall(
-  async (data: { ratingId: string }, context) => {
-    if (!context.auth) {
+export const pack423_flagRatingAsAbuse = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     // Check if admin or support
-    const userRef = admin.firestore().collection('users').doc(context.auth.uid);
+    const userRef = admin.firestore().collection('users').doc(request.auth.uid);
     const userSnap = await userRef.get();
     const userData = userSnap.data();
     const isAdmin = userData?.role === 'ADMIN' || userData?.isAdmin === true;
@@ -286,19 +285,19 @@ export const pack423_flagRatingAsAbuse = functions.https.onCall(
 /**
  * Check if user is recent detractor (for retention engine integration)
  */
-export const pack423_isRecentDetractor = functions.https.onCall(
-  async (data: { userId: string }, context) => {
-    if (!context.auth) {
+export const pack423_isRecentDetractor = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     // Admin or requesting own status
-    const userRef = admin.firestore().collection('users').doc(context.auth.uid);
+    const userRef = admin.firestore().collection('users').doc(request.auth.uid);
     const userSnap = await userRef.get();
     const userData = userSnap.data();
     const isAdmin = userData?.role === 'ADMIN' || userData?.isAdmin === true;
 
-    if (!isAdmin && context.auth.uid !== data.userId) {
+    if (!isAdmin && request.auth.uid !== data.userId) {
       throw new functions.https.HttpsError('permission-denied', 'Permission denied');
     }
 

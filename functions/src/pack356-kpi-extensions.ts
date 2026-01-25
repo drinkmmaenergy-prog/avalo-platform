@@ -185,14 +185,14 @@ async function calculateLTVByCountry(): Promise<Record<string, number>> {
 /**
  * Admin: Get ad KPIs dashboard
  */
-export const getAdKPIs = functions.https.onCall(
-  async (data, context) => {
+export const getAdKPIs = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     if (userDoc.data()?.role !== "admin") {
       throw new functions.https.HttpsError("permission-denied", "Admin access required");
     }
@@ -218,14 +218,14 @@ export const getAdKPIs = functions.https.onCall(
 /**
  * Admin: Get cohort analysis for ad campaigns
  */
-export const getAdCohortAnalysis = functions.https.onCall(
-  async (data: { campaignId: string; cohortDays: number }, context) => {
+export const getAdCohortAnalysis = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     if (userDoc.data()?.role !== "admin") {
       throw new functions.https.HttpsError("permission-denied", "Admin access required");
     }
@@ -289,14 +289,14 @@ export const getAdCohortAnalysis = functions.https.onCall(
 /**
  * Calculate channel comparison metrics
  */
-export const compareChannels = functions.https.onCall(
-  async (data, context) => {
+export const compareChannels = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     if (userDoc.data()?.role !== "admin") {
       throw new functions.https.HttpsError("permission-denied", "Admin access required");
     }

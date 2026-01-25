@@ -54,14 +54,11 @@ export interface SafetyActionLog {
  *   signals: string[]
  * }
  */
-export const getRelationshipHint = functions.https.onCall(
-  async (data: {
-    viewerUserId?: string;
-    counterpartUserId: string;
-  }, context) => {
+export const getRelationshipHint = functions.https.onCall(async (request) => {
+  const data = request.data;
     
     // Use authenticated user if available, otherwise use provided viewerUserId
-    const viewerUserId = context.auth?.uid || data.viewerUserId;
+    const viewerUserId = request.auth?.uid || data.viewerUserId;
     const { counterpartUserId } = data;
 
     // Validate input
@@ -129,16 +126,11 @@ export const getRelationshipHint = functions.https.onCall(
  *   actionId: string
  * }
  */
-export const logSafetyAction = functions.https.onCall(
-  async (data: {
-    userId?: string;
-    counterpartUserId: string;
-    action: SafetyAction;
-    notes?: string;
-  }, context) => {
+export const logSafetyAction = functions.https.onCall(async (request) => {
+  const data = request.data;
     
     // Use authenticated user if available
-    const userId = context.auth?.uid || data.userId;
+    const userId = request.auth?.uid || data.userId;
     const { counterpartUserId, action, notes } = data;
 
     // Validate input

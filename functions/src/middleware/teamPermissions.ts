@@ -216,19 +216,19 @@ export function withTeamPermission(
   requiredPermission: TeamPermission,
   handler: (
     data: any,
-    context: functions.https.CallableContext,
+    request: CallableRequest<any>,
     teamContext: TeamContext
   ) => Promise<any>
 ) {
-  return async (data: any, context: functions.https.CallableContext) => {
-    if (!context.auth) {
+  return async (data: any, request: CallableRequest<any>) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const actorUserId = context.auth.uid;
+    const actorUserId = request.auth.uid;
     const ownerUserId = data.ownerUserId || actorUserId;
 
     const teamContext = await requirePermission(

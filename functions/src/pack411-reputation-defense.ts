@@ -479,18 +479,18 @@ export const pack411_scanReputationAnomalies = functions.pubsub
 /**
  * Manual trigger for reputation scan (for testing/debugging)
  */
-export const pack411_triggerReputationScan = functions.https.onCall(
-  async (data, context) => {
+export const pack411_triggerReputationScan = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Must be admin
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userDoc = await db.collection('users').doc(context.auth.uid).get();
+      const userDoc = await db.collection('users').doc(request.auth.uid).get();
       const userData = userDoc.data();
 
       if (!userData || userData.role !== 'ADMIN') {

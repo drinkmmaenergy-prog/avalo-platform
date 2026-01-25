@@ -54,17 +54,18 @@ interface UserTasteProfile {
  */
 export const recordPersonalizationEvent = functions
   .region('europe-west3')
-  .https.onCall(async (data: PersonalizationEventPayload, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify authentication
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const callerId = context.auth.uid;
+      const callerId = request.auth.uid;
       const { userId, type, targetUserId, companionId, tokensSpent, interestsContext } = data;
 
       // Verify the caller is acting on their own behalf
@@ -137,17 +138,18 @@ export const recordPersonalizationEvent = functions
  */
 export const getPersonalizationProfile = functions
   .region('europe-west3')
-  .https.onCall(async (data: { userId: string }, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify authentication
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const callerId = context.auth.uid;
+      const callerId = request.auth.uid;
       const { userId } = data;
 
       // Verify the caller is requesting their own profile

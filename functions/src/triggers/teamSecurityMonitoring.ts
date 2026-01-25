@@ -234,9 +234,9 @@ async function suspendTeamMember(ownerUserId: string, memberUserId: string): Pro
 /**
  * Device fingerprint validation
  */
-export const validateDeviceFingerprint = functions.https.onCall(
-  async (data: { membershipId: string; deviceFingerprint: string }, context) => {
-    if (!context.auth) {
+export const validateDeviceFingerprint = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Not authenticated');
     }
 

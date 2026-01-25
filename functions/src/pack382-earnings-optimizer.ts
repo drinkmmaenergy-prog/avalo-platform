@@ -20,23 +20,20 @@ const db = getFirestore();
 /**
  * Generate AI-powered earnings optimizations for a creator
  */
-export const pack382_generateEarningsOptimizations = functions.https.onCall(
-  async (
-    data: GenerateOptimizationsInput,
-    context
-  ): Promise<GenerateOptimizationsOutput> => {
-    if (!context.auth) {
+export const pack382_generateEarningsOptimizations = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const { userId = context.auth.uid, regionCode, limit = 10 } = data;
+    const { userId = request.auth.uid, regionCode, limit = 10 } = data;
 
     // Only allow users to get their own optimizations (or admins)
-    const isAdmin = context.auth.token?.role === 'admin';
-    if (userId !== context.auth.uid && !isAdmin) {
+    const isAdmin = request.auth.token?.role === 'admin';
+    if (userId !== request.auth.uid && !isAdmin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Can only get own optimizations'
@@ -474,9 +471,9 @@ async function generateBurnoutPreventionOpts(
 /**
  * Mark optimization as viewed
  */
-export const pack382_markOptimizationViewed = functions.https.onCall(
-  async (data: { optimizationId: string }, context) => {
-    if (!context.auth) {
+export const pack382_markOptimizationViewed = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -505,9 +502,9 @@ export const pack382_markOptimizationViewed = functions.https.onCall(
 /**
  * Mark optimization as applied
  */
-export const pack382_markOptimizationApplied = functions.https.onCall(
-  async (data: { optimizationId: string }, context) => {
-    if (!context.auth) {
+export const pack382_markOptimizationApplied = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'

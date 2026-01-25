@@ -41,8 +41,9 @@ interface KeywordRankingAlert {
 /**
  * Monitor ASO health metrics
  */
-export const monitorASOHealth = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const monitorASOHealth = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -248,8 +249,9 @@ export const scheduledASOHealthCheck = functions.pubsub.schedule('every 6 hours'
 /**
  * Detect crash-to-review correlation
  */
-export const detectCrashReviewCorrelation = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const detectCrashReviewCorrelation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 

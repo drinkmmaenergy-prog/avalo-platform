@@ -364,10 +364,10 @@ export const identifyAtRiskUsers = functions.pubsub
 /**
  * Get churn analytics (callable function)
  */
-export const getChurnAnalytics = functions.https.onCall(
-  async (data, context) => {
+export const getChurnAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require admin auth
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         "permission-denied",
         "Admin access required"

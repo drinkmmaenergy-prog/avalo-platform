@@ -25,8 +25,9 @@ const db = admin.firestore();
 /**
  * Support → Wallet: Credit refund from support ticket
  */
-export const pack337_supportRefundToWallet = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack337_supportRefundToWallet = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -84,7 +85,8 @@ export const pack337_supportRefundToWallet = functions.https.onCall(async (data,
 /**
  * Retention → Support: Create proactive support ticket for at-risk user
  */
-export const pack337_retentionCreateProactiveTicket = functions.https.onCall(async (data, context) => {
+export const pack337_retentionCreateProactiveTicket = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { userId, riskScore, reasons } = data;
 
   if (!userId || !riskScore) {
@@ -118,7 +120,8 @@ export const pack337_retentionCreateProactiveTicket = functions.https.onCall(asy
 /**
  * Fraud → Wallet: Freeze wallet on fraud detection
  */
-export const pack337_fraudFreezeWallet = functions.https.onCall(async (data, context) => {
+export const pack337_fraudFreezeWallet = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { userId, fraudCaseId, reason } = data;
 
   if (!userId || !fraudCaseId) {
@@ -159,7 +162,8 @@ export const pack337_fraudFreezeWallet = functions.https.onCall(async (data, con
 /**
  * Ads → Wallet: Credit ad revenue to creator wallet
  */
-export const pack337_adsCreditRevenue = functions.https.onCall(async (data, context) => {
+export const pack337_adsCreditRevenue = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { creatorId, amount, impressionIds, period } = data;
 
   if (!creatorId || !amount) {
@@ -205,15 +209,16 @@ export const pack337_adsCreditRevenue = functions.https.onCall(async (data, cont
 /**
  * Cross-system state query: Get unified user state
  */
-export const pack337_getUnifiedUserState = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack337_getUnifiedUserState = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = data?.userId || context.auth.uid;
+  const userId = data?.userId || request.auth.uid;
 
   // Users can only query their own state
-  if (userId !== context.auth.uid) {
+  if (userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Cannot access another user\'s state');
   }
 

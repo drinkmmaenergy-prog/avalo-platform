@@ -19,24 +19,21 @@ const db = getFirestore();
  * Calculate comprehensive skill score for a creator
  * Evaluates performance across all earning activities
  */
-export const pack382_calculateCreatorSkillScore = functions.https.onCall(
-  async (
-    data: CalculateSkillScoreInput,
-    context
-  ): Promise<CalculateSkillScoreOutput> => {
+export const pack382_calculateCreatorSkillScore = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Auth check
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const { userId = context.auth.uid, forceRecalculate = false } = data;
+    const { userId = request.auth.uid, forceRecalculate = false } = data;
 
     // Only allow users to calculate their own score (or admins)
-    const isAdmin = context.auth.token?.role === 'admin';
-    if (userId !== context.auth.uid && !isAdmin) {
+    const isAdmin = request.auth.token?.role === 'admin';
+    if (userId !== request.auth.uid && !isAdmin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Can only calculate own skill score'

@@ -16,8 +16,9 @@ const rankingService = new RankingService(db);
  * Calculate ranking for a specific creator
  * Called when creator metrics change
  */
-export const calculateCreatorRanking = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const calculateCreatorRanking = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -41,8 +42,9 @@ export const calculateCreatorRanking = functions.https.onCall(async (data, conte
 /**
  * Get ranked creators for discovery
  */
-export const getRankedDiscovery = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getRankedDiscovery = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -60,13 +62,14 @@ export const getRankedDiscovery = functions.https.onCall(async (data, context) =
 /**
  * Get ranked feed items
  */
-export const getRankedFeed = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getRankedFeed = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { limit = 50 } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const items = await rankingService.getRankedFeedItems(userId, limit);
@@ -80,8 +83,9 @@ export const getRankedFeed = functions.https.onCall(async (data, context) => {
 /**
  * Get ranked AI companions
  */
-export const getRankedAICompanions = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getRankedAICompanions = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -99,23 +103,24 @@ export const getRankedAICompanions = functions.https.onCall(async (data, context
 /**
  * Admin: Update global ranking configuration
  */
-export const updateRankingConfig = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateRankingConfig = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   // Check admin privileges
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
   const { config } = data;
-  const adminEmail = context.auth.token.email || 'unknown';
+  const adminEmail = request.auth.token.email || 'unknown';
 
   try {
     const configResolver = rankingService.getConfigResolver();
-    await configResolver.updateGlobalConfig(config, context.auth.uid, adminEmail);
+    await configResolver.updateGlobalConfig(config, request.auth.uid, adminEmail);
     return { success: true };
   } catch (error) {
     console.error('Error updating ranking config:', error);
@@ -126,19 +131,20 @@ export const updateRankingConfig = functions.https.onCall(async (data, context) 
 /**
  * Admin: Update country-specific override
  */
-export const updateCountryRankingConfig = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateCountryRankingConfig = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   // Check admin privileges
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
   const { countryCode, override, enabled, notes } = data;
-  const adminEmail = context.auth.token.email || 'unknown';
+  const adminEmail = request.auth.token.email || 'unknown';
 
   try {
     const configResolver = rankingService.getConfigResolver();
@@ -146,7 +152,7 @@ export const updateCountryRankingConfig = functions.https.onCall(async (data, co
       countryCode,
       override,
       enabled,
-      context.auth.uid,
+      request.auth.uid,
       adminEmail,
       notes
     );
@@ -160,13 +166,14 @@ export const updateCountryRankingConfig = functions.https.onCall(async (data, co
 /**
  * Admin: Create A/B test
  */
-export const createABTest = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createABTest = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   // Check admin privileges
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -175,7 +182,7 @@ export const createABTest = functions.https.onCall(async (data, context) => {
 
   try {
     const abTestManager = rankingService.getABTestManager();
-    const testId = await abTestManager.createTest(test, context.auth.uid);
+    const testId = await abTestManager.createTest(test, request.auth.uid);
     return { success: true, testId };
   } catch (error) {
     console.error('Error creating A/B test:', error);
@@ -186,13 +193,14 @@ export const createABTest = functions.https.onCall(async (data, context) => {
 /**
  * Admin: Disable A/B test
  */
-export const disableABTest = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const disableABTest = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   // Check admin privileges
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -201,7 +209,7 @@ export const disableABTest = functions.https.onCall(async (data, context) => {
 
   try {
     const abTestManager = rankingService.getABTestManager();
-    await abTestManager.disableTest(testId, context.auth.uid);
+    await abTestManager.disableTest(testId, request.auth.uid);
     return { success: true };
   } catch (error) {
     console.error('Error disabling A/B test:', error);
@@ -212,13 +220,14 @@ export const disableABTest = functions.https.onCall(async (data, context) => {
 /**
  * Admin: Get A/B test results
  */
-export const getABTestResults = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getABTestResults = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   // Check admin privileges
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }

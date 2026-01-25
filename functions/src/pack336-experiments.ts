@@ -20,8 +20,9 @@ import { HttpsError, admin, auth, onCall } from './runtime';
 /**
  * Create a new growth experiment (admin only)
  */
-export const pack336_createExperiment = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_createExperiment = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -60,7 +61,7 @@ export const pack336_createExperiment = functions.https.onCall(async (data, cont
       targetMetric,
       createdAt: serverTimestamp() as any,
       updatedAt: serverTimestamp() as any,
-      createdBy: context.auth.uid,
+      createdBy: request.auth.uid,
     };
     
     await experimentRef.set(experiment);
@@ -81,8 +82,9 @@ export const pack336_createExperiment = functions.https.onCall(async (data, cont
 /**
  * Update experiment with results (admin only)
  */
-export const pack336_updateExperimentResults = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_updateExperimentResults = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -124,8 +126,9 @@ export const pack336_updateExperimentResults = functions.https.onCall(async (dat
 /**
  * Get all experiments with filtering (admin only)
  */
-export const pack336_getExperiments = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getExperiments = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -160,8 +163,9 @@ export const pack336_getExperiments = functions.https.onCall(async (data, contex
 /**
  * Get experiment details (admin only)
  */
-export const pack336_getExperiment = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getExperiment = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -196,8 +200,9 @@ export const pack336_getExperiment = functions.https.onCall(async (data, context
 /**
  * Delete an experiment (admin only)
  */
-export const pack336_deleteExperiment = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_deleteExperiment = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -225,8 +230,9 @@ export const pack336_deleteExperiment = functions.https.onCall(async (data, cont
  * Get experiment statistics (admin only)
  * Returns summary of all experiments
  */
-export const pack336_getExperimentStatistics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getExperimentStatistics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   

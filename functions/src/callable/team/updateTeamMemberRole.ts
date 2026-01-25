@@ -24,22 +24,19 @@ interface UpdateTeamMemberRoleResponse {
   error?: string;
 }
 
-export const updateTeamMemberRole = functions.https.onCall(
-  async (
-    data: UpdateTeamMemberRoleRequest,
-    context: functions.https.CallableContext
-  ): Promise<UpdateTeamMemberRoleResponse> => {
+export const updateTeamMemberRole = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
 
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { membershipId, newRole, customPermissions } = data;
 
       // Validate inputs
@@ -163,8 +160,8 @@ export const updateTeamMemberRole = functions.https.onCall(
     } catch (error: any) {
       // Log failed attempt
       await logTeamActivity({
-        userId: context.auth?.uid || 'unknown',
-        memberUserId: context.auth?.uid || 'unknown',
+        userId: request.auth?.uid || 'unknown',
+        memberUserId: request.auth?.uid || 'unknown',
         action: 'update_member_role',
         target: data.membershipId,
         metadata: {

@@ -174,7 +174,8 @@ export const pack373_finalizeASOExperiments = functions.pubsub
 /**
  * Track partner install
  */
-export const pack373_trackPartnerInstall = functions.https.onCall(async (data, context) => {
+export const pack373_trackPartnerInstall = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { partnerCode, userId, deviceInfo, installMetadata } = data;
   
   if (!partnerCode || !userId) {

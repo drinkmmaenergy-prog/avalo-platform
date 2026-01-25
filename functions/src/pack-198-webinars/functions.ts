@@ -47,12 +47,13 @@ import { FieldValue, HttpsError, Timestamp, auth, db, functions, increment, onCa
 
 const db = admin.firestore();
 
-export const createEvent = https.onCall(async (data: CreateEventInput, context) => {
-  if (!context.auth) {
+export const createEvent = https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const titleValidation = validateEventTitle(data.title);
   if (!titleValidation.isValid) {
@@ -148,13 +149,13 @@ export const createEvent = https.onCall(async (data: CreateEventInput, context) 
   return { eventId: event.id, event };
 });
 
-export const updateEvent = https.onCall(
-  async (data: { eventId: string; updates: UpdateEventInput }, context) => {
-    if (!context.auth) {
+export const updateEvent = https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const eventRef = db.collection('events').doc(data.eventId);
     const eventDoc = await eventRef.get();
 
@@ -220,12 +221,13 @@ export const updateEvent = https.onCall(
   }
 );
 
-export const publishEvent = https.onCall(async (data: { eventId: string }, context) => {
-  if (!context.auth) {
+export const publishEvent = https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const eventRef = db.collection('events').doc(data.eventId);
   const eventDoc = await eventRef.get();
 
@@ -251,13 +253,13 @@ export const publishEvent = https.onCall(async (data: { eventId: string }, conte
   return { success: true };
 });
 
-export const purchaseEventTicket = https.onCall(
-  async (data: PurchaseTicketInput, context) => {
-    if (!context.auth) {
+export const purchaseEventTicket = https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const eventRef = db.collection('events').doc(data.eventId);
     const eventDoc = await eventRef.get();
 
@@ -314,12 +316,13 @@ export const purchaseEventTicket = https.onCall(
   }
 );
 
-export const joinEvent = https.onCall(async (data: JoinEventInput, context) => {
-  if (!context.auth) {
+export const joinEvent = https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const eventRef = db.collection('events').doc(data.eventId);
   const eventDoc = await eventRef.get();
 
@@ -393,12 +396,13 @@ export const joinEvent = https.onCall(async (data: JoinEventInput, context) => {
   return { sessionId: session.id, streamUrl: 'placeholder-stream-url' };
 });
 
-export const submitQuestion = https.onCall(async (data: SubmitQuestionInput, context) => {
-  if (!context.auth) {
+export const submitQuestion = https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const validation = validateChatMessage(data.question);
   if (!validation.isValid) {
@@ -452,12 +456,13 @@ export const submitQuestion = https.onCall(async (data: SubmitQuestionInput, con
   return { questionId: question.id };
 });
 
-export const createPoll = https.onCall(async (data: CreatePollInput, context) => {
-  if (!context.auth) {
+export const createPoll = https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const eventRef = db.collection('events').doc(data.eventId);
   const eventDoc = await eventRef.get();
 
@@ -502,12 +507,13 @@ export const createPoll = https.onCall(async (data: CreatePollInput, context) =>
   return { pollId: poll.id };
 });
 
-export const sendEventMessage = https.onCall(async (data: SendMessageInput, context) => {
-  if (!context.auth) {
+export const sendEventMessage = https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const validation = validateChatMessage(data.content);
   if (!validation.isValid) {
@@ -610,13 +616,13 @@ export const sendEventMessage = https.onCall(async (data: SendMessageInput, cont
   return { messageId: message.id, hidden: message.hidden };
 });
 
-export const uploadEventMaterial = https.onCall(
-  async (data: UploadMaterialInput, context) => {
-    if (!context.auth) {
+export const uploadEventMaterial = https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const eventDoc = await db.collection('events').doc(data.eventId).get();
 
     if (!eventDoc.exists) {
@@ -666,9 +672,9 @@ export const uploadEventMaterial = https.onCall(
   }
 );
 
-export const generateEventCertificate = https.onCall(
-  async (data: GenerateCertificateInput, context) => {
-    if (!context.auth) {
+export const generateEventCertificate = https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -734,13 +740,13 @@ export const generateEventCertificate = https.onCall(
   }
 );
 
-export const moderateEventContent = https.onCall(
-  async (data: ModerateContentInput, context) => {
-    if (!context.auth) {
+export const moderateEventContent = https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const eventDoc = await db.collection('events').doc(data.eventId).get();
 
     if (!eventDoc.exists) {
@@ -814,13 +820,13 @@ export const moderateEventContent = https.onCall(
   }
 );
 
-export const completeEventTicketPayment = https.onCall(
-  async (data: { ticketId: string; paymentIntentId: string }, context) => {
-    if (!context.auth) {
+export const completeEventTicketPayment = https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const ticketRef = db.collection('event_tickets').doc(data.ticketId);
     const ticketDoc = await ticketRef.get();
 

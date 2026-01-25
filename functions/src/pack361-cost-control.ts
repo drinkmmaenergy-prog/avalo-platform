@@ -180,12 +180,9 @@ export async function trackCost(
 /**
  * Track AI usage cost
  */
-export const trackAiCost = functions.https.onCall(
-  async (
-    data: { tokens: number; model: string },
-    context
-  ) => {
-    if (!context.auth) {
+export const trackAiCost = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -201,12 +198,9 @@ export const trackAiCost = functions.https.onCall(
 /**
  * Track bandwidth cost
  */
-export const trackBandwidthCost = functions.https.onCall(
-  async (
-    data: { bytes: number; type: "video" | "webrtc" },
-    context
-  ) => {
-    if (!context.auth) {
+export const trackBandwidthCost = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -344,9 +338,9 @@ function getThrottleRule(service: string): ThrottleRule {
 /**
  * Check if service is throttled
  */
-export const checkThrottle = functions.https.onCall(
-  async (data: { service: string }, context) => {
-    if (!context.auth) {
+export const checkThrottle = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -426,9 +420,9 @@ export const checkThrottle = functions.https.onCall(
 /**
  * Disable throttling (admin only)
  */
-export const disableThrottling = functions.https.onCall(
-  async (data: { service: string }, context) => {
-    if (!context.auth) {
+export const disableThrottling = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -436,7 +430,7 @@ export const disableThrottling = functions.https.onCall(
     }
     
     const db = admin.firestore();
-    const userDoc = await db.collection("users").doc(context.auth.uid).get();
+    const userDoc = await db.collection("users").doc(request.auth.uid).get();
     const isAdmin = userDoc.data()?.role === "admin";
     
     if (!isAdmin) {
@@ -496,12 +490,9 @@ async function sendCostAlert(
 /**
  * Calculate cost metrics
  */
-export const getCostMetrics = functions.https.onCall(
-  async (
-    data: { startDate?: number; endDate?: number },
-    context
-  ) => {
-    if (!context.auth) {
+export const getCostMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -644,8 +635,8 @@ export const generateMonthlyReport = functions.pubsub
 /**
  * Get budget status
  */
-export const getBudgetStatus = functions.https.onCall(
-  async (data, context) => {
+export const getBudgetStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
     
     const services = Object.keys(COST_CONTROL_RULES);
@@ -689,12 +680,9 @@ export const getBudgetStatus = functions.https.onCall(
 /**
  * Detect and throttle fraud abuse
  */
-export const detectFraudAbuse = functions.https.onCall(
-  async (
-    data: { userId: string; service: string },
-    context
-  ) => {
-    if (!context.auth) {
+export const detectFraudAbuse = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"

@@ -174,12 +174,12 @@ async function sendWinBackMessage(userId: string, step: number): Promise<void> {
  * Mark user as returned from win-back
  * Called when churned user becomes active again
  */
-export const markWinBackReturn = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const markWinBackReturn = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const profile = await getUserRetentionProfile(userId);
@@ -211,7 +211,8 @@ export const markWinBackReturn = functions.https.onCall(async (data, context) =>
 /**
  * Get win-back statistics (admin only)
  */
-export const getWinBackStatistics = functions.https.onCall(async (data, context) => {
+export const getWinBackStatistics = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Optional: Add admin authentication check here
 
   try {
@@ -267,7 +268,8 @@ export const getWinBackStatistics = functions.https.onCall(async (data, context)
 /**
  * Manual trigger for win-back message (admin/testing only)
  */
-export const triggerWinBackMessage = functions.https.onCall(async (data, context) => {
+export const triggerWinBackMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Optional: Add admin authentication check here
 
   const { userId, step } = data;

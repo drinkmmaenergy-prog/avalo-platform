@@ -32,9 +32,9 @@ interface ChargebackRiskProfile {
 /**
  * Detect chargeback risk
  */
-export const pack383_detectChargebackRisk = functions.https.onCall(
-  async (data: { userId: string }, context) => {
-    if (!context.auth) {
+export const pack383_detectChargebackRisk = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -149,16 +149,16 @@ export const pack383_detectChargebackRisk = functions.https.onCall(
 /**
  * Apply payout freeze for high-risk users
  */
-export const pack383_applyPayoutFreeze = functions.https.onCall(
-  async (data: { userId: string; reason: string; freezeDays: number }, context) => {
-    if (!context.auth) {
+export const pack383_applyPayoutFreeze = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
     const { userId, reason, freezeDays } = data;
 
     // Verify admin
-    const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!adminDoc.exists || adminDoc.data()!.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -172,7 +172,7 @@ export const pack383_applyPayoutFreeze = functions.https.onCall(
         reason,
         freezeDays,
         freezeUntil: admin.firestore.Timestamp.fromDate(freezeUntil),
-        appliedBy: context.auth.uid,
+        appliedBy: request.auth.uid,
         appliedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
@@ -196,7 +196,7 @@ export const pack383_applyPayoutFreeze = functions.https.onCall(
       // Create audit log
       await db.collection('auditLogs').add({
         action: 'payout_freeze_applied',
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         targetType: 'user',
         targetId: userId,
         details: {
@@ -223,16 +223,16 @@ export const pack383_applyPayoutFreeze = functions.https.onCall(
 /**
  * Create reserve holding for high-risk user
  */
-export const pack383_createReserveHold = functions.https.onCall(
-  async (data: { userId: string; percentage: number; duration: number }, context) => {
-    if (!context.auth) {
+export const pack383_createReserveHold = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
     const { userId, percentage, duration } = data;
 
     // Verify admin
-    const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!adminDoc.exists || adminDoc.data()!.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -250,7 +250,7 @@ export const pack383_createReserveHold = functions.https.onCall(
         percentage,
         duration,
         expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
-        appliedBy: context.auth.uid,
+        appliedBy: request.auth.uid,
         appliedAt: admin.firestore.FieldValue.serverTimestamp(),
         status: 'active',
       });
@@ -265,7 +265,7 @@ export const pack383_createReserveHold = functions.https.onCall(
       // Create audit log
       await db.collection('auditLogs').add({
         action: 'reserve_hold_created',
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         targetType: 'user',
         targetId: userId,
         details: {

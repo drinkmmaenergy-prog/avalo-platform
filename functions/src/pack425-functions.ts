@@ -22,7 +22,8 @@ if (!admin.apps.length) {
 /**
  * Get country rollout profile with all data
  */
-export const getCountryProfile = functions.https.onCall(async (data, context) => {
+export const getCountryProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { countryCode } = data;
   
   if (!countryCode) {
@@ -50,7 +51,7 @@ export const getCountryProfile = functions.https.onCall(async (data, context) =>
 /**
  * List all countries with readiness scores
  */
-export const listCountries = functions.https.onCall(async (data, context) => {
+export const listCountries = functions.https.onCall(async (request) => {
   const countries = await Readiness.listCountriesByReadiness();
   return countries;
 });
@@ -58,7 +59,8 @@ export const listCountries = functions.https.onCall(async (data, context) => {
 /**
  * Get countries by launch strategy
  */
-export const getCountriesByStrategy = functions.https.onCall(async (data, context) => {
+export const getCountriesByStrategy = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { strategy } = data;
   
   if (!strategy) {
@@ -72,9 +74,10 @@ export const getCountriesByStrategy = functions.https.onCall(async (data, contex
 /**
  * Update country readiness profile
  */
-export const updateCountryReadiness = functions.https.onCall(async (data, context) => {
+export const updateCountryReadiness = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require admin authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
@@ -92,7 +95,8 @@ export const updateCountryReadiness = functions.https.onCall(async (data, contex
 /**
  * Get feature flags for a country
  */
-export const getCountryFeatureFlags = functions.https.onCall(async (data, context) => {
+export const getCountryFeatureFlags = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { countryCode } = data;
   
   if (!countryCode) {
@@ -106,9 +110,10 @@ export const getCountryFeatureFlags = functions.https.onCall(async (data, contex
 /**
  * Update feature flags for a country
  */
-export const updateCountryFeatureFlags = functions.https.onCall(async (data, context) => {
+export const updateCountryFeatureFlags = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require admin authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
@@ -118,7 +123,7 @@ export const updateCountryFeatureFlags = functions.https.onCall(async (data, con
     throw new functions.https.HttpsError('invalid-argument', 'countryCode and flags required');
   }
   
-  await FeatureFlags.updateCountryFlags(countryCode, flags, context.auth.uid);
+  await FeatureFlags.updateCountryFlags(countryCode, flags, request.auth.uid);
   
   return { success: true };
 });
@@ -126,7 +131,8 @@ export const updateCountryFeatureFlags = functions.https.onCall(async (data, con
 /**
  * Get token pack pricing for a country
  */
-export const getCountryPricing = functions.https.onCall(async (data, context) => {
+export const getCountryPricing = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { countryCode } = data;
   
   if (!countryCode) {
@@ -140,9 +146,9 @@ export const getCountryPricing = functions.https.onCall(async (data, context) =>
 /**
  * Get expansion dashboard data
  */
-export const getExpansionDashboard = functions.https.onCall(async (data, context) => {
+export const getExpansionDashboard = functions.https.onCall(async (request) => {
   // Require admin authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
@@ -179,9 +185,10 @@ export const getExpansionDashboard = functions.https.onCall(async (data, context
 /**
  * Initialize a new country for expansion
  */
-export const initializeCountry = functions.https.onCall(async (data, context) => {
+export const initializeCountry = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require admin authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
@@ -235,9 +242,10 @@ export const initializeCountry = functions.https.onCall(async (data, context) =>
 /**
  * Launch a country (enable all features)
  */
-export const launchCountry = functions.https.onCall(async (data, context) => {
+export const launchCountry = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Require admin authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
@@ -270,7 +278,7 @@ export const launchCountry = functions.https.onCall(async (data, context) => {
     discoveryEnabled: true,
     matchingEnabled: true,
     notificationsEnabled: true,
-  }, context.auth.uid);
+  }, request.auth.uid);
   
   // Mark as launched
   await Readiness.updateCountryProfile(countryCode, {
@@ -283,7 +291,8 @@ export const launchCountry = functions.https.onCall(async (data, context) => {
 /**
  * Get bootstrap program status
  */
-export const getBootstrapStatus = functions.https.onCall(async (data, context) => {
+export const getBootstrapStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { countryCode } = data;
   
   if (!countryCode) {
@@ -297,7 +306,7 @@ export const getBootstrapStatus = functions.https.onCall(async (data, context) =
 /**
  * Get localization completeness report
  */
-export const getLocalizationReport = functions.https.onCall(async (data, context) => {
+export const getLocalizationReport = functions.https.onCall(async (request) => {
   const report = await Localization.getCompletenessReport();
   return report;
 });
@@ -305,7 +314,8 @@ export const getLocalizationReport = functions.https.onCall(async (data, context
 /**
  * Validate country for launch
  */
-export const validateCountryLaunch = functions.https.onCall(async (data, context) => {
+export const validateCountryLaunch = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { countryCode } = data;
   
   if (!countryCode) {
@@ -368,9 +378,9 @@ export const validateCountryLaunch = functions.https.onCall(async (data, context
 /**
  * Recompute all readiness scores
  */
-export const recomputeAllReadiness = functions.https.onCall(async (data, context) => {
+export const recomputeAllReadiness = functions.https.onCall(async (request) => {
   // Require admin authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   

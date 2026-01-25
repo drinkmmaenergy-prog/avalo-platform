@@ -33,8 +33,9 @@ import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 /**
  * Evaluate message safety before sending
  */
-export const pack153_evaluateMessage = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_evaluateMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -46,7 +47,7 @@ export const pack153_evaluateMessage = functions.https.onCall(async (data, conte
 
   try {
     const result = await evaluateMessageSafety({
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       content,
       contentType: contentType || ContentType.TEXT_MESSAGE,
       targetUserId,
@@ -64,13 +65,14 @@ export const pack153_evaluateMessage = functions.https.onCall(async (data, conte
 /**
  * Get user's safety status
  */
-export const pack153_getSafetyStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_getSafetyStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   try {
-    const status = await getSafetyStatus(context.auth.uid);
+    const status = await getSafetyStatus(request.auth.uid);
     return { success: true, data: status };
   } catch (error: any) {
     console.error('Error getting safety status:', error);
@@ -81,8 +83,9 @@ export const pack153_getSafetyStatus = functions.https.onCall(async (data, conte
 /**
  * Submit appeal for safety decision
  */
-export const pack153_submitAppeal = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_submitAppeal = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -94,7 +97,7 @@ export const pack153_submitAppeal = functions.https.onCall(async (data, context)
 
   try {
     const appealId = await submitSafetyAppeal({
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       incidentId,
       reason,
       evidence,
@@ -110,8 +113,9 @@ export const pack153_submitAppeal = functions.https.onCall(async (data, context)
 /**
  * Get user's safety incidents
  */
-export const pack153_getMyIncidents = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_getMyIncidents = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -120,7 +124,7 @@ export const pack153_getMyIncidents = functions.https.onCall(async (data, contex
   try {
     const snapshot = await db
       .collection('safety_incidents')
-      .where('userId', '==', context.auth.uid)
+      .where('userId', '==', request.auth.uid)
       .orderBy('createdAt', 'desc')
       .limit(limit)
       .get();
@@ -140,8 +144,9 @@ export const pack153_getMyIncidents = functions.https.onCall(async (data, contex
 /**
  * Get user's blocked messages
  */
-export const pack153_getBlockedMessages = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_getBlockedMessages = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -150,7 +155,7 @@ export const pack153_getBlockedMessages = functions.https.onCall(async (data, co
   try {
     const snapshot = await db
       .collection('blocked_messages')
-      .where('userId', '==', context.auth.uid)
+      .where('userId', '==', request.auth.uid)
       .orderBy('blockedAt', 'desc')
       .limit(limit)
       .get();
@@ -170,8 +175,9 @@ export const pack153_getBlockedMessages = functions.https.onCall(async (data, co
 /**
  * Get safety education tip
  */
-export const pack153_getEducationTip = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_getEducationTip = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -204,8 +210,9 @@ export const pack153_getEducationTip = functions.https.onCall(async (data, conte
 /**
  * Start voice analysis session
  */
-export const pack153_startVoiceAnalysis = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_startVoiceAnalysis = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -231,8 +238,9 @@ export const pack153_startVoiceAnalysis = functions.https.onCall(async (data, co
 /**
  * Process voice transcript
  */
-export const pack153_processVoiceTranscript = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_processVoiceTranscript = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -246,7 +254,7 @@ export const pack153_processVoiceTranscript = functions.https.onCall(async (data
     const result = await processVoiceTranscript({
       sessionId,
       callId,
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       transcriptSegment,
       timestamp: timestamp || 0,
     });
@@ -261,8 +269,9 @@ export const pack153_processVoiceTranscript = functions.https.onCall(async (data
 /**
  * End voice analysis session
  */
-export const pack153_endVoiceAnalysis = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_endVoiceAnalysis = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -288,8 +297,9 @@ export const pack153_endVoiceAnalysis = functions.https.onCall(async (data, cont
 /**
  * Start livestream moderation
  */
-export const pack153_startLivestreamModeration = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_startLivestreamModeration = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -302,7 +312,7 @@ export const pack153_startLivestreamModeration = functions.https.onCall(async (d
   try {
     const sessionId = await startLivestreamModeration({
       streamId,
-      creatorId: context.auth.uid,
+      creatorId: request.auth.uid,
       moderatorIds,
     });
 
@@ -316,8 +326,9 @@ export const pack153_startLivestreamModeration = functions.https.onCall(async (d
 /**
  * Moderate livestream message
  */
-export const pack153_moderateLivestreamMessage = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_moderateLivestreamMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -331,7 +342,7 @@ export const pack153_moderateLivestreamMessage = functions.https.onCall(async (d
     const result = await moderateLivestreamMessage({
       sessionId,
       streamId,
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       message,
       messageId,
     });
@@ -346,8 +357,9 @@ export const pack153_moderateLivestreamMessage = functions.https.onCall(async (d
 /**
  * Get livestream moderation stats
  */
-export const pack153_getLivestreamStats = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_getLivestreamStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -369,8 +381,9 @@ export const pack153_getLivestreamStats = functions.https.onCall(async (data, co
 /**
  * End livestream moderation
  */
-export const pack153_endLivestreamModeration = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_endLivestreamModeration = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -396,8 +409,9 @@ export const pack153_endLivestreamModeration = functions.https.onCall(async (dat
 /**
  * Monitor event chat message
  */
-export const pack153_monitorEventMessage = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_monitorEventMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -410,7 +424,7 @@ export const pack153_monitorEventMessage = functions.https.onCall(async (data, c
   try {
     const result = await monitorEventChatMessage({
       eventId,
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       message,
       messageId,
     });
@@ -439,12 +453,13 @@ async function isAdmin(uid: string): Promise<boolean> {
 /**
  * Review safety appeal (admin only)
  */
-export const pack153_admin_reviewAppeal = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_admin_reviewAppeal = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  if (!(await isAdmin(context.auth.uid))) {
+  if (!(await isAdmin(request.auth.uid))) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -457,7 +472,7 @@ export const pack153_admin_reviewAppeal = functions.https.onCall(async (data, co
   try {
     await reviewSafetyAppeal({
       appealId,
-      reviewerId: context.auth.uid,
+      reviewerId: request.auth.uid,
       approved,
       reviewerNotes,
     });
@@ -472,12 +487,13 @@ export const pack153_admin_reviewAppeal = functions.https.onCall(async (data, co
 /**
  * Get safety incidents for review (admin only)
  */
-export const pack153_admin_getIncidents = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_admin_getIncidents = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  if (!(await isAdmin(context.auth.uid))) {
+  if (!(await isAdmin(request.auth.uid))) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -506,12 +522,13 @@ export const pack153_admin_getIncidents = functions.https.onCall(async (data, co
 /**
  * Get pending appeals (admin only)
  */
-export const pack153_admin_getPendingAppeals = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_admin_getPendingAppeals = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  if (!(await isAdmin(context.auth.uid))) {
+  if (!(await isAdmin(request.auth.uid))) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -540,12 +557,13 @@ export const pack153_admin_getPendingAppeals = functions.https.onCall(async (dat
 /**
  * Detect coordinated harassment (admin only)
  */
-export const pack153_admin_detectCoordinatedHarassment = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_admin_detectCoordinatedHarassment = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  if (!(await isAdmin(context.auth.uid))) {
+  if (!(await isAdmin(request.auth.uid))) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -571,12 +589,13 @@ export const pack153_admin_detectCoordinatedHarassment = functions.https.onCall(
 /**
  * Get safety statistics (admin only)
  */
-export const pack153_admin_getStatistics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack153_admin_getStatistics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  if (!(await isAdmin(context.auth.uid))) {
+  if (!(await isAdmin(request.auth.uid))) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 

@@ -56,17 +56,18 @@ interface UserTasteProfile {
  */
 export const getDiscoveryFeed = functions
   .region('europe-west3')
-  .https.onCall(async (data: DiscoveryFeedRequest, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify authentication
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const callerId = context.auth.uid;
+      const callerId = request.auth.uid;
       const { userId, cursor, limit = 20 } = data;
 
       // Verify the caller is requesting their own feed

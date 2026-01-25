@@ -446,17 +446,18 @@ export const onJourneyMilestoneUnlocked = functions.firestore
 /**
  * Manually trigger desire state check (for testing or admin)
  */
-export const triggerDesireStateCheck = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const triggerDesireStateCheck = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = data.userId || context.auth.uid;
+  const userId = data.userId || request.auth.uid;
   
   // Only allow users to check their own state, or admins to check any
-  if (userId !== context.auth.uid) {
+  if (userId !== request.auth.uid) {
     const { db } = await import('./init.js');
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const isAdmin = userDoc.data()?.role === 'admin';
     
     if (!isAdmin) {
@@ -492,13 +493,13 @@ export const triggerDesireStateCheck = functions.https.onCall(async (data, conte
 /**
  * Get user's current desire state (callable from client)
  */
-export const getMyDesireState = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getMyDesireState = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   try {
-    const state = await getDesireState(context.auth.uid);
+    const state = await getDesireState(request.auth.uid);
     return {
       success: true,
       state: {

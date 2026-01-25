@@ -29,17 +29,17 @@ interface LegalAcceptance {
 /**
  * Callable function to record legal document acceptance
  */
-export const pack338a_acceptLegal = functions.https.onCall(
-  async (data: AcceptLegalRequest, context) => {
+export const pack338a_acceptLegal = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated to accept legal documents'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { lang = 'en' } = data;
 
     // Validate language
@@ -54,7 +54,7 @@ export const pack338a_acceptLegal = functions.https.onCall(
       const db = admin.firestore();
       
       // Detect platform from user agent (basic detection)
-      const userAgent = context.rawRequest?.headers['user-agent'] || '';
+      const userAgent = request.rawRequest?.headers['user-agent'] || '';
       const platform: 'mobile' | 'web' = 
         userAgent.includes('Expo') || userAgent.includes('Mobile') 
           ? 'mobile' 

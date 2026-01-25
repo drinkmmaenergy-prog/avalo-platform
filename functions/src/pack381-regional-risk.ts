@@ -99,16 +99,16 @@ export interface RegionalRiskProfile {
 /**
  * Admin: Update regional risk profile
  */
-export const pack381_updateRegionalRisk = functions.https.onCall(
-  async (data: Partial<RegionalRiskProfile>, context) => {
-    if (!context.auth) {
+export const pack381_updateRegionalRisk = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'admin' && userData?.role !== 'super_admin') {
@@ -135,7 +135,7 @@ export const pack381_updateRegionalRisk = functions.https.onCall(
       metadata: {
         ...data.metadata,
         updatedAt: now,
-        updatedBy: context.auth.uid,
+        updatedBy: request.auth.uid,
         ...(existingProfile.exists ? {} : { createdAt: now }),
       },
     };
@@ -144,7 +144,7 @@ export const pack381_updateRegionalRisk = functions.https.onCall(
 
     await db.collection('auditLogs').add({
       type: 'regional_risk_update',
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       regionId,
       changes: data,
       timestamp: now,
@@ -161,20 +161,20 @@ export const pack381_updateRegionalRisk = functions.https.onCall(
 /**
  * Calculate regional risk score for a user
  */
-export const pack381_calculateRegionalRiskScore = functions.https.onCall(
-  async (data: { userId?: string; regionId?: string }, context) => {
-    if (!context.auth) {
+export const pack381_calculateRegionalRiskScore = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const targetUserId = data.userId || context.auth.uid;
+    const targetUserId = data.userId || request.auth.uid;
     
     // Verify permission to check other users
-    if (targetUserId !== context.auth.uid) {
-      const callerDoc = await db.collection('users').doc(context.auth.uid).get();
+    if (targetUserId !== request.auth.uid) {
+      const callerDoc = await db.collection('users').doc(request.auth.uid).get();
       const callerData = callerDoc.data();
       
       if (callerData?.role !== 'admin' && callerData?.role !== 'moderator') {
@@ -318,19 +318,16 @@ export const pack381_calculateRegionalRiskScore = functions.https.onCall(
 /**
  * Check if user action is allowed based on regional risk
  */
-export const pack381_validateAction = functions.https.onCall(
-  async (data: {
-    action: string;
-    metadata?: any;
-  }, context) => {
-    if (!context.auth) {
+export const pack381_validateAction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { action, metadata } = data;
 
     // Get user's current risk score
@@ -340,8 +337,8 @@ export const pack381_validateAction = functions.https.onCall(
       // First time user, calculate risk score
       const riskResult = await pack381_calculateRegionalRiskScore.run({
         data: { userId },
-        auth: context.auth,
-        rawRequest: context.rawRequest,
+        auth: request.auth,
+        rawRequest: request.rawRequest,
       });
       
       return {
@@ -428,22 +425,16 @@ export const pack381_validateAction = functions.https.onCall(
 /**
  * Report and track regional fraud incidents
  */
-export const pack381_reportIncident = functions.https.onCall(
-  async (data: {
-    regionId: string;
-    incidentType: string;
-    severity: 'low' | 'medium' | 'high' | 'critical';
-    description: string;
-    affectedUserIds?: string[];
-  }, context) => {
-    if (!context.auth) {
+export const pack381_reportIncident = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'admin' && userData?.role !== 'moderator') {
@@ -463,7 +454,7 @@ export const pack381_reportIncident = functions.https.onCall(
       severity,
       description,
       affectedUserIds: affectedUserIds || [],
-      reportedBy: context.auth.uid,
+      reportedBy: request.auth.uid,
       reportedAt: now,
       status: 'open',
     });
@@ -494,16 +485,16 @@ export const pack381_reportIncident = functions.https.onCall(
 /**
  * Get regional risk statistics
  */
-export const pack381_getRegionalRiskStats = functions.https.onCall(
-  async (data: { regionId: string; days?: number }, context) => {
-    if (!context.auth) {
+export const pack381_getRegionalRiskStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'admin') {

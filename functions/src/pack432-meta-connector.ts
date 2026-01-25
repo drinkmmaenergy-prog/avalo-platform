@@ -246,8 +246,9 @@ class MetaAdsAPI {
 // CLOUD FUNCTIONS
 // ===========================
 
-export const syncMetaCampaign = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const syncMetaCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -318,8 +319,9 @@ export const syncMetaCampaign = functions.https.onCall(async (data, context) => 
   }
 });
 
-export const updateMetaCampaignBudget = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateMetaCampaignBudget = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -350,8 +352,9 @@ export const updateMetaCampaignBudget = functions.https.onCall(async (data, cont
   }
 });
 
-export const rotateMetaCreatives = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const rotateMetaCreatives = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -522,7 +525,8 @@ export const syncMetaInsights = functions.pubsub
 // PIXEL & SDK EVENT TRACKING
 // ===========================
 
-export const trackMetaPixelEvent = functions.https.onCall(async (data, context) => {
+export const trackMetaPixelEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { event, userId, eventData } = data;
 
   // Get Meta pixel ID

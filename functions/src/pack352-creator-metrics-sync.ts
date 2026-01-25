@@ -34,18 +34,12 @@ const db = admin.firestore();
  * @param dateRange - Start and end dates (YYYY-MM-DD)
  * @returns Array of computed metrics per day
  */
-export const syncCreatorMetrics = functions.https.onCall(
-  async (
-    data: {
-      creatorId: string;
-      dateRange: DateRange;
-    },
-    context
-  ) => {
+export const syncCreatorMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { creatorId, dateRange } = data;
 
     // Verify authentication and permissions
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -53,8 +47,8 @@ export const syncCreatorMetrics = functions.https.onCall(
     }
 
     // Allow admins or the creator themselves
-    const isAdmin = context.auth.token.role === 'admin';
-    const isCreator = context.auth.uid === creatorId;
+    const isAdmin = request.auth.token.role === 'admin';
+    const isCreator = request.auth.uid === creatorId;
 
     if (!isAdmin && !isCreator) {
       throw new functions.https.HttpsError(
@@ -114,12 +108,12 @@ export const syncCreatorMetrics = functions.https.onCall(
  * Get current metrics for a creator (today + recent history)
  * Optimized for real-time creator dashboards
  */
-export const getCreatorCurrentMetrics = functions.https.onCall(
-  async (data: { creatorId: string; days?: number }, context) => {
+export const getCreatorCurrentMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { creatorId, days = 30 } = data;
 
     // Verify authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -127,8 +121,8 @@ export const getCreatorCurrentMetrics = functions.https.onCall(
     }
 
     // Allow admins or the creator themselves
-    const isAdmin = context.auth.token.role === 'admin';
-    const isCreator = context.auth.uid === creatorId;
+    const isAdmin = request.auth.token.role === 'admin';
+    const isCreator = request.auth.uid === creatorId;
 
     if (!isAdmin && !isCreator) {
       throw new functions.https.HttpsError(
@@ -184,16 +178,10 @@ export const getCreatorCurrentMetrics = functions.https.onCall(
  * Batch sync for multiple creators
  * Admin only - useful for backfilling
  */
-export const syncMultipleCreators = functions.https.onCall(
-  async (
-    data: {
-      creatorIds: string[];
-      dateRange: DateRange;
-    },
-    context
-  ) => {
+export const syncMultipleCreators = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Only admins
-    if (!context.auth || context.auth.token.role !== 'admin') {
+    if (!request.auth || request.auth.token.role !== 'admin') {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can batch sync'

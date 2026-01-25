@@ -20,18 +20,18 @@ import { HttpsError, auth, logger, onCall, timestamp } from '../runtime';
 
 const db = admin.firestore();
 
-export const updateTicket = functions.https.onCall(
-  async (data: UpdateTicketRequest, context): Promise<UpdateTicketResponse> => {
+export const updateTicket = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Authentication check
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated to update tickets'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { ticketId, status, priority, adminAssignedId, adminNotes } = data;
 
       // Validation
@@ -222,7 +222,7 @@ export const updateTicket = functions.https.onCall(
     } catch (error: any) {
       functions.logger.error('Error updating ticket', {
         error: error.message,
-        userId: context.auth?.uid,
+        userId: request.auth?.uid,
       });
 
       if (error instanceof functions.https.HttpsError) {

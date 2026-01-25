@@ -87,8 +87,9 @@ interface TrustSignal {
 /**
  * Ingest review from App Store / Google Play
  */
-export const pack376_ingestStoreReview = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack376_ingestStoreReview = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -99,7 +100,7 @@ export const pack376_ingestStoreReview = functions.https.onCall(async (data, con
     throw new functions.https.HttpsError('invalid-argument', 'Invalid review data');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const userDoc = await db.collection('users').doc(userId).get();
   
   if (!userDoc.exists) {
@@ -427,13 +428,14 @@ export const pack376_updateTrustScore = functions.pubsub
 /**
  * Track ASO metrics
  */
-export const pack376_trackASOMetrics = functions.https.onCall(async (data, context) => {
+export const pack376_trackASOMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin only
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin only');
   }
@@ -518,13 +520,14 @@ export const pack376_generateKeywordOptimizationHints = functions.pubsub
 /**
  * Trigger review request (safe mode)
  */
-export const pack376_triggerReviewRequest = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack376_triggerReviewRequest = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { trigger } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Check feature flag
   const flagsDoc = await db.collection('featureFlags').doc('reviews').get();

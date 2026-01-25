@@ -33,16 +33,17 @@ export const pack427_registerDevice = functions
     timeoutSeconds: 30,
     memory: '256MB',
   })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Authenticate user
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { deviceId, platform, appVersion } = data;
 
     if (!deviceId) {
@@ -106,16 +107,17 @@ export const pack427_syncMessages = functions
     timeoutSeconds: 60,
     memory: '512MB',
   })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Authenticate user
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { deviceId, since } = data;
 
     if (!deviceId) {
@@ -231,16 +233,17 @@ export const pack427_ackMessages = functions
     timeoutSeconds: 30,
     memory: '256MB',
   })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Authenticate user
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { messageIds, region } = data;
 
     if (!messageIds || !Array.isArray(messageIds)) {
@@ -294,16 +297,17 @@ export const pack427_getChatList = functions
     timeoutSeconds: 30,
     memory: '256MB',
   })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Authenticate user
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Get user's chats
     const chatsSnapshot = await db
@@ -363,16 +367,17 @@ export const pack427_resyncChat = functions
     timeoutSeconds: 60,
     memory: '256MB',
   })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Authenticate user
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { chatId } = data;
 
     if (!chatId) {

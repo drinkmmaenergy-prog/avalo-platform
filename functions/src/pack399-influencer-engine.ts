@@ -356,8 +356,9 @@ const getInfluencerCommission = (commissionId: string) =>
 // INFLUENCER ONBOARDING
 // ============================================================================
 
-export const createInfluencerProfile = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createInfluencerProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -384,7 +385,7 @@ export const createInfluencerProfile = functions.https.onCall(async (data, conte
 
   const profile: InfluencerProfile = {
     influencerId,
-    userId: context.auth.uid,
+    userId: request.auth.uid,
     state: 'CANDIDATE',
     
     displayName,
@@ -441,13 +442,14 @@ async function generateReferralCode(handle: string): Promise<string> {
 // INFLUENCER VERIFICATION
 // ============================================================================
 
-export const verifyInfluencer = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const verifyInfluencer = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Check admin permission
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || !adminDoc.data()?.roles.includes('influencer_manager')) {
     throw new functions.https.HttpsError('permission-denied', 'Insufficient permissions');
   }
@@ -475,8 +477,9 @@ export const verifyInfluencer = functions.https.onCall(async (data, context) => 
 // CREATOR FUNNEL TRACKING
 // ============================================================================
 
-export const trackInfluencerInstall = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const trackInfluencerInstall = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -499,14 +502,14 @@ export const trackInfluencerInstall = functions.https.onCall(async (data, contex
   const influencer = influencerSnapshot.docs[0].data() as InfluencerProfile;
 
   // Check fraud score using PACK 302
-  const fraudScore = await checkFraudScore(context.auth.uid, influencer.influencerId);
+  const fraudScore = await checkFraudScore(request.auth.uid, influencer.influencerId);
 
   // Create funnel entry
   const funnelId = db.collection('creator_funnels').doc().id;
   const funnel: CreatorFunnel = {
     funnelId,
     influencerId: influencer.influencerId,
-    userId: context.auth.uid,
+    userId: request.auth.uid,
     
     referralCode,
     utmSource,
@@ -753,13 +756,14 @@ export const detectInfluencerFraud = functions.pubsub
 // PAYOUT PROCESSING
 // ============================================================================
 
-export const createInfluencerPayout = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createInfluencerPayout = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Check admin permission
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || !adminDoc.data()?.roles.includes('finance_manager')) {
     throw new functions.https.HttpsError('permission-denied', 'Insufficient permissions');
   }
@@ -885,7 +889,8 @@ async function updateDailyMetrics(
 // REGIONAL PLAYBOOK MANAGEMENT
 // ============================================================================
 
-export const getRegionalPlaybook = functions.https.onCall(async (data, context) => {
+export const getRegionalPlaybook = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { country } = data;
 
   if (!country) {
@@ -935,8 +940,9 @@ function getDefaultPlaybook(country: string): Partial<RegionalPlaybook> {
 // ANALYTICS & REPORTING
 // ============================================================================
 
-export const getInfluencerAnalytics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getInfluencerAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 

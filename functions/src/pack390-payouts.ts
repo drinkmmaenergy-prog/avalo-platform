@@ -42,12 +42,13 @@ enum PayoutStatus {
 /**
  * User requests a bank payout
  */
-export const pack390_requestBankPayout = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_requestBankPayout = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { tokens, method, currency, bankDetails } = data;
   
   // Validation
@@ -159,13 +160,14 @@ export const pack390_requestBankPayout = functions.https.onCall(async (data, con
 /**
  * Execute approved bank payout (Admin/System only)
  */
-export const pack390_executeBankPayout = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_executeBankPayout = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   // Check admin/finance permissions
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const isAuthorized = userDoc.exists && 
     (userDoc.data()?.role === 'admin' || userDoc.data()?.permissions?.finance === true);
   
@@ -201,7 +203,7 @@ export const pack390_executeBankPayout = functions.https.onCall(async (data, con
     await payoutRef.update({
       status: PayoutStatus.PROCESSING,
       processingStartedAt: admin.firestore.FieldValue.serverTimestamp(),
-      processedBy: context.auth.uid
+      processedBy: request.auth.uid
     });
     
     // Execute payout based on method
@@ -259,7 +261,7 @@ export const pack390_executeBankPayout = functions.https.onCall(async (data, con
         currency: payoutData.currency,
         method: payoutData.method,
         transferId: transferResult.transferId,
-        executedBy: context.auth.uid,
+        executedBy: request.auth.uid,
         timestamp: admin.firestore.FieldValue.serverTimestamp()
       });
       
@@ -292,13 +294,14 @@ export const pack390_executeBankPayout = functions.https.onCall(async (data, con
 /**
  * Reverse a failed transfer
  */
-export const pack390_reverseFailedTransfer = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_reverseFailedTransfer = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   // Check admin/finance permissions
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const isAuthorized = userDoc.exists && 
     (userDoc.data()?.role === 'admin' || userDoc.data()?.permissions?.finance === true);
   
@@ -334,7 +337,7 @@ export const pack390_reverseFailedTransfer = functions.https.onCall(async (data,
     await payoutRef.update({
       status: PayoutStatus.REVERSED,
       reversedAt: admin.firestore.FieldValue.serverTimestamp(),
-      reversedBy: context.auth.uid,
+      reversedBy: request.auth.uid,
       reversalReason: reason
     });
     
@@ -357,7 +360,7 @@ export const pack390_reverseFailedTransfer = functions.https.onCall(async (data,
       payoutId,
       tokens: payoutData.tokens,
       reason,
-      reversedBy: context.auth.uid,
+      reversedBy: request.auth.uid,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
     
@@ -477,12 +480,13 @@ async function executeStripeConnectTransfer(payoutData: any) {
 /**
  * Get user's payout history
  */
-export const pack390_getPayoutHistory = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_getPayoutHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { limit = 20 } = data;
   
   try {

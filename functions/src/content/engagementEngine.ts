@@ -13,12 +13,13 @@ const db = admin.firestore();
 /**
  * Like a post or reel
  */
-export const likeContent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const likeContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { targetType, targetId } = data;
 
   if (!['POST', 'REEL'].includes(targetType)) {
@@ -78,12 +79,13 @@ export const likeContent = functions.https.onCall(async (data, context) => {
 /**
  * Unlike a post or reel
  */
-export const unlikeContent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const unlikeContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { targetType, targetId } = data;
 
   if (!['POST', 'REEL'].includes(targetType)) {
@@ -121,12 +123,13 @@ export const unlikeContent = functions.https.onCall(async (data, context) => {
 /**
  * Comment on a post or reel
  */
-export const createComment = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createComment = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { targetType, targetId, text } = data;
 
   if (!['POST', 'REEL'].includes(targetType)) {
@@ -206,8 +209,9 @@ export const createComment = functions.https.onCall(async (data, context) => {
 /**
  * Get comments for content
  */
-export const getComments = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getComments = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -268,12 +272,13 @@ export const getComments = functions.https.onCall(async (data, context) => {
 /**
  * Delete a comment (author or moderator only)
  */
-export const deleteComment = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const deleteComment = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { commentId } = data;
 
   try {
@@ -326,12 +331,13 @@ export const deleteComment = functions.https.onCall(async (data, context) => {
 /**
  * Record a view (with sampling to reduce writes)
  */
-export const recordView = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const recordView = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { targetType, targetId } = data;
 
   if (!['POST', 'STORY', 'REEL'].includes(targetType)) {
@@ -378,8 +384,9 @@ export const recordView = functions.https.onCall(async (data, context) => {
 /**
  * Track clicks to profile/chat (for CTA analytics)
  */
-export const trackClick = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const trackClick = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -460,12 +467,13 @@ async function updateCreatorDailyStats(authorId: string, action: string) {
 /**
  * Get user's liked content
  */
-export const getUserLikes = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getUserLikes = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = data.userId || context.auth.uid;
+  const userId = data.userId || request.auth.uid;
   const cursor = data.cursor || null;
   const limit = Math.min(data.limit || 20, 50);
 

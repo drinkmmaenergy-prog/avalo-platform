@@ -262,9 +262,9 @@ export const reviewAIService = new ReviewAIService();
 /**
  * HTTP endpoint: Get AI response suggestions
  */
-export const getReviewResponseSuggestions = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth?.token?.admin) {
+export const getReviewResponseSuggestions = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth?.token?.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can get review response suggestions'

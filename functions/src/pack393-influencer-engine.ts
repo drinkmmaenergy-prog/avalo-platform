@@ -52,8 +52,9 @@ interface InfluencerCampaign {
 // ONBOARDING
 // ============================================
 
-export const pack393_createInfluencerPartner = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack393_createInfluencerPartner = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
   
@@ -73,7 +74,7 @@ export const pack393_createInfluencerPartner = functions.https.onCall(async (dat
   
   // Create partner
   const partner: Partial<InfluencerPartner> = {
-    partnerId: context.auth.uid,
+    partnerId: request.auth.uid,
     name,
     email,
     phone,
@@ -94,18 +95,19 @@ export const pack393_createInfluencerPartner = functions.https.onCall(async (dat
     createdAt: admin.firestore.Timestamp.now()
   };
   
-  await db.collection('influencerPartners').doc(context.auth.uid).set(partner);
+  await db.collection('influencerPartners').doc(request.auth.uid).set(partner);
   
   functions.logger.info(`✅ New influencer partner created: ${name} (${referralCode})`);
   
-  return { success: true, referralCode, partnerId: context.auth.uid };
+  return { success: true, referralCode, partnerId: request.auth.uid };
 });
 
 // ============================================
 // ATTRIBUTION EVENT TRACKING
 // ============================================
 
-export const pack393_trackInfluencerEvent = functions.https.onCall(async (data, context) => {
+export const pack393_trackInfluencerEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { referralCode, eventType, userId, value } = data;
   
   if (!referralCode || !eventType) {
@@ -458,12 +460,13 @@ async function detectInstallSpike(partnerId: string): Promise<boolean> {
 // DASHBOARD ENDPOINTS
 // ============================================
 
-export const pack393_getInfluencerDashboard = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack393_getInfluencerDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
   
-  const partnerId = context.auth.uid;
+  const partnerId = request.auth.uid;
   
   // Get partner data
   const partnerDoc = await db.collection('influencerPartners').doc(partnerId).get();

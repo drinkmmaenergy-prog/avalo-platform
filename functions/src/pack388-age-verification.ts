@@ -109,12 +109,13 @@ function getMinimumAge(countryCode: string): number {
 /**
  * Verify age with strict enforcement
  */
-export const pack388_verifyAgeStrict = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_verifyAgeStrict = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { method, documentData, selfieData, countryCode } = data;
 
   try {
@@ -156,7 +157,7 @@ export const pack388_verifyAgeStrict = functions.https.onCall(async (data, conte
       createdAt: admin.firestore.Timestamp.now(),
       documentCountry: countryCode,
       metadata: {
-        ipAddress: context.rawRequest?.ip,
+        ipAddress: request.rawRequest?.ip,
         deviceId: data.deviceId,
         geolocation: data.geolocation
       }
@@ -442,13 +443,14 @@ export const pack388_minorDetectionLock = async (data: {
 /**
  * Manual review for age verification
  */
-export const pack388_manualAgeReview = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_manualAgeReview = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin must be authenticated');
   }
 
   // Check admin permissions
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists || !adminDoc.data()?.permissions?.includes('AGE_VERIFICATION_REVIEW')) {
     throw new functions.https.HttpsError('permission-denied', 'Insufficient permissions');
   }
@@ -470,7 +472,7 @@ export const pack388_manualAgeReview = functions.https.onCall(async (data, conte
       await attemptRef.update({
         status: AgeVerificationStatus.VERIFIED,
         estimatedAge,
-        reviewerId: context.auth.uid,
+        reviewerId: request.auth.uid,
         reviewNotes: notes,
         processedAt: admin.firestore.Timestamp.now()
       });
@@ -497,7 +499,7 @@ export const pack388_manualAgeReview = functions.https.onCall(async (data, conte
       // Reject verification
       await attemptRef.update({
         status: AgeVerificationStatus.REJECTED,
-        reviewerId: context.auth.uid,
+        reviewerId: request.auth.uid,
         reviewNotes: notes,
         rejectionReason: notes,
         processedAt: admin.firestore.Timestamp.now()
@@ -530,12 +532,13 @@ export const pack388_manualAgeReview = functions.https.onCall(async (data, conte
 /**
  * Get user verification status
  */
-export const pack388_getVerificationStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_getVerificationStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const userDoc = await db.collection('users').doc(userId).get();

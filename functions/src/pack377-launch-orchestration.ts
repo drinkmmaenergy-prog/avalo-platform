@@ -27,15 +27,16 @@ const pack296_auditLog = async (data: any) => {
 /**
  * Activate a country phase for launch
  */
-export const pack377_activateCountryPhase = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack377_activateCountryPhase = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { countryCode, phase, dailyUserCap, dailyPaymentCap, dailyCreatorCap } = data;
 
   // Verify admin privileges
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || !userDoc.data()?.isAdmin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -55,7 +56,7 @@ export const pack377_activateCountryPhase = functions.https.onCall(async (data, 
     dailyCreatorCap: dailyCreatorCap || 100,
     status: 'active',
     activatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    activatedBy: context.auth.uid,
+    activatedBy: request.auth.uid,
     pausedReason: null,
   };
 
@@ -73,7 +74,7 @@ export const pack377_activateCountryPhase = functions.https.onCall(async (data, 
   // Audit log
   await pack296_auditLog({
     action: 'launch.country_activated',
-    actorId: context.auth.uid,
+    actorId: request.auth.uid,
     resourceType: 'launchPhase',
     resourceId: countryCode,
     details: phaseData,
@@ -95,15 +96,16 @@ export const pack377_activateCountryPhase = functions.https.onCall(async (data, 
 /**
  * Pause a country phase (emergency stop)
  */
-export const pack377_pauseCountryPhase = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack377_pauseCountryPhase = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { countryCode, reason } = data;
 
   // Verify admin privileges
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || !userDoc.data()?.isAdmin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -113,14 +115,14 @@ export const pack377_pauseCountryPhase = functions.https.onCall(async (data, con
     phase: 'pause',
     status: 'paused',
     pausedAt: admin.firestore.FieldValue.serverTimestamp(),
-    pausedBy: context.auth.uid,
+    pausedBy: request.auth.uid,
     pausedReason: reason,
   });
 
   // Audit log
   await pack296_auditLog({
     action: 'launch.country_paused',
-    actorId: context.auth.uid,
+    actorId: request.auth.uid,
     resourceType: 'launchPhase',
     resourceId: countryCode,
     details: { reason },
@@ -320,15 +322,16 @@ export const pack377_scalingAutoThrottle = async (): Promise<boolean> => {
 /**
  * Create campaign traffic forecast
  */
-export const pack377_campaignTrafficForecast = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack377_campaignTrafficForecast = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { influencerId, region, trafficForecast, expectedInstalls, creatorInflow, conversionBenchmarks } = data;
 
   // Verify admin or marketing privileges
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || (!userDoc.data()?.isAdmin && !userDoc.data()?.isMarketing)) {
     throw new functions.https.HttpsError('permission-denied', 'Admin or Marketing access required');
   }
@@ -343,7 +346,7 @@ export const pack377_campaignTrafficForecast = functions.https.onCall(async (dat
     conversionBenchmarks,
     status: 'planning',
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    createdBy: context.auth.uid,
+    createdBy: request.auth.uid,
     actualInstalls: 0,
     actualCreators: 0,
     actualRevenue: 0,
@@ -353,7 +356,7 @@ export const pack377_campaignTrafficForecast = functions.https.onCall(async (dat
   if (trafficForecast > 10000) {
     await pack296_auditLog({
       action: 'launch.campaign_prewarm',
-      actorId: context.auth.uid,
+      actorId: request.auth.uid,
       resourceType: 'campaign',
       resourceId: campaignRef.id,
       details: { trafficForecast, region },
@@ -371,8 +374,9 @@ export const pack377_campaignTrafficForecast = functions.https.onCall(async (dat
 /**
  * Track campaign ROI
  */
-export const pack377_campaignROITracker = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack377_campaignROITracker = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -575,8 +579,9 @@ export const pack377_regionKPIAggregator = functions.pubsub
 /**
  * Calculate region risk score
  */
-export const pack377_regionRiskScorer = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack377_regionRiskScorer = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -667,13 +672,14 @@ export const pack377_regionRiskScorer = functions.https.onCall(async (data, cont
 /**
  * Initialize market entry sequence (EU First Wave)
  */
-export const pack377_initMarketSequence = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack377_initMarketSequence = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   // Verify admin privileges
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || !userDoc.data()?.isAdmin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }

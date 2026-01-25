@@ -12,7 +12,7 @@
 
 import { db, serverTimestamp } from './init';
 import * as functions from 'firebase-functions';
-import { HttpsError, admin, auth } from './runtime';
+import { HttpsError, admin, auth , CallableRequest} from './runtime';
 
 // ============================================================================
 // TYPES
@@ -44,14 +44,14 @@ export interface AppealData {
  */
 export const appeals_submit = async (
   data: any,
-  context: functions.https.CallableContext
+  request: CallableRequest<any>
 ): Promise<{ success: boolean; appealId?: string; error?: string }> => {
   
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { messageFromUser } = data;
 
   // Validate input
@@ -147,7 +147,7 @@ export const appeals_submit = async (
  */
 export const appeals_getStatus = async (
   data: any,
-  context: functions.https.CallableContext
+  request: CallableRequest<any>
 ): Promise<{ 
   success: boolean; 
   appeal?: any; 
@@ -155,11 +155,11 @@ export const appeals_getStatus = async (
   error?: string;
 }> => {
   
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     // Get most recent appeal
@@ -206,10 +206,10 @@ export const appeals_getStatus = async (
  */
 export const appeals_updateStatus = async (
   data: any,
-  context: functions.https.CallableContext
+  request: CallableRequest<any>
 ): Promise<{ success: boolean; error?: string }> => {
   
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -242,7 +242,7 @@ export const appeals_updateStatus = async (
       status,
       moderatorNote: moderatorNote || null,
       updatedAt: serverTimestamp(),
-      reviewedBy: context.auth.uid,
+      reviewedBy: request.auth.uid,
     });
 
     // If appeal is approved, update user's account status

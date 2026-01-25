@@ -32,8 +32,9 @@ interface StoreSafetyAlert {
 /**
  * Monitor for store policy violations
  */
-export const storePolicyViolationMonitor = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const storePolicyViolationMonitor = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -239,8 +240,9 @@ export const storePolicyViolationMonitor = functions.https.onCall(async (data, c
 /**
  * Generate store defense dossier for App Store/Google Play submission
  */
-export const generateStoreDefenseDossier = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const generateStoreDefenseDossier = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 

@@ -444,13 +444,14 @@ export async function processStripePaymentWithTax(
 /**
  * HTTP endpoint to calculate tax for a purchase
  */
-export const calculateTax = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const calculateTax = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   const { amount, type } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   
   if (!amount || amount <= 0) {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid amount');
@@ -464,13 +465,14 @@ export const calculateTax = functions.https.onCall(async (data, context) => {
 /**
  * HTTP endpoint to calculate creator earnings
  */
-export const calculateCreatorEarnings = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const calculateCreatorEarnings = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   const { amount, platformFee } = data;
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
   
   if (!amount || amount <= 0) {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid amount');

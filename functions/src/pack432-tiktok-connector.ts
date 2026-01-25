@@ -299,8 +299,9 @@ class TikTokAdsAPI {
 // CLOUD FUNCTIONS
 // ===========================
 
-export const syncTikTokCampaign = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const syncTikTokCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -384,8 +385,9 @@ export const syncTikTokCampaign = functions.https.onCall(async (data, context) =
   }
 });
 
-export const updateTikTokCampaignBudget = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateTikTokCampaignBudget = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -416,8 +418,9 @@ export const updateTikTokCampaignBudget = functions.https.onCall(async (data, co
   }
 });
 
-export const rotateTikTokCreatives = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const rotateTikTokCreatives = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -581,7 +584,8 @@ export const syncTikTokReports = functions.pubsub
 // EVENT TRACKING
 // ===========================
 
-export const trackTikTokEvent = functions.https.onCall(async (data, context) => {
+export const trackTikTokEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { event, userId, eventData } = data;
 
   // Get TikTok pixel code

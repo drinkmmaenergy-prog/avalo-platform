@@ -23,13 +23,13 @@ const db = admin.firestore();
 /**
  * Get user's current dating intentions
  */
-export const getDatingIntentions = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const getDatingIntentions = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const doc = await db.collection('dating_intentions').doc(userId).get();
@@ -60,16 +60,13 @@ export const getDatingIntentions = functions.https.onCall(
 /**
  * Update user's dating intentions and preferences
  */
-export const updateDatingIntentions = functions.https.onCall(
-  async (data: {
-    badges?: DatingIntentionBadge[];
-    preferences?: Partial<DatingPreferences>;
-  }, context) => {
-    if (!context.auth) {
+export const updateDatingIntentions = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Validate badges
     if (data.badges) {
@@ -134,13 +131,13 @@ export const updateDatingIntentions = functions.https.onCall(
 /**
  * Calculate compatibility between current user and a target user
  */
-export const calculateIntentionCompatibility = functions.https.onCall(
-  async (data: { targetUserId: string }, context) => {
-    if (!context.auth) {
+export const calculateIntentionCompatibility = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { targetUserId } = data;
 
     if (!targetUserId) {
@@ -184,13 +181,13 @@ export const calculateIntentionCompatibility = functions.https.onCall(
 /**
  * Get batch compatibility scores for discovery feed
  */
-export const getBatchCompatibilityScores = functions.https.onCall(
-  async (data: { userIds: string[]; minScore?: number }, context) => {
-    if (!context.auth) {
+export const getBatchCompatibilityScores = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { userIds, minScore = 0 } = data;
 
     if (!Array.isArray(userIds) || userIds.length === 0) {
@@ -238,13 +235,13 @@ export const getBatchCompatibilityScores = functions.https.onCall(
 /**
  * Track intention analytics when a match is made
  */
-export const trackIntentionMatch = functions.https.onCall(
-  async (data: { matchedUserId: string; conversationStarted: boolean }, context) => {
-    if (!context.auth) {
+export const trackIntentionMatch = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { matchedUserId, conversationStarted } = data;
 
     try {
@@ -280,13 +277,13 @@ export const trackIntentionMatch = functions.https.onCall(
 /**
  * Get intention analytics for the user
  */
-export const getIntentionAnalytics = functions.https.onCall(
-  async (data: { period?: 'daily' | 'weekly' | 'monthly' }, context) => {
-    if (!context.auth) {
+export const getIntentionAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const period = data.period || 'weekly';
 
     try {

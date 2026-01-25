@@ -71,10 +71,10 @@ export async function isFeatureEnabledInCountry(
 /**
  * Update country configuration (admin only)
  */
-export const pack345_updateCountryConfig = functions.https.onCall(
-  async (data, context) => {
+export const pack345_updateCountryConfig = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -98,7 +98,7 @@ export const pack345_updateCountryConfig = functions.https.onCall(
       { merge: true }
     );
 
-    console.log(`[Pack345] Country config updated for ${countryCode} by ${context.auth.uid}`);
+    console.log(`[Pack345] Country config updated for ${countryCode} by ${request.auth.uid}`);
 
     return {
       success: true,
@@ -111,10 +111,10 @@ export const pack345_updateCountryConfig = functions.https.onCall(
 /**
  * Get all country configurations
  */
-export const pack345_getAllCountryConfigs = functions.https.onCall(
-  async (data, context) => {
+export const pack345_getAllCountryConfigs = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -132,10 +132,10 @@ export const pack345_getAllCountryConfigs = functions.https.onCall(
 /**
  * Enable country for launch
  */
-export const pack345_enableCountry = functions.https.onCall(
-  async (data, context) => {
+export const pack345_enableCountry = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -151,7 +151,7 @@ export const pack345_enableCountry = functions.https.onCall(
       lastUpdated: admin.firestore.Timestamp.now()
     });
 
-    console.log(`[Pack345] Country ${countryCode} enabled for launch by ${context.auth.uid}`);
+    console.log(`[Pack345] Country ${countryCode} enabled for launch by ${request.auth.uid}`);
 
     return {
       success: true,
@@ -164,10 +164,10 @@ export const pack345_enableCountry = functions.https.onCall(
 /**
  * Disable country
  */
-export const pack345_disableCountry = functions.https.onCall(
-  async (data, context) => {
+export const pack345_disableCountry = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -184,7 +184,7 @@ export const pack345_disableCountry = functions.https.onCall(
       lastUpdated: admin.firestore.Timestamp.now()
     });
 
-    console.log(`[Pack345] Country ${countryCode} disabled by ${context.auth.uid}: ${reason || 'No reason'}`);
+    console.log(`[Pack345] Country ${countryCode} disabled by ${request.auth.uid}: ${reason || 'No reason'}`);
 
     return {
       success: true,
@@ -197,10 +197,9 @@ export const pack345_disableCountry = functions.https.onCall(
 /**
  * Initialize countries on first deploy
  */
-export const pack345_initializeCountries = functions.https.onCall(
-  async (data, context) => {
+export const pack345_initializeCountries = functions.https.onCall(async (request) => {
     // Require super-admin
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 

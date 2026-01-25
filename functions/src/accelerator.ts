@@ -129,12 +129,13 @@ interface AcceleratorParticipant {
 
 // Apply to Accelerator
 
-export const applyToAccelerator = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const applyToAccelerator = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const {
     userName,
     email,
@@ -194,12 +195,13 @@ export const applyToAccelerator = functions.https.onCall(async (data, context) =
 
 // Review Application (Admin only)
 
-export const reviewAcceleratorApplication = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reviewAcceleratorApplication = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const adminCheck = await db.collection('admins').doc(context.auth.uid).get();
+  const adminCheck = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminCheck.exists) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -221,7 +223,7 @@ export const reviewAcceleratorApplication = functions.https.onCall(async (data, 
     status,
     reviewNotes: reviewNotes || '',
     reviewedAt: FieldValue.serverTimestamp(),
-    reviewedBy: context.auth.uid,
+    reviewedBy: request.auth.uid,
   });
 
   if (status === 'approved') {
@@ -267,12 +269,13 @@ export const reviewAcceleratorApplication = functions.https.onCall(async (data, 
 
 // Assign Mentor
 
-export const assignMentor = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const assignMentor = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const adminCheck = await db.collection('admins').doc(context.auth.uid).get();
+  const adminCheck = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminCheck.exists) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -306,8 +309,9 @@ export const assignMentor = functions.https.onCall(async (data, context) => {
 
 // Log Mentorship Session
 
-export const logMentorshipSession = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const logMentorshipSession = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -354,8 +358,9 @@ export const logMentorshipSession = functions.https.onCall(async (data, context)
 
 // Complete Mentorship Session
 
-export const completeMentorshipSession = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const completeMentorshipSession = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -374,7 +379,7 @@ export const completeMentorshipSession = functions.https.onCall(async (data, con
 
   const sessionData = session.data() as MentorshipSession;
 
-  if (sessionData.mentorId !== context.auth.uid && sessionData.participantId !== context.auth.uid) {
+  if (sessionData.mentorId !== request.auth.uid && sessionData.participantId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Not authorized for this session');
   }
 
@@ -397,12 +402,13 @@ export const completeMentorshipSession = functions.https.onCall(async (data, con
 
 // Request Grant
 
-export const requestGrant = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const requestGrant = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const participant = await db.collection('accelerator_participants').doc(userId).get();
   if (!participant.exists) {
@@ -455,12 +461,13 @@ export const requestGrant = functions.https.onCall(async (data, context) => {
 
 // Issue Grant (Admin only)
 
-export const issueGrant = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const issueGrant = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const adminCheck = await db.collection('admins').doc(context.auth.uid).get();
+  const adminCheck = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminCheck.exists) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -482,7 +489,7 @@ export const issueGrant = functions.https.onCall(async (data, context) => {
     status,
     reviewNotes: reviewNotes || '',
     reviewedAt: FieldValue.serverTimestamp(),
-    reviewedBy: context.auth.uid,
+    reviewedBy: request.auth.uid,
   };
 
   if (status === 'approved') {
@@ -505,12 +512,13 @@ export const issueGrant = functions.https.onCall(async (data, context) => {
 
 // Sign Ethics Agreement
 
-export const signEthicsAgreement = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const signEthicsAgreement = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { agreed, agreementVersion } = data;
 
   if (!agreed || agreementVersion !== '1.0') {
@@ -538,12 +546,13 @@ export const signEthicsAgreement = functions.https.onCall(async (data, context) 
 
 // Update Tier Progress
 
-export const updateTierProgress = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateTierProgress = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { milestone } = data;
 
   if (!milestone || !['workshop', 'certification', 'business_milestone'].includes(milestone)) {
@@ -597,8 +606,9 @@ export const updateTierProgress = functions.https.onCall(async (data, context) =
 
 // Detect Exploitation Attempt
 
-export const detectExploitationAttempt = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const detectExploitationAttempt = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -611,7 +621,7 @@ export const detectExploitationAttempt = functions.https.onCall(async (data, con
   const reportId = generateId();
   const report = {
     reportId,
-    reporterId: context.auth.uid,
+    reporterId: request.auth.uid,
     reportType,
     reportedUserId,
     description,

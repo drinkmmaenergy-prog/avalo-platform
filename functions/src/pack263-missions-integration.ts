@@ -406,7 +406,7 @@ export async function getActiveMissionsForActivity(
  * ```typescript
  * import { integrateWithChatMonetization } from './pack263-missions-integration';
  * 
- * export const processChatPayment = functions.https.onCall(async (data, context) => {
+ * export const processChatPayment = functions.https.onCall(async (request) => {
  *   // ... existing chat billing logic ...
  *   
  *   // After tokens are deducted and chat is recorded:
@@ -454,7 +454,7 @@ export async function getActiveMissionsForActivity(
  * ```typescript
  * import { integrateWithFanClub } from './pack263-missions-integration';
  * 
- * export const handleFanClubSubscription = functions.https.onCall(async (data, context) => {
+ * export const handleFanClubSubscription = functions.https.onCall(async (request) => {
  *   // ... existing subscription logic ...
  *   
  *   // After subscription is confirmed:

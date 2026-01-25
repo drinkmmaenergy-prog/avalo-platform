@@ -30,8 +30,9 @@ import { HttpsError, admin, auth, onCall } from './runtime';
 /**
  * Get complete dashboard data (admin only)
  */
-export const pack336_getDashboard = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -103,8 +104,9 @@ export const pack336_getDashboard = functions.https.onCall(async (data, context)
 /**
  * Get daily global KPI timeseries for charts (admin only)
  */
-export const pack336_getDailyGlobalTimeseries = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getDailyGlobalTimeseries = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -150,8 +152,9 @@ export const pack336_getDailyGlobalTimeseries = functions.https.onCall(async (da
 /**
  * Get revenue streams timeseries for charts (admin only)
  */
-export const pack336_getRevenueStreamsTimeseries = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getRevenueStreamsTimeseries = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -200,8 +203,9 @@ export const pack336_getRevenueStreamsTimeseries = functions.https.onCall(async 
 /**
  * Get country breakdown with ranking (admin only)
  */
-export const pack336_getCountryBreakdown = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getCountryBreakdown = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -276,8 +280,9 @@ export const pack336_getCountryBreakdown = functions.https.onCall(async (data, c
 /**
  * Get cohort retention analysis (admin only)
  */
-export const pack336_getCohortAnalysis = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getCohortAnalysis = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -316,8 +321,9 @@ export const pack336_getCohortAnalysis = functions.https.onCall(async (data, con
 /**
  * Get virality metrics timeseries (admin only)
  */
-export const pack336_getViralityTimeseries = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getViralityTimeseries = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -364,8 +370,9 @@ export const pack336_getViralityTimeseries = functions.https.onCall(async (data,
 /**
  * Calculate ARPU and ARPPU for period (admin only)
  */
-export const pack336_getARPUMetrics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getARPUMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -434,8 +441,9 @@ export const pack336_getARPUMetrics = functions.https.onCall(async (data, contex
 /**
  * Get token velocity metrics (admin only)
  */
-export const pack336_getTokenVelocity = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getTokenVelocity = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -487,8 +495,9 @@ export const pack336_getTokenVelocity = functions.https.onCall(async (data, cont
 /**
  * Get refund metrics analysis (admin only)
  */
-export const pack336_getRefundAnalysis = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getRefundAnalysis = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -546,8 +555,9 @@ export const pack336_getRefundAnalysis = functions.https.onCall(async (data, con
 /**
  * Get North Star metric history (admin only)
  */
-export const pack336_getNorthStarHistory = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getNorthStarHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -592,8 +602,9 @@ export const pack336_getNorthStarHistory = functions.https.onCall(async (data, c
  * Get platform health summary (admin only)
  * Quick overview of key metrics
  */
-export const pack336_getPlatformHealth = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack336_getPlatformHealth = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   

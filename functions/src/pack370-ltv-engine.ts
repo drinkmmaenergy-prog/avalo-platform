@@ -69,9 +69,10 @@ const LTV_TIERS = {
 
 export const pack370_calculateLTVForecast = functions
   .runWith({ memory: '512MB', timeoutSeconds: 300 })
-  .https.onCall(async (data: { userId: string }, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -520,9 +521,9 @@ async function invalidateLTV(userId: string) {
   });
 }
 
-export const pack370_invalidateLTV = functions.https.onCall(
-  async (data: { userId: string }, context) => {
-    if (!context.auth) {
+export const pack370_invalidateLTV = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
     
@@ -666,14 +667,14 @@ export const pack370_updateGeoLTVProfiles = functions
 // 1️⃣1️⃣ ADMIN LTV OVERRIDE
 // ============================================================================
 
-export const pack370_adminLTVOverride = functions.https.onCall(
-  async (data: { userId: string, overrideLTV: number, reason: string }, context) => {
-    if (!context.auth) {
+export const pack370_adminLTVOverride = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
     
     // Check admin role
-    const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!adminDoc.exists || !['admin', 'superadmin'].includes(adminDoc.data()?.role)) {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -686,7 +687,7 @@ export const pack370_adminLTVOverride = functions.https.onCall(
       userId,
       overrideLTV,
       reason,
-      adminId: context.auth.uid,
+      adminId: request.auth.uid,
       overrideAt: admin.firestore.Timestamp.now()
     });
     
@@ -702,7 +703,7 @@ export const pack370_adminLTVOverride = functions.https.onCall(
     // Log to audit
     await logAuditEvent({
       eventType: 'LTV_MANUAL_OVERRIDE',
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       metadata: { targetUserId: userId, overrideLTV, reason }
     });
     

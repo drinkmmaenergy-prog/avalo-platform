@@ -98,12 +98,13 @@ const db = admin.firestore();
 /**
  * Generate referral code for user
  */
-export const generateReferralCode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const generateReferralCode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   
   // Check if user already has a referral code
   const existingCodeQuery = await db.collection('referral_codes')
@@ -138,8 +139,9 @@ export const generateReferralCode = functions.https.onCall(async (data, context)
 /**
  * Create referral
  */
-export const createReferral = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createReferral = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
@@ -164,13 +166,13 @@ export const createReferral = functions.https.onCall(async (data, context) => {
   const referrerId = referrerData.userId;
 
   // Check if user is trying to refer themselves
-  if (referrerId === context.auth.uid) {
+  if (referrerId === request.auth.uid) {
     throw new functions.https.HttpsError('invalid-argument', 'Cannot refer yourself');
   }
 
   // Check if user was already referred
   const existingReferralQuery = await db.collection('referrals')
-    .where('referredUserId', '==', context.auth.uid)
+    .where('referredUserId', '==', request.auth.uid)
     .limit(1)
     .get();
 
@@ -183,7 +185,7 @@ export const createReferral = functions.https.onCall(async (data, context) => {
   const referral: Referral = {
     referralId,
     referrerId,
-    referredUserId: context.auth.uid,
+    referredUserId: request.auth.uid,
     referralCode,
     referralLink: referrerData.link,
     channel: channel || 'link',
@@ -269,8 +271,9 @@ export const completeReferral = functions.firestore
 /**
  * Send viral invite
  */
-export const sendViralInvite = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const sendViralInvite = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
@@ -282,7 +285,7 @@ export const sendViralInvite = functions.https.onCall(async (data, context) => {
 
   // Get user's referral code
   const referralCodeQuery = await db.collection('referral_codes')
-    .where('userId', '==', context.auth.uid)
+    .where('userId', '==', request.auth.uid)
     .limit(1)
     .get();
 
@@ -294,7 +297,7 @@ export const sendViralInvite = functions.https.onCall(async (data, context) => {
     const code = await generateUniqueCode();
     referralLink = `https://avalo.app/invite/${code}`;
     await db.collection('referral_codes').add({
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       code,
       link: referralLink,
       totalUses: 0,
@@ -307,7 +310,7 @@ export const sendViralInvite = functions.https.onCall(async (data, context) => {
 
   const invite: ViralInvite = {
     inviteId,
-    senderId: context.auth.uid,
+    senderId: request.auth.uid,
     recipientContact,
     channel,
     deepLink: referralLink,
@@ -326,12 +329,13 @@ export const sendViralInvite = functions.https.onCall(async (data, context) => {
 /**
  * Get user's referral stats
  */
-export const getReferralStats = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getReferralStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Get referral code
   const referralCodeQuery = await db.collection('referral_codes')
@@ -395,7 +399,8 @@ export const getReferralStats = functions.https.onCall(async (data, context) => 
 /**
  * Get viral leaderboard
  */
-export const getViralLeaderboard = functions.https.onCall(async (data, context) => {
+export const getViralLeaderboard = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { limit = 100, countryCode } = data;
 
   let query = db.collection('viral_leaderboards')

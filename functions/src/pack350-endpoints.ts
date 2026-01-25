@@ -26,12 +26,12 @@ import { HttpsError, auth, onCall, onRequest } from './runtime';
 /**
  * Get current user's subscription tier and details
  */
-export const pack350_getMySubscription = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack350_getMySubscription = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   
   try {
     const tier = await getEffectiveSubscriptionTier(userId);
@@ -55,7 +55,8 @@ export const pack350_getMySubscription = functions.https.onCall(async (data, con
 /**
  * Get available subscription products for current platform
  */
-export const pack350_getSubscriptionProducts = functions.https.onCall(async (data, context) => {
+export const pack350_getSubscriptionProducts = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { platform } = data as { platform: 'web' | 'mobile' };
   
   if (!platform || (platform !== 'web' && platform !== 'mobile')) {
@@ -78,12 +79,13 @@ export const pack350_getSubscriptionProducts = functions.https.onCall(async (dat
 /**
  * Sync Stripe subscription (called after Stripe checkout success)
  */
-export const pack350_syncStripeSubscription = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack350_syncStripeSubscription = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { stripeCustomerId, stripePriceId, isActive, currentPeriodEnd } = data as {
     stripeCustomerId: string;
     stripePriceId: string;
@@ -117,12 +119,13 @@ export const pack350_syncStripeSubscription = functions.https.onCall(async (data
 /**
  * Sync Apple subscription (called after App Store purchase)
  */
-export const pack350_syncAppleSubscription = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack350_syncAppleSubscription = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { originalTransactionId, productId, isActive, expiresDate } = data as {
     originalTransactionId: string;
     productId: string;
@@ -156,12 +159,13 @@ export const pack350_syncAppleSubscription = functions.https.onCall(async (data,
 /**
  * Sync Google Play subscription (called after Play Store purchase)
  */
-export const pack350_syncGoogleSubscription = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack350_syncGoogleSubscription = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { purchaseToken, productId, isActive, expiryTimeMillis } = data as {
     purchaseToken: string;
     productId: string;
@@ -195,12 +199,13 @@ export const pack350_syncGoogleSubscription = functions.https.onCall(async (data
 /**
  * Cancel subscription
  */
-export const pack350_cancelSubscription = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack350_cancelSubscription = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { reason } = data as { reason?: string };
   
   try {

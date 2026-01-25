@@ -29,17 +29,18 @@ import { HttpsError, admin, auth, onCall, onRequest } from './runtime';
  */
 export const getDiscoveryFeedCallable = functions
   .region('europe-west3')
-  .https.onCall(async (data: GetDiscoveryFeedRequest, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify authentication
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const callerId = context.auth.uid;
+      const callerId = request.auth.uid;
       const { userId, cursor, limit = 20, filters } = data;
 
       // Verify the caller is requesting their own feed
@@ -87,17 +88,18 @@ export const getDiscoveryFeedCallable = functions
  */
 export const searchProfilesCallable = functions
   .region('europe-west3')
-  .https.onCall(async (data: SearchProfilesRequest, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify authentication
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const callerId = context.auth.uid;
+      const callerId = request.auth.uid;
       const { userId, query, cursor, limit = 20, filters } = data;
 
       // Verify the caller is performing their own search
@@ -146,21 +148,22 @@ export const searchProfilesCallable = functions
  */
 export const rebuildDiscoveryProfileCallable = functions
   .region('europe-west3')
-  .https.onCall(async (data: { userId: string }, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify authentication
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const callerId = context.auth.uid;
+      const callerId = request.auth.uid;
       const { userId } = data;
 
       // Only allow rebuilding own profile (or admin)
-      const isAdmin = context.auth.token?.admin === true;
+      const isAdmin = request.auth.token?.admin === true;
       if (callerId !== userId && !isAdmin) {
         throw new functions.https.HttpsError(
           'permission-denied',

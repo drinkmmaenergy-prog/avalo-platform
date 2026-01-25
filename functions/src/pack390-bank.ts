@@ -16,13 +16,14 @@ const db = admin.firestore();
 /**
  * Generate comprehensive financial report
  */
-export const pack390_generateFinancialReport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_generateFinancialReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   // Require finance team access
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const isAuthorized = userDoc.exists && 
     (userDoc.data()?.role === 'admin' || userDoc.data()?.permissions?.finance === true);
   
@@ -53,7 +54,7 @@ export const pack390_generateFinancialReport = functions.https.onCall(async (dat
       eventSettlements,
       chargebackExposure,
       generatedAt: new Date().toISOString(),
-      generatedBy: context.auth.uid
+      generatedBy: request.auth.uid
     };
     
     // Store report
@@ -94,13 +95,14 @@ export const pack390_generateFinancialReport = functions.https.onCall(async (dat
 /**
  * Export audit trail for regulators
  */
-export const pack390_exportAuditTrail = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_exportAuditTrail = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   // Require admin access
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -150,13 +152,14 @@ export const pack390_exportAuditTrail = functions.https.onCall(async (data, cont
 /**
  * Get platform financial dashboard metrics
  */
-export const pack390_getDashboardMetrics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_getDashboardMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   // Require finance team access
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const isAuthorized = userDoc.exists && 
     (userDoc.data()?.role === 'admin' || userDoc.data()?.permissions?.finance === true);
   
@@ -412,13 +415,14 @@ async function getAMLAlertSummary() {
 /**
  * Update market status for a country
  */
-export const pack390_updateMarketStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_updateMarketStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   // Require admin access
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -436,7 +440,7 @@ export const pack390_updateMarketStatus = functions.https.onCall(async (data, co
       payoutsEnabled: payoutsEnabled !== false,
       vatEnabled: vatEnabled !== false,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedBy: context.auth.uid
+      updatedBy: request.auth.uid
     }, { merge: true });
     
     // Log change
@@ -446,7 +450,7 @@ export const pack390_updateMarketStatus = functions.https.onCall(async (data, co
       paymentsEnabled,
       payoutsEnabled,
       vatEnabled,
-      updatedBy: context.auth.uid,
+      updatedBy: request.auth.uid,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
     
@@ -464,7 +468,8 @@ export const pack390_updateMarketStatus = functions.https.onCall(async (data, co
 /**
  * Get market status for all countries
  */
-export const pack390_getAllMarketStatus = functions.https.onCall(async (data, context) => {
+export const pack390_getAllMarketStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     const statusSnapshot = await db.collection('marketStatus').get();
     
@@ -496,13 +501,14 @@ function convertToCSV(data: any): string {
 /**
  * Record chargeback
  */
-export const pack390_recordChargeback = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_recordChargeback = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   // Require finance team access
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const isAuthorized = userDoc.exists && 
     (userDoc.data()?.role === 'admin' || userDoc.data()?.permissions?.finance === true);
   
@@ -521,7 +527,7 @@ export const pack390_recordChargeback = functions.https.onCall(async (data, cont
       reason,
       status: 'open',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      recordedBy: context.auth.uid
+      recordedBy: request.auth.uid
     });
     
     // Log to audit trail
@@ -531,7 +537,7 @@ export const pack390_recordChargeback = functions.https.onCall(async (data, cont
       userId,
       amount,
       currency,
-      recordedBy: context.auth.uid,
+      recordedBy: request.auth.uid,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
     

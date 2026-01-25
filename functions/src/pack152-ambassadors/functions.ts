@@ -25,12 +25,13 @@ const db = admin.firestore();
 /**
  * Apply to become an Ambassador
  */
-export const applyForAmbassador = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const applyForAmbassador = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { city, country, countryCode, timezone, motivation, experienceDescription } = data;
 
   if (!city || !country || !countryCode || !timezone || !motivation || !experienceDescription) {
@@ -98,12 +99,13 @@ export const applyForAmbassador = functions.https.onCall(async (data, context) =
 /**
  * Approve an Ambassador application (Admin only)
  */
-export const approveAmbassador = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const approveAmbassador = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const adminId = context.auth.uid;
+  const adminId = request.auth.uid;
   const { applicationId } = data;
 
   if (!applicationId) {
@@ -172,12 +174,13 @@ export const approveAmbassador = functions.https.onCall(async (data, context) =>
 /**
  * Schedule an Ambassador event
  */
-export const scheduleAmbassadorEvent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const scheduleAmbassadorEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const ambassadorId = context.auth.uid;
+  const ambassadorId = request.auth.uid;
   const {
     title,
     description,
@@ -288,12 +291,13 @@ export const scheduleAmbassadorEvent = functions.https.onCall(async (data, conte
 /**
  * Register attendance for an event
  */
-export const registerAttendance = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const registerAttendance = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { eventId, safetyRulesAccepted, photographyConsentGiven } = data;
 
   if (!eventId || safetyRulesAccepted === undefined || photographyConsentGiven === undefined) {
@@ -364,12 +368,13 @@ export const registerAttendance = functions.https.onCall(async (data, context) =
 /**
  * Check in to event via QR code
  */
-export const checkInToEvent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const checkInToEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { eventId, qrCode } = data;
 
   if (!eventId || !qrCode) {
@@ -426,8 +431,9 @@ export const checkInToEvent = functions.https.onCall(async (data, context) => {
 /**
  * Evaluate Ambassador Performance
  */
-export const evaluateAmbassadorPerformance = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const evaluateAmbassadorPerformance = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -437,7 +443,7 @@ export const evaluateAmbassadorPerformance = functions.https.onCall(async (data,
     throw new functions.https.HttpsError('invalid-argument', 'Missing ambassadorId or period');
   }
 
-  const adminId = context.auth.uid;
+  const adminId = request.auth.uid;
   const adminDoc = await db.collection('users').doc(adminId).get();
   if (!adminDoc.exists || !adminDoc.data()?.isAdmin) {
     throw new functions.https.HttpsError('permission-denied', 'Only admins can evaluate performance');
@@ -533,12 +539,13 @@ export const evaluateAmbassadorPerformance = functions.https.onCall(async (data,
 /**
  * Revoke Ambassador Access
  */
-export const revokeAmbassadorAccess = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const revokeAmbassadorAccess = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const adminId = context.auth.uid;
+  const adminId = request.auth.uid;
   const { ambassadorId, reason } = data;
 
   if (!ambassadorId || !reason) {
@@ -584,12 +591,13 @@ export const revokeAmbassadorAccess = functions.https.onCall(async (data, contex
 /**
  * Report Compliance Incident
  */
-export const reportComplianceIncident = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reportComplianceIncident = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const reportedBy = context.auth.uid;
+  const reportedBy = request.auth.uid;
   const { ambassadorId, eventId, incidentType, severity, description, evidenceUrls, witnessStatements } = data;
 
   if (!ambassadorId || !incidentType || !severity || !description) {

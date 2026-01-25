@@ -21,9 +21,10 @@ const db = admin.firestore();
 /**
  * Register a new partner - requires admin approval
  */
-export const registerPartner = https.onCall(async (data, context) => {
+export const registerPartner = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth?.token.admin) {
+    if (!request.auth?.token.admin) {
       throw new https.HttpsError(
         'permission-denied',
         'Only admins can register partners'
@@ -98,7 +99,7 @@ export const registerPartner = https.onCall(async (data, context) => {
       
       createdAt: new Date(),
       updatedAt: new Date(),
-      createdBy: context.auth.uid
+      createdBy: request.auth.uid
     };
 
     await db.collection('api_partner_profiles').doc(partnerId).set(partnerProfile);
@@ -122,9 +123,10 @@ export const registerPartner = https.onCall(async (data, context) => {
 /**
  * Verify partner identity
  */
-export const verifyPartnerIdentity = https.onCall(async (data, context) => {
+export const verifyPartnerIdentity = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth?.token.admin) {
+    if (!request.auth?.token.admin) {
       throw new https.HttpsError(
         'permission-denied',
         'Only admins can verify partners'
@@ -150,7 +152,7 @@ export const verifyPartnerIdentity = https.onCall(async (data, context) => {
     await partnerRef.update({
       identityVerified: verified,
       verificationDate: verified ? new Date() : admin.firestore.FieldValue.delete(),
-      verifiedBy: verified ? context.auth.uid : admin.firestore.FieldValue.delete(),
+      verifiedBy: verified ? request.auth.uid : admin.firestore.FieldValue.delete(),
       updatedAt: new Date()
     });
 
@@ -170,9 +172,10 @@ export const verifyPartnerIdentity = https.onCall(async (data, context) => {
 /**
  * Sign security agreement
  */
-export const signSecurityAgreement = https.onCall(async (data, context) => {
+export const signSecurityAgreement = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth) {
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'Authentication required');
     }
 
@@ -245,9 +248,10 @@ export const signSecurityAgreement = https.onCall(async (data, context) => {
 /**
  * Update partner status
  */
-export const updatePartnerStatus = https.onCall(async (data, context) => {
+export const updatePartnerStatus = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth?.token.admin) {
+    if (!request.auth?.token.admin) {
       throw new https.HttpsError(
         'permission-denied',
         'Only admins can update partner status'
@@ -326,9 +330,10 @@ export const updatePartnerStatus = https.onCall(async (data, context) => {
 /**
  * Get partner profile
  */
-export const getPartnerProfile = https.onCall(async (data, context) => {
+export const getPartnerProfile = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth) {
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'Authentication required');
     }
 
@@ -374,9 +379,10 @@ export const getPartnerProfile = https.onCall(async (data, context) => {
 /**
  * Update rate limits
  */
-export const updateRateLimits = https.onCall(async (data, context) => {
+export const updateRateLimits = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth?.token.admin) {
+    if (!request.auth?.token.admin) {
       throw new https.HttpsError(
         'permission-denied',
         'Only admins can update rate limits'
@@ -426,9 +432,10 @@ export const updateRateLimits = https.onCall(async (data, context) => {
 /**
  * List partners (admin only)
  */
-export const listPartners = https.onCall(async (data, context) => {
+export const listPartners = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth?.token.admin) {
+    if (!request.auth?.token.admin) {
       throw new https.HttpsError(
         'permission-denied',
         'Only admins can list partners'
@@ -470,9 +477,10 @@ export const listPartners = https.onCall(async (data, context) => {
 /**
  * Rotate API credentials
  */
-export const rotateAPICredentials = https.onCall(async (data, context) => {
+export const rotateAPICredentials = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth?.token.admin) {
+    if (!request.auth?.token.admin) {
       throw new https.HttpsError(
         'permission-denied',
         'Only admins can rotate credentials'

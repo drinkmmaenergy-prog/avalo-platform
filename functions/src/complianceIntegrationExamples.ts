@@ -17,12 +17,13 @@ import { FieldValue, HttpsError, auth, functions, onCall, serverTimestamp, stora
  * 
  * Usage in discoveryFeed.ts:
  * 
- * export const getDiscoveryFeed = functions.https.onCall(async (data, context) => {
- *   if (!context.auth) {
+ * export const getDiscoveryFeed = functions.https.onCall(async (request) => {
+  const data = request.data;
+ *   if (!request.auth) {
  *     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
  *   }
  * 
- *   const userId = context.auth.uid;
+ *   const userId = request.auth.uid;
  * 
  *   // Check age verification
  *   const ageVerificationRef = db.collection('age_verification').doc(userId);
@@ -80,12 +81,13 @@ import { FieldValue, HttpsError, auth, functions, onCall, serverTimestamp, stora
 /**
  * Before showing creator marketplace, verify age
  * 
- * export const creator_getMarketplace = functions.https.onCall(async (data, context) => {
- *   if (!context.auth) {
+ * export const creator_getMarketplace = functions.https.onCall(async (request) => {
+  const data = request.data;
+ *   if (!request.auth) {
  *     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
  *   }
  * 
- *   const userId = context.auth.uid;
+ *   const userId = request.auth.uid;
  * 
  *   // Check age verification
  *   const ageVerificationRef = db.collection('age_verification').doc(userId);
@@ -136,7 +138,7 @@ import { FieldValue, HttpsError, auth, functions, onCall, serverTimestamp, stora
  * 
  * In PPM media upload handler:
  * 
- * export const uploadPPMMedia = functions.https.onCall(async (data, context) => {
+ * export const uploadPPMMedia = functions.https.onCall(async (request) => {
  *   // ... upload media to storage ...
  *   
  *   const mediaId = `${conversationId}_${messageId}`;
@@ -274,8 +276,9 @@ import { FieldValue, HttpsError, auth, functions, onCall, serverTimestamp, stora
 /**
  * Before allowing payout, check KYC requirements
  * 
- * export const payout_request = functions.https.onCall(async (data, context) => {
- *   const userId = context.auth.uid;
+ * export const payout_request = functions.https.onCall(async (request) => {
+  const data = request.data;
+ *   const userId = request.auth.uid;
  *   const { amount } = data;
  * 
  *   // Check AML state

@@ -116,15 +116,16 @@ function isValidReferralCode(code: string): boolean {
  * Create or get referral code for user
  * POST /referrals/create-or-get
  */
-export const createOrGetReferralCode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createOrGetReferralCode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = data.userId || context.auth.uid;
+  const userId = data.userId || request.auth.uid;
   
   // Only allow users to create their own referral code
-  if (userId !== context.auth.uid) {
+  if (userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Cannot create referral code for another user');
   }
   
@@ -196,7 +197,8 @@ export const createOrGetReferralCode = functions.https.onCall(async (data, conte
  * Track referral click
  * POST /referrals/track-click
  */
-export const trackClick = functions.https.onCall(async (data, context) => {
+export const trackClick = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { referralCode, source, userAgentHash } = data;
   
   if (!referralCode) {
@@ -236,7 +238,7 @@ export const trackClick = functions.https.onCall(async (data, context) => {
       referralCode,
       referrerUserId,
       eventType: 'CLICK',
-      viewerUserId: context.auth?.uid || null,
+      viewerUserId: request.auth?.uid || null,
       userAgentHash: userAgentHash || null,
       ipCountry: null, // Could extract from request headers in production
       createdAt: now,
@@ -271,16 +273,17 @@ export const trackClick = functions.https.onCall(async (data, context) => {
  * Attribution on signup
  * POST /referrals/attribution-on-signup
  */
-export const attributionOnSignup = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const attributionOnSignup = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   const { newUserId, referralCode, source } = data;
-  const userId = newUserId || context.auth.uid;
+  const userId = newUserId || request.auth.uid;
   
   // Only allow users to set their own attribution
-  if (userId !== context.auth.uid) {
+  if (userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Cannot set attribution for another user');
   }
   
@@ -387,15 +390,16 @@ export const attributionOnSignup = functions.https.onCall(async (data, context) 
  * Track milestone (first purchase, first paid action)
  * POST /referrals/track-milestone
  */
-export const trackMilestone = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const trackMilestone = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   const { userId, milestone, tokensPurchased } = data;
   
   // Only allow tracking own milestones
-  if (userId !== context.auth.uid) {
+  if (userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Cannot track milestone for another user');
   }
   
@@ -490,15 +494,16 @@ export const trackMilestone = functions.https.onCall(async (data, context) => {
  * Get referral profile and stats
  * GET /referrals/get-profile
  */
-export const getReferralProfile = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getReferralProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = data.userId || context.auth.uid;
+  const userId = data.userId || request.auth.uid;
   
   // Only allow users to see their own referral profile
-  if (userId !== context.auth.uid) {
+  if (userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Cannot view another user\'s referral profile');
   }
   
@@ -623,7 +628,8 @@ export const aggregateReferralProfiles = functions.pubsub
 /**
  * Admin: Get referral profile for any user
  */
-export const admin_getReferralProfile = functions.https.onCall(async (data, context) => {
+export const admin_getReferralProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
   // TODO: Add admin authentication check
   const { userId } = data;
   

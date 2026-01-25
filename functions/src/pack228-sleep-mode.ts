@@ -60,12 +60,13 @@ interface PendingPayment {
 /**
  * Activate sleep mode for a user
  */
-export const activateSleepMode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const activateSleepMode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const autoEndHours = data.autoEndHours || null; // Optional auto-end time
 
   try {
@@ -123,12 +124,13 @@ export const activateSleepMode = functions.https.onCall(async (data, context) =>
 /**
  * Deactivate sleep mode for a user
  */
-export const deactivateSleepMode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const deactivateSleepMode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const exitReason = data.exitReason || 'manual';
 
   try {
@@ -360,12 +362,13 @@ async function createSleepModeSuggestion(
 /**
  * Track activity that might trigger auto-exit from sleep mode
  */
-export const trackSleepModeActivity = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const trackSleepModeActivity = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const activityType = data.activityType; // message_sent, chat_opened, meeting_scheduled, call_started
 
   try {
@@ -504,13 +507,14 @@ export const checkSleepModeAutoTimeout = functions.pubsub
 /**
  * Store paid interaction during sleep mode
  */
-export const storePendingPayment = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const storePendingPayment = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { recipientUserId, paymentType, amount } = data;
-  const senderUserId = context.auth.uid;
+  const senderUserId = request.auth.uid;
 
   try {
     await db.collection('sleep_mode_pending_payments').add({
@@ -691,7 +695,8 @@ export async function isUserInSleepMode(userId: string): Promise<boolean> {
 /**
  * Get sleep mode status message for other users
  */
-export const getSleepModeMessage = functions.https.onCall(async (data, context) => {
+export const getSleepModeMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { userId } = data;
 
   try {

@@ -107,11 +107,11 @@ function isValidPostalCode(postalCode: string, country: string): boolean {
 /**
  * Submit KYC profile for verification
  */
-export const kyc_submit = functions.https.onCall(
-  async (data: SubmitKYCRequest, context): Promise<SubmitKYCResponse> => {
+export const kyc_submit = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Auth check
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
@@ -119,7 +119,7 @@ export const kyc_submit = functions.https.onCall(
         };
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
 
       // Check if user is 18+
       const userDoc = await db.collection('users').doc(userId).get();
@@ -255,21 +255,21 @@ export const kyc_submit = functions.https.onCall(
 /**
  * Get KYC status for current user
  */
-export const kyc_getStatus = functions.https.onCall(
-  async (data: GetKYCStatusRequest, context): Promise<GetKYCStatusResponse> => {
+export const kyc_getStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
         };
       }
 
-      const userId = data.userId || context.auth.uid;
+      const userId = data.userId || request.auth.uid;
 
       // Security: Only own data or admin
-      if (userId !== context.auth.uid) {
-        const userDoc = await db.collection('users').doc(context.auth.uid).get();
+      if (userId !== request.auth.uid) {
+        const userDoc = await db.collection('users').doc(request.auth.uid).get();
         if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
           return {
             success: false,
@@ -309,18 +309,18 @@ export const kyc_getStatus = functions.https.onCall(
 /**
  * Review KYC submission (ADMIN ONLY)
  */
-export const kyc_admin_review = functions.https.onCall(
-  async (data: ReviewKYCRequest, context): Promise<ReviewKYCResponse> => {
+export const kyc_admin_review = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Check admin auth
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
         };
       }
 
-      const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+      const adminDoc = await db.collection('users').doc(request.auth.uid).get();
       if (!adminDoc.exists || adminDoc.data()?.role !== 'admin') {
         return {
           success: false,
@@ -368,7 +368,7 @@ export const kyc_admin_review = functions.https.onCall(
       // Log review
       await db.collection('kycAuditLogs').add({
         userId,
-        reviewedBy: context.auth.uid,
+        reviewedBy: request.auth.uid,
         action: approved ? 'APPROVED' : 'REJECTED',
         previousStatus: currentKyc.status,
         newStatus,
@@ -395,18 +395,18 @@ export const kyc_admin_review = functions.https.onCall(
 /**
  * List pending KYC submissions (ADMIN ONLY)
  */
-export const kyc_admin_listPending = functions.https.onCall(
-  async (data: { limit?: number }, context) => {
+export const kyc_admin_listPending = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Check admin auth
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
         };
       }
 
-      const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+      const adminDoc = await db.collection('users').doc(request.auth.uid).get();
       if (!adminDoc.exists || adminDoc.data()?.role !== 'admin') {
         return {
           success: false,

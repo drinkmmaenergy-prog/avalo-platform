@@ -66,12 +66,13 @@ interface FeedItem {
 /**
  * Generate personalized home feed for user
  */
-export const getHomeFeed = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getHomeFeed = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const cursor = data.cursor || null;
   const limit = Math.min(data.limit || 20, 50);
 

@@ -31,12 +31,13 @@ const db = admin.firestore();
 /**
  * Apply to become an ambassador
  */
-export const applyForAmbassador = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const applyForAmbassador = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const {
     qualification,
@@ -191,8 +192,9 @@ export const applyForAmbassador = functions.https.onCall(async (data, context) =
 /**
  * Review an ambassador application (Admin only)
  */
-export const reviewAmbassadorApplication = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reviewAmbassadorApplication = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -206,7 +208,7 @@ export const reviewAmbassadorApplication = functions.https.onCall(async (data, c
   }
 
   // Verify admin role
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists) {
     throw new functions.https.HttpsError(
       'permission-denied',
@@ -267,7 +269,7 @@ export const reviewAmbassadorApplication = functions.https.onCall(async (data, c
     // Update application
     await appRef.update({
       status: 'approved',
-      reviewedBy: context.auth.uid,
+      reviewedBy: request.auth.uid,
       reviewedAt: now,
       reviewNotes: reviewNotes || '',
       updatedAt: now
@@ -299,7 +301,7 @@ export const reviewAmbassadorApplication = functions.https.onCall(async (data, c
     // Reject application
     await appRef.update({
       status: 'rejected',
-      reviewedBy: context.auth.uid,
+      reviewedBy: request.auth.uid,
       reviewedAt: now,
       reviewNotes: reviewNotes || '',
       rejectionReason: rejectionReason || 'Application did not meet ambassador requirements',
@@ -329,8 +331,9 @@ export const reviewAmbassadorApplication = functions.https.onCall(async (data, c
 /**
  * Assign referral code to existing ambassador
  */
-export const assignReferralCode = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const assignReferralCode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -349,7 +352,7 @@ export const assignReferralCode = functions.https.onCall(async (data, context) =
 
   const ambassador = ambassadorDoc.data() as Ambassador;
 
-  if (ambassador.userId !== context.auth.uid) {
+  if (ambassador.userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Unauthorized');
   }
 
@@ -378,7 +381,8 @@ export const assignReferralCode = functions.https.onCall(async (data, context) =
 /**
  * Log referral revenue and calculate commission
  */
-export const logReferralRevenue = functions.https.onCall(async (data, context) => {
+export const logReferralRevenue = functions.https.onCall(async (request) => {
+  const data = request.data;
   const {
     ambassadorId,
     referralId,
@@ -468,8 +472,9 @@ export const logReferralRevenue = functions.https.onCall(async (data, context) =
 /**
  * Remove ambassador for violation
  */
-export const removeAmbassadorForViolation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const removeAmbassadorForViolation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -483,7 +488,7 @@ export const removeAmbassadorForViolation = functions.https.onCall(async (data, 
   }
 
   // Verify admin role
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists) {
     throw new functions.https.HttpsError(
       'permission-denied',
@@ -506,7 +511,7 @@ export const removeAmbassadorForViolation = functions.https.onCall(async (data, 
     description,
     severity: severity || 'critical',
     evidence: evidence || [],
-    reportedBy: context.auth.uid,
+    reportedBy: request.auth.uid,
     reportedAt: admin.firestore.Timestamp.now() as any
   };
 
@@ -629,8 +634,9 @@ async function generateAmbassadorContract(ambassadorId: string, userId: string):
 /**
  * Sign ambassador contract
  */
-export const signAmbassadorContract = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const signAmbassadorContract = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -652,7 +658,7 @@ export const signAmbassadorContract = functions.https.onCall(async (data, contex
 
   const contract = contractDoc.data() as AmbassadorContract;
 
-  if (contract.userId !== context.auth.uid) {
+  if (contract.userId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'Unauthorized');
   }
 
@@ -665,14 +671,14 @@ export const signAmbassadorContract = functions.https.onCall(async (data, contex
     signed: true,
     signedAt: admin.firestore.FieldValue.serverTimestamp(),
     signature,
-    ipAddress: context.rawRequest.ip,
+    ipAddress: request.rawRequest.ip,
     status: 'active',
     updatedAt: admin.firestore.FieldValue.serverTimestamp()
   });
 
   // Update ambassador
   const ambassadorQuery = await db.collection('ambassadors')
-    .where('userId', '==', context.auth.uid)
+    .where('userId', '==', request.auth.uid)
     .get();
 
   if (!ambassadorQuery.empty) {
@@ -692,8 +698,9 @@ export const signAmbassadorContract = functions.https.onCall(async (data, contex
 /**
  * Report ambassador misconduct
  */
-export const reportAmbassadorMisconduct = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reportAmbassadorMisconduct = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -714,7 +721,7 @@ export const reportAmbassadorMisconduct = functions.https.onCall(async (data, co
 
   const report: Partial<AmbassadorReport> = {
     reportedAmbassadorId: ambassadorId,
-    reportedBy: context.auth.uid,
+    reportedBy: request.auth.uid,
     reportType: reportType as ViolationType,
     description,
     evidence: evidence || [],

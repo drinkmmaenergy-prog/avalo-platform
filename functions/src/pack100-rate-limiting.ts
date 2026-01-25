@@ -261,8 +261,8 @@ async function logRateLimitViolation(
  * 
  * Example:
  * ```
- * export const myFunction = functions.https.onCall(async (data, context) => {
- *   return await enforceRateLimit(context.auth?.uid, 'MESSAGE_SEND', async () => {
+ * export const myFunction = functions.https.onCall(async (request) => {
+ *   return await enforceRateLimit(request.auth?.uid, 'MESSAGE_SEND', async () => {
  *     // Your function logic here
  *     return { success: true };
  *   });

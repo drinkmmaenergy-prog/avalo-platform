@@ -11,7 +11,7 @@ import {
   AdminPermissions, 
   AdminRole 
 } from './types/adminTypes';
-import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp , CallableRequest} from './runtime';
 
 // ============================================================================
 // ROLE-BASED DEFAULT PERMISSIONS
@@ -198,7 +198,7 @@ export async function requireAdmin(
  * Extract admin context from onCall request (Cloud Functions v2 style)
  */
 export async function requireAdminFromCallRequest(
-  auth: functions.https.CallableContext['auth'],
+  auth: CallableRequest<any>['auth'],
   requiredPermission?: keyof AdminPermissions
 ): Promise<AdminContext> {
   if (!auth || !auth.uid) {

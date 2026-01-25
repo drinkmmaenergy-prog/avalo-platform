@@ -505,9 +505,10 @@ async function triggerIncidentResponse(storeId: string, threatData: StoreThreatD
 export const pack392_analyzeStoreThreat = functions
   .runWith({ timeoutSeconds: 60, memory: '1GB' })
   .https
-  .onCall(async (data, context) => {
+  .onCall(async (request) => {
+  const data = request.data;
     // Admin only
-    if (!context.auth?.token.admin) {
+    if (!request.auth?.token.admin) {
       throw new functions.https.HttpsError('permission-denied', 'Admin required');
     }
 
@@ -528,9 +529,10 @@ export const pack392_analyzeStoreThreat = functions
 
 export const pack392_getStoreDefenseStatus = functions
   .https
-  .onCall(async (data, context) => {
+  .onCall(async (request) => {
+  const data = request.data;
     // Admin only
-    if (!context.auth?.token.admin) {
+    if (!request.auth?.token.admin) {
       throw new functions.https.HttpsError('permission-denied', 'Admin required');
     }
 

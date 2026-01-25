@@ -560,9 +560,10 @@ export const calculateSegmentLTVs = functions
  */
 export const getLTVProfiles = functions
   .region('europe-west1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can view LTV profiles'
@@ -589,9 +590,10 @@ export const getLTVProfiles = functions
  */
 export const calculateSegmentLTVOnDemand = functions
   .region('europe-west1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can calculate LTV'
@@ -622,9 +624,10 @@ export const calculateSegmentLTVOnDemand = functions
  */
 export const getLTVTrends = functions
   .region('europe-west1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can view LTV trends'

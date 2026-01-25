@@ -318,9 +318,10 @@ export const pack339_runDailyBackup = functions
  */
 export const pack339_simulateDisasterRecovery = functions
   .runWith({ timeoutSeconds: 540 })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -328,7 +329,7 @@ export const pack339_simulateDisasterRecovery = functions
     }
 
     // Check admin with OPS permissions
-    const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
     if (!adminDoc.exists) {
       throw new functions.https.HttpsError(
         'permission-denied',
@@ -446,10 +447,10 @@ async function validateBackupIntegrity(snapshot: BackupSnapshot): Promise<{
 /**
  * Apply legal hold to user or globally
  */
-export const pack339_applyLegalHold = functions.https.onCall(
-  async (data, context) => {
+export const pack339_applyLegalHold = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -457,7 +458,7 @@ export const pack339_applyLegalHold = functions.https.onCall(
     }
 
     // Check admin with LEGAL permissions
-    const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
     if (!adminDoc.exists) {
       throw new functions.https.HttpsError(
         'permission-denied',
@@ -508,7 +509,7 @@ export const pack339_applyLegalHold = functions.https.onCall(
         reason,
         createdAt: Timestamp.now(),
         createdBy: 'ADMIN',
-        createdByAdminId: context.auth.uid,
+        createdByAdminId: request.auth.uid,
         active: true,
         notes,
       };
@@ -519,7 +520,7 @@ export const pack339_applyLegalHold = functions.https.onCall(
       await db.collection('regulatorAuditLogs').add({
         timestamp: Timestamp.now(),
         action: 'LEGAL_HOLD_APPLIED',
-        adminId: context.auth.uid,
+        adminId: request.auth.uid,
         targetUserId: userId || null,
         reason,
         notes,
@@ -527,7 +528,7 @@ export const pack339_applyLegalHold = functions.https.onCall(
 
       // If no userId, activate global regulator lock
       if (!userId) {
-        await activateRegulatorLock(context.auth.uid, reason);
+        await activateRegulatorLock(request.auth.uid, reason);
       }
 
       console.log(`[Pack339] Legal hold applied: ${holdId}`);
@@ -548,10 +549,10 @@ export const pack339_applyLegalHold = functions.https.onCall(
 /**
  * Remove legal hold
  */
-export const pack339_removeLegalHold = functions.https.onCall(
-  async (data, context) => {
+export const pack339_removeLegalHold = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -559,7 +560,7 @@ export const pack339_removeLegalHold = functions.https.onCall(
     }
 
     // Check admin with LEGAL permissions
-    const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
     if (!adminDoc.exists) {
       throw new functions.https.HttpsError(
         'permission-denied',
@@ -604,7 +605,7 @@ export const pack339_removeLegalHold = functions.https.onCall(
       await db.collection('regulatorAuditLogs').add({
         timestamp: Timestamp.now(),
         action: 'LEGAL_HOLD_REMOVED',
-        adminId: context.auth.uid,
+        adminId: request.auth.uid,
         holdId,
         targetUserId: hold.userId || null,
       });
@@ -652,10 +653,10 @@ export async function hasActiveLegalHold(userId: string): Promise<boolean> {
 /**
  * Toggle regulator lock mode (global)
  */
-export const pack339_toggleRegulatorLock = functions.https.onCall(
-  async (data, context) => {
+export const pack339_toggleRegulatorLock = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -663,7 +664,7 @@ export const pack339_toggleRegulatorLock = functions.https.onCall(
     }
 
     // Check admin role
-    const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
     if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
       throw new functions.https.HttpsError(
         'permission-denied',
@@ -678,9 +679,9 @@ export const pack339_toggleRegulatorLock = functions.https.onCall(
 
     try {
       if (activate) {
-        await activateRegulatorLock(context.auth.uid, reason);
+        await activateRegulatorLock(request.auth.uid, reason);
       } else {
-        await deactivateRegulatorLock(context.auth.uid);
+        await deactivateRegulatorLock(request.auth.uid);
       }
 
       return {
@@ -768,10 +769,10 @@ export async function isRegulatorLockActive(): Promise<boolean> {
 /**
  * Request evidence export (court-grade)
  */
-export const pack339_requestEvidenceExport = functions.https.onCall(
-  async (data, context) => {
+export const pack339_requestEvidenceExport = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication required
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -779,7 +780,7 @@ export const pack339_requestEvidenceExport = functions.https.onCall(
     }
 
     // Check admin with LEGAL permissions
-    const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
     if (!adminDoc.exists) {
       throw new functions.https.HttpsError(
         'permission-denied',
@@ -822,7 +823,7 @@ export const pack339_requestEvidenceExport = functions.https.onCall(
       const job: EvidenceExportJob = {
         id: jobId,
         type,
-        requestedByAdminId: context.auth.uid,
+        requestedByAdminId: request.auth.uid,
         targetUserId,
         dateRange: dateRange
           ? {
@@ -841,7 +842,7 @@ export const pack339_requestEvidenceExport = functions.https.onCall(
       await db.collection('regulatorAuditLogs').add({
         timestamp: Timestamp.now(),
         action: 'EVIDENCE_EXPORT_REQUESTED',
-        adminId: context.auth.uid,
+        adminId: request.auth.uid,
         jobId,
         type,
         targetUserId: targetUserId || null,
@@ -1066,13 +1067,13 @@ async function triggerRegulatorLockAlert(activated: boolean): Promise<void> {
 /**
  * Get backup status
  */
-export const pack339_getBackupStatus = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack339_getBackupStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
     if (!adminDoc.exists || !adminDoc.data()?.permissions?.includes('OPS')) {
       throw new functions.https.HttpsError('permission-denied', 'OPS permissions required');
     }
@@ -1107,13 +1108,13 @@ export const pack339_getBackupStatus = functions.https.onCall(
 /**
  * Get active legal holds
  */
-export const pack339_getActiveLegalHolds = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack339_getActiveLegalHolds = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
     if (!adminDoc.exists || !adminDoc.data()?.permissions?.includes('LEGAL')) {
       throw new functions.https.HttpsError('permission-denied', 'LEGAL permissions required');
     }
@@ -1140,13 +1141,13 @@ export const pack339_getActiveLegalHolds = functions.https.onCall(
 /**
  * Get regulator lock status
  */
-export const pack339_getRegulatorLockStatus = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack339_getRegulatorLockStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
     if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -1181,13 +1182,13 @@ export const pack339_getRegulatorLockStatus = functions.https.onCall(
 /**
  * Get evidence export jobs
  */
-export const pack339_getEvidenceExportJobs = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack339_getEvidenceExportJobs = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
     if (!adminDoc.exists || !adminDoc.data()?.permissions?.includes('LEGAL')) {
       throw new functions.https.HttpsError('permission-denied', 'LEGAL permissions required');
     }
@@ -1223,13 +1224,13 @@ export const pack339_getEvidenceExportJobs = functions.https.onCall(
 /**
  * Initialize disaster recovery plans (one-time setup)
  */
-export const pack339_initializeDisasterRecoveryPlans = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack339_initializeDisasterRecoveryPlans = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
     if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }

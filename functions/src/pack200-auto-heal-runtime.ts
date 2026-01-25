@@ -537,14 +537,15 @@ export const scheduled_autoHeal = functions.pubsub
 /**
  * Manual healing trigger (admin-only)
  */
-export const admin_triggerHealing = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+export const admin_triggerHealing = onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
-    throw new functions.https.HttpsError('permission-denied', 'Admin access required');
+    throw new HttpsError('permission-denied', 'Admin access required');
   }
   
   try {
@@ -558,11 +559,11 @@ export const admin_triggerHealing = functions.https.onCall(async (data, context)
         break;
       
       case 'REHYDRATE_CHAT':
-        success = await rehydrateChatState(targetId, context.auth.uid);
+        success = await rehydrateChatState(targetId, request.auth.uid);
         break;
       
       case 'REBUILD_SESSION':
-        success = await rebuildSessionKey(context.auth.uid, targetId);
+        success = await rebuildSessionKey(request.auth.uid, targetId);
         break;
       
       case 'ROLLBACK_STATE':
@@ -580,6 +581,6 @@ export const admin_triggerHealing = functions.https.onCall(async (data, context)
     };
   } catch (error: any) {
     console.error('[Healing] Manual trigger failed:', error);
-    throw new functions.https.HttpsError('internal', error.message);
+    throw new HttpsError('internal', error.message);
   }
 });

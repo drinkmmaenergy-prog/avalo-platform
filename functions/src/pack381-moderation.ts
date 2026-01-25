@@ -127,16 +127,16 @@ export interface RegionalContentRules {
 /**
  * Admin: Update regional content rules
  */
-export const pack381_updateContentRules = functions.https.onCall(
-  async (data: Partial<RegionalContentRules>, context) => {
-    if (!context.auth) {
+export const pack381_updateContentRules = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'admin' && userData?.role !== 'super_admin') {
@@ -163,7 +163,7 @@ export const pack381_updateContentRules = functions.https.onCall(
       metadata: {
         ...data.metadata,
         updatedAt: now,
-        updatedBy: context.auth.uid,
+        updatedBy: request.auth.uid,
         ...(existingRules.exists ? {} : { createdAt: now }),
       },
     };
@@ -172,7 +172,7 @@ export const pack381_updateContentRules = functions.https.onCall(
 
     await db.collection('auditLogs').add({
       type: 'content_rules_update',
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       regionId,
       changes: data,
       timestamp: now,
@@ -189,14 +189,9 @@ export const pack381_updateContentRules = functions.https.onCall(
 /**
  * Apply regional moderation to content
  */
-export const pack381_applyRegionalModeration = functions.https.onCall(
-  async (data: {
-    contentType: 'profile' | 'message' | 'photo' | 'video' | 'bio';
-    content: string | any;
-    regionId?: string;
-    userId?: string;
-  }, context) => {
-    if (!context.auth) {
+export const pack381_applyRegionalModeration = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -204,7 +199,7 @@ export const pack381_applyRegionalModeration = functions.https.onCall(
     }
 
     const { contentType, content, regionId: providedRegionId, userId: targetUserId } = data;
-    const userId = targetUserId || context.auth.uid;
+    const userId = targetUserId || request.auth.uid;
 
     // Get user's region
     let regionId = providedRegionId;
@@ -347,12 +342,9 @@ export const pack381_applyRegionalModeration = functions.https.onCall(
 /**
  * Check if specific content is allowed in region
  */
-export const pack381_checkContentAllowed = functions.https.onCall(
-  async (data: {
-    contentType: string;
-    regionId?: string;
-  }, context) => {
-    if (!context.auth) {
+export const pack381_checkContentAllowed = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -364,7 +356,7 @@ export const pack381_checkContentAllowed = functions.https.onCall(
     // Get user's region
     let regionId = providedRegionId;
     if (!regionId) {
-      const userDoc = await db.collection('users').doc(context.auth.uid).get();
+      const userDoc = await db.collection('users').doc(request.auth.uid).get();
       const userData = userDoc.data();
       regionId = userData?.detectedRegion || 'GLOBAL';
     }
@@ -453,20 +445,16 @@ export const pack381_checkContentAllowed = functions.https.onCall(
 /**
  * Get moderation queue for moderators
  */
-export const pack381_getModerationQueue = functions.https.onCall(
-  async (data: {
-    regionId?: string;
-    priority?: 'low' | 'medium' | 'high';
-    limit?: number;
-  }, context) => {
-    if (!context.auth) {
+export const pack381_getModerationQueue = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'moderator' && userData?.role !== 'admin') {
@@ -504,21 +492,16 @@ export const pack381_getModerationQueue = functions.https.onCall(
 /**
  * Moderator: Review flagged content
  */
-export const pack381_reviewContent = functions.https.onCall(
-  async (data: {
-    queueId: string;
-    decision: 'approve' | 'reject' | 'escalate';
-    reason?: string;
-    notes?: string;
-  }, context) => {
-    if (!context.auth) {
+export const pack381_reviewContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'moderator' && userData?.role !== 'admin') {
@@ -545,7 +528,7 @@ export const pack381_reviewContent = functions.https.onCall(
     await queueRef.update({
       status: decision === 'escalate' ? 'escalated' : 'reviewed',
       decision,
-      reviewedBy: context.auth.uid,
+      reviewedBy: request.auth.uid,
       reviewedAt: now,
       reason: reason || null,
       notes: notes || null,
@@ -554,7 +537,7 @@ export const pack381_reviewContent = functions.https.onCall(
     // Log the review
     await db.collection('moderationReviews').add({
       queueId,
-      moderatorId: context.auth.uid,
+      moderatorId: request.auth.uid,
       decision,
       reason,
       notes,
@@ -572,19 +555,16 @@ export const pack381_reviewContent = functions.https.onCall(
 /**
  * User: Appeal moderation decision
  */
-export const pack381_appealDecision = functions.https.onCall(
-  async (data: {
-    contentId: string;
-    reason: string;
-  }, context) => {
-    if (!context.auth) {
+export const pack381_appealDecision = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { contentId, reason } = data;
 
     // Get user's region
@@ -653,16 +633,16 @@ export const pack381_appealDecision = functions.https.onCall(
 /**
  * Get regional moderation statistics
  */
-export const pack381_getModerationStats = functions.https.onCall(
-  async (data: { regionId: string; days?: number }, context) => {
-    if (!context.auth) {
+export const pack381_getModerationStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'admin') {

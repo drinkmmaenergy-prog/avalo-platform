@@ -342,13 +342,14 @@ const CHALLENGE_TEMPLATES: Record<ChallengeType, any[]> = {
 /**
  * Check if a couple is eligible for Royal Challenges
  */
-export const checkChallengeEligibility = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const checkChallengeEligibility = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { otherUserId } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const result = await performEligibilityCheck(userId, otherUserId);
@@ -702,13 +703,14 @@ async function assignChallengeToCouple(
 /**
  * Track challenge step completion
  */
-export const trackChallengeProgress = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const trackChallengeProgress = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { challengeId, stepId } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const challengeRef = db.collection('royal_challenges').doc(challengeId);
@@ -1042,13 +1044,14 @@ async function updateLeaderboardCache(cityId: string, weekStartStr: string): Pro
 /**
  * Get placement message for couple
  */
-export const getCouplePlacement = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCouplePlacement = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { otherUserId } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const coupleId = generateCoupleId(userId, otherUserId);
 
   try {
@@ -1181,12 +1184,13 @@ function getWeekStartDate(): Date {
 /**
  * Get active challenges for a user
  */
-export const getActiveChallenges = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getActiveChallenges = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const challengesSnap = await db.collection('royal_challenges')
@@ -1210,12 +1214,13 @@ export const getActiveChallenges = functions.https.onCall(async (data, context) 
 /**
  * Disable challenges for user
  */
-export const toggleChallenges = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const toggleChallenges = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { enabled } = data;
 
   try {

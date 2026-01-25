@@ -133,13 +133,14 @@ export const updateExchangeRates = functions.pubsub
   });
 
 // Get user currency based on country
-export const getUserCurrency = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getUserCurrency = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   try {
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const db = admin.firestore();
     
     // Get user profile
@@ -178,14 +179,15 @@ export const getUserCurrency = functions.https.onCall(async (data, context) => {
 });
 
 // Set user currency preference (manual)
-export const setUserCurrency = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const setUserCurrency = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   try {
     const { currency } = data;
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const db = admin.firestore();
     
     // Validate currency is supported
@@ -209,7 +211,8 @@ export const setUserCurrency = functions.https.onCall(async (data, context) => {
 });
 
 // Convert token price to local currency
-export const convertTokenPriceToLocal = functions.https.onCall(async (data, context) => {
+export const convertTokenPriceToLocal = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     const { tokenPackage, currency } = data;
     const db = admin.firestore();
@@ -261,8 +264,9 @@ export const convertTokenPriceToLocal = functions.https.onCall(async (data, cont
 });
 
 // Convert payout to local currency (for creator earnings preview)
-export const convertPayoutToLocal = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const convertPayoutToLocal = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -305,7 +309,8 @@ export const convertPayoutToLocal = functions.https.onCall(async (data, context)
 });
 
 // Get all supported currencies
-export const getSupportedCurrencies = functions.https.onCall(async (data, context) => {
+export const getSupportedCurrencies = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     const db = admin.firestore();
     
@@ -331,8 +336,9 @@ export const getSupportedCurrencies = functions.https.onCall(async (data, contex
 });
 
 // Admin: Set regional pricing adjustment
-export const adminSetRegionalPricing = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminSetRegionalPricing = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -340,7 +346,7 @@ export const adminSetRegionalPricing = functions.https.onCall(async (data, conte
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -355,7 +361,7 @@ export const adminSetRegionalPricing = functions.https.onCall(async (data, conte
       currency,
       multiplier,
       reason: reason || 'Regional pricing adjustment',
-      updatedBy: context.auth.uid,
+      updatedBy: request.auth.uid,
       lastUpdated: Date.now()
     });
     
@@ -367,8 +373,9 @@ export const adminSetRegionalPricing = functions.https.onCall(async (data, conte
 });
 
 // Admin: Toggle currency support
-export const adminToggleCurrency = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminToggleCurrency = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -376,7 +383,7 @@ export const adminToggleCurrency = functions.https.onCall(async (data, context) 
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -401,7 +408,8 @@ export const adminToggleCurrency = functions.https.onCall(async (data, context) 
 });
 
 // Format currency for display
-export const formatCurrency = functions.https.onCall(async (data, context) => {
+export const formatCurrency = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     const { amount, currency } = data;
     
@@ -432,8 +440,9 @@ export const formatCurrency = functions.https.onCall(async (data, context) => {
 });
 
 // Initialize currency rates on first deployment
-export const initializeCurrencyRates = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const initializeCurrencyRates = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -441,7 +450,7 @@ export const initializeCurrencyRates = functions.https.onCall(async (data, conte
     const db = admin.firestore();
     
     // Verify admin role
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }

@@ -106,13 +106,14 @@ interface TranslationGlossary {
 /**
  * Create localized press pack from base press release
  */
-export const createLocalizedPressPack = functions.https.onCall(async (data, context) => {
+export const createLocalizedPressPack = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Admin check
   const userDoc = await db.collection('users').doc(userId).get();
@@ -309,9 +310,10 @@ async function getRegionConfig(region: string): Promise<RegionConfig> {
 /**
  * Get localized creator materials
  */
-export const getLocalizedCreatorMaterials = functions.https.onCall(async (data, context) => {
+export const getLocalizedCreatorMaterials = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -348,13 +350,14 @@ export const getLocalizedCreatorMaterials = functions.https.onCall(async (data, 
 /**
  * Create localized creator pitch deck
  */
-export const createLocalizedPitchDeck = functions.https.onCall(async (data, context) => {
+export const createLocalizedPitchDeck = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const { language, region, includeEarnings, includeTestimonials } = data;
 
@@ -466,13 +469,14 @@ async function getLocalizedTestimonials(language: string, region: string): Promi
 /**
  * Initialize region configuration
  */
-export const initializeRegionConfig = functions.https.onCall(async (data, context) => {
+export const initializeRegionConfig = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Admin check
   const userDoc = await db.collection('users').doc(userId).get();
@@ -524,7 +528,8 @@ export const initializeRegionConfig = functions.https.onCall(async (data, contex
 /**
  * Get available regions
  */
-export const getAvailableRegions = functions.https.onCall(async (data, context) => {
+export const getAvailableRegions = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     const snapshot = await db.collection('regionConfigs').get();
     const regions = snapshot.docs.map(doc => doc.data() as RegionConfig);
@@ -551,13 +556,14 @@ export const getAvailableRegions = functions.https.onCall(async (data, context) 
 /**
  * Add translation glossary term
  */
-export const addTranslationGlossaryTerm = functions.https.onCall(async (data, context) => {
+export const addTranslationGlossaryTerm = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Admin check
   const userDoc = await db.collection('users').doc(userId).get();
@@ -597,13 +603,14 @@ export const addTranslationGlossaryTerm = functions.https.onCall(async (data, co
 /**
  * Get market expansion analysis
  */
-export const getMarketExpansionAnalysis = functions.https.onCall(async (data, context) => {
+export const getMarketExpansionAnalysis = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Admin check
   const userDoc = await db.collection('users').doc(userId).get();

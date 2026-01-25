@@ -76,28 +76,13 @@ interface SanctionsScreeningResult {
 /**
  * Submit KYC verification for a user
  */
-export const pack383_submitKYC = functions.https.onCall(
-  async (data: {
-    documentType: string;
-    documentNumber: string;
-    documentExpiry?: string;
-    fullName: string;
-    dateOfBirth: string;
-    nationality: string;
-    residenceCountry: string;
-    address: {
-      street: string;
-      city: string;
-      state?: string;
-      postalCode: string;
-      country: string;
-    };
-  }, context) => {
-    if (!context.auth) {
+export const pack383_submitKYC = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // Check if KYC already exists
@@ -161,9 +146,9 @@ export const pack383_submitKYC = functions.https.onCall(
 /**
  * Run AML check on user
  */
-export const pack383_runAMLCheck = functions.https.onCall(
-  async (data: { userId: string; amount?: number; currency?: string }, context) => {
-    if (!context.auth) {
+export const pack383_runAMLCheck = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -249,9 +234,9 @@ export const pack383_runAMLCheck = functions.https.onCall(
 /**
  * Run sanctions screening on user
  */
-export const pack383_runSanctionsScreening = functions.https.onCall(
-  async (data: { userId: string }, context) => {
-    if (!context.auth) {
+export const pack383_runSanctionsScreening = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -335,9 +320,9 @@ export const pack383_runSanctionsScreening = functions.https.onCall(
  * Block high-risk payout
  * Callable by admin or automated systems
  */
-export const pack383_blockHighRiskPayout = functions.https.onCall(
-  async (data: { payoutId: string; reason: string }, context) => {
-    if (!context.auth) {
+export const pack383_blockHighRiskPayout = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -354,7 +339,7 @@ export const pack383_blockHighRiskPayout = functions.https.onCall(
       await payoutDoc.ref.update({
         status: 'blocked',
         blockReason: reason,
-        blockedBy: context.auth.uid,
+        blockedBy: request.auth.uid,
         blockedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
@@ -363,7 +348,7 @@ export const pack383_blockHighRiskPayout = functions.https.onCall(
       // Create audit log
       await db.collection('auditLogs').add({
         action: 'payout_blocked',
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         targetType: 'payout',
         targetId: payoutId,
         details: {

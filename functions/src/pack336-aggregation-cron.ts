@@ -213,7 +213,8 @@ async function checkAlertThresholds(
  * Manual trigger for KPI aggregation (admin only)
  * Allows recalculating KPIs for a specific date
  */
-export const pack336_manualAggregation = functions.https.onCall(async (data, context) => {
+export const pack336_manualAggregation = functions.https.onCall(async (request) => {
+  const data = request.data;
   // TODO: Add admin authentication check
   
   const { date, forceRecalculation } = data;

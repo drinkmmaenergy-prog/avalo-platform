@@ -89,19 +89,16 @@ function scanForExternalFunnels(text: string): { flagged: boolean; matches: stri
   };
 }
 
-export const scanBrandContent = functions.https.onCall(
-  async (data: {
-    target_type: 'brand_profile' | 'brand_product';
-    target_id: string;
-  }, context) => {
-    if (!context.auth) {
+export const scanBrandContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const isAdmin = await db.collection('admin_users').doc(context.auth.uid).get()
+    const isAdmin = await db.collection('admin_users').doc(request.auth.uid).get()
       .then(doc => doc.exists);
 
     if (!isAdmin) {
@@ -160,7 +157,7 @@ export const scanBrandContent = functions.https.onCall(
         target_type,
         target_id,
         violations,
-        scanned_by: context.auth.uid,
+        scanned_by: request.auth.uid,
         scanned_at: Timestamp.now(),
         status: 'flagged'
       });
@@ -174,14 +171,9 @@ export const scanBrandContent = functions.https.onCall(
   }
 );
 
-export const reportBrandContent = functions.https.onCall(
-  async (data: {
-    target_type: 'brand_profile' | 'brand_product' | 'brand_collaboration';
-    target_id: string;
-    reason: string;
-    description?: string;
-  }, context) => {
-    if (!context.auth) {
+export const reportBrandContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -215,7 +207,7 @@ export const reportBrandContent = functions.https.onCall(
     }
 
     const existingReport = await db.collection('brand_moderation_reports')
-      .where('reporter_id', '==', context.auth.uid)
+      .where('reporter_id', '==', request.auth.uid)
       .where('target_type', '==', target_type)
       .where('target_id', '==', target_id)
       .where('status', 'in', ['pending', 'reviewing'])
@@ -231,7 +223,7 @@ export const reportBrandContent = functions.https.onCall(
 
     const now = Timestamp.now();
     const report: ModerationReport = {
-      reporter_id: context.auth.uid,
+      reporter_id: request.auth.uid,
       target_type,
       target_id,
       reason,
@@ -246,7 +238,7 @@ export const reportBrandContent = functions.https.onCall(
     const reportRef = await db.collection('brand_moderation_reports').add(report);
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'content_reported',
       report_id: reportRef.id,
       timestamp: now,
@@ -265,20 +257,16 @@ export const reportBrandContent = functions.https.onCall(
   }
 );
 
-export const banBrandProfile = functions.https.onCall(
-  async (data: {
-    brand_id: string;
-    reason: string;
-    permanent?: boolean;
-  }, context) => {
-    if (!context.auth) {
+export const banBrandProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const isAdmin = await db.collection('admin_users').doc(context.auth.uid).get()
+    const isAdmin = await db.collection('admin_users').doc(request.auth.uid).get()
       .then(doc => doc.exists);
 
     if (!isAdmin) {
@@ -315,7 +303,7 @@ export const banBrandProfile = functions.https.onCall(
       updated_at: now,
       ban_info: {
         banned_at: now,
-        banned_by: context.auth.uid,
+        banned_by: request.auth.uid,
         reason,
         permanent
       }
@@ -353,7 +341,7 @@ export const banBrandProfile = functions.https.onCall(
     await batch.commit();
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'brand_banned',
       brand_id,
       timestamp: now,
@@ -367,19 +355,16 @@ export const banBrandProfile = functions.https.onCall(
   }
 );
 
-export const banProduct = functions.https.onCall(
-  async (data: {
-    product_id: string;
-    reason: string;
-  }, context) => {
-    if (!context.auth) {
+export const banProduct = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const isAdmin = await db.collection('admin_users').doc(context.auth.uid).get()
+    const isAdmin = await db.collection('admin_users').doc(request.auth.uid).get()
       .then(doc => doc.exists);
 
     if (!isAdmin) {
@@ -414,7 +399,7 @@ export const banProduct = functions.https.onCall(
       updated_at: now,
       ban_info: {
         banned_at: now,
-        banned_by: context.auth.uid,
+        banned_by: request.auth.uid,
         reason
       }
     });
@@ -439,7 +424,7 @@ export const banProduct = functions.https.onCall(
     }
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'product_banned',
       product_id,
       timestamp: now,
@@ -453,20 +438,16 @@ export const banProduct = functions.https.onCall(
   }
 );
 
-export const resolveReport = functions.https.onCall(
-  async (data: {
-    report_id: string;
-    action: 'ban' | 'suspend' | 'warn' | 'dismiss';
-    notes?: string;
-  }, context) => {
-    if (!context.auth) {
+export const resolveReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const isAdmin = await db.collection('admin_users').doc(context.auth.uid).get()
+    const isAdmin = await db.collection('admin_users').doc(request.auth.uid).get()
       .then(doc => doc.exists);
 
     if (!isAdmin) {
@@ -523,12 +504,12 @@ export const resolveReport = functions.https.onCall(
     await reportRef.update({
       status: action === 'dismiss' ? 'dismissed' : 'resolved',
       resolved_at: now,
-      resolved_by: context.auth.uid,
+      resolved_by: request.auth.uid,
       action_taken: action
     });
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'report_resolved',
       report_id,
       timestamp: now,
@@ -542,19 +523,16 @@ export const resolveReport = functions.https.onCall(
   }
 );
 
-export const listPendingReports = functions.https.onCall(
-  async (data: {
-    limit?: number;
-    offset?: number;
-  }, context) => {
-    if (!context.auth) {
+export const listPendingReports = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const isAdmin = await db.collection('admin_users').doc(context.auth.uid).get()
+    const isAdmin = await db.collection('admin_users').doc(request.auth.uid).get()
       .then(doc => doc.exists);
 
     if (!isAdmin) {

@@ -505,10 +505,10 @@ async function applyAutoAction(signal: AbuseSignal): Promise<void> {
 /**
  * Resolve an abuse signal (admin action)
  */
-export const resolveAbuseSignal = functions.https.onCall(
-  async (data, context) => {
+export const resolveAbuseSignal = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require admin auth
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         "permission-denied",
         "Admin access required"
@@ -532,7 +532,7 @@ export const resolveAbuseSignal = functions.https.onCall(
       .update({
         resolved: true,
         resolvedAt: serverTimestamp(),
-        resolvedBy: context.auth.uid,
+        resolvedBy: request.auth.uid,
         notes: notes || "",
       });
 

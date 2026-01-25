@@ -191,11 +191,11 @@ async function recordTransaction(
 // CLOUD FUNCTION: sendPaidMediaMessage
 // ============================================================================
 
-export const sendPaidMediaMessage = functions.https.onCall(
-  async (data: SendPaidMediaRequest, context): Promise<SendPaidMediaResponse> => {
+export const sendPaidMediaMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify authentication
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Unauthorized',
@@ -203,7 +203,7 @@ export const sendPaidMediaMessage = functions.https.onCall(
         };
       }
 
-      const senderId = context.auth.uid;
+      const senderId = request.auth.uid;
       const {
         chatId,
         recipientId,
@@ -340,11 +340,11 @@ export const sendPaidMediaMessage = functions.https.onCall(
 // CLOUD FUNCTION: unlockPaidMedia
 // ============================================================================
 
-export const unlockPaidMedia = functions.https.onCall(
-  async (data: UnlockPaidMediaRequest, context): Promise<UnlockPaidMediaResponse> => {
+export const unlockPaidMedia = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify authentication
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Unauthorized',
@@ -352,7 +352,7 @@ export const unlockPaidMedia = functions.https.onCall(
         };
       }
 
-      const buyerId = context.auth.uid;
+      const buyerId = request.auth.uid;
       const { mediaId, chatId } = data;
 
       // Validate required fields

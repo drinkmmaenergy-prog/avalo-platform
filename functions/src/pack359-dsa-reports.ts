@@ -634,8 +634,9 @@ function calculateComplianceScore(stats: DSAStatistics): number {
 /**
  * HTTP endpoint to create DSA report
  */
-export const reportDSAIncident = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const reportDSAIncident = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -652,7 +653,7 @@ export const reportDSAIncident = functions.https.onCall(async (data, context) =>
     subjectUserId,
     subjectContentId,
     'user',
-    context.auth.uid,
+    request.auth.uid,
     evidence || []
   );
   

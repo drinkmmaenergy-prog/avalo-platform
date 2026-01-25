@@ -26,13 +26,13 @@ import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
 /**
  * Get current verification status for the authenticated user
  */
-export const identityVerification_getStatus = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const identityVerification_getStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // Get pending requests
@@ -91,19 +91,13 @@ export const identityVerification_getStatus = functions.https.onCall(
 /**
  * Upload documents for verification
  */
-export const identityVerification_uploadDocuments = functions.https.onCall(
-  async (data: {
-    requestId: string;
-    documents: Array<{
-      type: DocumentType;
-      data: string; // Base64 encoded image data
-    }>;
-  }, context) => {
-    if (!context.auth) {
+export const identityVerification_uploadDocuments = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { requestId, documents } = data;
 
     if (!requestId || !documents || documents.length === 0) {
@@ -182,21 +176,13 @@ export const identityVerification_uploadDocuments = functions.https.onCall(
 /**
  * Manually trigger verification check (for testing)
  */
-export const identityVerification_triggerCheck = functions.https.onCall(
-  async (data: {
-    context: {
-      selfieMismatch?: boolean;
-      profileMismatchReported?: boolean;
-      fraudScore?: number;
-      estimatedAge?: number;
-      underageFlag?: boolean;
-    };
-  }, context) => {
-    if (!context.auth) {
+export const identityVerification_triggerCheck = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const triggered = await VerificationEngine.triggerVerificationIfNeeded(
@@ -224,25 +210,14 @@ export const identityVerification_triggerCheck = functions.https.onCall(
 /**
  * Manually review and approve/reject verification
  */
-export const identityVerification_manualReview = functions.https.onCall(
-  async (data: {
-    requestId: string;
-    approved: boolean;
-    reason?: string;
-    extractedData?: {
-      dateOfBirth?: string;
-      age?: number;
-      fullName?: string;
-      documentNumber?: string;
-      nationality?: string;
-    };
-  }, context) => {
-    if (!context.auth) {
+export const identityVerification_manualReview = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 
     // TODO: Add proper admin role check
-    const reviewerId = context.auth.uid;
+    const reviewerId = request.auth.uid;
     const { requestId, approved, reason, extractedData } = data;
 
     try {
@@ -350,9 +325,9 @@ export const identityVerification_manualReview = functions.https.onCall(
 /**
  * Get pending verification requests for moderation
  */
-export const identityVerification_getPendingRequests = functions.https.onCall(
-  async (data: { limit?: number }, context) => {
-    if (!context.auth) {
+export const identityVerification_getPendingRequests = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 

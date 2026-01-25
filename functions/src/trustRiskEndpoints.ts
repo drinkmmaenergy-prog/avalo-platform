@@ -28,16 +28,15 @@ import { HttpsError, admin, auth, onCall } from './runtime';
  * Get user's trust profile
  * Returns sanitized profile with enforcement capabilities
  */
-export const trustRisk_getUserProfile = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const trustRisk_getUserProfile = functions.https.onCall(async (request) => {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const profile = await getTrustProfileForClient(userId);
@@ -69,8 +68,8 @@ export const trustRisk_getUserProfile = functions.https.onCall(
  * Log trust event
  * Internal function - called by other modules (chat, reports, KYC, etc.)
  */
-export const trustRisk_logEvent = functions.https.onCall(
-  async (data: LogTrustEventInput, context) => {
+export const trustRisk_logEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Note: This can be called by system/backend without auth
     // For user-triggered events, auth should be checked by calling module
     
@@ -100,8 +99,8 @@ export const trustRisk_logEvent = functions.https.onCall(
  * Recalculate user risk
  * Can be called manually or by system
  */
-export const trustRisk_recalculate = functions.https.onCall(
-  async (data, context) => {
+export const trustRisk_recalculate = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { userId } = data;
 
     if (!userId) {
@@ -112,7 +111,7 @@ export const trustRisk_recalculate = functions.https.onCall(
     }
 
     // If authenticated, only allow recalculating own profile (unless admin)
-    if (context.auth && context.auth.uid !== userId) {
+    if (request.auth && request.auth.uid !== userId) {
       // TODO: Add admin check
       throw new functions.https.HttpsError(
         "permission-denied",
@@ -146,10 +145,10 @@ export const trustRisk_recalculate = functions.https.onCall(
  * Apply manual override to user's risk score
  * Admin only
  */
-export const trustRisk_admin_applyOverride = functions.https.onCall(
-  async (data, context) => {
+export const trustRisk_admin_applyOverride = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"
@@ -158,7 +157,7 @@ export const trustRisk_admin_applyOverride = functions.https.onCall(
 
     // TODO: Add proper admin role check
     // For now, any authenticated user can call (should be restricted to admins)
-    const adminId = context.auth.uid;
+    const adminId = request.auth.uid;
 
     const { userId, reason, overrideScore, overrideEnforcement } = data;
 
@@ -223,10 +222,10 @@ export const trustRisk_admin_applyOverride = functions.https.onCall(
  * Remove manual override from user
  * Admin only
  */
-export const trustRisk_admin_removeOverride = functions.https.onCall(
-  async (data, context) => {
+export const trustRisk_admin_removeOverride = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"
@@ -234,7 +233,7 @@ export const trustRisk_admin_removeOverride = functions.https.onCall(
     }
 
     // TODO: Add proper admin role check
-    const adminId = context.auth.uid;
+    const adminId = request.auth.uid;
 
     const { userId } = data;
 
@@ -350,10 +349,10 @@ export const trustRisk_scheduledRebuild = functions.pubsub
  * Manual trigger for good behavior decay
  * Admin only - for testing or manual runs
  */
-export const trustRisk_admin_triggerDecay = functions.https.onCall(
-  async (data, context) => {
+export const trustRisk_admin_triggerDecay = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"
@@ -381,10 +380,10 @@ export const trustRisk_admin_triggerDecay = functions.https.onCall(
  * Manual trigger for rebuilding risk scores
  * Admin only - use with caution
  */
-export const trustRisk_admin_triggerRebuild = functions.https.onCall(
-  async (data, context) => {
+export const trustRisk_admin_triggerRebuild = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Authentication required"

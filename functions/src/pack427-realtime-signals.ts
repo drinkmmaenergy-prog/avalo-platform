@@ -31,16 +31,17 @@ export const pack427_updateTypingState = functions
     timeoutSeconds: 10,
     memory: '128MB',
   })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Authenticate user
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { chatId, isTyping } = data;
 
     if (!chatId || typeof isTyping !== 'boolean') {
@@ -118,16 +119,17 @@ export const pack427_markAsRead = functions
     timeoutSeconds: 30,
     memory: '256MB',
   })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Authenticate user
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { chatId, readUpToMessageId } = data;
 
     if (!chatId || !readUpToMessageId) {
@@ -204,16 +206,17 @@ export const pack427_getTypingStatus = functions
     timeoutSeconds: 10,
     memory: '128MB',
   })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Authenticate user
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { chatId, region } = data;
 
     if (!chatId) {
@@ -264,16 +267,17 @@ export const pack427_getUnreadCounts = functions
     timeoutSeconds: 30,
     memory: '256MB',
   })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Authenticate user
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Get user's chats
     const chatsSnapshot = await db
@@ -328,16 +332,16 @@ export const pack427_recalculateUnreadCounters = functions
     timeoutSeconds: 120,
     memory: '512MB',
   })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
     // Authenticate user
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     // Get user's chats
     const chatsSnapshot = await db

@@ -24,7 +24,7 @@ import {
   QueryBusinessEventsParams,
   QueryTechEventsParams,
 } from './pack90-logging';
-import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp , CallableRequest} from './runtime';
 
 // ============================================================================
 // ADMIN ROLE CHECK
@@ -34,15 +34,15 @@ import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
  * Verify the caller has admin role
  * In production, this should check against admin_roles collection or custom claims
  */
-async function verifyAdminRole(context: functions.https.CallableContext): Promise<void> {
-  if (!context.auth) {
+async function verifyAdminRole(request: CallableRequest<any>): Promise<void> {
+  if (!request.auth) {
     throw new functions.https.HttpsError(
       'unauthenticated',
       'Authentication required'
     );
   }
   
-  const uid = context.auth.uid;
+  const uid = request.auth.uid;
   
   // Check if user has admin role
   const adminDoc = await db.collection('admin_roles').doc(uid).get();
@@ -86,11 +86,11 @@ export interface GetDailyMetricsResponse {
 /**
  * Get daily metrics for a date range
  */
-export const admin_getDailyMetrics = functions.https.onCall(
-  async (data: GetDailyMetricsRequest, context): Promise<GetDailyMetricsResponse> => {
+export const admin_getDailyMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify admin role
-      await verifyAdminRole(context);
+      await verifyAdminRole(request);
       
       const { dateRange, metricKeys } = data;
       
@@ -195,11 +195,11 @@ export interface ListBusinessEventsResponse {
 /**
  * List business audit events with filters
  */
-export const admin_listBusinessEvents = functions.https.onCall(
-  async (data: ListBusinessEventsRequest, context): Promise<ListBusinessEventsResponse> => {
+export const admin_listBusinessEvents = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify admin role
-      await verifyAdminRole(context);
+      await verifyAdminRole(request);
       
       const filters = data.filters || {};
       const pagination = data.pagination || {};
@@ -284,11 +284,11 @@ export interface ListTechEventsResponse {
 /**
  * List technical event logs with filters
  */
-export const admin_listTechEvents = functions.https.onCall(
-  async (data: ListTechEventsRequest, context): Promise<ListTechEventsResponse> => {
+export const admin_listTechEvents = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify admin role
-      await verifyAdminRole(context);
+      await verifyAdminRole(request);
       
       const filters = data.filters || {};
       const pagination = data.pagination || {};
@@ -360,11 +360,11 @@ export interface GetUserAuditTrailResponse {
  * Get complete audit trail for a specific user
  * Shows both events where user is actor and subject
  */
-export const admin_getUserAuditTrail = functions.https.onCall(
-  async (data: GetUserAuditTrailRequest, context): Promise<GetUserAuditTrailResponse> => {
+export const admin_getUserAuditTrail = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify admin role
-      await verifyAdminRole(context);
+      await verifyAdminRole(request);
       
       const { userId, limit = 100 } = data;
       
@@ -461,11 +461,11 @@ export interface GetMetricsSummaryResponse {
 /**
  * Get summary of all key metrics for a specific date
  */
-export const admin_getMetricsSummary = functions.https.onCall(
-  async (data: GetMetricsSummaryRequest, context): Promise<GetMetricsSummaryResponse> => {
+export const admin_getMetricsSummary = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Verify admin role
-      await verifyAdminRole(context);
+      await verifyAdminRole(request);
       
       const date = data.date || new Date().toISOString().split('T')[0];
       

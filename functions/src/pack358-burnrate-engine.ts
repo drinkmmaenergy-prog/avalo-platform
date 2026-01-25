@@ -538,9 +538,10 @@ export const calculateMonthlyBurnRate = functions
  */
 export const calculateBurnRateOnDemand = functions
   .region('europe-west1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can calculate burn rate'
@@ -570,9 +571,10 @@ export const calculateBurnRateOnDemand = functions
  */
 export const getFinancialRunway = functions
   .region('europe-west1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can view runway'
@@ -608,9 +610,10 @@ export const getFinancialRunway = functions
  */
 export const getBurnRateHistory = functions
   .region('europe-west1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can view burn rate history'

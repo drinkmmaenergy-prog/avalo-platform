@@ -140,12 +140,13 @@ function isValidSeverity(severity: string): severity is SupportSeverity {
 /**
  * Create a new support ticket
  */
-export const createTicket = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createTicket = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const {
     category,
     subcategory,
@@ -254,12 +255,13 @@ export const createTicket = functions.https.onCall(async (data, context) => {
 /**
  * List user's tickets
  */
-export const listMyTickets = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const listMyTickets = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { limit = 20, cursor } = data;
 
   try {
@@ -307,12 +309,13 @@ export const listMyTickets = functions.https.onCall(async (data, context) => {
 /**
  * Get ticket detail with messages
  */
-export const getTicketDetail = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getTicketDetail = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { ticketId } = data;
 
   if (!ticketId) {
@@ -387,12 +390,13 @@ export const getTicketDetail = functions.https.onCall(async (data, context) => {
 /**
  * Add user reply to ticket
  */
-export const replyToTicket = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const replyToTicket = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { ticketId, message } = data;
 
   if (!ticketId || !message) {
@@ -474,7 +478,8 @@ export const replyToTicket = functions.https.onCall(async (data, context) => {
 /**
  * Get help articles for a category
  */
-export const getHelpArticles = functions.https.onCall(async (data, context) => {
+export const getHelpArticles = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { locale = 'en', category } = data;
 
   try {

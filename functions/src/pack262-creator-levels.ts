@@ -225,12 +225,13 @@ export interface BoostInstance {
 /**
  * Initialize creator level profile
  */
-export const initializeCreatorLevel = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const initializeCreatorLevel = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
   const levelRef = db.collection('creatorLevels').doc(creatorId);
 
   const existing = await levelRef.get();
@@ -281,8 +282,9 @@ export const initializeCreatorLevel = functions.https.onCall(async (data, contex
  * Record LP-earning activity and update level
  * Called by other systems when creators earn
  */
-export const recordLPActivity = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const recordLPActivity = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
@@ -547,13 +549,14 @@ async function updateCreatorRewards(
 /**
  * Activate a boost (profile or live placement)
  */
-export const activateBoost = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const activateBoost = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { boostType } = data; // 'profile' or 'live'
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
 
   if (!['profile', 'live'].includes(boostType)) {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid boost type');
@@ -970,15 +973,16 @@ export const notifyTopSupporterOnline = functions.firestore
 /**
  * Get creator level profile
  */
-export const getCreatorLevel = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCreatorLevel = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const creatorId = data.creatorId || context.auth.uid;
+  const creatorId = data.creatorId || request.auth.uid;
 
   // Only allow users to view their own level or public basic info
-  const isOwner = creatorId === context.auth.uid;
+  const isOwner = creatorId === request.auth.uid;
 
   const levelDoc = await db.collection('creatorLevels').doc(creatorId).get();
 
@@ -1016,12 +1020,13 @@ export const getCreatorLevel = functions.https.onCall(async (data, context) => {
 /**
  * Get LP activity history
  */
-export const getLPActivityHistory = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getLPActivityHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
   const { limit = 50, startAfter } = data;
 
   let query = db

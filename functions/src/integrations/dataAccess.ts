@@ -21,11 +21,12 @@ const db = admin.firestore();
 /**
  * Get anonymized dataset for integration
  */
-export const getIntegrationDataset = https.onCall(async (data, context) => {
+export const getIntegrationDataset = https.onCall(async (request) => {
+  const data = request.data;
   try {
     const startTime = Date.now();
     
-    if (!context.auth) {
+    if (!request.auth) {
       throw new https.HttpsError('unauthenticated', 'Authentication required');
     }
 
@@ -577,7 +578,7 @@ async function logAccessAttempt(
     logId,
     partnerId,
     integrationId,
-    creatorId: context.auth?.uid || 'unknown',
+    creatorId: request.auth?.uid || 'unknown',
     endpoint: 'getIntegrationDataset',
     method: 'POST',
     requestedData: [dataType as DataPermissionType],
@@ -585,8 +586,8 @@ async function logAccessAttempt(
     responseTime,
     dataReturned: statusCode === 200,
     recordCount,
-    ipAddress: context.rawRequest?.ip || 'unknown',
-    userAgent: context.rawRequest?.headers['user-agent'] || 'unknown',
+    ipAddress: request.rawRequest?.ip || 'unknown',
+    userAgent: request.rawRequest?.headers['user-agent'] || 'unknown',
     timestamp: new Date(),
     anomalyScore: 0,
     flaggedForReview: violation !== undefined,
@@ -608,9 +609,10 @@ async function logAccessAttempt(
 /**
  * Get access logs (admin only)
  */
-export const getAccessLogs = https.onCall(async (data, context) => {
+export const getAccessLogs = https.onCall(async (request) => {
+  const data = request.data;
   try {
-    if (!context.auth?.token.admin) {
+    if (!request.auth?.token.admin) {
       throw new https.HttpsError(
         'permission-denied',
         'Only admins can view access logs'

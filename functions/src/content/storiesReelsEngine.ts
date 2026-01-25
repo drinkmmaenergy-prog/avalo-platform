@@ -13,12 +13,13 @@ const db = admin.firestore();
  * Get Stories for home feed
  * Returns active stories from matches, followers, and local region
  */
-export const getStoriesFeed = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getStoriesFeed = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const userDoc = await db.collection('users').doc(userId).get();
@@ -125,12 +126,13 @@ export const getStoriesFeed = functions.https.onCall(async (data, context) => {
  * Get Reels feed with pagination
  * Full-screen vertical video stream
  */
-export const getReelsFeed = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getReelsFeed = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const cursor = data.cursor || null;
   const limit = Math.min(data.limit || 20, 50);
 
@@ -223,13 +225,14 @@ export const getReelsFeed = functions.https.onCall(async (data, context) => {
 /**
  * Mark story as viewed
  */
-export const markStoryViewed = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const markStoryViewed = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const { storyId } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     // Create view record

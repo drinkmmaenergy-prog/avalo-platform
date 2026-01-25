@@ -28,13 +28,14 @@ import { HttpsError, auth, db, onCall } from './runtime';
 /**
  * Create a new calendar booking
  */
-export const createCalendarBooking = functions.https.onCall(async (data: CreateBookingRequest, context) => {
+export const createCalendarBooking = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Verify authentication
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Verify user is the guest
   if (data.guestId !== userId) {
@@ -57,12 +58,13 @@ export const createCalendarBooking = functions.https.onCall(async (data: CreateB
 /**
  * Cancel a booking (guest or host)
  */
-export const cancelCalendarBooking = functions.https.onCall(async (data: CancelBookingRequest, context) => {
-  if (!context.auth) {
+export const cancelCalendarBooking = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { bookingId, cancelledBy } = data;
 
   try {
@@ -89,12 +91,13 @@ export const cancelCalendarBooking = functions.https.onCall(async (data: CancelB
 /**
  * Check-in to a meeting
  */
-export const checkInToMeeting = functions.https.onCall(async (data: CheckInRequest, context) => {
-  if (!context.auth) {
+export const checkInToMeeting = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Verify user matches request
   if (data.userId !== userId) {
@@ -118,12 +121,13 @@ export const checkInToMeeting = functions.https.onCall(async (data: CheckInReque
 /**
  * Report appearance mismatch
  */
-export const reportAppearanceMismatch = functions.https.onCall(async (data: MismatchReportRequest, context) => {
-  if (!context.auth) {
+export const reportAppearanceMismatch = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Verify user is the reporter
   if (data.reportedBy !== userId) {
@@ -147,8 +151,9 @@ export const reportAppearanceMismatch = functions.https.onCall(async (data: Mism
 /**
  * Complete a meeting (called by scheduler or manually)
  */
-export const completeMeetingCallable = functions.https.onCall(async (data: CompleteMeetingRequest, context) => {
-  if (!context.auth) {
+export const completeMeetingCallable = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -169,12 +174,13 @@ export const completeMeetingCallable = functions.https.onCall(async (data: Compl
 /**
  * Process goodwill refund (host-initiated)
  */
-export const processGoodwillRefundCallable = functions.https.onCall(async (data: GoodwillRefundRequest, context) => {
-  if (!context.auth) {
+export const processGoodwillRefundCallable = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Verify user is the host
   if (data.hostId !== userId) {
@@ -198,8 +204,9 @@ export const processGoodwillRefundCallable = functions.https.onCall(async (data:
 /**
  * Get refund policy for a specific cancellation time
  */
-export const getRefundPolicy = functions.https.onCall(async (data: { meetingStart: string; cancellationTime?: string }, context) => {
-  if (!context.auth) {
+export const getRefundPolicy = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -222,8 +229,9 @@ export const getRefundPolicy = functions.https.onCall(async (data: { meetingStar
 /**
  * Calculate payment split for a booking
  */
-export const calculateBookingPayment = functions.https.onCall(async (data: { priceTokens: number }, context) => {
-  if (!context.auth) {
+export const calculateBookingPayment = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 

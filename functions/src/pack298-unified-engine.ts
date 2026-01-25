@@ -51,16 +51,17 @@ const RANKING_WEIGHTS = {
  */
 export const calculateFeedRankings = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Authenticate
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { location, isRoyal } = data;
 
     try {
@@ -271,12 +272,13 @@ function calculateDistance(
  */
 export const generateSwipePool = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
+  .https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { preferences, location, isRoyal } = data;
 
     try {
@@ -575,8 +577,9 @@ function calculateProfileCompleteness(userData: any): number {
  */
 export const validateContentSafety = functions
   .region('europe-west3')
-  .https.onCall(async (data, context) => {
-    if (!context.auth) {
+  .https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 

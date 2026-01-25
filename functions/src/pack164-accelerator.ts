@@ -190,13 +190,14 @@ async function validateUserEligibility(userId: string): Promise<{
 // CALLABLE FUNCTIONS
 // ============================================================================
 
-export const applyToAccelerator = functions.https.onCall(async (data, context) => {
+export const applyToAccelerator = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Authentication required
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   
   try {
     // Validate input
@@ -306,13 +307,14 @@ export const applyToAccelerator = functions.https.onCall(async (data, context) =
   }
 });
 
-export const reviewAcceleratorApplication = functions.https.onCall(async (data, context) => {
+export const reviewAcceleratorApplication = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Authentication required
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
   
-  const reviewerId = context.auth.uid;
+  const reviewerId = request.auth.uid;
   
   // Check moderator role
   const reviewerDoc = await db.collection('users').doc(reviewerId).get();
@@ -404,13 +406,14 @@ export const reviewAcceleratorApplication = functions.https.onCall(async (data, 
   };
 });
 
-export const assignAcceleratorTrack = functions.https.onCall(async (data, context) => {
+export const assignAcceleratorTrack = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Authentication required
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
   
-  const adminId = context.auth.uid;
+  const adminId = request.auth.uid;
   
   // Check admin role
   const adminDoc = await db.collection('users').doc(adminId).get();
@@ -463,13 +466,14 @@ export const assignAcceleratorTrack = functions.https.onCall(async (data, contex
   };
 });
 
-export const completeMilestone = functions.https.onCall(async (data, context) => {
+export const completeMilestone = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Authentication required
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { milestone_id, submission_url, notes } = data;
   
   if (!milestone_id) {
@@ -555,13 +559,14 @@ export const completeMilestone = functions.https.onCall(async (data, context) =>
   };
 });
 
-export const issueAcceleratorGrant = functions.https.onCall(async (data, context) => {
+export const issueAcceleratorGrant = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Authentication required
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
   
-  const adminId = context.auth.uid;
+  const adminId = request.auth.uid;
   
   // Check admin role
   const adminDoc = await db.collection('users').doc(adminId).get();
@@ -645,13 +650,14 @@ export const issueAcceleratorGrant = functions.https.onCall(async (data, context
   }
 });
 
-export const issueAcceleratorCertificate = functions.https.onCall(async (data, context) => {
+export const issueAcceleratorCertificate = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Authentication required
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
   
-  const adminId = context.auth.uid;
+  const adminId = request.auth.uid;
   
   // Check admin role
   const adminDoc = await db.collection('users').doc(adminId).get();

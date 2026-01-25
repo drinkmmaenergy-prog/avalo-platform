@@ -228,12 +228,13 @@ function isEUCountry(countryCode: string): boolean {
 /**
  * Cloud Function: Calculate tax for a purchase
  */
-export const calculatePurchaseTax = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const calculatePurchaseTax = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { userCountry, userState, currency, amount, purchaseType } = data;
   
   // Validate inputs
@@ -305,8 +306,9 @@ export const updateVATRates = functions.pubsub.schedule('every 24 hours').onRun(
 /**
  * Validate VAT number (EU)
  */
-export const validateVATNumber = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const validateVATNumber = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   

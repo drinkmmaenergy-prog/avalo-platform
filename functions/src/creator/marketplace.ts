@@ -143,12 +143,13 @@ function calculatePersonalizationScore(
 // ENDPOINT: GET /creator/marketplace
 // ============================================================================
 
-export const getCreatorMarketplace = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCreatorMarketplace = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const viewerId = context.auth.uid;
+  const viewerId = request.auth.uid;
   const filters: CreatorMarketplaceFilters = data.filters || {};
   const limit = data.limit || 20;
   const cursor = data.cursor;
@@ -288,12 +289,13 @@ export const getCreatorMarketplace = functions.https.onCall(async (data, context
 // ENDPOINT: GET /creator/profile
 // ============================================================================
 
-export const getCreatorProfile = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCreatorProfile = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const viewerId = context.auth.uid;
+  const viewerId = request.auth.uid;
   const creatorId = data.creatorId;
   
   if (!creatorId) {

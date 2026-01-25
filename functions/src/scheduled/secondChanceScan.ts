@@ -429,9 +429,9 @@ export const triggerSecondChanceScan = functions
     memory: '2GB'
   })
   .https
-  .onCall(async (data, context) => {
+  .onCall(async (request) => {
     // Verify admin
-    if (!context.auth?.token?.admin) {
+    if (!request.auth?.token?.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can trigger manual scans'

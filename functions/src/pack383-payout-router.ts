@@ -62,10 +62,10 @@ interface ProviderConfig {
  * Resolve optimal payout route
  * Callable function
  */
-export const pack383_resolveOptimalPayoutRoute = functions.https.onCall(
-  async (data: { userId: string; amount: number; currency: string }, context) => {
+export const pack383_resolveOptimalPayoutRoute = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Authentication check
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -195,9 +195,9 @@ export const pack383_resolveOptimalPayoutRoute = functions.https.onCall(
  * Execute payout request
  * Creates payout entry and initiates provider execution
  */
-export const pack383_initiatePayout = functions.https.onCall(
-  async (data: PayoutRequest, context) => {
-    if (!context.auth) {
+export const pack383_initiatePayout = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -205,7 +205,7 @@ export const pack383_initiatePayout = functions.https.onCall(
 
     try {
       // Validate user
-      if (context.auth.uid !== userId) {
+      if (request.auth.uid !== userId) {
         throw new functions.https.HttpsError('permission-denied', 'Cannot initiate payout for another user');
       }
 

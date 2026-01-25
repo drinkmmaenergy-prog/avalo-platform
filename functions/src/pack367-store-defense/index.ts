@@ -26,11 +26,11 @@ const db = admin.firestore();
  * CLOUD FUNCTION: Scan Store Reviews
  * HTTP endpoint to import and analyze store reviews
  */
-export const pack367_scanStoreReviews = functions.https.onCall(
-  async (data: ReviewScanRequest, context): Promise<ReviewScanResult> => {
+export const pack367_scanStoreReviews = functions.https.onCall(async (request) => {
+  const data = request.data;
     
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.role || context.auth.token.role !== 'admin') {
+    if (!request.auth || !request.auth.token.role || request.auth.token.role !== 'admin') {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can scan store reviews'
@@ -61,16 +61,11 @@ export const pack367_scanStoreReviews = functions.https.onCall(
  * CLOUD FUNCTION: Trigger Defense Action
  * HTTP endpoint for admins to manually trigger defense actions
  */
-export const pack367_triggerDefenseAction = functions.https.onCall(
-  async (data: {
-    actionType: string;
-    platform?: Platform;
-    reason: string;
-    durationHours?: number;
-  }, context) => {
+export const pack367_triggerDefenseAction = functions.https.onCall(async (request) => {
+  const data = request.data;
     
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.role || context.auth.token.role !== 'admin') {
+    if (!request.auth || !request.auth.token.role || request.auth.token.role !== 'admin') {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can trigger defense actions'
@@ -83,7 +78,7 @@ export const pack367_triggerDefenseAction = functions.https.onCall(
     const actionId = await manager.triggerDefenseAction({
       actionType: actionType as any,
       platform,
-      triggeredBy: context.auth.uid,
+      triggeredBy: request.auth.uid,
       triggerReason: reason,
       autoTriggered: false,
       durationHours,
@@ -91,7 +86,7 @@ export const pack367_triggerDefenseAction = functions.https.onCall(
     
     functions.logger.info(`Defense action triggered by admin: ${actionType}`, {
       actionId,
-      adminId: context.auth.uid,
+      adminId: request.auth.uid,
     });
     
     return { success: true, actionId };
@@ -102,11 +97,11 @@ export const pack367_triggerDefenseAction = functions.https.onCall(
  * CLOUD FUNCTION: Deactivate Defense Action
  * HTTP endpoint for admins to deactivate defense actions
  */
-export const pack367_deactivateDefenseAction = functions.https.onCall(
-  async (data: { actionId: string }, context) => {
+export const pack367_deactivateDefenseAction = functions.https.onCall(async (request) => {
+  const data = request.data;
     
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.role || context.auth.token.role !== 'admin') {
+    if (!request.auth || !request.auth.token.role || request.auth.token.role !== 'admin') {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can deactivate defense actions'
@@ -116,7 +111,7 @@ export const pack367_deactivateDefenseAction = functions.https.onCall(
     const { actionId } = data;
     
     const manager = new DefenseActionManager();
-    await manager.deactivateDefenseAction(actionId, context.auth.uid);
+    await manager.deactivateDefenseAction(actionId, request.auth.uid);
     
     functions.logger.info(`Defense action deactivated by admin: ${actionId}`);
     
@@ -128,16 +123,11 @@ export const pack367_deactivateDefenseAction = functions.https.onCall(
  * CLOUD FUNCTION: Check Review Prompt Eligibility
  * Called when a positive trigger event occurs
  */
-export const pack367_checkReviewPromptEligibility = functions.https.onCall(
-  async (data: {
-    userId: string;
-    triggerType: string;
-    triggerEventId?: string;
-    platform?: Platform;
-  }, context) => {
+export const pack367_checkReviewPromptEligibility = functions.https.onCall(async (request) => {
+  const data = request.data;
     
     // Verify authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -145,8 +135,8 @@ export const pack367_checkReviewPromptEligibility = functions.https.onCall(
     }
     
     // Verify user can only check their own eligibility (or admin)
-    const isAdmin = context.auth.token.role === 'admin';
-    if (!isAdmin && context.auth.uid !== data.userId) {
+    const isAdmin = request.auth.token.role === 'admin';
+    if (!isAdmin && request.auth.uid !== data.userId) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Can only check own eligibility'
@@ -169,11 +159,11 @@ export const pack367_checkReviewPromptEligibility = functions.https.onCall(
  * CLOUD FUNCTION: Get Eligible Review Prompts
  * Called by mobile app to check for pending prompts
  */
-export const pack367_getEligibleReviewPrompts = functions.https.onCall(
-  async (data: { userId: string }, context) => {
+export const pack367_getEligibleReviewPrompts = functions.https.onCall(async (request) => {
+  const data = request.data;
     
     // Verify authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -181,8 +171,8 @@ export const pack367_getEligibleReviewPrompts = functions.https.onCall(
     }
     
     // Verify user can only get their own prompts (or admin)
-    const isAdmin = context.auth.token.role === 'admin';
-    if (!isAdmin && context.auth.uid !== data.userId) {
+    const isAdmin = request.auth.token.role === 'admin';
+    if (!isAdmin && request.auth.uid !== data.userId) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Can only get own prompts'
@@ -200,14 +190,11 @@ export const pack367_getEligibleReviewPrompts = functions.https.onCall(
  * CLOUD FUNCTION: Record Review Prompt Response
  * Called when user responds to a review prompt
  */
-export const pack367_recordPromptResponse = functions.https.onCall(
-  async (data: {
-    promptId: string;
-    responseAction: 'reviewed' | 'dismissed' | 'later';
-  }, context) => {
+export const pack367_recordPromptResponse = functions.https.onCall(async (request) => {
+  const data = request.data;
     
     // Verify authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -226,8 +213,8 @@ export const pack367_recordPromptResponse = functions.https.onCall(
     }
     
     const prompt = promptDoc.data();
-    const isAdmin = context.auth.token.role === 'admin';
-    if (!isAdmin && prompt?.userId !== context.auth.uid) {
+    const isAdmin = request.auth.token.role === 'admin';
+    if (!isAdmin && prompt?.userId !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Cannot respond to another user\'s prompt'
@@ -245,12 +232,12 @@ export const pack367_recordPromptResponse = functions.https.onCall(
  * CLOUD FUNCTION: Get Defense Status
  * Get current store defense status for a platform
  */
-export const pack367_getDefenseStatus = functions.https.onCall(
-  async (data: { platform: Platform }, context): Promise<DefenseStatus> => {
+export const pack367_getDefenseStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
     
     // Verify admin/moderator authentication
-    if (!context.auth || !context.auth.token.role || 
-        !['admin', 'moderator'].includes(context.auth.token.role)) {
+    if (!request.auth || !request.auth.token.role || 
+        !['admin', 'moderator'].includes(request.auth.token.role)) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins/moderators can view defense status'

@@ -21,12 +21,13 @@ import {
 } from '../middleware/educationCompliance';
 import { HttpsError, admin, auth, onCall } from '../runtime';
 
-export const uploadCourse = functions.https.onCall(async (data: CourseUploadRequest, context) => {
-  if (!context.auth) {
+export const uploadCourse = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   
   const userDoc = await db.collection('users').doc(userId).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'creator') {
@@ -98,8 +99,9 @@ export const uploadCourse = functions.https.onCall(async (data: CourseUploadRequ
   };
 });
 
-export const uploadCourseModule = functions.https.onCall(async (data: ModuleUploadRequest, context) => {
-  if (!context.auth) {
+export const uploadCourseModule = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -109,7 +111,7 @@ export const uploadCourseModule = functions.https.onCall(async (data: ModuleUplo
   }
 
   const courseData = courseDoc.data() as Course;
-  if (courseData.creatorId !== context.auth.uid) {
+  if (courseData.creatorId !== request.auth.uid) {
     throw new functions.https.HttpsError('permission-denied', 'You are not the course creator');
   }
 
@@ -138,12 +140,13 @@ export const uploadCourseModule = functions.https.onCall(async (data: ModuleUplo
   };
 });
 
-export const purchaseCourse = functions.https.onCall(async (data: PurchaseRequest, context) => {
-  if (!context.auth) {
+export const purchaseCourse = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   if (data.userId !== userId) {
     throw new functions.https.HttpsError('permission-denied', 'Invalid user ID');
@@ -237,18 +240,13 @@ export const purchaseCourse = functions.https.onCall(async (data: PurchaseReques
   };
 });
 
-export const logCourseProgress = functions.https.onCall(async (data: {
-  courseId: string;
-  moduleId: string;
-  completed: boolean;
-  timeSpent: number;
-  quizScore?: number;
-}, context) => {
-  if (!context.auth) {
+export const logCourseProgress = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const progressId = `${userId}_${data.courseId}`;
 
   const progressDoc = await db.collection('course_progress').doc(progressId).get();
@@ -307,12 +305,13 @@ export const logCourseProgress = functions.https.onCall(async (data: {
   };
 });
 
-export const issueCertificate = functions.https.onCall(async (data: CertificateRequest, context) => {
-  if (!context.auth) {
+export const issueCertificate = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   if (data.userId !== userId) {
     throw new functions.https.HttpsError('permission-denied', 'Invalid user ID');
@@ -387,12 +386,13 @@ export const issueCertificate = functions.https.onCall(async (data: CertificateR
   };
 });
 
-export const createQASession = functions.https.onCall(async (data: QASessionRequest, context) => {
-  if (!context.auth) {
+export const createQASession = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   if (data.studentId !== userId) {
     throw new functions.https.HttpsError('permission-denied', 'Invalid student ID');
@@ -438,12 +438,13 @@ export const createQASession = functions.https.onCall(async (data: QASessionRequ
   };
 });
 
-export const submitComplianceReport = functions.https.onCall(async (data: ComplianceReportRequest, context) => {
-  if (!context.auth) {
+export const submitComplianceReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   if (data.reporterId !== userId) {
     throw new functions.https.HttpsError('permission-denied', 'Invalid reporter ID');
@@ -483,16 +484,13 @@ export const submitComplianceReport = functions.https.onCall(async (data: Compli
   };
 });
 
-export const resolveEducationDisputes = functions.https.onCall(async (data: {
-  reportId: string;
-  action: 'approve' | 'reject' | 'suspend_course' | 'ban_creator';
-  notes: string;
-}, context) => {
-  if (!context.auth) {
+export const resolveEducationDisputes = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -507,7 +505,7 @@ export const resolveEducationDisputes = functions.https.onCall(async (data: {
   await db.runTransaction(async (transaction) => {
     transaction.update(reportDoc.ref, {
       status: 'resolved',
-      reviewedBy: context.auth!.uid,
+      reviewedBy: request.auth!.uid,
       reviewNotes: data.notes,
       actionTaken: data.action,
       resolvedAt: serverTimestamp()

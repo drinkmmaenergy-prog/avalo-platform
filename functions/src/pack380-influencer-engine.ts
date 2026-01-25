@@ -133,13 +133,14 @@ interface InfluencerProfile {
 /**
  * Submit influencer application
  */
-export const submitInfluencerApplication = functions.https.onCall(async (data, context) => {
+export const submitInfluencerApplication = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   const {
     applicantName,
@@ -213,13 +214,14 @@ export const submitInfluencerApplication = functions.https.onCall(async (data, c
 /**
  * Review influencer application (admin only)
  */
-export const reviewInfluencerApplication = functions.https.onCall(async (data, context) => {
+export const reviewInfluencerApplication = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Admin check
   const userDoc = await db.collection('users').doc(userId).get();
@@ -410,7 +412,8 @@ async function createInfluencerContract(
  * Track influencer performance
  * Called by other systems when events occur
  */
-export const trackInfluencerEvent = functions.https.onCall(async (data, context) => {
+export const trackInfluencerEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { referralCode, eventType, eventData } = data;
 
   if (!referralCode || !eventType) {
@@ -654,13 +657,14 @@ export const processInfluencerPayouts = functions.pubsub
 /**
  * Get influencer dashboard data
  */
-export const getInfluencerDashboard = functions.https.onCall(async (data, context) => {
+export const getInfluencerDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     // Get influencer profile
@@ -713,13 +717,14 @@ export const getInfluencerDashboard = functions.https.onCall(async (data, contex
 /**
  * Update influencer tier
  */
-export const updateInfluencerTier = functions.https.onCall(async (data, context) => {
+export const updateInfluencerTier = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Admin check
   const userDoc = await db.collection('users').doc(userId).get();

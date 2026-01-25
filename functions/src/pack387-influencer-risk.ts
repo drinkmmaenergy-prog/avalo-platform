@@ -12,9 +12,9 @@ const db = admin.firestore();
 /**
  * Calculate influencer reputation risk score
  */
-export const pack387_influencerReputationRisk = functions.https.onCall(
-  async (data: { influencerId: string }, context) => {
-    if (!context.auth) {
+export const pack387_influencerReputationRisk = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -348,9 +348,9 @@ export const pack387_updateAllInfluencerRisks = functions.pubsub
 /**
  * Manually review and unfreeze influencer
  */
-export const pack387_unfreezeInfluencer = functions.https.onCall(
-  async (data: { influencerId: string; reason: string }, context) => {
-    if (!context.auth) {
+export const pack387_unfreezeInfluencer = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -360,7 +360,7 @@ export const pack387_unfreezeInfluencer = functions.https.onCall(
       // Update risk score
       await db.collection('influencerRiskScores').doc(data.influencerId).update({
         payoutFrozen: false,
-        unfrozenBy: context.auth.uid,
+        unfrozenBy: request.auth.uid,
         unfrozenAt: admin.firestore.Timestamp.now(),
         unfreezeReason: data.reason,
         manualOverride: true,
@@ -376,7 +376,7 @@ export const pack387_unfreezeInfluencer = functions.https.onCall(
       const unfreezePromises = frozenPayouts.docs.map(doc =>
         doc.ref.update({
           status: 'PENDING',
-          unfrozenBy: context.auth!.uid,
+          unfrozenBy: request.auth!.uid,
           unfrozenAt: admin.firestore.Timestamp.now(),
           unfreezeReason: data.reason,
         })

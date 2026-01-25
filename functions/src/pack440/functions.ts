@@ -185,12 +185,12 @@ export const checkSLABreaches = functions.pubsub
 /**
  * HTTPS Callable: Get creator payout status
  */
-export const getCreatorPayoutStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCreatorPayoutStatus = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
   
   try {
     const status = await statusAPI.getStatus(creatorId);
@@ -204,13 +204,14 @@ export const getCreatorPayoutStatus = functions.https.onCall(async (data, contex
 /**
  * HTTPS Callable: Mark message as read
  */
-export const markPayoutMessageRead = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const markPayoutMessageRead = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   const { messageId } = data;
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
   
   if (!messageId) {
     throw new functions.https.HttpsError('invalid-argument', 'messageId is required');
@@ -228,13 +229,14 @@ export const markPayoutMessageRead = functions.https.onCall(async (data, context
 /**
  * HTTPS Callable: Admin - Release freeze
  */
-export const adminReleaseFreeze = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminReleaseFreeze = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   // Check admin role
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userRole = userDoc.data()?.role;
   
   if (!['admin', 'compliance'].includes(userRole)) {
@@ -248,7 +250,7 @@ export const adminReleaseFreeze = functions.https.onCall(async (data, context) =
   }
   
   try {
-    await freezeController.releaseFreeze(freezeId, context.auth.uid, notes || '');
+    await freezeController.releaseFreeze(freezeId, request.auth.uid, notes || '');
     
     // Update creator status
     const freeze = await freezeController.getFreeze(freezeId);
@@ -266,13 +268,14 @@ export const adminReleaseFreeze = functions.https.onCall(async (data, context) =
 /**
  * HTTPS Callable: Admin - Get dashboard stats
  */
-export const getAdminDashboardStats = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getAdminDashboardStats = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   // Check admin role
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userRole = userDoc.data()?.role;
   
   if (!['admin', 'compliance', 'finance'].includes(userRole)) {

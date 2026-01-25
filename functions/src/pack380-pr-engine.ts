@@ -104,13 +104,14 @@ interface PRCampaign {
  * Create and generate press release
  * Auto-generates compliant PR based on various triggers
  */
-export const createPressRelease = functions.https.onCall(async (data, context) => {
+export const createPressRelease = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Admin check
   const userDoc = await db.collection('users').doc(userId).get();
@@ -298,13 +299,14 @@ content sales, and Royal Club subscriptions.`
 /**
  * Distribute press release to media contacts
  */
-export const distributePressRelease = functions.https.onCall(async (data, context) => {
+export const distributePressRelease = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Admin check
   const userDoc = await db.collection('users').doc(userId).get();
@@ -514,7 +516,8 @@ export const pressMonitoringDaemon = functions.pubsub
 /**
  * Add press mention manually or via webhook
  */
-export const addPressMention = functions.https.onCall(async (data, context) => {
+export const addPressMention = functions.https.onCall(async (request) => {
+  const data = request.data;
   const {
     source,
     sourceType,
@@ -652,13 +655,14 @@ function extractKeywords(text: string): string[] {
 /**
  * Add press contact
  */
-export const addPressContact = functions.https.onCall(async (data, context) => {
+export const addPressContact = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Admin check
   const userDoc = await db.collection('users').doc(userId).get();

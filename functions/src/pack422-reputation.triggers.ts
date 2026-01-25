@@ -337,13 +337,14 @@ export const onUserChurn = functions.firestore
 /**
  * Callable function for admin to force reputation recalculation
  */
-export const forceReputationRecalc = functions.https.onCall(async (data, context) => {
+export const forceReputationRecalc = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Verify admin auth
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminId = context.auth.uid;
+  const adminId = request.auth.uid;
   const adminDoc = await db.collection('adminRoles').doc(adminId).get();
   
   if (!adminDoc.exists) {

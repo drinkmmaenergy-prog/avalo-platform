@@ -14,7 +14,8 @@ const db = admin.firestore();
  * Calculate and store daily retention metrics
  * Called by scheduled function or manually
  */
-export const aggregateRetentionMetrics = functions.https.onCall(async (data, context) => {
+export const aggregateRetentionMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Optional: Add admin authentication check here
 
   const { date } = data;
@@ -303,7 +304,8 @@ function getTodayDateString(): string {
 /**
  * Get retention metrics for date range (admin only)
  */
-export const getRetentionMetrics = functions.https.onCall(async (data, context) => {
+export const getRetentionMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Optional: Add admin authentication check here
 
   const { startDate, endDate, limit } = data;
@@ -340,7 +342,8 @@ export const getRetentionMetrics = functions.https.onCall(async (data, context) 
 /**
  * Get segment distribution over time (admin only)
  */
-export const getSegmentDistribution = functions.https.onCall(async (data, context) => {
+export const getSegmentDistribution = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Optional: Add admin authentication check here
 
   const { days } = data;
@@ -381,7 +384,8 @@ export const getSegmentDistribution = functions.https.onCall(async (data, contex
 /**
  * Get onboarding funnel metrics (admin only)
  */
-export const getOnboardingFunnelMetrics = functions.https.onCall(async (data, context) => {
+export const getOnboardingFunnelMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Optional: Add admin authentication check here
 
   try {
@@ -440,7 +444,8 @@ export const getOnboardingFunnelMetrics = functions.https.onCall(async (data, co
 /**
  * Get win-back effectiveness report (admin only)
  */
-export const getWinBackEffectiveness = functions.https.onCall(async (data, context) => {
+export const getWinBackEffectiveness = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Optional: Add admin authentication check here
 
   try {

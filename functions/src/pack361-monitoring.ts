@@ -73,16 +73,9 @@ const MONITORING_SERVICES = [
 /**
  * Track chat delivery time
  */
-export const trackChatDelivery = functions.https.onCall(
-  async (
-    data: {
-      messageId: string;
-      sentAt: number;
-      deliveredAt: number;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const trackChatDelivery = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -110,17 +103,9 @@ export const trackChatDelivery = functions.https.onCall(
 /**
  * Track wallet transaction
  */
-export const trackWalletTransaction = functions.https.onCall(
-  async (
-    data: {
-      transactionId: string;
-      startedAt: number;
-      completedAt: number;
-      success: boolean;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const trackWalletTransaction = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -150,16 +135,9 @@ export const trackWalletTransaction = functions.https.onCall(
 /**
  * Track event checkout
  */
-export const trackEventCheckout = functions.https.onCall(
-  async (
-    data: {
-      eventId: string;
-      startedAt: number;
-      completedAt: number;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const trackEventCheckout = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -187,16 +165,9 @@ export const trackEventCheckout = functions.https.onCall(
 /**
  * Track AI response time
  */
-export const trackAiResponse = functions.https.onCall(
-  async (
-    data: {
-      sessionId: string;
-      startedAt: number;
-      completedAt: number;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const trackAiResponse = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -224,17 +195,9 @@ export const trackAiResponse = functions.https.onCall(
 /**
  * Track video call quality
  */
-export const trackVideoCallQuality = functions.https.onCall(
-  async (
-    data: {
-      callId: string;
-      packetLoss: number;
-      jitter: number;
-      latency: number;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const trackVideoCallQuality = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -269,16 +232,9 @@ export const trackVideoCallQuality = functions.https.onCall(
 /**
  * Track panic button processing
  */
-export const trackPanicButton = functions.https.onCall(
-  async (
-    data: {
-      userId: string;
-      triggeredAt: number;
-      processedAt: number;
-    },
-    context
-  ) => {
-    if (!context.auth) {
+export const trackPanicButton = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -568,8 +524,8 @@ async function sendAlert(
 /**
  * Get current system health
  */
-export const getSystemHealth = functions.https.onCall(
-  async (data, context) => {
+export const getSystemHealth = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
     
     const healthDoc = await db
@@ -591,15 +547,8 @@ export const getSystemHealth = functions.https.onCall(
 /**
  * Get metrics history
  */
-export const getMetricsHistory = functions.https.onCall(
-  async (
-    data: {
-      metric: string;
-      startTime?: number;
-      endTime?: number;
-    },
-    context
-  ) => {
+export const getMetricsHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
     
     const endTime = data.endTime || Date.now();
@@ -627,8 +576,8 @@ export const getMetricsHistory = functions.https.onCall(
 /**
  * Get active alerts
  */
-export const getActiveAlerts = functions.https.onCall(
-  async (data, context) => {
+export const getActiveAlerts = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
     
     const alertsSnapshot = await db
@@ -648,9 +597,9 @@ export const getActiveAlerts = functions.https.onCall(
 /**
  * Resolve alert
  */
-export const resolveAlert = functions.https.onCall(
-  async (data: { alertId: string }, context) => {
-    if (!context.auth) {
+export const resolveAlert = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         "unauthenticated",
         "Must be authenticated"
@@ -662,7 +611,7 @@ export const resolveAlert = functions.https.onCall(
     await db.collection("systemAlerts").doc(data.alertId).update({
       resolved: true,
       resolvedAt: Date.now(),
-      resolvedBy: context.auth.uid,
+      resolvedBy: request.auth.uid,
     });
     
     return { success: true };
@@ -672,8 +621,8 @@ export const resolveAlert = functions.https.onCall(
 /**
  * Get performance dashboard data
  */
-export const getDashboardData = functions.https.onCall(
-  async (data, context) => {
+export const getDashboardData = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
     
     // Get latest metrics averages

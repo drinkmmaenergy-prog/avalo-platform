@@ -364,12 +364,11 @@ function getFeatureMatrix(): Record<string, FeatureStatus> {
  * 
  * Callable function (can also be exposed as HTTP if needed).
  */
-export const pack421_health_featureMatrix = functions.https.onCall(
-  async (data, context) => {
+export const pack421_health_featureMatrix = functions.https.onCall(async (request) => {
     try {
       // TODO: Add authentication check using PACK 296 audit system
       // For now, require authenticated user
-      if (!context.auth && process.env.NODE_ENV === 'production') {
+      if (!request.auth && process.env.NODE_ENV === 'production') {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'Feature matrix requires authentication'

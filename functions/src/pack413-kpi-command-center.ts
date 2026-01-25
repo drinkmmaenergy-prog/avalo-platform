@@ -32,9 +32,10 @@ const db = admin.firestore();
 /**
  * Get topline KPIs (global view across all categories)
  */
-export const pack413_getToplineKpis = functions.https.onCall(async (data: GetKpiParams, context) => {
+export const pack413_getToplineKpis = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin or internal service only
-  if (!context.auth || !await isAdminOrService(context.auth.uid)) {
+  if (!request.auth || !await isAdminOrService(request.auth.uid)) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -79,8 +80,9 @@ export const pack413_getToplineKpis = functions.https.onCall(async (data: GetKpi
 /**
  * Get region-specific KPIs
  */
-export const pack413_getRegionKpis = functions.https.onCall(async (data: GetKpiParams, context) => {
-  if (!context.auth || !await isAdminOrService(context.auth.uid)) {
+export const pack413_getRegionKpis = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth || !await isAdminOrService(request.auth.uid)) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -121,8 +123,9 @@ export const pack413_getRegionKpis = functions.https.onCall(async (data: GetKpiP
 /**
  * Get segment-specific KPIs (e.g., new users, paying users)
  */
-export const pack413_getSegmentKpis = functions.https.onCall(async (data: GetKpiParams, context) => {
-  if (!context.auth || !await isAdminOrService(context.auth.uid)) {
+export const pack413_getSegmentKpis = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth || !await isAdminOrService(request.auth.uid)) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 

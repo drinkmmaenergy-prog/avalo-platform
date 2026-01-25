@@ -160,9 +160,10 @@ const PHASE_CONFIGS: Record<LaunchPhase, PhaseConfig> = {
  * Set global launch phase
  * Admin-only function
  */
-export const pack385_setLaunchPhase = functions.https.onCall(async (data, context) => {
+export const pack385_setLaunchPhase = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin authentication required
-  if (!context.auth || !context.auth.token?.admin) {
+  if (!request.auth || !request.auth.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -180,11 +181,11 @@ export const pack385_setLaunchPhase = functions.https.onCall(async (data, contex
     currentPhase: phase,
     config,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedBy: context.auth.uid,
+    updatedBy: request.auth.uid,
     history: admin.firestore.FieldValue.arrayUnion({
       phase,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      userId: context.auth.uid
+      userId: request.auth.uid
     })
   }, { merge: true });
 
@@ -192,7 +193,7 @@ export const pack385_setLaunchPhase = functions.https.onCall(async (data, contex
   await db.collection('auditLogs').add({
     type: 'LAUNCH_PHASE_CHANGE',
     severity: 'HIGH',
-    userId: context.auth.uid,
+    userId: request.auth.uid,
     data: {
       newPhase: phase,
       config
@@ -210,8 +211,9 @@ export const pack385_setLaunchPhase = functions.https.onCall(async (data, contex
 /**
  * Get current launch phase and configuration
  */
-export const pack385_getLaunchPhase = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_getLaunchPhase = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -231,8 +233,9 @@ export const pack385_getLaunchPhase = functions.https.onCall(async (data, contex
 /**
  * Check if a feature is enabled for current launch phase
  */
-export const pack385_checkFeatureEnabled = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_checkFeatureEnabled = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -254,8 +257,9 @@ export const pack385_checkFeatureEnabled = functions.https.onCall(async (data, c
 /**
  * Get user limits based on current launch phase
  */
-export const pack385_getUserLimits = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_getUserLimits = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -267,7 +271,7 @@ export const pack385_getUserLimits = functions.https.onCall(async (data, context
   const config = PHASE_CONFIGS[currentPhase as LaunchPhase];
 
   // Check if user is ambassador - they get higher limits
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const isAmbassador = userDoc.data()?.isLaunchAmbassador || false;
 
   const limits = { ...config.limits };

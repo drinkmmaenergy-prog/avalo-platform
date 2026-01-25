@@ -263,13 +263,14 @@ async function createEraseLog(
 /**
  * Apply legal hold (prevents auto-deletion)
  */
-export const pack388_applyLegalHold = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_applyLegalHold = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin must be authenticated');
   }
 
   // Check admin permissions
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists || !adminDoc.data()?.permissions?.includes('LEGAL_HOLD')) {
     throw new functions.https.HttpsError('permission-denied', 'Insufficient permissions');
   }
@@ -285,7 +286,7 @@ export const pack388_applyLegalHold = functions.https.onCall(async (data, contex
       reason,
       dataTypes: dataTypes || 'ALL',
       active: true,
-      appliedBy: context.auth.uid,
+      appliedBy: request.auth.uid,
       appliedAt: admin.firestore.Timestamp.now(),
       retainAllData: true,
       notes: data.notes
@@ -330,13 +331,14 @@ export const pack388_applyLegalHold = functions.https.onCall(async (data, contex
 /**
  * Release legal hold
  */
-export const pack388_releaseLegalHold = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_releaseLegalHold = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin must be authenticated');
   }
 
   // Check admin permissions
-  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admins').doc(request.auth.uid).get();
   if (!adminDoc.exists || !adminDoc.data()?.permissions?.includes('LEGAL_HOLD')) {
     throw new functions.https.HttpsError('permission-denied', 'Insufficient permissions');
   }
@@ -355,7 +357,7 @@ export const pack388_releaseLegalHold = functions.https.onCall(async (data, cont
     // Deactivate hold
     await holdDoc.ref.update({
       active: false,
-      releasedBy: context.auth.uid,
+      releasedBy: request.auth.uid,
       releasedAt: admin.firestore.Timestamp.now()
     });
 
@@ -398,8 +400,8 @@ export const pack388_releaseLegalHold = functions.https.onCall(async (data, cont
 /**
  * Initialize retention policies for all jurisdictions
  */
-export const pack388_initializeRetentionPolicies = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_initializeRetentionPolicies = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin must be authenticated');
   }
 
@@ -453,7 +455,8 @@ export const pack388_initializeRetentionPolicies = functions.https.onCall(async 
 /**
  * Get retention policy for data type and jurisdiction
  */
-export const pack388_getRetentionPolicy = functions.https.onCall(async (data, context) => {
+export const pack388_getRetentionPolicy = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { dataType, jurisdiction } = data;
 
   try {

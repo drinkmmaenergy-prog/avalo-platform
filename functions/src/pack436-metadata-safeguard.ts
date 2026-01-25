@@ -557,8 +557,9 @@ function checkAdvertisingViolations(metadata: MetadataSnapshot): PolicyViolation
 /**
  * Generate comprehensive metadata health report
  */
-export const generateMetadataHealthReport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const generateMetadataHealthReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   

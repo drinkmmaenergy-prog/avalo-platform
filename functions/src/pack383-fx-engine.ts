@@ -33,9 +33,9 @@ interface FXRate {
 /**
  * Convert tokens to local fiat currency
  */
-export const pack383_convertTokenToLocalFiat = functions.https.onCall(
-  async (data: { tokens: number; targetCurrency: string }, context) => {
-    if (!context.auth) {
+export const pack383_convertTokenToLocalFiat = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -80,8 +80,8 @@ export const pack383_convertTokenToLocalFiat = functions.https.onCall(
 /**
  * Get current FX rate between two currencies
  */
-export const pack383_getFXRate = functions.https.onCall(
-  async (data: { from: string; to: string }, context) => {
+export const pack383_getFXRate = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { from, to } = data;
 
     try {
@@ -337,8 +337,8 @@ function getMinimumPayout(currency: string): number {
 /**
  * Calculate conversion preview (no database writes)
  */
-export const pack383_previewConversion = functions.https.onCall(
-  async (data: { tokens: number; targetCurrency: string }, context) => {
+export const pack383_previewConversion = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { tokens, targetCurrency } = data;
 
     try {

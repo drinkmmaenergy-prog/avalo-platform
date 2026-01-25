@@ -25,18 +25,18 @@ import { HttpsError, auth, logger, onCall, timestamp } from '../runtime';
 
 const db = admin.firestore();
 
-export const createTicket = functions.https.onCall(
-  async (data: CreateTicketRequest, context): Promise<CreateTicketResponse> => {
+export const createTicket = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Authentication check
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated to create a ticket'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { type, subject, description, related } = data;
 
       // Validation
@@ -209,7 +209,7 @@ export const createTicket = functions.https.onCall(
     } catch (error: any) {
       functions.logger.error('Error creating support ticket', {
         error: error.message,
-        userId: context.auth?.uid,
+        userId: request.auth?.uid,
       });
 
       if (error instanceof functions.https.HttpsError) {

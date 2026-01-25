@@ -17,12 +17,13 @@ const db = admin.firestore();
  * Track user activity from various sources
  * Generic endpoint that can be called by any service
  */
-export const trackActivity = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const trackActivity = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { activityType, metadata } = data;
 
   try {
@@ -166,12 +167,13 @@ export const onEventTicketCreated = functions.firestore
  * Track call activity
  * Called when a call starts or ends
  */
-export const trackCallActivity = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const trackCallActivity = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { callId, eventType } = data; // eventType: 'start' | 'end'
 
   try {
@@ -195,7 +197,8 @@ export const trackCallActivity = functions.https.onCall(async (data, context) =>
  * Batch activity update
  * For bulk tracking of activities (e.g., during migrations)
  */
-export const batchUpdateActivities = functions.https.onCall(async (data, context) => {
+export const batchUpdateActivities = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin only - add authentication check
   
   const { userIds } = data;
@@ -237,15 +240,16 @@ export const batchUpdateActivities = functions.https.onCall(async (data, context
 /**
  * Get activity summary for user (for debugging/admin)
  */
-export const getActivitySummary = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getActivitySummary = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = data.userId || context.auth.uid;
+  const userId = data.userId || request.auth.uid;
 
   // Users can only view their own summary (unless admin)
-  if (userId !== context.auth.uid) {
+  if (userId !== request.auth.uid) {
     // TODO: Add admin check here
     throw new functions.https.HttpsError('permission-denied', 'Cannot view other users\' activity');
   }

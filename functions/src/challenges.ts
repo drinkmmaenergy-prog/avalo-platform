@@ -44,15 +44,15 @@ import { HttpsError, admin, auth, onCall } from './runtime';
  * Create a new challenge
  * Verified creators only
  */
-export const createChallenge = functions.https.onCall(
-  async (data: CreateChallengeRequest, context): Promise<ChallengeResponse<{ challengeId: string }>> => {
+export const createChallenge = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Authentication check
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
 
       // Get user profile
       const userDoc = await db.collection('users').doc(userId).get();
@@ -224,14 +224,14 @@ export const createChallenge = functions.https.onCall(
  * Join a challenge
  * Handles payment for paid challenges
  */
-export const joinChallenge = functions.https.onCall(
-  async (data: JoinChallengeRequest, context): Promise<ChallengeResponse<{ participantId: string }>> => {
+export const joinChallenge = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { challengeId } = data;
 
       // Get challenge
@@ -416,14 +416,14 @@ export const joinChallenge = functions.https.onCall(
 /**
  * Submit task completion with post
  */
-export const submitChallengeTask = functions.https.onCall(
-  async (data: SubmitTaskRequest, context): Promise<ChallengeResponse<{ postId: string; progressId: string }>> => {
+export const submitChallengeTask = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { challengeId, taskNumber, taskDate, postType, caption, mediaUrl } = data;
 
       // Get challenge
@@ -618,10 +618,10 @@ export const submitChallengeTask = functions.https.onCall(
 /**
  * Get challenge leaderboard (consistency-based only)
  */
-export const getChallengeLeaderboard = functions.https.onCall(
-  async (data: GetLeaderboardRequest, context): Promise<ChallengeResponse<LeaderboardEntry[]>> => {
+export const getChallengeLeaderboard = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -676,10 +676,10 @@ export const getChallengeLeaderboard = functions.https.onCall(
 /**
  * Get challenge details
  */
-export const getChallengeDetails = functions.https.onCall(
-  async (data: { challengeId: string }, context): Promise<ChallengeResponse<Challenge>> => {
+export const getChallengeDetails = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -709,13 +709,10 @@ export const getChallengeDetails = functions.https.onCall(
 /**
  * List all active challenges
  */
-export const listChallenges = functions.https.onCall(
-  async (
-    data: { category?: string; limit?: number },
-    context
-  ): Promise<ChallengeResponse<Challenge[]>> => {
+export const listChallenges = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -753,14 +750,14 @@ export const listChallenges = functions.https.onCall(
 /**
  * Get user's participated challenges
  */
-export const getMyChallenges = functions.https.onCall(
-  async (data: { status?: string }, context): Promise<ChallengeResponse<ChallengeParticipant[]>> => {
+export const getMyChallenges = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { status } = data;
 
       let query = db
@@ -793,14 +790,14 @@ export const getMyChallenges = functions.https.onCall(
  * Leave a challenge (before completion)
  * NO REFUND as per policy
  */
-export const leaveChallenge = functions.https.onCall(
-  async (data: { challengeId: string }, context): Promise<ChallengeResponse> => {
+export const leaveChallenge = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { challengeId } = data;
 
       // Get participant record
@@ -846,13 +843,10 @@ export const leaveChallenge = functions.https.onCall(
 /**
  * Get challenge posts (progress submissions)
  */
-export const getChallengePosts = functions.https.onCall(
-  async (
-    data: { challengeId: string; limit?: number },
-    context
-  ): Promise<ChallengeResponse<ChallengePost[]>> => {
+export const getChallengePosts = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -886,14 +880,14 @@ export const getChallengePosts = functions.https.onCall(
 /**
  * Get user progress in a challenge
  */
-export const getChallengeProgress = functions.https.onCall(
-  async (data: { challengeId: string }, context): Promise<ChallengeResponse<ChallengeProgress[]>> => {
+export const getChallengeProgress = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { challengeId } = data;
 
       const snapshot = await db
@@ -923,14 +917,14 @@ export const getChallengeProgress = functions.https.onCall(
  * Cancel challenge (creator only)
  * Returns all paid entry fees to participants
  */
-export const cancelChallenge = functions.https.onCall(
-  async (data: { challengeId: string; reason: string }, context): Promise<ChallengeResponse> => {
+export const cancelChallenge = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { challengeId, reason } = data;
 
       // Get challenge

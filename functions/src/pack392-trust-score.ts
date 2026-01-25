@@ -375,8 +375,9 @@ function determineTrend(currentScore: number, previousScore: number): 'IMPROVING
 export const pack392_trackUserTrustImpact = functions
   .runWith({ timeoutSeconds: 60 })
   .https
-  .onCall(async (data, context) => {
-    if (!context.auth) {
+  .onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 
@@ -560,7 +561,8 @@ async function calculateStoreSafetyRating(storeId: string): Promise<void> {
 
 export const pack392_getTrustScore = functions
   .https
-  .onCall(async (data, context) => {
+  .onCall(async (request) => {
+  const data = request.data;
     const trustDoc = await db.collection('appTrustScore').doc('current').get();
     
     if (!trustDoc.exists) {
@@ -572,7 +574,8 @@ export const pack392_getTrustScore = functions
 
 export const pack392_getStoreSafetyRating = functions
   .https
-  .onCall(async (data, context) => {
+  .onCall(async (request) => {
+  const data = request.data;
     const { storeId } = data;
     
     if (!storeId) {
@@ -591,8 +594,9 @@ export const pack392_getStoreSafetyRating = functions
 export const pack392_recalculateTrustScore = functions
   .runWith({ timeoutSeconds: 300 })
   .https
-  .onCall(async (data, context) => {
-    if (!context.auth?.token.admin) {
+  .onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth?.token.admin) {
       throw new functions.https.HttpsError('permission-denied', 'Admin required');
     }
 

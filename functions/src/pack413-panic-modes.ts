@@ -114,8 +114,8 @@ const DEFAULT_PANIC_MODES: Omit<PanicModeConfig, 'createdAt' | 'updatedAt'>[] = 
 /**
  * Initialize panic mode configs (run once during deployment)
  */
-export const pack413_initPanicModes = functions.https.onCall(async (data, context) => {
-  if (!context.auth || !await isAdmin(context.auth.uid)) {
+export const pack413_initPanicModes = functions.https.onCall(async (request) => {
+  if (!request.auth || !await isAdmin(request.auth.uid)) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -144,7 +144,8 @@ export const pack413_initPanicModes = functions.https.onCall(async (data, contex
 /**
  * Propose panic mode activation (called by alert system or admins)
  */
-export const pack413_proposePanicModeActivation = functions.https.onCall(async (data, context) => {
+export const pack413_proposePanicModeActivation = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { modeId, reason, triggeringAlerts = [], affectedRegions, userId } = data;
 
   if (!modeId || !reason) {
@@ -177,7 +178,7 @@ export const pack413_proposePanicModeActivation = functions.https.onCall(async (
       id: proposalId,
       modeId: modeId as PanicModeId,
       proposedAt: new Date().toISOString(),
-      proposedBy: userId || (context.auth ? 'USER' : 'SYSTEM'),
+      proposedBy: userId || (request.auth ? 'USER' : 'SYSTEM'),
       reason,
       triggeringAlerts: triggeringAlerts || [],
       affectedRegions,
@@ -209,8 +210,9 @@ export const pack413_proposePanicModeActivation = functions.https.onCall(async (
 /**
  * Activate panic mode (admin only)
  */
-export const pack413_activatePanicMode = functions.https.onCall(async (data: ActivatePanicModeRequest, context) => {
-  if (!context.auth || !await isAdmin(context.auth.uid)) {
+export const pack413_activatePanicMode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth || !await isAdmin(request.auth.uid)) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -252,7 +254,7 @@ export const pack413_activatePanicMode = functions.https.onCall(async (data: Act
       id: activeModeId,
       modeId: modeId as PanicModeId,
       activatedAt: new Date().toISOString(),
-      activatedBy: context.auth.uid,
+      activatedBy: request.auth.uid,
       reason,
       regionIds,
       autoActivated: false,
@@ -264,7 +266,7 @@ export const pack413_activatePanicMode = functions.https.onCall(async (data: Act
     // Log to audit (PACK 296)
     await db.collection('auditLogs').add({
       action: 'PANIC_MODE_ACTIVATED',
-      actorId: context.auth.uid,
+      actorId: request.auth.uid,
       actorType: 'USER',
       resource: 'PANIC_MODE',
       resourceId: activeModeId,
@@ -301,8 +303,9 @@ export const pack413_activatePanicMode = functions.https.onCall(async (data: Act
 /**
  * Deactivate panic mode (admin only)
  */
-export const pack413_deactivatePanicMode = functions.https.onCall(async (data: DeactivatePanicModeRequest, context) => {
-  if (!context.auth || !await isAdmin(context.auth.uid)) {
+export const pack413_deactivatePanicMode = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth || !await isAdmin(request.auth.uid)) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -330,7 +333,7 @@ export const pack413_deactivatePanicMode = functions.https.onCall(async (data: D
     // Update with deactivation info
     await activeModeDoc.ref.update({
       deactivatedAt: new Date().toISOString(),
-      deactivatedBy: context.auth.uid,
+      deactivatedBy: request.auth.uid,
       deactivationReason: reason,
       metadata: { ...activeMode.metadata, ...metadata },
     });
@@ -338,7 +341,7 @@ export const pack413_deactivatePanicMode = functions.https.onCall(async (data: D
     // Log to audit
     await db.collection('auditLogs').add({
       action: 'PANIC_MODE_DEACTIVATED',
-      actorId: context.auth.uid,
+      actorId: request.auth.uid,
       actorType: 'USER',
       resource: 'PANIC_MODE',
       resourceId: activeMode.id,
@@ -375,8 +378,9 @@ export const pack413_deactivatePanicMode = functions.https.onCall(async (data: D
 /**
  * Get all active panic modes
  */
-export const pack413_getActivePanicModes = functions.https.onCall(async (data, context) => {
-  if (!context.auth || !await isAdminOrService(context.auth.uid)) {
+export const pack413_getActivePanicModes = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth || !await isAdminOrService(request.auth.uid)) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -398,8 +402,9 @@ export const pack413_getActivePanicModes = functions.https.onCall(async (data, c
 /**
  * Get panic mode history
  */
-export const pack413_getPanicModeHistory = functions.https.onCall(async (data, context) => {
-  if (!context.auth || !await isAdminOrService(context.auth.uid)) {
+export const pack413_getPanicModeHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth || !await isAdminOrService(request.auth.uid)) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 

@@ -55,17 +55,18 @@ const RISK_THRESHOLDS = {
 /**
  * Run comprehensive AML scan on user
  */
-export const pack390_runAMLScan = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_runAMLScan = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   const { userId, triggeredBy } = data;
-  const scanUserId = userId || context.auth.uid;
+  const scanUserId = userId || request.auth.uid;
   
   // Check if requester has permission to scan others
-  if (userId && userId !== context.auth.uid) {
-    const requesterDoc = await db.collection('users').doc(context.auth.uid).get();
+  if (userId && userId !== request.auth.uid) {
+    const requesterDoc = await db.collection('users').doc(request.auth.uid).get();
     const isAuthorized = requesterDoc.exists && 
       (requesterDoc.data()?.role === 'admin' || requesterDoc.data()?.permissions?.compliance === true);
     
@@ -220,8 +221,9 @@ export const pack390_autoAMLScanOnPayout = functions.firestore
 /**
  * Escalate financial risk to compliance team
  */
-export const pack390_escalateFinancialRisk = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack390_escalateFinancialRisk = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -241,7 +243,7 @@ export const pack390_escalateFinancialRisk = functions.https.onCall(async (data,
       reason,
       evidence: evidence || {},
       status: AMLAlertStatus.ESCALATED,
-      escalatedBy: context.auth.uid,
+      escalatedBy: request.auth.uid,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
     
@@ -259,7 +261,7 @@ export const pack390_escalateFinancialRisk = functions.https.onCall(async (data,
       userId,
       alertId: alertRef.id,
       reason,
-      escalatedBy: context.auth.uid,
+      escalatedBy: request.auth.uid,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
     

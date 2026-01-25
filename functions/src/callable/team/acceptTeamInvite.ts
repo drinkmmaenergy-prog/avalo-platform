@@ -22,22 +22,19 @@ interface AcceptTeamInviteResponse {
   error?: string;
 }
 
-export const acceptTeamInvite = functions.https.onCall(
-  async (
-    data: AcceptTeamInviteRequest,
-    context: functions.https.CallableContext
-  ): Promise<AcceptTeamInviteResponse> => {
+export const acceptTeamInvite = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
 
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { inviteToken } = data;
 
       if (!inviteToken) {

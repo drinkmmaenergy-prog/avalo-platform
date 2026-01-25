@@ -147,16 +147,16 @@ export interface ExpansionReadinessScore {
 /**
  * Update regional expansion status
  */
-export const pack381_updateExpansionStatus = functions.https.onCall(
-  async (data: Partial<RegionExpansionStatus>, context) => {
-    if (!context.auth) {
+export const pack381_updateExpansionStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'admin' && userData?.role !== 'super_admin') {
@@ -182,7 +182,7 @@ export const pack381_updateExpansionStatus = functions.https.onCall(
       metadata: {
         ...data.metadata,
         lastUpdated: now,
-        updatedBy: context.auth.uid,
+        updatedBy: request.auth.uid,
       },
     };
 
@@ -199,9 +199,9 @@ export const pack381_updateExpansionStatus = functions.https.onCall(
 /**
  * Automatically calculate and update growth metrics
  */
-export const pack381_calculateGrowthMetrics = functions.https.onCall(
-  async (data: { regionId: string }, context) => {
-    if (!context.auth) {
+export const pack381_calculateGrowthMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
@@ -283,16 +283,16 @@ export const pack381_calculateGrowthMetrics = functions.https.onCall(
 /**
  * Calculate expansion readiness score
  */
-export const pack381_expansionReadinessScore = functions.https.onCall(
-  async (data: { regionId: string }, context) => {
-    if (!context.auth) {
+export const pack381_expansionReadinessScore = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'admin') {
@@ -542,16 +542,16 @@ export const pack381_expansionReadinessScore = functions.https.onCall(
 /**
  * Get expansion overview for all regions
  */
-export const pack381_getExpansionOverview = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack381_getExpansionOverview = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'
       );
     }
 
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
     if (userData?.role !== 'admin') {
@@ -603,9 +603,9 @@ export const pack381_getExpansionOverview = functions.https.onCall(
 /**
  * Language availability matrix
  */
-export const pack381_languageAvailabilityMatrix = functions.https.onCall(
-  async (data, context) => {
-    if (!context.auth) {
+export const pack381_languageAvailabilityMatrix = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated'

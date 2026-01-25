@@ -334,8 +334,9 @@ class GoogleAdsAPI {
 // CLOUD FUNCTIONS
 // ===========================
 
-export const syncGoogleCampaign = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const syncGoogleCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -401,8 +402,9 @@ export const syncGoogleCampaign = functions.https.onCall(async (data, context) =
   }
 });
 
-export const updateGoogleCampaignBudget = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateGoogleCampaignBudget = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -433,8 +435,9 @@ export const updateGoogleCampaignBudget = functions.https.onCall(async (data, co
   }
 });
 
-export const uploadGoogleAssets = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const uploadGoogleAssets = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -584,7 +587,8 @@ export const syncGoogleStats = functions.pubsub
 // CONVERSION TRACKING
 // ===========================
 
-export const trackGoogleConversion = functions.https.onCall(async (data, context) => {
+export const trackGoogleConversion = functions.https.onCall(async (request) => {
+  const data = request.data;
   const { conversionAction, userId, conversionValue } = data;
 
   // Get Google Ads account

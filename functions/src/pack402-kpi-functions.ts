@@ -81,9 +81,10 @@ async function isAdmin(uid: string): Promise<boolean> {
  * HTTPS Callable: Get KPIs for date range
  * Admin-only access
  */
-export const pack402_getKpis = functions.https.onCall(async (data, context) => {
+export const pack402_getKpis = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Auth check
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError(
       'unauthenticated',
       'Must be authenticated to fetch KPIs'
@@ -91,7 +92,7 @@ export const pack402_getKpis = functions.https.onCall(async (data, context) => {
   }
 
   // Admin check
-  const adminCheck = await isAdmin(context.auth.uid);
+  const adminCheck = await isAdmin(request.auth.uid);
   if (!adminCheck) {
     throw new functions.https.HttpsError(
       'permission-denied',
@@ -171,9 +172,10 @@ export const pack402_backfillDailyKpis = functions
     timeoutSeconds: 540, // 9 minutes
     memory: '2GB',
   })
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Auth check
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated to backfill KPIs'
@@ -181,7 +183,7 @@ export const pack402_backfillDailyKpis = functions
     }
 
     // Admin check
-    const adminCheck = await isAdmin(context.auth.uid);
+    const adminCheck = await isAdmin(request.auth.uid);
     if (!adminCheck) {
       throw new functions.https.HttpsError(
         'permission-denied',

@@ -93,8 +93,9 @@ export interface CohortAnalysis {
 // INSTALL ATTRIBUTION
 // ===========================
 
-export const trackInstall = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const trackInstall = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Auth required');
   }
 
@@ -109,7 +110,7 @@ export const trackInstall = functions.https.onCall(async (data, context) => {
     deviceInfo 
   } = data;
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Check if already tracked
   const existingAttribution = await db.collection('ua_attributions')
@@ -190,13 +191,14 @@ export const trackInstall = functions.https.onCall(async (data, context) => {
 // JOURNEY EVENT TRACKING
 // ===========================
 
-export const trackJourneyEvent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const trackJourneyEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Auth required');
   }
 
   const { eventType, revenue, metadata } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Get or create journey
   const journeyDoc = await db.collection('ua_user_journeys').doc(userId).get();
@@ -539,8 +541,9 @@ export const updateCampaignLTVOptimization = functions.firestore
 // ANALYTICS ENDPOINTS
 // ===========================
 
-export const getAttributionReport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getAttributionReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -584,8 +587,9 @@ export const getAttributionReport = functions.https.onCall(async (data, context)
   };
 });
 
-export const getLTVReport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getLTVReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 

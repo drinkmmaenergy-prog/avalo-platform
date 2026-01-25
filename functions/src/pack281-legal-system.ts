@@ -50,12 +50,8 @@ interface UserLegalAcceptances {
  * Get all legal documents or specific ones
  * Includes version information and language-specific content
  */
-export const getLegalDocuments = functions.https.onCall(
-  async (data: { 
-    docIds?: LegalDocType[];
-    language?: LegalLanguage;
-    requiredOnly?: boolean;
-  }, context) => {
+export const getLegalDocuments = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       const { docIds, language = 'en', requiredOnly = false } = data;
 
@@ -106,25 +102,17 @@ export const getLegalDocuments = functions.https.onCall(
  * Accept one or more legal documents
  * Records version, language, timestamp, and optional audit info
  */
-export const acceptLegalDocuments = functions.https.onCall(
-  async (data: {
-    acceptances: Array<{
-      docId: LegalDocType;
-      version: number;
-      language: LegalLanguage;
-    }>;
-    ipAddress?: string;
-    userAgent?: string;
-  }, context) => {
+export const acceptLegalDocuments = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated to accept legal documents'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { acceptances, ipAddress, userAgent } = data;
 
     // Validate input
@@ -238,17 +226,17 @@ export const acceptLegalDocuments = functions.https.onCall(
  * Check if user has accepted all required legal documents
  * Returns compliance status and any missing/outdated docs
  */
-export const checkLegalCompliance = functions.https.onCall(
-  async (data: { language?: LegalLanguage }, context) => {
+export const checkLegalCompliance = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated to check legal compliance'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const { language = 'en' } = data;
 
     try {
@@ -328,17 +316,17 @@ export const checkLegalCompliance = functions.https.onCall(
  * Get user's legal acceptance history
  * For display in Legal Center
  */
-export const getUserLegalAcceptances = functions.https.onCall(
-  async (data: {}, context) => {
+export const getUserLegalAcceptances = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       const acceptanceDoc = await db.collection('legalAcceptances').doc(userId).get();
@@ -397,7 +385,7 @@ export const adminCreateLegalDocument = functions.https.onCall(
     effectiveAt?: string;
   }, context) => {
     // Require authentication and admin role
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -405,7 +393,7 @@ export const adminCreateLegalDocument = functions.https.onCall(
     }
 
     // Check if user is admin
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError(
         'permission-denied',
@@ -438,7 +426,7 @@ export const adminCreateLegalDocument = functions.https.onCall(
 
       await docRef.set(documentData);
 
-      console.log(`Legal document ${docId} version ${version} ${existingDoc.exists ? 'updated' : 'created'} by admin ${context.auth.uid}`);
+      console.log(`Legal document ${docId} version ${version} ${existingDoc.exists ? 'updated' : 'created'} by admin ${request.auth.uid}`);
 
       return {
         success: true,

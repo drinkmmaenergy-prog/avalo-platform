@@ -444,13 +444,14 @@ export const generateMonthlyStatements = functions.pubsub
 /**
  * Get creator's tax statement for a specific period
  */
-export const getCreatorStatement = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getCreatorStatement = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   const { year, month } = data;
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
   
   if (!year || !month) {
     throw new functions.https.HttpsError('invalid-argument', 'Year and month required');
@@ -467,13 +468,14 @@ export const getCreatorStatement = functions.https.onCall(async (data, context) 
 /**
  * Export creator's tax statement in specified format
  */
-export const exportStatement = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const exportStatement = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   const { year, month, format } = data;
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
   
   if (!year || !month || !format) {
     throw new functions.https.HttpsError('invalid-argument', 'Year, month, and format required');
@@ -511,13 +513,14 @@ export const exportStatement = functions.https.onCall(async (data, context) => {
 /**
  * Get creator's annual tax summary
  */
-export const getAnnualSummary = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getAnnualSummary = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
   const { year } = data;
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
   
   if (!year) {
     throw new functions.https.HttpsError('invalid-argument', 'Year required');
@@ -534,12 +537,13 @@ export const getAnnualSummary = functions.https.onCall(async (data, context) => 
 /**
  * List all available tax statements for creator
  */
-export const listCreatorStatements = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const listCreatorStatements = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const creatorId = context.auth.uid;
+  const creatorId = request.auth.uid;
   
   const statements = await db.collection('tax_statements')
     .where('userId', '==', creatorId)

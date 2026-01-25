@@ -139,8 +139,9 @@ const db = admin.firestore();
 /**
  * Create campaign
  */
-export const createCampaign = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const createCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -179,7 +180,7 @@ export const createCampaign = functions.https.onCall(async (data, context) => {
     trackingUrls: data.trackingUrls || {},
     metadata: data.metadata || {},
     createdAt: admin.firestore.Timestamp.now(),
-    createdBy: context.auth.uid,
+    createdBy: request.auth.uid,
   };
 
   await db.collection('campaigns').doc(campaignId).set(campaign);
@@ -190,8 +191,9 @@ export const createCampaign = functions.https.onCall(async (data, context) => {
 /**
  * Update campaign status
  */
-export const updateCampaignStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const updateCampaignStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -227,8 +229,9 @@ export const updateCampaignStatus = functions.https.onCall(async (data, context)
 /**
  * Track campaign performance
  */
-export const trackCampaignPerformance = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const trackCampaignPerformance = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -276,8 +279,9 @@ export const trackCampaignPerformance = functions.https.onCall(async (data, cont
 /**
  * Create influencer cohort
  */
-export const createInfluencerCohort = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const createInfluencerCohort = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -318,12 +322,13 @@ export const createInfluencerCohort = functions.https.onCall(async (data, contex
 /**
  * Predict LTV for user
  */
-export const predictUserLTV = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const predictUserLTV = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const userDoc = await db.collection('users').doc(userId).get();
 
   if (!userDoc.exists) {
@@ -524,8 +529,9 @@ export const calculateCampaignROI = functions.pubsub.schedule('every 24 hours').
 /**
  * Get campaign dashboard data
  */
-export const getCampaignDashboard = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const getCampaignDashboard = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 

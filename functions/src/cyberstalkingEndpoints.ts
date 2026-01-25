@@ -44,8 +44,9 @@ const db = admin.firestore();
 /**
  * Analyze message for stalking behavior (called by chat system)
  */
-export const pack175_analyzeMessage = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack175_analyzeMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -91,8 +92,9 @@ export const pack175_analyzeMessage = functions.https.onCall(async (data, contex
 /**
  * Analyze obsession patterns for user pair
  */
-export const pack175_analyzeObsessionPatterns = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack175_analyzeObsessionPatterns = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -127,12 +129,13 @@ export const pack175_analyzeObsessionPatterns = functions.https.onCall(async (da
 /**
  * Validate location sharing request
  */
-export const pack175_validateLocationShare = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack175_validateLocationShare = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { partnerId, sessionId } = data;
   
   if (!partnerId) {
@@ -155,12 +158,13 @@ export const pack175_validateLocationShare = functions.https.onCall(async (data,
 /**
  * Check if user can access location
  */
-export const pack175_canAccessLocation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack175_canAccessLocation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const requesterId = context.auth.uid;
+  const requesterId = request.auth.uid;
   const { targetUserId } = data;
   
   if (!targetUserId) {
@@ -183,12 +187,13 @@ export const pack175_canAccessLocation = functions.https.onCall(async (data, con
 /**
  * Validate event check-in with safety delay
  */
-export const pack175_validateEventCheckIn = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack175_validateEventCheckIn = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { eventId } = data;
   
   if (!eventId) {
@@ -216,12 +221,13 @@ export const pack175_validateEventCheckIn = functions.https.onCall(async (data, 
 /**
  * Validate media share (photos, videos, etc.)
  */
-export const pack175_validateMediaShare = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack175_validateMediaShare = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const senderId = context.auth.uid;
+  const senderId = request.auth.uid;
   const { recipientId, mediaType, context: shareContext } = data;
   
   if (!recipientId || !mediaType) {
@@ -250,12 +256,12 @@ export const pack175_validateMediaShare = functions.https.onCall(async (data, co
 /**
  * Get education status for user
  */
-export const pack175_getEducationStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack175_getEducationStatus = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   
   try {
     const locationEducation = await needsLocationEducation(userId);
@@ -277,12 +283,13 @@ export const pack175_getEducationStatus = functions.https.onCall(async (data, co
 /**
  * Mark education as completed
  */
-export const pack175_markEducationComplete = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack175_markEducationComplete = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { educationType, violationType } = data;
   
   try {
@@ -305,8 +312,9 @@ export const pack175_markEducationComplete = functions.https.onCall(async (data,
 /**
  * Get educational content for display
  */
-export const pack175_getEducationalContent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack175_getEducationalContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -345,8 +353,9 @@ export const pack175_resolveStalkingCase = resolveStalkingCase;
 /**
  * Get stalking cases for moderation (admin only)
  */
-export const pack175_admin_getStalkingCases = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack175_admin_getStalkingCases = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -385,8 +394,9 @@ export const pack175_admin_getStalkingCases = functions.https.onCall(async (data
 /**
  * Get analytics for cyberstalking system
  */
-export const pack175_admin_getAnalytics = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack175_admin_getAnalytics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   

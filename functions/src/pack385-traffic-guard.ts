@@ -70,9 +70,10 @@ const TRAFFIC_LEVELS = {
  * Set traffic protection level
  * Admin-only function
  */
-export const pack385_setTrafficLevel = functions.https.onCall(async (data, context) => {
+export const pack385_setTrafficLevel = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin authentication required
-  if (!context.auth || !context.auth.token?.admin) {
+  if (!request.auth || !request.auth.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -104,7 +105,7 @@ export const pack385_setTrafficLevel = functions.https.onCall(async (data, conte
   await db.collection('auditLogs').add({
     type: 'TRAFFIC_LEVEL_CHANGE',
     severity: level === 'CRITICAL' ? 'CRITICAL' : 'HIGH',
-    userId: context.auth.uid,
+    userId: request.auth.uid,
     data: {
       level,
       reason: reason || 'Manual adjustment',
@@ -123,8 +124,9 @@ export const pack385_setTrafficLevel = functions.https.onCall(async (data, conte
 /**
  * Get current traffic guard configuration
  */
-export const pack385_getTrafficGuard = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_getTrafficGuard = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -144,13 +146,14 @@ export const pack385_getTrafficGuard = functions.https.onCall(async (data, conte
 /**
  * Check if user action is within traffic limits
  */
-export const pack385_checkTrafficLimit = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack385_checkTrafficLimit = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { action } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Get traffic guard config
   const guardDoc = await db.collection('launchTrafficGuards').doc('global').get();
@@ -265,9 +268,10 @@ async function checkAILimit(userId: string, maxPerMinute: number): Promise<boole
 /**
  * Dynamic traffic protection based on system load
  */
-export const pack385_dynamicTrafficProtection = functions.https.onCall(async (data, context) => {
+export const pack385_dynamicTrafficProtection = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin or system authentication required
-  if (!context.auth || !context.auth.token?.admin) {
+  if (!request.auth || !request.auth.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -370,9 +374,10 @@ async function getSystemMetrics(): Promise<{
 /**
  * Throttle user temporarily for violations
  */
-export const pack385_throttleUser = functions.https.onCall(async (data, context) => {
+export const pack385_throttleUser = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Admin authentication required
-  if (!context.auth || !context.auth.token?.admin) {
+  if (!request.auth || !request.auth.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -387,7 +392,7 @@ export const pack385_throttleUser = functions.https.onCall(async (data, context)
   await db.collection('userThrottles').doc(userId).set({
     throttledUntil: throttleUntil,
     reason: reason || 'Traffic violation',
-    throttledBy: context.auth.uid,
+    throttledBy: request.auth.uid,
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 

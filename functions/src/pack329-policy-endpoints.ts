@@ -102,13 +102,14 @@ async function isAdmin(userId: string): Promise<boolean> {
 /**
  * Validate content before upload/publish
  */
-export const pack329_validateContent = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack329_validateContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   const { surface, platform, contentType, isPrivate } = data;
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   if (!surface || !platform || !contentType) {
     throw new functions.https.HttpsError(
@@ -215,12 +216,13 @@ export const pack329_validateContent = functions.https.onCall(async (data, conte
 /**
  * Get effective content policy for user
  */
-export const pack329_getPolicy = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack329_getPolicy = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const region = await getUserRegion(userId);
@@ -258,8 +260,9 @@ export const pack329_getPolicy = functions.https.onCall(async (data, context) =>
 /**
  * Report a policy violation
  */
-export const pack329_reportViolation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack329_reportViolation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -272,7 +275,7 @@ export const pack329_reportViolation = functions.https.onCall(async (data, conte
     description,
   } = data;
 
-  const reporterId = context.auth.uid;
+  const reporterId = request.auth.uid;
 
   if (!targetUserId || !violationType || !surface) {
     throw new functions.https.HttpsError(
@@ -337,13 +340,14 @@ export const pack329_reportViolation = functions.https.onCall(async (data, conte
 /**
  * Get user's violation history (own violations only, or admin)
  */
-export const pack329_getViolations = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack329_getViolations = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = data.userId || context.auth.uid;
-  const requesterId = context.auth.uid;
+  const userId = data.userId || request.auth.uid;
+  const requesterId = request.auth.uid;
 
   // Check if user can view violations
   const isAdminUser = await isAdmin(requesterId);
@@ -386,12 +390,13 @@ export const pack329_getViolations = functions.https.onCall(async (data, context
 /**
  * Update content policy (admin only)
  */
-export const pack329_admin_updatePolicy = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack329_admin_updatePolicy = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const isAdminUser = await isAdmin(context.auth.uid);
+  const isAdminUser = await isAdmin(request.auth.uid);
   
   if (!isAdminUser) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
@@ -412,10 +417,10 @@ export const pack329_admin_updatePolicy = functions.https.onCall(async (data, co
     await policyRef.update({
       [`regions.${region}`]: policyUpdates,
       'metadata.updatedAt': admin.firestore.FieldValue.serverTimestamp(),
-      'metadata.updatedBy': context.auth.uid,
+      'metadata.updatedBy': request.auth.uid,
     });
 
-    console.log(`Policy updated for region ${region} by ${context.auth.uid}`);
+    console.log(`Policy updated for region ${region} by ${request.auth.uid}`);
 
     return {
       success: true,
@@ -434,12 +439,12 @@ export const pack329_admin_updatePolicy = functions.https.onCall(async (data, co
 /**
  * Seed initial policy configuration (admin only, run once)
  */
-export const pack329_admin_seedPolicy = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack329_admin_seedPolicy = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const isAdminUser = await isAdmin(context.auth.uid);
+  const isAdminUser = await isAdmin(request.auth.uid);
   
   if (!isAdminUser) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');

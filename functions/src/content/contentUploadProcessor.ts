@@ -55,16 +55,17 @@ export const processContentUpload = functions
     timeoutSeconds: 300,
     memory: '2GB'
   })
-  .https.onCall(async (data: MediaUploadRequest, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Authentication check
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     if (data.userId !== userId) {
       throw new functions.https.HttpsError(
         'permission-denied',

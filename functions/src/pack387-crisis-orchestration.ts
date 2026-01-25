@@ -82,9 +82,9 @@ export const pack387_crisisResponseOrchestrator = functions.firestore
 /**
  * Manually trigger crisis orchestration
  */
-export const pack387_triggerCrisisOrchestration = functions.https.onCall(
-  async (data: { incidentId: string }, context) => {
-    if (!context.auth) {
+export const pack387_triggerCrisisOrchestration = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -343,9 +343,9 @@ async function notifyLegalAndExecutive(incidentId: string, incident: any): Promi
 /**
  * Deactivate crisis measures when incident is resolved
  */
-export const pack387_deactivateCrisisMeasures = functions.https.onCall(
-  async (data: { incidentId: string }, context) => {
-    if (!context.auth) {
+export const pack387_deactivateCrisisMeasures = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -361,7 +361,7 @@ export const pack387_deactivateCrisisMeasures = functions.https.onCall(
         doc.ref.update({
           status: 'ACTIVE',
           resumedAt: admin.firestore.Timestamp.now(),
-          resumedBy: context.auth!.uid,
+          resumedBy: request.auth!.uid,
         })
       );
 
@@ -378,7 +378,7 @@ export const pack387_deactivateCrisisMeasures = functions.https.onCall(
         doc.ref.update({
           active: false,
           deactivatedAt: admin.firestore.Timestamp.now(),
-          deactivatedBy: context.auth!.uid,
+          deactivatedBy: request.auth!.uid,
         })
       );
 
@@ -393,7 +393,7 @@ export const pack387_deactivateCrisisMeasures = functions.https.onCall(
         actionType: 'CRISIS_MEASURES_DEACTIVATED',
         status: 'SUCCESS',
         timestamp: admin.firestore.Timestamp.now(),
-        performedBy: context.auth.uid,
+        performedBy: request.auth.uid,
       });
 
       return { success: true };

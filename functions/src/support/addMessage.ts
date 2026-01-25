@@ -21,18 +21,18 @@ import { HttpsError, auth, logger, onCall, timestamp } from '../runtime';
 
 const db = admin.firestore();
 
-export const addMessage = functions.https.onCall(
-  async (data: AddMessageRequest, context): Promise<AddMessageResponse> => {
+export const addMessage = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Authentication check
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated to add a message'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { ticketId, body, internal } = data;
 
       // Validation
@@ -196,7 +196,7 @@ export const addMessage = functions.https.onCall(
     } catch (error: any) {
       functions.logger.error('Error adding message to ticket', {
         error: error.message,
-        userId: context.auth?.uid,
+        userId: request.auth?.uid,
       });
 
       if (error instanceof functions.https.HttpsError) {

@@ -15,9 +15,10 @@ import { HttpsError, admin, auth, onCall } from './runtime';
  * GET /royal/state?userId=...
  * Returns user's Royal Club membership state
  */
-export const royal_getState = functions.https.onCall(async (data, context) => {
+export const royal_getState = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Users can only query their own state (unless admin)
-  const requesterId = context.auth?.uid;
+  const requesterId = request.auth?.uid;
   const targetUserId = data.userId;
 
   if (!requesterId) {
@@ -69,8 +70,9 @@ export const royal_getState = functions.https.onCall(async (data, context) => {
  * GET /royal/preview?userId=...
  * Returns preview of next tier and tokens needed
  */
-export const royal_getPreview = functions.https.onCall(async (data, context) => {
-  const requesterId = context.auth?.uid;
+export const royal_getPreview = functions.https.onCall(async (request) => {
+  const data = request.data;
+  const requesterId = request.auth?.uid;
   const targetUserId = data.userId;
 
   if (!requesterId) {
@@ -103,8 +105,9 @@ export const royal_getPreview = functions.https.onCall(async (data, context) => 
 /**
  * Manual recompute (for debugging/admin)
  */
-export const royal_recompute = functions.https.onCall(async (data, context) => {
-  const requesterId = context.auth?.uid;
+export const royal_recompute = functions.https.onCall(async (request) => {
+  const data = request.data;
+  const requesterId = request.auth?.uid;
   const targetUserId = data.userId;
 
   if (!requesterId) {
@@ -138,8 +141,9 @@ export const royal_recompute = functions.https.onCall(async (data, context) => {
  * Record token spend for Royal Club tracking
  * Called from mobile when tokens are spent
  */
-export const royal_recordSpend = functions.https.onCall(async (data, context) => {
-  const requesterId = context.auth?.uid;
+export const royal_recordSpend = functions.https.onCall(async (request) => {
+  const data = request.data;
+  const requesterId = request.auth?.uid;
   const { userId, tokensSpent } = data;
 
   if (!requesterId) {

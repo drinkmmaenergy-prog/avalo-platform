@@ -244,25 +244,22 @@ async function createAuditLog(
 /**
  * Get withdrawable tokens for a user
  */
-export const withdrawals_getWithdrawableTokens = functions.https.onCall(
-  async (
-    data: GetWithdrawableTokensRequest,
-    context
-  ): Promise<GetWithdrawableTokensResponse> => {
+export const withdrawals_getWithdrawableTokens = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Auth check
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
         };
       }
 
-      const userId = data.userId || context.auth.uid;
+      const userId = data.userId || request.auth.uid;
 
       // Security: Only own data or admin
-      if (userId !== context.auth.uid) {
-        const userDoc = await db.collection('users').doc(context.auth.uid).get();
+      if (userId !== request.auth.uid) {
+        const userDoc = await db.collection('users').doc(request.auth.uid).get();
         if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
           return {
             success: false,
@@ -311,14 +308,11 @@ export const withdrawals_getWithdrawableTokens = functions.https.onCall(
 /**
  * Create a withdrawal request
  */
-export const withdrawals_createRequest = functions.https.onCall(
-  async (
-    data: CreateWithdrawalRequest,
-    context
-  ): Promise<CreateWithdrawalResponse> => {
+export const withdrawals_createRequest = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Auth check
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
@@ -326,7 +320,7 @@ export const withdrawals_createRequest = functions.https.onCall(
         };
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { requestedTokens } = data;
 
       // Validate input
@@ -460,25 +454,22 @@ export const withdrawals_createRequest = functions.https.onCall(
 /**
  * Get withdrawal history for a user
  */
-export const withdrawals_getHistory = functions.https.onCall(
-  async (
-    data: GetWithdrawalHistoryRequest,
-    context
-  ): Promise<GetWithdrawalHistoryResponse> => {
+export const withdrawals_getHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
         };
       }
 
-      const userId = data.userId || context.auth.uid;
+      const userId = data.userId || request.auth.uid;
       const limit = data.limit || 20;
 
       // Security check
-      if (userId !== context.auth.uid) {
-        const userDoc = await db.collection('users').doc(context.auth.uid).get();
+      if (userId !== request.auth.uid) {
+        const userDoc = await db.collection('users').doc(request.auth.uid).get();
         if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
           return {
             success: false,
@@ -525,24 +516,21 @@ export const withdrawals_getHistory = functions.https.onCall(
 /**
  * Get monthly withdrawal limits status
  */
-export const withdrawals_getMonthlyLimits = functions.https.onCall(
-  async (
-    data: GetMonthlyLimitsRequest,
-    context
-  ): Promise<GetMonthlyLimitsResponse> => {
+export const withdrawals_getMonthlyLimits = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         return {
           success: false,
           error: 'Authentication required',
         };
       }
 
-      const userId = data.userId || context.auth.uid;
+      const userId = data.userId || request.auth.uid;
 
       // Security check
-      if (userId !== context.auth.uid) {
-        const userDoc = await db.collection('users').doc(context.auth.uid).get();
+      if (userId !== request.auth.uid) {
+        const userDoc = await db.collection('users').doc(request.auth.uid).get();
         if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
           return {
             success: false,

@@ -76,8 +76,9 @@ export interface BudgetAllocation {
 // CAMPAIGN CREATION
 // ===========================
 
-export const createCampaign = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const createCampaign = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -139,7 +140,7 @@ export const createCampaign = functions.https.onCall(async (data, context) => {
     campaignId: campaignConfig.id,
     platform,
     country,
-    adminUid: context.auth.uid,
+    adminUid: request.auth.uid,
     timestamp: admin.firestore.Timestamp.now()
   });
 
@@ -154,8 +155,9 @@ export const createCampaign = functions.https.onCall(async (data, context) => {
 // CAMPAIGN MANAGEMENT
 // ===========================
 
-export const updateCampaignStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateCampaignStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -176,15 +178,16 @@ export const updateCampaignStatus = functions.https.onCall(async (data, context)
     campaignId,
     newStatus: status,
     reason: reason || 'manual',
-    adminUid: context.auth.uid,
+    adminUid: request.auth.uid,
     timestamp: admin.firestore.Timestamp.now()
   });
 
   return { success: true };
 });
 
-export const updateCampaignBudget = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const updateCampaignBudget = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -211,7 +214,7 @@ export const updateCampaignBudget = functions.https.onCall(async (data, context)
     campaignId,
     dailyBudget,
     totalBudget,
-    adminUid: context.auth.uid,
+    adminUid: request.auth.uid,
     timestamp: admin.firestore.Timestamp.now()
   });
 
@@ -340,8 +343,9 @@ async function getAverageCPI(platform: string, country: string): Promise<number>
 // BUDGET ROUTING & OPTIMIZATION
 // ===========================
 
-export const calculateBudgetAllocation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const calculateBudgetAllocation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
@@ -444,7 +448,7 @@ export const calculateBudgetAllocation = functions.https.onCall(async (data, con
   await db.collection('ua_budget_allocations').add({
     allocation,
     timestamp: admin.firestore.Timestamp.now(),
-    createdBy: context.auth.uid
+    createdBy: request.auth.uid
   });
 
   return allocation;

@@ -90,17 +90,17 @@ async function logSnapshotAudit(auditLog: SnapshotAuditLog): Promise<void> {
  * POST /admin/legal/snapshots
  * Create a new legal snapshot request
  */
-export const createLegalSnapshot = functions.https.onCall(
-  async (data: CreateSnapshotRequest, context) => {
+export const createLegalSnapshot = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Check authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
     
-    const adminId = context.auth.uid;
+    const adminId = request.auth.uid;
     
     // Validate request data
     if (!data.type || !data.period || !data.format) {
@@ -215,22 +215,17 @@ export const createLegalSnapshot = functions.https.onCall(
  * GET /admin/legal/snapshots (list)
  * List legal snapshots with filtering
  */
-export const listLegalSnapshots = functions.https.onCall(
-  async (data: {
-    type?: SnapshotType;
-    status?: string;
-    limit?: number;
-    offset?: number;
-  }, context) => {
+export const listLegalSnapshots = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Check authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
     
-    const adminId = context.auth.uid;
+    const adminId = request.auth.uid;
     
     try {
       // Get admin role
@@ -306,17 +301,17 @@ export const listLegalSnapshots = functions.https.onCall(
  * GET /admin/legal/snapshots/:id
  * Get a specific snapshot by ID
  */
-export const getLegalSnapshot = functions.https.onCall(
-  async (data: { snapshotId: string }, context) => {
+export const getLegalSnapshot = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Check authentication
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
     
-    const adminId = context.auth.uid;
+    const adminId = request.auth.uid;
     
     if (!data.snapshotId) {
       throw new functions.https.HttpsError(

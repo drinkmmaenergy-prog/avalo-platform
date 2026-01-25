@@ -31,12 +31,13 @@ import { HttpsError, admin, auth, db, onCall, serverTimestamp, timestamp } from 
 /**
  * Start safety tracking session after QR check-in
  */
-export const pack210_startSafetySession = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_startSafetySession = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const result = await startSafetySession({
@@ -63,12 +64,13 @@ export const pack210_startSafetySession = functions.https.onCall(async (data, co
 /**
  * End safety tracking session
  */
-export const pack210_endSafetySession = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_endSafetySession = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const result = await endSafetySession({
@@ -87,12 +89,13 @@ export const pack210_endSafetySession = functions.https.onCall(async (data, cont
 /**
  * Update location during active safety session
  */
-export const pack210_updateLocation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_updateLocation = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const result = await updateLocation({
@@ -121,12 +124,13 @@ export const pack210_updateLocation = functions.https.onCall(async (data, contex
 /**
  * Add or update trusted contact
  */
-export const pack210_manageTrustedContact = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_manageTrustedContact = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Validate relationship enum
   if (!Object.values(TrustedContactRelationship).includes(data.relationship)) {
@@ -166,12 +170,13 @@ export const pack210_manageTrustedContact = functions.https.onCall(async (data, 
 /**
  * Remove trusted contact
  */
-export const pack210_removeTrustedContact = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_removeTrustedContact = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const result = await removeTrustedContact({
@@ -189,12 +194,13 @@ export const pack210_removeTrustedContact = functions.https.onCall(async (data, 
 /**
  * Get user's trusted contacts
  */
-export const pack210_getTrustedContacts = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_getTrustedContacts = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const { db } = await import('./init');
@@ -229,12 +235,13 @@ export const pack210_getTrustedContacts = functions.https.onCall(async (data, co
 /**
  * Trigger panic alert (Tier 1 or Tier 2)
  */
-export const pack210_triggerPanicAlert = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_triggerPanicAlert = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Validate tier
   if (!Object.values(PanicAlertTier).includes(data.tier)) {
@@ -267,12 +274,13 @@ export const pack210_triggerPanicAlert = functions.https.onCall(async (data, con
 /**
  * Respond to "Are You Safe?" safety check
  */
-export const pack210_respondToSafetyCheck = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_respondToSafetyCheck = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   // Validate response
   if (!['SAFE', 'NEED_HELP'].includes(data.response)) {
@@ -296,12 +304,13 @@ export const pack210_respondToSafetyCheck = functions.https.onCall(async (data, 
 /**
  * Get active safety session for user
  */
-export const pack210_getActiveSafetySession = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_getActiveSafetySession = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const { db } = await import('./init');
@@ -341,14 +350,15 @@ export const pack210_getActiveSafetySession = functions.https.onCall(async (data
 /**
  * Get all active safety sessions (admin only)
  */
-export const pack210_admin_getActiveSessions = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_admin_getActiveSessions = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Verify admin or safety team role
   const { db } = await import('./init');
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userData = userDoc.data();
 
   if (!userData?.roles?.admin && !userData?.roles?.safety_team) {
@@ -373,14 +383,15 @@ export const pack210_admin_getActiveSessions = functions.https.onCall(async (dat
 /**
  * Get panic alerts (admin only)
  */
-export const pack210_admin_getPanicAlerts = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_admin_getPanicAlerts = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Verify admin or safety team role
   const { db } = await import('./init');
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userData = userDoc.data();
 
   if (!userData?.roles?.admin && !userData?.roles?.safety_team) {
@@ -407,14 +418,15 @@ export const pack210_admin_getPanicAlerts = functions.https.onCall(async (data, 
 /**
  * Resolve panic alert (safety team only)
  */
-export const pack210_admin_resolvePanicAlert = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_admin_resolvePanicAlert = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Verify admin or safety team role
   const { db } = await import('./init');
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userData = userDoc.data();
 
   if (!userData?.roles?.admin && !userData?.roles?.safety_team) {
@@ -424,7 +436,7 @@ export const pack210_admin_resolvePanicAlert = functions.https.onCall(async (dat
   try {
     const result = await resolvePanicAlert({
       alertId: data.alertId,
-      resolvedBy: context.auth.uid,
+      resolvedBy: request.auth.uid,
       resolution: data.resolution,
       notes: data.notes,
     });
@@ -439,14 +451,15 @@ export const pack210_admin_resolvePanicAlert = functions.https.onCall(async (dat
 /**
  * Get safety event logs (admin only)
  */
-export const pack210_admin_getSafetyLogs = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack210_admin_getSafetyLogs = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Verify admin or safety team role
   const { db } = await import('./init');
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userData = userDoc.data();
 
   if (!userData?.roles?.admin && !userData?.roles?.safety_team) {

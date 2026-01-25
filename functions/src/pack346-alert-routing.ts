@@ -262,10 +262,10 @@ function getSeverityColor(severity: AlertSeverity): string {
 /**
  * Acknowledge an alert (admin action)
  */
-export const acknowledgeAlert = functions.https.onCall(
-  async (data, context) => {
+export const acknowledgeAlert = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require admin auth
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         "permission-denied",
         "Admin access required"
@@ -288,7 +288,7 @@ export const acknowledgeAlert = functions.https.onCall(
       .doc(alertId)
       .update({
         acknowledgedAt: serverTimestamp(),
-        acknowledgedBy: context.auth.uid,
+        acknowledgedBy: request.auth.uid,
       });
 
     return { success: true, alertId };
@@ -298,10 +298,10 @@ export const acknowledgeAlert = functions.https.onCall(
 /**
  * Resolve an alert (admin action)
  */
-export const resolveAlert = functions.https.onCall(
-  async (data, context) => {
+export const resolveAlert = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Require admin auth
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         "permission-denied",
         "Admin access required"
@@ -341,7 +341,7 @@ export const resolveAlert = functions.https.onCall(
       .set({
         ...alertSnap.data(),
         resolvedAt: serverTimestamp(),
-        resolvedBy: context.auth.uid,
+        resolvedBy: request.auth.uid,
       });
 
     // Delete from active

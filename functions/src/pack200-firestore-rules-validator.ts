@@ -272,12 +272,13 @@ export const scheduled_validateRules = functions.pubsub
 /**
  * Manual rules validation trigger (admin-only)
  */
-export const admin_validateFirestoreRules = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const admin_validateFirestoreRules = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || adminDoc.data()?.role !== 'ADMIN') {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -304,12 +305,13 @@ export const admin_validateFirestoreRules = functions.https.onCall(async (data, 
 /**
  * Get rules audit history
  */
-export const admin_getRulesAuditHistory = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const admin_getRulesAuditHistory = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
   
-  const adminDoc = await db.collection('admin_users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('admin_users').doc(request.auth.uid).get();
   if (!adminDoc.exists || !['ADMIN', 'ENGINEER'].includes(adminDoc.data()?.role)) {
     throw new functions.https.HttpsError('permission-denied', 'Engineering access required');
   }

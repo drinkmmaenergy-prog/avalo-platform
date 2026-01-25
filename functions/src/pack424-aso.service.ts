@@ -389,8 +389,9 @@ export const dailyKeywordTracking = functions.pubsub
 /**
  * HTTP endpoint: Get ASO metrics
  */
-export const getASOMetrics = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const getASOMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError(
       'permission-denied',
       'Only admins can view ASO metrics'

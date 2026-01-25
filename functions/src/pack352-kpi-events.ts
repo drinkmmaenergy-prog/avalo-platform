@@ -79,11 +79,11 @@ export async function pack352_logKpiEvent(
  * HTTP callable function for logging KPI events
  * Exposed for server-side calls from other Cloud Functions
  */
-export const logKpiEvent = functions.https.onCall(
-  async (data: KpiEventInput, context) => {
+export const logKpiEvent = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Verify this is a server request (from another Cloud Function)
     // or from an authenticated user with proper permissions
-    if (!context.auth) {
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'Must be authenticated to log KPI events'
@@ -98,10 +98,10 @@ export const logKpiEvent = functions.https.onCall(
  * Batch logging for multiple events at once
  * Useful for retroactive data import or bulk operations
  */
-export const logKpiEventsBatch = functions.https.onCall(
-  async (data: { events: KpiEventInput[] }, context) => {
+export const logKpiEventsBatch = functions.https.onCall(async (request) => {
+  const data = request.data;
     // Only admins can batch log
-    if (!context.auth || context.auth.token.role !== 'admin') {
+    if (!request.auth || request.auth.token.role !== 'admin') {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can batch log events'

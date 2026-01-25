@@ -85,21 +85,9 @@ function hasRomanceContent(text: string): boolean {
   return ROMANCE_KEYWORDS.some(keyword => lowerText.includes(keyword));
 }
 
-export const publishProduct = functions.https.onCall(
-  async (data: {
-    brand_id: string;
-    collaboration_id?: string;
-    name: string;
-    description: string;
-    category: string;
-    type: 'physical' | 'digital';
-    price_tokens: number;
-    images?: string[];
-    inventory?: any;
-    shipping?: any;
-    digital_delivery?: any;
-  }, context) => {
-    if (!context.auth) {
+export const publishProduct = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -186,7 +174,7 @@ export const publishProduct = functions.https.onCall(
       }
     }
 
-    if (brandData?.owner_id !== context.auth.uid && creator_id !== context.auth.uid) {
+    if (brandData?.owner_id !== request.auth.uid && creator_id !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to publish products for this brand'
@@ -230,7 +218,7 @@ export const publishProduct = functions.https.onCall(
     }
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'product_published',
       product_id: productRef.id,
       timestamp: now,
@@ -249,12 +237,9 @@ export const publishProduct = functions.https.onCall(
   }
 );
 
-export const updateProductStatus = functions.https.onCall(
-  async (data: {
-    product_id: string;
-    status: 'draft' | 'active' | 'inactive';
-  }, context) => {
-    if (!context.auth) {
+export const updateProductStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -293,7 +278,7 @@ export const updateProductStatus = functions.https.onCall(
     const brandDoc = await db.collection('brand_profiles').doc(productData.brand_id).get();
     const brandData = brandDoc.data();
 
-    if (brandData?.owner_id !== context.auth.uid && productData.creator_id !== context.auth.uid) {
+    if (brandData?.owner_id !== request.auth.uid && productData.creator_id !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to update this product'
@@ -306,7 +291,7 @@ export const updateProductStatus = functions.https.onCall(
     });
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'product_status_updated',
       product_id,
       timestamp: Timestamp.now(),
@@ -320,12 +305,9 @@ export const updateProductStatus = functions.https.onCall(
   }
 );
 
-export const purchaseProduct = functions.https.onCall(
-  async (data: {
-    product_id: string;
-    shipping_address?: any;
-  }, context) => {
-    if (!context.auth) {
+export const purchaseProduct = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -376,7 +358,7 @@ export const purchaseProduct = functions.https.onCall(
       );
     }
 
-    const userTokensRef = db.collection('user_tokens').doc(context.auth.uid);
+    const userTokensRef = db.collection('user_tokens').doc(request.auth.uid);
     const userTokensDoc = await userTokensRef.get();
     const userTokens = userTokensDoc.data()?.balance || 0;
 
@@ -389,7 +371,7 @@ export const purchaseProduct = functions.https.onCall(
 
     const now = Timestamp.now();
     const purchase: ProductPurchase = {
-      buyer_id: context.auth.uid,
+      buyer_id: request.auth.uid,
       product_id,
       brand_id: productData.brand_id,
       price_tokens: productData.price_tokens,
@@ -428,7 +410,7 @@ export const purchaseProduct = functions.https.onCall(
     await batch.commit();
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'product_purchased',
       product_id,
       timestamp: now,
@@ -446,12 +428,9 @@ export const purchaseProduct = functions.https.onCall(
   }
 );
 
-export const confirmProductDelivery = functions.https.onCall(
-  async (data: {
-    purchase_id: string;
-    tracking_number?: string;
-  }, context) => {
-    if (!context.auth) {
+export const confirmProductDelivery = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -479,7 +458,7 @@ export const confirmProductDelivery = functions.https.onCall(
 
     const purchaseData = purchaseDoc.data() as ProductPurchase;
 
-    if (purchaseData.buyer_id !== context.auth.uid) {
+    if (purchaseData.buyer_id !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to confirm this delivery'
@@ -503,7 +482,7 @@ export const confirmProductDelivery = functions.https.onCall(
     await releaseBrandRoyalties(purchase_id);
 
     await db.collection('activity_logs').add({
-      user_id: context.auth.uid,
+      user_id: request.auth.uid,
       action: 'delivery_confirmed',
       purchase_id,
       timestamp: now
@@ -597,16 +576,16 @@ async function releaseBrandRoyalties(purchase_id: string) {
   await batch.commit();
 }
 
-export const releaseBrandRoyaltiesManual = functions.https.onCall(
-  async (data: { purchase_id: string }, context) => {
-    if (!context.auth) {
+export const releaseBrandRoyaltiesManual = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const isAdmin = await db.collection('admin_users').doc(context.auth.uid).get()
+    const isAdmin = await db.collection('admin_users').doc(request.auth.uid).get()
       .then(doc => doc.exists);
 
     if (!isAdmin) {
@@ -625,8 +604,8 @@ export const releaseBrandRoyaltiesManual = functions.https.onCall(
   }
 );
 
-export const getProduct = functions.https.onCall(
-  async (data: { product_id: string }, context) => {
+export const getProduct = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { product_id } = data;
 
     if (!product_id) {
@@ -648,7 +627,7 @@ export const getProduct = functions.https.onCall(
     const productData = productDoc.data() as BrandProduct;
 
     if (productData.status !== 'active') {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'permission-denied',
           'Product not accessible'
@@ -658,7 +637,7 @@ export const getProduct = functions.https.onCall(
       const brandDoc = await db.collection('brand_profiles').doc(productData.brand_id).get();
       const brandData = brandDoc.data();
 
-      if (brandData?.owner_id !== context.auth.uid && productData.creator_id !== context.auth.uid) {
+      if (brandData?.owner_id !== request.auth.uid && productData.creator_id !== request.auth.uid) {
         throw new functions.https.HttpsError(
           'permission-denied',
           'Product not accessible'
@@ -678,13 +657,8 @@ export const getProduct = functions.https.onCall(
   }
 );
 
-export const listBrandProducts = functions.https.onCall(
-  async (data: {
-    brand_id: string;
-    category?: string;
-    status?: string;
-    limit?: number;
-  }, context) => {
+export const listBrandProducts = functions.https.onCall(async (request) => {
+  const data = request.data;
     const { brand_id, category, status = 'active', limit = 20 } = data;
 
     if (!brand_id) {

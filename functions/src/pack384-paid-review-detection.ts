@@ -36,8 +36,9 @@ interface DeviceFingerprint {
 /**
  * Detect paid review farms
  */
-export const detectPaidReviewFarms = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const detectPaidReviewFarms = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -226,8 +227,9 @@ export const detectPaidReviewFarms = functions.https.onCall(async (data, context
 /**
  * Analyze device fingerprint for authenticity
  */
-export const analyzeDeviceFingerprint = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const analyzeDeviceFingerprint = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
@@ -292,7 +294,7 @@ export const analyzeDeviceFingerprint = functions.https.onCall(async (data, cont
     // Store fingerprint
     await db.collection('deviceFingerprints').add({
       ...fingerprint,
-      userId: context.auth.uid,
+      userId: request.auth.uid,
       riskScore,
       suspicionReasons,
       timestamp: admin.firestore.Timestamp.now()
@@ -395,8 +397,9 @@ export const detectCoordinatedAttack = functions.pubsub.schedule('every 4 hours'
 /**
  * Block review farm IP ranges
  */
-export const blockReviewFarmIPRanges = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const blockReviewFarmIPRanges = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 
@@ -412,7 +415,7 @@ export const blockReviewFarmIPRanges = functions.https.onCall(async (data, conte
         reason,
         type: 'review_farm',
         blockedAt: admin.firestore.Timestamp.now(),
-        blockedBy: context.auth.uid,
+        blockedBy: request.auth.uid,
         active: true
       });
 
@@ -445,8 +448,9 @@ export const blockReviewFarmIPRanges = functions.https.onCall(async (data, conte
 /**
  * Generate review authenticity report
  */
-export const generateAuthenticityReport = functions.https.onCall(async (data, context) => {
-  if (!context.auth?.token?.admin) {
+export const generateAuthenticityReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth?.token?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
 

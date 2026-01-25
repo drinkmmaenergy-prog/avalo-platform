@@ -26,13 +26,13 @@ import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
  * Search audit logs with filters
  * Admin endpoint (RISK or SUPERADMIN only)
  */
-export const admin_searchAuditLogs = functions.https.onCall(
-  async (data: AuditSearchParams, context) => {
-    if (!context.auth) {
+export const admin_searchAuditLogs = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const adminId = context.auth.uid;
+    const adminId = request.auth.uid;
 
     // Check admin permissions
     const hasPermission = await canViewAuditLogs(adminId);
@@ -141,13 +141,13 @@ export const admin_searchAuditLogs = functions.https.onCall(
 /**
  * Get single audit log by ID
  */
-export const admin_getAuditLog = functions.https.onCall(
-  async (data: { logId: string }, context) => {
-    if (!context.auth) {
+export const admin_getAuditLog = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const adminId = context.auth.uid;
+    const adminId = request.auth.uid;
 
     const hasPermission = await canViewAuditLogs(adminId);
     if (!hasPermission) {
@@ -201,13 +201,13 @@ export const admin_getAuditLog = functions.https.onCall(
 /**
  * Export aggregated business metrics for investors/regulators
  */
-export const admin_exportMetrics = functions.https.onCall(
-  async (data: MetricsExportParams, context) => {
-    if (!context.auth) {
+export const admin_exportMetrics = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const adminId = context.auth.uid;
+    const adminId = request.auth.uid;
 
     const hasPermission = await canViewAuditLogs(adminId);
     if (!hasPermission) {
@@ -414,13 +414,13 @@ function getWeekNumber(date: Date): number {
 /**
  * Export case data for a specific user (for legal/regulatory purposes)
  */
-export const admin_exportCase = functions.https.onCall(
-  async (data: CaseExportParams, context) => {
-    if (!context.auth) {
+export const admin_exportCase = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const adminId = context.auth.uid;
+    const adminId = request.auth.uid;
 
     // Only SUPERADMIN can export sensitive case data
     const isSuperAdminUser = await isSuperAdmin(adminId);

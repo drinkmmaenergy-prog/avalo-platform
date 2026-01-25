@@ -34,19 +34,16 @@ import { HttpsError, auth, increment, onCall, onRequest } from './runtime';
 /**
  * Create an affiliate link for a product
  */
-export const createAffiliateLink = functions.https.onCall(
-  async (
-    data: CreateAffiliateLinkRequest,
-    context
-  ): Promise<CreateAffiliateLinkResponse> => {
-    if (!context.auth) {
+export const createAffiliateLink = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // Validate revenue split
@@ -141,19 +138,16 @@ export const createAffiliateLink = functions.https.onCall(
 /**
  * Track an affiliate conversion when a purchase is made
  */
-export const trackAffiliateConversion = functions.https.onCall(
-  async (
-    data: TrackAffiliateConversionRequest,
-    context
-  ): Promise<TrackAffiliateConversionResponse> => {
-    if (!context.auth) {
+export const trackAffiliateConversion = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const buyerId = context.auth.uid;
+    const buyerId = request.auth.uid;
 
     try {
       // Get affiliate link
@@ -216,8 +210,8 @@ export const trackAffiliateConversion = functions.https.onCall(
         clickedAt: Timestamp.now(),
         purchasedAt: Timestamp.now(),
         isFraudulent: false,
-        ipAddress: context.rawRequest?.ip || 'unknown',
-        userAgent: context.rawRequest?.headers['user-agent'] || 'unknown',
+        ipAddress: request.rawRequest?.ip || 'unknown',
+        userAgent: request.rawRequest?.headers['user-agent'] || 'unknown',
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
       };
@@ -299,9 +293,9 @@ async function assignCommissionInternal(
 /**
  * Assign commission (callable function)
  */
-export const assignCommission = functions.https.onCall(
-  async (data: { conversionId: string }, context) => {
-    if (!context.auth) {
+export const assignCommission = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -345,19 +339,16 @@ export const assignCommission = functions.https.onCall(
 /**
  * Withdraw affiliate earnings
  */
-export const withdrawAffiliateEarnings = functions.https.onCall(
-  async (
-    data: WithdrawAffiliateEarningsRequest,
-    context
-  ): Promise<WithdrawAffiliateEarningsResponse> => {
-    if (!context.auth) {
+export const withdrawAffiliateEarnings = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // Get available commissions
@@ -440,19 +431,16 @@ export const withdrawAffiliateEarnings = functions.https.onCall(
 /**
  * Generate an affiliate banner
  */
-export const generateAffiliateBanner = functions.https.onCall(
-  async (
-    data: GenerateAffiliateBannerRequest,
-    context
-  ): Promise<GenerateAffiliateBannerResponse> => {
-    if (!context.auth) {
+export const generateAffiliateBanner = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
     }
 
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     try {
       // Verify link ownership

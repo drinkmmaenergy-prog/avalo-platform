@@ -1302,13 +1302,14 @@ function getWinnerNotificationMessage(rank: number, month: string): string {
 /**
  * Manual trigger to calculate rankings (for testing or emergency recalculation)
  */
-export const manualRecalculateRankings = functions.https.onCall(async (data, context) => {
+export const manualRecalculateRankings = functions.https.onCall(async (request) => {
+  const data = request.data;
   // Only allow admins to trigger manual recalculation
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userData = userDoc.data();
   
   if (!userData?.roles?.includes('admin') && !userData?.roles?.includes('super_admin')) {
@@ -1318,7 +1319,7 @@ export const manualRecalculateRankings = functions.https.onCall(async (data, con
   try {
     const month = data.month || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
     
-    logger.info(`Manual recalculation triggered by ${context.auth.uid} for month ${month}`);
+    logger.info(`Manual recalculation triggered by ${request.auth.uid} for month ${month}`);
     
     await calculateRankingsForMonth(month);
     
@@ -1335,7 +1336,8 @@ export const manualRecalculateRankings = functions.https.onCall(async (data, con
 /**
  * Get leaderboard (publicly callable)
  */
-export const getLeaderboard = functions.https.onCall(async (data, context) => {
+export const getLeaderboard = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     const {
       category = 'global',
@@ -1393,7 +1395,8 @@ export const getLeaderboard = functions.https.onCall(async (data, context) => {
 /**
  * Get creator's league status (publicly callable)
  */
-export const getCreatorLeagueStatus = functions.https.onCall(async (data, context) => {
+export const getCreatorLeagueStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
   try {
     const { userId } = data;
     

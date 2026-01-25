@@ -516,8 +516,9 @@ async function createAnniversaryCelebration(
  * Track paid activity for streak calculation
  * Called from other systems (chat, calls, meetings, events)
  */
-export const trackAnniversaryActivity = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const trackAnniversaryActivity = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -673,12 +674,13 @@ async function checkAndUnlockRewards(coupleId: string, participantIds: [string, 
 /**
  * Get active celebrations for a user
  */
-export const getActiveCelebrations = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getActiveCelebrations = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   
   try {
     const celebrations = await db.collection('anniversary_celebrations')
@@ -702,8 +704,9 @@ export const getActiveCelebrations = functions.https.onCall(async (data, context
 /**
  * Get streak status for a couple
  */
-export const getStreakStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getStreakStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
@@ -745,12 +748,13 @@ export const getStreakStatus = functions.https.onCall(async (data, context) => {
 /**
  * Toggle anniversary system for user
  */
-export const toggleAnniversarySystem = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const toggleAnniversarySystem = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { enabled } = data;
   
   if (typeof enabled !== 'boolean') {
@@ -777,12 +781,13 @@ export const toggleAnniversarySystem = functions.https.onCall(async (data, conte
 /**
  * Mark celebration as viewed
  */
-export const markCelebrationViewed = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const markCelebrationViewed = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { celebrationId } = data;
   
   if (!celebrationId) {
@@ -841,8 +846,9 @@ async function updateAnniversaryAnalytics(celebrationsToday: number): Promise<vo
  * Initialize anniversary status for a new couple
  * Called when couple is created
  */
-export const initializeAnniversaryStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const initializeAnniversaryStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   

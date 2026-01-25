@@ -66,9 +66,9 @@ const DEFAULT_LIMITS: Record<number, PayoutLimitConfig> = {
 /**
  * Check if payout is within limits
  */
-export const pack383_enforcePayoutLimits = functions.https.onCall(
-  async (data: { userId: string; requestAmount: number; currency?: string }, context) => {
-    if (!context.auth) {
+export const pack383_enforcePayoutLimits = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -163,17 +163,17 @@ export const pack383_enforcePayoutLimits = functions.https.onCall(
 /**
  * Get user payout limits
  */
-export const pack383_getUserPayoutLimits = functions.https.onCall(
-  async (data: { userId: string }, context) => {
-    if (!context.auth) {
+export const pack383_getUserPayoutLimits = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
     const { userId } = data;
 
     // Verify user can access this information
-    if (context.auth.uid !== userId) {
-      const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    if (request.auth.uid !== userId) {
+      const userDoc = await db.collection('users').doc(request.auth.uid).get();
       if (!userDoc.exists || userDoc.data()!.role !== 'admin') {
         throw new functions.https.HttpsError('permission-denied', 'Cannot access another user\'s limits');
       }
@@ -220,16 +220,16 @@ export const pack383_getUserPayoutLimits = functions.https.onCall(
  * Upgrade user risk tier (progressive unlock)
  * Called by admin or automated system based on clean history
  */
-export const pack383_upgradeUserRiskTier = functions.https.onCall(
-  async (data: { userId: string; newTier: number; reason: string }, context) => {
-    if (!context.auth) {
+export const pack383_upgradeUserRiskTier = functions.https.onCall(async (request) => {
+  const data = request.data;
+    if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
     const { userId, newTier, reason } = data;
 
     // Verify admin
-    const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+    const adminDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!adminDoc.exists || adminDoc.data()!.role !== 'admin') {
       throw new functions.https.HttpsError('permission-denied', 'Admin access required');
     }
@@ -245,7 +245,7 @@ export const pack383_upgradeUserRiskTier = functions.https.onCall(
         userId,
         tier: newTier,
         previousTier: currentProfile.tier,
-        updatedBy: context.auth.uid,
+        updatedBy: request.auth.uid,
         updateReason: reason,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       }, { merge: true });
@@ -253,7 +253,7 @@ export const pack383_upgradeUserRiskTier = functions.https.onCall(
       // Create audit log
       await db.collection('auditLogs').add({
         action: 'risk_tier_updated',
-        userId: context.auth.uid,
+        userId: request.auth.uid,
         targetType: 'user_risk_profile',
         targetId: userId,
         details: {

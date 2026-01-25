@@ -31,12 +31,13 @@ interface ReportContentRequest {
 /**
  * Report content for policy violations
  */
-export const reportContent = functions.https.onCall(async (data: ReportContentRequest, context) => {
-  if (!context.auth) {
+export const reportContent = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const reporterId = context.auth.uid;
+  const reporterId = request.auth.uid;
   const { targetType, targetId, reason, details } = data;
 
   try {
@@ -350,13 +351,14 @@ async function sendModerationAlert(alert: any) {
 /**
  * Get moderation queue for moderators
  */
-export const getModerationQueue = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const getModerationQueue = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   // Check if user is moderator
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userData = userDoc.data();
 
   if (!userData?.isModerator && !userData?.isAdmin) {
@@ -426,13 +428,14 @@ export const getModerationQueue = functions.https.onCall(async (data, context) =
 /**
  * Resolve a content report (moderator action)
  */
-export const resolveReport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const resolveReport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   // Check if user is moderator
-  const userDoc = await db.collection('users').doc(context.auth.uid).get();
+  const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userData = userDoc.data();
 
   if (!userData?.isModerator && !userData?.isAdmin) {
@@ -476,7 +479,7 @@ export const resolveReport = functions.https.onCall(async (data, context) => {
       status: 'resolved',
       resolution: action,
       resolutionNotes: notes || '',
-      resolvedBy: context.auth.uid,
+      resolvedBy: request.auth.uid,
       resolvedAt: admin.firestore.Timestamp.now()
     });
 

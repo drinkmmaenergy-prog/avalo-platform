@@ -45,11 +45,11 @@ import { HttpsError, auth, onCall, timestamp } from './runtime';
  * Record a transaction to the ledger
  * Called by payment systems after transaction completion
  */
-export const recordLedgerTransactionEndpoint = functions.https.onCall(
-  async (data: RecordLedgerTransactionRequest, context) => {
+export const recordLedgerTransactionEndpoint = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // Validate authentication
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -86,10 +86,10 @@ export const recordLedgerTransactionEndpoint = functions.https.onCall(
 /**
  * Validate ledger entry against escrow status
  */
-export const validateLedgerEscrowStatusEndpoint = functions.https.onCall(
-  async (data: ValidateLedgerEscrowRequest, context) => {
+export const validateLedgerEscrowStatusEndpoint = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -114,14 +114,14 @@ export const validateLedgerEscrowStatusEndpoint = functions.https.onCall(
 /**
  * Get user's ledger overview
  */
-export const getLedgerOverviewEndpoint = functions.https.onCall(
-  async (data: GetLedgerOverviewRequest, context) => {
+export const getLedgerOverviewEndpoint = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
 
       // Get stats
       const stats = await getLedgerStats(userId);
@@ -217,14 +217,14 @@ export const getLedgerOverviewEndpoint = functions.https.onCall(
 /**
  * Get user's transaction history
  */
-export const getTransactionHistoryEndpoint = functions.https.onCall(
-  async (data: { limit?: number; productTypes?: string[] }, context) => {
+export const getTransactionHistoryEndpoint = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const transactions = await getUserLedgerTransactions(userId, {
         limit: data.limit || 50,
         productTypes: data.productTypes as any,
@@ -257,10 +257,10 @@ export const getTransactionHistoryEndpoint = functions.https.onCall(
 /**
  * Verify blockchain hash for transaction
  */
-export const verifyBlockchainHashEndpoint = functions.https.onCall(
-  async (data: VerifyBlockchainHashRequest, context) => {
+export const verifyBlockchainHashEndpoint = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -290,10 +290,10 @@ export const verifyBlockchainHashEndpoint = functions.https.onCall(
 /**
  * Get blockchain proof for transaction
  */
-export const getBlockchainProofEndpoint = functions.https.onCall(
-  async (data: { transactionId: string }, context) => {
+export const getBlockchainProofEndpoint = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -316,10 +316,10 @@ export const getBlockchainProofEndpoint = functions.https.onCall(
 /**
  * Request export of ledger data
  */
-export const exportLedgerHistoryEndpoint = functions.https.onCall(
-  async (data: ExportLedgerHistoryRequest, context) => {
+export const exportLedgerHistoryEndpoint = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -332,7 +332,7 @@ export const exportLedgerHistoryEndpoint = functions.https.onCall(
         throw new functions.https.HttpsError('invalid-argument', 'Invalid export format');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
 
       const exportId = await createExportRequest(
         userId,
@@ -363,17 +363,17 @@ export const exportLedgerHistoryEndpoint = functions.https.onCall(
 /**
  * Get export status
  */
-export const getExportStatusEndpoint = functions.https.onCall(
-  async (data: { exportId: string }, context) => {
+export const getExportStatusEndpoint = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
       const exportRecord = await getExportStatus(data.exportId);
 
       // Verify user owns this export
-      if (exportRecord.userId !== context.auth.uid) {
+      if (exportRecord.userId !== request.auth.uid) {
         throw new functions.https.HttpsError('permission-denied', 'Access denied');
       }
 
@@ -400,10 +400,10 @@ export const getExportStatusEndpoint = functions.https.onCall(
 /**
  * Download export file
  */
-export const downloadLedgerReportEndpoint = functions.https.onCall(
-  async (data: DownloadLedgerReportRequest, context) => {
+export const downloadLedgerReportEndpoint = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -431,14 +431,13 @@ export const downloadLedgerReportEndpoint = functions.https.onCall(
 /**
  * Get user's export history
  */
-export const getMyExportsEndpoint = functions.https.onCall(
-  async (data: {}, context) => {
+export const getMyExportsEndpoint = functions.https.onCall(async (request) => {
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const exports = await getUserExports(userId);
 
       return {
@@ -467,10 +466,9 @@ export const getMyExportsEndpoint = functions.https.onCall(
 /**
  * Get verification statistics (system-wide)
  */
-export const getVerificationStatsEndpoint = functions.https.onCall(
-  async (data: {}, context) => {
+export const getVerificationStatsEndpoint = functions.https.onCall(async (request) => {
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
       }
 
@@ -493,11 +491,11 @@ export const getVerificationStatsEndpoint = functions.https.onCall(
 /**
  * Internal: Update ledger on escrow release (called by payment system)
  */
-export const updateLedgerOnEscrowReleaseEndpoint = functions.https.onCall(
-  async (data: { transactionId: string; escrowOutcome: 'released' | 'refunded' }, context) => {
+export const updateLedgerOnEscrowReleaseEndpoint = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
       // This should be called by system only
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'System authentication required');
       }
 
@@ -517,10 +515,10 @@ export const updateLedgerOnEscrowReleaseEndpoint = functions.https.onCall(
 /**
  * Internal: Update ledger on dispute (called by dispute system)
  */
-export const updateLedgerOnDisputeEndpoint = functions.https.onCall(
-  async (data: { transactionId: string; disputeId: string }, context) => {
+export const updateLedgerOnDisputeEndpoint = functions.https.onCall(async (request) => {
+  const data = request.data;
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'System authentication required');
       }
 

@@ -33,23 +33,20 @@ interface GetTeamMembersResponse {
   error?: string;
 }
 
-export const getTeamMembers = functions.https.onCall(
-  async (
-    data: GetTeamMembersRequest,
-    context: functions.https.CallableContext
-  ): Promise<GetTeamMembersResponse> => {
+export const getTeamMembers = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
     const auth = admin.auth();
 
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { status } = data;
 
       // Build query

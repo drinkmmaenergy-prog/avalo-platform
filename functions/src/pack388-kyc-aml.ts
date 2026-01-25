@@ -131,12 +131,13 @@ const SANCTIONED_COUNTRIES = ['KP', 'IR', 'SY', 'CU'];
 /**
  * Run KYC check
  */
-export const pack388_runKYCCheck = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_runKYCCheck = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { level, identityData } = data;
 
   try {
@@ -531,12 +532,13 @@ async function hashSensitiveData(data: string): Promise<string> {
 /**
  * Get KYC status
  */
-export const pack388_getKYCStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_getKYCStatus = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const userDoc = await db.collection('users').doc(userId).get();

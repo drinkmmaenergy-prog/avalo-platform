@@ -108,12 +108,13 @@ const RETENTION_REQUIRED_COLLECTIONS = [
 /**
  * Request data export (GDPR Article 15 - Right of Access)
  */
-export const pack388_requestDataExport = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_requestDataExport = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { jurisdiction } = data;
 
   try {
@@ -131,8 +132,8 @@ export const pack388_requestDataExport = functions.https.onCall(async (data, con
       createdAt: admin.firestore.Timestamp.now(),
       legalDeadline: deadline,
       metadata: {
-        ipAddress: context.rawRequest?.ip,
-        userAgent: context.rawRequest?.headers['user-agent'],
+        ipAddress: request.rawRequest?.ip,
+        userAgent: request.rawRequest?.headers['user-agent'],
         jurisdiction: jurisdiction || 'EU'
       }
     };
@@ -282,12 +283,13 @@ export const pack388_processDataExport = functions.firestore
 /**
  * Execute Right to be Forgotten (GDPR Article 17 - Right to Erasure)
  */
-export const pack388_executeRightToBeForgotten = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_executeRightToBeForgotten = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { confirmationCode } = data;
 
   try {
@@ -339,8 +341,8 @@ export const pack388_executeRightToBeForgotten = functions.https.onCall(async (d
       createdAt: admin.firestore.Timestamp.now(),
       legalDeadline: deadline,
       metadata: {
-        ipAddress: context.rawRequest?.ip,
-        userAgent: context.rawRequest?.headers['user-agent'],
+        ipAddress: request.rawRequest?.ip,
+        userAgent: request.rawRequest?.headers['user-agent'],
         jurisdiction: 'EU'
       }
     };
@@ -497,12 +499,13 @@ export const pack388_executeDataDeletion = functions.pubsub
 /**
  * Restrict data processing (GDPR Article 18)
  */
-export const pack388_restrictProcessing = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_restrictProcessing = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { reason } = data;
 
   try {
@@ -556,12 +559,12 @@ export const pack388_restrictProcessing = functions.https.onCall(async (data, co
 /**
  * Cancel deletion request (within 30-day grace period)
  */
-export const pack388_cancelDeletionRequest = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const pack388_cancelDeletionRequest = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     // Find pending deletion request

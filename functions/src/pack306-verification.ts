@@ -332,12 +332,12 @@ export const onUserCreate = functions.auth.user().onCreate(async (user) => {
 /**
  * Start verification process
  */
-export const startVerification = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const startVerification = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   
   // Check if allowed
   const canAttempt = await canAttemptVerification(userId);
@@ -364,12 +364,13 @@ export const startVerification = functions.https.onCall(async (data, context) =>
 /**
  * Verify selfie with liveness detection
  */
-export const verifySelfie = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const verifySelfie = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { videoBase64 } = data;
 
   if (!videoBase64) {
@@ -479,12 +480,13 @@ export const verifySelfie = functions.https.onCall(async (data, context) => {
 /**
  * Verify profile photos match selfie
  */
-export const verifyProfilePhotos = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const verifyProfilePhotos = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { photosBase64 }: { photosBase64: string[] } = data;
 
   if (!photosBase64 || photosBase64.length < CONFIG.REQUIRED_FACE_PHOTOS) {
@@ -690,12 +692,13 @@ async function addToReviewQueue(
 /**
  * Verify user during meeting (QR selfie check)
  */
-export const verifyMeetingSelfie = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const verifyMeetingSelfie = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
   const { meetingId, selfieBase64 } = data;
 
   if (!meetingId || !selfieBase64) {
@@ -758,13 +761,14 @@ export const verifyMeetingSelfie = functions.https.onCall(async (data, context) 
 /**
  * Admin: Manual verification override
  */
-export const adminVerificationOverride = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const adminVerificationOverride = functions.https.onCall(async (request) => {
+  const data = request.data;
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
   // Check admin role
-  const adminDoc = await db.collection('users').doc(context.auth.uid).get();
+  const adminDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!adminDoc.exists || !adminDoc.data()?.roles?.admin) {
     throw new functions.https.HttpsError('permission-denied', 'Admin access required');
   }
@@ -788,7 +792,7 @@ export const adminVerificationOverride = functions.https.onCall(async (data, con
     });
 
   await logAuditEvent('VERIFICATION_MANUAL_OVERRIDE', userId, {
-    adminId: context.auth.uid,
+    adminId: request.auth.uid,
     approved: approve,
     notes,
   });

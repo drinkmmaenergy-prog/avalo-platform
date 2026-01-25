@@ -35,23 +35,20 @@ interface GetTeamActivityResponse {
   error?: string;
 }
 
-export const getTeamActivity = functions.https.onCall(
-  async (
-    data: GetTeamActivityRequest,
-    context: functions.https.CallableContext
-  ): Promise<GetTeamActivityResponse> => {
+export const getTeamActivity = functions.https.onCall(async (request) => {
+  const data = request.data;
     const db = admin.firestore();
     const auth = admin.auth();
 
     try {
-      if (!context.auth) {
+      if (!request.auth) {
         throw new functions.https.HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
       }
 
-      const userId = context.auth.uid;
+      const userId = request.auth.uid;
       const { memberUserId, action, startDate, endDate, limit = 100 } = data;
 
       // Verify user is owner (only owners can view activity logs)

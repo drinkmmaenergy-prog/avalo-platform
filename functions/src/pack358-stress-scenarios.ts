@@ -615,9 +615,10 @@ export const runMonthlyStressScenarios = functions
  */
 export const runStressScenario = functions
   .region('europe-west1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can run stress scenarios'
@@ -647,9 +648,9 @@ export const runStressScenario = functions
  */
 export const getAvailableScenarios = functions
   .region('europe-west1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can view scenarios'
@@ -664,9 +665,10 @@ export const getAvailableScenarios = functions
  */
 export const getScenarioResults = functions
   .region('europe-west1')
-  .https.onCall(async (data, context) => {
+  .https.onCall(async (request) => {
+  const data = request.data;
     // Verify admin authentication
-    if (!context.auth || !context.auth.token.admin) {
+    if (!request.auth || !request.auth.token.admin) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Only admins can view scenario results'
