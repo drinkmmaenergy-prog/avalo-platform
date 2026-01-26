@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import axios from 'axios';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -28,10 +28,7 @@ const ECB_API_URL = 'https://api.exchangerate-api.com/v4/latest/PLN';
  * Syncs FX rates daily from external oracle (ECB/Wise)
  * Scheduled to run daily at 00:00 UTC
  */
-export const syncFXRates = functions.pubsub
-  .schedule('0 0 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const syncFXRates = onSchedule({ schedule: "0 0 * * *", timeZone: "UTC" }, async (event) => {
     try {
       console.log('Starting FX rate synchronization...');
       

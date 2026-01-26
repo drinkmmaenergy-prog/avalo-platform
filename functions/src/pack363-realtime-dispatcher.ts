@@ -13,7 +13,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, Timestamp, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, Timestamp, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -516,9 +516,7 @@ async function triggerEmergencyProtocol(eventId: string, event: any) {
 /**
  * Clean up old realtime events (scheduled)
  */
-export const cleanupRealtimeEvents = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const cleanupRealtimeEvents = onSchedule("every 1 hours", async (event) => {
     const cutoffTime = admin.firestore.Timestamp.fromMillis(
       Date.now() - 24 * 60 * 60 * 1000 // 24 hours ago
     );
@@ -550,7 +548,7 @@ export const cleanupRealtimeEvents = functions.pubsub
     }
 
     console.log(`[Cleanup] Deleted ${totalDeleted} old realtime events`);
-    return null;
+    return;
   });
 
 // ============================================================================

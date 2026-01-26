@@ -25,10 +25,10 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import * as logger from 'firebase-functions/logger';
-import { admin, auth, functions, increment } from './runtime';
+import { admin, auth, functions, increment, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -244,12 +244,15 @@ export const createLiveStream = onCall(async (request) => {
   
   logger.info(`Live stream created: ${streamId} by ${creatorId} (mode: ${mode})`);
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     streamId,
     mode,
     status: streamData.status,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -288,7 +291,10 @@ export const startLiveStream = onCall(async (request) => {
   
   logger.info(`Live stream started: ${streamId}`);
   
-  return { success: true, startedAt: Timestamp.now() };
+  console.log('Scheduled job result:', { success: true, startedAt: Timestamp.now() });
+
+  
+  return;
 });
 
 /**
@@ -336,12 +342,15 @@ export const endLiveStream = onCall(async (request) => {
   
   logger.info(`Live stream ended: ${streamId} (duration: ${durationMinutes} min)`);
   
-  return { 
+  console.log('Scheduled job result:', { 
     success: true, 
     endedAt,
     durationMinutes,
     totalRevenue: streamData.totalRevenue || 0,
-  };
+  });
+
+  
+  return;
 });
 
 // =====================================================================
@@ -458,11 +467,14 @@ export const purchasePPVTicket = onCall(async (request) => {
   
   logger.info(`PPV ticket purchased: ${streamId} by ${userId} (${ticketPrice} tokens)`);
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     ticketPrice,
     message: 'Ticket purchased successfully. Entry granted!',
-  };
+  });
+
+  
+  return;
 });
 
 // =====================================================================
@@ -741,7 +753,9 @@ export const trackViewerWatchTime = onCall(async (request) => {
   // Get stream data
   const streamDoc = await db.collection('liveStreamSessions').doc(streamId).get();
   if (!streamDoc.exists) {
-    return { success: false };
+    console.log('Scheduled job result:', { success: false });
+
+    return;
   }
   
   const streamData = streamDoc.data();
@@ -761,7 +775,10 @@ export const trackViewerWatchTime = onCall(async (request) => {
     }
   }
   
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+  
+  return;
 });
 
 /**
@@ -863,12 +880,15 @@ export const reportSafetyViolation = onCall(async (request) => {
     
     logger.warn(`Stream auto-ended due to ${newWarningCount} warnings: ${streamId}`);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       warningCount: newWarningCount,
       streamEnded: true,
       message: 'Stream ended due to policy violations',
-    };
+    });
+
+    
+    return;
   }
   
   logger.info(`Safety warning ${newWarningCount} issued for stream ${streamId}`);
@@ -949,13 +969,15 @@ export const getLiveStreamAnalytics = onCall(async (request) => {
   const analyticsDoc = await db.collection('liveStreamAnalytics').doc(creatorId).get();
   
   if (!analyticsDoc.exists) {
-    return {
+    console.log('Scheduled job result:', {
       totalStreams: 0,
       totalRevenue: 0,
       totalViewers: 0,
       totalDurationMinutes: 0,
       averageViewers: 0,
-    };
+    });
+
+    return;
   }
   
   return analyticsDoc.data();

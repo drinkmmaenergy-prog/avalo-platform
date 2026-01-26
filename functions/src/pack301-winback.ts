@@ -15,7 +15,7 @@ import {
 } from './pack301-retention-service';
 import { enqueueNotification } from './pack293-notification-service';
 import { writeAuditLog } from './pack296-audit-helpers';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -23,10 +23,7 @@ const db = admin.firestore();
  * Scheduled function: Runs daily at 3 AM UTC
  * Sends win-back messages based on step timing
  */
-export const dailyWinBackSequence = functions.pubsub
-  .schedule('0 3 * * *') // Daily at 3 AM UTC
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dailyWinBackSequence = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[WinBack] Starting daily win-back sequence');
 
     try {

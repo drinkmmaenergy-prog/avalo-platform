@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -63,14 +63,7 @@ export interface RiskFactor {
 // CORE: TRUST SCORE CALCULATION ENGINE
 // ============================================================================
 
-export const pack392_calculateTrustScore = functions
-  .runWith({ 
-    timeoutSeconds: 300,
-    memory: '2GB'
-  })
-  .pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const pack392_calculateTrustScore = onSchedule("every 1 hours", async (event) => {
     console.log('[PACK 392] Calculating Global Trust Score');
 
     try {
@@ -134,7 +127,10 @@ export const pack392_calculateTrustScore = functions
       
       console.log(`[PACK 392] Global Trust Score: ${globalScore}/100 (${trend})`);
       
-      return { success: true, globalScore, trend };
+      console.log('Scheduled job result:', { success: true, globalScore, trend });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK 392] Trust Score calculation error:', error);
       throw error;
@@ -447,11 +443,7 @@ export const pack392_trackUserTrustImpact = functions
 // STORE SAFETY RATING
 // ============================================================================
 
-export const pack392_calculateStoreSafetyRating = functions
-  .runWith({ timeoutSeconds: 300 })
-  .pubsub
-  .schedule('every 12 hours')
-  .onRun(async (context) => {
+export const pack392_calculateStoreSafetyRating = onSchedule("every 12 hours", async (event) => {
     console.log('[PACK 392] Calculating Store Safety Ratings');
 
     const storesSnap = await db.collection('stores').where('active', '==', true).get();
@@ -461,7 +453,10 @@ export const pack392_calculateStoreSafetyRating = functions
       await calculateStoreSafetyRating(storeId);
     }
 
-    return { success: true, calculated: storesSnap.size };
+    console.log('Scheduled job result:', { success: true, calculated: storesSnap.size });
+
+
+    return;
   });
 
 async function calculateStoreSafetyRating(storeId: string): Promise<void> {
@@ -566,7 +561,9 @@ export const pack392_getTrustScore = functions
     const trustDoc = await db.collection('appTrustScore').doc('current').get();
     
     if (!trustDoc.exists) {
-      return { globalScore: 0, message: 'Trust score not yet calculated' };
+      console.log('Scheduled job result:', { globalScore: 0, message: 'Trust score not yet calculated' });
+
+      return;
     }
     
     return trustDoc.data();
@@ -585,7 +582,9 @@ export const pack392_getStoreSafetyRating = functions
     const ratingDoc = await db.collection('storeSafetyRatings').doc(storeId).get();
     
     if (!ratingDoc.exists) {
-      return { message: 'Safety rating not yet calculated' };
+      console.log('Scheduled job result:', { message: 'Safety rating not yet calculated' });
+
+      return;
     }
     
     return ratingDoc.data();

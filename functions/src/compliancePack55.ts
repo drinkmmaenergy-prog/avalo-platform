@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, admin } from './init';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -552,9 +552,7 @@ async function assessAMLRisk(userId: string): Promise<void> {
 /**
  * Scheduled function to update AML profiles (daily)
  */
-export const amlDailyMonitor = functions.pubsub
-  .schedule('0 2 * * *') // Daily at 2 AM UTC
-  .onRun(async (context) => {
+export const amlDailyMonitor = onSchedule("0 2 * * *", async (event) => {
     console.log('[AML Monitor] Starting daily AML risk assessment');
 
     try {

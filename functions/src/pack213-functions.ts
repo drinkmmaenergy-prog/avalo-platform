@@ -9,7 +9,7 @@
  */
 
 import { onCall } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { HttpsError } from 'firebase-functions/v2/https';
 import { z } from 'zod';
 import {
@@ -32,7 +32,7 @@ import {
   calculateMatchPriority,
   expireOldBoosts,
 } from './pack213-match-priority-engine';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // LOGGER
@@ -97,14 +97,17 @@ export const getDiscoveryFeedV2 = onCall(
       // Get visibility feedback if available
       const visibilityMessage = await getVisibilityFeedback(uid);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         items: result.items,
         cursor: result.cursor,
         hasMore: result.hasMore,
         totalCandidates: result.totalCandidates,
         visibilityMessage: visibilityMessage || undefined,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Discovery feed failed:', error);
       throw new HttpsError('internal', 'Failed to get discovery feed');
@@ -141,11 +144,14 @@ export const getHighPriorityMatchesV1 = onCall(
     try {
       const matches = await getHighPriorityMatches(uid, limit, minScore);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         matches,
         count: matches.length,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('High priority matches failed:', error);
       throw new HttpsError('internal', 'Failed to get high priority matches');
@@ -182,12 +188,15 @@ export const getSuggestedProfilesV1 = onCall(
     try {
       const profiles = await getSuggestedProfiles(uid, context, limit);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         profiles,
         context,
         count: profiles.length,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Suggested profiles failed:', error);
       throw new HttpsError('internal', 'Failed to get suggested profiles');
@@ -231,10 +240,13 @@ export const trackProfileLikeV1 = onCall(
     try {
       await trackProfileLike(uid, targetUserId);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Like tracked successfully',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Track like failed:', error);
       throw new HttpsError('internal', 'Failed to track like');
@@ -271,17 +283,22 @@ export const trackProfileViewV1 = onCall(
     try {
       await trackProfileView(uid, targetUserId, dwellTimeSeconds);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'View tracked successfully',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Track view failed:', error);
       // Non-critical, don't throw
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         message: 'Failed to track view',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -314,17 +331,22 @@ export const trackMediaExpansionV1 = onCall(
     try {
       await trackMediaExpansion(uid, targetUserId);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Media expansion tracked',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Track media expansion failed:', error);
       // Non-critical
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         message: 'Failed to track media expansion',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -357,10 +379,13 @@ export const trackProfileWishlistV1 = onCall(
     try {
       await trackProfileWishlist(uid, targetUserId);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Wishlist tracked successfully',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Track wishlist failed:', error);
       throw new HttpsError('internal', 'Failed to track wishlist');
@@ -401,18 +426,23 @@ export const applyTokenPurchaseBoostV1 = onCall(
     try {
       await applyTokenPurchaseBoost(uid, amount);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Boost applied successfully',
         duration: '24 hours',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Apply token purchase boost failed:', error);
       // Non-critical
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         message: 'Failed to apply boost',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -445,10 +475,13 @@ export const calculateMatchPriorityV1 = onCall(
     try {
       const score = await calculateMatchPriority(uid, candidateId);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         score,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Calculate match priority failed:', error);
       throw new HttpsError('internal', 'Failed to calculate match priority');
@@ -523,7 +556,10 @@ export const onChatCompletedWebhook = onCall(
       }
     }
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -561,7 +597,10 @@ export const onMeetingCompletedWebhook = onCall(
       }
     }
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -599,7 +638,10 @@ export const onEventHostedWebhook = onCall(
       }
     }
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -634,7 +676,10 @@ export const onGoodVibeReceivedWebhook = onCall(
       logger.error('Failed to apply good vibe boost:', error);
     }
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 

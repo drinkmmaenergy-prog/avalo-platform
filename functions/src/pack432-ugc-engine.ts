@@ -7,7 +7,7 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -124,10 +124,13 @@ export const submitUGCCreative = functions.https.onCall(async (request) => {
     await autoApproveUGC(submission.id!);
   }
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     submissionId: submission.id
-  };
+  });
+
+
+  return;
 });
 
 async function autoApproveUGC(submissionId: string) {
@@ -225,7 +228,10 @@ export const reviewUGCSubmission = functions.https.onCall(async (request) => {
     });
   }
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 // ===========================
@@ -271,20 +277,21 @@ export const startCreativeTesting = functions.https.onCall(async (request) => {
     });
   }
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     testId,
     endDate: endDate.toISOString()
-  };
+  });
+
+
+  return;
 });
 
 // ===========================
 // AUTOMATIC CREATIVE ROTATION
 // ===========================
 
-export const rotateTopCreatives = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async (context) => {
+export const rotateTopCreatives = onSchedule("every 6 hours", async (event) => {
     // Get all active campaigns
     const campaigns = await db.collection('ua_campaigns')
       .where('status', '==', 'active')
@@ -368,7 +375,7 @@ export const rotateTopCreatives = functions.pubsub
       }
     }
 
-    return null;
+    return;
   });
 
 // ===========================
@@ -407,7 +414,10 @@ export const updateCreativePerformance = functions.https.onCall(async (request) 
     updatedAt: admin.firestore.Timestamp.now()
   });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 // ===========================
@@ -441,11 +451,14 @@ export const generateAICreative = functions.https.onCall(async (request) => {
   // - Runway/Synthesia for videos
   // - GPT-4 for text
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     requestId,
     message: 'AI generation queued. Check back in 5-10 minutes.'
-  };
+  });
+
+
+  return;
 });
 
 // ===========================
@@ -493,11 +506,14 @@ export const importFromUGCPlatform = functions.https.onCall(async (request) => {
     imported.push(creative.id);
   }
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     importedCount: imported.length,
     creativeIds: imported
-  };
+  });
+
+
+  return;
 });
 
 // ===========================

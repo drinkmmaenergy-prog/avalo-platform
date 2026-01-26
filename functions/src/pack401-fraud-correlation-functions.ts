@@ -6,14 +6,14 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { logger } from 'firebase-functions/v2';
 import { Timestamp } from 'firebase-admin/firestore';
 import {
   recomputeFraudProfileForUser,
   recomputeFraudProfilesForWindow,
 } from './pack401-fraud-correlation-service';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 /**
  * Callable function to recompute fraud profile for a specific user

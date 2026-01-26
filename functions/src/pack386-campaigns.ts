@@ -10,7 +10,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, onRequest, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, onRequest, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -195,9 +195,7 @@ export const pack386_updateCampaignBudget = functions.https.onCall(async (reques
 // AUTO-PAUSE LOW ROI CAMPAIGNS (SCHEDULED)
 // ============================================================================
 
-export const pack386_autoPauseLowROI = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async () => {
+export const pack386_autoPauseLowROI = onSchedule("every 1 hours", async (event) => {
     const campaigns = await db.collection('marketingCampaigns')
       .where('status', '==', 'ACTIVE')
       .get();
@@ -256,9 +254,7 @@ export const pack386_autoPauseLowROI = functions.pubsub
 // AUTO-SCALE HIGH ROI CAMPAIGNS (SCHEDULED)
 // ============================================================================
 
-export const pack386_scaleHighROI = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async () => {
+export const pack386_scaleHighROI = onSchedule("every 6 hours", async (event) => {
     const campaigns = await db.collection('marketingCampaigns')
       .where('status', '==', 'ACTIVE')
       .get();

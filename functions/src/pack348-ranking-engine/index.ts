@@ -6,6 +6,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { onSchedule } from '../runtime';
 import { RankingService } from './ranking-service';
 import { RankingMetrics } from './types';
 
@@ -247,10 +248,7 @@ export const getABTestResults = functions.https.onCall(async (request) => {
 /**
  * Scheduled: Recalculate all rankings (daily at 3 AM)
  */
-export const recalculateAllRankingsScheduled = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async () => {
+export const recalculateAllRankingsScheduled = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     console.log('Starting scheduled ranking recalculation...');
 
     try {

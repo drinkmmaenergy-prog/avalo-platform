@@ -8,6 +8,7 @@ import * as admin from 'firebase-admin';
 import { ReviewScanner } from './reviewScanner';
 import { DefenseActionManager } from './defenseActions';
 import { ReviewFunnelManager } from './reviewFunnel';
+import { onSchedule } from '../runtime';
 import {
   ReviewScanRequest,
   ReviewScanResult,
@@ -89,7 +90,10 @@ export const pack367_triggerDefenseAction = functions.https.onCall(async (reques
       adminId: request.auth.uid,
     });
     
-    return { success: true, actionId };
+    console.log('Scheduled job result:', { success: true, actionId });
+
+    
+    return;
   }
 );
 
@@ -115,7 +119,10 @@ export const pack367_deactivateDefenseAction = functions.https.onCall(async (req
     
     functions.logger.info(`Defense action deactivated by admin: ${actionId}`);
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -224,7 +231,10 @@ export const pack367_recordPromptResponse = functions.https.onCall(async (reques
     const funnelManager = new ReviewFunnelManager();
     await funnelManager.recordPromptResponse(promptId, responseAction);
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -329,30 +339,26 @@ export const pack367_getDefenseStatus = functions.https.onCall(async (request) =
  * SCHEDULED FUNCTION: Expire Old Defense Actions
  * Runs every hour to clean up expired actions
  */
-export const pack367_expireDefenseActions = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const pack367_expireDefenseActions = onSchedule("every 1 hours", async (event) => {
     functions.logger.info('Running defense action expiry check');
     
     const manager = new DefenseActionManager();
     await manager.expireOldActions();
     
-    return null;
+    return;
   });
 
 /**
  * SCHEDULED FUNCTION: Clean Up Expired Review Prompts
  * Runs daily to clean up expired prompts
  */
-export const pack367_cleanupExpiredPrompts = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack367_cleanupExpiredPrompts = onSchedule("every 24 hours", async (event) => {
     functions.logger.info('Running review prompt cleanup');
     
     const funnelManager = new ReviewFunnelManager();
     await funnelManager.cleanupExpiredPrompts();
     
-    return null;
+    return;
   });
 
 /**
@@ -376,5 +382,5 @@ export const pack367_monitorReviews = functions.firestore
       // Could trigger immediate re-scan or pattern detection
     }
     
-    return null;
+    return;
   });

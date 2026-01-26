@@ -175,5 +175,7 @@ export function createErrorResponse(
  * Create standardized success response
  */
 export function createSuccessResponse<T>(data: T): SuccessResponse<T> {
-  return { success: true, data };
+  console.log('Scheduled job result:', { success: true, data });
+
+  return;
 }

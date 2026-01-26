@@ -17,7 +17,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp, arrayUnion } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
@@ -34,7 +34,7 @@ import {
   XP_EARNING_CONFIG,
 } from './pack112-types';
 import { createNotification } from './notificationHub';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -434,7 +434,10 @@ export async function recalculateUserAchievementsDaily(
     
     logger.info(`Completed daily achievement recalculation for ${userId}`);
     
-    return { processedAchievements: 0 };
+    console.log('Scheduled job result:', { processedAchievements: 0 });
+
+    
+    return;
   } catch (error: any) {
     logger.error(`Error recalculating achievements for ${userId}`, error);
     throw error;
@@ -479,7 +482,7 @@ export const dailyAchievementRecalculation = onSchedule(
       
       logger.info(`Daily achievement recalculation complete: ${processedCount} users processed`);
       
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in daily achievement recalculation job', error);
       throw error;
@@ -593,7 +596,10 @@ export const selectProfileBadges = onCall(
       
       logger.info(`User ${userId} selected badges`, { badgeIds: data.badgeIds });
       
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      
+      return;
     } catch (error: any) {
       logger.error('Error selecting profile badges', error);
       
@@ -635,10 +641,13 @@ export const initializeAchievementsCatalog = onCall(
       
       logger.info(`Initialized ${SAFE_ACHIEVEMENTS.length} achievements`);
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         count: SAFE_ACHIEVEMENTS.length,
-      };
+      });
+
+      
+      return;
     } catch (error: any) {
       logger.error('Error initializing achievements catalog', error);
       throw new HttpsError('internal', 'Failed to initialize catalog');

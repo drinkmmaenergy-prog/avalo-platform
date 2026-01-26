@@ -12,7 +12,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { checkGDPRApplicability } from './pack359-jurisdiction-engine';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -500,10 +500,7 @@ async function collectUserData(userId: string): Promise<UserDataPackage> {
  * Automatically delete/anonymize old data based on retention policies
  * Run this daily as a scheduled function
  */
-export const enforceRetentionPolicies = functions.pubsub
-  .schedule('0 2 * * *') // 02:00 AM daily
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const enforceRetentionPolicies = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     console.log('Starting retention policy enforcement');
     
     let totalDeleted = 0;

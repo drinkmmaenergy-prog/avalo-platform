@@ -8,7 +8,7 @@ import { db, admin } from './init';
 import * as functions from 'firebase-functions';
 import { collectAndAnalyzeFraudSignals } from './fraudEngine';
 import { logEvent } from './observability';
-import { HttpsError, Timestamp, auth, onCall } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // WEEKLY FRAUD RECALCULATION
@@ -18,10 +18,7 @@ import { HttpsError, Timestamp, auth, onCall } from './runtime';
  * Scheduled function to recalculate fraud scores weekly for all users with activity
  * Runs every Sunday at 2 AM UTC
  */
-export const weeklyFraudRecalculation = functions.pubsub
-  .schedule('0 2 * * 0')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const weeklyFraudRecalculation = onSchedule({ schedule: "0 2 * * 0", timeZone: "UTC" }, async (event) => {
     console.log('[Fraud Scheduled] Starting weekly fraud recalculation');
     
     const startTime = Date.now();
@@ -103,12 +100,15 @@ export const weeklyFraudRecalculation = functions.pubsub
       
       console.log(`[Fraud Scheduled] Completed: ${processedCount} users processed, ${errorCount} errors, ${duration}ms duration`);
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         processedCount,
         errorCount,
         durationMs: duration
-      };
+      });
+
+      
+      return;
       
     } catch (error: any) {
       console.error('[Fraud Scheduled] Weekly recalculation failed:', error);

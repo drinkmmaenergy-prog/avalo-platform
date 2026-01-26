@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -229,7 +229,7 @@ export const monitorASOHealth = functions.https.onCall(async (request) => {
 /**
  * Scheduled ASO health check
  */
-export const scheduledASOHealthCheck = functions.pubsub.schedule('every 6 hours').onRun(async () => {
+export const scheduledASOHealthCheck = onSchedule("every 6 hours", async (event) => {
   try {
     const platforms: Array<'ios' | 'android'> = ['ios', 'android'];
     

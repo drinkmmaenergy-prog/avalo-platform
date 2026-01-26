@@ -14,7 +14,7 @@ import {
   MetricKey,
   logTechEvent,
 } from './pack90-logging';
-import { admin } from './runtime';
+import { admin, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // SCHEDULED: REBUILD DAILY METRICS
@@ -25,10 +25,7 @@ import { admin } from './runtime';
  * Runs once per day at 2 AM UTC
  * Provides redundancy if real-time increments are missed
  */
-export const rebuildDailyMetrics = functions.pubsub
-  .schedule('0 2 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const rebuildDailyMetrics = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     try {
       console.log('[MetricsJob] Starting daily metrics rebuild...');
       
@@ -57,7 +54,7 @@ export const rebuildDailyMetrics = functions.pubsub
         message: `Successfully rebuilt metrics for ${dateStr}`,
       });
       
-      return null;
+      return;
     } catch (error: any) {
       console.error('[MetricsJob] Error rebuilding metrics:', error);
       

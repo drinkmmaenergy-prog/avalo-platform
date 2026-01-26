@@ -11,11 +11,11 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp, increment, generateId } from './init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // CONFIGURATION
@@ -193,7 +193,10 @@ export const addPayoutAccount = onCall(
         method,
       });
 
-      return { accountId: accountRef.id };
+      console.log('Scheduled job result:', { accountId: accountRef.id });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error adding payout account', error);
       if (error instanceof HttpsError) throw error;
@@ -253,7 +256,7 @@ async function calculatePayoutInternal(creatorId: string): Promise<PayoutCalcula
 
   // Check fraud status
   if (creator?.status === 'BANNED' || creator?.status === 'SUSPENDED') {
-    return {
+    console.log('Scheduled job result:', {
       totalTokens: 0,
       cpiEarnings: 0,
       cpsEarnings: 0,
@@ -263,7 +266,9 @@ async function calculatePayoutInternal(creatorId: string): Promise<PayoutCalcula
       netAmount: 0,
       eligible: false,
       reason: 'Account suspended or banned',
-    };
+    });
+
+    return;
   }
 
   // Calculate earnings from all attributions
@@ -340,7 +345,7 @@ async function calculatePayoutInternal(creatorId: string): Promise<PayoutCalcula
   const processingFee = (fiatAmount * PAYOUT_CONFIG.PAYOUT_PROCESSING_FEE_PERCENTAGE) / 100;
   const netAmount = fiatAmount - processingFee;
 
-  return {
+  console.log('Scheduled job result:', {
     totalTokens,
     cpiEarnings,
     cpsEarnings,
@@ -349,7 +354,10 @@ async function calculatePayoutInternal(creatorId: string): Promise<PayoutCalcula
     processingFee,
     netAmount,
     eligible: true,
-  };
+  });
+
+
+  return;
 }
 
 /**
@@ -604,7 +612,10 @@ export const processPayout = onCall(
         amount: payout.netAmount,
       });
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error processing payout', error);
       if (error instanceof HttpsError) throw error;
@@ -648,7 +659,10 @@ export const holdPayoutForFraud = onCall(
 
       logger.info(`Payout placed on fraud hold: ${payoutId}`, { reason });
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error holding payout', error);
       if (error instanceof HttpsError) throw error;
@@ -684,7 +698,7 @@ export const processWeeklyPayouts = onSchedule(
 
       if (pendingPayouts.empty) {
         logger.info('No pending payouts to process');
-        return null;
+        return;
       }
 
       let processedCount = 0;
@@ -721,7 +735,7 @@ export const processWeeklyPayouts = onSchedule(
         failed: failedCount,
       });
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in weekly payout processing', error);
       throw error;

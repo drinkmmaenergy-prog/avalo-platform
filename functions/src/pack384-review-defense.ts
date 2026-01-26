@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -410,7 +410,7 @@ export const requestStoreReview = functions.https.onCall(async (request) => {
 /**
  * Detect copy-paste review content (bot patterns)
  */
-export const detectCopyPasteReviews = functions.pubsub.schedule('every 6 hours').onRun(async () => {
+export const detectCopyPasteReviews = onSchedule("every 6 hours", async (event) => {
   try {
     const windowStart = admin.firestore.Timestamp.fromMillis(Date.now() - 48 * 60 * 60 * 1000);
     

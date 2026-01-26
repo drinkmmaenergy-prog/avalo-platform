@@ -23,7 +23,7 @@ import {
   getRecentScansSummary,
   PosterFormat,
 } from '../services/offline-presence';
-import { HttpsError, admin, auth, onCall } from '../runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule } from '../runtime';
 
 /**
  * Generate QR profile for authenticated user
@@ -35,7 +35,9 @@ export const generateUserQRProfile = functions.https.onCall(async (request) => {
 
   try {
     const qrProfile = await getOrCreateQRProfile(request.auth.uid);
-    return { success: true, qrProfile };
+    console.log('Scheduled job result:', { success: true, qrProfile });
+
+    return;
   } catch (error: any) {
     console.error('Error generating QR profile:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -52,7 +54,9 @@ export const getQRVariations = functions.https.onCall(async (request) => {
 
   try {
     const variations = await generateQRVariations(request.auth.uid);
-    return { success: true, variations };
+    console.log('Scheduled job result:', { success: true, variations });
+
+    return;
   } catch (error: any) {
     console.error('Error generating QR variations:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -69,7 +73,9 @@ export const regenerateUserQRProfile = functions.https.onCall(async (request) =>
 
   try {
     const qrProfile = await regenerateQRProfile(request.auth.uid);
-    return { success: true, qrProfile };
+    console.log('Scheduled job result:', { success: true, qrProfile });
+
+    return;
   } catch (error: any) {
     console.error('Error regenerating QR profile:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -108,7 +114,10 @@ export const createPoster = functions.https.onCall(async (request) => {
       }
     );
 
-    return { success: true, poster };
+    console.log('Scheduled job result:', { success: true, poster });
+
+
+    return;
   } catch (error: any) {
     console.error('Error creating poster:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -137,7 +146,10 @@ export const createEventPosterBundle = functions.https.onCall(async (request) =>
       creators,
     });
 
-    return { success: true, posterIds };
+    console.log('Scheduled job result:', { success: true, posterIds });
+
+
+    return;
   } catch (error: any) {
     console.error('Error creating event bundle:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -166,7 +178,9 @@ export const submitPosterForReview = functions.https.onCall(async (request) => {
 
   try {
     await submitForReview(assetId);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     console.error('Error submitting poster for review:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -195,7 +209,9 @@ export const moderatePoster = functions.https.onCall(async (request) => {
 
   try {
     await moderatePosterAsset(assetId, request.auth.uid, decision, rejectionReason);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     console.error('Error moderating poster:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -212,7 +228,9 @@ export const getMyOfflineAssets = functions.https.onCall(async (request) => {
 
   try {
     const assets = await getUserAssets(request.auth.uid);
-    return { success: true, assets };
+    console.log('Scheduled job result:', { success: true, assets });
+
+    return;
   } catch (error: any) {
     console.error('Error getting offline assets:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -238,7 +256,10 @@ export const recordQRScan = functions.https.onCall(async (request) => {
       location,
     });
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   } catch (error: any) {
     console.error('Error logging scan:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -265,7 +286,9 @@ export const getMyScanAnalytics = functions.https.onCall(async (request) => {
     const end = endDate ? new Date(endDate) : new Date();
 
     const analytics = await getScanAnalytics(request.auth.uid, period, start, end);
-    return { success: true, analytics };
+    console.log('Scheduled job result:', { success: true, analytics });
+
+    return;
   } catch (error: any) {
     console.error('Error getting scan analytics:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -310,9 +333,7 @@ export const getMyScanSummary = functions.https.onCall(async (request) => {
 /**
  * Scheduled cleanup of old scan logs (runs daily)
  */
-export const cleanupOldScanLogs = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const cleanupOldScanLogs = onSchedule("every 24 hours", async (event) => {
     const { ScanTracker } = await import('../services/offline-presence');
     await ScanTracker.cleanupOldScans();
     console.log('Old scan logs cleanup completed');

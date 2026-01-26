@@ -9,7 +9,7 @@ const db = admin.firestore();
 
 // Reuse NSFW classifier from PACK 287
 import { classifyNSFW, NSFWFlag } from '../media/nsfwClassifier';
-import { FieldValue, HttpsError, Timestamp, auth, db, increment, onCall, storage } from '../runtime';
+import { FieldValue, HttpsError, Timestamp, auth, db, increment, onCall, storage, logger, onSchedule } from '../runtime';
 
 /**
  * Content Policy Rules (from PACK 267, 268):
@@ -270,12 +270,15 @@ export const processContentUpload = functions
       // Delete temp file
       await tempFile.delete();
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         contentId,
         contentType: data.contentType,
         ...processingResult
-      };
+      });
+
+
+      return;
 
     } catch (error) {
       console.error('Content upload processing error:', error);
@@ -423,9 +426,7 @@ async function updateCreatorStats(userId: string, contentType: string) {
 /**
  * Scheduled cleanup of expired stories
  */
-export const cleanupExpiredStories = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const cleanupExpiredStories = onSchedule("every 1 hours", async (event) => {
     const now = admin.firestore.Timestamp.now();
     
     const expiredStories = await db.collection('stories')
@@ -456,5 +457,5 @@ export const cleanupExpiredStories = functions.pubsub
     await batch.commit();
     
     console.log(`Cleaned up ${expiredStories.size} expired stories`);
-    return null;
+    return;
   });

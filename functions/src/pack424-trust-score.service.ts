@@ -6,7 +6,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { StoreTrustScore, StoreReview, Platform } from './pack424-store-reviews.types';
-import { HttpsError, auth, logger, onCall } from './runtime';
+import { HttpsError, auth, logger, onCall, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -264,10 +264,7 @@ export const trustScoreService = new TrustScoreService();
 /**
  * Scheduled function: Calculate trust score every 6 hours
  */
-export const scheduledTrustScoreCalculation = functions.pubsub
-  .schedule('0 */6 * * *') // Every 6 hours
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const scheduledTrustScoreCalculation = onSchedule({ schedule: "0 */6 * * *", timeZone: "UTC" }, async (event) => {
     functions.logger.info('Starting scheduled trust score calculation');
 
     try {
@@ -285,7 +282,7 @@ export const scheduledTrustScoreCalculation = functions.pubsub
         });
       }
 
-      return { success: true, score: score.score };
+      return;
     } catch (error) {
       functions.logger.error('Error calculating trust score:', error);
       throw error;

@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -108,7 +108,10 @@ export const recordEarning = functions.https.onCall(async (request) => {
     // Check for milestones
     await checkMilestones(creatorId);
 
-    return { success: true, netTokens };
+    console.log('Scheduled job result:', { success: true, netTokens });
+
+
+    return;
   } catch (error) {
     console.error('Error recording earning:', error);
     throw new functions.https.HttpsError('internal', 'Failed to record earning');
@@ -359,7 +362,10 @@ export const requestPayout = functions.https.onCall(async (request) => {
       });
     }
 
-    return { success: true, payoutId: payoutRef.id };
+    console.log('Scheduled job result:', { success: true, payoutId: payoutRef.id });
+
+
+    return;
   } catch (error) {
     console.error('Error requesting payout:', error);
     throw error;
@@ -367,7 +373,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
 });
 
 // Compute analytics (scheduled function - runs daily)
-export const computeAnalytics = functions.pubsub.schedule('0 2 * * *').onRun(async (context) => {
+export const computeAnalytics = onSchedule("0 2 * * *", async (event) => {
   const creatorsSnapshot = await db.collection('users')
     .where('role', '==', 'creator').get();
 
@@ -377,7 +383,7 @@ export const computeAnalytics = functions.pubsub.schedule('0 2 * * *').onRun(asy
     await generateEarningTips(creatorId);
   }
 
-  return null;
+  return;
 });
 
 // Compute creator analytics

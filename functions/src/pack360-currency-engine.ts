@@ -9,7 +9,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import axios from 'axios';
-import { HttpsError, auth, onCall, z } from './runtime';
+import { HttpsError, auth, onCall, z, logger, onSchedule } from './runtime';
 
 // Types
 export interface CurrencyProfile {
@@ -87,9 +87,7 @@ const COUNTRY_TO_CURRENCY: Record<string, string> = {
 };
 
 // Update exchange rates (scheduled every 6 hours)
-export const updateExchangeRates = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async (context) => {
+export const updateExchangeRates = onSchedule("every 6 hours", async (event) => {
     const db = admin.firestore();
     
     try {
@@ -125,10 +123,14 @@ export const updateExchangeRates = functions.pubsub
       }, { merge: true });
       
       console.log('Exchange rates updated successfully');
-      return { success: true, timestamp };
+      console.log('Scheduled job result:', { success: true, timestamp });
+
+      return;
     } catch (error) {
       console.error('Error updating exchange rates:', error);
-      return { success: false, error };
+      console.log('Scheduled job result:', { success: false, error });
+
+      return;
     }
   });
 
@@ -152,11 +154,13 @@ export const getUserCurrency = functions.https.onCall(async (request) => {
     if (prefDoc.exists) {
       const currency = prefDoc.data()?.currency;
       const rateDoc = await db.collection('currency-rates').doc(currency).get();
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         currency,
         ...rateDoc.data()
-      };
+      });
+
+      return;
     }
     
     // Auto-detect from country
@@ -166,12 +170,15 @@ export const getUserCurrency = functions.https.onCall(async (request) => {
     // Get current rate
     const rateDoc = await db.collection('currency-rates').doc(currency).get();
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       currency,
       autoDetected: true,
       ...rateDoc.data()
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error getting user currency:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -203,7 +210,10 @@ export const setUserCurrency = functions.https.onCall(async (request) => {
       lastUpdated: Date.now()
     });
     
-    return { success: true, currency };
+    console.log('Scheduled job result:', { success: true, currency });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error setting user currency:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -248,7 +258,7 @@ export const convertTokenPriceToLocal = functions.https.onCall(async (request) =
     const decimals = ['JPY', 'KRW', 'VND', 'IDR'].includes(currency) ? 0 : 2;
     finalPrice = Math.round(finalPrice * Math.pow(10, decimals)) / Math.pow(10, decimals);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       tokenPackage,
       currency,
@@ -256,7 +266,10 @@ export const convertTokenPriceToLocal = functions.https.onCall(async (request) =
       exchangeRate: rate,
       localPrice: finalPrice,
       tokenAmount: packageData.tokenAmount
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error converting token price:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -293,7 +306,7 @@ export const convertPayoutToLocal = functions.https.onCall(async (request) => {
     const decimals = ['JPY', 'KRW', 'VND', 'IDR'].includes(currency) ? 0 : 2;
     const finalAmount = Math.round(localAmount * Math.pow(10, decimals)) / Math.pow(10, decimals);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       tokenAmount,
       currency,
@@ -301,7 +314,10 @@ export const convertPayoutToLocal = functions.https.onCall(async (request) => {
       exchangeRate: rate,
       localAmount: finalAmount,
       symbol: SUPPORTED_CURRENCIES[currency]?.symbol || currency
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error converting payout:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -325,10 +341,13 @@ export const getSupportedCurrencies = functions.https.onCall(async (request) => 
       }
     });
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       currencies: currencies.sort((a, b) => a.currency.localeCompare(b.currency))
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error getting supported currencies:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -365,7 +384,10 @@ export const adminSetRegionalPricing = functions.https.onCall(async (request) =>
       lastUpdated: Date.now()
     });
     
-    return { success: true, currency, multiplier };
+    console.log('Scheduled job result:', { success: true, currency, multiplier });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error setting regional pricing:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -400,7 +422,10 @@ export const adminToggleCurrency = functions.https.onCall(async (request) => {
       lastUpdated: Date.now()
     });
     
-    return { success: true, currency, enabled };
+    console.log('Scheduled job result:', { success: true, currency, enabled });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error toggling currency:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -475,7 +500,10 @@ export const initializeCurrencyRates = functions.https.onCall(async (request) =>
     
     await batch.commit();
     
-    return { success: true, message: 'Currency rates initialized' };
+    console.log('Scheduled job result:', { success: true, message: 'Currency rates initialized' });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error initializing currency rates:', error);
     throw new functions.https.HttpsError('internal', error.message);

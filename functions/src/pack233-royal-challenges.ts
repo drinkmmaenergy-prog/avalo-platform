@@ -7,7 +7,7 @@
 import { db, serverTimestamp, increment, arrayUnion } from './init';
 import * as functions from 'firebase-functions';
 import { isUserInSleepMode } from './pack228-sleep-mode';
-import { HttpsError, Timestamp, auth, onCall } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // INTERFACES
@@ -554,10 +554,7 @@ async function checkSafety(userId: string, otherUserId: string): Promise<boolean
 /**
  * Assign weekly challenges to eligible couples (scheduled function)
  */
-export const assignWeeklyChallenges = functions.pubsub
-  .schedule('every monday 09:00')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const assignWeeklyChallenges = onSchedule({ schedule: "every monday 09:00", timeZone: "UTC" }, async (event) => {
     try {
       console.log('Starting weekly challenge assignment...');
       
@@ -787,11 +784,14 @@ export const trackChallengeProgress = functions.https.onCall(async (request) => 
       // Boost Romantic Momentum (PACK 224)
       await boostRomanticMomentum(challenge.participantIds);
 
-      return { 
+      console.log('Scheduled job result:', { 
         success: true, 
         completed: true,
         message: 'Challenge completed! Rewards earned!' 
-      };
+      });
+
+
+      return;
     }
 
     await challengeRef.update({
@@ -799,11 +799,14 @@ export const trackChallengeProgress = functions.https.onCall(async (request) => 
       progress: challenge.progress
     });
 
-    return { 
+    console.log('Scheduled job result:', { 
       success: true, 
       completed: false,
       progress: challenge.progress 
-    };
+    });
+
+
+    return;
   } catch (error) {
     console.error('Error tracking challenge progress:', error);
     throw new functions.https.HttpsError('internal', 'Failed to track progress');
@@ -813,9 +816,7 @@ export const trackChallengeProgress = functions.https.onCall(async (request) => 
 /**
  * Auto-expire old challenges (scheduled function)
  */
-export const expireOldChallenges = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const expireOldChallenges = onSchedule("every 24 hours", async (event) => {
     try {
       const now = new Date();
       
@@ -1088,13 +1089,16 @@ export const getCouplePlacement = functions.https.onCall(async (request) => {
       message = `You've completed ${placement.totalCompleted} challenge(s) this week. Keep going!`;
     }
 
-    return {
+    console.log('Scheduled job result:', {
       hasPlacement: true,
       rank: placement.rank,
       percentile: placement.percentile,
       totalCompleted: placement.totalCompleted,
       message
-    };
+    });
+
+
+    return;
   } catch (error) {
     console.error('Error getting couple placement:', error);
     throw new functions.https.HttpsError('internal', 'Failed to get placement');
@@ -1231,7 +1235,10 @@ export const toggleChallenges = functions.https.onCall(async (request) => {
         updatedAt: serverTimestamp()
       }, { merge: true });
 
-    return { success: true, enabled };
+    console.log('Scheduled job result:', { success: true, enabled });
+
+
+    return;
   } catch (error) {
     console.error('Error toggling challenges:', error);
     throw new functions.https.HttpsError('internal', 'Failed to toggle challenges');

@@ -4,7 +4,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp } from './init.js';
 import { rebuildAllAvatarIndexes, rebuildAvatarIndex } from './aiMarketplaceRanking.js';
 import type {
@@ -12,7 +12,7 @@ import type {
   MarketplaceResponse,
   OwnerAvatarsResponse
 } from './aiMarketplaceTypes.js';
-import { admin, auth, functions, timestamp } from './runtime';
+import { admin, auth, functions, timestamp, onSchedule } from './runtime';
 
 /**
  * Get AI Marketplace - Global discovery
@@ -179,7 +179,10 @@ export const trackAIAvatarView = onCall<{ avatarId: string }>(
       createdAt: serverTimestamp()
     });
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -208,7 +211,10 @@ export const trackAIAvatarDetailOpened = onCall<{ avatarId: string }>(
       createdAt: serverTimestamp()
     });
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -245,7 +251,10 @@ export const rebuildAvatarIndexManual = onCall<{ avatarId: string }>(
     // Rebuild index
     await rebuildAvatarIndex(avatarId);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 

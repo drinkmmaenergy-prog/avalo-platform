@@ -8,7 +8,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { levenshtein } from './utils/string-similarity';
-import { HttpsError, Timestamp, auth, increment, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule } from './runtime';
 
 // Mock functions for dependencies (will be replaced with actual implementations)
 async function sendTrustTeamAlert(data: any): Promise<void> {
@@ -93,9 +93,7 @@ interface KeywordRanking {
  * Detects review attacks and manipulation patterns
  * Triggered on new review ingestion from App Store Connect / Google Play API
  */
-export const pack379_reviewAttackDetector = functions.pubsub
-  .schedule('every 15 minutes')
-  .onRun(async (context) => {
+export const pack379_reviewAttackDetector = onSchedule("every 15 minutes", async (event) => {
     const now = admin.firestore.Timestamp.now();
     const fifteenMinutesAgo = new Date(now.toMillis() - 15 * 60 * 1000);
     
@@ -106,7 +104,7 @@ export const pack379_reviewAttackDetector = functions.pubsub
     
     if (recentReviews.empty) {
       console.log('No recent reviews to analyze');
-      return null;
+      return;
     }
     
     const reviews = recentReviews.docs.map(doc => ({
@@ -151,7 +149,10 @@ export const pack379_reviewAttackDetector = functions.pubsub
       });
     }
     
-    return { analyzed: reviews.length, attacks: attacks.length };
+    console.log('Scheduled job result:', { analyzed: reviews.length, attacks: attacks.length });
+
+    
+    return;
   });
 
 async function detectVelocityAttack(reviews: any[]): Promise<AttackPattern | null> {
@@ -178,7 +179,7 @@ async function detectVelocityAttack(reviews: any[]): Promise<AttackPattern | nul
     }
   }
   
-  return null;
+  return;
 }
 
 async function detectRepetitionAttack(reviews: any[]): Promise<AttackPattern | null> {
@@ -209,7 +210,7 @@ async function detectRepetitionAttack(reviews: any[]): Promise<AttackPattern | n
     };
   }
   
-  return null;
+  return;
 }
 
 async function detectCoordinatedAttack(reviews: any[]): Promise<AttackPattern | null> {
@@ -234,7 +235,7 @@ async function detectCoordinatedAttack(reviews: any[]): Promise<AttackPattern | 
     };
   }
   
-  return null;
+  return;
 }
 
 async function detectBotAttack(reviews: any[]): Promise<AttackPattern | null> {
@@ -263,7 +264,7 @@ async function detectBotAttack(reviews: any[]): Promise<AttackPattern | null> {
     };
   }
   
-  return null;
+  return;
 }
 
 function calculateAttackSeverity(attacks: AttackPattern[]): 'low' | 'medium' | 'high' | 'critical' {
@@ -390,9 +391,7 @@ export const pack379_fakeReviewClassifier = functions.firestore
 /**
  * Review velocity guard - monitors and throttles
  */
-export const pack379_reviewVelocityGuard = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const pack379_reviewVelocityGuard = onSchedule("every 5 minutes", async (event) => {
     const now = admin.firestore.Timestamp.now();
     const fiveMinutesAgo = new Date(now.toMillis() - 5 * 60 * 1000);
     
@@ -515,7 +514,10 @@ export const pack379_storeAppealAutoSubmit = functions.https.onCall(async (reque
     metadata: { bundleId, platform: bundle.platform }
   });
   
-  return { success: true, bundleId, status: 'ready_for_submission' };
+  console.log('Scheduled job result:', { success: true, bundleId, status: 'ready_for_submission' });
+
+  
+  return;
 });
 
 // Helper functions for dispute generation
@@ -562,11 +564,14 @@ async function analyzeIPPatterns(reviews: admin.firestore.DocumentSnapshot[]): P
     }
   });
   
-  return {
+  console.log('Scheduled job result:', {
     uniqueIPs: ipCounts.size,
     duplicateIPs: Array.from(ipCounts.entries()).filter(([_, count]) => count > 1).length,
     maxReviewsPerIP: Math.max(...Array.from(ipCounts.values()))
-  };
+  });
+
+  
+  return;
 }
 
 async function linkToFraudSystem(reviews: admin.firestore.DocumentSnapshot[]): Promise<any> {
@@ -619,9 +624,7 @@ function generateLegalReferences(platform: string): string[] {
 /**
  * ASO optimization engine - analyzes and suggests improvements
  */
-export const pack379_asoBoostOptimizer = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async (context) => {
+export const pack379_asoBoostOptimizer = onSchedule("every 6 hours", async (event) => {
     const now = admin.firestore.Timestamp.now();
     
     // Fetch latest metrics for both platforms
@@ -794,9 +797,7 @@ function estimatePotentialRank(cluster: any[]): number {
 /**
  * Store algorithm response monitor
  */
-export const pack379_storeAlgorithmResponse = functions.pubsub
-  .schedule('every 12 hours')
-  .onRun(async (context) => {
+export const pack379_storeAlgorithmResponse = onSchedule("every 12 hours", async (event) => {
     // Monitor algorithm changes and ranking volatility
     const recentMetrics = await db.collection('asoMetrics')
       .where('date', '>=', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
@@ -824,7 +825,7 @@ export const pack379_storeAlgorithmResponse = functions.pubsub
       }
     }
     
-    return null;
+    return;
   });
 
 function calculateVolatility(values: number[]): number {
@@ -973,9 +974,7 @@ async function calculateTrustScore(userId: string): Promise<any> {
 /**
  * Watches for store policy changes and compliance risks
  */
-export const pack379_storePolicyWatcher = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack379_storePolicyWatcher = onSchedule("every 24 hours", async (event) => {
     // In production, this would scrape/monitor:
     // - App Store Review Guidelines
     // - Google Play Developer Policy
@@ -1250,7 +1249,9 @@ export const pack379_crisisReputationShield = functions.https.onCall(async (requ
   } else if (action === 'deactivate') {
     // Deactivate crisis mode
     await deactivateCrisisMode(crisisId, request.auth.uid);
-    return { success: true, message: 'Crisis mode deactivated' };
+    console.log('Scheduled job result:', { success: true, message: 'Crisis mode deactivated' });
+
+    return;
   }
   
   throw new functions.https.HttpsError('invalid-argument', 'Invalid action');
@@ -1405,7 +1406,10 @@ export const pack379_recordReviewCompletion = functions.https.onCall(async (requ
     platform
   });
   
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+  
+  return;
 });
 
 // ========================================
@@ -1453,7 +1457,7 @@ export const pack379_execReputationDashboard = functions.https.onCall(async (req
     alertCount: activeAlerts.length
   });
   
-  return {
+  console.log('Scheduled job result:', {
     overallHealth,
     asoHealth,
     reviewHealth,
@@ -1461,7 +1465,10 @@ export const pack379_execReputationDashboard = functions.https.onCall(async (req
     activeAlerts,
     countryReputation,
     generatedAt: new Date().toISOString()
-  };
+  });
+
+  
+  return;
 });
 
 async function getASOHealthMetrics(startDate: Date): Promise<any> {
@@ -1503,13 +1510,16 @@ async function getReviewHealthMetrics(startDate: Date): Promise<any> {
   const flaggedCount = reviews.docs.filter(d => d.data().flaggedAsAttack).length;
   const highSuspicionCount = reviews.docs.filter(d => d.data().suspicionLevel === 'high').length;
   
-  return {
+  console.log('Scheduled job result:', {
     totalReviews,
     avgRating,
     flaggedCount,
     highSuspicionCount,
     healthScore: Math.max(0, 100 - (flaggedCount / totalReviews * 100) - (highSuspicionCount / totalReviews * 50))
-  };
+  });
+
+  
+  return;
 }
 
 async function getTrustScoreDistribution(): Promise<any> {
@@ -1636,10 +1646,7 @@ function calculateTrend(values: number[]): 'up' | 'down' | 'flat' {
 /**
  * Daily executive report generation
  */
-export const pack379_dailyExecutiveReport = functions.pubsub
-  .schedule('every day 08:00')
-  .timeZone('America/New_York')
-  .onRun(async (context) => {
+export const pack379_dailyExecutiveReport = onSchedule({ schedule: "every day 08:00", timeZone: "America/New_York" }, async (event) => {
     const report = await generateExecutiveReport('daily');
     
     await db.collection('executiveReports').add({
@@ -1656,7 +1663,10 @@ export const pack379_dailyExecutiveReport = functions.pubsub
     // In production, send email/notification to admins
     console.log(`Daily report generated for ${admins.size} admins`);
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   });
 
 async function generateExecutiveReport(type: string): Promise<any> {
@@ -1718,13 +1728,16 @@ async function getASOPerformance(since: Date): Promise<any> {
     .where('date', '>=', since.toISOString().split('T')[0])
     .get();
   
-  if (metrics.empty) return null;
+  if (metrics.empty) return;
   
   const data = metrics.docs.map(d => d.data());
   
-  return {
+  console.log('Scheduled job result:', {
     totalInstalls: sum(data.map(m => m.installs || 0)),
     avgConversionRate: average(data.map(m => m.conversionRate || 0)),
     avgRating: average(data.map(m => m.avgRating || 0))
-  };
+  });
+
+  
+  return;
 }

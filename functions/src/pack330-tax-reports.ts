@@ -281,18 +281,23 @@ export const pack330_getUserTaxReport = https.onCall(
         .get();
 
       if (!reportDoc.exists) {
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           report: null,
-        };
+        });
+
+        return;
       }
 
       const report = reportDoc.data() as TaxReportUser;
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         report,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Get user tax report error:', error);
       throw new HttpsError(
@@ -335,10 +340,13 @@ export const pack330_listUserTaxReports = https.onCall(
 
       const reports = reportsQuery.docs.map(doc => doc.data() as TaxReportUser);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         reports,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('List user tax reports error:', error);
       throw new HttpsError(

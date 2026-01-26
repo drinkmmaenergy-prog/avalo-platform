@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -225,7 +225,7 @@ export const computePublicTrustScore = functions.https.onCall(async (request) =>
 /**
  * Batch recompute trust scores for all users
  */
-export const batchRecomputeTrustScores = functions.pubsub.schedule('every 24 hours').onRun(async () => {
+export const batchRecomputeTrustScores = onSchedule("every 24 hours", async (event) => {
   try {
     const usersSnapshot = await db.collection('users')
       .where('active', '==', true)
@@ -351,11 +351,14 @@ export const applyTrustScoreToRankings = functions.https.onCall(async (request) 
       }
     }
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       category,
       usersProcessed: trustScores.size
-    };
+    });
+
+
+    return;
   } catch (error) {
     console.error('Error applying trust scores to rankings:', error);
     throw new functions.https.HttpsError('internal', 'Failed to apply trust scores');

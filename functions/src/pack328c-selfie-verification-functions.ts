@@ -4,7 +4,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { logger } from 'firebase-functions/v2';
 import { db, Timestamp } from './init';
@@ -15,7 +15,7 @@ import {
   handleSelfieTimeout,
   cancelBookingBeforeSelfie,
 } from './pack328c-selfie-verification-engine';
-import { auth, functions, timestamp } from './runtime';
+import { auth, functions, timestamp, onSchedule } from './runtime';
 
 /**
  * Scheduled function to check for bookings that should start selfie verification
@@ -121,7 +121,10 @@ export const uploadMeetupSelfieFunction = onCall(
       throw new HttpsError('failed-precondition', result.error || 'Failed to upload selfie');
     }
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -154,7 +157,10 @@ export const reportSelfieMismatchFunction = onCall(
       throw new HttpsError('failed-precondition', result.error || 'Failed to report mismatch');
     }
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -183,7 +189,10 @@ export const cancelBookingBeforeSelfieFunction = onCall(
       throw new HttpsError('failed-precondition', result.error || 'Failed to cancel booking');
     }
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 

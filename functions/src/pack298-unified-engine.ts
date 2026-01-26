@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -118,10 +118,13 @@ export const calculateFeedRankings = functions
       // Sort by score
       rankings.sort((a, b) => b.score - a.score);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         rankings: rankings.slice(0, 20), // Top 20
-      };
+      });
+
+
+      return;
     } catch (error) {
       console.error('Feed ranking error:', error);
       throw new functions.https.HttpsError('internal', 'Failed to calculate rankings');
@@ -374,11 +377,14 @@ export const generateSwipePool = functions
       }
       await batch.commit();
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         poolSize: finalPool.length,
         candidates: finalPool,
-      };
+      });
+
+
+      return;
     } catch (error) {
       console.error('Swipe pool generation error:', error);
       throw new functions.https.HttpsError('internal', 'Failed to generate swipe pool');
@@ -391,10 +397,7 @@ export const generateSwipePool = functions
  * Scheduled Function: Check and update low-popularity status for all users
  * Runs every 6 hours
  */
-export const updateLowPopularityStatus = functions
-  .region('europe-west3')
-  .pubsub.schedule('every 6 hours')
-  .onRun(async (context) => {
+export const updateLowPopularityStatus = onSchedule({ schedule: "every 6 hours", region: "europe-west3" }, async (event) => {
     console.log('Starting low-popularity status update...');
 
     try {
@@ -466,7 +469,9 @@ export const updateLowPopularityStatus = functions
       await batch.commit();
 
       console.log(`Low-popularity status update complete. Updated ${updateCount} users.`);
-      return { success: true, usersProcessed: updateCount };
+      console.log('Scheduled job result:', { success: true, usersProcessed: updateCount });
+
+      return;
     } catch (error) {
       console.error('Low-popularity update error:', error);
       throw error;

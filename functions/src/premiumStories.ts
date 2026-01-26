@@ -7,11 +7,11 @@
 
 import { db, admin, serverTimestamp, generateId } from './init';
 import { HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { logger } from 'firebase-functions/v2';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { recordStoryEarning } from './earningsIntegration';
-import { functions, increment } from './runtime';
+import { functions, increment, onSchedule } from './runtime';
 
 // ============================================================================
 // CONFIGURATION
@@ -118,7 +118,7 @@ async function checkExistingUnlock(userId: string, storyId: string): Promise<Pre
     .get();
   
   if (unlocksQuery.empty) {
-    return null;
+    return;
   }
   
   return unlocksQuery.docs[0].data() as PremiumStoryUnlock;
@@ -293,12 +293,15 @@ export async function unlockPremiumStory(
     
     logger.info(`Story unlocked: ${storyId} by ${userId} for ${price} tokens`);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       unlockId,
       mediaUrl: story.mediaUrl,
       expiresAt: expiresAt.toDate(),
-    };
+    });
+
+    
+    return;
     
   } catch (error: any) {
     logger.error('Failed to unlock story', error);
@@ -307,10 +310,13 @@ export async function unlockPremiumStory(
       throw error;
     }
     
-    return {
+    console.log('Scheduled job result:', {
       success: false,
       error: error.message || 'Failed to unlock story',
-    };
+    });
+
+    
+    return;
   }
 }
 
@@ -370,7 +376,9 @@ export async function validateMediaAccess(
     const storySnap = await db.collection('premium_stories').doc(storyId).get();
     
     if (!storySnap.exists) {
-      return { allowed: false, error: 'Story not found' };
+      console.log('Scheduled job result:', { allowed: false, error: 'Story not found' });
+
+      return;
     }
     
     const story = storySnap.data() as PremiumStory;
@@ -384,7 +392,9 @@ export async function validateMediaAccess(
     const access = await checkStoryAccess(userId, storyId);
     
     if (!access.hasAccess) {
-      return { allowed: false, error: 'Story not unlocked or access expired' };
+      console.log('Scheduled job result:', { allowed: false, error: 'Story not unlocked or access expired' });
+
+      return;
     }
     
     // Increment view count
@@ -397,7 +407,9 @@ export async function validateMediaAccess(
     
   } catch (error: any) {
     logger.error('Failed to validate media access', error);
-    return { allowed: false, error: 'Access validation failed' };
+    console.log('Scheduled job result:', { allowed: false, error: 'Access validation failed' });
+
+    return;
   }
 }
 

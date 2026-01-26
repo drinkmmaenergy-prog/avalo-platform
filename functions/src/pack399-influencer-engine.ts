@@ -13,7 +13,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall } from './runtime';
+import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -424,12 +424,15 @@ export const createInfluencerProfile = functions.https.onCall(async (request) =>
 
   await getInfluencerProfile(influencerId).set(profile);
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     influencerId,
     referralCode,
     referralLink: profile.customReferralLink,
-  };
+  });
+
+
+  return;
 });
 
 async function generateReferralCode(handle: string): Promise<string> {
@@ -470,7 +473,10 @@ export const verifyInfluencer = functions.https.onCall(async (request) => {
     updatedAt: admin.firestore.Timestamp.now(),
   });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 // ============================================================================
@@ -558,11 +564,14 @@ export const trackInfluencerInstall = functions.https.onCall(async (request) => 
     });
   }
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     funnelId,
     isFraud: funnel.isFraud,
-  };
+  });
+
+
+  return;
 });
 
 async function checkFraudScore(userId: string, influencerId: string): Promise<number> {
@@ -685,9 +694,7 @@ export const trackInfluencerCommission = functions.firestore
 // FRAUD DETECTION & AUTO-ACTIONS
 // ============================================================================
 
-export const detectInfluencerFraud = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const detectInfluencerFraud = onSchedule("every 1 hours", async (event) => {
     console.log('Running influencer fraud detection...');
 
     const funnelsSnapshot = await db.collection('creator_funnels')
@@ -749,7 +756,10 @@ export const detectInfluencerFraud = functions.pubsub
 
     console.log(`Fraud detection complete. Actions taken: ${fraudActions.length}`);
 
-    return { success: true, actionsCount: fraudActions.length };
+    console.log('Scheduled job result:', { success: true, actionsCount: fraudActions.length });
+
+
+    return;
   });
 
 // ============================================================================
@@ -819,11 +829,14 @@ export const createInfluencerPayout = functions.https.onCall(async (request) => 
 
   await getInfluencerPayout(payoutId).set(payout);
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     payoutId,
     amount: totalAmount,
-  };
+  });
+
+
+  return;
 });
 
 // ============================================================================
@@ -906,22 +919,27 @@ export const getRegionalPlaybook = functions.https.onCall(async (request) => {
 
   if (playbooksSnapshot.empty) {
     // Return default playbook
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       playbook: getDefaultPlaybook(country),
-    };
+    });
+
+    return;
   }
 
   const playbook = playbooksSnapshot.docs[0].data();
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     playbook,
-  };
+  });
+
+
+  return;
 });
 
 function getDefaultPlaybook(country: string): Partial<RegionalPlaybook> {
-  return {
+  console.log('Scheduled job result:', {
     region: 'default',
     countries: [country],
     allowedAdPlatforms: ['google', 'facebook', 'tiktok', 'instagram'],
@@ -933,7 +951,9 @@ function getDefaultPlaybook(country: string): Partial<RegionalPlaybook> {
     contentRestrictions: [],
     primaryTrafficSources: ['organic', 'influencer', 'paid'],
     active: true,
-  };
+  });
+
+  return;
 }
 
 // ============================================================================
@@ -989,12 +1009,15 @@ export const getInfluencerAnalytics = functions.https.onCall(async (request) => 
     fraudRate: totals.installs > 0 ? totals.fraudInstalls / totals.installs : 0,
   };
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     metrics,
     totals,
     conversionRates,
-  };
+  });
+
+
+  return;
 });
 
 // ============================================================================

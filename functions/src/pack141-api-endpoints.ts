@@ -4,7 +4,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp } from './init';
 import {
   checkMessageSafety,
@@ -41,7 +41,7 @@ import {
   SAFE_PERSONALITY_CATEGORIES,
   FORBIDDEN_PERSONALITY_TYPES,
 } from './types/pack141-types';
-import { auth, functions } from './runtime';
+import { auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // AI COMPANION MESSAGING
@@ -366,7 +366,10 @@ export const completeAICompanionOnboarding = onCall<Partial<AICompanionOnboardin
 
       await db.collection('ai_companion_onboarding').doc(userId).set(onboarding);
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error: any) {
       console.error('Error in completeAICompanionOnboarding:', error);
       throw new HttpsError('internal', error.message || 'Internal server error');

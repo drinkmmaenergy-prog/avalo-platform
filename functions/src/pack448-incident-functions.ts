@@ -23,7 +23,7 @@ import {
   PlaybookTriggeredEvent,
   CrisisActivatedEvent,
 } from './pack448-incident-types';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -692,9 +692,7 @@ async function notifyIncidentStakeholders(incident: Incident) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 // Monitor SLA breaches
-export const monitorSLABreaches = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async () => {
+export const monitorSLABreaches = onSchedule("every 5 minutes", async (event) => {
     const incidents = await db
       .collection('incidents')
       .where('status', 'in', ['open', 'investigating'])
@@ -718,9 +716,7 @@ async function notifySLABreach(incidentId: string, type: string) {
 }
 
 // Calculate metrics
-export const calculateIncidentMetrics = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async () => {
+export const calculateIncidentMetrics = onSchedule("every 1 hours", async (event) => {
     const now = new Date();
     const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 

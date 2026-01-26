@@ -10,11 +10,11 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, admin, serverTimestamp, increment, generateId } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
-import { auth, functions, storage } from './runtime';
+import { auth, functions, storage, onSchedule } from './runtime';
 
 // ============================================================================
 // CONFIGURATION
@@ -409,12 +409,15 @@ async function fetchLedgerPage(
   const countSnapshot = await countQuery.count().get();
   const total = countSnapshot.data().count;
 
-  return {
+  console.log('Scheduled job result:', {
     entries,
     nextPageToken,
     hasMore,
     total,
-  };
+  });
+
+
+  return;
 }
 
 // ============================================================================
@@ -577,7 +580,7 @@ export const aggregateCreatorEarningsDaily = onSchedule(
 
       logger.info(`Completed daily aggregation for ${processedCount} creators`);
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in daily earnings aggregation', error);
       throw error;

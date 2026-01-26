@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { HttpsError, auth, onCall, timestamp } from './runtime';
+import { HttpsError, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 // ============================================
 // TYPES
@@ -96,7 +96,10 @@ export const trackChatDelivery = functions.https.onCall(async (request) => {
       );
     }
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -128,7 +131,10 @@ export const trackWalletTransaction = functions.https.onCall(async (request) => 
     // Check failure rate
     await checkWalletFailureRate();
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -158,7 +164,10 @@ export const trackEventCheckout = functions.https.onCall(async (request) => {
       );
     }
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -188,7 +197,10 @@ export const trackAiResponse = functions.https.onCall(async (request) => {
       );
     }
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -225,7 +237,10 @@ export const trackVideoCallQuality = functions.https.onCall(async (request) => {
       );
     }
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -257,7 +272,10 @@ export const trackPanicButton = functions.https.onCall(async (request) => {
       );
     }
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -345,9 +363,7 @@ async function checkWalletFailureRate(): Promise<void> {
 /**
  * Run comprehensive health check
  */
-export const runHealthCheck = functions.pubsub
-  .schedule("every 1 minutes")
-  .onRun(async (context) => {
+export const runHealthCheck = onSchedule("every 1 minutes", async (event) => {
     console.log("🏥 Running health check...");
     
     const db = admin.firestore();
@@ -565,11 +581,14 @@ export const getMetricsHistory = functions.https.onCall(async (request) => {
     
     const metrics = metricsSnapshot.docs.map((doc) => doc.data());
     
-    return {
+    console.log('Scheduled job result:', {
       metric: data.metric,
       count: metrics.length,
       values: metrics,
-    };
+    });
+
+    
+    return;
   }
 );
 
@@ -614,7 +633,10 @@ export const resolveAlert = functions.https.onCall(async (request) => {
       resolvedBy: request.auth.uid,
     });
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -670,9 +692,7 @@ export const getDashboardData = functions.https.onCall(async (request) => {
 /**
  * Clean up old metrics
  */
-export const cleanupOldMetrics = functions.pubsub
-  .schedule("0 3 * * *") // Daily at 3 AM
-  .onRun(async (context) => {
+export const cleanupOldMetrics = onSchedule("0 3 * * *", async (event) => {
     const db = admin.firestore();
     
     console.log("🗑️ Cleaning up old metrics...");

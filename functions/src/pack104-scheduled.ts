@@ -28,7 +28,7 @@ import {
   createCollusionRingCase,
   createSpamClusterCase,
 } from './pack104-caseManagement';
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // SCHEDULED JOBS
@@ -38,10 +38,7 @@ import { HttpsError, admin, auth, onCall } from './runtime';
  * Update fraud graph edges - Daily at 2 AM
  * Applies decay to stale edges
  */
-export const updateFraudGraphEdges = functions.pubsub
-  .schedule('0 2 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const updateFraudGraphEdges = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[PACK104] Starting fraud graph edge update...');
     
     try {
@@ -49,10 +46,13 @@ export const updateFraudGraphEdges = functions.pubsub
       
       console.log(`[PACK104] Graph update complete: ${result.decayed} decayed, ${result.removed} removed`);
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         ...result,
-      };
+      });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK104] Error updating graph edges:', error);
       throw error;
@@ -63,10 +63,7 @@ export const updateFraudGraphEdges = functions.pubsub
  * Detect collusion rings - Daily at 3 AM
  * Runs graph analysis to find coordinated groups
  */
-export const detectCollusionRingsJob = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const detectCollusionRingsJob = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[PACK104] Starting collusion ring detection...');
     
     try {
@@ -85,12 +82,15 @@ export const detectCollusionRingsJob = functions.pubsub
         }
       }
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         ringsDetected: rings.length,
         highRiskRings: rings.filter(r => r.riskLevel === 'HIGH').length,
         mediumRiskRings: rings.filter(r => r.riskLevel === 'MEDIUM').length,
-      };
+      });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK104] Error detecting collusion rings:', error);
       throw error;
@@ -101,10 +101,7 @@ export const detectCollusionRingsJob = functions.pubsub
  * Detect commercial spam clusters - Daily at 4 AM
  * Analyzes recent signups for spam patterns
  */
-export const detectCommercialSpamClustersJob = functions.pubsub
-  .schedule('0 4 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const detectCommercialSpamClustersJob = onSchedule({ schedule: "0 4 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[PACK104] Starting commercial spam cluster detection...');
     
     try {
@@ -123,12 +120,15 @@ export const detectCommercialSpamClustersJob = functions.pubsub
         }
       }
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         clustersDetected: clusters.length,
         highRiskClusters: clusters.filter(c => c.riskLevel === 'HIGH').length,
         mediumRiskClusters: clusters.filter(c => c.riskLevel === 'MEDIUM').length,
-      };
+      });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK104] Error detecting spam clusters:', error);
       throw error;
@@ -139,10 +139,7 @@ export const detectCommercialSpamClustersJob = functions.pubsub
  * Cleanup expired enforcements - Every 6 hours
  * Removes temporary restrictions that have expired
  */
-export const cleanupExpiredEnforcementsJob = functions.pubsub
-  .schedule('0 */6 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const cleanupExpiredEnforcementsJob = onSchedule({ schedule: "0 */6 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[PACK104] Starting expired enforcement cleanup...');
     
     try {
@@ -150,10 +147,13 @@ export const cleanupExpiredEnforcementsJob = functions.pubsub
       
       console.log(`[PACK104] Cleaned up ${cleaned} expired enforcements`);
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         cleaned,
-      };
+      });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK104] Error cleaning up enforcements:', error);
       throw error;
@@ -164,10 +164,7 @@ export const cleanupExpiredEnforcementsJob = functions.pubsub
  * Cleanup old rings and clusters - Weekly on Sundays at 1 AM
  * Removes resolved/false positive cases older than 90 days
  */
-export const cleanupOldDataJob = functions.pubsub
-  .schedule('0 1 * * 0')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const cleanupOldDataJob = onSchedule({ schedule: "0 1 * * 0", timeZone: "UTC" }, async (event) => {
     console.log('[PACK104] Starting old data cleanup...');
     
     try {
@@ -175,10 +172,13 @@ export const cleanupOldDataJob = functions.pubsub
       
       console.log(`[PACK104] Cleaned up ${cleanedRings} old rings`);
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         cleanedRings,
-      };
+      });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK104] Error cleaning up old data:', error);
       throw error;

@@ -7,7 +7,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { logger } from 'firebase-functions/v2';
 import { getFirestore } from 'firebase-admin/firestore';
 import { 
@@ -42,7 +42,7 @@ import {
   GetProfileHealthResponse,
   AI_ASSIST_CONSTANTS,
 } from './types/pack291-ai-assist.types';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -77,10 +77,12 @@ export const creator_ai_insights_daily = onCall<GetDailyInsightsRequest, Promise
       // Check if user has sufficient data
       const hasSufficientData = await hasSufficientDataForInsights(userId);
       if (!hasSufficientData) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'Insufficient data. Continue earning for at least 7 days to see insights.',
-        };
+        });
+
+        return;
       }
 
       // Get data for the day
@@ -96,16 +98,21 @@ export const creator_ai_insights_daily = onCall<GetDailyInsightsRequest, Promise
 
       logger.info(`Generated daily insights for user ${userId} on ${targetDate}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: summary,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error generating daily insights:', error);
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to generate insights',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -160,16 +167,21 @@ export const creator_ai_insights_weekly = onCall<GetWeeklyOptimizationRequest, P
 
       logger.info(`Generated weekly optimization for user ${userId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: optimization,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error generating weekly optimization:', error);
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to generate optimization tips',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -207,17 +219,22 @@ export const creator_ai_recommendations_content = onCall<GetContentRecommendatio
 
       logger.info(`Generated content recommendations for user ${userId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: recommendations,
         postingTime,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error generating content recommendations:', error);
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to generate recommendations',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -264,17 +281,22 @@ export const creator_ai_recommendations_chat = onCall<GetChatOptimizationRequest
 
       logger.info(`Generated chat optimization for user ${userId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         metrics,
         suggestions,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error generating chat optimization:', error);
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to generate chat optimization',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -314,16 +336,21 @@ export const creator_ai_recommendations_calendar = onCall<GetCalendarOptimizatio
 
       logger.info(`Generated calendar optimization for user ${userId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: calendarInsight,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error generating calendar optimization:', error);
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to generate calendar insights',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -363,16 +390,21 @@ export const creator_ai_recommendations_events = onCall<GetEventOptimizationRequ
 
       logger.info(`Generated event optimization for user ${userId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: eventInsight,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error generating event optimization:', error);
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to generate event insights',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -409,16 +441,21 @@ export const creator_ai_profile_health = onCall<GetProfileHealthRequest, Promise
 
       logger.info(`Generated profile health for user ${userId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: healthScore,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error generating profile health:', error);
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to generate profile health',
-      };
+      });
+
+      return;
     }
   }
 );

@@ -11,7 +11,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -279,9 +279,7 @@ export const pack383_upgradeUserRiskTier = functions.https.onCall(async (request
 /**
  * Scheduled: Auto-upgrade risk tiers for users with clean history
  */
-export const pack383_autoUpgradeRiskTiers = functions.pubsub
-  .schedule('0 0 * * 0') // Weekly on Sunday at midnight
-  .onRun(async (context) => {
+export const pack383_autoUpgradeRiskTiers = onSchedule("0 0 * * 0", async (event) => {
     try {
       // Get users at risk tier 3-5 (eligible for upgrade)
       const usersSnapshot = await db

@@ -18,7 +18,7 @@ import {
   RevenueSplitConfig,
   RefundPolicyCheck
 } from './pack345-types';
-import { HttpsError, Timestamp, auth, onCall } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -941,13 +941,10 @@ function buildIntegrationsStatus(checks: AuditCheckResult[]) {
 /**
  * Scheduled audit every 6 hours
  */
-export const pack345_runLaunchAudit = functions.pubsub
-  .schedule('0 */6 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack345_runLaunchAudit = onSchedule({ schedule: "0 */6 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[Pack345] Running scheduled launch audit');
     await runLaunchAudit('scheduled');
-    return null;
+    return;
   });
 
 /**
@@ -1082,10 +1079,13 @@ export const pack345_forceLaunch = functions.https.onCall(async (request) => {
 
     console.log(`[Pack345] Launch forced by admin ${request.auth.uid}: ${reason}`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Launch force override applied. All blocking reasons cleared.',
       overrideId
-    };
+    });
+
+
+    return;
   }
 );

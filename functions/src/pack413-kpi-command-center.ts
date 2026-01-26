@@ -25,7 +25,7 @@ import {
   KpiSeverity,
   KpiTrend,
 } from '../../shared/types/pack413-kpi';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -70,7 +70,10 @@ export const pack413_getToplineKpis = functions.https.onCall(async (request) => 
       recentIncidents,
     };
 
-    return { success: true, data: response };
+    console.log('Scheduled job result:', { success: true, data: response });
+
+
+    return;
   } catch (error) {
     console.error('Error fetching topline KPIs:', error);
     throw new functions.https.HttpsError('internal', 'Failed to fetch topline KPIs');
@@ -113,7 +116,10 @@ export const pack413_getRegionKpis = functions.https.onCall(async (request) => {
       timestamp: new Date().toISOString(),
     };
 
-    return { success: true, data: response };
+    console.log('Scheduled job result:', { success: true, data: response });
+
+
+    return;
   } catch (error) {
     console.error('Error fetching region KPIs:', error);
     throw new functions.https.HttpsError('internal', 'Failed to fetch region KPIs');
@@ -145,7 +151,10 @@ export const pack413_getSegmentKpis = functions.https.onCall(async (request) => 
       timestamp: new Date().toISOString(),
     };
 
-    return { success: true, data: response };
+    console.log('Scheduled job result:', { success: true, data: response });
+
+
+    return;
   } catch (error) {
     console.error('Error fetching segment KPIs:', error);
     throw new functions.https.HttpsError('internal', 'Failed to fetch segment KPIs');
@@ -155,9 +164,7 @@ export const pack413_getSegmentKpis = functions.https.onCall(async (request) => 
 /**
  * Scheduled function: evaluate KPI alert rules (runs every 5 minutes)
  */
-export const pack413_evaluateKpiAlerts = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const pack413_evaluateKpiAlerts = onSchedule("every 5 minutes", async (event) => {
     console.log('Starting KPI alert evaluation...');
 
     try {
@@ -181,10 +188,15 @@ export const pack413_evaluateKpiAlerts = functions.pubsub
         console.log(`${triggered} alerts triggered.`);
       }
 
-      return { success: true, evaluated: results.length, triggered };
+      console.log('Scheduled job result:', { success: true, evaluated: results.length, triggered });
+
+
+      return;
     } catch (error) {
       console.error('Error evaluating KPI alerts:', error);
-      return { success: false, error: String(error) };
+      console.log('Scheduled job result:', { success: false, error: String(error) });
+
+      return;
     }
   });
 

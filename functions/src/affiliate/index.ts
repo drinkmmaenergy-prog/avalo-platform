@@ -4,8 +4,9 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db } from '../init';
+import { onSchedule } from '../runtime';
 import {
   createAffiliateProfile,
   generateAffiliateLink,
@@ -58,7 +59,9 @@ export const affiliateMarkVerified = onCall(async (request) => {
   }
 
   await markReferralVerified(request.data.userId);
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+  return;
 });
 
 /**
@@ -148,7 +151,10 @@ export const affiliateSignAgreement = onCall(async (request) => {
     updatedAt: new Date(),
   });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 /**
@@ -183,7 +189,10 @@ export const affiliateUpdateLandingPage = onCall(async (request) => {
     updatedAt: new Date(),
   });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 /**

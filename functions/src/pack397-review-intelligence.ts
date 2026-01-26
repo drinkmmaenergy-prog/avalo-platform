@@ -14,7 +14,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -1258,10 +1258,7 @@ export const createVerifiedReview = functions.https.onCall(async (request) => {
 /**
  * Scheduled: Daily reputation score updates
  */
-export const scheduledReputationUpdate = functions.pubsub
-  .schedule('0 2 * * *') // 2 AM daily
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const scheduledReputationUpdate = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     const engine = new ReputationScoreEngine();
     
     // Update active users (interacted in last 30 days)
@@ -1284,10 +1281,7 @@ export const scheduledReputationUpdate = functions.pubsub
 /**
  * Scheduled: Review recovery automation
  */
-export const scheduledReviewRecovery = functions.pubsub
-  .schedule('0 10 * * *') // 10 AM daily
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const scheduledReviewRecovery = onSchedule({ schedule: "0 10 * * *", timeZone: "UTC" }, async (event) => {
     const engine = new ReviewRecoveryEngine();
     
     // Identify candidates
@@ -1312,10 +1306,7 @@ export const scheduledReviewRecovery = functions.pubsub
 /**
  * Scheduled: Anomaly detection sweep
  */
-export const scheduledAnomalyDetection = functions.pubsub
-  .schedule('*/15 * * * *') // Every 15 minutes
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const scheduledAnomalyDetection = onSchedule({ schedule: "*/15 * * * *", timeZone: "UTC" }, async (event) => {
     // Check for unresolved anomalies
     const activeAnomalies = await db.collection('review_anomalies')
       .where('status', 'in', ['detected', 'responding'])

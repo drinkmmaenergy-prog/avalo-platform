@@ -7,7 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, auth, onCall } from './runtime';
+import { HttpsError, auth, onCall, logger, onSchedule } from './runtime';
 
 // Types
 export interface LanguageProfile {
@@ -202,13 +202,18 @@ export const getSupportedLanguages = functions.https.onCall(async (request) => {
       }));
     }
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       languages: languages.filter(l => l.enabled).sort((a, b) => a.priority - b.priority)
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error getting supported languages:', error);
-    return { success: false, error: error.message };
+    console.log('Scheduled job result:', { success: false, error: error.message });
+
+    return;
   }
 });
 
@@ -231,11 +236,13 @@ export const detectUserLanguage = functions.https.onCall(async (request) => {
     // Check if user already has a manual preference
     const userPrefDoc = await db.collection('user-language-preferences').doc(userId).get();
     if (userPrefDoc.exists && !userPrefDoc.data()?.autoDetected) {
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         languageCode: userPrefDoc.data()?.languageCode,
         source: 'manual'
-      };
+      });
+
+      return;
     }
     
     // Try device language first
@@ -286,11 +293,14 @@ export const detectUserLanguage = functions.https.onCall(async (request) => {
     
     await db.collection('user-language-preferences').doc(userId).set(preference);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       languageCode: detectedLanguage,
       source: detectionSource
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error detecting user language:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -332,7 +342,10 @@ export const setUserLanguage = functions.https.onCall(async (request) => {
       'languageUpdated': Date.now()
     });
     
-    return { success: true, languageCode };
+    console.log('Scheduled job result:', { success: true, languageCode });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error setting user language:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -390,7 +403,10 @@ export const getTranslationPhrases = functions.https.onCall(async (request) => {
       }
     });
     
-    return { success: true, phrases, languageCode };
+    console.log('Scheduled job result:', { success: true, phrases, languageCode });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error getting translation phrases:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -427,7 +443,10 @@ export const adminUpdateTranslationPhrase = functions.https.onCall(async (reques
     
     await db.collection('translation-phrases').doc(phraseId).set(phrase, { merge: true });
     
-    return { success: true, phraseId };
+    console.log('Scheduled job result:', { success: true, phraseId });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error updating translation phrase:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -472,7 +491,10 @@ export const adminToggleLanguage = functions.https.onCall(async (request) => {
     
     await configRef.set({ disabledLanguages }, { merge: true });
     
-    return { success: true, languageCode, enabled };
+    console.log('Scheduled job result:', { success: true, languageCode, enabled });
+
+    
+    return;
   } catch (error: any) {
     console.error('Error toggling language:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -528,9 +550,7 @@ export const onUserCountryChange = functions.firestore
   });
 
 // Initialize translation cache (scheduled job)
-export const cacheTranslations = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const cacheTranslations = onSchedule("every 24 hours", async (event) => {
     const db = admin.firestore();
     
     try {

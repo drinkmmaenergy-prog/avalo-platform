@@ -17,7 +17,7 @@ import {
   DiscoveryFeedResponse,
   SearchProfilesResponse,
 } from './types/discovery.types';
-import { HttpsError, admin, auth, onCall, onRequest } from './runtime';
+import { HttpsError, admin, auth, onCall, onRequest, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // CALLABLE FUNCTIONS
@@ -197,11 +197,7 @@ export const rebuildDiscoveryProfileCallable = functions
  * Refresh Discovery Profiles Daily
  * Runs daily at 2 AM UTC to refresh stale profiles
  */
-export const refreshDiscoveryProfilesDaily = functions
-  .region('europe-west3')
-  .pubsub.schedule('0 2 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const refreshDiscoveryProfilesDaily = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC", region: "europe-west3" }, async (event) => {
     try {
       console.log('[refreshDiscoveryProfilesDaily] Starting daily refresh');
 
@@ -212,7 +208,10 @@ export const refreshDiscoveryProfilesDaily = functions
         `[refreshDiscoveryProfilesDaily] Completed: ${result.refreshed} refreshed, ${result.errors} errors`
       );
 
-      return { ok: true, ...result };
+      console.log('Scheduled job result:', { ok: true, ...result });
+
+
+      return;
     } catch (error) {
       console.error('[refreshDiscoveryProfilesDaily] Error:', error);
       throw error;
@@ -223,11 +222,7 @@ export const refreshDiscoveryProfilesDaily = functions
  * Degrade Inactive User Scores
  * Runs daily at 3 AM UTC to reduce scores for inactive users
  */
-export const degradeInactiveScoresDaily = functions
-  .region('europe-west3')
-  .pubsub.schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const degradeInactiveScoresDaily = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC", region: "europe-west3" }, async (event) => {
     try {
       console.log('[degradeInactiveScoresDaily] Starting score degradation');
 
@@ -238,7 +233,10 @@ export const degradeInactiveScoresDaily = functions
         `[degradeInactiveScoresDaily] Completed: ${result.degraded} users degraded`
       );
 
-      return { ok: true, ...result };
+      console.log('Scheduled job result:', { ok: true, ...result });
+
+
+      return;
     } catch (error) {
       console.error('[degradeInactiveScoresDaily] Error:', error);
       throw error;

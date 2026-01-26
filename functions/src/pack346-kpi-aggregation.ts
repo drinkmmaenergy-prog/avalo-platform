@@ -7,15 +7,12 @@ import * as functions from "firebase-functions";
 import { db, serverTimestamp, increment, generateId } from "./init.js";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 import { DailyKPI, HourlyMetrics } from "./pack346-types";
-import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 /**
  * Scheduled daily aggregation at 00:05 UTC
  */
-export const aggregateDailyKPIs = functions.pubsub
-  .schedule("5 0 * * *")
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const aggregateDailyKPIs = onSchedule({ schedule: "5 0 * * *", timeZone: "UTC" }, async (event) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const dateStr = yesterday.toISOString().split("T")[0];
@@ -33,7 +30,9 @@ export const aggregateDailyKPIs = functions.pubsub
         .set(kpi, { merge: true });
 
       console.log(`KPIs aggregated successfully for ${dateStr}`);
-      return { success: true, date: dateStr };
+      console.log('Scheduled job result:', { success: true, date: dateStr });
+
+      return;
     } catch (error) {
       console.error("Error aggregating KPIs:", error);
       throw error;
@@ -43,10 +42,7 @@ export const aggregateDailyKPIs = functions.pubsub
 /**
  * Scheduled hourly aggregation
  */
-export const aggregateHourlyKPIs = functions.pubsub
-  .schedule("5 * * * *")
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const aggregateHourlyKPIs = onSchedule({ schedule: "5 * * * *", timeZone: "UTC" }, async (event) => {
     const now = new Date();
     const hour = now.toISOString().substring(0, 13); // YYYY-MM-DD-HH
 
@@ -63,7 +59,9 @@ export const aggregateHourlyKPIs = functions.pubsub
         .set(metrics);
 
       console.log(`Hourly KPIs aggregated for ${hour}`);
-      return { success: true, hour };
+      console.log('Scheduled job result:', { success: true, hour });
+
+      return;
     } catch (error) {
       console.error("Error aggregating hourly KPIs:", error);
       throw error;
@@ -486,7 +484,10 @@ export const triggerKPIAggregation = functions.https.onCall(async (request) => {
         .doc(date)
         .set(kpi, { merge: true });
 
-      return { success: true, date, kpi };
+      console.log('Scheduled job result:', { success: true, date, kpi });
+
+
+      return;
     } catch (error) {
       console.error("Error in manual KPI aggregation:", error);
       throw new functions.https.HttpsError(

@@ -9,7 +9,7 @@ import { BrandCampaignEngine } from './pack349-campaign-engine';
 import { AdPlacementEngine } from './pack349-placement-engine';
 import { AdBillingEngine } from './pack349-billing';
 import { SponsoredCreatorEngine } from './pack349-sponsored-creators';
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
 
 /**
  * Create Ad
@@ -515,9 +515,7 @@ export const requestCreatorPayout = functions.https.onCall(async (request) => {
  * Scheduled: Process Campaigns
  * Runs every hour to activate/end scheduled campaigns
  */
-export const processScheduledCampaigns = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async () => {
+export const processScheduledCampaigns = onSchedule("every 1 hours", async (event) => {
     await BrandCampaignEngine.processScheduledCampaigns();
     return null;
   });
@@ -526,10 +524,7 @@ export const processScheduledCampaigns = functions.pubsub
  * Scheduled: Process Minimum Guarantees
  * Runs on the 1st of each month
  */
-export const processMinimumGuarantees = functions.pubsub
-  .schedule('0 0 1 * *')
-  .timeZone('UTC')
-  .onRun(async () => {
+export const processMinimumGuarantees = onSchedule({ schedule: "0 0 1 * *", timeZone: "UTC" }, async (event) => {
     await SponsoredCreatorEngine.processMinimumGuarantees();
     return null;
   });

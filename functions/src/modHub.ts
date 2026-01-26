@@ -337,7 +337,7 @@ async function autoAssignToModeratorV1(queueId: string): Promise<string | null> 
     }
   }
 
-  return null;
+  return;
 }
 
 // ============================================================================
@@ -542,7 +542,10 @@ export const claimQueueItemV1 = onCall(
 
     logger.info(`Moderator ${moderatorId} claimed queue item ${queueId}`);
 
-    return { success: true, item: updatedItem };
+    console.log('Scheduled job result:', { success: true, item: updatedItem });
+
+
+    return;
   }
 );
 
@@ -609,7 +612,10 @@ export const resolveQueueItemV1 = onCall(
 
     logger.info(`Moderator ${moderatorId} resolved ${queueId} with action: ${action}`);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -760,7 +766,7 @@ export const getModeratorStatsV1 = onCall(
     const stats = statsDoc.exists ? (statsDoc.data() as ModeratorStats) : null;
 
     if (!stats) {
-      return {
+      console.log('Scheduled job result:', {
         moderatorId,
         totalReviewed: 0,
         avgReviewTime: 0,
@@ -770,7 +776,9 @@ export const getModeratorStatsV1 = onCall(
         overdueCases: 0,
         appealsOverturned: 0,
         lastActiveAt: Timestamp.now(),
-      };
+      });
+
+      return;
     }
 
     return stats;

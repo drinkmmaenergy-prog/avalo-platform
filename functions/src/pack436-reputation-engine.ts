@@ -11,7 +11,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { timestamp } from './runtime';
+import { timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -97,9 +97,7 @@ interface WeeklyReport {
  * Calculate Global App Reputation Score
  * Updates every hour
  */
-export const calculateGARS = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async () => {
+export const calculateGARS = onSchedule("every 1 hours", async (event) => {
     const db = admin.firestore();
     
     // Fetch current metrics
@@ -166,7 +164,7 @@ export const calculateGARS = functions.pubsub
       });
     }
     
-    return score;
+    return;
   });
 
 // Component calculation functions
@@ -288,9 +286,7 @@ async function calculateMarketShareScore(): Promise<number> {
 /**
  * Calculate reputation scores per country
  */
-export const calculateCountryScores = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async () => {
+export const calculateCountryScores = onSchedule("every 6 hours", async (event) => {
     const db = admin.firestore();
     
     // Get list of active countries
@@ -306,7 +302,7 @@ export const calculateCountryScores = functions.pubsub
       await db.collection('countryReputation').doc(country).set(score);
     }
     
-    return { countries: scores.length };
+    return;
   });
 
 async function calculateCountryScore(country: string): Promise<CountryReputationScore> {
@@ -347,9 +343,7 @@ async function calculateCountryScore(country: string): Promise<CountryReputation
 /**
  * Track store visibility scores
  */
-export const calculateVisibilityScores = functions.pubsub
-  .schedule('every 12 hours')
-  .onRun(async () => {
+export const calculateVisibilityScores = onSchedule("every 12 hours", async (event) => {
     const db = admin.firestore();
     
     // Fetch iOS metrics
@@ -382,7 +376,7 @@ export const calculateVisibilityScores = functions.pubsub
     // Store visibility score
     await db.collection('visibilityScores').doc('current').set(visibility);
     
-    return visibility;
+    return;
   });
 
 function calculatePlatformVisibility(data: any): number {
@@ -417,9 +411,7 @@ async function createReputationAnomaly(anomaly: ReputationAnomaly) {
 /**
  * Monitor for reputation anomalies
  */
-export const monitorReputationAnomalies = functions.pubsub
-  .schedule('every 30 minutes')
-  .onRun(async () => {
+export const monitorReputationAnomalies = onSchedule("every 30 minutes", async (event) => {
     const db = admin.firestore();
     const now = Date.now();
     const oneHourAgo = now - (60 * 60 * 1000);
@@ -476,7 +468,7 @@ export const monitorReputationAnomalies = functions.pubsub
       }
     }
     
-    return { checked: true };
+    return;
   });
 
 // ============================================================================
@@ -486,10 +478,7 @@ export const monitorReputationAnomalies = functions.pubsub
 /**
  * Generate weekly reputation report
  */
-export const generateWeeklyReport = functions.pubsub
-  .schedule('every monday 09:00')
-  .timeZone('UTC')
-  .onRun(async () => {
+export const generateWeeklyReport = onSchedule({ schedule: "every monday 09:00", timeZone: "UTC" }, async (event) => {
     const db = admin.firestore();
     const now = Date.now();
     const oneWeekAgo = now - (7 * 24 * 60 * 60 * 1000);
@@ -536,7 +525,7 @@ export const generateWeeklyReport = functions.pubsub
       read: false,
     });
     
-    return report;
+    return;
   });
 
 function generateRecommendations(

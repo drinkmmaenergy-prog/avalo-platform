@@ -28,7 +28,7 @@ import {
   ProximityThresholds,
   PassionThresholds
 } from './pack245-audience-segments-types';
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
 
 // ========================================================================
 // Configuration and Constants
@@ -822,9 +822,7 @@ export async function computeCreatorAudienceAnalytics(
 /**
  * Scheduled function to update segments (runs daily)
  */
-export const scheduledSegmentUpdate = functions.pubsub
-  .schedule('0 2 * * *') // 2 AM daily
-  .onRun(async (context) => {
+export const scheduledSegmentUpdate = onSchedule("0 2 * * *", async (event) => {
     const batchSize = 100;
     let lastDoc: any = null;
 

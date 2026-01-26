@@ -12,7 +12,7 @@ import {
   AmlInputMetrics,
   AmlRiskResult 
 } from './amlRiskEngine';
-import { onRequest } from './runtime';
+import { onRequest, logger, onSchedule } from './runtime';
 
 const FieldValue = admin.firestore.FieldValue;
 const Timestamp = admin.firestore.Timestamp;
@@ -491,10 +491,7 @@ export async function aggregateAmlProfileForUser(userId: string): Promise<void> 
  * Scheduled function to aggregate AML profiles.
  * Runs daily at 2 AM UTC.
  */
-export const aggregateAmlProfiles = functions.pubsub
-  .schedule('0 2 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const aggregateAmlProfiles = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[AML Aggregation] Starting daily AML profile aggregation');
     
     try {
@@ -542,7 +539,10 @@ export const aggregateAmlProfiles = functions.pubsub
       
       console.log(`[AML Aggregation] Completed: ${processedCount} profiles updated, ${errorCount} errors`);
       
-      return { success: true, processed: processedCount, errors: errorCount };
+      console.log('Scheduled job result:', { success: true, processed: processedCount, errors: errorCount });
+
+      
+      return;
     } catch (error: any) {
       console.error('[AML Aggregation] Job failed:', error);
       throw error;
@@ -666,7 +666,7 @@ export const getAmlProfile = functions.https.onRequest(async (req, res) => {
     
     const events = eventsSnapshot.docs.map(doc => {
       const event = doc.data() as AmlEvent;
-      return {
+      console.log('Scheduled job result:', {
         eventId: event.eventId,
         kind: event.kind,
         severity: event.severity,
@@ -674,7 +674,9 @@ export const getAmlProfile = functions.https.onRequest(async (req, res) => {
         source: event.source,
         handled: event.handled,
         createdAt: event.createdAt.toMillis()
-      };
+      });
+
+      return;
     });
     
     res.json({

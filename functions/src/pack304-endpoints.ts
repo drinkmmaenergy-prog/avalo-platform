@@ -8,7 +8,7 @@
 
 import * as functions from 'firebase-functions';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp } from './init';
 import { logger } from 'firebase-functions/v2';
 import { logAdminAction } from './pack296-audit-helpers';
@@ -40,7 +40,7 @@ import {
   exportMonthlyFinanceData,
   exportCreatorSummaryData,
 } from './pack304-exports';
-import { auth , CallableRequest} from './runtime';
+import { auth , CallableRequest, onSchedule } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -110,19 +110,24 @@ export const pack304_getMonthlyOverview = onCall(
         }
       );
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: aggregation,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting monthly overview:', error);
       if (error instanceof HttpsError) {
         throw error;
       }
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to get monthly overview',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -171,19 +176,24 @@ export const pack304_getMonthlyTrends = onCall(
         }
       );
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: aggregations,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting monthly trends:', error);
       if (error instanceof HttpsError) {
         throw error;
       }
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to get trends',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -223,19 +233,24 @@ export const pack304_getUserFinancialSummary = onCall(
         }
       );
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: summary,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting user financial summary:', error);
       if (error instanceof HttpsError) {
         throw error;
       }
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to get user summary',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -289,20 +304,25 @@ export const pack304_listAnomalies = onCall(
         .map(doc => doc.data() as FinanceAnomaly);
       const hasMore = snapshot.docs.length > limit;
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         anomalies,
         hasMore,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error listing anomalies:', error);
       if (error instanceof HttpsError) {
         throw error;
       }
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to list anomalies',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -358,18 +378,23 @@ export const pack304_updateAnomalyStatus = onCall(
         }
       );
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error updating anomaly status:', error);
       if (error instanceof HttpsError) {
         throw error;
       }
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to update anomaly',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -411,19 +436,24 @@ export const pack304_exportMonthlyFinance = onCall(
         }
       );
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         downloadUrl,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error exporting monthly finance:', error);
       if (error instanceof HttpsError) {
         throw error;
       }
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to export data',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -461,19 +491,24 @@ export const pack304_exportCreatorSummary = onCall(
         }
       );
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         downloadUrl,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error exporting creator summary:', error);
       if (error instanceof HttpsError) {
         throw error;
       }
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to export data',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -522,10 +557,12 @@ export const pack304_admin_triggerAggregation = onCall(
       if (error instanceof HttpsError) {
         throw error;
       }
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to trigger aggregation',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -548,10 +585,12 @@ export const pack304_admin_triggerAnomalyDetection = onCall(
       if (error instanceof HttpsError) {
         throw error;
       }
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to detect anomalies',
-      };
+      });
+
+      return;
     }
   }
 );

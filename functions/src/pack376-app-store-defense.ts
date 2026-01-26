@@ -8,7 +8,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
-import { FieldValue, HttpsError, auth, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -331,9 +331,7 @@ async function pack376_detectReviewAttackPattern(reviewId: string, review: Store
 /**
  * Calculate and update user trust score
  */
-export const pack376_updateTrustScore = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async () => {
+export const pack376_updateTrustScore = onSchedule("every 6 hours", async (event) => {
     const usersSnapshot = await db.collection('users').limit(1000).get();
 
     const batch = db.batch();
@@ -461,9 +459,7 @@ export const pack376_trackASOMetrics = functions.https.onCall(async (request) =>
 /**
  * Generate keyword optimization hints
  */
-export const pack376_generateKeywordOptimizationHints = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async () => {
+export const pack376_generateKeywordOptimizationHints = onSchedule("every 24 hours", async (event) => {
     const platforms = ['ios', 'android'];
 
     for (const platform of platforms) {
@@ -597,9 +593,7 @@ export const pack376_triggerReviewRequest = functions.https.onCall(async (reques
 /**
  * Monitor reputation and trigger damage control
  */
-export const pack376_reputationDamageControl = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async () => {
+export const pack376_reputationDamageControl = onSchedule("every 1 hours", async (event) => {
     const platforms = ['ios', 'android'];
 
     for (const platform of platforms) {
@@ -693,9 +687,7 @@ export const pack376_reputationDamageControl = functions.pubsub
 /**
  * Generate trust signals for users
  */
-export const pack376_generateTrustSignals = functions.pubsub
-  .schedule('every 12 hours')
-  .onRun(async () => {
+export const pack376_generateTrustSignals = onSchedule("every 12 hours", async (event) => {
     const usersSnapshot = await db.collection('users').limit(500).get();
 
     for (const userDoc of usersSnapshot.docs) {

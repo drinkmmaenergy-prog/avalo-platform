@@ -10,7 +10,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -252,9 +252,7 @@ export const pack386_recordSpend = functions.https.onCall(async (request) => {
 // BUDGET MONITORING (SCHEDULED)
 // ============================================================================
 
-export const pack386_monitorBudgets = functions.pubsub
-  .schedule('every 15 minutes')
-  .onRun(async () => {
+export const pack386_monitorBudgets = onSchedule("every 15 minutes", async (event) => {
     const today = new Date().toISOString().split('T')[0];
 
     // Get today's budgets
@@ -424,10 +422,7 @@ export const pack386_budgetKillSwitch = functions.https.onCall(async (request) =
 // RESET DAILY BUDGETS (SCHEDULED)
 // ============================================================================
 
-export const pack386_resetDailyBudgets = functions.pubsub
-  .schedule('0 0 * * *')
-  .timeZone('UTC')
-  .onRun(async () => {
+export const pack386_resetDailyBudgets = onSchedule({ schedule: "0 0 * * *", timeZone: "UTC" }, async (event) => {
     const today = new Date().toISOString().split('T')[0];
 
     // Archive yesterday's budgets

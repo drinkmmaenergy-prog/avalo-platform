@@ -13,10 +13,10 @@
 
 import { logger } from 'firebase-functions';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp, increment, arrayUnion } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
-import { admin, auth, functions, timestamp } from './runtime';
+import { admin, auth, functions, timestamp, onSchedule } from './runtime';
 
 // ==================== TYPES & INTERFACES ====================
 
@@ -242,11 +242,14 @@ export const listStoryArcs = onCall(
         ...doc.data()
       }));
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         arcs,
         total: arcs.length
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error listing story arcs', { error });
       throw new HttpsError('internal', error.message);
@@ -298,12 +301,14 @@ export const startStoryArc = onCall(
 
       if (!existingState.empty) {
         const state = existingState.docs[0];
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           stateId: state.id,
           resumed: true,
           currentChapter: state.data().currentChapterId
-        };
+        });
+
+        return;
       }
 
       const firstChapter = await db
@@ -352,13 +357,16 @@ export const startStoryArc = onCall(
         popularityScore: increment(1)
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         stateId: stateRef.id,
         resumed: false,
         currentChapter: firstChapter.docs[0].id,
         chapter: firstChapter.docs[0].data()
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error starting story arc', { error });
       throw new HttpsError('internal', error.message);
@@ -407,12 +415,15 @@ export const progressStoryArc = onCall(
 
       const currentChapter = currentChapterDoc.data() as StoryChapter;
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         state,
         chapter: currentChapter,
         canProgress: true
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error progressing story arc', { error });
       throw new HttpsError('internal', error.message);
@@ -451,11 +462,14 @@ export const getStoryChoices = onCall(
         ...doc.data()
       }));
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         choices,
         hasChoices: choices.length > 0
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting story choices', { error });
       throw new HttpsError('internal', error.message);
@@ -506,11 +520,14 @@ export const makeStoryChoice = onCall(
           lastUpdatedAt: serverTimestamp()
         });
 
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           paused: true,
           message: 'Story paused for your wellbeing. Real connections are irreplaceable!'
-        };
+        });
+
+
+        return;
       }
 
       const arcDoc = await db.collection('ai_story_arcs').doc(state.arcId).get();
@@ -547,12 +564,15 @@ export const makeStoryChoice = onCall(
         .doc(branch.nextChapterId)
         .get();
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         nextChapter: nextChapterDoc.exists ? nextChapterDoc.data() : null,
         progressPercentage: Math.min(100, progressPercentage),
         consequence: branch.consequence
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error making story choice', { error });
       throw new HttpsError('internal', error.message);
@@ -615,11 +635,14 @@ export const startMultiAiScene = onCall(
 
       logger.info(`Multi-AI scene started`, { userId, sessionId: sessionRef.id, characterIds });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         sessionId: sessionRef.id,
         message: 'Multi-AI scene started successfully'
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error starting multi-AI scene', { error });
       throw new HttpsError('internal', error.message);
@@ -678,11 +701,14 @@ export const completeStoryArc = onCall(
 
       logger.info(`Story arc completed`, { userId, arcId: state.arcId, outcomeType });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Story completed successfully!',
         outcomeType
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error completing story arc', { error });
       throw new HttpsError('internal', error.message);
@@ -718,10 +744,13 @@ export const resetStoryArc = onCall(
 
       logger.info(`Story arc reset`, { userId, arcId: state.arcId });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Story reset successfully. You can start fresh!'
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error resetting story arc', { error });
       throw new HttpsError('internal', error.message);
@@ -809,10 +838,13 @@ export const reportStoryContent = onCall(
 
       logger.warn(`Story content reported`, { userId, arcId, reason });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Thank you for keeping our community safe!'
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error reporting story content', { error });
       throw new HttpsError('internal', error.message);

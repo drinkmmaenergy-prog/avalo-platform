@@ -4,11 +4,11 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { AdEngine } from './pack145-ad-engine';
 import { AdPlacementEngine } from './pack145-placement-engine';
 import { db } from './init';
-import { auth, functions } from './runtime';
+import { auth, functions, onSchedule } from './runtime';
 
 export const createAdCampaign = onCall(async (request) => {
   const uid = request.auth?.uid;
@@ -18,7 +18,9 @@ export const createAdCampaign = onCall(async (request) => {
 
   try {
     const campaign = await AdEngine.createCampaign(uid, request.data);
-    return { success: true, campaign };
+    console.log('Scheduled job result:', { success: true, campaign });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -32,7 +34,9 @@ export const uploadAdAsset = onCall(async (request) => {
 
   try {
     const asset = await AdEngine.uploadAdAsset(uid, request.data);
-    return { success: true, asset };
+    console.log('Scheduled job result:', { success: true, asset });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -51,7 +55,9 @@ export const attachAssetToCampaign = onCall(async (request) => {
 
   try {
     await AdEngine.attachAssetToCampaign(campaignId, assetId, uid);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -70,7 +76,9 @@ export const updateCampaignStatus = onCall(async (request) => {
 
   try {
     await AdEngine.updateCampaignStatus(campaignId, status, uid);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -95,7 +103,10 @@ export const getMyCampaigns = onCall(async (request) => {
       ...doc.data(),
     }));
 
-    return { success: true, campaigns };
+    console.log('Scheduled job result:', { success: true, campaigns });
+
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -120,7 +131,10 @@ export const getMyAdAssets = onCall(async (request) => {
       ...doc.data(),
     }));
 
-    return { success: true, assets };
+    console.log('Scheduled job result:', { success: true, assets });
+
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -144,7 +158,9 @@ export const getCampaignAnalytics = onCall(async (request) => {
       startDate,
       endDate
     );
-    return { success: true, analytics };
+    console.log('Scheduled job result:', { success: true, analytics });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -163,7 +179,9 @@ export const recordAdImpression = onCall(async (request) => {
 
   try {
     await AdEngine.recordAdInteraction(placementId, 'impression', metadata);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -182,7 +200,9 @@ export const recordAdClick = onCall(async (request) => {
 
   try {
     await AdEngine.recordAdInteraction(placementId, 'click', metadata);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -204,7 +224,9 @@ export const recordAdView = onCall(async (request) => {
       ...metadata,
       viewDuration: duration,
     });
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -227,7 +249,9 @@ export const recordAdConversion = onCall(async (request) => {
       conversionType,
       conversionValue,
     });
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -247,11 +271,15 @@ export const getFeedAds = onCall(async (request) => {
   try {
     const placement = await AdPlacementEngine.getFeedAdsForUser(uid, feedPosition);
     if (!placement) {
-      return { success: true, placement: null };
+      console.log('Scheduled job result:', { success: true, placement: null });
+
+      return;
     }
 
     const adData = await AdPlacementEngine.getAdWithAsset(placement.id);
-    return { success: true, ad: adData };
+    console.log('Scheduled job result:', { success: true, ad: adData });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -273,7 +301,9 @@ export const getClubAds = onCall(async (request) => {
     const ads = await Promise.all(
       placements.map(p => AdPlacementEngine.getAdWithAsset(p.id))
     );
-    return { success: true, ads: ads.filter(a => a !== null) };
+    console.log('Scheduled job result:', { success: true, ads: ads.filter(a => a !== null) });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -292,7 +322,9 @@ export const getDiscoveryAds = onCall(async (request) => {
     const ads = await Promise.all(
       placements.map(p => AdPlacementEngine.getAdWithAsset(p.id))
     );
-    return { success: true, ads: ads.filter(a => a !== null) };
+    console.log('Scheduled job result:', { success: true, ads: ads.filter(a => a !== null) });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -311,7 +343,9 @@ export const getEventRecommendationAds = onCall(async (request) => {
     const ads = await Promise.all(
       placements.map(p => AdPlacementEngine.getAdWithAsset(p.id))
     );
-    return { success: true, ads: ads.filter(a => a !== null) };
+    console.log('Scheduled job result:', { success: true, ads: ads.filter(a => a !== null) });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -340,7 +374,10 @@ export const reportAd = onCall(async (request) => {
       createdAt: new Date(),
     });
 
-    return { success: true, reportId: reportRef.id };
+    console.log('Scheduled job result:', { success: true, reportId: reportRef.id });
+
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -354,7 +391,9 @@ export const getAdvertiserStrikes = onCall(async (request) => {
 
   try {
     const strikes = await AdEngine.getAdvertiserStrikes(uid);
-    return { success: true, strikes };
+    console.log('Scheduled job result:', { success: true, strikes });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }
@@ -378,7 +417,9 @@ export const getPlacementStats = onCall(async (request) => {
     }
 
     const stats = await AdPlacementEngine.getPlacementStats(campaignId);
-    return { success: true, stats };
+    console.log('Scheduled job result:', { success: true, stats });
+
+    return;
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
   }

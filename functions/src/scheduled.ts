@@ -97,7 +97,7 @@ export const expireStaleChats = onSchedule(
       console.error("Error expiring chats:", error);
     }
 
-    return null;
+    return;
   });
 
 /**
@@ -207,7 +207,7 @@ export const calendarSweep = onSchedule(
       console.error("Error in calendar sweep:", error);
     }
 
-    return null;
+    return;
   });
 
 /**
@@ -294,7 +294,7 @@ export const updateRoyalEligibility = onSchedule(
       console.error("Error updating Royal eligibility:", error);
     }
 
-    return null;
+    return;
   });
 
 

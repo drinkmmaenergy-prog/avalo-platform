@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { HttpsError, auth, onCall, timestamp } from './runtime';
+import { HttpsError, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 // ============================================
 // TYPES
@@ -90,9 +90,7 @@ const RECOVERY_SLA = {
 /**
  * Create hourly backup
  */
-export const createHourlyBackup = functions.pubsub
-  .schedule("0 * * * *") // Every hour at minute 0
-  .onRun(async (context) => {
+export const createHourlyBackup = onSchedule("0 * * * *", async (event) => {
     console.log("💾 Starting hourly backup...");
     
     const backupId = `hourly_${Date.now()}`;
@@ -107,9 +105,7 @@ export const createHourlyBackup = functions.pubsub
 /**
  * Create daily backup
  */
-export const createDailyBackup = functions.pubsub
-  .schedule("0 2 * * *") // Every day at 2 AM
-  .onRun(async (context) => {
+export const createDailyBackup = onSchedule("0 2 * * *", async (event) => {
     console.log("💾 Starting daily backup...");
     
     const backupId = `daily_${Date.now()}`;
@@ -124,9 +120,7 @@ export const createDailyBackup = functions.pubsub
 /**
  * Create cold storage archive
  */
-export const createColdStorageBackup = functions.pubsub
-  .schedule("0 3 1 * *") // First day of month at 3 AM
-  .onRun(async (context) => {
+export const createColdStorageBackup = onSchedule("0 3 1 * *", async (event) => {
     console.log("❄️ Starting cold storage backup...");
     
     const backupId = `cold_${Date.now()}`;
@@ -304,11 +298,14 @@ export const recoverWallet = functions.https.onCall(async (request) => {
       console.warn(`⚠️ Recovery exceeded SLA (${RECOVERY_SLA.wallet}s)`);
     }
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       recoveryId,
       durationMs: duration,
-    };
+    });
+
+    
+    return;
   }
 );
 
@@ -342,11 +339,14 @@ export const recoverChat = functions.https.onCall(async (request) => {
       console.warn(`⚠️ Recovery exceeded SLA (${RECOVERY_SLA.chat}s)`);
     }
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       recoveryId,
       durationMs: duration,
-    };
+    });
+
+    
+    return;
   }
 );
 
@@ -380,11 +380,14 @@ export const recoverSupportTicket = functions.https.onCall(async (request) => {
       console.warn(`⚠️ Recovery exceeded SLA (${RECOVERY_SLA.support}s)`);
     }
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       recoveryId,
       durationMs: duration,
-    };
+    });
+
+    
+    return;
   }
 );
 
@@ -418,11 +421,14 @@ export const recoverAiSession = functions.https.onCall(async (request) => {
       console.warn(`⚠️ Recovery exceeded SLA (${RECOVERY_SLA.ai_session}s)`);
     }
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       recoveryId,
       durationMs: duration,
-    };
+    });
+
+    
+    return;
   }
 );
 
@@ -610,10 +616,13 @@ export const initiateRegionFailover = functions.https.onCall(async (request) => 
     
     console.log(`✅ Region failover complete: ${failedOverCount} users`);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       usersFailedOver: failedOverCount,
-    };
+    });
+
+    
+    return;
   }
 );
 
@@ -624,9 +633,7 @@ export const initiateRegionFailover = functions.https.onCall(async (request) => 
 /**
  * Monitor backup health
  */
-export const monitorBackupHealth = functions.pubsub
-  .schedule("every 6 hours")
-  .onRun(async (context) => {
+export const monitorBackupHealth = onSchedule("every 6 hours", async (event) => {
     const db = admin.firestore();
     
     console.log("🏥 Checking backup health...");

@@ -24,7 +24,7 @@ import * as logger from 'firebase-functions/logger';
 import { getFirestore } from 'firebase-admin/firestore';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db, serverTimestamp } from './init';
-import { HttpsError, admin, auth, increment, onCall, storage, z } from './runtime';
+import { HttpsError, admin, auth, increment, onCall, storage, z, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES
@@ -724,10 +724,7 @@ export const rebuildAiUserMemoryEndpoint = functions
  * Scheduled job: Rebuild memories for active users
  * Runs daily to keep memories fresh
  */
-export const scheduledMemoryRebuild = functions
-  .region('europe-west3')
-  .pubsub.schedule('every 24 hours')
-  .onRun(async (context) => {
+export const scheduledMemoryRebuild = onSchedule({ schedule: "every 24 hours", region: "europe-west3" }, async (event) => {
     try {
       logger.info('[AI Memory] Starting scheduled memory rebuild');
 

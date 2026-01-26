@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as crypto from 'crypto';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -197,11 +197,14 @@ export const pack385_attributeReferral = functions.https.onCall(async (request) 
     uses: admin.firestore.FieldValue.increment(1)
   });
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     verified: fraudFlags.length === 0,
     fraudFlags
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -340,12 +343,15 @@ export const pack385_processReferralReward = functions.https.onCall(async (reque
 
   await batch.commit();
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     inviterTokens: config.inviterTokens,
     inviteeTokens: config.inviteeTokens,
     unlockDate: unlockDate.toISOString()
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -455,9 +461,7 @@ export const pack385_getReferralStats = functions.https.onCall(async (request) =
 /**
  * Background job: Unlock referral rewards
  */
-export const pack385_unlockReferralRewards = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack385_unlockReferralRewards = onSchedule("every 24 hours", async (event) => {
     const now = new Date();
 
     // Get locked tokens that are ready to unlock

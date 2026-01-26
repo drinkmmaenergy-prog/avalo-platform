@@ -7,7 +7,7 @@ import * as functions from "firebase-functions";
 import { db, serverTimestamp, increment } from "./init.js";
 import { Timestamp } from "firebase-admin/firestore";
 import { CreatorKPI } from "./pack346-types";
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
 
 /**
  * Update creator KPI on chat completion
@@ -284,10 +284,7 @@ async function recalculateCreatorRates(creatorId: string): Promise<void> {
 /**
  * Scheduled daily creator KPI refresh
  */
-export const refreshCreatorKPIs = functions.pubsub
-  .schedule("0 2 * * *") // 2 AM daily
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const refreshCreatorKPIs = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     // Get all creators
     const creatorsSnap = await db
       .collection("users")

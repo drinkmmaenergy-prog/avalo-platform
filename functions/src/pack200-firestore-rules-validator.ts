@@ -16,7 +16,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import * as fs from 'fs';
 import * as path from 'path';
-import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 export type RuleViolationType = 
   | 'OPEN_READ'
@@ -175,7 +175,7 @@ async function testCollectionRule(
     const config = configDoc.data();
     
     if (type === 'UNAUTHENTICATED_READ' && config?.allowPublicRead === true) {
-      return {
+      console.log('Scheduled job result:', {
         violationId: generateId(),
         type: 'OPEN_READ',
         severity: 'HIGH',
@@ -184,11 +184,13 @@ async function testCollectionRule(
         message,
         recommendation: 'Restrict read access to authenticated users only',
         createdAt: Timestamp.now(),
-      };
+      });
+
+      return;
     }
     
     if (type === 'UNAUTHENTICATED_WRITE' && !config?.requireAuth) {
-      return {
+      console.log('Scheduled job result:', {
         violationId: generateId(),
         type: 'OPEN_WRITE',
         severity: 'CRITICAL',
@@ -197,13 +199,15 @@ async function testCollectionRule(
         message,
         recommendation: 'Require authentication for all write operations',
         createdAt: Timestamp.now(),
-      };
+      });
+
+      return;
     }
     
-    return null;
+    return;
   } catch (error) {
     console.error(`[RulesValidator] Test failed for ${collection}:`, error);
-    return null;
+    return;
   }
 }
 
@@ -258,9 +262,7 @@ async function triggerSecurityAlert(report: RulesAuditReport): Promise<void> {
 /**
  * Scheduled rules validation (daily)
  */
-export const scheduled_validateRules = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const scheduled_validateRules = onSchedule("every 24 hours", async (event) => {
     try {
       await validateFirestoreRules();
       console.log('[RulesValidator] Scheduled validation completed');
@@ -336,11 +338,14 @@ export const admin_getRulesAuditHistory = functions.https.onCall(async (request)
       };
     });
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       audits,
       total: snapshot.size,
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('[RulesValidator] Failed to get audit history:', error);
     throw new functions.https.HttpsError('internal', error.message);

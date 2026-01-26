@@ -15,7 +15,7 @@ import { db } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import {
   AgencyAnalytics,
   CreatorAgencyAccount,
@@ -25,7 +25,7 @@ import {
   getAgencyEarningsSummary,
   getCreatorEarningsSummaryWithAgency,
 } from './pack114-earnings-integration';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // AGENCY ANALYTICS ENDPOINTS
@@ -88,13 +88,16 @@ export const getAgencyDashboard = onCall(
         anonymized: `Creator ${String.fromCharCode(65 + index)}`, // A, B, C, etc.
       }));
 
-      return {
+      console.log('Scheduled job result:', {
         linkedCreators,
         totalEarnings: agency.totalEarnings,
         activeEarnings: agency.activeEarnings,
         last30DaysEarnings: earningsSummary.totalAgencyEarnings,
         topPerformers,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting agency dashboard', error);
       throw new HttpsError('internal', `Failed to get dashboard: ${error.message}`);
@@ -315,7 +318,7 @@ export const getAgencyLinkedCreators = onCall(
           const userDoc = await db.collection('users').doc(link.creatorUserId).get();
           const userData = userDoc.exists ? userDoc.data() : {};
 
-          return {
+          console.log('Scheduled job result:', {
             creatorId: link.creatorUserId,
             username: userData.username || 'Unknown',
             avatarUrl: userData.avatarUrl,
@@ -324,7 +327,10 @@ export const getAgencyLinkedCreators = onCall(
             totalEarnings: link.totalEarningsGenerated,
             agencyShare: link.agencyEarningsTotal,
             linkedSince: link.createdAt.toDate().toISOString(),
-          };
+          });
+
+
+          return;
         })
       );
 
@@ -463,7 +469,7 @@ export const getCreatorAgencyView = onCall(
 
       const agency = agencyDoc.exists ? (agencyDoc.data() as CreatorAgencyAccount) : null;
 
-      return {
+      console.log('Scheduled job result:', {
         hasAgency: true,
         agencyName: agency?.name,
         agencyPercentage: link.percentageForAgency,
@@ -472,7 +478,10 @@ export const getCreatorAgencyView = onCall(
         agencyShare: link.agencyEarningsTotal,
         linkStatus: link.status,
         linkedSince: link.createdAt.toDate().toISOString(),
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting creator agency view', error);
       throw new HttpsError('internal', `Failed to get agency info: ${error.message}`);
@@ -545,7 +554,7 @@ export const aggregateAgencyAnalyticsDaily = onSchedule(
 
       logger.info('Daily agency analytics aggregation completed', { processedCount });
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in analytics aggregation', error);
       throw error;
@@ -629,7 +638,7 @@ async function computeCreatorAnalytics(
     .count()
     .get();
 
-  return {
+  console.log('Scheduled job result:', {
     agencyId,
     creatorUserId,
     period: 'DAILY',
@@ -644,5 +653,8 @@ async function computeCreatorAnalytics(
     contentPublishedCount: 0, // Could be computed separately
     breakdown,
     computedAt: Timestamp.now(),
-  };
+  });
+
+
+  return;
 }

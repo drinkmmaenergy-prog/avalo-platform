@@ -576,7 +576,10 @@ export const updateCreatorPricingV1 = onCall(
 
     logger.info(`Creator ${userId} updated pricing settings`);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -634,16 +637,21 @@ export const validatePromoCodeV1 = onCall(
       }
       discount = Math.min(discount, promo.maxDiscountTokens);
 
-      return {
+      console.log('Scheduled job result:', {
         valid: true,
         discount,
         finalPrice: basePrice - discount,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
-      return {
+      console.log('Scheduled job result:', {
         valid: false,
         error: error.message,
-      };
+      });
+
+      return;
     }
   }
 );

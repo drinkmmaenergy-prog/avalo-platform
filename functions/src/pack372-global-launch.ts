@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -132,10 +132,12 @@ export const checkFeatureAccess = functions.https.onCall(async (request) => {
 
       // Check if country is locked
       if (launchConfig.launchStatus === 'locked') {
-        return {
+        console.log('Scheduled job result:', {
           allowed: false,
           reason: 'Service not available in your country',
-        };
+        });
+
+        return;
       }
 
       // Check if feature is enabled for this country
@@ -430,11 +432,15 @@ export const checkPaymentSafety = functions.https.onCall(async (request) => {
 
       // Check if payments/withdrawals enabled
       if (action === 'payout' && !launchConfig.withdrawalsEnabled) {
-        return { allowed: false, reason: 'Withdrawals not enabled in your country' };
+        console.log('Scheduled job result:', { allowed: false, reason: 'Withdrawals not enabled in your country' });
+
+        return;
       }
 
       if (action === 'tokenSale' && !launchConfig.paymentEnabled) {
-        return { allowed: false, reason: 'Payments not enabled in your country' };
+        console.log('Scheduled job result:', { allowed: false, reason: 'Payments not enabled in your country' });
+
+        return;
       }
 
       // Check safety gates
@@ -543,9 +549,7 @@ export const updateLaunchStatus = functions.https.onCall(async (request) => {
 // 6️⃣ CLEANUP OLD TRAFFIC METRICS (Scheduled)
 // ============================================
 
-export const cleanupOldTrafficMetrics = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const cleanupOldTrafficMetrics = onSchedule("every 24 hours", async (event) => {
     const cutoffTime = Date.now() - 7 * 24 * 60 * 60 * 1000; // 7 days ago
 
     try {
@@ -582,11 +586,13 @@ export const checkCountryAvailability = functions.https.onCall(async (request) =
         .get();
 
       if (!launchConfigDoc.exists) {
-        return {
+        console.log('Scheduled job result:', {
           available: false,
           status: 'locked',
           message: 'Service not available in your country yet',
-        };
+        });
+
+        return;
       }
 
       const config = launchConfigDoc.data() as GlobalLaunchConfig;

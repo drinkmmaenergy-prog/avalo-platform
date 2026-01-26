@@ -28,7 +28,7 @@ import {
   CONSENT_VERSION,
   DEFAULT_SESSION_EXPIRATION_HOURS
 } from './pack193-sexuality-consent';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -86,11 +86,14 @@ export const enableSexualityConsent = functions.https.onCall(async (request) => 
 
     await db.collection('consent_audit_logs').add(auditLog);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Sexuality consent enabled successfully',
       consentVersion: CONSENT_VERSION
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Error enabling sexuality consent:', error);
@@ -174,11 +177,14 @@ export const disableSexualityConsent = functions.https.onCall(async (request) =>
 
     await db.collection('consent_audit_logs').add(auditLog);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Sexuality consent disabled. All conversations reverted to PG mode.',
       sessionsEnded: activeSessions.size + activeSessions2.size
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Error disabling sexuality consent:', error);
@@ -283,7 +289,7 @@ export const initiateSexyModeSession = functions.https.onCall(async (request) =>
 
     await db.collection('consent_audit_logs').add(auditLog);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       sessionId,
       isActive: session.isActive,
@@ -291,7 +297,10 @@ export const initiateSexyModeSession = functions.https.onCall(async (request) =>
       message: session.isActive 
         ? 'Sexy mode is now active with mutual consent'
         : 'Request sent. Waiting for other user to consent.'
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Error initiating sexy mode session:', error);
@@ -366,14 +375,17 @@ export const respondToSexyModeInvitation = functions.https.onCall(async (request
 
     await db.collection('consent_audit_logs').add(auditLog);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       accepted: accept,
       isActive: updates.isActive,
       message: accept 
         ? 'Sexy mode is now active with mutual consent'
         : 'Invitation declined. Conversation remains PG.'
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Error responding to sexy mode invitation:', error);
@@ -444,10 +456,13 @@ export const endSexyModeSession = functions.https.onCall(async (request) => {
 
     await db.collection('consent_audit_logs').add(auditLog);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Sexy mode ended. Conversation reverted to PG.'
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Error ending sexy mode session:', error);
@@ -550,11 +565,14 @@ export const sendSexyContent = functions.https.onCall(async (request) => {
 
     await db.collection('consent_audit_logs').add(auditLog);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       contentId: contentRef.id,
       message: 'Content sent successfully'
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Error sending sexy content:', error);
@@ -626,10 +644,13 @@ export const reportSexyContent = functions.https.onCall(async (request) => {
       await db.collection('sexy_mode_violations').add(violation);
     }
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Content reported successfully. Our moderation team will review this.'
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Error reporting sexy content:', error);
@@ -645,7 +666,7 @@ export const reportSexyContent = functions.https.onCall(async (request) => {
  * Auto-expire sessions (scheduled function)
  * Runs every hour
  */
-export const autoExpireSessions = functions.pubsub.schedule('every 1 hours').onRun(async () => {
+export const autoExpireSessions = onSchedule("every 1 hours", async (event) => {
   try {
     const now = admin.firestore.Timestamp.now();
     

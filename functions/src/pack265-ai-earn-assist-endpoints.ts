@@ -4,7 +4,6 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { logger } from 'firebase-functions/v2';
 import { db, serverTimestamp } from './init';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -24,7 +23,7 @@ import {
   ContentOptimizationTip,
   FeatureAwarenessPrompt,
 } from './pack265-ai-earn-assist-types';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // SUGGESTION GENERATION
@@ -227,11 +226,14 @@ export const generateDailySuggestions = onCall(
     // Update metrics
     await updateMetrics(creatorId, prioritized.length, 'generated');
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       suggestions: prioritized,
       count: prioritized.length,
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -264,11 +266,14 @@ export const getCreatorSuggestions = onCall(
       .filter(s => !s.expiresAt || s.expiresAt > now)
       .slice(0, 5);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       suggestions,
       count: suggestions.length,
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -301,7 +306,10 @@ export const dismissSuggestion = onCall(
 
     await updateMetrics(cId, 1, 'dismissed');
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -334,7 +342,10 @@ export const actOnSuggestion = onCall(
 
     await updateMetrics(cId, 1, 'acted_upon');
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -424,14 +435,15 @@ export const calculateDMPriorities = onCall(
         .set(label);
     }
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       priorities: priorities.sort((a, b) => {
-        const order = { high: 3, medium: 2, standard: 1 };
+        const order: Record<string, number> = { high: 3, medium: 2, standard: 1 };
         return order[b.priority] - order[a.priority];
       }),
       count: priorities.length,
-    };
+    });
+    return;
   }
 );
 
@@ -461,13 +473,18 @@ export const getDMPriority = onCall(
       .get();
 
     if (!priorityDoc.exists) {
-      return { success: true, priority: null };
+      console.log('Scheduled job result:', { success: true, priority: null });
+
+      return;
     }
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       priority: priorityDoc.data(),
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -546,7 +563,7 @@ async function generateContentOptimizationTip(
   const profileDoc = await db.collection('users').doc(creatorId).get();
   const profile = profileDoc.data();
 
-  if (!profile) return null;
+  if (!profile) return;
 
   // Check photo count
   const photoCount = profile.photos?.length || 0;
@@ -566,7 +583,7 @@ async function generateContentOptimizationTip(
     };
   }
 
-  return null;
+  return;
 }
 
 /**
@@ -600,7 +617,7 @@ async function generateFeatureAwarenessPrompt(
     };
   }
 
-  return null;
+  return;
 }
 
 /**

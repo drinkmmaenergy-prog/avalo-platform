@@ -10,14 +10,14 @@
  * - Requires legal order for fraud-backed cancellations
  */
 
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp } from './init';
 import { logger } from 'firebase-functions/v2';
 import { Timestamp } from 'firebase-admin/firestore';
 import { PayoutReconciliationResult } from './pack105-types';
 import { createFinanceCase } from './pack105-finance-cases';
 import { logReconciliationMismatch } from './pack105-audit-logger';
-import { admin, functions } from './runtime';
+import { admin, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // RECONCILIATION ENGINE
@@ -58,7 +58,7 @@ export const reconcilePayoutsScheduled = onSchedule(
         casesCreated: result.casesCreated,
       });
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('[Reconciliation] Failed daily reconciliation', {
         error: error.message,
@@ -122,13 +122,16 @@ export async function reconcilePayouts(params: {
       }
     }
 
-    return {
+    console.log('Scheduled job result:', {
       totalChecked: payoutsSnapshot.size,
       matched,
       mismatches,
       casesCreated,
       results,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     logger.error('[Reconciliation] Failed to reconcile payouts', {
       error: error.message,
@@ -357,13 +360,13 @@ async function checkStripePayoutStatus(
   try {
     logger.info('[Reconciliation] Checking Stripe payout', { payoutId });
 
-    return null;
+    return;
   } catch (error: any) {
     logger.error('[Reconciliation] Failed to check Stripe payout', {
       error: error.message,
       payoutId,
     });
-    return null;
+    return;
   }
 }
 
@@ -377,13 +380,13 @@ async function checkWisePayoutStatus(
   try {
     logger.info('[Reconciliation] Checking Wise transfer', { transferId });
 
-    return null;
+    return;
   } catch (error: any) {
     logger.error('[Reconciliation] Failed to check Wise transfer', {
       error: error.message,
       transferId,
     });
-    return null;
+    return;
   }
 }
 

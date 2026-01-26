@@ -6,20 +6,14 @@
 import * as functions from 'firebase-functions';
 import { scheduledBlockchainIntegrityCheck } from './pack148-blockchain-verification';
 import { cleanupExpiredExports } from './pack148-export-engine';
+import { onSchedule } from './runtime';
 
 /**
  * Daily blockchain integrity check
  * Verifies blockchain chain integrity and alerts on issues
  * Runs at 3 AM UTC daily
  */
-export const dailyBlockchainIntegrityCheck = functions
-  .runWith({
-    timeoutSeconds: 540,
-    memory: '512MB',
-  })
-  .pubsub.schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dailyBlockchainIntegrityCheck = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     console.log('🔗 Starting daily blockchain integrity check...');
     
     try {
@@ -36,14 +30,7 @@ export const dailyBlockchainIntegrityCheck = functions
  * Deletes expired export files and records
  * Runs every 6 hours
  */
-export const cleanupExpiredExportsJob = functions
-  .runWith({
-    timeoutSeconds: 300,
-    memory: '256MB',
-  })
-  .pubsub.schedule('0 */6 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const cleanupExpiredExportsJob = onSchedule({ schedule: "0 */6 * * *", timeZone: "UTC" }, async (event) => {
     console.log('🗑️ Starting expired exports cleanup...');
     
     try {

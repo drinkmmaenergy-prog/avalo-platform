@@ -14,7 +14,7 @@
 import { db, serverTimestamp, generateId } from './init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
-import { HttpsError, admin, arrayUnion, auth, increment, onCall, timestamp } from './runtime';
+import { HttpsError, admin, arrayUnion, auth, increment, onCall, timestamp, logger, onSchedule } from './runtime';
 
 export type ConflictType = 
   | 'CONCURRENT_WRITE'
@@ -408,9 +408,7 @@ export async function resolveBalanceInconsistency(userId: string): Promise<boole
 /**
  * Scheduled conflict detection and resolution
  */
-export const scheduled_resolveConflicts = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const scheduled_resolveConflicts = onSchedule("every 5 minutes", async (event) => {
     try {
       const unresolvedSnapshot = await db.collection('stability_conflicts')
         .where('status', 'in', ['DETECTED', 'RESOLVING'])
@@ -477,11 +475,14 @@ export const admin_getStabilityConflicts = functions.https.onCall(async (request
     const snapshot = await query.get();
     const conflicts = snapshot.docs.map(doc => doc.data());
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       conflicts,
       total: snapshot.size,
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('[Stability] Failed to get conflicts:', error);
     throw new functions.https.HttpsError('internal', error.message);

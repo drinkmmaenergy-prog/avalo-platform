@@ -3,9 +3,9 @@
  * Periodic fraud pattern scanning and cleanup tasks
  */
 
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp, generateId } from '../init';
-import { functions, timestamp } from '../runtime';
+import { functions, timestamp, onSchedule } from '../runtime';
 
 /**
  * Periodic fraud pattern scan (runs daily)

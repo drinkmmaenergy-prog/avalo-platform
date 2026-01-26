@@ -185,10 +185,13 @@ export const generateAuditReportCallable = onCall(
         totalActions: logsSnapshot.size,
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         report,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error("Error generating audit report:", error);
       throw new HttpsError("internal", `Failed to generate audit report: ${error.message}`);

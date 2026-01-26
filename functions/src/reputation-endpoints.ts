@@ -22,7 +22,7 @@ import {
   ReputationEventType,
   ReputationDimension,
 } from './types/reputation.types';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // USER-FACING FUNCTIONS
@@ -46,10 +46,13 @@ export const pack140_getReputationScore = functions.https.onCall(async (request)
     try {
       const score = await getReputationScore(userId);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: score,
-      };
+      });
+
+
+      return;
     } catch (error) {
       console.error('Error getting reputation score:', error);
       throw new functions.https.HttpsError(
@@ -78,10 +81,13 @@ export const pack140_getReputationInsights = functions.https.onCall(async (reque
     try {
       const insights = await getReputationInsights(userId);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: insights,
-      };
+      });
+
+
+      return;
     } catch (error) {
       console.error('Error getting reputation insights:', error);
       throw new functions.https.HttpsError(
@@ -121,10 +127,13 @@ export const pack140_checkReputationRequirement = functions.https.onCall(async (
         minimumScore || 50
       );
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: result,
-      };
+      });
+
+
+      return;
     } catch (error) {
       console.error('Error checking reputation requirement:', error);
       throw new functions.https.HttpsError(
@@ -161,11 +170,14 @@ export const pack140_startRecovery = functions.https.onCall(async (request) => {
     try {
       const recovery = await startReputationRecovery(userId, dimension);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: recovery,
         message: 'Recovery program started',
-      };
+      });
+
+
+      return;
     } catch (error) {
       console.error('Error starting recovery:', error);
       throw new functions.https.HttpsError(
@@ -224,10 +236,12 @@ export const pack140_recordEvent = functions.https.onCall(async (request) => {
       if (reporterId) {
         const isCampaign = await checkForMassReportCampaign(userId, reporterId);
         if (isCampaign) {
-          return {
+          console.log('Scheduled job result:', {
             success: false,
             message: 'Mass report campaign detected - report ignored',
-          };
+          });
+
+          return;
         }
       }
 
@@ -287,11 +301,14 @@ export const pack140_recalculateScore = functions.https.onCall(async (request) =
     try {
       const score = await calculateReputationScore(userId);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: score,
         message: 'Score recalculated successfully',
-      };
+      });
+
+
+      return;
     } catch (error) {
       console.error('Error recalculating score:', error);
       throw new functions.https.HttpsError(
@@ -352,10 +369,13 @@ export const pack140_admin_blockReporter = functions.https.onCall(async (request
         timestamp: admin.firestore.Timestamp.now(),
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Reporter blocked successfully',
-      };
+      });
+
+
+      return;
     } catch (error) {
       console.error('Error blocking reporter:', error);
       throw new functions.https.HttpsError(
@@ -391,10 +411,13 @@ export const pack140_admin_addFlagPendingVerification = functions.https.onCall(a
     try {
       await addFlagPendingVerification(userId, flagId, type, severity);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Flag added for verification',
-      };
+      });
+
+
+      return;
     } catch (error) {
       console.error('Error adding flag:', error);
       throw new functions.https.HttpsError(
@@ -451,10 +474,13 @@ export const pack140_admin_verifyFlag = functions.https.onCall(async (request) =
         timestamp: admin.firestore.Timestamp.now(),
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: approved ? 'Flag approved and applied' : 'Flag dismissed',
-      };
+      });
+
+
+      return;
     } catch (error) {
       console.error('Error verifying flag:', error);
       throw new functions.https.HttpsError(
@@ -508,10 +534,13 @@ export const pack140_admin_getReputationHistory = functions.https.onCall(async (
 
       const events = eventsSnapshot.docs.map(doc => doc.data());
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         data: events,
-      };
+      });
+
+
+      return;
     } catch (error) {
       console.error('Error getting reputation history:', error);
       throw new functions.https.HttpsError(
@@ -530,10 +559,7 @@ export const pack140_admin_getReputationHistory = functions.https.onCall(async (
  * Daily: Award reputation points for consistent good behavior
  * Runs every day at 3 AM UTC
  */
-export const pack140_dailyReputationMaintenance = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack140_dailyReputationMaintenance = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     const db = admin.firestore();
 
     try {

@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
-import { Timestamp } from '../runtime';
+import { Timestamp, logger, onSchedule } from '../runtime';
 
 interface SafetyScore {
   userId: string;
@@ -383,9 +383,7 @@ export const detectBehaviorAnomalies = functions.firestore
   });
 
 // Calculate overall safety risk level
-export const calculateUserRiskLevel = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async (context) => {
+export const calculateUserRiskLevel = onSchedule("every 6 hours", async (event) => {
     console.log('Calculating user risk levels...');
 
     try {
@@ -455,10 +453,7 @@ export const calculateUserRiskLevel = functions.pubsub
   });
 
 // Daily safety metrics aggregation
-export const aggregateSafetyMetrics = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const aggregateSafetyMetrics = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const dateStr = yesterday.toISOString().split('T')[0];

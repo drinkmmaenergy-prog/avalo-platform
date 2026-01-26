@@ -18,7 +18,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
@@ -39,7 +39,7 @@ import {
 } from './pack107-types';
 import { CurrencyProfile } from './pack106-types';
 import { getFeatureFlag, FeatureFlags } from './featureFlags';
-import { admin, auth, functions, increment } from './runtime';
+import { admin, auth, functions, increment, onSchedule } from './runtime';
 
 // ============================================================================
 // CONFIGURATION
@@ -73,7 +73,7 @@ export async function getMembershipStatus(
       .get();
 
     if (!membershipDoc.exists) {
-      return null;
+      return;
     }
 
     return membershipDoc.data() as UserMembership;
@@ -631,10 +631,13 @@ export const cancelMembershipAutoRenew = onCall(
         effectiveDate: effectiveExpiryDate.toDate(),
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         effectiveDate: effectiveExpiryDate.toDate().toISOString(),
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error cancelling membership', error);
 
@@ -782,7 +785,7 @@ export const expireMembershipIfNeeded = onSchedule(
         `Membership expiration complete: ${expiredCount} expired, ${gracePeriodExpiredCount} grace period expired`
       );
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in membership expiration job', error);
       throw error;

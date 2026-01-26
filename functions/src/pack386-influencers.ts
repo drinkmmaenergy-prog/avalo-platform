@@ -10,7 +10,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -379,9 +379,7 @@ export const pack386_updateInfluencerConversion = functions.firestore
 // CALCULATE INFLUENCER ROI (SCHEDULED)
 // ============================================================================
 
-export const pack386_calculateInfluencerROI = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async () => {
+export const pack386_calculateInfluencerROI = onSchedule("every 24 hours", async (event) => {
     const influencersSnapshot = await db.collection('influencerProfiles')
       .where('status', '==', 'ACTIVE')
       .get();

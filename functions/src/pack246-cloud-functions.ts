@@ -4,7 +4,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { logger } from 'firebase-functions/v2';
 import { db, serverTimestamp } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
@@ -17,7 +17,7 @@ import {
   ContractViolation,
   AuditLogEntry,
 } from './pack246-contract-types';
-import { admin, auth, functions, timestamp } from './runtime';
+import { admin, auth, functions, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // CALLABLE FUNCTION: Validate Transaction
@@ -73,12 +73,14 @@ export const economyContractValidator = onCall(
       }
 
       // Return result (ALLOW or AUTO_CORRECT)
-      return {
+      console.log('Scheduled job result:', {
         valid: result.valid,
         action: result.action,
         violations: result.violations,
         correctedValues: result.correctedValues,
-      };
+      });
+
+      return;
     } catch (error) {
       if (error instanceof HttpsError) {
         throw error;
@@ -246,7 +248,10 @@ export const resolveAnomaly = onCall(
         resolvedBy: auth.uid,
       });
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error) {
       logger.error('Error resolving anomaly:', error);
       throw new HttpsError('internal', 'Failed to resolve anomaly');

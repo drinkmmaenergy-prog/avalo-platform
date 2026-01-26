@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, logger, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, logger, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -93,13 +93,7 @@ const SAFETY_THRESHOLDS: SafetyThresholds = {
 // MARKETING ORCHESTRATOR (Main Controller)
 // ============================================
 
-export const pack393_marketingOrchestrator = functions
-  .runWith({ 
-    timeoutSeconds: 540, 
-    memory: '2GB' 
-  })
-  .pubsub.schedule('every 6 hours')
-  .onRun(async (context) => {
+export const pack393_marketingOrchestrator = onSchedule("every 6 hours", async (event) => {
     functions.logger.info('🚀 Marketing Orchestrator: Starting campaign optimization cycle');
     
     try {
@@ -120,7 +114,10 @@ export const pack393_marketingOrchestrator = functions
       
       functions.logger.info('✅ Marketing Orchestrator: Optimization cycle complete');
       
-      return { success: true, actionsExecuted: safetyActions.length + budgetActions.length };
+      console.log('Scheduled job result:', { success: true, actionsExecuted: safetyActions.length + budgetActions.length });
+
+      
+      return;
     } catch (error) {
       functions.logger.error('❌ Marketing Orchestrator failed:', error);
       
@@ -571,7 +568,10 @@ export const pack393_manualOrchestration = functions
     // Run orchestration immediately
     const result = await pack393_marketingOrchestrator(null as any);
     
-    return { success: true, result };
+    console.log('Scheduled job result:', { success: true, result });
+
+    
+    return;
   });
 
 // ============================================

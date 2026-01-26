@@ -18,7 +18,7 @@ import * as functions from 'firebase-functions';
 import { db, admin } from './init';
 import { createDispute, CreateDisputeParams } from './disputes';
 import { createAmlEvent } from './amlMonitoring';
-import { HttpsError, auth, increment, onCall, serverTimestamp } from './runtime';
+import { HttpsError, auth, increment, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
 const FieldValue = admin.firestore.FieldValue;
 const Timestamp = admin.firestore.Timestamp;
@@ -178,7 +178,9 @@ async function validateUserEligibility(userId: string): Promise<{ valid: boolean
   const enforcementData = enforcementDoc.data();
   if (enforcementData) {
     if (enforcementData.status === 'SUSPENDED' || enforcementData.status === 'BANNED') {
-      return { valid: false, reason: 'Account suspended or banned' };
+      console.log('Scheduled job result:', { valid: false, reason: 'Account suspended or banned' });
+
+      return;
     }
   }
 
@@ -673,7 +675,10 @@ export const setAvailability = functions.https.onCall(async (request) => {
     });
   }
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 /**
@@ -1195,9 +1200,7 @@ export const listReservations = functions.https.onCall(async (request) => {
  * Scheduled: Clean up PENDING_PAYMENT reservations
  * Runs every 15 minutes
  */
-export const cleanupPendingReservations = functions.pubsub
-  .schedule('*/15 * * * *')
-  .onRun(async (context) => {
+export const cleanupPendingReservations = onSchedule("*/15 * * * *", async (event) => {
     const now = Timestamp.now();
     const cutoffTime = new Date(now.toMillis() - PENDING_PAYMENT_TIMEOUT_MINUTES * 60000);
 
@@ -1228,16 +1231,14 @@ export const cleanupPendingReservations = functions.pubsub
     }
 
     console.log(`Cleaned up ${pendingReservations.size} pending payment reservations`);
-    return null;
+    return;
   });
 
 /**
  * Scheduled: Auto-timeout unconfirmed reservations
  * Runs every hour
  */
-export const autoTimeoutReservations = functions.pubsub
-  .schedule('0 * * * *')
-  .onRun(async (context) => {
+export const autoTimeoutReservations = onSchedule("0 * * * *", async (event) => {
     const now = Timestamp.now();
     const cutoffTime = new Date(now.toMillis() - CONFIRMATION_WINDOW_HOURS * 60 * 60 * 1000);
 
@@ -1283,16 +1284,14 @@ export const autoTimeoutReservations = functions.pubsub
     }
 
     console.log(`Auto-timeout: created ${disputeCreated} disputes for unconfirmed reservations`);
-    return null;
+    return;
   });
 
 /**
  * Scheduled: Send meeting reminders
  * Runs every hour
  */
-export const sendMeetingReminders = functions.pubsub
-  .schedule('0 * * * *')
-  .onRun(async (context) => {
+export const sendMeetingReminders = onSchedule("0 * * * *", async (event) => {
     const now = new Date();
     const in24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     const in1Hour = new Date(now.getTime() + 60 * 60 * 1000);
@@ -1362,5 +1361,5 @@ export const sendMeetingReminders = functions.pubsub
     }
 
     console.log(`Sent reminders for ${upcomingReservations24h.size + upcomingReservations1h.size} meetings`);
-    return null;
+    return;
   });

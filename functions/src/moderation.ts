@@ -17,7 +17,7 @@ import {
   ModerationQueueItem,
 } from '../../shared/types/contentModeration';
 import { logEvent } from './observability';
-import { HttpsError, admin, onCall, onRequest, serverTimestamp, timestamp } from './runtime';
+import { HttpsError, admin, onCall, onRequest, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -75,12 +75,15 @@ export const moderateContentFunction = functions.https.onCall(async (request) =>
       moderationContext
     );
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       decision: result.decision,
       reason: result.reason,
       confidence: result.confidence,
-    };
+    });
+
+
+    return;
   } catch (error) {
     await logEvent({
       level: 'ERROR',
@@ -133,10 +136,12 @@ export const getModerationStatusFunction = functions.https.onCall(async (request
     const status = await getModerationStatus(contentId);
 
     if (!status) {
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         status: null,
-      };
+      });
+
+      return;
     }
 
     return {
@@ -359,9 +364,7 @@ export const adminModerationDecision = functions.https.onRequest(async (req, res
  * Background function: Auto-cleanup old moderation records
  * Runs daily to remove old ALLOW records (keep blocks indefinitely)
  */
-export const cleanupOldModerationRecords = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const cleanupOldModerationRecords = onSchedule("every 24 hours", async (event) => {
     try {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -394,7 +397,10 @@ export const cleanupOldModerationRecords = functions.pubsub
         message: `Cleaned up ${deleteCount} old moderation records`,
       });
 
-      return { success: true, deletedCount: deleteCount };
+      console.log('Scheduled job result:', { success: true, deletedCount: deleteCount });
+
+
+      return;
     } catch (error) {
       await logEvent({
         level: 'ERROR',
@@ -417,9 +423,7 @@ export const cleanupOldModerationRecords = functions.pubsub
  * Background function: Generate moderation statistics
  * Runs hourly to compute stats for monitoring
  */
-export const generateModerationStats = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const generateModerationStats = onSchedule("every 1 hours", async (event) => {
     try {
       const oneHourAgo = new Date();
       oneHourAgo.setHours(oneHourAgo.getHours() - 1);
@@ -494,7 +498,10 @@ export const generateModerationStats = functions.pubsub
         },
       });
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error) {
       await logEvent({
         level: 'ERROR',

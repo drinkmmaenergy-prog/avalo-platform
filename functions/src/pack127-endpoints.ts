@@ -10,7 +10,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 
 // Fingerprint engine
 import {
@@ -55,7 +55,7 @@ import {
   sendExpiryReminders,
   getLicensingStats,
 } from './pack127-licensing-engine';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // FINGERPRINT ENDPOINTS
@@ -81,7 +81,10 @@ export const pack127_registerFingerprint = onCall(async (request) => {
     metadata,
   });
   
-  return { success: true, fingerprint };
+  console.log('Scheduled job result:', { success: true, fingerprint });
+
+  
+  return;
 });
 
 export const pack127_matchFingerprint = onCall(async (request) => {
@@ -98,7 +101,10 @@ export const pack127_matchFingerprint = onCall(async (request) => {
   
   const result = await matchFingerprint(fingerprintId);
   
-  return { success: true, ...result };
+  console.log('Scheduled job result:', { success: true, ...result });
+
+  
+  return;
 });
 
 export const pack127_getUserFingerprints = onCall(async (request) => {
@@ -109,7 +115,10 @@ export const pack127_getUserFingerprints = onCall(async (request) => {
   
   const fingerprints = await getUserFingerprints(userId);
   
-  return { success: true, count: fingerprints.length, fingerprints };
+  console.log('Scheduled job result:', { success: true, count: fingerprints.length, fingerprints });
+
+  
+  return;
 });
 
 export const pack127_detectDerivative = onCall(async (request) => {
@@ -126,7 +135,10 @@ export const pack127_detectDerivative = onCall(async (request) => {
   
   const result = await detectDerivative(fingerprintId);
   
-  return { success: true, ...result };
+  console.log('Scheduled job result:', { success: true, ...result });
+
+  
+  return;
 });
 
 // ============================================================================
@@ -155,7 +167,10 @@ export const pack127_submitClaim = onCall(async (request) => {
       evidenceUrls,
     });
     
-    return { success: true, ...result };
+    console.log('Scheduled job result:', { success: true, ...result });
+
+    
+    return;
   } catch (error: any) {
     throw new HttpsError('failed-precondition', error.message);
   }
@@ -169,7 +184,10 @@ export const pack127_getUserClaims = onCall(async (request) => {
   
   const claims = await getUserClaims(userId);
   
-  return { success: true, count: claims.length, claims };
+  console.log('Scheduled job result:', { success: true, count: claims.length, claims });
+
+  
+  return;
 });
 
 export const pack127_getClaimsAgainstUser = onCall(async (request) => {
@@ -180,7 +198,10 @@ export const pack127_getClaimsAgainstUser = onCall(async (request) => {
   
   const claims = await getClaimsAgainstUser(userId);
   
-  return { success: true, count: claims.length, claims };
+  console.log('Scheduled job result:', { success: true, count: claims.length, claims });
+
+  
+  return;
 });
 
 export const pack127_getClaim = onCall(async (request) => {
@@ -206,7 +227,10 @@ export const pack127_getClaim = onCall(async (request) => {
     throw new HttpsError('permission-denied', 'Not authorized to view this claim');
   }
   
-  return { success: true, claim };
+  console.log('Scheduled job result:', { success: true, claim });
+
+  
+  return;
 });
 
 // ============================================================================
@@ -230,7 +254,10 @@ export const pack127_admin_reviewClaim = onCall(async (request) => {
   
   await reviewClaim(claimId, moderatorId, decision, notes);
   
-  return { success: true, message: 'Claim reviewed' };
+  console.log('Scheduled job result:', { success: true, message: 'Claim reviewed' });
+
+  
+  return;
 });
 
 // ============================================================================
@@ -257,7 +284,10 @@ export const pack127_embedWatermark = onCall(async (request) => {
     sessionId
   );
   
-  return { success: true, ...result };
+  console.log('Scheduled job result:', { success: true, ...result });
+
+  
+  return;
 });
 
 export const pack127_reportPiracy = onCall(async (request) => {
@@ -280,7 +310,10 @@ export const pack127_reportPiracy = onCall(async (request) => {
     description
   );
   
-  return { success: true, detectionId };
+  console.log('Scheduled job result:', { success: true, detectionId });
+
+  
+  return;
 });
 
 export const pack127_getPiracyDetections = onCall(async (request) => {
@@ -291,7 +324,10 @@ export const pack127_getPiracyDetections = onCall(async (request) => {
   
   const detections = await getPiracyDetectionsForCreator(userId);
   
-  return { success: true, count: detections.length, detections };
+  console.log('Scheduled job result:', { success: true, count: detections.length, detections });
+
+  
+  return;
 });
 
 export const pack127_admin_confirmPiracy = onCall(async (request) => {
@@ -310,7 +346,10 @@ export const pack127_admin_confirmPiracy = onCall(async (request) => {
   
   await confirmPiracyDetection(detectionId, investigatorId, notes);
   
-  return { success: true, message: 'Piracy confirmed' };
+  console.log('Scheduled job result:', { success: true, message: 'Piracy confirmed' });
+
+  
+  return;
 });
 
 // ============================================================================
@@ -341,7 +380,10 @@ export const pack127_createLicense = onCall(async (request) => {
       durationDays,
     });
     
-    return { success: true, license };
+    console.log('Scheduled job result:', { success: true, license });
+
+    
+    return;
   } catch (error: any) {
     throw new HttpsError('failed-precondition', error.message);
   }
@@ -362,7 +404,10 @@ export const pack127_revokeLicense = onCall(async (request) => {
   try {
     await revokeLicense(licenseId, userId, reason);
     
-    return { success: true, message: 'License revoked' };
+    console.log('Scheduled job result:', { success: true, message: 'License revoked' });
+
+    
+    return;
   } catch (error: any) {
     throw new HttpsError('failed-precondition', error.message);
   }
@@ -383,7 +428,10 @@ export const pack127_renewLicense = onCall(async (request) => {
   try {
     await renewLicense(licenseId, additionalDays);
     
-    return { success: true, message: 'License renewed' };
+    console.log('Scheduled job result:', { success: true, message: 'License renewed' });
+
+    
+    return;
   } catch (error: any) {
     throw new HttpsError('failed-precondition', error.message);
   }
@@ -403,7 +451,10 @@ export const pack127_verifyLicense = onCall(async (request) => {
   
   const result = await verifyLicense(userId, assetRef);
   
-  return { success: true, ...result };
+  console.log('Scheduled job result:', { success: true, ...result });
+
+  
+  return;
 });
 
 export const pack127_getMyLicenses = onCall(async (request) => {
@@ -418,7 +469,10 @@ export const pack127_getMyLicenses = onCall(async (request) => {
     ? await getLicensesHeldByUser(userId)
     : await getLicensesOwnedByUser(userId);
   
-  return { success: true, count: licenses.length, licenses };
+  console.log('Scheduled job result:', { success: true, count: licenses.length, licenses });
+
+  
+  return;
 });
 
 export const pack127_getLicensingStats = onCall(async (request) => {
@@ -429,7 +483,10 @@ export const pack127_getLicensingStats = onCall(async (request) => {
   
   const stats = await getLicensingStats(userId);
   
-  return { success: true, stats };
+  console.log('Scheduled job result:', { success: true, stats });
+
+  
+  return;
 });
 
 // ============================================================================

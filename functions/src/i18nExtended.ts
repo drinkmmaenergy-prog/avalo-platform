@@ -640,11 +640,14 @@ export const getSupportedLanguagesV1 = onCall(
         isRTL: config.isRTL,
       }));
 
-    return {
+    console.log('Scheduled job result:', {
       languages,
       count: languages.length,
       defaultLanguage: LanguageCode.EN,
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -727,7 +730,10 @@ export const updateLanguagePreferencesV1 = onCall(
 
     logger.info(`User ${userId} updated language preferences`);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -775,12 +781,15 @@ export const getTranslationsV1 = onCall(
       translations[data.key] = data.value;
     });
 
-    return {
+    console.log('Scheduled job result:', {
       translations,
       language: targetLanguage,
       namespace,
       count: Object.keys(translations).length,
-    };
+    });
+
+
+    return;
   }
 );
 

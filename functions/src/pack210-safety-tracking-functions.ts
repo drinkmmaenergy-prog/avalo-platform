@@ -22,7 +22,7 @@ import {
   PanicAlertStatus,
   TrustedContactRelationship,
 } from './pack210-safety-tracking-types';
-import { HttpsError, admin, auth, db, onCall, serverTimestamp, timestamp } from './runtime';
+import { HttpsError, admin, auth, db, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // USER FUNCTIONS - Safety Session Management
@@ -51,10 +51,13 @@ export const pack210_startSafetySession = functions.https.onCall(async (request)
       deviceInfo: data.deviceInfo,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       ...result,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error starting safety session:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -157,10 +160,13 @@ export const pack210_manageTrustedContact = functions.https.onCall(async (reques
       receiveAutoAlerts: data.receiveAutoAlerts ?? true,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       ...result,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error managing trusted contact:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -218,10 +224,13 @@ export const pack210_getTrustedContacts = functions.https.onCall(async (request)
       ...doc.data(),
     }));
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       contacts,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error getting trusted contacts:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -257,10 +266,13 @@ export const pack210_triggerPanicAlert = functions.https.onCall(async (request) 
       deviceInfo: data.deviceInfo,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       ...result,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error triggering panic alert:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -324,10 +336,12 @@ export const pack210_getActiveSafetySession = functions.https.onCall(async (requ
       .get();
 
     if (sessionsSnap.empty) {
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         session: null,
-      };
+      });
+
+      return;
     }
 
     return {
@@ -370,10 +384,13 @@ export const pack210_admin_getActiveSessions = functions.https.onCall(async (req
       limit: data.limit || 50,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       sessions,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error getting active sessions:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -405,10 +422,13 @@ export const pack210_admin_getPanicAlerts = functions.https.onCall(async (reques
       limit: data.limit || 50,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       alerts,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error getting panic alerts:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -491,10 +511,13 @@ export const pack210_admin_getSafetyLogs = functions.https.onCall(async (request
       ...doc.data(),
     }));
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       logs,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error getting safety logs:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -509,9 +532,7 @@ export const pack210_admin_getSafetyLogs = functions.https.onCall(async (request
  * Check for expired safety sessions (runs every 5 minutes)
  * Sessions without heartbeat for >10 minutes get flagged
  */
-export const pack210_checkExpiredSessions = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const pack210_checkExpiredSessions = onSchedule("every 5 minutes", async (event) => {
     const { db, serverTimestamp } = await import('./init');
     
     try {
@@ -537,7 +558,10 @@ export const pack210_checkExpiredSessions = functions.pubsub
 
       await batch.commit();
 
-      return { success: true, expiredCount: expiredSessionsSnap.size };
+      console.log('Scheduled job result:', { success: true, expiredCount: expiredSessionsSnap.size });
+
+
+      return;
     } catch (error) {
       console.error('Error checking expired sessions:', error);
       throw error;
@@ -547,9 +571,7 @@ export const pack210_checkExpiredSessions = functions.pubsub
 /**
  * Process pending safety checks (runs every minute)
  */
-export const pack210_processSafetyChecks = functions.pubsub
-  .schedule('every 1 minutes')
-  .onRun(async (context) => {
+export const pack210_processSafetyChecks = onSchedule("every 1 minutes", async (event) => {
     const { db, serverTimestamp } = await import('./init');
     
     try {
@@ -579,7 +601,10 @@ export const pack210_processSafetyChecks = functions.pubsub
 
       await batch.commit();
 
-      return { success: true, processedCount: pendingChecksSnap.size };
+      console.log('Scheduled job result:', { success: true, processedCount: pendingChecksSnap.size });
+
+
+      return;
     } catch (error) {
       console.error('Error processing safety checks:', error);
       throw error;
@@ -590,9 +615,7 @@ export const pack210_processSafetyChecks = functions.pubsub
  * Check for no-response safety checks (runs every 2 minutes)
  * If user doesn't respond within 5 minutes, trigger Tier 1 alert
  */
-export const pack210_checkNoResponseSafetyChecks = functions.pubsub
-  .schedule('every 2 minutes')
-  .onRun(async (context) => {
+export const pack210_checkNoResponseSafetyChecks = onSchedule("every 2 minutes", async (event) => {
     const { db } = await import('./init');
     
     try {
@@ -650,7 +673,10 @@ export const pack210_checkNoResponseSafetyChecks = functions.pubsub
         }
       }
 
-      return { success: true, processedCount: noResponseChecksSnap.size };
+      console.log('Scheduled job result:', { success: true, processedCount: noResponseChecksSnap.size });
+
+
+      return;
     } catch (error) {
       console.error('Error checking no-response safety checks:', error);
       throw error;
@@ -661,9 +687,7 @@ export const pack210_checkNoResponseSafetyChecks = functions.pubsub
  * Clean up old location tracking data (runs daily)
  * Deletes location points older than 30 days
  */
-export const pack210_cleanupOldLocationData = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack210_cleanupOldLocationData = onSchedule("every 24 hours", async (event) => {
     const { db } = await import('./init');
     
     try {
@@ -686,7 +710,10 @@ export const pack210_cleanupOldLocationData = functions.pubsub
 
       await batch.commit();
 
-      return { success: true, deletedCount: oldLocationSnap.size };
+      console.log('Scheduled job result:', { success: true, deletedCount: oldLocationSnap.size });
+
+
+      return;
     } catch (error) {
       console.error('Error cleaning up old location data:', error);
       throw error;

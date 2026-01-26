@@ -7,7 +7,7 @@ import { db, serverTimestamp, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import {
   SupporterRank,
   SupporterRanking,
@@ -19,7 +19,7 @@ import {
   LIFETIME_BADGE_THRESHOLDS,
   PERK_MAPPINGS,
 } from './pack264-supporters-types';
-import { admin, functions } from './runtime';
+import { admin, functions, onSchedule } from './runtime';
 
 /**
  * Process token spending event and update supporter rankings

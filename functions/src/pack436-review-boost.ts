@@ -10,7 +10,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, auth, increment, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, increment, onCall, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -237,9 +237,7 @@ function getReviewNudgeMessage(trigger: ReviewNudgeTrigger['trigger']): string {
  * Reward high-performing creators (NOT for reviews - for performance metrics)
  * Fully Apple/Google compliant
  */
-export const evaluateCreatorIncentives = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async () => {
+export const evaluateCreatorIncentives = onSchedule("every 6 hours", async (event) => {
     const db = admin.firestore();
     
     // Fetch creators
@@ -272,7 +270,7 @@ export const evaluateCreatorIncentives = functions.pubsub
       }
     }
     
-    return { incentivesApplied: incentives.length };
+    return;
   });
 
 async function calculateCreatorPerformanceScore(creatorId: string): Promise<number> {
@@ -415,9 +413,7 @@ export const trackReviewResponse = functions.https.onCall(async (request) => {
 /**
  * Clear expired incentives
  */
-export const cleanupExpiredIncentives = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async () => {
+export const cleanupExpiredIncentives = onSchedule("every 1 hours", async (event) => {
     const db = admin.firestore();
     const now = Date.now();
     
@@ -460,11 +456,7 @@ export const cleanupExpiredIncentives = functions.pubsub
     
     await batch.commit();
     
-    return {
-      expiredBoosts: expiredBoosts.size,
-      expiredRevenue: expiredRevenue.size,
-      expiredSupport: expiredSupport.size,
-    };
+    return;
   });
 
 // ============================================================================

@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -218,9 +218,7 @@ export const pack387_getStoreReplyMacro = functions.https.onCall(async (request)
 /**
  * Analyze app store rating trends
  */
-export const pack387_analyzeRatingTrends = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async context => {
+export const pack387_analyzeRatingTrends = onSchedule("every 6 hours", async (event) => {
     console.log('Analyzing app store rating trends...');
 
     try {

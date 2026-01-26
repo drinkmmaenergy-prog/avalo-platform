@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -97,14 +97,7 @@ export interface SentimentAnalysis {
 // CORE: REVIEW INTELLIGENCE ENGINE
 // ============================================================================
 
-export const pack392_reviewIntelligenceEngine = functions
-  .runWith({ 
-    timeoutSeconds: 540,
-    memory: '2GB'
-  })
-  .pubsub
-  .schedule('every 30 minutes')
-  .onRun(async (context) => {
+export const pack392_reviewIntelligenceEngine = onSchedule("every 30 minutes", async (event) => {
     console.log('[PACK 392] Running Review Intelligence Engine');
 
     try {
@@ -132,7 +125,9 @@ export const pack392_reviewIntelligenceEngine = functions
       await checkCoordinatedAttacks();
 
       console.log('[PACK 392] Review Intelligence Engine completed');
-      return { success: true, processed: reviewsSnap.size };
+      console.log('Scheduled job result:', { success: true, processed: reviewsSnap.size });
+
+      return;
     } catch (error) {
       console.error('[PACK 392] Review Intelligence Engine error:', error);
       throw error;
@@ -773,5 +768,8 @@ export const pack392_escalateReviews = functions
       status: 'SUBMITTED'
     });
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   });

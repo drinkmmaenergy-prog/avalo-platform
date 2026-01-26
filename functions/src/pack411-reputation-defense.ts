@@ -12,7 +12,7 @@ import {
   ReviewBrigadeAlert,
   ReputationDefenseConfig,
 } from '../../shared/types/pack411-reviews';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -358,10 +358,7 @@ async function createReputationSnapshot(
  * Scheduled job: Scan for reputation anomalies
  * Runs daily
  */
-export const pack411_scanReputationAnomalies = functions.pubsub
-  .schedule('0 2 * * *') // Run at 2 AM UTC daily
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack411_scanReputationAnomalies = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     try {
       const config = await getDefenseConfig();
 

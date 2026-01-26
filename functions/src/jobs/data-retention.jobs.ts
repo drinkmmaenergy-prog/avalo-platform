@@ -3,7 +3,7 @@
  * Scheduled functions for automated compliance tasks
  */
 
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db } from '../init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { 
@@ -13,7 +13,7 @@ import {
 import { COLLECTION_NAMES } from '../schemas/data-retention.schema';
 import { executeDataDeletion } from '../services/data-retention.service';
 import { cleanupExpiredExports } from '../services/data-export.service';
-import { admin, functions, timestamp } from '../runtime';
+import { admin, functions, timestamp, onSchedule } from '../runtime';
 
 /**
  * Scheduled job: Execute retention policy deletions

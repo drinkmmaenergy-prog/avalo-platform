@@ -7,7 +7,7 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -144,11 +144,14 @@ export const createCampaign = functions.https.onCall(async (request) => {
     timestamp: admin.firestore.Timestamp.now()
   });
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     campaignId: campaignConfig.id,
     config: campaignConfig
-  };
+  });
+
+
+  return;
 });
 
 // ===========================
@@ -182,7 +185,10 @@ export const updateCampaignStatus = functions.https.onCall(async (request) => {
     timestamp: admin.firestore.Timestamp.now()
   });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 export const updateCampaignBudget = functions.https.onCall(async (request) => {
@@ -218,16 +224,17 @@ export const updateCampaignBudget = functions.https.onCall(async (request) => {
     timestamp: admin.firestore.Timestamp.now()
   });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 // ===========================
 // AUTOMATIC CAMPAIGN PAUSING
 // ===========================
 
-export const monitorCampaignHealth = functions.pubsub
-  .schedule('every 15 minutes')
-  .onRun(async (context) => {
+export const monitorCampaignHealth = onSchedule("every 15 minutes", async (event) => {
     const campaigns = await db.collection('ua_campaigns')
       .where('status', '==', 'active')
       .get();
@@ -287,7 +294,7 @@ export const monitorCampaignHealth = functions.pubsub
       }
     }
 
-    return null;
+    return;
   });
 
 async function pauseCampaign(campaignId: string, reason: string, details: any) {
@@ -458,10 +465,7 @@ export const calculateBudgetAllocation = functions.https.onCall(async (request) 
 // CAMPAIGN AUTO-EXPANSION
 // ===========================
 
-export const autoExpandTopCampaigns = functions.pubsub
-  .schedule('every day 02:00')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const autoExpandTopCampaigns = onSchedule({ schedule: "every day 02:00", timeZone: "UTC" }, async (event) => {
     // Find top performing campaigns from last 7 days
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
@@ -518,7 +522,7 @@ export const autoExpandTopCampaigns = functions.pubsub
       });
     }
 
-    return { expandedCampaigns: expandableCampaigns.length };
+    return;
   });
 
 // ===========================

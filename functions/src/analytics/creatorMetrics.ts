@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
-import { Timestamp, arrayUnion, increment } from '../runtime';
+import { Timestamp, arrayUnion, increment, logger, onSchedule } from '../runtime';
 
 interface CreatorMetrics {
   creatorId: string;
@@ -300,10 +300,7 @@ function calculateChatPriceEligibility(
 }
 
 // Daily creator metrics aggregation
-export const aggregateCreatorMetrics = functions.pubsub
-  .schedule('0 4 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const aggregateCreatorMetrics = onSchedule({ schedule: "0 4 * * *", timeZone: "UTC" }, async (event) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const dateStr = yesterday.toISOString().split('T')[0];
@@ -499,10 +496,7 @@ export const aggregateCreatorMetrics = functions.pubsub
   });
 
 // Calculate weekly/monthly trends
-export const calculateCreatorTrends = functions.pubsub
-  .schedule('0 5 * * 1')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const calculateCreatorTrends = onSchedule({ schedule: "0 5 * * 1", timeZone: "UTC" }, async (event) => {
     console.log('Calculating creator trends...');
 
     try {

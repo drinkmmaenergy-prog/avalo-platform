@@ -5,7 +5,7 @@
  * Integrates with Stripe Connect, Wise, and AML monitoring.
  */
 
-import { onSchedule } from "firebase-functions/v2/scheduler";
+
 import { db, admin, serverTimestamp } from "../init";
 import {
   createStripeTransfer,
@@ -17,7 +17,7 @@ import {
   getWiseProfileId,
 } from "../integrations/wise";
 import type { PayoutRequest } from "../payouts";
-import { FieldValue, functions, increment } from '../runtime';
+import { FieldValue, functions, increment, onSchedule } from '../runtime';
 
 /**
  * Process pending payout requests.
@@ -182,10 +182,13 @@ async function executeStripeTransfer(payout: PayoutRequest) {
     },
   });
 
-  return {
+  console.log('Scheduled job result:', {
     transferId: result.transferId,
     status: result.status,
-  };
+  });
+
+
+  return;
 }
 
 /**
@@ -225,10 +228,13 @@ async function executeWiseTransfer(payout: PayoutRequest) {
     },
   });
 
-  return {
+  console.log('Scheduled job result:', {
     transferId: result.transferId,
     status: result.status,
-  };
+  });
+
+
+  return;
 }
 
 /**

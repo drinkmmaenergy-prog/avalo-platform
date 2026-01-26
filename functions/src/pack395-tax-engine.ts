@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -200,7 +200,7 @@ export function calculateTax(input: TaxCalculationInput): TaxCalculationResult {
   const taxAmount = Math.round(netAmount * taxRate * 100) / 100;
   const grossAmount = netAmount + taxAmount;
   
-  return {
+  console.log('Scheduled job result:', {
     netAmount,
     taxAmount,
     grossAmount,
@@ -210,7 +210,10 @@ export function calculateTax(input: TaxCalculationInput): TaxCalculationResult {
     currency,
     isReversedCharge,
     exemptionReason
-  };
+  });
+
+  
+  return;
 }
 
 /**
@@ -279,7 +282,7 @@ export const calculatePurchaseTax = functions.https.onCall(async (request) => {
  * Update VAT rates from external provider
  * Should be run periodically via Cloud Scheduler
  */
-export const updateVATRates = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
+export const updateVATRates = onSchedule("every 24 hours", async (event) => {
   // In production, fetch from external API like:
   // - VAT API (https://vatapi.com/)
   // - TaxJar API
@@ -363,12 +366,15 @@ export const validateVATNumber = functions.https.onCall(async (request) => {
   // In production, also check against VIES (VAT Information Exchange System)
   // https://ec.europa.eu/taxation_customs/vies/
   
-  return {
+  console.log('Scheduled job result:', {
     valid: isValidFormat,
     vatNumber: cleanVAT,
     countryCode,
     checkedAt: new Date().toISOString()
-  };
+  });
+
+  
+  return;
 });
 
 /**

@@ -10,7 +10,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, increment, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -129,7 +129,10 @@ export const pack377_pauseCountryPhase = functions.https.onCall(async (request) 
     severity: 'critical',
   });
 
-  return { success: true, countryCode, status: 'paused' };
+  console.log('Scheduled job result:', { success: true, countryCode, status: 'paused' });
+
+
+  return;
 });
 
 /**
@@ -219,9 +222,7 @@ export const pack377_enforceCountryCaps = async (
 /**
  * Monitor infrastructure metrics
  */
-export const pack377_infraLoadGate = functions.pubsub
-  .schedule('every 1 minutes')
-  .onRun(async (context) => {
+export const pack377_infraLoadGate = onSchedule("every 1 minutes", async (event) => {
     const metrics = {
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
       
@@ -299,7 +300,7 @@ export const pack377_infraLoadGate = functions.pubsub
       });
     }
 
-    return null;
+    return;
   });
 
 /**
@@ -364,11 +365,14 @@ export const pack377_campaignTrafficForecast = functions.https.onCall(async (req
     });
   }
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     campaignId: campaignRef.id,
     status: 'planning',
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -421,9 +425,7 @@ export const pack377_campaignROITracker = functions.https.onCall(async (request)
 /**
  * Launch threat shield
  */
-export const pack377_launchThreatShield = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const pack377_launchThreatShield = onSchedule("every 5 minutes", async (event) => {
     const fiveMinutesAgo = new Date(Date.now() - 300000);
 
     // Detect device farming
@@ -496,7 +498,7 @@ export const pack377_launchThreatShield = functions.pubsub
       });
     }
 
-    return null;
+    return;
   });
 
 // ========================================
@@ -506,9 +508,7 @@ export const pack377_launchThreatShield = functions.pubsub
 /**
  * Aggregate regional KPIs
  */
-export const pack377_regionKPIAggregator = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const pack377_regionKPIAggregator = onSchedule("every 1 hours", async (event) => {
     const regions = ['PL', 'CZ', 'SK', 'HR', 'RO', 'BG', 'GR', 'IT']; // EU First Wave
 
     for (const region of regions) {
@@ -573,7 +573,7 @@ export const pack377_regionKPIAggregator = functions.pubsub
       });
     }
 
-    return null;
+    return;
   });
 
 /**
@@ -711,7 +711,10 @@ export const pack377_initMarketSequence = functions.https.onCall(async (request)
 
   await batch.commit();
 
-  return { success: true, sequenceLength: sequence.length };
+  console.log('Scheduled job result:', { success: true, sequenceLength: sequence.length });
+
+
+  return;
 });
 
 /**

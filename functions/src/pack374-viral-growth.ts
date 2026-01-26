@@ -17,7 +17,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
 import * as crypto from 'crypto';
-import { FieldValue, HttpsError, Timestamp, increment, onCall } from './runtime';
+import { FieldValue, HttpsError, Timestamp, increment, onCall, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 const auth = getAuth();
@@ -214,11 +214,14 @@ export const pack374_registerInviteAcceptance = functions.https.onCall(async (re
     // Schedule reward check (after 7 days of activity)
     await scheduleRewardCheck(inviteId, codeData.inviterUserId, newUserId);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       inviteId,
       inviterUserId: codeData.inviterUserId,
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Error registering invite:', error);
@@ -303,11 +306,14 @@ export const pack374_rewardInviteSuccess = functions.https.onCall(async (request
       }
     );
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       rewardId,
       rewardType: 'profile_boost',
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Error rewarding invite:', error);
@@ -428,11 +434,14 @@ export const pack374_applyBoost = functions.https.onCall(async (request) => {
     // Apply boost effects based on type
     await applyBoostEffects(userId, boostType, strength || 3);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       boostId,
       expiresAt: expiresAt.toDate().toISOString(),
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Error applying boost:', error);
@@ -443,9 +452,7 @@ export const pack374_applyBoost = functions.https.onCall(async (request) => {
 /**
  * Expire boost (scheduled function)
  */
-export const pack374_expireBoost = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const pack374_expireBoost = onSchedule("every 5 minutes", async (event) => {
     const now = admin.firestore.Timestamp.now();
 
     // Find expired boosts
@@ -476,7 +483,7 @@ export const pack374_expireBoost = functions.pubsub
     await batch.commit();
 
     console.log(`Expired ${expiredBoosts.size} boosts`);
-    return null;
+    return;
   });
 
 // ═════════════════════════════════════════════════════════════
@@ -559,7 +566,7 @@ export const pack374_processSocialLoop = functions.firestore
     // Update loop metrics
     await updateLoopMetrics(eventData.loopType, eventData.eventType);
 
-    return null;
+    return;
   });
 
 // ═════════════════════════════════════════════════════════════
@@ -624,11 +631,14 @@ export const pack374_trackShareEvent = functions.https.onCall(async (request) =>
       metadata: { shareType, shareChannel, shareId },
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       shareId,
       trackingUrl,
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Error tracking share:', error);
@@ -647,7 +657,9 @@ export const pack374_processShareConversion = functions.https.onCall(async (requ
     const shareDoc = await db.collection('shareTracking').doc(shareId).get();
     
     if (!shareDoc.exists) {
-      return { success: false, message: 'Share not found' };
+      console.log('Scheduled job result:', { success: false, message: 'Share not found' });
+
+      return;
     }
 
     // Update share tracking
@@ -682,14 +694,19 @@ export const pack374_processShareConversion = functions.https.onCall(async (requ
       );
     }
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       convertedUserId: newUserId,
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Error processing share conversion:', error);
-    return { success: false, message: error.message };
+    console.log('Scheduled job result:', { success: false, message: error.message });
+
+    return;
   }
 });
 
@@ -774,7 +791,7 @@ export const pack374_lockRewardAbuse = functions.firestore
       });
     }
 
-    return null;
+    return;
   });
 
 // ═════════════════════════════════════════════════════════════
@@ -843,11 +860,13 @@ async function checkInviteFraud(
   const accountAge = Date.now() - new Date(userRecord.metadata.creationTime).getTime();
   
   if (accountAge < 60 * 1000) { // Created less than 1 minute ago
-    return {
+    console.log('Scheduled job result:', {
       isFraud: true,
       fraudType: 'instant_account_creation',
       severity: 'medium',
-    };
+    });
+
+    return;
   }
 
   // Store device fingerprint
@@ -870,10 +889,7 @@ async function checkInviteFraud(
  * Calculate viral coefficient (K-Factor)
  * Runs daily
  */
-export const pack374_calculateKFactor = functions.pubsub
-  .schedule('0 0 * * *') // Daily at midnight
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack374_calculateKFactor = onSchedule({ schedule: "0 0 * * *", timeZone: "UTC" }, async (event) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -921,7 +937,7 @@ export const pack374_calculateKFactor = functions.pubsub
     });
 
     console.log(`K-Factor for ${periodId}: ${kFactor.toFixed(4)}`);
-    return null;
+    return;
   });
 
 // ═════════════════════════════════════════════════════════════

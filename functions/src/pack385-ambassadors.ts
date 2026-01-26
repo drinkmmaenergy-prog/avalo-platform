@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -162,12 +162,15 @@ export const pack385_assignLaunchAmbassador = functions.https.onCall(async (requ
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     userId,
     tier,
     benefits: ambassador.benefits
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -323,7 +326,10 @@ export const pack385_trackAmbassadorPerformance = functions.https.onCall(async (
     [updatePath]: admin.firestore.FieldValue.increment(value || 1)
   });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 /**
@@ -415,15 +421,16 @@ export const pack385_removeAmbassador = functions.https.onCall(async (request) =
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 /**
  * Background job: Calculate ambassador engagement scores
  */
-export const pack385_calculateAmbassadorScores = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack385_calculateAmbassadorScores = onSchedule("every 24 hours", async (event) => {
     const ambassadorsSnapshot = await db.collection('launchAmbassadors')
       .where('status', '==', 'ACTIVE')
       .get();

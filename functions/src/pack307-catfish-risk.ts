@@ -25,7 +25,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -629,11 +629,14 @@ export const recomputeCatfishRisk = functions.https.onCall(async (request) => {
   try {
     const riskProfile = await recomputeUserCatfishRisk(userId);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       riskLevel: riskProfile.riskLevel,
       message: 'Risk score recomputed successfully',
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     logger.error('Error recomputing catfish risk:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -644,10 +647,7 @@ export const recomputeCatfishRisk = functions.https.onCall(async (request) => {
  * Scheduled function: Daily cron job to recalculate catfish risk for active users
  * Runs every day at 3:00 AM UTC
  */
-export const cronRecomputeCatfishRiskDaily = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const cronRecomputeCatfishRiskDaily = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     logger.info('Starting daily catfish risk recalculation cron job');
     
     const startTime = Date.now();

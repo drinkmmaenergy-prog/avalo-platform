@@ -4,13 +4,14 @@
  */
 
 import { onRequest } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, auth, serverTimestamp } from '../init';
 import { SyncService } from './syncService';
 import { OfflineQueueService } from './offlineQueueService';
 import { SyncMiddleware } from './syncMiddleware';
 import { SyncRequest } from './types';
 
+import { onSchedule } from '../runtime';
 /**
  * Main sync endpoint - handles all sync types
  */

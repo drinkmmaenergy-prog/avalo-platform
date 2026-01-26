@@ -16,12 +16,12 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { db, serverTimestamp, increment } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -481,7 +481,10 @@ export const reviewFraudSignal = onCall(
         reviewedBy: request.auth.uid,
       });
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error reviewing fraud signal', error);
       if (error instanceof HttpsError) throw error;
@@ -545,7 +548,7 @@ export const getCreatorRiskScore = onCall(
       const riskDoc = await db.collection('creator_risk_scores').doc(creatorId).get();
 
       if (!riskDoc.exists) {
-        return null;
+        return;
       }
 
       return {
@@ -595,7 +598,7 @@ export const dailyFraudScan = onSchedule(
 
       logger.info(`Daily fraud scan completed - scanned ${scannedCount} creators`);
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in daily fraud scan', error);
       throw error;
@@ -638,7 +641,7 @@ export const cleanupOldFraudSignals = onSchedule(
 
       logger.info(`Cleaned up ${deleteCount} old fraud signals`);
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in fraud signals cleanup', error);
       throw error;

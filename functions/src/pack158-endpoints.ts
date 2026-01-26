@@ -5,7 +5,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { Timestamp } from 'firebase-admin/firestore';
 import {
   createLegalVault,
@@ -24,7 +24,7 @@ import {
   LegalEvidenceCategory,
   LegalViolationSeverity,
 } from './types/pack158-legal-evidence.types';
-import { admin, auth, functions, timestamp } from './runtime';
+import { admin, auth, functions, timestamp, onSchedule } from './runtime';
 
 export const pack158_captureMessageEvidence = onCall(async (request) => {
   const userId = request.auth?.uid;
@@ -59,19 +59,24 @@ export const pack158_captureMessageEvidence = onCall(async (request) => {
     });
 
     if (!result) {
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         stored: false,
         message: 'Evidence not stored - content does not meet legal violation criteria',
-      };
+      });
+
+      return;
     }
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       stored: true,
       vaultId: result.vaultId,
       evidenceId: result.evidenceId,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('[Pack 158] Error capturing message evidence:', error);
     throw new HttpsError('internal', error.message);
@@ -114,12 +119,15 @@ export const pack158_requestExport = onCall(async (request) => {
       recipient,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       requestId: result.requestId,
       validation: result.validation,
       message: 'Export request submitted for review',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('[Pack 158] Error requesting export:', error);
     throw new HttpsError('internal', error.message);
@@ -145,10 +153,13 @@ export const pack158_admin_approveExport = onCall(async (request) => {
       deliveryMethod,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Export request approved',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('[Pack 158] Error approving export:', error);
     throw new HttpsError('internal', error.message);
@@ -174,10 +185,13 @@ export const pack158_admin_rejectExport = onCall(async (request) => {
       reason,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Export request rejected',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('[Pack 158] Error rejecting export:', error);
     throw new HttpsError('internal', error.message);
@@ -203,12 +217,15 @@ export const pack158_admin_deliverExport = onCall(async (request) => {
       accessorId: userId,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       evidence: result.evidence,
       metadata: result.metadata,
       message: 'Export package prepared',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('[Pack 158] Error delivering export:', error);
     throw new HttpsError('internal', error.message);
@@ -248,11 +265,14 @@ export const pack158_admin_createLegalHold = onCall(async (request) => {
       retentionReason,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       caseId: holdCaseId,
       message: 'Legal hold case created',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('[Pack 158] Error creating legal hold:', error);
     throw new HttpsError('internal', error.message);
@@ -277,10 +297,13 @@ export const pack158_admin_closeLegalHold = onCall(async (request) => {
       closedBy: userId,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Legal hold case closed',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('[Pack 158] Error closing legal hold:', error);
     throw new HttpsError('internal', error.message);
@@ -309,11 +332,14 @@ export const pack158_getUserOwnEvidence = onCall(async (request) => {
       recipient: userId,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       requestId,
       message: 'Your evidence export is being prepared',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('[Pack 158] Error requesting user evidence:', error);
     throw new HttpsError('internal', error.message);

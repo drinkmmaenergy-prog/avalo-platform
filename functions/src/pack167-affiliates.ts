@@ -28,7 +28,7 @@ import {
   validateRevenueSplit,
   logBlockedContent,
 } from './middleware/pack167-affiliate-safety';
-import { HttpsError, auth, increment, onCall, onRequest } from './runtime';
+import { HttpsError, auth, increment, onCall, onRequest, onSchedule } from './runtime';
 
 
 /**
@@ -599,9 +599,7 @@ async function updateAnalytics(creatorId: string): Promise<void> {
 /**
  * Scheduled function to update all analytics daily
  */
-export const updateAllAffiliateAnalytics = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async () => {
+export const updateAllAffiliateAnalytics = onSchedule("every 24 hours", async (event) => {
     const creatorsSnapshot = await db
       .collection('affiliate_links')
       .select('creatorId')

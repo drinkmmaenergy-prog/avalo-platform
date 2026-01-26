@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, logger, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, logger, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -99,7 +99,10 @@ export const pack393_createInfluencerPartner = functions.https.onCall(async (req
   
   functions.logger.info(`✅ New influencer partner created: ${name} (${referralCode})`);
   
-  return { success: true, referralCode, partnerId: request.auth.uid };
+  console.log('Scheduled job result:', { success: true, referralCode, partnerId: request.auth.uid });
+
+  
+  return;
 });
 
 // ============================================
@@ -170,7 +173,10 @@ export const pack393_trackInfluencerEvent = functions.https.onCall(async (reques
   // Check for payout trigger
   await checkPayoutTrigger(partnerId, partnerDoc.data() as InfluencerPartner, eventType, value || 0);
   
-  return { success: true, eventTracked: eventType };
+  console.log('Scheduled job result:', { success: true, eventTracked: eventType });
+
+  
+  return;
 });
 
 // ============================================
@@ -222,10 +228,7 @@ async function checkPayoutTrigger(
   }
 }
 
-export const pack393_processInfluencerPayouts = functions
-  .runWith({ timeoutSeconds: 540, memory: '1GB' })
-  .pubsub.schedule('0 0 1 * *') // First day of each month
-  .onRun(async (context) => {
+export const pack393_processInfluencerPayouts = onSchedule("0 0 1 * *", async (event) => {
     functions.logger.info('💰 Processing influencer payouts for last month');
     
     const lastMonth = getLastMonth();
@@ -280,17 +283,17 @@ export const pack393_processInfluencerPayouts = functions
       });
     }
     
-    return { success: true, partnersProcessed: partnerPayouts.size };
+    console.log('Scheduled job result:', { success: true, partnersProcessed: partnerPayouts.size });
+
+    
+    return;
   });
 
 // ============================================
 // FRAUD DETECTION
 // ============================================
 
-export const pack393_checkInfluencerFraud = functions
-  .runWith({ memory: '1GB' })
-  .pubsub.schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack393_checkInfluencerFraud = onSchedule("every 24 hours", async (event) => {
     functions.logger.info('🔍 Running influencer fraud detection');
     
     const sevenDaysAgo = admin.firestore.Timestamp.fromDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
@@ -369,7 +372,10 @@ export const pack393_checkInfluencerFraud = functions
       }
     }
     
-    return { success: true, partnersChecked: partnersSnapshot.size };
+    console.log('Scheduled job result:', { success: true, partnersChecked: partnersSnapshot.size });
+
+    
+    return;
   });
 
 // ============================================

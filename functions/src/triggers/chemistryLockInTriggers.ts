@@ -18,7 +18,7 @@ import {
   sendLockInActivatedNotification,
   sendConversionSuggestionNotification
 } from '../notifications/chemistryLockInNotifications';
-import { HttpsError, admin, auth, logger, onCall, serverTimestamp, timestamp } from '../runtime';
+import { HttpsError, admin, auth, logger, onCall, serverTimestamp, timestamp, onSchedule } from '../runtime';
 
 // ============================================================================
 // MESSAGE TRIGGERS
@@ -186,10 +186,7 @@ export const onCallCompleted = functions.firestore
 /**
  * Scheduled: Daily check for Lock-In expirations
  */
-export const dailyLockInMaintenance = functions.pubsub
-  .schedule('0 2 * * *') // 2 AM daily
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dailyLockInMaintenance = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     functions.logger.info('Starting daily Lock-In maintenance');
 
     try {
@@ -225,10 +222,7 @@ export const dailyLockInMaintenance = functions.pubsub
 /**
  * Scheduled: Send daily chemistry reminders
  */
-export const sendDailyChemistryReminders = functions.pubsub
-  .schedule('0 10 * * *') // 10 AM daily
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const sendDailyChemistryReminders = onSchedule({ schedule: "0 10 * * *", timeZone: "UTC" }, async (event) => {
     functions.logger.info('Sending daily chemistry reminders');
 
     try {

@@ -68,13 +68,15 @@ export const requestDataExportV1 = onCall(
 
       if (!existingRequests.empty) {
         const existingRequest = existingRequests.docs[0].data();
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: "existing_request",
           message: "A data export request is already in progress",
           requestId: existingRequests.docs[0].id,
           createdAt: existingRequest.createdAt,
-        };
+        });
+
+        return;
       }
 
       // Create privacy request
@@ -99,13 +101,16 @@ export const requestDataExportV1 = onCall(
       // Trigger async processing
       await processDataExport(uid, requestDoc.id);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         requestId: requestDoc.id,
         message:
           "Data export request created. You will receive a download link within 24 hours.",
         estimatedCompletionTime: "24 hours",
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error("Data export request failed:", error);
       throw new HttpsError("internal", "Failed to create data export request");
@@ -291,13 +296,15 @@ export const requestAccountDeletionV1 = onCall(
 
       if (!existingRequests.empty) {
         const existingRequest = existingRequests.docs[0].data();
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: "existing_request",
           message: "An account deletion request is already pending",
           requestId: existingRequests.docs[0].id,
           scheduledDeletionDate: existingRequest.scheduledDeletionAt,
-        };
+        });
+
+        return;
       }
 
       // Create deletion request with 30-day grace period
@@ -334,7 +341,7 @@ export const requestAccountDeletionV1 = onCall(
         gracePeriodDays: 30,
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         requestId: requestDoc.id,
         message:
@@ -342,7 +349,10 @@ export const requestAccountDeletionV1 = onCall(
         gracePeriodDays: 30,
         scheduledDeletionDate: scheduledDeletionAt.toDate().toISOString(),
         canRestoreUntil: scheduledDeletionAt.toDate().toISOString(),
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error("Account deletion request failed:", error);
       throw new HttpsError("internal", "Failed to create deletion request");
@@ -408,10 +418,13 @@ export const cancelAccountDeletionV1 = onCall(
         requestId: requestDoc.id,
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: "Account deletion cancelled. Your account has been restored.",
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error("Cancel deletion failed:", error);
       if (error instanceof HttpsError) throw error;
@@ -601,7 +614,7 @@ export const getPrivacyRequestStatusV1 = onCall(
       throw new HttpsError("permission-denied", "Not authorized to view this request");
     }
 
-    return {
+    console.log('Scheduled job result:', {
       requestId: requestDoc.id,
       type: requestData.type,
       status: requestData.status,
@@ -609,7 +622,10 @@ export const getPrivacyRequestStatusV1 = onCall(
       completedAt: requestData.completedAt || null,
       downloadUrl: requestData.downloadUrl || null,
       expiresAt: requestData.expiresAt || null,
-    };
+    });
+
+
+    return;
   }
 );
 

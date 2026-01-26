@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -92,14 +92,7 @@ export interface CountryASO {
 // CORE: ASO OPTIMIZATION ENGINE
 // ============================================================================
 
-export const pack392_asoOptimizationEngine = functions
-  .runWith({ 
-    timeoutSeconds: 540,
-    memory: '2GB'
-  })
-  .pubsub
-  .schedule('every 6 hours')
-  .onRun(async (context) => {
+export const pack392_asoOptimizationEngine = onSchedule("every 6 hours", async (event) => {
     console.log('[PACK 392] Running ASO Optimization Engine');
 
     try {
@@ -119,7 +112,9 @@ export const pack392_asoOptimizationEngine = functions
       }
 
       console.log('[PACK 392] ASO Optimization Engine completed');
-      return { success: true, optimized: storesSnap.size };
+      console.log('Scheduled job result:', { success: true, optimized: storesSnap.size });
+
+      return;
     } catch (error) {
       console.error('[PACK 392] ASO Optimization Engine error:', error);
       throw error;
@@ -258,12 +253,15 @@ async function getKeywordPerformance(storeId: string, country: string, keyword: 
   const conversion = totalImpressions > 0 ? totalInstalls / totalImpressions : 0;
   const trending = recentImpressions > oldImpressions * 1.2; // 20% growth
   
-  return {
+  console.log('Scheduled job result:', {
     conversion,
     impressions: totalImpressions,
     installs: totalInstalls,
     trending
-  };
+  });
+
+  
+  return;
 }
 
 // ============================================================================
@@ -456,10 +454,13 @@ async function getConversionMetrics(storeId: string, country: string) {
     totalRegistrations += data.registrations || 0;
   });
   
-  return {
+  console.log('Scheduled job result:', {
     conversionRate: totalViews > 0 ? totalInstalls / totalViews : 0,
     installToRegistration: totalInstalls > 0 ? totalRegistrations / totalInstalls : 0
-  };
+  });
+
+  
+  return;
 }
 
 // ============================================================================
@@ -671,7 +672,10 @@ export const pack392_addKeyword = functions
       trackingEnabled: true
     });
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   });
 
 export const pack392_removeKeyword = functions
@@ -690,5 +694,8 @@ export const pack392_removeKeyword = functions
 
     await db.collection('asoKeywords').doc(keywordId).delete();
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   });

@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { FieldValue, HttpsError, auth, increment, onCall, storage, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, increment, onCall, storage, timestamp, onSchedule } from './runtime';
 
 // ============================================
 // TYPES
@@ -572,9 +572,7 @@ export const getCostMetrics = functions.https.onCall(async (request) => {
 /**
  * Generate monthly cost report
  */
-export const generateMonthlyReport = functions.pubsub
-  .schedule("0 0 1 * *") // First day of month at midnight
-  .onRun(async (context) => {
+export const generateMonthlyReport = onSchedule("0 0 1 * *", async (event) => {
     const db = admin.firestore();
     
     console.log("📊 Generating monthly cost report...");

@@ -10,7 +10,7 @@ import { digestEngine } from './digests';
 import { settingsManager } from './settings';
 import { db } from '../init';
 import { Notification } from './types';
-import { HttpsError, admin, auth, onCall } from '../runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule } from '../runtime';
 
 /**
  * Send a notification
@@ -51,7 +51,10 @@ export const sendNotification = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', result.reason || 'Failed to send notification');
   }
 
-  return { notificationId: result.notificationId };
+  console.log('Scheduled job result:', { notificationId: result.notificationId });
+
+
+  return;
 });
 
 /**
@@ -112,7 +115,10 @@ export const markNotificationRead = functions.https.onCall(async (request) => {
     readAt: new Date(),
   });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 /**
@@ -142,7 +148,10 @@ export const markAllNotificationsRead = functions.https.onCall(async (request) =
 
   await batch.commit();
 
-  return { success: true, count: snapshot.size };
+  console.log('Scheduled job result:', { success: true, count: snapshot.size });
+
+
+  return;
 });
 
 /**
@@ -172,7 +181,10 @@ export const archiveNotification = functions.https.onCall(async (request) => {
     archived: true,
   });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 /**
@@ -197,7 +209,9 @@ export const updateNotificationSettings = functions.https.onCall(async (request)
   }
 
   await settingsManager.updateSettings(request.auth.uid, data.updates);
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+  return;
 });
 
 /**
@@ -212,7 +226,9 @@ export const toggleCategoryNotifications = functions.https.onCall(async (request
   const { category, enabled } = data;
 
   await settingsManager.toggleCategory(request.auth.uid, category, enabled);
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+  return;
 });
 
 /**
@@ -227,7 +243,9 @@ export const setSnoozeMode = functions.https.onCall(async (request) => {
   const { duration } = data;
 
   await settingsManager.setSnoozeMode(request.auth.uid, duration || null);
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+  return;
 });
 
 /**
@@ -282,7 +300,9 @@ export const updateReminder = functions.https.onCall(async (request) => {
   }
 
   await reminderEngine.updateReminder(reminderId, updates);
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+  return;
 });
 
 /**
@@ -308,7 +328,9 @@ export const deleteReminder = functions.https.onCall(async (request) => {
   }
 
   await reminderEngine.deleteReminder(reminderId);
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+  return;
 });
 
 /**
@@ -328,20 +350,15 @@ export const getUserDigests = functions.https.onCall(async (request) => {
 /**
  * SCHEDULED: Process due reminders (runs every 5 minutes)
  */
-export const processReminders = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const processReminders = onSchedule("every 5 minutes", async (event) => {
     await reminderEngine.processDueReminders();
-    return null;
+    return;
   });
 
 /**
  * SCHEDULED: Generate daily digests (runs at 8:00 AM UTC)
  */
-export const generateDailyDigests = functions.pubsub
-  .schedule('0 8 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const generateDailyDigests = onSchedule({ schedule: "0 8 * * *", timeZone: "UTC" }, async (event) => {
     // Get all users with digest settings
     const usersSnapshot = await db.collection('notification_settings').get();
 
@@ -354,16 +371,13 @@ export const generateDailyDigests = functions.pubsub
       }
     }
 
-    return null;
+    return;
   });
 
 /**
  * SCHEDULED: Generate weekly digests (runs on Monday at 8:00 AM UTC)
  */
-export const generateWeeklyDigests = functions.pubsub
-  .schedule('0 8 * * 1')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const generateWeeklyDigests = onSchedule({ schedule: "0 8 * * 1", timeZone: "UTC" }, async (event) => {
     const usersSnapshot = await db.collection('notification_settings').get();
 
     for (const userDoc of usersSnapshot.docs) {
@@ -375,38 +389,29 @@ export const generateWeeklyDigests = functions.pubsub
       }
     }
 
-    return null;
+    return;
   });
 
 /**
  * SCHEDULED: Reset paused reminders (runs daily at midnight UTC)
  */
-export const resetPausedReminders = functions.pubsub
-  .schedule('0 0 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const resetPausedReminders = onSchedule({ schedule: "0 0 * * *", timeZone: "UTC" }, async (event) => {
     await reminderEngine.resetDailyPausedReminders();
-    return null;
+    return;
   });
 
 /**
  * SCHEDULED: Clean up old digests (runs weekly)
  */
-export const cleanupOldDigests = functions.pubsub
-  .schedule('0 2 * * 0')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const cleanupOldDigests = onSchedule({ schedule: "0 2 * * 0", timeZone: "UTC" }, async (event) => {
     await digestEngine.cleanupOldDigests();
-    return null;
+    return;
   });
 
 /**
  * SCHEDULED: Clean up old notifications (runs weekly)
  */
-export const cleanupOldNotifications = functions.pubsub
-  .schedule('0 3 * * 0')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const cleanupOldNotifications = onSchedule({ schedule: "0 3 * * 0", timeZone: "UTC" }, async (event) => {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 90); // Keep 90 days
 
@@ -426,5 +431,5 @@ export const cleanupOldNotifications = functions.pubsub
     await batch.commit();
     console.log(`Cleaned up ${snapshot.size} old notifications`);
 
-    return null;
+    return;
   });

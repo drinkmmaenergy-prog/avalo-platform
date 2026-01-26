@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
-import { Timestamp, arrayUnion } from '../runtime';
+import { Timestamp, arrayUnion, logger, onSchedule } from '../runtime';
 
 interface FraudScore {
   userId: string;
@@ -371,9 +371,7 @@ export const predictChargebackRisk = functions.firestore
   });
 
 // Calculate overall fraud risk
-export const calculateOverallFraudRisk = functions.pubsub
-  .schedule('every 12 hours')
-  .onRun(async (context) => {
+export const calculateOverallFraudRisk = onSchedule("every 12 hours", async (event) => {
     console.log('Calculating overall fraud risk scores...');
 
     try {
@@ -466,10 +464,7 @@ export const calculateOverallFraudRisk = functions.pubsub
   });
 
 // Daily fraud metrics aggregation
-export const aggregateFraudMetrics = functions.pubsub
-  .schedule('0 6 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const aggregateFraudMetrics = onSchedule({ schedule: "0 6 * * *", timeZone: "UTC" }, async (event) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const dateStr = yesterday.toISOString().split('T')[0];

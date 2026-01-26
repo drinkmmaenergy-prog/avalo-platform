@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -58,14 +58,7 @@ export interface StoreMetrics {
 // CORE: STORE DEFENSE ENGINE
 // ============================================================================
 
-export const pack392_storeDefenseEngine = functions
-  .runWith({ 
-    timeoutSeconds: 540,
-    memory: '2GB'
-  })
-  .pubsub
-  .schedule('every 15 minutes')
-  .onRun(async (context) => {
+export const pack392_storeDefenseEngine = onSchedule("every 15 minutes", async (event) => {
     console.log('[PACK 392] Running Store Defense Engine');
 
     try {
@@ -78,7 +71,9 @@ export const pack392_storeDefenseEngine = functions
       }
 
       console.log('[PACK 392] Store Defense Engine completed');
-      return { success: true, analyzed: storesSnap.size };
+      console.log('Scheduled job result:', { success: true, analyzed: storesSnap.size });
+
+      return;
     } catch (error) {
       console.error('[PACK 392] Store Defense Engine error:', error);
       throw error;
@@ -154,7 +149,7 @@ async function detectReviewBombing(
     .orderBy('timestamp', 'desc')
     .get();
 
-  if (reviewsSnap.empty) return null;
+  if (reviewsSnap.empty) return;
 
   const reviews = reviewsSnap.docs.map(doc => doc.data());
   
@@ -185,7 +180,7 @@ async function detectReviewBombing(
     };
   }
 
-  return null;
+  return;
 }
 
 function detectCoordinatedTiming(reviews: any[]): boolean {
@@ -237,7 +232,7 @@ async function detectFakeInstalls(
     .where('timestamp', '>=', since)
     .get();
 
-  if (installsSnap.empty || installsSnap.size < 100) return null;
+  if (installsSnap.empty || installsSnap.size < 100) return;
 
   const installs = installsSnap.docs.map(doc => doc.data());
   
@@ -263,7 +258,7 @@ async function detectFakeInstalls(
     };
   }
 
-  return null;
+  return;
 }
 
 function detectIPClustering(installs: any[]): boolean {
@@ -297,7 +292,7 @@ async function detectRefundAbuse(
     .where('timestamp', '>=', since)
     .get();
 
-  if (refundsSnap.empty || refundsSnap.size < 10) return null;
+  if (refundsSnap.empty || refundsSnap.size < 10) return;
 
   const refunds = refundsSnap.docs.map(doc => doc.data());
   const totalTransactionsSnap = await db.collection('transactions')
@@ -328,7 +323,7 @@ async function detectRefundAbuse(
     };
   }
 
-  return null;
+  return;
 }
 
 function detectRepeatRefunders(refunds: any[]): boolean {
@@ -364,7 +359,7 @@ async function detectFakeReporting(
     .where('timestamp', '>=', since)
     .get();
 
-  if (reportsSnap.empty || reportsSnap.size < 5) return null;
+  if (reportsSnap.empty || reportsSnap.size < 5) return;
 
   const reports = reportsSnap.docs.map(doc => doc.data());
   
@@ -390,7 +385,7 @@ async function detectFakeReporting(
     };
   }
 
-  return null;
+  return;
 }
 
 function detectSameCategorySpam(reports: any[]): boolean {
@@ -444,7 +439,7 @@ function determineRiskState(
 }
 
 async function identifyAttackPattern(threats: ThreatSignal[]): Promise<string | null> {
-  if (threats.length === 0) return null;
+  if (threats.length === 0) return;
 
   // Create signature from threat types
   const signature = threats.map(t => t.type).sort().join('_');

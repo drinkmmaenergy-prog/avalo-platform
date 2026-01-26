@@ -6,7 +6,7 @@
 import * as functions from "firebase-functions";
 import { db, serverTimestamp } from "./init.js";
 import { Alert, AlertType, AlertSeverity, AlertChannel } from "./pack346-types";
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
 
 /**
  * Trigger an alert
@@ -291,7 +291,10 @@ export const acknowledgeAlert = functions.https.onCall(async (request) => {
         acknowledgedBy: request.auth.uid,
       });
 
-    return { success: true, alertId };
+    console.log('Scheduled job result:', { success: true, alertId });
+
+
+    return;
   }
 );
 
@@ -347,16 +350,17 @@ export const resolveAlert = functions.https.onCall(async (request) => {
     // Delete from active
     await alertRef.delete();
 
-    return { success: true, alertId };
+    console.log('Scheduled job result:', { success: true, alertId });
+
+
+    return;
   }
 );
 
 /**
  * Check thresholds and trigger alerts (scheduled)
  */
-export const checkKPIThresholds = functions.pubsub
-  .schedule("every 5 minutes")
-  .onRun(async (context) => {
+export const checkKPIThresholds = onSchedule("every 5 minutes", async (event) => {
     const today = new Date().toISOString().split("T")[0];
 
     // Get today's KPI

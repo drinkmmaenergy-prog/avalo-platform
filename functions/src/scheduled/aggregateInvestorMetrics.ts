@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, Timestamp, serverTimestamp } from '../runtime';
+import { FieldValue, Timestamp, serverTimestamp, onSchedule } from '../runtime';
 
 const db = admin.firestore();
 
@@ -9,10 +9,7 @@ const db = admin.firestore();
  * Runs daily at 00:00 UTC to aggregate previous day's metrics
  * NO CHANGES to tokenomics, prices, or payout rates
  */
-export const aggregateInvestorMetrics = functions.pubsub
-  .schedule('0 0 * * *') // Daily at midnight UTC
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const aggregateInvestorMetrics = onSchedule({ schedule: "0 0 * * *", timeZone: "UTC" }, async (event) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     yesterday.setHours(0, 0, 0, 0);
@@ -171,8 +168,7 @@ export const aggregateInvestorMetrics = functions.pubsub
         .set(metrics);
 
       console.log(`Successfully aggregated metrics for ${dateStr}`, metrics);
-
-      return { success: true, date: dateStr };
+      return;
     } catch (error) {
       console.error('Error aggregating investor metrics:', error);
       throw error;

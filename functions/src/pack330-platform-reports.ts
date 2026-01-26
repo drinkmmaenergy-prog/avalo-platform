@@ -306,10 +306,13 @@ export const pack330_listPlatformTaxReports = https.onCall(
 
       const reports = reportsQuery.docs.map(doc => doc.data() as TaxReportPlatform);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         reports,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('List platform tax reports error:', error);
       throw new HttpsError(
@@ -343,10 +346,13 @@ export const pack330_admin_generatePlatformReport = https.onCall(
     try {
       const report = await generatePlatformReport(period);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         report,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Admin generate platform report error:', error);
       throw new HttpsError(

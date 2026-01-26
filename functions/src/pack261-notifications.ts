@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -218,9 +218,7 @@ export const notifyVIPActive = async (
 };
 
 // Send weekly earnings summary
-export const sendWeeklySummary = functions.pubsub
-  .schedule('0 9 * * 1') // Every Monday at 9 AM
-  .onRun(async (context) => {
+export const sendWeeklySummary = onSchedule("0 9 * * 1", async (event) => {
     const creatorsSnapshot = await db.collection('users')
       .where('role', '==', 'creator')
       .get();

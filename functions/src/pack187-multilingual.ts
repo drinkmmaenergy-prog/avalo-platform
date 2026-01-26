@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, admin, serverTimestamp } from './init';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
 
 // Supported languages matrix
 const SUPPORTED_LANGUAGES = [
@@ -453,9 +453,7 @@ async function checkCulturalSafety(
 /**
  * Scheduled function to clean up old translation logs (30 days)
  */
-export const cleanupTranslationLogs = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async () => {
+export const cleanupTranslationLogs = onSchedule("every 24 hours", async (event) => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 

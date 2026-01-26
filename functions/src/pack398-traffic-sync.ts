@@ -7,7 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule } from './runtime';
 
 // Campaign Status
 export enum CampaignStatus {
@@ -185,7 +185,10 @@ export const createCampaign = functions.https.onCall(async (request) => {
 
   await db.collection('campaigns').doc(campaignId).set(campaign);
 
-  return { success: true, campaignId };
+  console.log('Scheduled job result:', { success: true, campaignId });
+
+
+  return;
 });
 
 /**
@@ -223,7 +226,10 @@ export const updateCampaignStatus = functions.https.onCall(async (request) => {
     timestamp: admin.firestore.Timestamp.now(),
   });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 /**
@@ -273,7 +279,10 @@ export const trackCampaignPerformance = functions.https.onCall(async (request) =
     currentCPI: cpi,
   });
 
-  return { success: true, cac, cpi };
+  console.log('Scheduled job result:', { success: true, cac, cpi });
+
+
+  return;
 });
 
 /**
@@ -316,7 +325,10 @@ export const createInfluencerCohort = functions.https.onCall(async (request) => 
 
   await db.collection('influencer_cohorts').doc(cohortId).set(cohort);
 
-  return { success: true, cohortId, trackingCode };
+  console.log('Scheduled job result:', { success: true, cohortId, trackingCode });
+
+
+  return;
 });
 
 /**
@@ -392,7 +404,7 @@ export const predictUserLTV = functions.https.onCall(async (request) => {
 /**
  * Monitor campaigns and auto-stop if needed
  */
-export const monitorCampaigns = functions.pubsub.schedule('every 15 minutes').onRun(async (context) => {
+export const monitorCampaigns = onSchedule("every 15 minutes", async (event) => {
   const campaignsQuery = await db.collection('campaigns')
     .where('status', '==', CampaignStatus.ACTIVE)
     .where('autoStopEnabled', '==', true)
@@ -444,13 +456,13 @@ export const monitorCampaigns = functions.pubsub.schedule('every 15 minutes').on
     });
   }
 
-  return null;
+  return;
 });
 
 /**
  * Calculate campaign ROI
  */
-export const calculateCampaignROI = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
+export const calculateCampaignROI = onSchedule("every 24 hours", async (event) => {
   const campaignsQuery = await db.collection('campaigns')
     .where('status', 'in', [CampaignStatus.ACTIVE, CampaignStatus.COMPLETED])
     .get();
@@ -523,7 +535,7 @@ export const calculateCampaignROI = functions.pubsub.schedule('every 24 hours').
     });
   }
 
-  return null;
+  return;
 });
 
 /**

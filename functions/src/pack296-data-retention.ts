@@ -7,7 +7,7 @@ import * as functions from 'firebase-functions';
 import { db, serverTimestamp } from './init';
 import { DATA_RETENTION } from './pack296-audit-helpers';
 import type { RetentionJobResult } from './types/audit.types';
-import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // DATA RETENTION JOB (Runs daily)
@@ -17,10 +17,7 @@ import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
  * Daily job to clean up old audit logs and compliance data
  * Respects retention policies while maintaining compliance requirements
  */
-export const retention_dailyCleanup = functions.pubsub
-  .schedule('0 3 * * *') // Run at 3 AM daily
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const retention_dailyCleanup = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[RETENTION] Starting daily cleanup job');
 
     const results: Record<string, RetentionJobResult> = {

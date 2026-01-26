@@ -20,7 +20,7 @@ import {
   IntentTracking,
   MonetizationIntent
 } from './types/pack238-chat-motivation';
-import { FieldValue, Timestamp, increment, timestamp } from './runtime';
+import { FieldValue, Timestamp, increment, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -903,9 +903,7 @@ function findSharedInterests(context: ConversationContext): string[] {
 /**
  * Cloud Function: Clean up expired boosters
  */
-export const cleanupExpiredBoosters = functions.pubsub
-  .schedule('every 15 minutes')
-  .onRun(async () => {
+export const cleanupExpiredBoosters = onSchedule("every 15 minutes", async (event) => {
     const now = admin.firestore.Timestamp.now();
     
     const expiredBoostersSnapshot = await db

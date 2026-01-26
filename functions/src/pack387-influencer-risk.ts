@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -194,9 +194,7 @@ async function handleCriticalInfluencerRisk(influencerId: string, riskScore: num
 /**
  * Detect fake "expose" campaigns or coordinated harassment
  */
-export const pack387_detectCoordinatedAttack = functions.pubsub
-  .schedule('every 30 minutes')
-  .onRun(async context => {
+export const pack387_detectCoordinatedAttack = onSchedule("every 30 minutes", async (event) => {
     console.log('Checking for coordinated attacks...');
 
     try {
@@ -279,9 +277,7 @@ export const pack387_detectCoordinatedAttack = functions.pubsub
 /**
  * Update all influencer risk scores
  */
-export const pack387_updateAllInfluencerRisks = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async context => {
+export const pack387_updateAllInfluencerRisks = onSchedule("every 24 hours", async (event) => {
     console.log('Updating all influencer risk scores...');
 
     try {

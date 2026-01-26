@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, increment, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, increment, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -16,10 +16,7 @@ const db = admin.firestore();
 /**
  * Rotate ASO variants for A/B testing
  */
-export const pack373_rotateASOVariants = functions.pubsub
-  .schedule('every monday 00:00')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack373_rotateASOVariants = onSchedule({ schedule: "every monday 00:00", timeZone: "UTC" }, async (event) => {
     console.log('🔄 Starting ASO variant rotation...');
     
     const asoControlDocs = await db.collection('asoControl').get();
@@ -61,7 +58,10 @@ export const pack373_rotateASOVariants = functions.pubsub
     await batch.commit();
     console.log(`✅ Created ${experiments.length} ASO experiments`);
     
-    return { success: true, experimentsCreated: experiments.length };
+    console.log('Scheduled job result:', { success: true, experimentsCreated: experiments.length });
+
+    
+    return;
   });
 
 /**
@@ -75,13 +75,13 @@ export const pack373_trackStoreConversion = functions.firestore
     
     // Check if user came from store listing (has install metadata)
     if (!userData.installMetadata) {
-      return null;
+      return;
     }
     
     const { countryCode, storeExperimentId } = userData.installMetadata;
     
     if (!storeExperimentId) {
-      return null;
+      return;
     }
     
     // Update experiment conversion
@@ -114,16 +114,13 @@ export const pack373_trackStoreConversion = functions.firestore
       console.log(`📊 ASO conversion tracked: ${conversionRate.toFixed(2)}% (${conversionLift > 0 ? '+' : ''}${conversionLift.toFixed(1)}% lift)`);
     }
     
-    return null;
+    return;
   });
 
 /**
  * Finalize ASO experiments weekly
  */
-export const pack373_finalizeASOExperiments = functions.pubsub
-  .schedule('every sunday 23:00')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack373_finalizeASOExperiments = onSchedule({ schedule: "every sunday 23:00", timeZone: "UTC" }, async (event) => {
     console.log('🏁 Finalizing ASO experiments...');
     
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -164,7 +161,10 @@ export const pack373_finalizeASOExperiments = functions.pubsub
     await batch.commit();
     console.log(`✅ Finalized ${experimentsSnapshot.size} experiments, ${winnerCount} winners applied`);
     
-    return { success: true, finalized: experimentsSnapshot.size, winners: winnerCount };
+    console.log('Scheduled job result:', { success: true, finalized: experimentsSnapshot.size, winners: winnerCount });
+
+    
+    return;
   });
 
 // ========================================
@@ -242,7 +242,10 @@ export const pack373_trackPartnerInstall = functions.https.onCall(async (request
   
   console.log(`${validated ? '✅' : '⚠️'} Install tracked: fraud score ${fraudScore.toFixed(2)}`);
   
-  return { success: true, validated, fraudScore };
+  console.log('Scheduled job result:', { success: true, validated, fraudScore });
+
+  
+  return;
 });
 
 /**
@@ -255,13 +258,13 @@ export const pack373_calculatePartnerCommission = functions.firestore
     const userId = transaction.userId;
     
     if (!userId || transaction.amount <= 0) {
-      return null;
+      return;
     }
     
     // Check if user has referral partner
     const userDoc = await db.collection('users').doc(userId).get();
     if (!userDoc.exists || !userDoc.data()!.referralPartner) {
-      return null;
+      return;
     }
     
     const partnerId = userDoc.data()!.referralPartner;
@@ -274,7 +277,7 @@ export const pack373_calculatePartnerCommission = functions.firestore
     
     const installDoc = await installRef.get();
     if (!installDoc.exists || !installDoc.data()!.validated) {
-      return null;
+      return;
     }
     
     const installData = installDoc.data()!;
@@ -294,7 +297,7 @@ export const pack373_calculatePartnerCommission = functions.firestore
     
     console.log(`💰 Commission calculated: $${commissionAmount.toFixed(2)} for partner ${partnerId}`);
     
-    return null;
+    return;
   });
 
 // ========================================
@@ -304,9 +307,7 @@ export const pack373_calculatePartnerCommission = functions.firestore
 /**
  * Auto-pause campaigns with poor performance
  */
-export const pack373_autoPauseCampaign = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const pack373_autoPauseCampaign = onSchedule("every 1 hours", async (event) => {
     console.log('🔍 Checking campaign performance...');
     
     const campaignsSnapshot = await db.collection('adCampaigns')
@@ -394,16 +395,16 @@ export const pack373_autoPauseCampaign = functions.pubsub
     
     console.log(`✅ Campaign check complete. Paused: ${pausedCount}`);
     
-    return { success: true, pausedCount };
+    console.log('Scheduled job result:', { success: true, pausedCount });
+
+    
+    return;
   });
 
 /**
  * Update campaign metrics daily
  */
-export const pack373_updateCampaignMetrics = functions.pubsub
-  .schedule('every day 01:00')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack373_updateCampaignMetrics = onSchedule({ schedule: "every day 01:00", timeZone: "UTC" }, async (event) => {
     console.log('📊 Updating campaign metrics...');
     
     const campaignsSnapshot = await db.collection('adCampaigns').get();
@@ -476,7 +477,10 @@ export const pack373_updateCampaignMetrics = functions.pubsub
     await batch.commit();
     console.log(`✅ Updated metrics for ${campaignsSnapshot.size} campaigns`);
     
-    return { success: true, campaignsUpdated: campaignsSnapshot.size };
+    console.log('Scheduled job result:', { success: true, campaignsUpdated: campaignsSnapshot.size });
+
+    
+    return;
   });
 
 // ========================================
@@ -493,7 +497,7 @@ export const pack373_validateInstall = functions.firestore
     const userData = snap.data();
     
     if (!userData.installMetadata) {
-      return null;
+      return;
     }
     
     const { deviceInfo, campaignId, ip, userAgent } = userData.installMetadata;
@@ -548,7 +552,7 @@ export const pack373_validateInstall = functions.firestore
       });
     }
     
-    return null;
+    return;
   });
 
 // ========================================
@@ -558,9 +562,7 @@ export const pack373_validateInstall = functions.firestore
 /**
  * Check regional budget limits
  */
-export const pack373_checkRegionalLimits = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async (context) => {
+export const pack373_checkRegionalLimits = onSchedule("every 6 hours", async (event) => {
     console.log('🌍 Checking regional marketing limits...');
     
     const limitsSnapshot = await db.collection('regionalMarketingLimits').get();
@@ -642,7 +644,10 @@ export const pack373_checkRegionalLimits = functions.pubsub
     
     console.log(`✅ Regional limit check complete. Alerts: ${alerts.length}`);
     
-    return { success: true, alertsCreated: alerts.length };
+    console.log('Scheduled job result:', { success: true, alertsCreated: alerts.length });
+
+    
+    return;
   });
 
 // ========================================
@@ -652,9 +657,7 @@ export const pack373_checkRegionalLimits = functions.pubsub
 /**
  * Budget firewall - continuous monitoring
  */
-export const pack373_budgetFirewall = functions.pubsub
-  .schedule('every 30 minutes')
-  .onRun(async (context) => {
+export const pack373_budgetFirewall = onSchedule("every 30 minutes", async (event) => {
     console.log('🛡️ Running budget firewall checks...');
     
     const issues: any[] = [];
@@ -762,7 +765,10 @@ export const pack373_budgetFirewall = functions.pubsub
     
     console.log(`🛡️ Budget firewall check complete. Issues: ${issues.length}`);
     
-    return { success: true, issuesDetected: issues.length, issues };
+    console.log('Scheduled job result:', { success: true, issuesDetected: issues.length, issues });
+
+    
+    return;
   });
 
 // ========================================

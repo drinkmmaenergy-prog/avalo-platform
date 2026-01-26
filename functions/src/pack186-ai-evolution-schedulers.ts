@@ -7,16 +7,13 @@
 import * as functions from 'firebase-functions';
 import { forgetOldAIMemories, generateLoreUpdate, GrowthEventType, recordGrowthMetric } from './pack186-ai-evolution';
 import { db } from './init';
-import { timestamp } from './runtime';
+import { timestamp, logger, onSchedule } from './runtime';
 
 // ======================
 // Memory Decay Scheduler
 // ======================
 
-export const memoryDecayCycle = functions.pubsub
-  .schedule('every 24 hours')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const memoryDecayCycle = onSchedule({ schedule: "every 24 hours", timeZone: "UTC" }, async (event) => {
     console.log('Starting memory decay cycle...');
     
     try {
@@ -31,11 +28,14 @@ export const memoryDecayCycle = functions.pubsub
         status: 'success'
       });
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         expired: result.expired,
         processed: result.processed
-      };
+      });
+
+      
+      return;
     } catch (error: any) {
       console.error('Memory decay cycle failed:', error);
       
@@ -54,10 +54,7 @@ export const memoryDecayCycle = functions.pubsub
 // Seasonal Lore Update Scheduler
 // ======================
 
-export const seasonalLoreUpdate = functions.pubsub
-  .schedule('0 0 1 * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const seasonalLoreUpdate = onSchedule({ schedule: "0 0 1 * *", timeZone: "UTC" }, async (event) => {
     console.log('Starting seasonal lore update...');
     
     try {
@@ -125,11 +122,14 @@ export const seasonalLoreUpdate = functions.pubsub
         status: 'success'
       });
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         updatesCreated: updates.length,
         charactersProcessed: characters.length
-      };
+      });
+
+      
+      return;
     } catch (error: any) {
       console.error('Seasonal lore update failed:', error);
       
@@ -148,10 +148,7 @@ export const seasonalLoreUpdate = functions.pubsub
 // Dependency Risk Scan Scheduler
 // ======================
 
-export const dependencyRiskScan = functions.pubsub
-  .schedule('every 6 hours')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dependencyRiskScan = onSchedule({ schedule: "every 6 hours", timeZone: "UTC" }, async (event) => {
     console.log('Starting dependency risk scan...');
     
     try {
@@ -204,11 +201,14 @@ export const dependencyRiskScan = functions.pubsub
         status: 'success'
       });
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         usersScanned: userCharacterPairs.size,
         risksDetected: risksDetected.length
-      };
+      });
+
+      
+      return;
     } catch (error: any) {
       console.error('Dependency risk scan failed:', error);
       
@@ -227,10 +227,7 @@ export const dependencyRiskScan = functions.pubsub
 // Memory Refresh Reminder Scheduler
 // ======================
 
-export const memoryRefreshReminder = functions.pubsub
-  .schedule('every 168 hours')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const memoryRefreshReminder = onSchedule({ schedule: "every 168 hours", timeZone: "UTC" }, async (event) => {
     console.log('Starting memory refresh reminder...');
     
     try {
@@ -276,10 +273,13 @@ export const memoryRefreshReminder = functions.pubsub
         status: 'success'
       });
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         remindersSent: remindersCreated.length
-      };
+      });
+
+      
+      return;
     } catch (error: any) {
       console.error('Memory refresh reminder failed:', error);
       
@@ -347,6 +347,6 @@ async function generateSeasonalUpdate(character: any, eventType: GrowthEventType
     case GrowthEventType.NEW_PROJECT:
       return projects[Math.floor(Math.random() * projects.length)];
     default:
-      return null;
+      return;
   }
 }

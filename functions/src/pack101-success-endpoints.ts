@@ -4,7 +4,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db } from './init';
 import { logger } from 'firebase-functions/v2';
 import {
@@ -13,7 +13,7 @@ import {
 } from './pack101-success-types';
 import { rebuildSuccessSignalsForUser } from './pack101-success-engine';
 import { logTechEvent } from './pack90-logging';
-import { auth, functions } from './runtime';
+import { auth, functions, onSchedule } from './runtime';
 
 /**
  * Get creator success signals for authenticated user
@@ -64,20 +64,24 @@ export const getCreatorSuccessSignals = onCall(
         }
 
         const data = newSignalsDoc.data()!;
-        return {
+        console.log('Scheduled job result:', {
           updatedAt: data.updatedAt.toDate().toISOString(),
           scorecard: data.scorecard,
           suggestions: data.suggestions,
-        };
+        });
+
+        return;
       }
 
       // Return existing signals
       const data = signalsDoc.data()!;
-      return {
+      console.log('Scheduled job result:', {
         updatedAt: data.updatedAt.toDate().toISOString(),
         scorecard: data.scorecard,
         suggestions: data.suggestions,
-      };
+      });
+
+      return;
     } catch (error: any) {
       logger.error('[SuccessToolkit] Error fetching success signals', {
         userId,
@@ -178,7 +182,7 @@ export const rebuildCreatorSuccessSignalsDaily = onSchedule(
         },
       });
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('[SuccessToolkit] Error in daily rebuild job', error);
 

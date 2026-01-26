@@ -9,7 +9,7 @@
  * @version 1.0.0
  */
 
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp } from './init';
 import {
   CreatorDailyStats,
@@ -18,7 +18,7 @@ import {
   mapTransactionToFeature,
   isEarningTransaction,
 } from './types/pack290-creator-analytics.types';
-import { functions } from './runtime';
+import { functions, onSchedule } from './runtime';
 
 // ============================================================================
 // SCHEDULED FUNCTION: Daily Aggregation
@@ -302,9 +302,12 @@ export async function backfillDailyStats(
     currentDate.setDate(currentDate.getDate() + 1);
   }
   
-  return {
+  console.log('Scheduled job result:', {
     success: errors.length === 0,
     daysProcessed,
     errors,
-  };
+  });
+
+  
+  return;
 }

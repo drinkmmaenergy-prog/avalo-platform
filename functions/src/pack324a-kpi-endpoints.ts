@@ -6,7 +6,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db } from './init';
 import { logger } from 'firebase-functions/v2';
 import {
@@ -23,7 +23,7 @@ import {
   aggregateCurrentHourKpi,
   cleanupOldHourlyKpi,
 } from './pack324a-kpi-aggregation';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // HELPER: ADMIN CHECK
@@ -460,13 +460,16 @@ export const pack324a_admin_triggerDailyAggregation = onCall(
         creatorsProcessed: result.creatorsProcessed,
       });
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         date: result.platformKpi.date,
         creatorsProcessed: result.creatorsProcessed,
         platformKpi: result.platformKpi,
         safetyKpi: result.safetyKpi,
-      };
+      });
+
+      
+      return;
     } catch (error: any) {
       logger.error('Error in manual aggregation:', error);
       throw new HttpsError('internal', `Aggregation failed: ${error.message}`);
@@ -624,13 +627,16 @@ export const pack324a_admin_getTopCreators = onCall(
         .sort((a, b) => b.totalEarningsTokens - a.totalEarningsTokens)
         .slice(0, Math.min(limit, 100));
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         startDate,
         endDate,
         topCreators,
         totalCreators: creatorMap.size,
-      };
+      });
+
+      
+      return;
     } catch (error: any) {
       logger.error('Error fetching top creators:', error);
       throw new HttpsError('internal', `Failed to fetch top creators: ${error.message}`);

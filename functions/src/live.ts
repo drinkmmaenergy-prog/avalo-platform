@@ -178,11 +178,14 @@ export const createLiveSessionCallable = onCall(
         type,
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         sessionId: sessionRef.id,
         session,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error("Error creating live session:", error);
       throw new HttpsError("internal", "Failed to create live session");
@@ -224,11 +227,13 @@ export const joinLiveSessionCallable = onCall(
 
       // Check if host is trying to join (hosts are always allowed)
       if (uid === session.hostId) {
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           role: "host",
           session,
-        };
+        });
+
+        return;
       }
 
       // Check max viewers (for 1:1)
@@ -335,12 +340,15 @@ export const endLiveSessionCallable = onCall(
         totalTips: session.totalTips,
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         duration,
         totalViewers: session.totalViewers,
         totalRevenue: session.totalRevenue,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error("Error ending live session:", error);
       if (error instanceof HttpsError) throw error;
@@ -469,12 +477,15 @@ export const sendLiveTipCallable = onCall(
         amount,
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         amount,
         recipientAmount,
         platformFee,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error("Error sending live tip:", error);
       if (error instanceof HttpsError) throw error;

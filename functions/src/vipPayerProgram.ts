@@ -11,11 +11,11 @@ import {
   onDocumentCreated,
   onDocumentUpdated,
 } from 'firebase-functions/v2/firestore';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { HttpsError } from 'firebase-functions/v2/https';
 import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
-import { admin, arrayUnion, functions, increment, timestamp } from './runtime';
+import { admin, arrayUnion, functions, increment, timestamp, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -436,13 +436,16 @@ function calculateScoreComponents(
 
   const totalScore = Math.round(loyaltyScore + consistencyScore + valueScore + frequencyScore);
 
-  return {
+  console.log('Scheduled job result:', {
     loyaltyScore: Math.round(loyaltyScore),
     consistencyScore: Math.round(consistencyScore),
     valueScore: Math.round(valueScore),
     frequencyScore: Math.round(frequencyScore),
     totalScore: Math.min(100, totalScore),
-  };
+  });
+
+
+  return;
 }
 
 /**

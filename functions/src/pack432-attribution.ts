@@ -7,7 +7,7 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -119,11 +119,13 @@ export const trackInstall = functions.https.onCall(async (request) => {
     .get();
 
   if (!existingAttribution.empty) {
-    return { 
+    console.log('Scheduled job result:', { 
       success: true, 
       message: 'Attribution already exists',
       attribution: existingAttribution.docs[0].data()
-    };
+    });
+
+    return;
   }
 
   // Get user's country from profile
@@ -181,10 +183,13 @@ export const trackInstall = functions.https.onCall(async (request) => {
     });
   }
 
-  return { 
+  console.log('Scheduled job result:', { 
     success: true, 
     installId: attribution.installId 
-  };
+  });
+
+
+  return;
 });
 
 // ===========================
@@ -258,16 +263,17 @@ export const trackJourneyEvent = functions.https.onCall(async (request) => {
 
   await db.collection('ua_user_journeys').doc(userId).update(updates);
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 // ===========================
 // LTV CALCULATION
 // ===========================
 
-export const calculateUserLTV = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const calculateUserLTV = onSchedule("every 24 hours", async (event) => {
     const now = new Date();
     const dates = {
       day7: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
@@ -329,17 +335,14 @@ export const calculateUserLTV = functions.pubsub
       }
     }
 
-    return null;
+    return;
   });
 
 // ===========================
 // COHORT ANALYSIS
 // ===========================
 
-export const generateCohortAnalysis = functions.pubsub
-  .schedule('every day 03:00')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const generateCohortAnalysis = onSchedule({ schedule: "every day 03:00", timeZone: "UTC" }, async (event) => {
     const dates = [
       new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
@@ -466,7 +469,7 @@ export const generateCohortAnalysis = functions.pubsub
       }
     }
 
-    return null;
+    return;
   });
 
 // ===========================
@@ -478,11 +481,11 @@ export const updateCampaignLTVOptimization = functions.firestore
   .onCreate(async (snap, context) => {
     const cohort = snap.data() as CohortAnalysis;
 
-    if (!cohort.campaignId) return null; // Skip organic
+    if (!cohort.campaignId) return; // Skip organic
 
     // Get campaign
     const campaignDoc = await db.collection('ua_campaigns').doc(cohort.campaignId).get();
-    if (!campaignDoc.exists) return null;
+    if (!campaignDoc.exists) return;
 
     const campaign = campaignDoc.data()!;
 
@@ -534,7 +537,7 @@ export const updateCampaignLTVOptimization = functions.firestore
       });
     }
 
-    return null;
+    return;
   });
 
 // ===========================
@@ -579,12 +582,15 @@ export const getAttributionReport = functions.https.onCall(async (request) => {
     }
   }
 
-  return {
+  console.log('Scheduled job result:', {
     totalInstalls: attributionsSnap.size,
     byPlatform,
     byCountry,
     byCampaign
-  };
+  });
+
+
+  return;
 });
 
 export const getLTVReport = functions.https.onCall(async (request) => {

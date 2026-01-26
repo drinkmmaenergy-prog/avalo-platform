@@ -3,14 +3,14 @@
  * Periodic scanning and audit functions
  */
 
-import { onSchedule } from "firebase-functions/v2/scheduler";
+
 import { db } from "./init";
 import { Timestamp } from "firebase-admin/firestore";
 import { detectMultiAccountFarming, requestIdentityReVerification, disableAffiliateLinks } from "./pack168-multi-account-detection";
 import { calculateFarmingRiskScore } from "./pack168-anti-farming-engine";
 import { scanConversationHistory } from "./pack168-emotional-grooming";
 import { NetworkGraphScanResult, AffiliateLoopAudit } from "./pack168-types";
-import { admin, functions, timestamp } from './runtime';
+import { admin, functions, timestamp, onSchedule } from './runtime';
 
 export const networkGraphScan = onSchedule(
   {

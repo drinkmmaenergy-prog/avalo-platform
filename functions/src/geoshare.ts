@@ -11,11 +11,11 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp, generateId, admin } from './init.js';
 import { logger } from 'firebase-functions/v2';
 import Stripe from 'stripe';
-import { FieldValue, Timestamp, auth, functions, storage, timestamp } from './runtime';
+import { FieldValue, Timestamp, auth, functions, storage, timestamp, onSchedule } from './runtime';
 
 // ==========================================
 // CONFIGURATION
@@ -90,11 +90,14 @@ function calculateGeosharePricing(durationMinutes: number): {
   const avaloFee = Math.round(totalTokens * (GEOSHARE_CONFIG.AVALO_FEE_PERCENT / 100));
   const netAmount = totalTokens - avaloFee;
 
-  return {
+  console.log('Scheduled job result:', {
     totalTokens,
     avaloFee,
     netAmount,
-  };
+  });
+
+
+  return;
 }
 
 /**
@@ -208,13 +211,16 @@ export const getGeosharePricing = onCall(
 
     const pricing = calculateGeosharePricing(durationMinutes);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       durationMinutes,
       pricePerMinute: GEOSHARE_CONFIG.PRICE_PER_MINUTE,
       ...pricing,
       availableDurations: GEOSHARE_CONFIG.DURATION_OPTIONS,
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -330,13 +336,16 @@ export const startGeoshareSession = onCall(
 
       logger.info(`Geoshare session started: ${sessionId} (${userId} -> ${partnerId})`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         sessionId,
         expiresAt: expiresAt.toISOString(),
         durationMinutes,
         paidAmount: pricing.totalTokens,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error starting geoshare session:', error);
       throw new HttpsError('internal', error.message || 'Failed to start session');
@@ -429,11 +438,14 @@ export const updateGeoshareLocation = onCall(
       lastUpdateAt: serverTimestamp(),
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       locationId,
       remainingSeconds: Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000)),
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -478,10 +490,13 @@ export const stopGeoshareSession = onCall(
 
     logger.info(`Geoshare session manually stopped: ${sessionId} by ${userId}`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Location sharing stopped',
-    };
+    });
+
+
+    return;
   }
 );
 

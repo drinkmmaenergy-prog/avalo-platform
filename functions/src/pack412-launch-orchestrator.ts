@@ -17,7 +17,7 @@ import type {
   MarketExpansionProposal,
   LaunchStage,
 } from '../../shared/types/pack412-launch';
-import { HttpsError, auth, onCall, timestamp } from './runtime';
+import { HttpsError, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -127,14 +127,17 @@ async function checkPaymentsEnabled(regionId: string, countries: string[]): Prom
       paymentsData?.enabledCountries?.includes(country)
     );
     
-    return {
+    console.log('Scheduled job result:', {
       checkName: 'payments_enabled',
       passed: allCountriesSupported,
       message: allCountriesSupported
         ? 'Payments enabled for all countries'
         : 'Some countries lack payment support',
       checkedAt: new Date().toISOString(),
-    };
+    });
+
+    
+    return;
   } catch (error) {
     return {
       checkName: 'payments_enabled',
@@ -275,7 +278,7 @@ async function getCurrentRegionStats(regionId: string): Promise<Partial<LaunchRe
     const dau = data.dau || 0;
     const totalReviews = data.totalReviews || 1;
     
-    return {
+    console.log('Scheduled job result:', {
       regionId,
       snapshotAt: new Date().toISOString(),
       dau: dau,
@@ -291,7 +294,10 @@ async function getCurrentRegionStats(regionId: string): Promise<Partial<LaunchRe
       supportBacklog: supportDoc.data().count,
       avgResponseTimeMin: data.avgResponseTimeMin || 0,
       riskScore: data.riskScore || 0,
-    };
+    });
+
+    
+    return;
   } catch (error) {
     console.error(`Error getting region stats for ${regionId}:`, error);
     return {};
@@ -595,7 +601,10 @@ export const pack412_createOrUpdateRegionConfig = functions.https.onCall(async (
     timestamp: now,
   });
   
-  return { success: true, regionId: regionConfig.id };
+  console.log('Scheduled job result:', { success: true, regionId: regionConfig.id });
+
+  
+  return;
 });
 
 /**
@@ -663,7 +672,10 @@ export const pack412_setRegionStage = functions.https.onCall(async (request) => 
     timestamp: now,
   });
   
-  return { success: true, regionId, stage };
+  console.log('Scheduled job result:', { success: true, regionId, stage });
+
+  
+  return;
 });
 
 /**
@@ -723,7 +735,10 @@ export const pack412_updateRegionTrafficCap = functions.https.onCall(async (requ
     timestamp: now,
   });
   
-  return { success: true, regionId, trafficCapPct };
+  console.log('Scheduled job result:', { success: true, regionId, trafficCapPct });
+
+  
+  return;
 });
 
 /**
@@ -769,13 +784,16 @@ export const pack412_updateGuardrailThresholds = functions.https.onCall(async (r
     timestamp: now,
   });
   
-  return { success: true, thresholdId: thresholds.id };
+  console.log('Scheduled job result:', { success: true, thresholdId: thresholds.id });
+
+  
+  return;
 });
 
 /**
  * Monitor guardrails (scheduled function - runs every 15 min)
  */
-export const pack412_monitorLaunchGuardrails = functions.pubsub.schedule('every 15 minutes').onRun(async (context) => {
+export const pack412_monitorLaunchGuardrails = onSchedule("every 15 minutes", async (event) => {
   console.log('Starting guardrail monitoring...');
   
   // Get default thresholds

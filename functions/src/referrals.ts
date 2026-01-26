@@ -14,7 +14,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, generateId, increment } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES
@@ -206,10 +206,12 @@ export const trackClick = functions.https.onCall(async (request) => {
   }
   
   if (!isValidReferralCode(referralCode)) {
-    return {
+    console.log('Scheduled job result:', {
       valid: false,
       error: 'Invalid referral code format'
-    };
+    });
+
+    return;
   }
   
   try {
@@ -220,10 +222,12 @@ export const trackClick = functions.https.onCall(async (request) => {
       .get();
     
     if (profileQuery.empty) {
-      return {
+      console.log('Scheduled job result:', {
         valid: false,
         error: 'Referral code not found'
-      };
+      });
+
+      return;
     }
     
     const profileDoc = profileQuery.docs[0];
@@ -289,11 +293,15 @@ export const attributionOnSignup = functions.https.onCall(async (request) => {
   
   if (!referralCode) {
     // No referral code = no attribution (valid case)
-    return { success: true, message: 'No referral code provided' };
+    console.log('Scheduled job result:', { success: true, message: 'No referral code provided' });
+
+    return;
   }
   
   if (!isValidReferralCode(referralCode)) {
-    return { success: false, error: 'Invalid referral code format' };
+    console.log('Scheduled job result:', { success: false, error: 'Invalid referral code format' });
+
+    return;
   }
   
   try {
@@ -303,10 +311,12 @@ export const attributionOnSignup = functions.https.onCall(async (request) => {
     
     if (attributionDoc.exists && attributionDoc.data()?.referrerUserId) {
       // Already attributed, idempotent
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'User already has attribution'
-      };
+      });
+
+      return;
     }
     
     // Find referrer
@@ -316,10 +326,12 @@ export const attributionOnSignup = functions.https.onCall(async (request) => {
       .get();
     
     if (profileQuery.empty) {
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: 'Referral code not found'
-      };
+      });
+
+      return;
     }
     
     const profileDoc = profileQuery.docs[0];
@@ -328,10 +340,12 @@ export const attributionOnSignup = functions.https.onCall(async (request) => {
     
     // Cannot refer yourself
     if (referrerUserId === userId) {
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: 'Cannot use your own referral code'
-      };
+      });
+
+      return;
     }
     
     const now = serverTimestamp() as Timestamp;
@@ -373,10 +387,13 @@ export const attributionOnSignup = functions.https.onCall(async (request) => {
     
     console.log(`[Referrals] Attributed user ${userId} to referrer ${referrerUserId} via code ${referralCode}`);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       referrerUserId
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('[Referrals] Error in attributionOnSignup:', error);
     if (error instanceof functions.https.HttpsError) {
@@ -417,7 +434,9 @@ export const trackMilestone = functions.https.onCall(async (request) => {
     
     if (!attributionDoc.exists || !attributionDoc.data()?.referrerUserId) {
       // No attribution = nothing to track
-      return { success: true, message: 'No attribution found' };
+      console.log('Scheduled job result:', { success: true, message: 'No attribution found' });
+
+      return;
     }
     
     const attribution = attributionDoc.data() as UserAttribution;
@@ -433,7 +452,9 @@ export const trackMilestone = functions.https.onCall(async (request) => {
     
     if (!existingEventQuery.empty) {
       // Already tracked
-      return { success: true, message: 'Milestone already tracked' };
+      console.log('Scheduled job result:', { success: true, message: 'Milestone already tracked' });
+
+      return;
     }
     
     const now = serverTimestamp() as Timestamp;
@@ -480,7 +501,10 @@ export const trackMilestone = functions.https.onCall(async (request) => {
     
     console.log(`[Referrals] Tracked milestone ${milestone} for user ${userId}, referrer ${referrerUserId}`);
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   } catch (error: any) {
     console.error('[Referrals] Error in trackMilestone:', error);
     if (error instanceof functions.https.HttpsError) {
@@ -548,9 +572,7 @@ export const getReferralProfile = functions.https.onCall(async (request) => {
  * Scheduled job to aggregate referral profiles
  * Computes activeUsers30d by checking attributed users with recent activity
  */
-export const aggregateReferralProfiles = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const aggregateReferralProfiles = onSchedule("every 24 hours", async (event) => {
     console.log('[Referrals] Starting daily aggregation of referral profiles');
     
     try {
@@ -614,7 +636,10 @@ export const aggregateReferralProfiles = functions.pubsub
       
       console.log(`[Referrals] Aggregated ${processedCount} referral profiles`);
       
-      return { success: true, processedCount };
+      console.log('Scheduled job result:', { success: true, processedCount });
+
+      
+      return;
     } catch (error: any) {
       console.error('[Referrals] Error in aggregateReferralProfiles:', error);
       throw error;

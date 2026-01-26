@@ -7,7 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -268,14 +268,17 @@ class StressScenarioEngine {
 
     const conversionRate = conversionDoc.exists ? conversionDoc.data()!.installToPayRate || 0.03 : 0.03;
 
-    return {
+    console.log('Scheduled job result:', {
       avgRevenue: count > 0 ? totalRevenue / count : 1000,
       avgPayouts: count > 0 ? totalPayouts / count : 700,
       avgActiveUsers: count > 0 ? totalUsers / count : 500,
       avgTransactions: count > 0 ? totalTransactions / count : 50,
       churnRate,
       conversionRate,
-    };
+    });
+
+
+    return;
   }
 
   /**
@@ -307,12 +310,15 @@ class StressScenarioEngine {
     const totalRevenue = stressedRevenue * scenario.durationDays;
     const totalPayouts = stressedPayouts * scenario.durationDays;
 
-    return {
+    console.log('Scheduled job result:', {
       dailyRevenuePLN: stressedRevenue,
       dailyPayoutsPLN: stressedPayouts,
       totalRevenuePLN: totalRevenue,
       totalPayoutsPLN: totalPayouts,
-    };
+    });
+
+
+    return;
   }
 
   /**
@@ -370,7 +376,7 @@ class StressScenarioEngine {
       profitImpactPercent
     );
 
-    return {
+    console.log('Scheduled job result:', {
       scenarioId: scenario.id,
       scenarioName: scenario.name,
       baselineRevenuePLN: Math.round(baselineRevenue * 100) / 100,
@@ -388,7 +394,10 @@ class StressScenarioEngine {
       recoveryThresholdDays: recoveryThreshold,
       recommendations,
       simulatedAt: new Date().toISOString(),
-    };
+    });
+
+
+    return;
   }
 
   /**
@@ -424,7 +433,7 @@ class StressScenarioEngine {
                        (stressed.dailyRevenuePLN - stressed.dailyPayoutsPLN);
     
     if (profitDiff <= 0) {
-      return null; // No recovery needed
+      return; // No recovery needed
     }
 
     // Assume 5% daily recovery rate
@@ -589,11 +598,7 @@ const engine = new StressScenarioEngine();
 /**
  * Scheduled function: Run stress scenarios monthly on 5th at 4 AM
  */
-export const runMonthlyStressScenarios = functions
-  .region('europe-west1')
-  .pubsub.schedule('0 4 5 * *')
-  .timeZone('Europe/Warsaw')
-  .onRun(async (context) => {
+export const runMonthlyStressScenarios = onSchedule({ schedule: "0 4 5 * *", timeZone: "Europe/Warsaw", region: "europe-west1" }, async (event) => {
     console.log('[PACK 358] Running monthly stress scenarios');
     
     try {
@@ -603,7 +608,10 @@ export const runMonthlyStressScenarios = functions
         avgImpact: results.reduce((sum, r) => sum + r.profitImpactPercent, 0) / results.length,
       });
       
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK 358] Error running stress scenarios:', error);
       throw error;

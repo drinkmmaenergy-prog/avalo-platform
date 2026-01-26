@@ -333,11 +333,14 @@ export const claimRewardCallable = onCall(
         rewardAmount,
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         rewardAmount,
         level,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error("Error claiming reward:", error);
       if (error instanceof HttpsError) throw error;

@@ -13,7 +13,7 @@
 import { db, serverTimestamp, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import {
   AgencyViolation,
   AgencyViolationType,
@@ -22,7 +22,7 @@ import {
   DEFAULT_AGENCY_RULES,
 } from './pack114-types';
 import { updateAgencyStatus } from './pack114-agency-engine';
-import { admin, functions } from './runtime';
+import { admin, functions, onSchedule } from './runtime';
 // Note: Integration with moderation system - implement if moderationEngine has this function
 // import { createModerationCase } from './moderationEngine';
 
@@ -48,7 +48,7 @@ export async function detectForcedLinkage(agencyId: string): Promise<AgencyViola
     .get();
 
   if (requestsSnapshot.empty) {
-    return null;
+    return;
   }
 
   const totalRequests = requestsSnapshot.size;
@@ -86,7 +86,7 @@ export async function detectForcedLinkage(agencyId: string): Promise<AgencyViola
     return violation;
   }
 
-  return null;
+  return;
 }
 
 /**
@@ -131,7 +131,7 @@ export async function detectUnsolicitedRequests(agencyId: string): Promise<Agenc
     return violation;
   }
 
-  return null;
+  return;
 }
 
 /**
@@ -151,7 +151,7 @@ export async function detectSuspiciousPayouts(agencyId: string): Promise<AgencyV
     .get();
 
   if (payoutsSnapshot.empty) {
-    return null;
+    return;
   }
 
   const payouts = payoutsSnapshot.docs.map((doc) => doc.data());
@@ -183,7 +183,7 @@ export async function detectSuspiciousPayouts(agencyId: string): Promise<AgencyV
     return violation;
   }
 
-  return null;
+  return;
 }
 
 /**
@@ -226,7 +226,7 @@ export async function detectExcessivePercentage(agencyId: string): Promise<Agenc
     return violation;
   }
 
-  return null;
+  return;
 }
 
 /**
@@ -241,7 +241,7 @@ export async function detectMinorExploitation(agencyId: string): Promise<AgencyV
     .get();
 
   if (linksSnapshot.empty) {
-    return null;
+    return;
   }
 
   const creatorIds = linksSnapshot.docs.map((doc) => doc.data().creatorUserId);
@@ -295,7 +295,7 @@ export async function detectMinorExploitation(agencyId: string): Promise<AgencyV
     return violation;
   }
 
-  return null;
+  return;
 }
 
 // ============================================================================
@@ -458,7 +458,7 @@ export const runDailyAgencySafetyScan = onSchedule(
         violationsDetected,
       });
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in daily safety scan', error);
       throw error;

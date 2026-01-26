@@ -5,10 +5,10 @@
 
 import { getFirestore, Firestore, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { enqueueNotification } from './enqueue';
 import { NotificationType } from './types';
-import { admin, db, functions } from '../runtime';
+import { admin, db, functions, onSchedule } from '../runtime';
 
 // ============================================================================
 // Configuration
@@ -194,7 +194,7 @@ async function determineActivationNudge(
   }
   
   // User is fully activated
-  return null;
+  return;
 }
 
 function calculateProfileCompleteness(userData: any): number {
@@ -235,7 +235,7 @@ async function getLastActivationNudge(db: Firestore, userId: string): Promise<st
     .get();
   
   if (snapshot.empty) {
-    return null;
+    return;
   }
   
   return snapshot.docs[0].data().createdAt;
@@ -477,7 +477,7 @@ async function getLastRetentionNudge(db: Firestore, userId: string): Promise<str
     .get();
   
   if (snapshot.empty) {
-    return null;
+    return;
   }
   
   return snapshot.docs[0].data().createdAt;

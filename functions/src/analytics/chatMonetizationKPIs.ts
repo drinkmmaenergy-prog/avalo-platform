@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
-import { Timestamp, increment } from '../runtime';
+import { Timestamp, increment, logger, onSchedule } from '../runtime';
 
 interface ChatMonetizationMetrics {
   date: string;
@@ -253,10 +253,7 @@ export const trackRefund = functions.firestore
   });
 
 // Daily aggregation for chat monetization KPIs
-export const aggregateChatMonetizationKPIs = functions.pubsub
-  .schedule('0 1 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const aggregateChatMonetizationKPIs = onSchedule({ schedule: "0 1 * * *", timeZone: "UTC" }, async (event) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const dateStr = yesterday.toISOString().split('T')[0];

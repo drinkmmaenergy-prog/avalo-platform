@@ -11,7 +11,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, onRequest, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, onRequest, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -50,12 +50,14 @@ export const pack383_detectChargebackRisk = functions.https.onCall(async (reques
         .get();
 
       if (transactionsSnapshot.empty) {
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           high: false,
           riskScore: 0,
           message: 'No transaction history',
-        };
+        });
+
+        return;
       }
 
       // Count chargebacks
@@ -124,7 +126,7 @@ export const pack383_detectChargebackRisk = functions.https.onCall(async (reques
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       }, { merge: true });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         high: riskScore >= 50,
         riskScore,
@@ -138,7 +140,10 @@ export const pack383_detectChargebackRisk = functions.https.onCall(async (reques
           : riskScore >= 50
           ? 'Apply reserve and freeze window'
           : 'Monitor closely',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('Error detecting chargeback risk:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -290,9 +295,7 @@ export const pack383_createReserveHold = functions.https.onCall(async (request) 
 /**
  * Scheduled: Release expired freezes and reserves
  */
-export const pack383_releaseExpiredHolds = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async (context) => {
+export const pack383_releaseExpiredHolds = onSchedule("every 6 hours", async (event) => {
     try {
       const now = admin.firestore.Timestamp.now();
 
@@ -360,10 +363,10 @@ export const pack383_releaseExpiredHolds = functions.pubsub
         `Released ${expiredFreezesSnapshot.size} freezes and ${expiredReservesSnapshot.size} reserves`
       );
 
-      return null;
+      return;
     } catch (error) {
       console.error('Error releasing expired holds:', error);
-      return null;
+      return;
     }
   });
 

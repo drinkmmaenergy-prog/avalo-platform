@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -298,10 +298,7 @@ export const calculateCampaignLTV = functions.https.onCall(async (request) => {
 /**
  * Scheduled: Calculate CPA for all campaigns daily
  */
-export const calculateCPA = functions.pubsub
-  .schedule("0 2 * * *") // 2 AM daily
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const calculateCPA = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     try {
       const campaigns = await db.collection("adCampaigns").get();
 

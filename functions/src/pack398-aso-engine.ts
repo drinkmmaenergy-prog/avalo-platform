@@ -7,7 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 // ASO Test Types
 export enum ASOTestType {
@@ -149,7 +149,10 @@ export const createASOTest = functions.https.onCall(async (request) => {
 
   await db.collection('aso_ab_tests').doc(testId).set(test);
 
-  return { success: true, testId };
+  console.log('Scheduled job result:', { success: true, testId });
+
+
+  return;
 });
 
 /**
@@ -172,7 +175,10 @@ export const startASOTest = functions.https.onCall(async (request) => {
     startDate: admin.firestore.Timestamp.now(),
   });
 
-  return { success: true, message: 'Test started' };
+  console.log('Scheduled job result:', { success: true, message: 'Test started' });
+
+
+  return;
 });
 
 /**
@@ -190,7 +196,10 @@ export const pauseASOTest = functions.https.onCall(async (request) => {
     status: 'paused',
   });
 
-  return { success: true, message: 'Test paused' };
+  console.log('Scheduled job result:', { success: true, message: 'Test paused' });
+
+
+  return;
 });
 
 /**
@@ -223,7 +232,10 @@ export const completeASOTest = functions.https.onCall(async (request) => {
     variants: updatedVariants,
   });
 
-  return { success: true, message: 'Test completed' };
+  console.log('Scheduled job result:', { success: true, message: 'Test completed' });
+
+
+  return;
 });
 
 /**
@@ -294,7 +306,10 @@ export const recordASOTestEvent = functions.https.onCall(async (request) => {
     confidenceLevel: test.confidenceLevel,
   });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 /**
@@ -338,7 +353,10 @@ export const trackKeywordPerformance = functions.https.onCall(async (request) =>
 
   await keywordRef.set(keywordPerformance, { merge: true });
 
-  return { success: true, keywordId };
+  console.log('Scheduled job result:', { success: true, keywordId });
+
+
+  return;
 });
 
 /**
@@ -389,7 +407,10 @@ export const recordStoreMetrics = functions.https.onCall(async (request) => {
 
   await db.collection('store_performance_metrics').doc(metricsId).set(storeMetrics, { merge: true });
 
-  return { success: true, metricsId };
+  console.log('Scheduled job result:', { success: true, metricsId });
+
+
+  return;
 });
 
 /**
@@ -431,7 +452,7 @@ export const getASODashboard = functions.https.onCall(async (request) => {
 /**
  * Analyze ASO performance and suggest optimizations
  */
-export const analyzeASOPerformance = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
+export const analyzeASOPerformance = onSchedule("every 24 hours", async (event) => {
   // Get all active tests
   const testsSnapshot = await db.collection('aso_ab_tests')
     .where('status', '==', 'running')
@@ -476,5 +497,5 @@ export const analyzeASOPerformance = functions.pubsub.schedule('every 24 hours')
     }
   }
 
-  return null;
+  return;
 });

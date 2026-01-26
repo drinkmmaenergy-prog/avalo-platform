@@ -13,7 +13,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp } from './init.js';
-import { HttpsError, Timestamp, auth, onCall, timestamp, z } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, z, onSchedule } from './runtime';
 
 // Configuration
 const PACK344_CONFIG = {
@@ -584,10 +584,7 @@ function generateFallbackTips(locale: string): {
 /**
  * Scheduled cleanup: Remove old message patterns (runs daily)
  */
-export const pack344_cleanupOldPatterns = functions.pubsub
-  .schedule('0 2 * * *') // 2 AM daily
-  .timeZone('UTC')
-  .onRun(async () => {
+export const pack344_cleanupOldPatterns = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     try {
       const cutoffDate = new Date();
       cutoffDate.setHours(cutoffDate.getHours() - 24);

@@ -14,8 +14,8 @@ import { db, serverTimestamp, admin, increment, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
-import { auth, functions, timestamp } from './runtime';
+
+import { auth, functions, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES
@@ -217,10 +217,13 @@ async function getPaidChatStatistics(userId: string): Promise<{
     totalExchanges += exchanges;
   }
 
-  return {
+  console.log('Scheduled job result:', {
     exchanges: totalExchanges,
     uniqueChats: chatsQuery.size,
-  };
+  });
+
+
+  return;
 }
 
 /**
@@ -242,10 +245,13 @@ async function getCallStatistics(userId: string): Promise<{
     totalMinutes += call.durationMinutes || 0;
   });
 
-  return {
+  console.log('Scheduled job result:', {
     totalMinutes,
     totalCalls: callsQuery.size,
-  };
+  });
+
+
+  return;
 }
 
 /**
@@ -461,10 +467,13 @@ async function detectCopyPastePattern(userId: string): Promise<{ detected: boole
   // If more than 30% are duplicates, flag as copy-paste
   const duplicateRatio = 1 - (uniqueMessages.size / messages.length);
   
-  return {
+  console.log('Scheduled job result:', {
     detected: duplicateRatio > 0.3,
     count: messages.length - uniqueMessages.size,
-  };
+  });
+
+  
+  return;
 }
 
 async function detectMultiAccount(userId: string): Promise<{ detected: boolean }> {
@@ -477,9 +486,12 @@ async function detectMultiAccount(userId: string): Promise<{ detected: boolean }
   const deviceData = deviceDoc.data() as any;
   const linkedAccounts = deviceData.linkedAccounts?.length || 0;
 
-  return {
+  console.log('Scheduled job result:', {
     detected: linkedAccounts >= 3, // 3+ accounts from same device
-  };
+  });
+
+
+  return;
 }
 
 async function detectSuddenPopularitySpike(userId: string): Promise<{ detected: boolean }> {
@@ -844,11 +856,14 @@ export const requestWithdrawal = onCall(
         });
       }
 
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         message: validation.reason || 'Withdrawal validation failed',
         pauseDurationHours: validation.pauseDurationHours,
-      };
+      });
+
+
+      return;
     }
 
     // Create withdrawal request
@@ -865,11 +880,14 @@ export const requestWithdrawal = onCall(
       createdAt: serverTimestamp(),
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       requestId,
       message: 'Withdrawal approved and processing',
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -917,7 +935,7 @@ export const resetMonthlyRiskScores = onSchedule(
     await batch.commit();
     logger.info(`Reset risk scores for ${count} users`);
 
-    return null;
+    return;
   }
 );
 
@@ -971,6 +989,6 @@ export const processPendingReviews = onSchedule(
     }
 
     logger.info(`Auto-approved ${processed} withdrawal reviews`);
-    return null;
+    return;
   }
 );

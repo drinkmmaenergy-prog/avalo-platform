@@ -6,7 +6,7 @@
 import { db, serverTimestamp } from './init';
 import * as functions from 'firebase-functions';
 import { LoadMetrics, TrafficAlert } from './pack183-traffic-monitor';
-import { Timestamp, timestamp } from './runtime';
+import { Timestamp, timestamp, logger, onSchedule } from './runtime';
 
 export interface ScalingDecision {
   component: 'CHAT' | 'AI' | 'FEED' | 'EVENTS' | 'PAYMENTS' | 'MEDIA';
@@ -113,7 +113,7 @@ export function determineScaling(
     };
   }
 
-  return null;
+  return;
 }
 
 /**
@@ -168,14 +168,17 @@ export async function executeScaling(decision: ScalingDecision): Promise<Scaling
 
     console.error(`[Scaler] Failed to scale ${decision.component}:`, error);
 
-    return {
+    console.log('Scheduled job result:', {
       decisionId: eventRef.id,
       status: 'FAILED',
       component: decision.component,
       action: decision.action,
       startedAt: serverTimestamp() as FirebaseFirestore.Timestamp,
       error: error.message,
-    };
+    });
+
+
+    return;
   }
 }
 
@@ -304,9 +307,7 @@ export async function getScalingHistory(
 /**
  * Cloud Function: Auto-scale based on load (scheduled every 5 minutes)
  */
-export const autoScaleSystem = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const autoScaleSystem = onSchedule("every 5 minutes", async (event) => {
     console.log('[AutoScale] Starting auto-scaling check...');
     
     const regions = ['EU', 'US', 'ASIA'];
@@ -337,9 +338,12 @@ export const autoScaleSystem = functions.pubsub
       }
     }
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       totalEvents,
       timestamp: new Date().toISOString(),
-    };
+    });
+
+
+    return;
   });

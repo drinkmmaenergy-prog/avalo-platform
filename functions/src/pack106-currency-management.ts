@@ -15,7 +15,7 @@
  * - All conversions are FX parity only
  */
 
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
@@ -32,7 +32,7 @@ import {
   SUPPORTED_CURRENCIES,
   VAT_RULES_BY_COUNTRY,
 } from './pack106-types';
-import { admin, functions } from './runtime';
+import { admin, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // CONFIGURATION
@@ -153,7 +153,7 @@ export const refreshCurrencyProfilesFromPSP = onSchedule(
         source: 'pack106-currency-management',
       });
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('[PACK106] Error refreshing FX rates', error);
       throw error;
@@ -371,7 +371,7 @@ export async function generateLocalizedStorefront(
     // Determine preferred PSP
     const preferredPSP = profile.supportedPSPs[0] || 'STRIPE';
 
-    return {
+    console.log('Scheduled job result:', {
       currency: currencyCode,
       symbol: profile.symbol,
       bundles,
@@ -382,7 +382,10 @@ export async function generateLocalizedStorefront(
       baseTokenPrice: BASE_TOKEN_PRICE_EUR,
       rateTimestamp: profile.updatedAt,
       preferredPSP,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     logger.error('[PACK106] Error generating localized storefront', error);
     throw error;
@@ -407,14 +410,16 @@ export async function determinePSPRouting(
     
     if (!profileDoc.exists) {
       // Fallback: charge in EUR
-      return {
+      console.log('Scheduled job result:', {
         psp: 'FALLBACK',
         chargeCurrency: 'EUR',
         chargeAmount: amount / (await getEURRate(currencyCode)),
         reason: 'Currency not supported, using EUR fallback',
         nativeSupport: false,
         disclosureMessage: `Payment will be processed in EUR. Your bank may apply conversion fees.`,
-      };
+      });
+
+      return;
     }
 
     const profile = profileDoc.data() as CurrencyProfile;
@@ -540,7 +545,7 @@ export async function getCurrencyProfile(currencyCode: string): Promise<Currency
     return doc.exists ? (doc.data() as CurrencyProfile) : null;
   } catch (error: any) {
     logger.error('[PACK106] Error fetching currency profile', error);
-    return null;
+    return;
   }
 }
 

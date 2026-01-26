@@ -13,9 +13,9 @@ import { db, serverTimestamp } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { AgencyDashboardAnalytics } from './pack119-types';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // ANALYTICS COMPUTATION
@@ -136,7 +136,7 @@ async function computeCreatorAnalytics(
   const avgEarningsPerDay =
     period !== 'LIFETIME' ? totalEarnings / ((now - startTime) / (24 * 60 * 60 * 1000)) : 0;
 
-  return {
+  console.log('Scheduled job result:', {
     followerCount,
     followerGrowth: Math.round(followerGrowth * 100) / 100,
     reach,
@@ -149,7 +149,10 @@ async function computeCreatorAnalytics(
     avgEngagementPerPost: Math.round(avgEngagementPerPost * 100) / 100,
     portfolioViews,
     portfolioClicks: 0, // Would be tracked separately
-  };
+  });
+
+
+  return;
 }
 
 // ============================================================================
@@ -305,12 +308,15 @@ export const getAgencyOverview = onCall(
 
       const avgEngagement = engagementCount > 0 ? totalEngagement / engagementCount : 0;
 
-      return {
+      console.log('Scheduled job result:', {
         totalCreators,
         totalEarnings: Math.round(totalEarnings),
         totalFollowers,
         avgEngagement: Math.round(avgEngagement * 100) / 100,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting agency overview', error);
       throw new HttpsError('internal', error.message);

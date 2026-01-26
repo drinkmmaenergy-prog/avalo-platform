@@ -30,7 +30,7 @@ import type {
   LeaguePrivileges,
   HallOfFameAchievement,
 } from '../../shared/src/types/creatorLeague';
-import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const logger = functions.logger;
 
@@ -165,12 +165,14 @@ async function calculateTimeEfficiencyMultiplier(
     // Calculate average reply time
     const messages = messagesSnapshot.docs.map(doc => {
       const data = doc.data();
-      return {
+      console.log('Scheduled job result:', {
         id: doc.id,
         senderId: data.senderId,
         createdAt: data.createdAt,
         ...data,
-      };
+      });
+
+      return;
     });
     
     for (let i = 1; i < messages.length; i++) {
@@ -374,10 +376,7 @@ async function storeLeagueMetrics(
  * Calculate rankings for all creators in a given month
  * Scheduled function runs daily at 2 AM UTC
  */
-export const calculateDailyRankings = functions.pubsub
-  .schedule('0 2 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const calculateDailyRankings = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     logger.info('Starting daily creator league rankings calculation');
     
     try {
@@ -976,10 +975,7 @@ async function detectManipulation(userId: string): Promise<boolean> {
  * Monthly reset function - runs on the 1st of each month at 00:00 UTC
  * Archives winners, resets rankings, and starts new competition
  */
-export const monthlyLeagueReset = functions.pubsub
-  .schedule('0 0 1 * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const monthlyLeagueReset = onSchedule({ schedule: "0 0 1 * *", timeZone: "UTC" }, async (event) => {
     logger.info('Starting monthly creator league reset');
     
     try {
@@ -1362,14 +1358,16 @@ export const getLeaderboard = functions.https.onCall(async (request) => {
     const rankingDoc = await db.collection('league_rankings').doc(docId).get();
     
     if (!rankingDoc.exists) {
-      return {
+      console.log('Scheduled job result:', {
         rankings: [],
         total: 0,
         category,
         month: queryMonth,
         lastUpdatedAt: new Date().toISOString(),
         nextResetAt: getNextMonthResetDate(queryMonth).toISOString(),
-      };
+      });
+
+      return;
     }
     
     const ranking = rankingDoc.data()!;
@@ -1378,14 +1376,17 @@ export const getLeaderboard = functions.https.onCall(async (request) => {
     // Apply pagination
     const paginatedRankings = allRankings.slice(offset, offset + limit);
     
-    return {
+    console.log('Scheduled job result:', {
       rankings: paginatedRankings,
       total: allRankings.length,
       category,
       month: queryMonth,
       lastUpdatedAt: ranking.lastUpdatedAt,
       nextResetAt: ranking.nextResetAt,
-    };
+    });
+
+    
+    return;
   } catch (error) {
     logger.error('Error fetching leaderboard:', error);
     throw new functions.https.HttpsError('internal', 'Failed to fetch leaderboard');
@@ -1419,7 +1420,7 @@ export const getCreatorLeagueStatus = functions.https.onCall(async (request) => 
     const privilegesDoc = await db.collection('league_privileges').doc(userId).get();
     const privileges = privilegesDoc.exists ? privilegesDoc.data() : null;
     
-    return {
+    console.log('Scheduled job result:', {
       exists: true,
       userId,
       globalRank: leagueData.globalRank,
@@ -1432,7 +1433,10 @@ export const getCreatorLeagueStatus = functions.https.onCall(async (request) => 
       privileges,
       isEligible: leagueData.isEligible,
       lastCalculatedAt: leagueData.lastCalculatedAt,
-    };
+    });
+
+    
+    return;
   } catch (error) {
     logger.error('Error fetching creator league status:', error);
     throw new functions.https.HttpsError('internal', 'Failed to fetch league status');

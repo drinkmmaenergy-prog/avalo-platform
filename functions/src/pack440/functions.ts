@@ -10,7 +10,7 @@ import { IntelligentPayoutEscrowService } from './services/IntelligentPayoutEscr
 import { ProgressiveFreezeController } from './services/ProgressiveFreezeController';
 import { CreatorPayoutStatusAPI } from './services/CreatorPayoutStatusAPI';
 import { ComplianceEscalationOrchestrator } from './services/ComplianceEscalationOrchestrator';
-import { HttpsError, Timestamp, auth, db, onCall } from '../runtime';
+import { HttpsError, Timestamp, auth, db, onCall, logger, onSchedule } from '../runtime';
 
 const db = admin.firestore();
 
@@ -63,9 +63,7 @@ export const onPayoutCreated = functions.firestore
 /**
  * Scheduled: Update integrity scores hourly
  */
-export const updateIntegrityScores = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const updateIntegrityScores = onSchedule("every 1 hours", async (event) => {
     try {
       // Get all active creators (with recent activity)
       const recentPayouts = await db
@@ -99,9 +97,7 @@ export const updateIntegrityScores = functions.pubsub
 /**
  * Scheduled: Process escrow releases (every 15 minutes)
  */
-export const processEscrowReleases = functions.pubsub
-  .schedule('every 15 minutes')
-  .onRun(async (context) => {
+export const processEscrowReleases = onSchedule("every 15 minutes", async (event) => {
     try {
       const readyPayouts = await escrowService.getPayoutsReadyForRelease();
       
@@ -124,9 +120,7 @@ export const processEscrowReleases = functions.pubsub
 /**
  * Scheduled: Process freeze auto-releases (every 30 minutes)
  */
-export const processFreezeReleases = functions.pubsub
-  .schedule('every 30 minutes')
-  .onRun(async (context) => {
+export const processFreezeReleases = onSchedule("every 30 minutes", async (event) => {
     try {
       const readyFreezes = await freezeController.getFreezesReadyForRelease();
       
@@ -149,9 +143,7 @@ export const processFreezeReleases = functions.pubsub
 /**
  * Scheduled: Check for SLA breaches (every hour)
  */
-export const checkSLABreaches = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const checkSLABreaches = onSchedule("every 1 hours", async (event) => {
     try {
       const overdueCases = await complianceOrchestrator.getOverdueCases();
       
@@ -219,7 +211,9 @@ export const markPayoutMessageRead = functions.https.onCall(async (request) => {
   
   try {
     await statusAPI.markMessageRead(creatorId, messageId);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error) {
     console.error('Error in markPayoutMessageRead:', error);
     throw new functions.https.HttpsError('internal', 'Failed to mark message as read');
@@ -258,7 +252,10 @@ export const adminReleaseFreeze = functions.https.onCall(async (request) => {
       await statusAPI.updateStatus(freeze.creatorId);
     }
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   } catch (error) {
     console.error('Error in adminReleaseFreeze:', error);
     throw new functions.https.HttpsError('internal', 'Failed to release freeze');
@@ -298,13 +295,16 @@ export const getAdminDashboardStats = functions.https.onCall(async (request) => 
         .get()
     ]);
     
-    return {
+    console.log('Scheduled job result:', {
       activeEscrows: activeEscrows.size,
       activeFreezes: activeFreezes.size,
       openCases: openCases.size,
       overdueCases: overdueCases.size,
       totalEscrowAmount: activeEscrows.docs.reduce((sum, doc) => sum + doc.data().amount, 0)
-    };
+    });
+
+    
+    return;
   } catch (error) {
     console.error('Error in getAdminDashboardStats:', error);
     throw new functions.https.HttpsError('internal', 'Failed to get dashboard stats');

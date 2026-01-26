@@ -14,8 +14,8 @@
 
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
-import { admin, functions, increment, serverTimestamp } from './runtime';
+
+import { admin, functions, increment, serverTimestamp, onSchedule } from './runtime';
 
 const db = getFirestore();
 

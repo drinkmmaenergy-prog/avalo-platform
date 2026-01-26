@@ -282,11 +282,14 @@ export const createStripeCheckoutSession = onCall(
         sessionId: session.id,
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         sessionId: session.id,
         url: session.url,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error("Error creating Stripe checkout session:", error);
       throw new HttpsError("internal", `Failed to create checkout session: ${error.message}`);
@@ -521,7 +524,9 @@ export const validateAppleReceipt = onCall(
         .get();
 
       if (!existingTx.empty) {
-        return { success: true, message: "Already processed", tokens: existingTx.docs[0].data().tokens };
+        console.log('Scheduled job result:', { success: true, message: "Already processed", tokens: existingTx.docs[0].data().tokens });
+
+        return;
       }
 
       // Verify receipt with Apple
@@ -592,7 +597,10 @@ export const validateAppleReceipt = onCall(
         transactionId,
       });
 
-      return { success: true, tokens };
+      console.log('Scheduled job result:', { success: true, tokens });
+
+
+      return;
     } catch (error: any) {
       logger.error("Error validating Apple receipt:", error);
       throw new HttpsError("internal", `Receipt validation failed: ${error.message}`);
@@ -622,7 +630,10 @@ async function verifyAppleReceiptWithServer(receiptData: string): Promise<{ vali
     return verifyAppleReceiptWithServer(receiptData);
   }
 
-  return { valid: result.status === 0 };
+  console.log('Scheduled job result:', { valid: result.status === 0 });
+
+
+  return;
 }
 
 function extractTokensFromProductId(productId: string): number {
@@ -771,7 +782,10 @@ export const initiateChat = onCall(
         });
       });
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error: any) {
       logger.error("Error initiating chat:", error);
       throw new HttpsError("internal", `Failed to initiate chat: ${error.message}`);
@@ -853,7 +867,10 @@ export const releaseEscrowIncremental = onCall(
         });
       });
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error: any) {
       logger.error("Error releasing escrow:", error);
       throw new HttpsError("internal", `Failed to release escrow: ${error.message}`);
@@ -1058,23 +1075,27 @@ export const getWalletBalance = onCall(
       const walletSnap = await db.collection("users").doc(userId).collection("wallet").doc("main").get();
 
       if (!walletSnap.exists) {
-        return {
+        console.log('Scheduled job result:', {
           balance: 0,
           pendingBalance: 0,
           earnedBalance: 0,
           totalDeposits: 0,
           totalEarnings: 0,
-        };
+        });
+
+        return;
       }
 
       const wallet = walletSnap.data() as UserWallet;
-      return {
+      console.log('Scheduled job result:', {
         balance: wallet.balance || 0,
         pendingBalance: wallet.pendingBalance || 0,
         earnedBalance: wallet.earnedBalance || 0,
         totalDeposits: wallet.totalDeposits || 0,
         totalEarnings: wallet.totalEarnings || 0,
-      };
+      });
+
+      return;
     } catch (error: any) {
       logger.error("Error getting wallet balance:", error);
       throw new HttpsError("internal", `Failed to get balance: ${error.message}`);
@@ -1261,7 +1282,10 @@ export const createCalendarBooking = onCall(
         });
       });
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error: any) {
       logger.error("Error creating calendar booking:", error);
       throw new HttpsError("internal", `Failed to create booking: ${error.message}`);
@@ -1357,7 +1381,10 @@ export const completeCalendarBooking = onCall(
         });
       });
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error: any) {
       logger.error("Error completing calendar booking:", error);
       throw new HttpsError("internal", `Failed to complete booking: ${error.message}`);
@@ -1466,7 +1493,10 @@ export const cancelCalendarBooking = onCall(
         });
       });
 
-      return { success: true, refundAmount, refundPercent };
+      console.log('Scheduled job result:', { success: true, refundAmount, refundPercent });
+
+
+      return;
     } catch (error: any) {
       logger.error("Error cancelling calendar booking:", error);
       throw new HttpsError("internal", `Failed to cancel booking: ${error.message}`);
@@ -1555,7 +1585,10 @@ export const requestPayout = onCall(
         currency: settlement.fiatCurrency,
       });
 
-      return { success: true, payoutId: payoutResult.id };
+      console.log('Scheduled job result:', { success: true, payoutId: payoutResult.id });
+
+
+      return;
     } catch (error: any) {
       logger.error("Error processing payout:", error);
 

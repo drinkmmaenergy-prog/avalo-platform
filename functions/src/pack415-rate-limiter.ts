@@ -14,8 +14,8 @@
 import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions/v2';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
-import { FieldValue, arrayUnion, auth, functions, increment, timestamp } from './runtime';
+
+import { FieldValue, arrayUnion, auth, functions, increment, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -252,11 +252,13 @@ export async function checkUserLimit(
         
         // FREEZE mode blocks everything
         if (currentAbuseMode === 'FREEZE') {
-          return {
+          console.log('Scheduled job result:', {
             allowed: false,
             reason: 'Account frozen due to abuse. Contact support.',
             abuseMode: 'FREEZE',
-          };
+          });
+
+          return;
         }
       }
     }
@@ -291,7 +293,10 @@ export async function checkUserLimit(
       logger.warn(`checkUserLimit took ${elapsed}ms (target: <20ms)`);
     }
 
-    return { ...result, abuseMode: currentAbuseMode };
+    console.log('Scheduled job result:', { ...result, abuseMode: currentAbuseMode });
+
+
+    return;
   } catch (error) {
     logger.error('Error checking user limit:', error);
     return { allowed: true };
@@ -1026,11 +1031,13 @@ export const rateLimiterHealth = onCall(
       };
     } catch (error) {
       logger.error('Error in health check:', error);
-      return {
+      console.log('Scheduled job result:', {
         status: 'unhealthy',
         timestamp: Date.now(),
         error: String(error),
-      };
+      });
+
+      return;
     }
   }
 );

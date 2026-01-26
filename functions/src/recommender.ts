@@ -136,12 +136,14 @@ export const getDiscoveryRankV2 = onCall(
       const candidates = await getCandidatePool(uid, userSignals, filters);
 
       if (candidates.length === 0) {
-        return {
+        console.log('Scheduled job result:', {
           results: [],
           total: 0,
           version: "v2",
           cached: false,
-        };
+        });
+
+        return;
       }
 
       // Score and rank candidates
@@ -173,13 +175,16 @@ export const getDiscoveryRankV2 = onCall(
         `Discovery v2 returned ${results.length} results for ${uid}`
       );
 
-      return {
+      console.log('Scheduled job result:', {
         results,
         total: scoredCandidates.length,
         version: "v2",
         cached: false,
         timestamp: new Date().toISOString(),
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error("Discovery v2 failed:", error);
       throw new HttpsError("internal", "Recommendation engine failed");
@@ -412,7 +417,7 @@ async function scoreCandidates(
         };
       } catch (error: any) {
         logger.error(`Scoring failed for candidate ${candidate.id}:`, error);
-        return null;
+        return;
       }
     })
   );

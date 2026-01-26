@@ -7,7 +7,7 @@
 
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import type {
   ModerationAnalytics,
@@ -15,7 +15,7 @@ import type {
   ModerationRiskLevel,
   ModerationActionType
 } from './pack320-moderation-types';
-import { admin, auth, functions, timestamp } from './runtime';
+import { admin, auth, functions, timestamp, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -321,7 +321,7 @@ export const getModerationStats = onCall(
         recentActionsSnapshot.docs.map((doc) => doc.data().moderatorId)
       ).size;
 
-      return {
+      console.log('Scheduled job result:', {
         totalPending: pendingSnapshot.size,
         totalInReview: inReviewSnapshot.size,
         totalToday: todaySnapshot.size,
@@ -330,7 +330,10 @@ export const getModerationStats = onCall(
         highUnresolved: highSnapshot.size,
         avgResolutionTimeMinutes,
         moderatorsActive: activeModerators
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Failed to get moderation stats:', error);
       throw new HttpsError('internal', 'Failed to fetch statistics');

@@ -6,7 +6,7 @@
 import { getFirestore, Firestore, Timestamp } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
 import { logger } from 'firebase-functions/v2';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import {
   Notification,
   UserDevice,
@@ -18,7 +18,7 @@ import {
   NotificationConfig
 } from './types';
 import { getLocalizedText } from './templates';
-import { admin, db, functions, timestamp } from '../runtime';
+import { admin, db, functions, timestamp, onSchedule } from '../runtime';
 
 // ============================================================================
 // Configuration
@@ -115,14 +115,16 @@ async function processNotification(
     const userDoc = await db.collection('users').doc(notification.userId).get();
     if (!userDoc.exists) {
       await markNotificationFailed(db, notification.notificationId, 'User not found');
-      return {
+      console.log('Scheduled job result:', {
         notificationId: notification.notificationId,
         success: false,
         sentToDevices: 0,
         failedDevices: 0,
         errors: ['User not found'],
         skippedReason: 'NO_DEVICES'
-      };
+      });
+
+      return;
     }
     
     const userData = userDoc.data()!;
@@ -141,28 +143,32 @@ async function processNotification(
     // Check if notifications are enabled
     if (!preferences.pushEnabled) {
       await markNotificationFailed(db, notification.notificationId, 'Push disabled');
-      return {
+      console.log('Scheduled job result:', {
         notificationId: notification.notificationId,
         success: false,
         sentToDevices: 0,
         failedDevices: 0,
         errors: ['Push notifications disabled'],
         skippedReason: 'USER_PREFERENCE'
-      };
+      });
+
+      return;
     }
     
     // Check category preferences
     const categoryKey = notification.category.toLowerCase() as keyof typeof preferences.categories;
     if (!preferences.categories[categoryKey]) {
       await markNotificationFailed(db, notification.notificationId, 'Category disabled');
-      return {
+      console.log('Scheduled job result:', {
         notificationId: notification.notificationId,
         success: false,
         sentToDevices: 0,
         failedDevices: 0,
         errors: ['Category disabled'],
         skippedReason: 'USER_PREFERENCE'
-      };
+      });
+
+      return;
     }
     
     // Check quiet hours (except for transactional/safety)
@@ -175,14 +181,17 @@ async function processNotification(
           updatedAt: new Date().toISOString()
         });
         
-        return {
+        console.log('Scheduled job result:', {
           notificationId: notification.notificationId,
           success: false,
           sentToDevices: 0,
           failedDevices: 0,
           errors: ['In quiet hours'],
           skippedReason: 'QUIET_HOURS'
-        };
+        });
+
+        
+        return;
       }
     }
     
@@ -190,14 +199,16 @@ async function processNotification(
     const rateLimitOk = await checkRateLimit(db, notification, config);
     if (!rateLimitOk) {
       await markNotificationFailed(db, notification.notificationId, 'Rate limit exceeded');
-      return {
+      console.log('Scheduled job result:', {
         notificationId: notification.notificationId,
         success: false,
         sentToDevices: 0,
         failedDevices: 0,
         errors: ['Rate limit exceeded'],
         skippedReason: 'RATE_LIMIT'
-      };
+      });
+
+      return;
     }
     
     // Load user devices
@@ -209,14 +220,16 @@ async function processNotification(
     
     if (devicesSnapshot.empty) {
       await markNotificationFailed(db, notification.notificationId, 'No active devices');
-      return {
+      console.log('Scheduled job result:', {
         notificationId: notification.notificationId,
         success: false,
         sentToDevices: 0,
         failedDevices: 0,
         errors: ['No active devices'],
         skippedReason: 'NO_DEVICES'
-      };
+      });
+
+      return;
     }
     
     const devices = devicesSnapshot.docs.map(doc => doc.data() as UserDevice);
@@ -259,13 +272,16 @@ async function processNotification(
         devices: sentToDevices
       });
       
-      return {
+      console.log('Scheduled job result:', {
         notificationId: notification.notificationId,
         success: true,
         sentToDevices,
         failedDevices,
         errors: []
-      };
+      });
+
+      
+      return;
     } else {
       // All sends failed
       const newAttempts = notification.attempts + 1;
@@ -281,13 +297,16 @@ async function processNotification(
         });
       }
       
-      return {
+      console.log('Scheduled job result:', {
         notificationId: notification.notificationId,
         success: false,
         sentToDevices: 0,
         failedDevices,
         errors: ['All devices failed']
-      };
+      });
+
+      
+      return;
     }
   } catch (error: any) {
     logger.error('Error processing notification', {
@@ -297,13 +316,16 @@ async function processNotification(
     
     await markNotificationFailed(db, notification.notificationId, error.message);
     
-    return {
+    console.log('Scheduled job result:', {
       notificationId: notification.notificationId,
       success: false,
       sentToDevices: 0,
       failedDevices: 0,
       errors: [error.message]
-    };
+    });
+
+    
+    return;
   }
 }
 
@@ -320,12 +342,14 @@ async function sendPushToDevice(
 ): Promise<SendPushResult> {
   try {
     if (!device.pushToken) {
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         deviceId: device.deviceId,
         platform: device.platform,
         error: 'No push token'
-      };
+      });
+
+      return;
     }
     
     const messaging = getMessaging();
@@ -373,11 +397,14 @@ async function sendPushToDevice(
     
     await messaging.send(message);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       deviceId: device.deviceId,
       platform: device.platform
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     logger.error('Failed to send push to device', {
       deviceId: device.deviceId,
@@ -395,13 +422,16 @@ async function sendPushToDevice(
       });
     }
     
-    return {
+    console.log('Scheduled job result:', {
       success: false,
       deviceId: device.deviceId,
       platform: device.platform,
       error: error.message,
       errorCode: error.code
-    };
+    });
+
+    
+    return;
   }
 }
 

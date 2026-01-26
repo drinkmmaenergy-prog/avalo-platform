@@ -3,9 +3,9 @@
  * Scheduled tasks for notification delivery
  */
 
-import { onSchedule } from "firebase-functions/v2/scheduler";
+
 import { deliverPendingNotifications } from "./notificationHub";
-import { functions } from './runtime';
+import { functions, onSchedule } from './runtime';
 
 /**
  * Scheduled function to deliver pending notifications

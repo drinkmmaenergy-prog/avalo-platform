@@ -17,7 +17,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { checkDSAApplicability } from './pack359-jurisdiction-engine';
-import { FieldValue, HttpsError, arrayUnion, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, arrayUnion, auth, onCall, serverTimestamp, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -559,10 +559,7 @@ export async function generateDSAStatistics(
 /**
  * Generate monthly DSA compliance report
  */
-export const generateMonthlyDSAReport = functions.pubsub
-  .schedule('0 0 1 * *') // 00:00 on the 1st of every month
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const generateMonthlyDSAReport = onSchedule({ schedule: "0 0 1 * *", timeZone: "UTC" }, async (event) => {
     const now = new Date();
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const startDate = new Date(lastMonth.getFullYear(), lastMonth.getMonth(), 1);

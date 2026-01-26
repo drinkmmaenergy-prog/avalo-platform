@@ -16,7 +16,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, admin, generateId } from './init';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, onSchedule } from './runtime';
 
 // =====================================================
 // TYPES
@@ -660,10 +660,7 @@ export const claimViralReward = functions.https.onCall(async (request) => {
 /**
  * Daily viral metrics aggregation
  */
-export const aggregateViralMetrics = functions.pubsub
-  .schedule('0 2 * * *') // 2 AM daily
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const aggregateViralMetrics = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     yesterday.setHours(0, 0, 0, 0);
