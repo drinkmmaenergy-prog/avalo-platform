@@ -3,7 +3,7 @@
  * Scheduled functions for weekly reset and monthly summary
  */
 
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import * as logger from 'firebase-functions/logger';
 import { weeklyReset, monthlyReset } from './leaderboardEngine';
 
@@ -187,7 +187,7 @@ export const hourlyLeaderboardCleanup = onSchedule(
 // ============================================================================
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { Timestamp, admin, auth, db, functions, serverTimestamp, timestamp } from './runtime';
+import { Timestamp, admin, auth, db, functions, serverTimestamp, timestamp, onSchedule } from './runtime';
 
 /**
  * Manual weekly reset trigger (admin only)
@@ -215,11 +215,13 @@ export const triggerWeeklyReset = onCall(
     
     try {
       await weeklyReset();
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Weekly reset completed successfully',
         timestamp: new Date().toISOString(),
-      };
+      });
+
+      return;
     } catch (error) {
       logger.error('Manual weekly reset failed:', error);
       throw new HttpsError('internal', 'Weekly reset failed');
@@ -253,11 +255,13 @@ export const triggerMonthlySummary = onCall(
     
     try {
       await monthlyReset();
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Monthly summary completed successfully',
         timestamp: new Date().toISOString(),
-      };
+      });
+
+      return;
     } catch (error) {
       logger.error('Manual monthly summary failed:', error);
       throw new HttpsError('internal', 'Monthly summary failed');

@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -114,11 +114,14 @@ export const pack385_setTrafficLevel = functions.https.onCall(async (request) =>
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     level,
     limits
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -325,11 +328,14 @@ export const pack385_dynamicTrafficProtection = functions.https.onCall(async (re
     });
   }
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     currentLevel: recommendedLevel,
     metrics
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -363,12 +369,15 @@ async function getSystemMetrics(): Promise<{
   const estimatedCPU = Math.min(100, (userCount / 1000) * 60);
   const estimatedMemory = Math.min(100, (userCount / 800) * 50);
 
-  return {
+  console.log('Scheduled job result:', {
     cpuUsage: estimatedCPU,
     memoryUsage: estimatedMemory,
     errorRate,
     activeUsers: userCount
-  };
+  });
+
+
+  return;
 }
 
 /**
@@ -396,19 +405,20 @@ export const pack385_throttleUser = functions.https.onCall(async (request) => {
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     userId,
     throttledUntil: throttleUntil.toISOString()
-  };
+  });
+
+
+  return;
 });
 
 /**
  * Background job: Monitor and adjust traffic protection
  */
-export const pack385_monitorTrafficLoad = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const pack385_monitorTrafficLoad = onSchedule("every 5 minutes", async (event) => {
     const metrics = await getSystemMetrics();
 
     // Determine appropriate traffic level
@@ -472,9 +482,7 @@ export const pack385_monitorTrafficLoad = functions.pubsub
 /**
  * Background job: Clean up expired throttles
  */
-export const pack385_cleanupThrottles = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const pack385_cleanupThrottles = onSchedule("every 1 hours", async (event) => {
     const now = new Date();
 
     const expiredThrottles = await db.collection('userThrottles')

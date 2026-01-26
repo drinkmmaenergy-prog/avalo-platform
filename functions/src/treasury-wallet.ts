@@ -139,7 +139,7 @@ export const treasury_rebalanceWallet = https.onCall(
       const check = await checkRebalanceNeeded();
 
       if (!check.needed) {
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           movedAmount: 0,
           direction: null,
@@ -147,7 +147,9 @@ export const treasury_rebalanceWallet = https.onCall(
           coldBalance: (await db.collection('treasury_cold_wallet').doc('cold_wallet').get()).data()?.totalBalance || 0,
           timestamp: serverTimestamp() as any,
           message: 'No rebalancing needed',
-        };
+        });
+
+        return;
       }
 
       // Execute rebalance in transaction
@@ -467,12 +469,15 @@ export const treasury_emergencyTransfer = https.onCall(
         adminId: auth.uid,
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Emergency transfer completed',
         amount,
         direction,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Emergency transfer failed', { error });
       throw new HttpsError('internal', error.message || 'Failed to execute emergency transfer');

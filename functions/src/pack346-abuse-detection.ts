@@ -13,7 +13,7 @@ import {
   AbuseAutoAction 
 } from "./pack346-types";
 import { triggerAlert } from "./pack346-alert-routing";
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
 
 /**
  * Detect refund loop abuse
@@ -63,7 +63,7 @@ export const detectPanicSpam = functions.firestore
     const event = snap.data();
     
     if (event.type !== "panic_button") {
-      return null;
+      return;
     }
 
     const userId = event.userId;
@@ -106,7 +106,7 @@ export const detectFakeMismatch = functions.firestore
     const event = snap.data();
     
     if (event.type !== "selfie_mismatch") {
-      return null;
+      return;
     }
 
     const userId = event.reportedBy;
@@ -145,9 +145,7 @@ export const detectFakeMismatch = functions.firestore
  * Detect bot-like swipe/chat behavior
  * Scheduled function that analyzes patterns
  */
-export const detectBotBehavior = functions.pubsub
-  .schedule("every 1 hours")
-  .onRun(async (context) => {
+export const detectBotBehavior = onSchedule("every 1 hours", async (event) => {
     const oneHourAgo = Timestamp.fromDate(
       new Date(Date.now() - 60 * 60 * 1000)
     );
@@ -183,7 +181,10 @@ export const detectBotBehavior = functions.pubsub
       }
     }
 
-    return { processed: userActivityCount.size };
+    console.log('Scheduled job result:', { processed: userActivityCount.size });
+
+
+    return;
   });
 
 /**
@@ -253,9 +254,7 @@ export const detectAIAbuse = functions.firestore
 /**
  * Detect creator cancellation farming
  */
-export const detectCancellationFarming = functions.pubsub
-  .schedule("every 6 hours")
-  .onRun(async (context) => {
+export const detectCancellationFarming = onSchedule("every 6 hours", async (event) => {
     const sevenDaysAgo = Timestamp.fromDate(
       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     );
@@ -304,7 +303,10 @@ export const detectCancellationFarming = functions.pubsub
       }
     }
 
-    return { processed: creatorStats.size };
+    console.log('Scheduled job result:', { processed: creatorStats.size });
+
+
+    return;
   });
 
 /**
@@ -316,7 +318,7 @@ export const detectTokenDrain = functions.firestore
     const transaction = snap.data();
     
     if (transaction.amount >= 0) {
-      return null; // Only check negative transactions (spending)
+      return; // Only check negative transactions (spending)
     }
 
     const userId = transaction.userId;
@@ -536,6 +538,9 @@ export const resolveAbuseSignal = functions.https.onCall(async (request) => {
         notes: notes || "",
       });
 
-    return { success: true, signalId };
+    console.log('Scheduled job result:', { success: true, signalId });
+
+
+    return;
   }
 );

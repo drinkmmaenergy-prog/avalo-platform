@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { FieldValue, HttpsError, Timestamp, arrayRemove, arrayUnion, auth, increment, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, arrayRemove, arrayUnion, auth, increment, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -34,10 +34,7 @@ export interface RetargetingCampaign {
  * Scheduled: Build retargeting audiences daily
  * Runs at 5 AM UTC
  */
-export const buildRetargetingAudiences = functions.pubsub
-  .schedule("0 5 * * *")
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const buildRetargetingAudiences = onSchedule({ schedule: "0 5 * * *", timeZone: "UTC" }, async (event) => {
     console.log("Building retargeting audiences...");
 
     try {
@@ -47,7 +44,9 @@ export const buildRetargetingAudiences = functions.pubsub
 
       if (!retargetingEnabled) {
         console.log("Retargeting disabled");
-        return { success: false, reason: "disabled" };
+        console.log('Scheduled job result:', { success: false, reason: "disabled" });
+
+        return;
       }
 
       // Build all audience types
@@ -57,7 +56,9 @@ export const buildRetargetingAudiences = functions.pubsub
       await buildChurnRiskAudience();
 
       console.log("Retargeting audiences built successfully");
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      return;
     } catch (error) {
       console.error("Error building retargeting audiences:", error);
       throw error;
@@ -259,10 +260,12 @@ function getRetargetingMessages(audienceType: RetargetingAudienceType): {
 } {
   switch (audienceType) {
     case "REGISTERED_UNVERIFIED":
-      return {
+      console.log('Scheduled job result:', {
         title: "Complete Your Profile",
         body: "Verify your account to start connecting with amazing people!",
-      };
+      });
+
+      return;
     case "VERIFIED_UNPAID":
       return {
         title: "Unlock Premium Features",
@@ -400,7 +403,10 @@ export const exportRetargetingAudience = functions.https.onCall(async (request) 
           throw new functions.https.HttpsError("invalid-argument", "Unknown platform");
       }
 
-      return { success: true, exportData };
+      console.log('Scheduled job result:', { success: true, exportData });
+
+
+      return;
     } catch (error) {
       console.error("Error exporting audience:", error);
       throw new functions.https.HttpsError("internal", "Failed to export audience");

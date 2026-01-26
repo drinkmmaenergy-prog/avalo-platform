@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, generateId } from './init';
 import { computeTasteProfile, aggregateEventCounters } from '../personalizationEngine';
-import { HttpsError, Timestamp, auth, onCall } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES
@@ -289,10 +289,7 @@ async function updateUserTasteProfile(userId: string): Promise<void> {
  * Scheduled function: Update taste profiles for active users
  * Runs every 6 hours to refresh profiles
  */
-export const scheduledProfileUpdate = functions
-  .region('europe-west3')
-  .pubsub.schedule('every 6 hours')
-  .onRun(async (context) => {
+export const scheduledProfileUpdate = onSchedule({ schedule: "every 6 hours", region: "europe-west3" }, async (event) => {
     try {
       console.log('[Personalization] Starting scheduled profile update');
 

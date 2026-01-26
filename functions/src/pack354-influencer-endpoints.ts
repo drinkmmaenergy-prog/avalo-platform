@@ -9,7 +9,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 
@@ -33,7 +33,7 @@ import {
   CreatorCapability,
   CreatorGender,
 } from './pack354-influencer-service';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -97,11 +97,14 @@ export const applyAsInfluencer = onCall(
 
       logger.info(`Influencer application submitted by ${uid}: ${applicationId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         applicationId,
         message: 'Application submitted successfully. We will review it within 48 hours.',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error submitting influencer application', error);
       throw new HttpsError('internal', error.message || 'Failed to submit application');
@@ -124,10 +127,12 @@ export const getInfluencerApplicationStatus = onCall(
       const application = await getApplicationStatus(uid);
 
       if (!application) {
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           hasApplication: false,
-        };
+        });
+
+        return;
       }
 
       // Don't expose sensitive admin info to users
@@ -142,11 +147,14 @@ export const getInfluencerApplicationStatus = onCall(
             : undefined,
       };
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         hasApplication: true,
         application: sanitized,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting application status', error);
       throw new HttpsError('internal', error.message || 'Failed to get application status');
@@ -259,11 +267,14 @@ export const adminGetInfluencerApplications = onCall(
 
       logger.info(`Admin ${uid} fetched ${applications.length} applications`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         applications,
         hasMore: snapshot.size === limit,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error fetching applications for admin', error);
       throw new HttpsError('internal', error.message || 'Failed to fetch applications');
@@ -364,10 +375,13 @@ export const adminUpdateCreatorTier = onCall(
 
       logger.info(`Admin ${uid} updated creator ${creatorId} to tier ${tier}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Creator tier updated successfully',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error updating creator tier', error);
       throw new HttpsError('internal', error.message || 'Failed to update tier');
@@ -411,10 +425,13 @@ export const adminToggleCreatorCapability = onCall(
         `Admin ${uid} set ${capability} to ${enabled} for creator ${creatorId}`
       );
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Creator capability updated successfully',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error toggling creator capability', error);
       throw new HttpsError('internal', error.message || 'Failed to toggle capability');
@@ -455,10 +472,13 @@ export const adminForceCreatorKYC = onCall(
 
       logger.info(`Admin ${uid} forced KYC for creator ${creatorId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'KYC requirement set for creator',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error forcing KYC', error);
       throw new HttpsError('internal', error.message || 'Failed to force KYC');
@@ -574,10 +594,13 @@ export const adminBanDeviceAndIP = onCall(
 
       logger.warn(`Admin ${uid} banned device/IP for creator ${creatorId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Device and IP banned successfully',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error banning device/IP', error);
       throw new HttpsError('internal', error.message || 'Failed to ban device/IP');
@@ -666,12 +689,15 @@ export const adminGetCreatorAnalytics = onCall(
 
       logger.info(`Admin ${uid} fetched creator analytics`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         topEarners,
         atRiskCreators,
         totalCreators: Object.keys(creatorEarnings).length,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error fetching creator analytics', error);
       throw new HttpsError('internal', error.message || 'Failed to fetch analytics');
@@ -718,11 +744,14 @@ export const adminCreateRegionalProgram = onCall(
 
       logger.info(`Admin ${uid} created regional program ${programId} for ${countryCode}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         programId,
         message: 'Regional program created successfully',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error creating regional program', error);
       throw new HttpsError('internal', error.message || 'Failed to create program');
@@ -781,7 +810,7 @@ export const dailyCreatorRiskAssessment = onSchedule(
         `Completed daily risk assessment: ${processedCount} creators, ${flaggedCount} flagged`
       );
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in daily risk assessment', error);
       throw error;
@@ -817,7 +846,7 @@ export const dailyRegionalProgramUpdate = onSchedule(
 
       logger.info(`Updated ${processedCount} regional programs`);
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in daily regional program update', error);
       throw error;

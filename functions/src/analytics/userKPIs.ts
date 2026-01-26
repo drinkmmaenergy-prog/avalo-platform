@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
-import { Timestamp, arrayUnion, increment } from '../runtime';
+import { Timestamp, arrayUnion, increment, logger, onSchedule } from '../runtime';
 
 interface UserKPIMetrics {
   dau: number;
@@ -294,10 +294,7 @@ export const trackProfileView = functions.firestore
   });
 
 // Daily aggregation job - runs at midnight
-export const aggregateDailyUserKPIs = functions.pubsub
-  .schedule('0 0 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const aggregateDailyUserKPIs = onSchedule({ schedule: "0 0 * * *", timeZone: "UTC" }, async (event) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const dateStr = yesterday.toISOString().split('T')[0];

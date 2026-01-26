@@ -23,7 +23,7 @@ import {
 import { sendPushNotification } from './pack293-notification-service'; // PACK 293
 import { checkFraudLimits } from './pack302-fraud-detection'; // PACK 302
 import { routeRegion } from './pack426-region-router'; // PACK 426
-import { admin, timestamp } from './runtime';
+import { admin, timestamp, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -33,13 +33,7 @@ const db = getFirestore();
  * Runs every minute to process pending messages
  * Handles delivery, retries, and exponential backoff
  */
-export const pack427_processMessageQueue = functions
-  .runWith({
-    timeoutSeconds: 540,
-    memory: '1GB',
-  })
-  .pubsub.schedule('every 1 minutes')
-  .onRun(async (context) => {
+export const pack427_processMessageQueue = onSchedule("every 1 minutes", async (event) => {
     const regions: Region[] = ['EU', 'US', 'APAC'];
     const results: Record<Region, DeliveryResult[]> = {
       EU: [],
@@ -67,7 +61,7 @@ export const pack427_processMessageQueue = functions
     };
 
     console.log('Queue processing complete:', summary);
-    return summary;
+    return;
   });
 
 /**
@@ -175,11 +169,13 @@ async function processMessage(
   if (targetRegion !== region) {
     // Move message to correct region
     await moveMessageToRegion(message, region, targetRegion);
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       messageId: message.id,
       attempts: message.attempts,
-    };
+    });
+
+    return;
   }
 
   // Step 2: Check fraud limits (PACK 302 integration)
@@ -192,12 +188,14 @@ async function processMessage(
 
     if (fraudCheck.blocked) {
       await markMessageFailed(message.id, region, 'RATE_LIMITED');
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         messageId: message.id,
         error: 'Rate limited',
         attempts: message.attempts,
-      };
+      });
+
+      return;
     }
   } catch (error) {
     console.warn('Fraud check failed, continuing with delivery:', error);
@@ -211,11 +209,13 @@ async function processMessage(
     const delivered = await deliverRealTime(message);
     if (delivered) {
       await markMessageDelivered(message.id, region);
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         messageId: message.id,
         attempts: message.attempts,
-      };
+      });
+
+      return;
     }
   }
 
@@ -223,11 +223,13 @@ async function processMessage(
   try {
     await deliverViaPushNotification(message);
     await markMessageDelivered(message.id, region);
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       messageId: message.id,
       attempts: message.attempts,
-    };
+    });
+
+    return;
   } catch (error) {
     // Mark as failed for retry
     await markMessageFailed(
@@ -235,12 +237,14 @@ async function processMessage(
       region,
       error instanceof Error ? error.message : 'Delivery failed'
     );
-    return {
+    console.log('Scheduled job result:', {
       success: false,
       messageId: message.id,
       error: error instanceof Error ? error.message : 'Delivery failed',
       attempts: message.attempts + 1,
-    };
+    });
+
+    return;
   }
 }
 
@@ -415,13 +419,7 @@ async function checkIfPaidMessage(contentRef: string): Promise<boolean> {
  * 
  * Runs daily to remove old delivered messages
  */
-export const pack427_cleanupMessages = functions
-  .runWith({
-    timeoutSeconds: 540,
-    memory: '512MB',
-  })
-  .pubsub.schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack427_cleanupMessages = onSchedule("every 24 hours", async (event) => {
     const regions: Region[] = ['EU', 'US', 'APAC'];
     const results: Record<Region, number> = {
       EU: 0,
@@ -437,7 +435,7 @@ export const pack427_cleanupMessages = functions
     );
 
     console.log('Cleanup complete:', results);
-    return results;
+    return;
   });
 
 /**
@@ -445,13 +443,7 @@ export const pack427_cleanupMessages = functions
  * 
  * Exports queue statistics for monitoring
  */
-export const pack427_exportQueueStats = functions
-  .runWith({
-    timeoutSeconds: 60,
-    memory: '256MB',
-  })
-  .pubsub.schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const pack427_exportQueueStats = onSchedule("every 5 minutes", async (event) => {
     const regions: Region[] = ['EU', 'US', 'APAC'];
     const stats: Record<Region, any> = {
       EU: {},
@@ -472,7 +464,7 @@ export const pack427_exportQueueStats = functions
       stats,
     });
 
-    return stats;
+    return;
   });
 
 /**

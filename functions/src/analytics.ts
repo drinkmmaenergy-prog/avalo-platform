@@ -12,7 +12,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, auth } from './init';
-import { onRequest } from './runtime';
+import { onRequest, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -343,21 +343,21 @@ async function aggregatePromotionAnalytics(
   const campaignDoc = await db.collection('promotion_campaigns').doc(campaignId).get();
   
   if (!campaignDoc.exists) {
-    return null;
+    return;
   }
 
   const campaign = campaignDoc.data()!;
   
   // Verify ownership
   if (campaign.creatorUserId !== ownerUserId) {
-    return null;
+    return;
   }
 
   const impressions = campaign.impressions || 0;
   const clicks = campaign.clicks || 0;
   const ctr = impressions > 0 ? clicks / impressions : 0;
 
-  return {
+  console.log('Scheduled job result:', {
     campaignId,
     ownerUserId,
     impressions,
@@ -367,7 +367,10 @@ async function aggregatePromotionAnalytics(
     budgetTokensSpent: campaign.budgetTokensSpent || 0,
     remainingTokens: (campaign.budgetTokensTotal || 0) - (campaign.budgetTokensSpent || 0),
     updatedAt: Date.now(),
-  };
+  });
+
+
+  return;
 }
 
 // ============================================================================
@@ -378,9 +381,7 @@ async function aggregatePromotionAnalytics(
  * Scheduled function to aggregate creator earnings analytics
  * Runs hourly to update analytics_creator_earnings collection
  */
-export const aggregateCreatorEarningsAnalytics = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const aggregateCreatorEarningsAnalytics = onSchedule("every 1 hours", async (event) => {
     console.log('Starting creator earnings analytics aggregation...');
 
     // Get all users with recent token earn events (last 90 days)
@@ -424,16 +425,14 @@ export const aggregateCreatorEarningsAnalytics = functions.pubsub
     }
 
     console.log(`Creator analytics aggregation complete: ${count} users`);
-    return null;
+    return;
   });
 
 /**
  * Scheduled function to aggregate user spending analytics
  * Runs hourly to update analytics_user_spending collection
  */
-export const aggregateUserSpendingAnalytics = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const aggregateUserSpendingAnalytics = onSchedule("every 1 hours", async (event) => {
     console.log('Starting user spending analytics aggregation...');
 
     const now = Date.now();
@@ -487,7 +486,7 @@ export const aggregateUserSpendingAnalytics = functions.pubsub
     }
 
     console.log(`User spending analytics aggregation complete: ${count} users`);
-    return null;
+    return;
   });
 
 // ============================================================================

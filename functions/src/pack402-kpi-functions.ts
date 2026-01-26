@@ -14,16 +14,13 @@ import {
   backfillDailyKpis,
 } from './pack402-kpi-service';
 import { KpiType, KpiInterval } from './pack402-kpi-types';
-import { HttpsError, auth, onCall, onRequest } from './runtime';
+import { HttpsError, auth, onCall, onRequest, logger, onSchedule } from './runtime';
 
 /**
  * Scheduled function: Build hourly KPIs
  * Runs every hour at minute 5
  */
-export const pack402_buildHourlyKpis = functions.pubsub
-  .schedule('5 * * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack402_buildHourlyKpis = onSchedule({ schedule: "5 * * * *", timeZone: "UTC" }, async (event) => {
     const now = new Date();
     const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
     const hour = now.getUTCHours();
@@ -43,10 +40,7 @@ export const pack402_buildHourlyKpis = functions.pubsub
  * Scheduled function: Build daily KPIs
  * Runs once per day at 02:00 UTC for the previous day
  */
-export const pack402_buildDailyKpis = functions.pubsub
-  .schedule('0 2 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack402_buildDailyKpis = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const date = yesterday.toISOString().split('T')[0]; // YYYY-MM-DD
@@ -145,7 +139,7 @@ export const pack402_getKpis = functions.https.onCall(async (request) => {
 
   try {
     const kpis = await fetchKpis(type as KpiType, fromDate, toDate, interval as KpiInterval);
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       type,
       interval,
@@ -153,7 +147,9 @@ export const pack402_getKpis = functions.https.onCall(async (request) => {
       toDate,
       count: kpis.length,
       data: kpis,
-    };
+    });
+
+    return;
   } catch (error) {
     console.error('[PACK 402] Error fetching KPIs:', error);
     throw new functions.https.HttpsError(

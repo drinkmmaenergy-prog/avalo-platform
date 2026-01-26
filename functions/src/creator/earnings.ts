@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import { db } from '../init';
 import { FieldValue } from 'firebase-admin/firestore';
-import { HttpsError, Timestamp, admin, auth, onCall, serverTimestamp } from '../runtime';
+import { HttpsError, Timestamp, admin, auth, onCall, serverTimestamp, logger, onSchedule } from '../runtime';
 
 // ============================================================================
 // TYPES
@@ -64,7 +64,7 @@ export const getCreatorEarningsSummary = functions.https.onCall(async (request) 
     
     if (!earningsDoc.exists) {
       // Return zero earnings if document doesn't exist
-      return {
+      console.log('Scheduled job result:', {
         userId,
         totalTokensEarnedAllTime: 0,
         totalTokensEarned30d: 0,
@@ -79,7 +79,9 @@ export const getCreatorEarningsSummary = functions.https.onCall(async (request) 
         tokensFromAiCompanions30d: 0,
         estimatedFiatValueAllTime: 0,
         lastUpdatedAt: Date.now(),
-      };
+      });
+
+      return;
     }
     
     const earnings = earningsDoc.data() as CreatorEarningsSummary;
@@ -178,9 +180,7 @@ export const getCreatorEarningsActivity = functions.https.onCall(async (request)
 // AGGREGATION FUNCTION (Scheduled)
 // ============================================================================
 
-export const aggregateCreatorEarnings = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const aggregateCreatorEarnings = onSchedule("every 1 hours", async (event) => {
     console.log('Starting creator earnings aggregation...');
     
     try {

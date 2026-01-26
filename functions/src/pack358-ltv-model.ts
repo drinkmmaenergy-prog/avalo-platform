@@ -7,7 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -105,7 +105,7 @@ class LTVModelEngine {
     const userCount = users.length;
 
     if (userCount === 0) {
-      return {
+      console.log('Scheduled job result:', {
         segment,
         avgLTVPLN: 0,
         avgDaysActive: 0,
@@ -115,7 +115,9 @@ class LTVModelEngine {
         userCount: 0,
         totalValuePLN: 0,
         calculatedAt: new Date().toISOString(),
-      };
+      });
+
+      return;
     }
 
     // Calculate metrics for each user
@@ -143,7 +145,7 @@ class LTVModelEngine {
     // Extrapolate to full segment
     const totalValue = avgLTV * userCount;
 
-    return {
+    console.log('Scheduled job result:', {
       segment,
       avgLTVPLN: Math.round(avgLTV * 100) / 100,
       avgDaysActive: Math.round(avgDaysActive),
@@ -153,7 +155,10 @@ class LTVModelEngine {
       userCount,
       totalValuePLN: Math.round(totalValue * 100) / 100,
       calculatedAt: new Date().toISOString(),
-    };
+    });
+
+
+    return;
   }
 
   /**
@@ -183,7 +188,9 @@ class LTVModelEngine {
     const userDoc = await this.db.collection('users').doc(userId).get();
     
     if (!userDoc.exists) {
-      return { ltv: 0, daysActive: 0, paymentCount: 0, totalSpent: 0 };
+      console.log('Scheduled job result:', { ltv: 0, daysActive: 0, paymentCount: 0, totalSpent: 0 });
+
+      return;
     }
 
     const userData = userDoc.data()!;
@@ -207,12 +214,15 @@ class LTVModelEngine {
     const paymentCount = transactionsSnapshot.size;
     const ltv = totalSpent;
 
-    return {
+    console.log('Scheduled job result:', {
       ltv,
       daysActive,
       paymentCount,
       totalSpent,
-    };
+    });
+
+
+    return;
   }
 
   /**
@@ -530,11 +540,7 @@ const engine = new LTVModelEngine();
 /**
  * Scheduled function: Calculate segment LTVs weekly on Sundays at 3 AM
  */
-export const calculateSegmentLTVs = functions
-  .region('europe-west1')
-  .pubsub.schedule('0 3 * * 0')
-  .timeZone('Europe/Warsaw')
-  .onRun(async (context) => {
+export const calculateSegmentLTVs = onSchedule({ schedule: "0 3 * * 0", timeZone: "Europe/Warsaw", region: "europe-west1" }, async (event) => {
     console.log('[PACK 358] Calculating LTV for all segments');
     
     try {
@@ -548,7 +554,10 @@ export const calculateSegmentLTVs = functions
         totalValue: profiles.reduce((sum, p) => sum + p.totalValuePLN, 0),
       });
       
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK 358] Error calculating LTVs:', error);
       throw error;

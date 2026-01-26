@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { UserSegment, RetentionMetrics } from './pack301-retention-types';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -145,10 +145,7 @@ export const aggregateRetentionMetrics = functions.https.onCall(async (request) 
  * Scheduled function: Daily retention analytics aggregation at 5 AM UTC
  * Runs after churn recalculation and win-back
  */
-export const dailyRetentionAnalytics = functions.pubsub
-  .schedule('0 5 * * *') // Daily at 5 AM UTC
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dailyRetentionAnalytics = onSchedule({ schedule: "0 5 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[Analytics] Starting daily retention analytics');
 
     try {

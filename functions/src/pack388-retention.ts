@@ -12,7 +12,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -95,10 +95,7 @@ function getRetentionDays(dataType: string, jurisdiction: string): number {
 /**
  * Execute automated retention purge (runs daily)
  */
-export const pack388_executeRetentionPurge = functions.pubsub
-  .schedule('every 24 hours at 03:00')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack388_executeRetentionPurge = onSchedule({ schedule: "every 24 hours at 03:00", timeZone: "UTC" }, async (event) => {
     console.log('🗑️ Starting automated retention purge...');
 
     const now = admin.firestore.Timestamp.now();
@@ -147,7 +144,7 @@ export const pack388_executeRetentionPurge = functions.pubsub
 
     } catch (error) {
       console.error('Error executing retention purge:', error);
-      return null;
+      return;
     }
   });
 
@@ -316,11 +313,14 @@ export const pack388_applyLegalHold = functions.https.onCall(async (request) => 
 
     console.log(`⚖️ Legal hold applied for user ${userId}`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       holdId: holdRef.id,
       message: 'Legal hold applied successfully'
-    };
+    });
+
+
+    return;
 
   } catch (error) {
     console.error('Error applying legal hold:', error);
@@ -386,10 +386,13 @@ export const pack388_releaseLegalHold = functions.https.onCall(async (request) =
 
     console.log(`⚖️ Legal hold released for user ${userId}`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Legal hold released successfully'
-    };
+    });
+
+
+    return;
 
   } catch (error) {
     console.error('Error releasing legal hold:', error);
@@ -440,11 +443,14 @@ export const pack388_initializeRetentionPolicies = functions.https.onCall(async 
 
     console.log(`✅ Initialized ${policies.length} retention policies`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       policiesCreated: policies.length,
       message: 'Retention policies initialized successfully'
-    };
+    });
+
+
+    return;
 
   } catch (error) {
     console.error('Error initializing retention policies:', error);
@@ -464,21 +470,26 @@ export const pack388_getRetentionPolicy = functions.https.onCall(async (request)
     const policyDoc = await db.collection('dataRetentionPolicies').doc(policyId).get();
 
     if (policyDoc.exists) {
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         policy: policyDoc.data()
-      };
+      });
+
+      return;
     }
 
     // Fallback to default
     const defaultPolicyId = `DEFAULT_${dataType}`;
     const defaultDoc = await db.collection('dataRetentionPolicies').doc(defaultPolicyId).get();
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       policy: defaultDoc.exists ? defaultDoc.data() : null,
       usingDefault: true
-    };
+    });
+
+
+    return;
 
   } catch (error) {
     console.error('Error getting retention policy:', error);

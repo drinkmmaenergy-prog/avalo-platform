@@ -9,11 +9,11 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { db, serverTimestamp, generateId, increment } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
-import { admin, auth, functions, timestamp } from './runtime';
+import { admin, auth, functions, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES
@@ -107,11 +107,14 @@ export const getMySchedule = onCall<{
   
   const items = snapshot.docs.map(doc => doc.data() as AvaloScheduleItem);
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     items,
     count: items.length,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -436,10 +439,13 @@ export const getMyReminders = onCall({ region: 'us-central1' }, async (request) 
   
   const reminders = snapshot.docs.map(doc => doc.data());
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     reminders,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -473,9 +479,12 @@ export const dismissReminder = onCall<{
     updatedAt: serverTimestamp(),
   });
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -499,10 +508,13 @@ export const getCancellationDeadlines = onCall<{
   
   const deadlines = snapshot.docs.map(doc => doc.data());
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     deadlines,
-  };
+  });
+
+  
+  return;
 });
 
 // ============================================================================
@@ -551,11 +563,14 @@ export const generateAttendeeQR = onCall<{
     });
   }
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     qrData: JSON.stringify(qrData),
     checkInCode: qrData.checkInCode,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -685,12 +700,15 @@ export const getEventAttendees = onCall<{
     };
   });
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     attendees,
     totalCount: attendees.length,
     checkedInCount: attendees.filter(a => a.checkedIn).length,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -1051,9 +1069,12 @@ export const logSafetyPanelAccess = onCall<{
     accessedAt: serverTimestamp(),
   });
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -1257,10 +1278,13 @@ export const saveEventFilter = onCall<{
     lastUsedAt: serverTimestamp(),
   });
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     filterId,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -1282,10 +1306,13 @@ export const getMySavedFilters = onCall({ region: 'us-central1' }, async (reques
   
   const filters = snapshot.docs.map(doc => doc.data());
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     filters,
-  };
+  });
+
+  
+  return;
 });
 
 // ============================================================================

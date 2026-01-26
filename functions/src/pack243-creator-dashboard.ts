@@ -22,16 +22,13 @@ import {
   NUDGE_TEMPLATES,
   SUGGESTION_TEMPLATES,
 } from './types/pack243-creator-dashboard';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 /**
  * Scheduled function: Calculate dashboard analytics for all creators
  * Runs daily at 2 AM UTC
  */
-export const calculateCreatorDashboards = functions.pubsub
-  .schedule('0 2 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const calculateCreatorDashboards = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     console.log('Starting daily creator dashboard calculation...');
 
     try {
@@ -57,7 +54,9 @@ export const calculateCreatorDashboards = functions.pubsub
       }
 
       console.log(`Dashboard calculation complete. Processed: ${processedCount}, Failed: ${failedCount}`);
-      return { success: true, processed: processedCount, failed: failedCount };
+      console.log('Scheduled job result:', { success: true, processed: processedCount, failed: failedCount });
+
+      return;
     } catch (error) {
       console.error('Error in calculateCreatorDashboards:', error);
       throw error;
@@ -307,11 +306,14 @@ async function getMissedEarnings(
   const currentPrice = await getCurrentChatPrice(userId);
   const estimatedRevenue = failedPaymentsSnapshot.size * currentPrice;
 
-  return {
+  console.log('Scheduled job result:', {
     count: failedPaymentsSnapshot.size,
     estimatedRevenue,
     reason: 'price_too_high',
-  };
+  });
+
+
+  return;
 }
 
 /**
@@ -486,7 +488,10 @@ async function getEventPopularityStats(userId: string): Promise<{ expectedAttend
     totalExpectedAttendance += data.interestedCount || 0;
   });
 
-  return { expectedAttendance: totalExpectedAttendance };
+  console.log('Scheduled job result:', { expectedAttendance: totalExpectedAttendance });
+
+
+  return;
 }
 
 /**
@@ -897,7 +902,9 @@ export const triggerDashboardCalculation = functions.https.onCall(async (request
 
   try {
     await calculateCreatorAnalytics(userId);
-    return { success: true, message: 'Dashboard calculated successfully' };
+    console.log('Scheduled job result:', { success: true, message: 'Dashboard calculated successfully' });
+
+    return;
   } catch (error) {
     console.error('Error calculating dashboard:', error);
     throw new functions.https.HttpsError('internal', 'Failed to calculate dashboard');
@@ -926,7 +933,10 @@ export const dismissNudge = functions.https.onCall(async (request) => {
       dismissedAt: admin.firestore.Timestamp.now(),
     });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 /**
@@ -964,5 +974,8 @@ export const completeActionSuggestion = functions.https.onCall(async (request) =
       timestamp: admin.firestore.Timestamp.now(),
     });
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });

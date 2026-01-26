@@ -8,6 +8,7 @@
  */
 
 import * as functions from 'firebase-functions';
+import { onSchedule } from './runtime';
 import { db } from './init';
 import {
   getEarningsDashboard,
@@ -175,11 +176,14 @@ export const checkEarningsCapabilityCallable = functions
     const hasCapability = await hasEarningsCapability(userId);
     const availableMonths = await getAvailableEarningsMonths(userId);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       hasEarningsCapability: hasCapability,
       availableMonths,
-    };
+    });
+
+    
+    return;
   });
 
 // ============================================================================
@@ -207,10 +211,13 @@ export const adminTriggerAggregation = functions
     
     const result = await aggregateUserMonthlyEarnings(userId, year, month);
     
-    return {
+    console.log('Scheduled job result:', {
       success: result.success,
       result,
-    };
+    });
+
+    
+    return;
   });
 
 /**
@@ -238,13 +245,16 @@ export const adminBackfillAggregation = functions
     
     const results = await backfillAggregation(userId, startYear, startMonth, endYear, endMonth);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       results,
       totalProcessed: results.length,
       successCount: results.filter(r => r.success).length,
       errorCount: results.filter(r => !r.success).length,
-    };
+    });
+
+    
+    return;
   });
 
 /**
@@ -296,12 +306,7 @@ export const adminViewUserEarnings = functions
  * Daily aggregation cron job
  * Runs at 02:00 UTC daily to aggregate previous day's earnings
  */
-export const cronDailyEarningsAggregation = functions
-  .region('europe-west3')
-  .runWith({ timeoutSeconds: 540, memory: '1GB' })
-  .pubsub.schedule('0 2 * * *') // Daily at 02:00 UTC
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const cronDailyEarningsAggregation = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC", region: "europe-west3" }, async (event) => {
     console.log('Starting daily earnings aggregation');
     
     // Aggregate current month
@@ -324,8 +329,6 @@ export const cronDailyEarningsAggregation = functions
       undefined,
       { results: result.results.length, errors: result.errors }
     );
-    
-    return null;
   });
 
 /**

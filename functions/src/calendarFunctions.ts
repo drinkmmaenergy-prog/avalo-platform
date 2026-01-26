@@ -23,7 +23,7 @@ import type {
   GoodwillRefundRequest,
   CompleteMeetingRequest,
 } from '../../shared/src/types/calendar';
-import { HttpsError, auth, db, onCall } from './runtime';
+import { HttpsError, auth, db, onCall, logger, onSchedule } from './runtime';
 
 /**
  * Create a new calendar booking
@@ -45,10 +45,13 @@ export const createCalendarBooking = functions.https.onCall(async (request) => {
   try {
     const booking = await createBooking(data);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       booking,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error creating booking:', error);
     throw new functions.https.HttpsError('internal', error.message || 'Failed to create booking');
@@ -78,10 +81,13 @@ export const cancelCalendarBooking = functions.https.onCall(async (request) => {
       throw new Error('Invalid cancelledBy value');
     }
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       booking,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error cancelling booking:', error);
     throw new functions.https.HttpsError('internal', error.message || 'Failed to cancel booking');
@@ -107,11 +113,14 @@ export const checkInToMeeting = functions.https.onCall(async (request) => {
   try {
     const booking = await checkInMeeting(data);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       booking,
       message: 'Successfully checked in to meeting',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error checking in:', error);
     throw new functions.https.HttpsError('internal', error.message || 'Failed to check-in');
@@ -137,11 +146,14 @@ export const reportAppearanceMismatch = functions.https.onCall(async (request) =
   try {
     const booking = await reportMismatch(data);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       booking,
       message: 'Mismatch reported. Full refund processed.',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error reporting mismatch:', error);
     throw new functions.https.HttpsError('internal', error.message || 'Failed to report mismatch');
@@ -160,11 +172,14 @@ export const completeMeetingCallable = functions.https.onCall(async (request) =>
   try {
     const booking = await completeMeeting(data);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       booking,
       message: 'Meeting completed and payout processed',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error completing meeting:', error);
     throw new functions.https.HttpsError('internal', error.message || 'Failed to complete meeting');
@@ -190,11 +205,14 @@ export const processGoodwillRefundCallable = functions.https.onCall(async (reque
   try {
     const booking = await processGoodwillRefund(data);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       booking,
       message: 'Goodwill refund processed. Guest received refund, Avalo kept service fee.',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error processing goodwill refund:', error);
     throw new functions.https.HttpsError('internal', error.message || 'Failed to process goodwill refund');
@@ -216,10 +234,13 @@ export const getRefundPolicy = functions.https.onCall(async (request) => {
 
     const policy = calculateRefundPolicy(meetingStart, cancellationTime);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       policy,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error calculating refund policy:', error);
     throw new functions.https.HttpsError('internal', error.message || 'Failed to calculate refund policy');
@@ -265,7 +286,7 @@ export const calculateBookingPayment = functions.https.onCall(async (request) =>
  * Scheduled function to auto-complete meetings
  * Runs every 30 minutes to check for meetings that have ended
  */
-export const autoCompleteMeetings = functions.pubsub.schedule('every 30 minutes').onRun(async (context) => {
+export const autoCompleteMeetings = onSchedule("every 30 minutes", async (event) => {
   const now = new Date();
   const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
 
@@ -302,7 +323,7 @@ export const autoCompleteMeetings = functions.pubsub.schedule('every 30 minutes'
  * Scheduled function to send reminders for upcoming meetings
  * Runs every hour
  */
-export const sendMeetingReminders = functions.pubsub.schedule('every 1 hours').onRun(async (context) => {
+export const sendMeetingReminders = onSchedule("every 1 hours", async (event) => {
   const now = new Date();
   const in24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 

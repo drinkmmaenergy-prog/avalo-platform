@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import axios from 'axios';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -37,9 +37,7 @@ interface PayoutRequest {
 }
 
 // Process pending payouts (scheduled function - runs every hour)
-export const processPendingPayouts = functions.pubsub
-  .schedule('0 * * * *')
-  .onRun(async (context) => {
+export const processPendingPayouts = onSchedule("0 * * * *", async (event) => {
     const pendingPayouts = await db.collection('payoutRequests')
       .where('status', '==', 'pending')
       .limit(100)
@@ -433,7 +431,10 @@ export const verifyPayoutMethod = functions.https.onCall(async (request) => {
         });
     }
 
-    return { verified, errorMessage };
+    console.log('Scheduled job result:', { verified, errorMessage });
+
+
+    return;
   } catch (error) {
     console.error('Error verifying payout method:', error);
     throw new functions.https.HttpsError('internal', 'Failed to verify payout method');
@@ -512,7 +513,10 @@ export const cancelPayout = functions.https.onCall(async (request) => {
     // Refund tokens
     await refundFailedPayout(payout);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   } catch (error) {
     console.error('Error canceling payout:', error);
     throw error;

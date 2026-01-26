@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -175,7 +175,7 @@ export const pack385_launchPayoutSafetyFilter = functions.https.onCall(async (re
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     requestId: requestRef.id,
     effectiveAmount,
@@ -184,7 +184,10 @@ export const pack385_launchPayoutSafetyFilter = functions.https.onCall(async (re
     safetyChecks,
     releaseDate: releaseDate?.toISOString(),
     message: getPayoutMessage(safetyChecks, releaseDate)
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -431,7 +434,10 @@ export const pack385_approvePayoutRequest = functions.https.onCall(async (reques
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  return { success: true, requestId };
+  console.log('Scheduled job result:', { success: true, requestId });
+
+
+  return;
 });
 
 /**
@@ -476,15 +482,16 @@ export const pack385_rejectPayoutRequest = functions.https.onCall(async (request
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  return { success: true, requestId };
+  console.log('Scheduled job result:', { success: true, requestId });
+
+
+  return;
 });
 
 /**
  * Background job: Process delayed payouts
  */
-export const pack385_processDelayedPayouts = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack385_processDelayedPayouts = onSchedule("every 24 hours", async (event) => {
     const now = new Date();
 
     // Get payouts ready for release
@@ -514,9 +521,7 @@ export const pack385_processDelayedPayouts = functions.pubsub
 /**
  * Background job: Release fraud buffers
  */
-export const pack385_releaseFraudBuffers = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack385_releaseFraudBuffers = onSchedule("every 24 hours", async (event) => {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
     // Get old buffers ready for release

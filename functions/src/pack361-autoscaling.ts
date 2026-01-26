@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { HttpsError, auth, onCall, timestamp } from './runtime';
+import { HttpsError, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 // ============================================
 // TYPES
@@ -182,7 +182,7 @@ export async function collectServiceMetrics(
     .get();
   
   if (!metricsDoc.exists) {
-    return {
+    console.log('Scheduled job result:', {
       serviceName,
       cpuUsage: 0,
       memoryUsage: 0,
@@ -190,7 +190,9 @@ export async function collectServiceMetrics(
       requestsPerSecond: 0,
       errorRate: 0,
       timestamp: Date.now(),
-    };
+    });
+
+    return;
   }
   
   return metricsDoc.data() as ScalingMetrics;
@@ -221,7 +223,10 @@ export const updateMetrics = functions.https.onCall(async (request) => {
     // Check if scaling is needed
     await evaluateScaling(data.serviceName);
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -458,7 +463,10 @@ export const enableBurstProtection = functions.https.onCall(async (request) => {
     
     console.log(`🚀 Burst protection enabled: ${data.trigger}`);
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -488,7 +496,10 @@ export const disableBurstProtection = functions.https.onCall(async (request) => 
     
     console.log("🔒 Burst protection disabled");
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -499,9 +510,7 @@ export const disableBurstProtection = functions.https.onCall(async (request) => 
 /**
  * Regular scaling evaluation
  */
-export const evaluateAllServices = functions.pubsub
-  .schedule("every 1 minutes")
-  .onRun(async (context) => {
+export const evaluateAllServices = onSchedule("every 1 minutes", async (event) => {
     console.log("📊 Evaluating scaling for all services...");
     
     const services = Object.keys(SCALING_RULES);
@@ -516,9 +525,7 @@ export const evaluateAllServices = functions.pubsub
 /**
  * Detect viral traffic and enable burst protection
  */
-export const detectViralTraffic = functions.pubsub
-  .schedule("every 5 minutes")
-  .onRun(async (context) => {
+export const detectViralTraffic = onSchedule("every 5 minutes", async (event) => {
     const db = admin.firestore();
     
     // Get request rate over last 5 minutes
@@ -703,6 +710,9 @@ export const manualScale = functions.https.onCall(async (request) => {
       `⚙️ Manual scaling: ${data.serviceName} → ${data.instances} instances`
     );
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );

@@ -9,7 +9,7 @@
  * - No public visibility of feedback data
  */
 
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
@@ -18,7 +18,7 @@ import {
   UserFeedbackEvent,
   FEATURE_KEYS,
 } from './pack110-types';
-import { admin, functions, timestamp } from './runtime';
+import { admin, functions, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -110,7 +110,7 @@ async function aggregateFeedback(
     
     if (eventsSnapshot.empty) {
       logger.info(`No feedback found for ${featureKey} in the last ${periodDays} days`);
-      return null;
+      return;
     }
     
     // Aggregate metrics
@@ -204,7 +204,7 @@ async function aggregateFeedback(
     return insights;
   } catch (error: any) {
     logger.error(`Error aggregating feedback for ${featureKey}`, error);
-    return null;
+    return;
   }
 }
 

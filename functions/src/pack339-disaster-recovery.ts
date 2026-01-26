@@ -19,7 +19,7 @@ import * as functions from 'firebase-functions';
 import { db, admin } from './init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { Storage } from '@google-cloud/storage';
-import { HttpsError, auth, functionsConfig, onCall, storage, timestamp } from './runtime';
+import { HttpsError, auth, functionsConfig, onCall, storage, timestamp, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES
@@ -187,10 +187,7 @@ async function calculateCurrentRPO(): Promise<number> {
  * Run incremental backup (every 15 minutes)
  * Callable function for Cloud Scheduler
  */
-export const pack339_runIncrementalBackup = functions
-  .runWith({ timeoutSeconds: 540, memory: '2GB' })
-  .pubsub.schedule('every 15 minutes')
-  .onRun(async (context) => {
+export const pack339_runIncrementalBackup = onSchedule("every 15 minutes", async (event) => {
     const backupId = `incremental_${Date.now()}`;
     
     try {
@@ -233,7 +230,10 @@ export const pack339_runIncrementalBackup = functions
         await triggerRPOBreachAlert(rpoMinutes);
       }
 
-      return { success: true, backupId, rpoMinutes };
+      console.log('Scheduled job result:', { success: true, backupId, rpoMinutes });
+
+
+      return;
     } catch (error: any) {
       console.error(`[Pack339] Incremental backup failed:`, error);
 
@@ -245,7 +245,10 @@ export const pack339_runIncrementalBackup = functions
 
       await triggerBackupFailureAlert(backupId, error.message);
 
-      return { success: false, error: error.message };
+      console.log('Scheduled job result:', { success: false, error: error.message });
+
+
+      return;
     }
   });
 
@@ -253,11 +256,7 @@ export const pack339_runIncrementalBackup = functions
  * Run daily full backup (includes storage media)
  * Callable function for Cloud Scheduler
  */
-export const pack339_runDailyBackup = functions
-  .runWith({ timeoutSeconds: 540, memory: '2GB' })
-  .pubsub.schedule('every day 03:00')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack339_runDailyBackup = onSchedule({ schedule: "every day 03:00", timeZone: "UTC" }, async (event) => {
     const backupId = `daily_${Date.now()}`;
     
     try {
@@ -292,7 +291,10 @@ export const pack339_runDailyBackup = functions
 
       console.log(`[Pack339] Daily backup completed: ${backupId}`);
 
-      return { success: true, backupId };
+      console.log('Scheduled job result:', { success: true, backupId });
+
+
+      return;
     } catch (error: any) {
       console.error(`[Pack339] Daily backup failed:`, error);
 
@@ -304,7 +306,10 @@ export const pack339_runDailyBackup = functions
 
       await triggerBackupFailureAlert(backupId, error.message);
 
-      return { success: false, error: error.message };
+      console.log('Scheduled job result:', { success: false, error: error.message });
+
+
+      return;
     }
   });
 
@@ -388,13 +393,16 @@ export const pack339_simulateDisasterRecovery = functions
         lastTestResult: validationResults.valid ? 'PASS' : 'FAIL',
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         snapshotId,
         validation: validationResults,
         restoreSimulation,
         estimatedRTOMinutes: RECOVERY_PRIORITY_ORDER.length * 10,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error(`[Pack339] DR simulation failed:`, error);
       
@@ -533,12 +541,15 @@ export const pack339_applyLegalHold = functions.https.onCall(async (request) => 
 
       console.log(`[Pack339] Legal hold applied: ${holdId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         holdId,
         userId: userId || null,
         reason,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error(`[Pack339] Failed to apply legal hold:`, error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -612,10 +623,13 @@ export const pack339_removeLegalHold = functions.https.onCall(async (request) =>
 
       console.log(`[Pack339] Legal hold removed: ${holdId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         holdId,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error(`[Pack339] Failed to remove legal hold:`, error);
       
@@ -684,10 +698,13 @@ export const pack339_toggleRegulatorLock = functions.https.onCall(async (request
         await deactivateRegulatorLock(request.auth.uid);
       }
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         isRegulatorLockActive: activate,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error(`[Pack339] Failed to toggle regulator lock:`, error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -853,12 +870,15 @@ export const pack339_requestEvidenceExport = functions.https.onCall(async (reque
       // Trigger background processing (would be a separate function)
       // For now, we just create the job
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         jobId,
         type,
         status: 'PENDING',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error(`[Pack339] Failed to request evidence export:`, error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -903,7 +923,10 @@ export const pack339_processEvidenceExport = functions
 
       console.log(`[Pack339] Evidence export completed: ${jobId}`);
 
-      return { success: true, jobId };
+      console.log('Scheduled job result:', { success: true, jobId });
+
+
+      return;
     } catch (error: any) {
       console.error(`[Pack339] Evidence export failed:`, error);
 
@@ -913,7 +936,10 @@ export const pack339_processEvidenceExport = functions
         errorMessage: error.message,
       });
 
-      return { success: false, error: error.message };
+      console.log('Scheduled job result:', { success: false, error: error.message });
+
+
+      return;
     }
   });
 
@@ -1156,15 +1182,17 @@ export const pack339_getRegulatorLockStatus = functions.https.onCall(async (requ
       const lockDoc = await db.collection('regulatorLockStates').doc('GLOBAL').get();
       
       if (!lockDoc.exists) {
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           isRegulatorLockActive: false,
-        };
+        });
+
+        return;
       }
 
       const lockState = lockDoc.data() as RegulatorLockState;
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         isRegulatorLockActive: lockState.isRegulatorLockActive,
         activatedAt: lockState.activatedAt
@@ -1172,7 +1200,10 @@ export const pack339_getRegulatorLockStatus = functions.https.onCall(async (requ
           : null,
         activatedBy: lockState.activatedBy,
         reason: lockState.reason,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       throw new functions.https.HttpsError('internal', error.message);
     }
@@ -1272,10 +1303,13 @@ export const pack339_initializeDisasterRecoveryPlans = functions.https.onCall(as
 
       console.log('[Pack339] Disaster recovery plans initialized');
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Disaster recovery plans initialized',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       throw new functions.https.HttpsError('internal', error.message);
     }

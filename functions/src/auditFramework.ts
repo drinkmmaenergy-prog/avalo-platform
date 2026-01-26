@@ -564,7 +564,9 @@ export const runAccessibilityAuditV1 = onCall(
       const passed = criteria.filter((c) => c.status === "pass").length;
       const total = criteria.length;
       const score = total > 0 ? Math.round((passed / total) * 100) : 100;
-      return { score, passed, total };
+      console.log('Scheduled job result:', { score, passed, total });
+
+      return;
     };
 
     const breakdown = {

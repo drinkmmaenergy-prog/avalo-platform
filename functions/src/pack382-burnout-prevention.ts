@@ -13,7 +13,7 @@ import {
   CreatorEarningProfile,
 } from './types/pack382-types';
 import { v4 as uuidv4 } from 'uuid';
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -554,10 +554,7 @@ export const pack382_resolveBurnout = functions.https.onCall(async (request) => 
 /**
  * Scheduled job: Daily burnout monitoring
  */
-export const pack382_dailyBurnoutMonitoring = functions.pubsub
-  .schedule('0 1 * * *') // 1 AM daily
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack382_dailyBurnoutMonitoring = onSchedule({ schedule: "0 1 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[PACK382] Starting daily burnout monitoring...');
 
     // Get active creators

@@ -11,7 +11,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -131,11 +131,14 @@ export const pack383_submitKYC = functions.https.onCall(async (request) => {
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         status: 'pending',
         message: 'KYC verification submitted for review',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('Error submitting KYC:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -216,14 +219,17 @@ export const pack383_runAMLCheck = functions.https.onCall(async (request) => {
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         screeningId,
         status: amlResult.status,
         riskLevel: amlResult.riskLevel,
         blocked: amlResult.status === 'blocked',
         requiresReview: amlResult.status === 'review',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('Error running AML check:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -301,14 +307,17 @@ export const pack383_runSanctionsScreening = functions.https.onCall(async (reque
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         screeningId,
         status: sanctionsResult.status,
         matchScore: sanctionsResult.matchScore,
         blocked: sanctionsResult.status === 'match',
         requiresReview: sanctionsResult.status === 'potential_match',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('Error running sanctions screening:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -359,10 +368,13 @@ export const pack383_blockHighRiskPayout = functions.https.onCall(async (request
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Payout blocked successfully',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('Error blocking payout:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -373,9 +385,7 @@ export const pack383_blockHighRiskPayout = functions.https.onCall(async (request
 /**
  * Scheduled: Auto-run sanctions screening for new/updated users
  */
-export const pack383_autoSanctionsScreening = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack383_autoSanctionsScreening = onSchedule("every 24 hours", async (event) => {
     try {
       // Get users created in last 24 hours or with updated KYC
       const yesterday = new Date();
@@ -389,7 +399,7 @@ export const pack383_autoSanctionsScreening = functions.pubsub
 
       if (recentKYCSnapshot.empty) {
         console.log('No recent KYC profiles to screen');
-        return null;
+        return;
       }
 
       const screeningPromises = recentKYCSnapshot.docs.map(async (kycDoc) => {
@@ -448,10 +458,10 @@ export const pack383_autoSanctionsScreening = functions.pubsub
       await Promise.all(screeningPromises);
 
       console.log(`Auto-screened ${recentKYCSnapshot.size} users for sanctions`);
-      return null;
+      return;
     } catch (error) {
       console.error('Error in auto sanctions screening:', error);
-      return null;
+      return;
     }
   });
 

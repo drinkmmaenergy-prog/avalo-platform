@@ -11,7 +11,7 @@
 
 import { onCall } from 'firebase-functions/v2/https';
 import { onDocumentCreated, onDocumentDeleted } from 'firebase-functions/v2/firestore';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp, generateId } from './init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
@@ -23,7 +23,7 @@ import {
   AccessToken,
 } from './pack113-types';
 import { validateAccessToken, hasScope } from './pack113-api-gateway';
-import { admin, auth, functions, increment } from './runtime';
+import { admin, auth, functions, increment, onSchedule } from './runtime';
 
 const crypto = require('crypto');
 const fetch = require('node-fetch');
@@ -112,11 +112,14 @@ export const subscribeWebhook = onCall(
       eventType,
     });
 
-    return {
+    console.log('Scheduled job result:', {
       subscriptionId,
       secret, // Return secret once for signature verification
       status: 'created',
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -153,7 +156,7 @@ export const listWebhookSubscriptions = onCall(
 
     const subscriptions = subscriptionsSnapshot.docs.map(doc => {
       const sub = doc.data() as WebhookSubscription;
-      return {
+      console.log('Scheduled job result:', {
         subscriptionId: sub.subscriptionId,
         eventType: sub.eventType,
         callbackUrl: sub.callbackUrl,
@@ -162,7 +165,9 @@ export const listWebhookSubscriptions = onCall(
         failureCount: sub.failureCount,
         lastTriggeredAt: sub.lastTriggeredAt,
         createdAt: sub.createdAt,
-      };
+      });
+
+      return;
     });
 
     return { subscriptions };
@@ -212,7 +217,10 @@ export const unsubscribeWebhook = onCall(
       userId: tokenData.userId,
     });
 
-    return { deleted: true, subscriptionId };
+    console.log('Scheduled job result:', { deleted: true, subscriptionId });
+
+
+    return;
   }
 );
 
@@ -261,7 +269,9 @@ async function deliverWebhook(
     });
 
     if (response.ok) {
-      return { success: true, statusCode: response.status };
+      console.log('Scheduled job result:', { success: true, statusCode: response.status });
+
+      return;
     } else {
       return {
         success: false,
@@ -270,10 +280,12 @@ async function deliverWebhook(
       };
     }
   } catch (error: any) {
-    return {
+    console.log('Scheduled job result:', {
       success: false,
       error: error.message || 'Network error',
-    };
+    });
+
+    return;
   }
 }
 
@@ -420,7 +432,7 @@ export const retryFailedWebhooks = onSchedule(
       }
 
       logger.info(`Retried ${pendingDeliveries.size} webhook deliveries`);
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error retrying webhooks', error);
       throw error;
@@ -443,7 +455,7 @@ export const onContentPublished = onDocumentCreated(
   async (event) => {
     const post = event.data?.data();
     if (!post || !post.postedViaAPI) {
-      return null; // Only trigger for API-posted content
+      return; // Only trigger for API-posted content
     }
 
     const authorId = post.authorId;
@@ -471,7 +483,7 @@ export const onContentPublished = onDocumentCreated(
       await createWebhookDelivery(subscription, 'CONTENT_PUBLISHED', payload);
     }
 
-    return null;
+    return;
   }
 );
 
@@ -486,7 +498,7 @@ export const onContentDeleted = onDocumentDeleted(
   async (event) => {
     const post = event.data?.data();
     if (!post || !post.postedViaAPI) {
-      return null;
+      return;
     }
 
     const authorId = post.authorId;
@@ -513,7 +525,7 @@ export const onContentDeleted = onDocumentDeleted(
       await createWebhookDelivery(subscription, 'CONTENT_DELETED', payload);
     }
 
-    return null;
+    return;
   }
 );
 
@@ -528,7 +540,7 @@ export const onNewFollower = onDocumentCreated(
   async (event) => {
     const follow = event.data?.data();
     if (!follow) {
-      return null;
+      return;
     }
 
     const creatorId = follow.followedUserId;
@@ -553,7 +565,7 @@ export const onNewFollower = onDocumentCreated(
       await createWebhookDelivery(subscription, 'NEW_FOLLOWER', payload);
     }
 
-    return null;
+    return;
   }
 );
 
@@ -582,7 +594,7 @@ export const cleanupOldWebhookDeliveries = onSchedule(
       await batch.commit();
 
       logger.info(`Cleaned up ${oldDeliveries.size} old webhook deliveries`);
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error cleaning up webhook deliveries', error);
       throw error;

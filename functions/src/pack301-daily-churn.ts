@@ -18,7 +18,7 @@ import {
 } from './pack301-retention-types';
 import { enqueueNotification } from './pack293-notification-service';
 import { writeAuditLog } from './pack296-audit-helpers';
-import { HttpsError, Timestamp, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -26,10 +26,7 @@ const db = admin.firestore();
  * Scheduled function: Runs daily at 2 AM UTC
  * Recalculates churn risk and segment for all active users
  */
-export const dailyChurnRecalculation = functions.pubsub
-  .schedule('0 2 * * *') // Daily at 2 AM UTC
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dailyChurnRecalculation = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[ChurnDaily] Starting daily churn recalculation');
 
     try {

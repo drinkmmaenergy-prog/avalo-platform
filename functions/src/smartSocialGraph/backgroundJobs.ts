@@ -19,7 +19,7 @@ import {
   identifyGuaranteedSlotCreators,
   grantGuaranteedSlots,
 } from './shadowDensityControl';
-import { admin, timestamp } from '../runtime';
+import { admin, timestamp, logger, onSchedule } from '../runtime';
 
 // ============================================================================
 // LOGGER
@@ -39,10 +39,7 @@ const logger = {
  * Scheduled job: Refresh discovery scores daily
  * Runs at 02:00 UTC every day
  */
-export const dailyDiscoveryRefresh = functions.pubsub
-  .schedule('0 2 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dailyDiscoveryRefresh = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     const jobId = `refresh_${Date.now()}`;
     
     logger.info(`Starting daily discovery refresh job ${jobId}`);
@@ -126,10 +123,7 @@ export const dailyDiscoveryRefresh = functions.pubsub
  * Scheduled job: Scan for flirt manipulation and safety violations
  * Runs every 6 hours
  */
-export const safetyComplianceScan = functions.pubsub
-  .schedule('0 */6 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const safetyComplianceScan = onSchedule({ schedule: "0 */6 * * *", timeZone: "UTC" }, async (event) => {
     const jobId = `safety_scan_${Date.now()}`;
     
     logger.info(`Starting safety compliance scan ${jobId}`);
@@ -186,10 +180,7 @@ export const safetyComplianceScan = functions.pubsub
  * Scheduled job: Audit discovery fairness and diversity
  * Runs daily at 03:00 UTC
  */
-export const fairnessDiversityAudit = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const fairnessDiversityAudit = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     const auditId = `audit_${Date.now()}`;
     
     logger.info(`Starting fairness & diversity audit ${auditId}`);

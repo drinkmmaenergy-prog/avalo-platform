@@ -6,13 +6,13 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { db, serverTimestamp } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { EarningSourceType } from './creatorEarnings';
-import { admin, auth, functions, increment } from './runtime';
+import { admin, auth, functions, increment, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES
@@ -156,7 +156,7 @@ export const onLedgerEntryWrite = onDocumentWritten(
     // Only process new entries
     if (!data || !event.data?.after.exists) {
       logger.info('Skipping deleted or non-existent entry');
-      return null;
+      return;
     }
 
     const creatorId = data.creatorId;
@@ -219,11 +219,11 @@ export const onLedgerEntryWrite = onDocumentWritten(
         netTokens: netTokensCreator,
       });
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error updating daily analytics', error);
       // Don't throw - we don't want to fail the ledger write
-      return null;
+      return;
     }
   }
 );
@@ -321,7 +321,7 @@ export const rebuildCreatorAnalyticsSnapshots = onSchedule(
 
       logger.info(`Completed snapshot rebuild for ${processedCount} creators`);
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in snapshot rebuild', error);
       throw error;
@@ -395,7 +395,7 @@ async function buildCreatorSnapshot(
   const topPaidMedia = await getTopPaidMedia(creatorId, startDate, endDate);
   const topGifts = await getTopGifts(creatorId, startDate, endDate);
 
-  return {
+  console.log('Scheduled job result:', {
     last30_totalNet: totalNet,
     last30_totalPayers: uniquePayers.size,
     last30_totalEvents: totalEvents,
@@ -405,7 +405,10 @@ async function buildCreatorSnapshot(
     last30_topPaidMedia: topPaidMedia,
     last30_topGifts: topGifts,
     updatedAt: Timestamp.now(),
-  };
+  });
+
+
+  return;
 }
 
 /**
@@ -677,7 +680,7 @@ export const getCreatorAnalyticsOverview = onCall(
         }
       }
 
-      return {
+      console.log('Scheduled job result:', {
         totalEarnings: snapshot.last30_totalNet,
         payingUsers: snapshot.last30_totalPayers,
         paidInteractions: snapshot.last30_totalEvents,
@@ -690,7 +693,10 @@ export const getCreatorAnalyticsOverview = onCall(
         periodStart: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
         periodEnd: new Date(),
         lastUpdated: snapshot.updatedAt.toDate(),
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error fetching analytics overview', error);
       throw new HttpsError('internal', `Failed to fetch analytics: ${error.message}`);

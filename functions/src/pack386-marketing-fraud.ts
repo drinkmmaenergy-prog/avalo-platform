@@ -11,7 +11,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -40,9 +40,7 @@ interface FraudShieldResponse {
 // MARKETING FRAUD SHIELD (MAIN FUNCTION)
 // ============================================================================
 
-export const pack386_marketingFraudShield = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async () => {
+export const pack386_marketingFraudShield = onSchedule("every 1 hours", async (event) => {
     const signals: MarketingFraudSignal[] = [];
 
     // 1. Detect fake installs

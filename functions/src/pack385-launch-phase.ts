@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, arrayUnion, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, arrayUnion, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -201,11 +201,14 @@ export const pack385_setLaunchPhase = functions.https.onCall(async (request) => 
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     phase,
     config
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -293,9 +296,7 @@ export const pack385_getUserLimits = functions.https.onCall(async (request) => {
  * Background job: Enforce phase-based limits
  * Runs hourly to check and enforce limits
  */
-export const pack385_enforcePhaseLimits = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const pack385_enforcePhaseLimits = onSchedule("every 1 hours", async (event) => {
     const phaseDoc = await db.collection('launchPhases').doc('global').get();
     
     if (!phaseDoc.exists) return;

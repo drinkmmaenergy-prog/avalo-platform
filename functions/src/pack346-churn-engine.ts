@@ -7,7 +7,7 @@ import * as functions from "firebase-functions";
 import { db, serverTimestamp } from "./init.js";
 import { Timestamp } from "firebase-admin/firestore";
 import { ChurnRecord, ChurnCause } from "./pack346-types";
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
 
 /**
  * Track user activity and update churn score
@@ -23,7 +23,7 @@ export const trackUserActivity = functions.firestore
       totalSessions: 1, // Will be incremented
     });
 
-    return null;
+    return;
   });
 
 /**
@@ -40,7 +40,7 @@ export const trackRefundForChurn = functions.firestore
       totalRefunds: 1, // Will be incremented
     });
 
-    return null;
+    return;
   });
 
 /**
@@ -52,7 +52,7 @@ export const trackPanicForChurn = functions.firestore
     const event = snap.data();
     
     if (event.type !== "panic_button") {
-      return null;
+      return;
     }
 
     const userId = event.userId;
@@ -61,7 +61,7 @@ export const trackPanicForChurn = functions.firestore
       lastPanic: serverTimestamp() as any,
     });
 
-    return null;
+    return;
   });
 
 /**
@@ -80,7 +80,7 @@ export const trackCancelForChurn = functions.firestore
       });
     }
 
-    return null;
+    return;
   });
 
 /**
@@ -261,9 +261,7 @@ function inferChurnCause(record: ChurnRecord): ChurnCause {
 /**
  * Scheduled churn score recalculation
  */
-export const recalculateChurnScores = functions.pubsub
-  .schedule("every 6 hours")
-  .onRun(async (context) => {
+export const recalculateChurnScores = onSchedule("every 6 hours", async (event) => {
     // Get all active users
     const sevenDaysAgo = Timestamp.fromDate(
       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -289,16 +287,15 @@ export const recalculateChurnScores = functions.pubsub
     }
 
     console.log(`Recalculated churn scores for ${processed} users`);
-    return { processed };
+    console.log('Scheduled job result:', { processed });
+
+    return;
   });
 
 /**
  * Identify at-risk users and trigger retention campaigns
  */
-export const identifyAtRiskUsers = functions.pubsub
-  .schedule("0 10 * * *") // 10 AM daily
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const identifyAtRiskUsers = onSchedule({ schedule: "0 10 * * *", timeZone: "UTC" }, async (event) => {
     // Get users with high churn score who haven't been contacted recently
     const threeDaysAgo = Timestamp.fromDate(
       new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)

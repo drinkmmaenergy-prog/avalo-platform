@@ -15,7 +15,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, increment, FieldValue } from './init';
 import { logger } from 'firebase-functions/v1';
-import { HttpsError, Timestamp, arrayUnion, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, arrayUnion, auth, onCall, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // CONSTANTS & CONFIGURATION
@@ -236,7 +236,9 @@ export const initializeCreatorLevel = functions.https.onCall(async (request) => 
 
   const existing = await levelRef.get();
   if (existing.exists) {
-    return { success: true, message: 'Level profile already exists', data: existing.data() };
+    console.log('Scheduled job result:', { success: true, message: 'Level profile already exists', data: existing.data() });
+
+    return;
   }
 
   const initialProfile: CreatorLevelProfile = {
@@ -275,7 +277,10 @@ export const initializeCreatorLevel = functions.https.onCall(async (request) => 
 
   logger.info(`Initialized creator level for ${creatorId}`);
 
-  return { success: true, message: 'Creator level initialized', data: initialProfile };
+  console.log('Scheduled job result:', { success: true, message: 'Creator level initialized', data: initialProfile });
+
+
+  return;
 });
 
 /**
@@ -388,12 +393,15 @@ export const recordLPActivity = functions.https.onCall(async (request) => {
     await updateCreatorLevel(creatorId, lpEarned, tokensEarned || 0);
   }
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     lpEarned,
     flagged: abuseDetected.flagged,
     message: abuseDetected.flagged ? 'Activity flagged for review' : 'LP recorded successfully',
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -489,7 +497,7 @@ function getNextLevelConfig(currentLevel: CreatorLevel): LevelConfig | null {
   const currentIndex = levels.indexOf(currentLevel);
   
   if (currentIndex === -1 || currentIndex === levels.length - 1) {
-    return null;
+    return;
   }
 
   return LEVEL_CONFIGS[levels[currentIndex + 1]];
@@ -631,10 +639,7 @@ export const activateBoost = functions.https.onCall(async (request) => {
 /**
  * Reset weekly boosts (scheduled function - runs every Monday 00:00 UTC)
  */
-export const resetWeeklyBoosts = functions.pubsub
-  .schedule('0 0 * * 1')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const resetWeeklyBoosts = onSchedule({ schedule: "0 0 * * 1", timeZone: "UTC" }, async (event) => {
     const rewardsSnapshot = await db.collection('creatorRewards').get();
     const batch = db.batch();
     let count = 0;
@@ -656,16 +661,15 @@ export const resetWeeklyBoosts = functions.pubsub
     await batch.commit();
 
     logger.info(`Reset weekly boosts for ${count} creators`);
-    return { success: true, count };
+    console.log('Scheduled job result:', { success: true, count });
+
+    return;
   });
 
 /**
  * Expire inactive boosts (scheduled function - runs every hour)
  */
-export const expireInactiveBoosts = functions.pubsub
-  .schedule('0 * * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const expireInactiveBoosts = onSchedule({ schedule: "0 * * * *", timeZone: "UTC" }, async (event) => {
     const now = FirebaseFirestore.Timestamp.now();
     const boostsSnapshot = await db.collectionGroup('boosts')
       .where('active', '==', true)
@@ -683,7 +687,9 @@ export const expireInactiveBoosts = functions.pubsub
     await batch.commit();
 
     logger.info(`Expired ${count} boosts`);
-    return { success: true, count };
+    console.log('Scheduled job result:', { success: true, count });
+
+    return;
   });
 
 // ============================================================================
@@ -856,10 +862,7 @@ async function sendLevelUpNotification(
 /**
  * Send milestone notification (e.g., 80% to next level)
  */
-export const checkAndSendMilestoneNotifications = functions.pubsub
-  .schedule('0 */6 * * *') // Every 6 hours
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const checkAndSendMilestoneNotifications = onSchedule({ schedule: "0 */6 * * *", timeZone: "UTC" }, async (event) => {
     const levels = await db.collection('creatorLevels').get();
     const notifications: any[] = [];
 
@@ -891,7 +894,9 @@ export const checkAndSendMilestoneNotifications = functions.pubsub
     await batch.commit();
 
     logger.info(`Sent ${notifications.length} milestone notifications`);
-    return { success: true, count: notifications.length };
+    console.log('Scheduled job result:', { success: true, count: notifications.length });
+
+    return;
   });
 
 /**
@@ -987,7 +992,9 @@ export const getCreatorLevel = functions.https.onCall(async (request) => {
   const levelDoc = await db.collection('creatorLevels').doc(creatorId).get();
 
   if (!levelDoc.exists) {
-    return { success: false, message: 'Creator level not found' };
+    console.log('Scheduled job result:', { success: false, message: 'Creator level not found' });
+
+    return;
   }
 
   const profile = levelDoc.data() as CreatorLevelProfile;
@@ -997,11 +1004,14 @@ export const getCreatorLevel = functions.https.onCall(async (request) => {
     const rewardsDoc = await db.collection('creatorRewards').doc(creatorId).get();
     const rewards = rewardsDoc.exists ? rewardsDoc.data() : null;
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       profile,
       rewards,
-    };
+    });
+
+
+    return;
   } else {
     // Public view - only show level and badge
     return {
@@ -1052,11 +1062,14 @@ export const getLPActivityHistory = functions.https.onCall(async (request) => {
   const snapshot = await query.get();
   const activities = snapshot.docs.map(doc => doc.data());
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     activities,
     hasMore: snapshot.size === limit,
-  };
+  });
+
+
+  return;
 });
 
 // ============================================================================

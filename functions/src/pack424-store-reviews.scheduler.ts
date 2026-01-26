@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import { storeReviewService } from './pack424-store-reviews.service';
 import { reputationDefenseService } from './pack424-reputation-defense';
-import { HttpsError, admin, auth, logger, onCall, onRequest, timestamp } from './runtime';
+import { HttpsError, admin, auth, logger, onCall, onRequest, timestamp, onSchedule } from './runtime';
 
 // Configuration
 const APP_CONFIG = {
@@ -23,10 +23,7 @@ const APP_CONFIG = {
  * Scheduled function: Run every 30 minutes
  * Fetches latest reviews from both stores
  */
-export const scheduledReviewSync = functions.pubsub
-  .schedule('every 30 minutes')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const scheduledReviewSync = onSchedule({ schedule: "every 30 minutes", timeZone: "UTC" }, async (event) => {
     functions.logger.info('Starting scheduled review sync');
 
     try {
@@ -73,7 +70,10 @@ export const scheduledReviewSync = functions.pubsub
         functions.logger.info('No new reviews found');
       }
 
-      return { success: true, reviewsProcessed: allReviews.length };
+      console.log('Scheduled job result:', { success: true, reviewsProcessed: allReviews.length });
+
+
+      return;
     } catch (error) {
       functions.logger.error('Error in scheduled review sync:', error);
       throw error;
@@ -135,11 +135,14 @@ export const triggerReviewSync = functions.https.onCall(async (request) => {
       await reputationDefenseService.detectAttacks();
     }
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       reviewsProcessed: allReviews.length,
       platform,
-    };
+    });
+
+
+    return;
   } catch (error) {
     functions.logger.error('Error in manual review sync:', error);
     throw new functions.https.HttpsError('internal', 'Failed to sync reviews');
@@ -198,10 +201,7 @@ export const storeReviewWebhook = functions.https.onRequest(async (req, res) => 
  * Scheduled function: Daily review metrics calculation
  * Runs at 3 AM UTC
  */
-export const dailyReviewMetrics = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dailyReviewMetrics = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     functions.logger.info('Starting daily review metrics calculation');
 
     try {
@@ -230,7 +230,10 @@ export const dailyReviewMetrics = functions.pubsub
         reviews30d: stats30d.totalReviews,
       });
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error) {
       functions.logger.error('Error calculating daily metrics:', error);
       throw error;

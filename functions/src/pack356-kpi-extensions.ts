@@ -5,17 +5,14 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
 /**
  * Calculate and update all ad-related KPIs
  */
-export const updateAdKPIs = functions.pubsub
-  .schedule("0 6 * * *") // 6 AM UTC daily
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const updateAdKPIs = onSchedule({ schedule: "0 6 * * *", timeZone: "UTC" }, async (event) => {
     console.log("Updating ad acquisition KPIs...");
 
     try {

@@ -5,7 +5,7 @@
 
 import { db, serverTimestamp } from './init';
 import * as functions from 'firebase-functions';
-import { Timestamp, timestamp } from './runtime';
+import { Timestamp, timestamp, logger, onSchedule } from './runtime';
 
 export interface LoadMetrics {
   timestamp: FirebaseFirestore.Timestamp;
@@ -74,7 +74,7 @@ export async function collectMetrics(region: string): Promise<LoadMetrics> {
     const totalRequests = 1000;
     const errorRate = recentErrors.data().count / Math.max(totalRequests, 1);
 
-    return {
+    console.log('Scheduled job result:', {
       timestamp: serverTimestamp() as FirebaseFirestore.Timestamp,
       activeUsers: activeSessions.data().count,
       activeChatSessions: Math.floor(activeSessions.data().count * 0.3),
@@ -85,7 +85,10 @@ export async function collectMetrics(region: string): Promise<LoadMetrics> {
       avgResponseTimeMs: 200,
       errorRate,
       region,
-    };
+    });
+
+
+    return;
   } catch (error) {
     console.error('[TrafficMonitor] Error collecting metrics:', error);
     throw error;
@@ -167,9 +170,7 @@ export async function getLoadTrends(
 /**
  * Cloud Function: Monitor traffic (scheduled every minute)
  */
-export const monitorTraffic = functions.pubsub
-  .schedule('every 1 minutes')
-  .onRun(async (context) => {
+export const monitorTraffic = onSchedule("every 1 minutes", async (event) => {
     const regions = ['EU', 'US', 'ASIA'];
 
     for (const region of regions) {
@@ -195,7 +196,10 @@ export const monitorTraffic = functions.pubsub
       }
     }
 
-    return { success: true, timestamp: new Date().toISOString() };
+    console.log('Scheduled job result:', { success: true, timestamp: new Date().toISOString() });
+
+
+    return;
   });
 
 /**

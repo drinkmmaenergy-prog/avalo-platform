@@ -18,7 +18,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, increment } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
-import { HttpsError, admin, arrayUnion, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, arrayUnion, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 // =============================================================================
 // TYPES & INTERFACES
@@ -185,7 +185,7 @@ async function getCoupleDocument(userId1: string, userId2: string) {
     }
   }
   
-  return null;
+  return;
 }
 
 /**
@@ -290,10 +290,7 @@ function generateSuggestedAction(type: AnniversaryType, interval: AnniversaryInt
  * Check for anniversaries daily at 03:00 UTC
  * Processes all active couples and creates celebrations
  */
-export const checkDailyAnniversaries = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const checkDailyAnniversaries = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     console.log('🎉 Starting daily anniversary check...');
     
     const batch = db.batch();
@@ -397,7 +394,10 @@ export const checkDailyAnniversaries = functions.pubsub
       
       console.log(`✅ Anniversary check complete. Created ${celebrationsCreated} celebrations.`);
       
-      return { success: true, celebrationsCreated };
+      console.log('Scheduled job result:', { success: true, celebrationsCreated });
+
+      
+      return;
       
     } catch (error) {
       console.error('Error in daily anniversary check:', error);
@@ -421,7 +421,7 @@ function getOriginalEventDate(coupleData: any, eventType: AnniversaryType): Date
     case 'first_meeting':
       return coupleData.firstMeetingAt?.toDate() || null;
     default:
-      return null;
+      return;
   }
 }
 
@@ -720,7 +720,9 @@ export const getStreakStatus = functions.https.onCall(async (request) => {
     const streakDoc = await db.collection('anniversary_streaks').doc(coupleId).get();
     
     if (!streakDoc.exists) {
-      return { success: true, streak: null };
+      console.log('Scheduled job result:', { success: true, streak: null });
+
+      return;
     }
     
     const streakData = streakDoc.data();
@@ -767,10 +769,13 @@ export const toggleAnniversarySystem = functions.https.onCall(async (request) =>
       .collection('settings').doc('anniversary')
       .set({ enabled, updatedAt: serverTimestamp() }, { merge: true });
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: enabled ? 'Anniversary system enabled' : 'Anniversary system disabled'
-    };
+    });
+
+    
+    return;
     
   } catch (error) {
     console.error('Error toggling anniversary system:', error);
@@ -816,7 +821,10 @@ export const markCelebrationViewed = functions.https.onCall(async (request) => {
       lastInteractionAt: serverTimestamp()
     });
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
     
   } catch (error) {
     console.error('Error marking celebration viewed:', error);
@@ -894,7 +902,10 @@ export const initializeAnniversaryStatus = functions.https.onCall(async (request
     
     await db.collection('anniversary_status').doc(coupleId).set(status);
     
-    return { success: true, message: 'Anniversary status initialized' };
+    console.log('Scheduled job result:', { success: true, message: 'Anniversary status initialized' });
+
+    
+    return;
     
   } catch (error) {
     console.error('Error initializing anniversary status:', error);

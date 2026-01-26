@@ -8,7 +8,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import axios from 'axios';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -391,11 +391,14 @@ export const syncGoogleCampaign = functions.https.onCall(async (request) => {
       syncedAt: admin.firestore.Timestamp.now()
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       googleCampaignId: googleCampaign.campaignId,
       resourceName: googleCampaign.resourceName
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -429,7 +432,10 @@ export const updateGoogleCampaignBudget = functions.https.onCall(async (request)
   try {
     await api.updateCampaignBudget(resourceName, dailyBudget * 1000000);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
   }
@@ -508,10 +514,13 @@ export const uploadGoogleAssets = functions.https.onCall(async (request) => {
   try {
     const results = await api.addAssets(resourceName, assets);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       assetsAdded: results.length
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -522,19 +531,17 @@ export const uploadGoogleAssets = functions.https.onCall(async (request) => {
 // SYNC STATS FROM GOOGLE
 // ===========================
 
-export const syncGoogleStats = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const syncGoogleStats = onSchedule("every 1 hours", async (event) => {
     // Get all active Google campaigns
     const campaigns = await db.collection('ua_campaigns')
       .where('platform', '==', 'google')
       .where('status', '==', 'active')
       .get();
 
-    if (campaigns.empty) return null;
+    if (campaigns.empty) return;
 
     const googleAccountDoc = await db.collection('ua_platform_accounts').doc('google').get();
-    if (!googleAccountDoc.exists) return null;
+    if (!googleAccountDoc.exists) return;
 
     const googleAccount = googleAccountDoc.data() as GoogleAdsAccount;
     const api = new GoogleAdsAPI(googleAccount);
@@ -580,7 +587,7 @@ export const syncGoogleStats = functions.pubsub
       }
     }
 
-    return null;
+    return;
   });
 
 // ===========================
@@ -594,7 +601,9 @@ export const trackGoogleConversion = functions.https.onCall(async (request) => {
   // Get Google Ads account
   const googleAccountDoc = await db.collection('ua_platform_accounts').doc('google').get();
   if (!googleAccountDoc.exists) {
-    return { success: false, error: 'Google account not configured' };
+    console.log('Scheduled job result:', { success: false, error: 'Google account not configured' });
+
+    return;
   }
 
   const googleAccount = googleAccountDoc.data() as GoogleAdsAccount;
@@ -622,11 +631,16 @@ export const trackGoogleConversion = functions.https.onCall(async (request) => {
       { headers }
     );
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Google conversion tracking failed:', error);
-    return { success: false, error: error.message };
+    console.log('Scheduled job result:', { success: false, error: error.message });
+
+    return;
   }
 });
 

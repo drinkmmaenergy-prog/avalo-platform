@@ -24,7 +24,7 @@ import {
   unregisterDevice,
   updateDeviceLastSeen,
 } from './pack293-notification-delivery';
-import { HttpsError, Timestamp, auth, onCall } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -117,7 +117,9 @@ export const markNotificationRead = functions.https.onCall(async (request) => {
 
   try {
     await markNotificationAsRead(request.auth.uid, notificationId);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     console.error('Error marking notification as read:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -134,7 +136,9 @@ export const markAllNotificationsRead = functions.https.onCall(async (request) =
 
   try {
     await markAllNotificationsAsRead(request.auth.uid);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     console.error('Error marking all notifications as read:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -158,7 +162,9 @@ export const dismissNotificationFunc = functions.https.onCall(async (request) =>
 
   try {
     await dismissNotification(request.auth.uid, notificationId);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     console.error('Error dismissing notification:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -197,7 +203,9 @@ export const updateNotificationSettings = functions.https.onCall(async (request)
 
   try {
     await updateUserNotificationSettings(request.auth.uid, data);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     console.error('Error updating notification settings:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -228,7 +236,9 @@ export const registerDeviceForPush = functions.https.onCall(async (request) => {
 
   try {
     await registerDevice(request.auth.uid, deviceId, platform, pushToken);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     console.error('Error registering device:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -252,7 +262,9 @@ export const unregisterDeviceFromPush = functions.https.onCall(async (request) =
 
   try {
     await unregisterDevice(deviceId);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     console.error('Error unregistering device:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -276,7 +288,9 @@ export const updateDeviceActivity = functions.https.onCall(async (request) => {
 
   try {
     await updateDeviceLastSeen(deviceId);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   } catch (error: any) {
     console.error('Error updating device activity:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -322,9 +336,7 @@ export const processNotification = functions.firestore
  * Process batched notifications
  * Runs every 15 minutes to send queued low-priority notifications
  */
-export const processBatchedNotifications = functions.pubsub
-  .schedule('every 15 minutes')
-  .onRun(async (context) => {
+export const processBatchedNotifications = onSchedule("every 15 minutes", async (event) => {
     try {
       const now = admin.firestore.Timestamp.now();
 
@@ -339,7 +351,7 @@ export const processBatchedNotifications = functions.pubsub
 
       if (batchesSnap.empty) {
         console.log('No batched notifications to process');
-        return null;
+        return;
       }
 
       console.log(`Processing ${batchesSnap.size} batched notifications`);
@@ -371,10 +383,10 @@ export const processBatchedNotifications = functions.pubsub
 
       await Promise.all(promises);
 
-      return null;
+      return;
     } catch (error) {
       console.error('Error in processBatchedNotifications:', error);
-      return null;
+      return;
     }
   });
 
@@ -386,9 +398,7 @@ export const processBatchedNotifications = functions.pubsub
  * Clean up old dismissed/read notifications
  * Runs daily to remove notifications older than 90 days
  */
-export const cleanupOldNotifications = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const cleanupOldNotifications = onSchedule("every 24 hours", async (event) => {
     try {
       const ninetyDaysAgo = admin.firestore.Timestamp.fromMillis(
         Date.now() - 90 * 24 * 60 * 60 * 1000
@@ -405,7 +415,7 @@ export const cleanupOldNotifications = functions.pubsub
 
       if (snapshot.empty) {
         console.log('No old notifications to clean up');
-        return null;
+        return;
       }
 
       console.log(`Deleting ${snapshot.size} old notifications`);
@@ -419,10 +429,10 @@ export const cleanupOldNotifications = functions.pubsub
       await batch.commit();
 
       console.log(`Deleted ${snapshot.size} old notifications`);
-      return null;
+      return;
     } catch (error) {
       console.error('Error cleaning up old notifications:', error);
-      return null;
+      return;
     }
   });
 
@@ -458,7 +468,9 @@ export const sendNotificationToUser = functions.https.onCall(async (request) => 
 
   try {
     const notificationId = await enqueueNotification(payload);
-    return { success: true, notificationId };
+    console.log('Scheduled job result:', { success: true, notificationId });
+
+    return;
   } catch (error: any) {
     console.error('Error sending notification:', error);
     throw new functions.https.HttpsError('internal', error.message);

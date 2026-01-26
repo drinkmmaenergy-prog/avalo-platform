@@ -6,16 +6,13 @@
 import * as functions from "firebase-functions";
 import { db, admin } from "./init";
 import { SupportTicket, SupportTicketMessage, SupportSystemSettings } from "./pack335-support-types";
-import { Timestamp, timestamp } from './runtime';
+import { Timestamp, timestamp, logger, onSchedule } from './runtime';
 
 /**
  * Auto-close old tickets that have been resolved/rejected with no response
  * Runs daily at 2 AM UTC
  */
-export const pack335_autoCloseOldTickets = functions.pubsub
-  .schedule("0 2 * * *")
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const pack335_autoCloseOldTickets = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     console.log("Starting auto-close old tickets job");
     
     // Get settings
@@ -87,17 +84,17 @@ export const pack335_autoCloseOldTickets = functions.pubsub
       timestamp: now,
     });
     
-    return { ticketsClosed: count };
+    console.log('Scheduled job result:', { ticketsClosed: count });
+
+    
+    return;
   });
 
 /**
  * Send notifications for tickets awaiting user response
  * Runs daily at 10 AM UTC
  */
-export const pack335_notifyPendingTickets = functions.pubsub
-  .schedule("0 10 * * *")
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const pack335_notifyPendingTickets = onSchedule({ schedule: "0 10 * * *", timeZone: "UTC" }, async (event) => {
     console.log("Starting pending tickets notification job");
     
     const reminderWindowMs = 3 * 24 * 60 * 60 * 1000; // 3 days
@@ -146,17 +143,17 @@ export const pack335_notifyPendingTickets = functions.pubsub
     
     console.log(`Sent ${notificationsSent} notifications`);
     
-    return { notificationsSent };
+    console.log('Scheduled job result:', { notificationsSent });
+
+    
+    return;
   });
 
 /**
  * Generate ticket analytics
  * Runs daily at 3 AM UTC
  */
-export const pack335_generateTicketAnalytics = functions.pubsub
-  .schedule("0 3 * * *")
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const pack335_generateTicketAnalytics = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     console.log("Starting ticket analytics generation");
     
     const now = admin.firestore.Timestamp.now();
@@ -219,6 +216,5 @@ export const pack335_generateTicketAnalytics = functions.pubsub
     await db.collection("supportAnalytics").doc(now.toMillis().toString()).set(analytics);
     
     console.log("Ticket analytics generated", analytics);
-    
-    return analytics;
+    return;
   });

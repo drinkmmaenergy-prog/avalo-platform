@@ -30,6 +30,7 @@ export {
 
 // Re-export getFirestore and Timestamp from firebase-admin/firestore
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
+import { onSchedule } from './runtime';
 export { getFirestore, Timestamp };
 
 // Additional FieldValue helper not in init.ts

@@ -7,7 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -359,7 +359,7 @@ class RevenueForecastEngine {
     const revenues = forecasts.map(f => f.predictedRevenuePLN).sort((a, b) => a - b);
     const n = revenues.length;
 
-    return {
+    console.log('Scheduled job result:', {
       p50: revenues[Math.floor(n * 0.5)],
       p75: revenues[Math.floor(n * 0.75)],
       p90: revenues[Math.floor(n * 0.9)],
@@ -367,7 +367,10 @@ class RevenueForecastEngine {
       totalPayoutsPLN: forecasts.reduce((sum, f) => sum + f.predictedPayoutsPLN, 0),
       totalGrossProfitPLN: forecasts.reduce((sum, f) => sum + f.predictedGrossProfitPLN, 0),
       avgDailyRevenuePLN: revenues.reduce((sum, r) => sum + r, 0) / n,
-    };
+    });
+
+
+    return;
   }
 
   /**
@@ -422,11 +425,7 @@ const engine = new RevenueForecastEngine();
 /**
  * Scheduled function: Generate 30-day forecast daily at 2 AM
  */
-export const forecastRevenueNext30Days = functions
-  .region('europe-west1')
-  .pubsub.schedule('0 2 * * *')
-  .timeZone('Europe/Warsaw')
-  .onRun(async (context) => {
+export const forecastRevenueNext30Days = onSchedule({ schedule: "0 2 * * *", timeZone: "Europe/Warsaw", region: "europe-west1" }, async (event) => {
     console.log('[PACK 358] Generating 30-day revenue forecast');
     
     try {
@@ -436,7 +435,10 @@ export const forecastRevenueNext30Days = functions
         totalProfit: result.totalGrossProfitPLN,
       });
       
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK 358] Error generating 30-day forecast:', error);
       throw error;
@@ -446,11 +448,7 @@ export const forecastRevenueNext30Days = functions
 /**
  * Scheduled function: Generate 90-day forecast weekly on Monday at 3 AM
  */
-export const forecastRevenueNext90Days = functions
-  .region('europe-west1')
-  .pubsub.schedule('0 3 * * 1')
-  .timeZone('Europe/Warsaw')
-  .onRun(async (context) => {
+export const forecastRevenueNext90Days = onSchedule({ schedule: "0 3 * * 1", timeZone: "Europe/Warsaw", region: "europe-west1" }, async (event) => {
     console.log('[PACK 358] Generating 90-day revenue forecast');
     
     try {
@@ -460,7 +458,10 @@ export const forecastRevenueNext90Days = functions
         totalProfit: result.totalGrossProfitPLN,
       });
       
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK 358] Error generating 90-day forecast:', error);
       throw error;
@@ -470,11 +471,7 @@ export const forecastRevenueNext90Days = functions
 /**
  * Scheduled function: Generate 12-month forecast monthly on 1st at 4 AM
  */
-export const forecastRevenueNext12Months = functions
-  .region('europe-west1')
-  .pubsub.schedule('0 4 1 * *')
-  .timeZone('Europe/Warsaw')
-  .onRun(async (context) => {
+export const forecastRevenueNext12Months = onSchedule({ schedule: "0 4 1 * *", timeZone: "Europe/Warsaw", region: "europe-west1" }, async (event) => {
     console.log('[PACK 358] Generating 12-month revenue forecast');
     
     try {
@@ -484,7 +481,10 @@ export const forecastRevenueNext12Months = functions
         totalProfit: result.totalGrossProfitPLN,
       });
       
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK 358] Error generating 12-month forecast:', error);
       throw error;

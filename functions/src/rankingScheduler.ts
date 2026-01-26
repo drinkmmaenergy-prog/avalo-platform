@@ -10,21 +10,21 @@
 
 import * as functions from 'firebase-functions';
 import { applyTop10Bonuses, cleanupOldScores } from './rankingEngine';
-import { timestamp } from './runtime';
+import { timestamp, logger, onSchedule } from './runtime';
 
 /**
  * Main scheduler - runs every 10 minutes
  * Updates rankings and manages Top 10 bonuses
  */
-export const updateRankingsScheduler = functions.pubsub
-  .schedule('every 10 minutes')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const updateRankingsScheduler = onSchedule({ schedule: "every 10 minutes", timeZone: "UTC" }, async (event) => {
     try {
       // Apply/update Top 10 bonuses for daily worldwide ranking
       await applyTop10Bonuses();
       
-      return { success: true, timestamp: new Date().toISOString() };
+      console.log('Scheduled job result:', { success: true, timestamp: new Date().toISOString() });
+
+      
+      return;
     } catch (error) {
       throw new Error(`Ranking scheduler failed: ${error}`);
     }
@@ -34,14 +34,14 @@ export const updateRankingsScheduler = functions.pubsub
  * Cleanup scheduler - runs daily at midnight UTC
  * Removes expired score data to optimize database
  */
-export const cleanupRankingsScheduler = functions.pubsub
-  .schedule('every day 00:00')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const cleanupRankingsScheduler = onSchedule({ schedule: "every day 00:00", timeZone: "UTC" }, async (event) => {
     try {
       await cleanupOldScores();
       
-      return { success: true, timestamp: new Date().toISOString() };
+      console.log('Scheduled job result:', { success: true, timestamp: new Date().toISOString() });
+
+      
+      return;
     } catch (error) {
       throw new Error(`Cleanup scheduler failed: ${error}`);
     }

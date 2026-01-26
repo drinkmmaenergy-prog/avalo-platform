@@ -585,7 +585,10 @@ export const getSecurityIncidentsV1 = onCall(
       ...doc.data(),
     }));
 
-    return { incidents, total: incidents.length };
+    console.log('Scheduled job result:', { incidents, total: incidents.length });
+
+
+    return;
   }
 );
 
@@ -641,7 +644,10 @@ export const updateSecurityIncidentV1 = onCall(
 
     logger.info(`Incident ${incidentId} updated to ${status} by ${adminUid}`);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 

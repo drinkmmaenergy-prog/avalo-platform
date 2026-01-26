@@ -10,7 +10,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -318,9 +318,7 @@ export const pack386_updateAttributionOnPurchase = functions.firestore
 // DETECT CHURN (SCHEDULED)
 // ============================================================================
 
-export const pack386_detectChurn = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async () => {
+export const pack386_detectChurn = onSchedule("every 24 hours", async (event) => {
     // Users inactive for 30 days = churned
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);

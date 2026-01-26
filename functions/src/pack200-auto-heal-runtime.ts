@@ -15,7 +15,7 @@ import { db, serverTimestamp, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import { trackMetric } from './pack200-track-metrics';
-import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp, onSchedule } from './runtime';
 
 export type HealingAction = 
   | 'RESTART_WORKER'
@@ -503,9 +503,7 @@ async function logHealingEvent(input: Omit<HealingEvent, 'eventId' | 'timestamp'
 /**
  * Monitor system health and trigger healing
  */
-export const scheduled_autoHeal = functions.pubsub
-  .schedule('every 1 minutes')
-  .onRun(async (context) => {
+export const scheduled_autoHeal = onSchedule("every 1 minutes", async (event) => {
     try {
       const failedWorkers = await db.collection('queue_workers')
         .where('status', '==', 'FAILED')
@@ -574,11 +572,14 @@ export const admin_triggerHealing = onCall(async (request) => {
         throw new Error(`Unknown healing action: ${action}`);
     }
     
-    return {
+    console.log('Scheduled job result:', {
       success,
       message: success ? 'Healing action completed' : 'Healing action failed',
       timestamp: Date.now(),
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('[Healing] Manual trigger failed:', error);
     throw new HttpsError('internal', error.message);

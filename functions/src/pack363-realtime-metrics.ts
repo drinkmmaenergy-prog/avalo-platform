@@ -11,7 +11,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, Timestamp, arrayUnion, increment, onRequest, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, Timestamp, arrayUnion, increment, onRequest, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -110,9 +110,7 @@ async function logHighLatency(
 /**
  * Aggregate metrics hourly
  */
-export const aggregateMetricsHourly = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const aggregateMetricsHourly = onSchedule("every 1 hours", async (event) => {
     const now = new Date();
     const lastHour = new Date(now.getTime() - 60 * 60 * 1000);
     const period = lastHour.toISOString().slice(0, 13);
@@ -128,7 +126,7 @@ export const aggregateMetricsHourly = functions.pubsub
     }
 
     console.log(`[Metrics] Hourly aggregation completed for period: ${period}`);
-    return null;
+    return;
   });
 
 /**
@@ -313,11 +311,14 @@ function calculateHealthScore(metricsByChannel: Record<string, any[]>): any {
 
   const overallScore = Math.round(totalScore / channels.length);
 
-  return {
+  console.log('Scheduled job result:', {
     overall: overallScore,
     status: overallScore >= 90 ? 'healthy' : overallScore >= 70 ? 'degraded' : 'unhealthy',
     byChannel: channelScores
-  };
+  });
+
+
+  return;
 }
 
 // ============================================================================
@@ -327,9 +328,7 @@ function calculateHealthScore(metricsByChannel: Record<string, any[]>): any {
 /**
  * Clean up old metrics data
  */
-export const cleanupOldMetrics = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const cleanupOldMetrics = onSchedule("every 24 hours", async (event) => {
     const cutoffTime = admin.firestore.Timestamp.fromMillis(
       Date.now() - 7 * 24 * 60 * 60 * 1000 // 7 days ago
     );
@@ -363,7 +362,7 @@ export const cleanupOldMetrics = functions.pubsub
     }
 
     console.log(`[Metrics] Cleaned up ${totalDeleted} old metric records`);
-    return null;
+    return;
   });
 
 // ============================================================================

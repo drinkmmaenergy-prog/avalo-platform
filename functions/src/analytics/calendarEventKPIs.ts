@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
-import { Timestamp, increment } from '../runtime';
+import { Timestamp, increment, logger, onSchedule } from '../runtime';
 
 interface CalendarEventMetrics {
   date: string;
@@ -236,10 +236,7 @@ export const trackEventCompletion = functions.firestore
   });
 
 // Daily aggregation for calendar KPIs
-export const aggregateCalendarEventKPIs = functions.pubsub
-  .schedule('0 2 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const aggregateCalendarEventKPIs = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const dateStr = yesterday.toISOString().split('T')[0];

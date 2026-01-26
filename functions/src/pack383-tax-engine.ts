@@ -12,7 +12,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -267,10 +267,7 @@ export const pack383_generateTaxReport = functions.https.onCall(async (request) 
 /**
  * Scheduled: Generate annual tax reports
  */
-export const pack383_generateAnnualTaxReports = functions.pubsub
-  .schedule('0 0 1 1 *') // January 1st at midnight
-  .timeZone('America/New_York')
-  .onRun(async (context) => {
+export const pack383_generateAnnualTaxReports = onSchedule({ schedule: "0 0 1 1 *", timeZone: "America/New_York" }, async (event) => {
     try {
       const previousYear = new Date().getFullYear() - 1;
 

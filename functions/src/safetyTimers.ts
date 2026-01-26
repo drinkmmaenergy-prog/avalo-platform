@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -123,12 +123,15 @@ export const createSafetyTimer = functions.https.onCall(async (request) => {
 
     console.log(`[SafetyTimer] Created timer ${timerRef.id} for user ${userId}, expires at ${expiresAt.toDate()}`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       timerId: timerRef.id,
       expiresAt: expiresAt.toDate().toISOString(),
       message: 'Safety timer created successfully',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     if (error instanceof functions.https.HttpsError) {
       throw error;
@@ -195,10 +198,13 @@ export const checkInSafetyTimer = functions.https.onCall(async (request) => {
 
     console.log(`[SafetyTimer] User ${userId} checked in on timer ${timerId}`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Successfully checked in',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     if (error instanceof functions.https.HttpsError) {
       throw error;
@@ -254,10 +260,13 @@ export const cancelSafetyTimer = functions.https.onCall(async (request) => {
 
     console.log(`[SafetyTimer] User ${userId} cancelled timer ${timerId}`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Timer cancelled successfully',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     if (error instanceof functions.https.HttpsError) {
       throw error;
@@ -336,11 +345,14 @@ export const triggerPanic = functions.https.onCall(async (request) => {
       console.log(`[SafetyTimer] Panic button triggered by ${userId}, notified ${trustedContacts.length} contacts`);
     }
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       eventId: eventRef.id,
       message: 'Panic alert sent successfully',
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('[SafetyTimer] Error triggering panic:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -378,7 +390,7 @@ export const getUserSafetyTimers = functions.https.onCall(async (request) => {
       const expiresAt = data.expiresAt.toDate().getTime();
       const remainingSeconds = Math.max(0, Math.floor((expiresAt - now) / 1000));
 
-      return {
+      console.log('Scheduled job result:', {
         timerId: doc.id,
         status: data.status,
         durationMinutes: Math.floor(data.durationSeconds / 60),
@@ -387,13 +399,19 @@ export const getUserSafetyTimers = functions.https.onCall(async (request) => {
         trustedContactsCount: data.trustedContacts?.length || 0,
         createdAt: data.createdAt.toDate().toISOString(),
         expiresAt: data.expiresAt.toDate().toISOString(),
-      };
+      });
+
+
+      return;
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       timers,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('[SafetyTimer] Error getting timers:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -436,7 +454,7 @@ export const getSafetyAlerts = functions.https.onCall(async (request) => {
         }
       }
 
-      return {
+      console.log('Scheduled job result:', {
         id: doc.id,
         type: eventData.type === 'panic' ? 'panic_button' : 'timer_expired',
         userId: eventData.userId,
@@ -447,15 +465,21 @@ export const getSafetyAlerts = functions.https.onCall(async (request) => {
         lastKnownLocation: eventData.lastKnownLocation || null,
         timerId: eventData.timerId || null,
         eventId: doc.id,
-      };
+      });
+
+
+      return;
     });
 
     const alerts = await Promise.all(alertsPromises);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       alerts,
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('[SafetyTimer] Error getting alerts:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -466,9 +490,7 @@ export const getSafetyAlerts = functions.https.onCall(async (request) => {
  * Scheduled function to check for expired timers
  * Runs every 1 minute
  */
-export const checkExpiredSafetyTimers = functions.pubsub
-  .schedule('every 1 minutes')
-  .onRun(async (context) => {
+export const checkExpiredSafetyTimers = onSchedule("every 1 minutes", async (event) => {
     const now = admin.firestore.Timestamp.now();
 
     try {
@@ -481,7 +503,7 @@ export const checkExpiredSafetyTimers = functions.pubsub
 
       if (expiredTimers.empty) {
         console.log('[SafetyTimer] No expired timers found');
-        return null;
+        return;
       }
 
       console.log(`[SafetyTimer] Found ${expiredTimers.size} expired timers`);
@@ -537,10 +559,10 @@ export const checkExpiredSafetyTimers = functions.pubsub
       await Promise.all(updatePromises);
 
       console.log(`[SafetyTimer] Processed ${expiredTimers.size} expired timers`);
-      return null;
+      return;
     } catch (error) {
       console.error('[SafetyTimer] Error checking expired timers:', error);
-      return null;
+      return;
     }
   });
 
@@ -548,10 +570,7 @@ export const checkExpiredSafetyTimers = functions.pubsub
  * Cleanup old safety records
  * Runs daily at 3 AM UTC
  */
-export const cleanupOldSafetyRecords = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const cleanupOldSafetyRecords = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     const cutoffDate = new admin.firestore.Timestamp(
       admin.firestore.Timestamp.now().seconds - TTL_DAYS * 24 * 60 * 60,
       0
@@ -582,9 +601,9 @@ export const cleanupOldSafetyRecords = functions.pubsub
         console.log(`[SafetyTimer] Deleted ${oldEvents.size} old events`);
       }
 
-      return null;
+      return;
     } catch (error) {
       console.error('[SafetyTimer] Error cleaning up old records:', error);
-      return null;
+      return;
     }
   });

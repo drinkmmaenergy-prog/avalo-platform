@@ -20,12 +20,12 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { logger } from 'firebase-functions/v2';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { canAppearInDiscovery } from './moderationEngine';
 import { createOrUpdateCaseFromReport } from './moderationEngine';
-import { admin, auth, functions, increment, serverTimestamp } from './runtime';
+import { admin, auth, functions, increment, serverTimestamp, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -432,11 +432,14 @@ export const pack323_likeContent = onCall(
 
       logger.info(`Unlike: ${uid} unliked ${contentType} ${contentId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         action: "unliked",
         contentId,
-      };
+      });
+
+
+      return;
     } else {
       // Like - create like and increment counter
       const likeRef = db.collection("feedLikes").doc();
@@ -460,12 +463,15 @@ export const pack323_likeContent = onCall(
 
       logger.info(`Like: ${uid} liked ${contentType} ${contentId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         action: "liked",
         contentId,
         likeId: likeRef.id,
-      };
+      });
+
+
+      return;
     }
   }
 );
@@ -630,11 +636,14 @@ export const pack323_reportContent = onCall(
 
     logger.info(`Content reported: ${contentId} (${contentType}) by ${uid} for ${reason}`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       reportId: reportRef.id,
       message: "Report submitted successfully",
-    };
+    });
+
+
+    return;
   }
 );
 

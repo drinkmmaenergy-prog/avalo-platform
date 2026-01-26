@@ -5,7 +5,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { logger } from 'firebase-functions/v2';
 import {
   getUserSubscription,
@@ -25,7 +25,7 @@ import {
   checkPurchaseFrequency,
 } from './pack278-purchase-validation';
 import { updateSubscription } from './pack278-subscription-service';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 /**
  * Get current user's subscription status
@@ -38,10 +38,13 @@ export const pack278_getSubscription = onCall(async (request) => {
   const userId = request.auth.uid;
   const subscription = await getUserSubscription(userId);
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     subscription,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -123,12 +126,15 @@ export const pack278_verifyIAP = onCall<{
     throw new HttpsError('internal', result.error || 'Receipt validation failed');
   }
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     tier: result.tier,
     expiresDate: result.expiresDate,
     transactionId: result.transactionId,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -146,10 +152,13 @@ export const pack278_cancelSubscription = onCall<{
   
   await deactivateSubscription(userId, reason);
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     message: 'Subscription cancelled successfully',
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -171,10 +180,13 @@ export const pack278_hasTier = onCall<{
   
   const hasTier = await hasSubscriptionTier(userId, tier);
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     hasTier,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -188,10 +200,13 @@ export const pack278_hasPremium = onCall(async (request) => {
   const userId = request.auth.uid;
   const hasPremium = await hasAnyPremiumTier(userId);
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     hasPremium,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -210,10 +225,13 @@ export const pack278_getMetrics = onCall(async (request) => {
   
   const metrics = await getSubscriptionMetrics();
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     metrics,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -345,10 +363,13 @@ export const pack278_stripeWebhook = onCall<{
   try {
     await handleStripeWebhook(eventType, subscriptionData);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Webhook processed',
-    };
+    });
+
+    
+    return;
   } catch (error) {
     logger.error('Webhook processing error:', error);
     throw new HttpsError('internal', 'Webhook processing failed');

@@ -12,7 +12,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { timestamp } from './runtime';
+import { timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -308,9 +308,7 @@ async function flagSuspiciousReview(reviewId: string, score: ReviewAuthenticityS
 /**
  * Detect coordinated negative campaigns and competitor attacks
  */
-export const detectAttackPatterns = functions.pubsub
-  .schedule('every 10 minutes')
-  .onRun(async () => {
+export const detectAttackPatterns = onSchedule("every 10 minutes", async (event) => {
     const db = admin.firestore();
     const now = Date.now();
     const oneHourAgo = now - (60 * 60 * 1000);
@@ -405,7 +403,7 @@ export const detectAttackPatterns = functions.pubsub
       await handleAttackPattern(attack);
     }
     
-    return { attacks: attacks.length };
+    return;
   });
 
 async function detectTextSimilarity(
@@ -590,9 +588,7 @@ async function alertAdmins(attack: AttackPattern) {
 /**
  * Cluster reviews by sentiment and category for targeted responses
  */
-export const clusterReviewSentiments = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async () => {
+export const clusterReviewSentiments = onSchedule("every 1 hours", async (event) => {
     const db = admin.firestore();
     const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
     
@@ -649,7 +645,7 @@ export const clusterReviewSentiments = functions.pubsub
       }
     });
     
-    return { clusters: clusters.length };
+    return;
   });
 
 function categorizeReview(text: string): SentimentCluster['category'] {

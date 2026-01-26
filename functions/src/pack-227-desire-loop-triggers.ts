@@ -16,7 +16,7 @@ import {
   setBreakupCooldown,
   setToxicCooldown,
 } from './pack-227-desire-loop-engine.js';
-import { HttpsError, admin, auth, db, onCall } from './runtime';
+import { HttpsError, admin, auth, db, onCall, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // SCHEDULED FUNCTIONS (CRON JOBS)
@@ -26,10 +26,7 @@ import { HttpsError, admin, auth, db, onCall } from './runtime';
  * Daily decay and cleanup - Runs at 3 AM UTC
  * Applies natural decay to all desire states
  */
-export const dailyDesireDecay = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dailyDesireDecay = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     console.log('Running daily desire decay...');
     
     try {
@@ -50,7 +47,9 @@ export const dailyDesireDecay = functions.pubsub
       }
       
       console.log(`Daily decay complete: ${processedCount} processed, ${errorCount} errors`);
-      return { success: true, processed: processedCount, errors: errorCount };
+      console.log('Scheduled job result:', { success: true, processed: processedCount, errors: errorCount });
+
+      return;
     } catch (error) {
       console.error('Daily decay failed:', error);
       throw error;
@@ -61,16 +60,15 @@ export const dailyDesireDecay = functions.pubsub
  * Daily snapshot creation - Runs at 2 AM UTC
  * Creates historical snapshots for analytics
  */
-export const dailyDesireSnapshot = functions.pubsub
-  .schedule('0 2 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dailyDesireSnapshot = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     console.log('Creating daily desire snapshots...');
     
     try {
       await createDailyDesireSnapshot();
       console.log('Daily snapshots created successfully');
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      return;
     } catch (error) {
       console.error('Snapshot creation failed:', error);
       throw error;
@@ -81,16 +79,15 @@ export const dailyDesireSnapshot = functions.pubsub
  * Cleanup expired data - Runs every 6 hours
  * Removes expired triggers and cooldowns
  */
-export const cleanupDesireLoopData = functions.pubsub
-  .schedule('0 */6 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const cleanupDesireLoopData = onSchedule({ schedule: "0 */6 * * *", timeZone: "UTC" }, async (event) => {
     console.log('Cleaning up expired desire loop data...');
     
     try {
       const result = await cleanupExpiredData();
       console.log(`Cleanup complete: ${result.triggers} triggers, ${result.cooldowns} cooldowns removed`);
-      return { success: true, ...result };
+      console.log('Scheduled job result:', { success: true, ...result });
+
+      return;
     } catch (error) {
       console.error('Cleanup failed:', error);
       throw error;
@@ -479,11 +476,14 @@ export const triggerDesireStateCheck = functions.https.onCall(async (request) =>
       }
     }
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       state,
       triggersGenerated: triggers.length,
-    };
+    });
+
+    
+    return;
   } catch (error) {
     console.error('Failed to check desire state:', error);
     throw new functions.https.HttpsError('internal', 'Failed to check desire state');

@@ -1,4 +1,5 @@
 import * as functions from 'firebase-functions';
+import { onSchedule } from '../runtime';
 import { db } from '../init';
 import { 
   detectConflictTrend,
@@ -72,9 +73,7 @@ export const onCommentCreated = functions.firestore
     }
   });
 
-export const monitorTrendVelocity = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async () => {
+export const monitorTrendVelocity = onSchedule("every 5 minutes", async (event) => {
     try {
       const trendsSnapshot = await db
         .collection('conflict_trends')

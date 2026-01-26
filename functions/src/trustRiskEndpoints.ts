@@ -18,7 +18,7 @@ import {
   TrustRiskError,
   EnforcementLevel,
 } from "./types/trustRisk.types";
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // USER FUNCTIONS
@@ -40,7 +40,9 @@ export const trustRisk_getUserProfile = functions.https.onCall(async (request) =
 
     try {
       const profile = await getTrustProfileForClient(userId);
-      return { success: true, profile };
+      console.log('Scheduled job result:', { success: true, profile });
+
+      return;
     } catch (error: any) {
       console.error("Error in trustRisk_getUserProfile:", error);
       
@@ -84,7 +86,9 @@ export const trustRisk_logEvent = functions.https.onCall(async (request) => {
 
     try {
       await logTrustEvent({ userId, type, weightOverride, meta });
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      return;
     } catch (error: any) {
       console.error("Error in trustRisk_logEvent:", error);
       throw new functions.https.HttpsError(
@@ -121,12 +125,14 @@ export const trustRisk_recalculate = functions.https.onCall(async (request) => {
 
     try {
       const profile = await recalculateUserRisk(userId);
-      return { 
+      console.log('Scheduled job result:', { 
         success: true, 
         riskScore: profile.riskScore,
         enforcementLevel: profile.enforcementLevel,
         flags: profile.flags,
-      };
+      });
+
+      return;
     } catch (error: any) {
       console.error("Error in trustRisk_recalculate:", error);
       throw new functions.https.HttpsError(
@@ -198,7 +204,10 @@ export const trustRisk_admin_applyOverride = functions.https.onCall(async (reque
         overrideEnforcement
       );
 
-      return { success: true, message: "Manual override applied" };
+      console.log('Scheduled job result:', { success: true, message: "Manual override applied" });
+
+
+      return;
     } catch (error: any) {
       console.error("Error in trustRisk_admin_applyOverride:", error);
       
@@ -246,7 +255,9 @@ export const trustRisk_admin_removeOverride = functions.https.onCall(async (requ
 
     try {
       await removeManualOverride(userId, adminId);
-      return { success: true, message: "Manual override removed" };
+      console.log('Scheduled job result:', { success: true, message: "Manual override removed" });
+
+      return;
     } catch (error: any) {
       console.error("Error in trustRisk_admin_removeOverride:", error);
       
@@ -274,10 +285,7 @@ export const trustRisk_admin_removeOverride = functions.https.onCall(async (requ
  * Scheduled function: Apply good behavior decay
  * Runs daily at 2 AM UTC
  */
-export const trustRisk_scheduledDecay = functions.pubsub
-  .schedule("0 2 * * *")
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const trustRisk_scheduledDecay = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     try {
       const batchSize = 100;
       let totalDecayed = 0;
@@ -300,7 +308,10 @@ export const trustRisk_scheduledDecay = functions.pubsub
         `[TrustRisk] Scheduled decay completed: ${totalDecayed} users processed`
       );
 
-      return { success: true, totalDecayed };
+      console.log('Scheduled job result:', { success: true, totalDecayed });
+
+
+      return;
     } catch (error: any) {
       console.error("[TrustRisk] Error in scheduled decay:", error);
       throw error;
@@ -312,10 +323,7 @@ export const trustRisk_scheduledDecay = functions.pubsub
  * Runs weekly on Sunday at 3 AM UTC
  * Use sparingly - for fixing inconsistencies or after config changes
  */
-export const trustRisk_scheduledRebuild = functions.pubsub
-  .schedule("0 3 * * 0")
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const trustRisk_scheduledRebuild = onSchedule({ schedule: "0 3 * * 0", timeZone: "UTC" }, async (event) => {
     try {
       const batchSize = 50;
       let totalRebuilt = 0;
@@ -338,7 +346,10 @@ export const trustRisk_scheduledRebuild = functions.pubsub
         `[TrustRisk] Scheduled rebuild completed: ${totalRebuilt} users processed`
       );
 
-      return { success: true, totalRebuilt };
+      console.log('Scheduled job result:', { success: true, totalRebuilt });
+
+
+      return;
     } catch (error: any) {
       console.error("[TrustRisk] Error in scheduled rebuild:", error);
       throw error;
@@ -365,7 +376,9 @@ export const trustRisk_admin_triggerDecay = functions.https.onCall(async (reques
 
     try {
       const decayed = await applyGoodBehaviorDecay(batchSize);
-      return { success: true, decayed };
+      console.log('Scheduled job result:', { success: true, decayed });
+
+      return;
     } catch (error: any) {
       console.error("Error in trustRisk_admin_triggerDecay:", error);
       throw new functions.https.HttpsError(
@@ -396,7 +409,9 @@ export const trustRisk_admin_triggerRebuild = functions.https.onCall(async (requ
 
     try {
       const rebuilt = await rebuildAllRiskScores(batchSize);
-      return { success: true, rebuilt };
+      console.log('Scheduled job result:', { success: true, rebuilt });
+
+      return;
     } catch (error: any) {
       console.error("Error in trustRisk_admin_triggerRebuild:", error);
       throw new functions.https.HttpsError(

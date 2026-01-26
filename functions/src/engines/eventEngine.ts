@@ -140,10 +140,13 @@ export const enqueueEventCallable = onCall(
         uid,
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         eventId,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error("Error enqueuing event:", error);
       throw new HttpsError("internal", `Failed to enqueue event: ${error.message}`);

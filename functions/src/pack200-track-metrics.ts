@@ -13,7 +13,7 @@
 import { db, serverTimestamp, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
-import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 export type MetricLayer = 
   | 'MOBILE' 
@@ -194,7 +194,7 @@ export async function aggregateMetrics(
       .where('timestamp', '>=', Timestamp.fromMillis(windowStart))
       .get();
     
-    if (snapshot.empty) return null;
+    if (snapshot.empty) return;
     
     const values = snapshot.docs
       .map(doc => doc.data().value)
@@ -232,7 +232,7 @@ export async function aggregateMetrics(
     return aggregated;
   } catch (error) {
     console.error('[Metrics] Failed to aggregate metrics:', error);
-    return null;
+    return;
   }
 }
 
@@ -277,7 +277,10 @@ export const trackMobileMetrics = functions.https.onCall(async (request) => {
     
     await batch.commit();
     
-    return { success: true, tracked: metrics.length };
+    console.log('Scheduled job result:', { success: true, tracked: metrics.length });
+
+    
+    return;
   } catch (error: any) {
     console.error('[Metrics] Error tracking mobile metrics:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -331,13 +334,16 @@ export const getMetricsDashboard = functions.https.onCall(async (request) => {
       }
     }
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       metricsByLayer: Object.fromEntries(metricsByLayer),
       criticalCount: criticalMetrics.length,
       totalMetrics: snapshot.size,
       timeRange,
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('[Metrics] Error getting dashboard:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -347,9 +353,7 @@ export const getMetricsDashboard = functions.https.onCall(async (request) => {
 /**
  * Scheduled function to aggregate metrics every 5 minutes
  */
-export const scheduled_aggregateMetrics = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const scheduled_aggregateMetrics = onSchedule("every 5 minutes", async (event) => {
     try {
       const layers: MetricLayer[] = ['MOBILE', 'API', 'FUNCTIONS', 'FIRESTORE', 'STORAGE', 'STRIPE', 'AI_ENGINES'];
       const types: MetricType[] = ['LATENCY', 'ERROR_RATE', 'THROUGHPUT'];

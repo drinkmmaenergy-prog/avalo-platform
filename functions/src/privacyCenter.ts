@@ -9,12 +9,12 @@
  */
 
 import { onCall } from "firebase-functions/v2/https";
-import { onSchedule } from "firebase-functions/v2/scheduler";
+
 import { HttpsError } from "firebase-functions/v2/https";
 import { db, auth, storage, admin, serverTimestamp, increment, generateId } from "./init";
 import { v4 as uuidv4 } from "uuid";
 import { Timestamp } from "firebase-admin/firestore";
-import { functions, timestamp } from './runtime';
+import { functions, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES
@@ -190,12 +190,12 @@ export const getExportStatus = onCall(
         .get();
 
       if (jobSnapshot.empty) {
-        return null;
+        return;
       }
 
       const job = jobSnapshot.docs[0].data() as ExportJob;
 
-      return {
+      console.log('Scheduled job result:', {
         jobId: job.jobId,
         status: job.status,
         requestedAt: job.requestedAt.toMillis(),
@@ -205,7 +205,10 @@ export const getExportStatus = onCall(
         expiresAt: job.expiresAt?.toMillis() || null,
         fileSizeBytes: job.fileSizeBytes || null,
         errorMessage: job.errorMessage || null,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error("Error fetching export status:", error);
       throw new HttpsError("internal", "Failed to fetch export status");
@@ -389,7 +392,7 @@ export const getDeletionStatus = onCall(
         .get();
 
       if (jobSnapshot.empty) {
-        return null;
+        return;
       }
 
       const job = jobSnapshot.docs[0].data() as DeletionJob;
@@ -456,7 +459,10 @@ export const reviewDeletion = onCall(
           lastUpdatedAt: now,
         });
 
-        return { success: true, status: "SCHEDULED" };
+        console.log('Scheduled job result:', { success: true, status: "SCHEDULED" });
+
+
+        return;
       } else {
         await jobDoc.ref.update({
           status: "REJECTED",
@@ -467,7 +473,10 @@ export const reviewDeletion = onCall(
           lastUpdatedAt: now,
         });
 
-        return { success: true, status: "REJECTED" };
+        console.log('Scheduled job result:', { success: true, status: "REJECTED" });
+
+
+        return;
       }
     } catch (error: any) {
       console.error("Error reviewing deletion job:", error);
@@ -767,12 +776,12 @@ async function checkDeletionSafetyFlags(userId: string): Promise<{
 
 async function gatherProfileData(userId: string): Promise<any> {
   const profile = await db.collection("profiles").doc(userId).get();
-  if (!profile.exists) return null;
+  if (!profile.exists) return;
 
   const data = profile.data();
   
   // Return minimal profile data
-  return {
+  console.log('Scheduled job result:', {
     userId,
     displayName: data?.displayName,
     bio: data?.bio,
@@ -781,7 +790,9 @@ async function gatherProfileData(userId: string): Promise<any> {
     location: data?.location,
     createdAt: data?.createdAt?.toMillis(),
     // Do NOT include auth email or sensitive fields
-  };
+  });
+
+  return;
 }
 
 async function gatherPreferencesData(userId: string): Promise<any> {
@@ -824,12 +835,14 @@ async function gatherMediaMetadata(userId: string): Promise<any> {
 
   return media.docs.map((doc) => {
     const data = doc.data();
-    return {
+    console.log('Scheduled job result:', {
       mediaId: doc.id,
       type: data.type,
       createdAt: data.createdAt?.toMillis(),
       // Do NOT include actual file URLs
-    };
+    });
+
+    return;
   });
 }
 
@@ -842,13 +855,15 @@ async function gatherReservations(userId: string): Promise<any> {
 
   return reservations.docs.map((doc) => {
     const data = doc.data();
-    return {
+    console.log('Scheduled job result:', {
       reservationId: doc.id,
       status: data.status,
       startTime: data.startTime?.toMillis(),
       endTime: data.endTime?.toMillis(),
       createdAt: data.createdAt?.toMillis(),
-    };
+    });
+
+    return;
   });
 }
 
@@ -862,14 +877,16 @@ async function gatherPayoutsSummary(userId: string): Promise<any> {
 
   return payouts.docs.map((doc) => {
     const data = doc.data();
-    return {
+    console.log('Scheduled job result:', {
       payoutId: doc.id,
       status: data.status,
       amountCents: data.amountCents,
       currency: data.currency,
       createdAt: data.createdAt?.toMillis(),
       // Do NOT include bank details
-    };
+    });
+
+    return;
   });
 }
 

@@ -12,7 +12,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
-import { HttpsError, auth, onCall, timestamp } from './runtime';
+import { HttpsError, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -180,11 +180,14 @@ export const createPressRelease = functions.https.onCall(async (request) => {
       timestamp: Timestamp.now()
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       pressReleaseId: pressReleaseRef.id,
       pressRelease
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error creating press release:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -417,15 +420,13 @@ export const distributePressRelease = functions.https.onCall(async (request) => 
  * Monitor press mentions and sentiment
  * Scheduled function that runs periodically
  */
-export const pressMonitoringDaemon = functions.pubsub
-  .schedule('every 30 minutes')
-  .onRun(async (context) => {
+export const pressMonitoringDaemon = onSchedule("every 30 minutes", async (event) => {
     try {
       // Check feature flag
       const flagDoc = await db.collection('featureFlags').doc('pr.engine.enabled').get();
       if (!flagDoc.exists || !flagDoc.data()?.enabled) {
         console.log('PR engine disabled, skipping monitoring');
-        return null;
+        return;
       }
 
       // Get monitoring sources
@@ -502,10 +503,10 @@ export const pressMonitoringDaemon = functions.pubsub
       });
 
       console.log(`Press monitoring complete: ${mentionCount} mentions, avg sentiment: ${avgSentiment}`);
-      return null;
+      return;
     } catch (error) {
       console.error('Error in press monitoring daemon:', error);
-      return null;
+      return;
     }
   });
 
@@ -561,11 +562,14 @@ export const addPressMention = functions.https.onCall(async (request) => {
 
     await mentionRef.set(mention);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       mentionId: mentionRef.id,
       sentiment: sentimentAnalysis
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error adding press mention:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -697,10 +701,13 @@ export const addPressContact = functions.https.onCall(async (request) => {
 
     await contactRef.set(contact);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       contactId: contactRef.id
-    };
+    });
+
+
+    return;
   } catch (error: any) {
     console.error('Error adding press contact:', error);
     throw new functions.https.HttpsError('internal', error.message);

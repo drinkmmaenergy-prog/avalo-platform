@@ -12,7 +12,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -60,7 +60,7 @@ export const pack383_convertTokenToLocalFiat = functions.https.onCall(async (req
         );
       }
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         tokens,
         plnAmount,
@@ -69,7 +69,10 @@ export const pack383_convertTokenToLocalFiat = functions.https.onCall(async (req
         fxRate: rate,
         fees: appliedFees,
         minimumPayout: minPayout,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('Error converting token to fiat:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -88,7 +91,7 @@ export const pack383_getFXRate = functions.https.onCall(async (request) => {
       // Check cache first
       const cachedRate = await getCachedFXRate(from, to);
       if (cachedRate && cachedRate.validUntil.toDate() > new Date()) {
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           from,
           to,
@@ -96,7 +99,9 @@ export const pack383_getFXRate = functions.https.onCall(async (request) => {
           inverseRate: cachedRate.inverseRate,
           source: cachedRate.source,
           cachedAt: cachedRate.timestamp.toDate().toISOString(),
-        };
+        });
+
+        return;
       }
 
       // Fetch fresh rate
@@ -115,7 +120,7 @@ export const pack383_getFXRate = functions.https.onCall(async (request) => {
         ),
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         from,
         to,
@@ -123,7 +128,10 @@ export const pack383_getFXRate = functions.https.onCall(async (request) => {
         inverseRate: 1 / freshRate.rate,
         source: freshRate.source,
         fetchedAt: new Date().toISOString(),
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('Error getting FX rate:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -135,9 +143,7 @@ export const pack383_getFXRate = functions.https.onCall(async (request) => {
  * Update FX rates from external source
  * Scheduled function
  */
-export const pack383_updateFXRates = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const pack383_updateFXRates = onSchedule("every 1 hours", async (event) => {
     try {
       // Major currency pairs to update
       const currencyPairs = [
@@ -175,10 +181,10 @@ export const pack383_updateFXRates = functions.pubsub
       await Promise.all(updatePromises);
 
       console.log(`Updated ${currencyPairs.length} FX rates`);
-      return null;
+      return;
     } catch (error) {
       console.error('Error updating FX rates:', error);
-      return null;
+      return;
     }
   });
 
@@ -234,7 +240,7 @@ async function getCachedFXRate(from: string, to: string): Promise<FXRate | null>
     .get();
 
   if (snapshot.empty) {
-    return null;
+    return;
   }
 
   return snapshot.docs[0].data() as FXRate;

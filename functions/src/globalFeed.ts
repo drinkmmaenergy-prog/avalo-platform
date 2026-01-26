@@ -480,11 +480,14 @@ export const invalidateFeedCacheV1 = onCall(
         await invalidateCacheByTags([`feed`]);
       }
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         postId,
         message: "Feed cache invalidated",
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error("Error invalidating feed cache", { error, postId });
       throw new HttpsError("internal", `Failed to invalidate cache: ${error.message}`);

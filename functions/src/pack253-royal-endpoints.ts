@@ -4,7 +4,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db } from './init';
 import { logger } from 'firebase-functions/v2';
 import {
@@ -20,7 +20,7 @@ import {
   RoyalPricing,
   ROYAL_BENEFITS,
 } from './pack253-royal-types';
-import { auth, functions } from './runtime';
+import { auth, functions, onSchedule } from './runtime';
 
 /**
  * Get user's Royal status
@@ -38,7 +38,7 @@ export const getRoyalStatus = onCall(
       const statusDoc = await db.collection('royal_status').doc(userId).get();
       
       if (!statusDoc.exists) {
-        return null;
+        return;
       }
 
       return statusDoc.data() as RoyalStatus;
@@ -68,7 +68,7 @@ export const getRoyalProgress = onCall(
       const progressDoc = await db.collection('royal_progress').doc(userId).get();
       
       if (!progressDoc.exists) {
-        return null;
+        return;
       }
 
       return progressDoc.data() as RoyalProgress;
@@ -149,7 +149,10 @@ export const setRoyalChatPricing = onCall(
 
       logger.info(`Royal user ${userId} set chat price to ${chatPrice}`);
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error setting Royal chat pricing', error);
       throw new HttpsError('internal', `Failed to set chat pricing: ${error.message}`);
@@ -256,7 +259,10 @@ export const joinRoyalEvent = onCall(
 
       logger.info(`User ${userId} joined Royal event ${eventId}`);
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error joining Royal event', error);
       throw new HttpsError('internal', `Failed to join event: ${error.message}`);
@@ -376,7 +382,7 @@ export const updateAllRoyalStatusesDaily = onSchedule(
 
       logger.info(`Completed daily Royal status update: ${processedCount} users processed, ${errors} errors`);
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in daily Royal status update', error);
       throw error;
@@ -418,7 +424,7 @@ export const generateRoyalAnalyticsWeekly = onSchedule(
 
       logger.info(`Completed weekly Royal analytics: ${processedCount} users processed, ${errors} errors`);
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in weekly Royal analytics generation', error);
       throw error;

@@ -14,7 +14,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import {
@@ -31,7 +31,7 @@ import {
   SupporterSegment,
   SmartAlert
 } from './pack266-supporter-crm-types.js';
-import { admin, auth, functions, timestamp } from './runtime';
+import { admin, auth, functions, timestamp, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -162,13 +162,16 @@ export const getCRMInbox = onCall(
 
       const entries = await generateInboxEntries(db, creatorId, tab, limit);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         entries: entries.map(sanitizeSupporterData),
         count: entries.length,
         hasMore: entries.length >= limit,
         timestamp: Timestamp.now()
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting CRM inbox:', error);
       throw new HttpsError('internal', `Failed to get inbox: ${error.message}`);
@@ -255,11 +258,14 @@ export const getSupporterProfile = onCall(
         supporterId
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         profile: sanitizeSupporterData(profile),
         timestamp: Timestamp.now()
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting supporter profile:', error);
       throw new HttpsError('internal', `Failed to get profile: ${error.message}`);
@@ -297,11 +303,14 @@ export const getSupporterSignals = onCall(
     try {
       const signals = await calculateBehavioralSignals(db, creatorId, supporterId);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         signals: sanitizeSupporterData(signals),
         timestamp: Timestamp.now()
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting supporter signals:', error);
       throw new HttpsError('internal', `Failed to get signals: ${error.message}`);
@@ -397,12 +406,15 @@ export const executeCRMAction = onCall(
         result
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         actionId: actionRef.id,
         result,
         timestamp: Timestamp.now()
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error executing CRM action:', error);
       throw new HttpsError('internal', `Failed to execute action: ${error.message}`);
@@ -564,13 +576,16 @@ export const getSmartAlerts = onCall(
         ? alerts.length
         : alerts.filter(a => !a.readAt).length;
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         alerts,
         count: alerts.length,
         unreadCount,
         timestamp: Timestamp.now()
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting smart alerts:', error);
       throw new HttpsError('internal', `Failed to get alerts: ${error.message}`);
@@ -610,10 +625,13 @@ export const markAlertRead = onCall(
         readAt: Timestamp.now()
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         timestamp: Timestamp.now()
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error marking alert as read:', error);
       throw new HttpsError('internal', `Failed to mark alert: ${error.message}`);
@@ -653,10 +671,13 @@ export const dismissAlert = onCall(
         dismissedAt: Timestamp.now()
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         timestamp: Timestamp.now()
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error dismissing alert:', error);
       throw new HttpsError('internal', `Failed to dismiss alert: ${error.message}`);
@@ -717,18 +738,23 @@ export const getCRMSettings = onCall(
         };
 
         await db.doc(`crmSettings/${creatorId}`).set(defaultSettings);
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           settings: defaultSettings,
           timestamp: Timestamp.now()
-        };
+        });
+
+        return;
       }
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         settings: settingsDoc.data(),
         timestamp: Timestamp.now()
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting CRM settings:', error);
       throw new HttpsError('internal', `Failed to get settings: ${error.message}`);
@@ -773,11 +799,14 @@ export const updateCRMSettings = onCall(
         changes: Object.keys(settings)
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Settings updated',
         timestamp: Timestamp.now()
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error updating CRM settings:', error);
       throw new HttpsError('internal', `Failed to update settings: ${error.message}`);

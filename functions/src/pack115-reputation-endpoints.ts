@@ -11,7 +11,7 @@ import {
   getInternalReputationScore,
 } from './pack115-reputation-engine';
 import { getReputationDisclaimer } from './pack115-types';
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
 
 // ============================================================================
 // USER-FACING ENDPOINTS
@@ -240,10 +240,7 @@ export const reputation_admin_getAbuseAttempts = functions.https.onCall(async (r
  * Daily reputation score recalculation
  * Runs at 6 AM UTC daily to update all active users' reputation
  */
-export const reputation_dailyRecalculation = functions.pubsub
-  .schedule('0 6 * * *') // 6 AM UTC daily
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const reputation_dailyRecalculation = onSchedule({ schedule: "0 6 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[Reputation] Starting daily recalculation job');
 
     try {
@@ -310,10 +307,7 @@ export const reputation_dailyRecalculation = functions.pubsub
  * Cleanup old reputation audit logs
  * Runs weekly to remove audit logs older than 1 year
  */
-export const reputation_cleanupOldAuditLogs = functions.pubsub
-  .schedule('0 3 * * 0') // 3 AM UTC every Sunday
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const reputation_cleanupOldAuditLogs = onSchedule({ schedule: "0 3 * * 0", timeZone: "UTC" }, async (event) => {
     console.log('[Reputation] Starting audit log cleanup job');
 
     try {

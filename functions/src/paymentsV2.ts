@@ -607,12 +607,15 @@ export const purchaseTokensV2 = onCall(
         createdAt: FieldValue.serverTimestamp(),
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         transactionId,
         tokens: tokenAmount,
         status: "under_review",
-      };
+      });
+
+
+      return;
     }
 
     // Process payment (simplified - in production integrate with Stripe/Coinbase)
@@ -640,12 +643,15 @@ export const purchaseTokensV2 = onCall(
 
     logger.info(`User ${userId} purchased ${tokenAmount} tokens for ${amount} ${currency}`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       transactionId,
       tokens: tokenAmount,
       status: "completed",
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -741,10 +747,13 @@ export const getExchangeRatesV1 = onCall(
       }
     }
 
-    return {
+    console.log('Scheduled job result:', {
       rates,
       updatedAt: new Date().toISOString(),
-    };
+    });
+
+
+    return;
   }
 );
 

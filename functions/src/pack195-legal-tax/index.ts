@@ -5,6 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, admin } from '../init';
+import { onSchedule } from '../runtime';
 import {
   generateContract,
   signContract,
@@ -463,10 +464,7 @@ export const calculateTaxFunction = functions.https.onCall(async (request) => {
   }
 );
 
-export const monthlyTaxReportsScheduled = functions.pubsub
-  .schedule('0 1 1 * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const monthlyTaxReportsScheduled = onSchedule({ schedule: "0 1 1 * *", timeZone: "UTC" }, async (event) => {
     console.log('Running monthly tax reports generation...');
 
     const now = new Date();
@@ -502,13 +500,10 @@ export const monthlyTaxReportsScheduled = functions.pubsub
     }
 
     console.log(`Generated ${count} monthly tax reports`);
-    return null;
+    return;
   });
 
-export const quarterlyTaxReportsScheduled = functions.pubsub
-  .schedule('0 2 1 1,4,7,10 *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const quarterlyTaxReportsScheduled = onSchedule({ schedule: "0 2 1 1,4,7,10 *", timeZone: "UTC" }, async (event) => {
     console.log('Running quarterly tax reports generation...');
 
     const now = new Date();
@@ -544,13 +539,10 @@ export const quarterlyTaxReportsScheduled = functions.pubsub
     }
 
     console.log(`Generated ${count} quarterly tax reports`);
-    return null;
+    return;
   });
 
-export const contractExpirationRemindersScheduled = functions.pubsub
-  .schedule('0 9 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const contractExpirationRemindersScheduled = onSchedule({ schedule: "0 9 * * *", timeZone: "UTC" }, async (event) => {
     console.log('Checking for expiring contracts...');
 
     const now = new Date();
@@ -585,13 +577,10 @@ export const contractExpirationRemindersScheduled = functions.pubsub
 
     await batch.commit();
     console.log(`Sent ${contractsSnap.size} contract expiration reminders`);
-    return null;
+    return;
   });
 
-export const overdueInvoiceRemindersScheduled = functions.pubsub
-  .schedule('0 10 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const overdueInvoiceRemindersScheduled = onSchedule({ schedule: "0 10 * * *", timeZone: "UTC" }, async (event) => {
     console.log('Checking for overdue invoices...');
 
     const now = new Date();
@@ -630,5 +619,5 @@ export const overdueInvoiceRemindersScheduled = functions.pubsub
 
     await batch.commit();
     console.log(`Marked ${invoicesSnap.size} invoices as overdue`);
-    return null;
+    return;
   });

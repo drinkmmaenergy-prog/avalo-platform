@@ -5,7 +5,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import {
   requestConsent,
   pauseConsent,
@@ -30,7 +30,7 @@ import {
   cleanupExpiredVaults,
 } from './pack126-evidence-vault';
 import { getSafetyDashboard } from './pack126-safety-dashboard';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // UNIVERSAL CONSENT PROTOCOL ENDPOINTS
@@ -71,7 +71,10 @@ export const pack126_pauseConsent = onCall(async (request) => {
   
   await pauseConsent(userId, counterpartId, userId, reason);
   
-  return { success: true, message: 'Consent paused' };
+  console.log('Scheduled job result:', { success: true, message: 'Consent paused' });
+
+  
+  return;
 });
 
 export const pack126_revokeConsent = onCall(async (request) => {
@@ -88,7 +91,10 @@ export const pack126_revokeConsent = onCall(async (request) => {
   
   await revokeConsent(userId, counterpartId, userId, reason);
   
-  return { success: true, message: 'Consent revoked' };
+  console.log('Scheduled job result:', { success: true, message: 'Consent revoked' });
+
+  
+  return;
 });
 
 export const pack126_resumeConsent = onCall(async (request) => {
@@ -105,7 +111,10 @@ export const pack126_resumeConsent = onCall(async (request) => {
   
   await resumeConsent(userId, counterpartId, userId);
   
-  return { success: true, message: 'Consent resumed' };
+  console.log('Scheduled job result:', { success: true, message: 'Consent resumed' });
+
+  
+  return;
 });
 
 export const pack126_checkConsent = onCall(async (request) => {
@@ -143,7 +152,10 @@ export const pack126_getConsentRecord = onCall(async (request) => {
   
   const record = await getConsentRecord(userId, counterpartId);
   
-  return { success: true, record };
+  console.log('Scheduled job result:', { success: true, record });
+
+  
+  return;
 });
 
 export const pack126_getUserConsentsByState = onCall(async (request) => {
@@ -160,7 +172,10 @@ export const pack126_getUserConsentsByState = onCall(async (request) => {
   
   const records = await getUserConsentRecordsByState(userId, state);
   
-  return { success: true, count: records.length, records };
+  console.log('Scheduled job result:', { success: true, count: records.length, records });
+
+  
+  return;
 });
 
 // ============================================================================
@@ -191,20 +206,25 @@ export const pack126_reportUser = onCall(async (request) => {
   if (signals.length > 0) {
     const shield = await activateHarassmentShield(userId, reportedUserId, signals);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       shieldActivated: true,
       level: shield.level,
       message: 'Report received and protection activated',
-    };
+    });
+
+    
+    return;
   }
   
   // Otherwise, just log report (handled by existing report system)
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     shieldActivated: false,
     message: 'Report received',
-  };
+  });
+
+  return;
 });
 
 export const pack126_getActiveShield = onCall(async (request) => {
@@ -221,7 +241,10 @@ export const pack126_getActiveShield = onCall(async (request) => {
   
   const shield = await getActiveShield(userId, counterpartId);
   
-  return { success: true, shield };
+  console.log('Scheduled job result:', { success: true, shield });
+
+  
+  return;
 });
 
 // ============================================================================
@@ -236,7 +259,10 @@ export const pack126_getSafetyDashboard = onCall(async (request) => {
   
   const dashboard = await getSafetyDashboard(userId);
   
-  return { success: true, dashboard };
+  console.log('Scheduled job result:', { success: true, dashboard });
+
+  
+  return;
 });
 
 // ============================================================================
@@ -261,7 +287,10 @@ export const pack126_orchestrateRisk = onCall(async (request) => {
     counterpartId,
   });
   
-  return { success: true, result };
+  console.log('Scheduled job result:', { success: true, result });
+
+  
+  return;
 });
 
 // ============================================================================
@@ -285,7 +314,10 @@ export const pack126_admin_requestVaultAccess = onCall(async (request) => {
   
   const requestId = await requestVaultAccess(vaultId, moderatorId, reason, scope);
   
-  return { success: true, requestId };
+  console.log('Scheduled job result:', { success: true, requestId });
+
+  
+  return;
 });
 
 export const pack126_admin_approveVaultAccess = onCall(async (request) => {
@@ -304,7 +336,10 @@ export const pack126_admin_approveVaultAccess = onCall(async (request) => {
   
   await approveVaultAccess(vaultId, requestId, adminId, durationHours);
   
-  return { success: true, message: 'Access granted' };
+  console.log('Scheduled job result:', { success: true, message: 'Access granted' });
+
+  
+  return;
 });
 
 export const pack126_admin_accessVaultEvidence = onCall(async (request) => {
@@ -321,7 +356,10 @@ export const pack126_admin_accessVaultEvidence = onCall(async (request) => {
   
   const evidence = await accessVaultEvidence(vaultId, moderatorId);
   
-  return { success: true, evidence };
+  console.log('Scheduled job result:', { success: true, evidence });
+
+  
+  return;
 });
 
 // ============================================================================

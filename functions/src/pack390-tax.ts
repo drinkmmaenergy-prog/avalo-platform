@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -80,7 +80,7 @@ export const pack390_calculateVAT = functions.https.onCall(async (request) => {
       grossAmount = amount + vatAmount;
     }
     
-    return {
+    console.log('Scheduled job result:', {
       netAmount,
       vatAmount,
       grossAmount,
@@ -88,7 +88,10 @@ export const pack390_calculateVAT = functions.https.onCall(async (request) => {
       countryCode,
       reverseCharge,
       transactionType
-    };
+    });
+
+    
+    return;
     
   } catch (error) {
     console.error('VAT calculation error:', error);
@@ -117,13 +120,16 @@ export const pack390_calculatePlatformFee = functions.https.onCall(async (reques
     const platformFee = amount * feeRate;
     const creatorAmount = amount - platformFee;
     
-    return {
+    console.log('Scheduled job result:', {
       totalAmount: amount,
       platformFee,
       creatorAmount,
       feeRate,
       transactionType
-    };
+    });
+
+    
+    return;
     
   } catch (error) {
     console.error('Platform fee calculation error:', error);
@@ -400,11 +406,14 @@ export const pack390_generateCountryRevenue = functions.https.onCall(async (requ
       generatedBy: request.auth.uid
     });
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       breakdownId: breakdownRef.id,
       revenueByCountry
-    };
+    });
+
+    
+    return;
     
   } catch (error) {
     console.error('Country revenue generation error:', error);
@@ -420,10 +429,7 @@ export const pack390_generateCountryRevenue = functions.https.onCall(async (requ
  * Auto-generate quarterly tax reports
  * Runs on the 5th of Jan, Apr, Jul, Oct
  */
-export const pack390_autoGenerateQuarterlyReports = functions.pubsub
-  .schedule('0 2 5 1,4,7,10 *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack390_autoGenerateQuarterlyReports = onSchedule({ schedule: "0 2 5 1,4,7,10 *", timeZone: "UTC" }, async (event) => {
     try {
       const now = new Date();
       const year = now.getFullYear();
@@ -525,11 +531,14 @@ export const pack390_getTaxInfo = functions.https.onCall(async (request) => {
   const vatRate = VAT_RATES[countryCode] || VAT_RATES.DEFAULT;
   const isEU = isEUCountry(countryCode);
   
-  return {
+  console.log('Scheduled job result:', {
     countryCode,
     vatRate,
     isEU,
     reverseChargeAvailable: isEU,
     platformFees: PLATFORM_FEES
-  };
+  });
+
+  
+  return;
 });

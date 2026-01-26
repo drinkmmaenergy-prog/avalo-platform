@@ -14,7 +14,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { pack296_auditLog } from './pack296-audit';
 import { pack277_freezeWallet } from './pack277-wallet-engine';
-import { HttpsError, Timestamp, auth, onCall, storage } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, storage, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -158,12 +158,15 @@ export const pack388_requestDataExport = functions.https.onCall(async (request) 
       createdAt: admin.firestore.Timestamp.now()
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       requestId: requestRef.id,
       estimatedCompletionDate: deadline.toDate(),
       message: 'Data export request submitted. You will be notified when ready.'
-    };
+    });
+
+
+    return;
 
   } catch (error) {
     console.error('Error requesting data export:', error);
@@ -180,7 +183,7 @@ export const pack388_processDataExport = functions.firestore
     const task = snap.data();
     
     if (task.type !== 'PROCESS_DATA_EXPORT') {
-      return null;
+      return;
     }
 
     const { requestId, userId } = task;
@@ -265,7 +268,10 @@ export const pack388_processDataExport = functions.firestore
         metadata: { fileName, fileSize: userData.collections.length }
       });
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
 
     } catch (error) {
       console.error('Error processing data export:', error);
@@ -276,7 +282,7 @@ export const pack388_processDataExport = functions.firestore
       
       await snap.ref.update({ status: 'FAILED', error: error.message });
       
-      return null;
+      return;
     }
   });
 
@@ -381,12 +387,15 @@ export const pack388_executeRightToBeForgotten = functions.https.onCall(async (r
       createdAt: admin.firestore.Timestamp.now()
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       requestId: requestRef.id,
       scheduledDeletionDate: deadline.toDate(),
       message: 'Your account has been disabled. Data will be permanently deleted in 30 days unless you cancel this request.'
-    };
+    });
+
+
+    return;
 
   } catch (error) {
     console.error('Error executing right to be forgotten:', error);
@@ -397,9 +406,7 @@ export const pack388_executeRightToBeForgotten = functions.https.onCall(async (r
 /**
  * Execute data deletion (background function)
  */
-export const pack388_executeDataDeletion = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack388_executeDataDeletion = onSchedule("every 24 hours", async (event) => {
     const now = admin.firestore.Timestamp.now();
 
     // Find scheduled deletions due for execution
@@ -493,7 +500,7 @@ export const pack388_executeDataDeletion = functions.pubsub
     });
 
     await Promise.all(deletionPromises);
-    return null;
+    return;
   });
 
 /**
@@ -544,11 +551,14 @@ export const pack388_restrictProcessing = functions.https.onCall(async (request)
       metadata: { reason }
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       requestId: requestRef.id,
       message: 'Processing restriction applied to your account.'
-    };
+    });
+
+
+    return;
 
   } catch (error) {
     console.error('Error restricting processing:', error);
@@ -622,10 +632,13 @@ export const pack388_cancelDeletionRequest = functions.https.onCall(async (reque
       metadata: {}
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Deletion request cancelled. Your account has been restored.'
-    };
+    });
+
+
+    return;
 
   } catch (error) {
     console.error('Error cancelling deletion request:', error);

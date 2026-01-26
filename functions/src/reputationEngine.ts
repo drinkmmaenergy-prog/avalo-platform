@@ -168,11 +168,14 @@ export const submitReviewV1 = onCall(
 
     logger.info(`Review submitted: ${reviewId} by ${uid} for ${reviewedUserId} (${rating}⭐)`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       reviewId,
       trustLevelChanged: false, // Will be calculated async
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -308,7 +311,10 @@ export const reportReviewV1 = onCall(
 
     logger.info(`Review reported: ${reviewId} by ${uid} (${reason})`);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 

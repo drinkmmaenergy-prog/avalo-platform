@@ -18,7 +18,7 @@ import {
   DEFAULT_FRAUD_BY_SEVERITY,
   KpiEventType,
 } from '../../shared/types/kpi';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -30,10 +30,7 @@ const db = admin.firestore();
  * Main scheduled function - runs daily at 02:00 UTC
  * Computes metrics for the previous day
  */
-export const aggregateDailyKpis = functions.pubsub
-  .schedule('0 2 * * *') // Daily at 02:00 UTC
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const aggregateDailyKpis = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     try {
       // Calculate for yesterday (to ensure all data is complete)
       const yesterday = new Date();

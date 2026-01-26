@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { calculateTransactionTax } from './pack395-tax-engine';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp, z } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, z, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -477,10 +477,7 @@ export const getCreatorPayoutStatements = functions.https.onCall(async (request)
 /**
  * Generate monthly statements for all creators (scheduled)
  */
-export const generateMonthlyStatementsForAllCreators = functions.pubsub
-  .schedule('0 0 1 * *') // First day of each month at midnight
-  .timeZone('Europe/Warsaw')
-  .onRun(async (context) => {
+export const generateMonthlyStatementsForAllCreators = onSchedule({ schedule: "0 0 1 * *", timeZone: "Europe/Warsaw" }, async (event) => {
     console.log('Starting monthly statement generation...');
     
     // Get all verified creators

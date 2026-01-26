@@ -14,11 +14,11 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp, generateId, increment } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -269,10 +269,13 @@ export const acceptDealContract = onCall(
         creatorId,
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         dealId: contract.dealId,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error accepting contract', error);
       if (error instanceof HttpsError) throw error;
@@ -380,10 +383,13 @@ export const toggleDealStatus = onCall(
 
       logger.info(`Deal status toggled: ${dealId}`, { oldStatus: deal.status, newStatus });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         newStatus,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error toggling deal status', error);
       if (error instanceof HttpsError) throw error;
@@ -570,7 +576,7 @@ export const expireDealsDaily = onSchedule(
 
       if (expiredDeals.empty) {
         logger.info('No deals to expire');
-        return null;
+        return;
       }
 
       const batch = db.batch();
@@ -598,7 +604,7 @@ export const expireDealsDaily = onSchedule(
 
       logger.info(`Expired ${count} deals`);
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error expiring deals', error);
       throw error;
@@ -626,7 +632,7 @@ export const updateDealStatsDaily = onSchedule(
 
       if (activeDeals.empty) {
         logger.info('No active deals to update');
-        return null;
+        return;
       }
 
       let processedCount = 0;
@@ -664,7 +670,7 @@ export const updateDealStatsDaily = onSchedule(
 
       logger.info(`Updated stats for ${processedCount} deals`);
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error updating deal stats', error);
       throw error;

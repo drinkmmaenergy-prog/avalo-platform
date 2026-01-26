@@ -3,7 +3,7 @@
  */
 
 import { onRequest } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { auth } from './init.js';
 import {
   submitPostMeetingFeedback,
@@ -14,7 +14,7 @@ import {
   trackSuggestionInteraction,
   expireOldGlowStates
 } from './pack-230-post-meeting-glow.js';
-import { functions } from './runtime';
+import { functions, onSchedule } from './runtime';
 
 // ============================================================================
 // HTTP ENDPOINTS

@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -142,11 +142,14 @@ export const pack385_activateMarket = functions.https.onCall(async (request) => 
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     countryCode,
     config: marketConfig
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -228,11 +231,13 @@ export const pack385_getMarketConfig = functions.https.onCall(async (request) =>
   const marketDoc = await db.collection('marketActivation').doc(countryCode).get();
 
   if (!marketDoc.exists) {
-    return {
+    console.log('Scheduled job result:', {
       available: false,
       countryCode,
       reason: 'Market not yet activated'
-    };
+    });
+
+    return;
   }
 
   const config = marketDoc.data() as MarketConfig;
@@ -246,11 +251,14 @@ export const pack385_getMarketConfig = functions.https.onCall(async (request) =>
     };
   }
 
-  return {
+  console.log('Scheduled job result:', {
     available: true,
     countryCode,
     config
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -282,11 +290,14 @@ export const pack385_checkMarketFeature = functions.https.onCall(async (request)
 
   const featureEnabled = config.features[feature as keyof typeof config.features];
 
-  return {
+  console.log('Scheduled job result:', {
     available: featureEnabled,
     countryCode,
     feature
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -324,11 +335,14 @@ export const pack385_suspendMarket = functions.https.onCall(async (request) => {
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     countryCode,
     status: MarketStatus.SUSPENDED
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -355,9 +369,7 @@ export const pack385_getActiveMarkets = functions.https.onCall(async (request) =
 /**
  * Background job: Monitor market health
  */
-export const pack385_monitorMarketHealth = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async (context) => {
+export const pack385_monitorMarketHealth = onSchedule("every 6 hours", async (event) => {
     const marketsSnapshot = await db.collection('marketActivation')
       .where('status', '==', MarketStatus.ACTIVE)
       .get();

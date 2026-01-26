@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -23,10 +23,7 @@ export interface ROASAction {
  * Scheduled: Daily ROAS analysis and budget automation
  * Runs at 3 AM UTC daily
  */
-export const dailyROASOptimization = functions.pubsub
-  .schedule("0 3 * * *")
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const dailyROASOptimization = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     console.log("Starting daily ROAS optimization...");
 
     try {
@@ -67,7 +64,10 @@ export const dailyROASOptimization = functions.pubsub
         })),
       });
 
-      return { success: true, actionsCount: actions.length };
+      console.log('Scheduled job result:', { success: true, actionsCount: actions.length });
+
+
+      return;
     } catch (error) {
       console.error("Error in ROAS optimization:", error);
       throw error;
@@ -86,7 +86,7 @@ async function optimizeCampaignBudget(
   
   if (!performanceDoc.exists) {
     console.log(`No performance data for campaign ${campaignId}`);
-    return null;
+    return;
   }
 
   const performance = performanceDoc.data()!;
@@ -245,7 +245,10 @@ export const runManualROASOptimization = functions.https.onCall(async (request) 
       const campaign = campaignDoc.data()!;
       const action = await optimizeCampaignBudget(data.campaignId, campaign);
 
-      return { success: true, action };
+      console.log('Scheduled job result:', { success: true, action });
+
+
+      return;
     } catch (error) {
       console.error("Error in manual ROAS optimization:", error);
       throw new functions.https.HttpsError("internal", "Failed to optimize campaign");
@@ -344,10 +347,7 @@ export const getROASDashboard = functions.https.onCall(async (request) => {
 /**
  * Calculate country-level ROAS
  */
-export const calculateCountryROAS = functions.pubsub
-  .schedule("0 4 * * *") // 4 AM UTC daily
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const calculateCountryROAS = onSchedule({ schedule: "0 4 * * *", timeZone: "UTC" }, async (event) => {
     console.log("Calculating country-level ROAS...");
 
     try {

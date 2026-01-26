@@ -11,7 +11,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
-import { HttpsError, auth, increment, onCall } from './runtime';
+import { HttpsError, auth, increment, onCall, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -562,10 +562,7 @@ async function updateLifetimeStats(
  * Calculate and process influencer payouts
  * Scheduled monthly function
  */
-export const processInfluencerPayouts = functions.pubsub
-  .schedule('0 0 1 * *') // First day of each month
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const processInfluencerPayouts = onSchedule({ schedule: "0 0 1 * *", timeZone: "UTC" }, async (event) => {
     try {
       // Check feature flag
       const flagDoc = await db.collection('featureFlags').doc('influencer.engine.enabled').get();

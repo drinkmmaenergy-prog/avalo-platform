@@ -11,7 +11,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, logger, onSchedule } from './runtime';
 
 // Referral Status
 export enum ReferralStatus {
@@ -204,7 +204,10 @@ export const createReferral = functions.https.onCall(async (request) => {
     totalUses: admin.firestore.FieldValue.increment(1),
   });
 
-  return { success: true, referralId };
+  console.log('Scheduled job result:', { success: true, referralId });
+
+
+  return;
 });
 
 /**
@@ -222,7 +225,7 @@ export const completeReferral = functions.firestore
     const hadFirstInteraction = afterData.hasHadInteraction && !beforeData.hasHadInteraction;
 
     if (!profileComplete && !hadFirstInteraction) {
-      return null;
+      return;
     }
 
     // Find pending referral for this user
@@ -233,7 +236,7 @@ export const completeReferral = functions.firestore
       .get();
 
     if (referralQuery.empty) {
-      return null;
+      return;
     }
 
     const referralDoc = referralQuery.docs[0];
@@ -248,7 +251,7 @@ export const completeReferral = functions.firestore
         fraudCheckPassed: false,
         fraudScore: fraudCheckResult.score,
       });
-      return null;
+      return;
     }
 
     // Mark referral as completed
@@ -265,7 +268,7 @@ export const completeReferral = functions.firestore
     // Update leaderboard
     await updateViralLeaderboard(referral.referrerId);
 
-    return null;
+    return;
   });
 
 /**
@@ -323,7 +326,10 @@ export const sendViralInvite = functions.https.onCall(async (request) => {
   // TODO: Actually send the invite via the specified channel
   // This would integrate with email/SMS/social media APIs
 
-  return { success: true, inviteId, deepLink: referralLink };
+  console.log('Scheduled job result:', { success: true, inviteId, deepLink: referralLink });
+
+
+  return;
 });
 
 /**
@@ -567,7 +573,7 @@ async function updateViralLeaderboard(userId: string) {
 /**
  * Calculate leaderboard ranks (scheduled job)
  */
-export const calculateLeaderboardRanks = functions.pubsub.schedule('every 1 hours').onRun(async (context) => {
+export const calculateLeaderboardRanks = onSchedule("every 1 hours", async (event) => {
   const leaderboardQuery = await db.collection('viral_leaderboards')
     .orderBy('score', 'desc')
     .get();
@@ -582,7 +588,7 @@ export const calculateLeaderboardRanks = functions.pubsub.schedule('every 1 hour
 
   await batch.commit();
 
-  return null;
+  return;
 });
 
 /**

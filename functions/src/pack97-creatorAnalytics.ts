@@ -11,12 +11,12 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp, increment } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { EarningSourceType } from './creatorEarnings';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES
@@ -236,7 +236,7 @@ export const dailyContentAnalyticsJob = onSchedule(
       await rebuildContentAnalyticsForDay(yesterday);
 
       logger.info('Completed daily content analytics job');
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in daily content analytics job', error);
       throw error;

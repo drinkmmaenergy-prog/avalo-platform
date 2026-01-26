@@ -11,7 +11,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp } from './init';
 import { logger } from 'firebase-functions/v2';
 import {
@@ -38,7 +38,7 @@ import {
   AudienceGrowthError,
   AudienceGrowthErrorCode,
 } from './pack102-audience-types';
-import { auth, functions } from './runtime';
+import { auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // PUBLIC TRACKING ENDPOINT
@@ -176,10 +176,13 @@ export const audienceGrowth_updateSocialLinks = onCall(
 
       logger.info(`[AudienceGrowth] Updated social links for user ${userId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         socialLinks: updatedLinks as CreatorSocialLinks,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('[AudienceGrowth] Error updating social links:', error);
       throw new HttpsError('internal', 'Failed to update social links');
@@ -231,12 +234,15 @@ export const audienceGrowth_generateSmartLinks = onCall(
 
       logger.info(`[AudienceGrowth] Generated smart links for user ${userId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         smartLinks: smartLinks as any,
         qrCodeUrl,
         shareText,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('[AudienceGrowth] Error generating smart links:', error);
       
@@ -284,10 +290,12 @@ export const audienceGrowth_getPublicCreatorPage = onCall(
       }
 
       if (!userDoc || !userDoc.exists) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'Creator not found',
-        };
+        });
+
+        return;
       }
 
       const userData = userDoc.data();
@@ -298,10 +306,12 @@ export const audienceGrowth_getPublicCreatorPage = onCall(
       const socialLinks = socialLinksDoc.data();
 
       if (!socialLinks || !socialLinks.publicProfileEnabled) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'Public profile is not enabled for this creator',
-        };
+        });
+
+        return;
       }
 
       // Build public preview
@@ -318,17 +328,23 @@ export const audienceGrowth_getPublicCreatorPage = onCall(
         deepLink: `avalo://profile/${userId}`,
       };
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         creator: preview,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('[AudienceGrowth] Error getting public creator page:', error);
       
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: 'Failed to load creator profile',
-      };
+      });
+
+      
+      return;
     }
   }
 );
@@ -360,7 +376,7 @@ export const audienceGrowth_dailyAggregation = onSchedule(
       await rebuildAudienceAttributionDaily(yesterday);
 
       logger.info('[AudienceGrowth] Completed daily aggregation job');
-      return null;
+      return;
     } catch (error: any) {
       logger.error('[AudienceGrowth] Error in daily aggregation job:', error);
       throw error;

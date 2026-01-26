@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -315,7 +315,7 @@ export const analyzeDeviceFingerprint = functions.https.onCall(async (request) =
 /**
  * Detect coordinated review attacks
  */
-export const detectCoordinatedAttack = functions.pubsub.schedule('every 4 hours').onRun(async () => {
+export const detectCoordinatedAttack = onSchedule("every 4 hours", async (event) => {
   try {
     const windowStart = admin.firestore.Timestamp.fromMillis(Date.now() - 12 * 60 * 60 * 1000);
 

@@ -7,7 +7,7 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { FieldValue, increment, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, increment, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 interface RateLimitConfig {
   maxRequests: number;
@@ -98,7 +98,9 @@ export async function confirmTransaction(
       const data = doc.data() as PendingTransaction;
       
       if (data.status === 'confirmed') {
-        return { success: true, tokensAssigned: data.tokenAmount, alreadyProcessed: true };
+        console.log('Scheduled job result:', { success: true, tokensAssigned: data.tokenAmount, alreadyProcessed: true });
+
+        return;
       }
       
       if (data.status === 'failed' || data.status === 'escalated') {
@@ -145,13 +147,18 @@ export async function confirmTransaction(
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       });
       
-      return { success: true, tokensAssigned: data.tokenAmount };
+      console.log('Scheduled job result:', { success: true, tokensAssigned: data.tokenAmount });
+
+      
+      return;
     });
     
     return result;
   } catch (error) {
     console.error('Transaction confirmation error:', error);
-    return { success: false };
+    console.log('Scheduled job result:', { success: false });
+
+    return;
   }
 }
 
@@ -168,13 +175,17 @@ export async function retryTransactionVerification(
     const doc = await ref.get();
     
     if (!doc.exists) {
-      return { success: false };
+      console.log('Scheduled job result:', { success: false });
+
+      return;
     }
     
     const data = doc.data() as PendingTransaction;
     
     if (data.status !== 'pending') {
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      return;
     }
     
     // Verify with provider
@@ -183,7 +194,9 @@ export async function retryTransactionVerification(
     if (verified.confirmed) {
       // Confirm transaction
       const result = await confirmTransaction(transactionId, data.providerTransactionId!);
-      return { success: result.success, confirmed: true };
+      console.log('Scheduled job result:', { success: result.success, confirmed: true });
+
+      return;
     }
     
     if (verified.failed) {
@@ -194,7 +207,10 @@ export async function retryTransactionVerification(
         error: verified.error,
       });
       
-      return { success: true, confirmed: false };
+      console.log('Scheduled job result:', { success: true, confirmed: false });
+
+      
+      return;
     }
     
     // Still pending, increment retry count
@@ -213,10 +229,15 @@ export async function retryTransactionVerification(
       await scheduleRetry(transactionId, newRetryCount + 1);
     }
     
-    return { success: true, confirmed: false };
+    console.log('Scheduled job result:', { success: true, confirmed: false });
+
+    
+    return;
   } catch (error) {
     console.error('Retry verification error:', error);
-    return { success: false };
+    console.log('Scheduled job result:', { success: false });
+
+    return;
   }
 }
 
@@ -243,7 +264,9 @@ async function verifyWithProvider(
         return await verifyGoogleTransaction(transactionId);
       
       default:
-        return { confirmed: false, failed: true, error: 'Unknown provider' };
+        console.log('Scheduled job result:', { confirmed: false, failed: true, error: 'Unknown provider' });
+
+        return;
     }
   } catch (error) {
     console.error(`Provider verification error (${provider}):`, error);
@@ -270,7 +293,9 @@ async function verifyStripeTransaction(
     return { confirmed: false };
   } catch (error: any) {
     if (error.code === 'resource_missing') {
-      return { confirmed: false, failed: true, error: 'Payment intent not found' };
+      console.log('Scheduled job result:', { confirmed: false, failed: true, error: 'Payment intent not found' });
+
+      return;
     }
     return { confirmed: false };
   }
@@ -392,7 +417,7 @@ export async function getTransactionStatus(
   const doc = await db.collection('pendingTransactions').doc(transactionId).get();
   
   if (!doc.exists) {
-    return null;
+    return;
   }
   
   return doc.data() as PendingTransaction;
@@ -425,9 +450,7 @@ export async function cleanupOldTransactions(): Promise<void> {
 /**
  * Process scheduled retries (cloud function trigger)
  */
-export const processScheduledRetries = functions.pubsub
-  .schedule('every 1 minutes')
-  .onRun(async (context) => {
+export const processScheduledRetries = onSchedule("every 1 minutes", async (event) => {
     const db = admin.firestore();
     const now = Date.now();
     

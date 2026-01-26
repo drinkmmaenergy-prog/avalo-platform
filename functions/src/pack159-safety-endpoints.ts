@@ -10,7 +10,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, logger } from './common';
 import {
   evaluateConsentState,
@@ -26,7 +26,7 @@ import {
   SafetyIntervention,
 } from './pack159-safety-types';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
-import { admin, auth, functions, increment } from './runtime';
+import { admin, auth, functions, increment, onSchedule } from './runtime';
 
 // ============================================================================
 // CONSENT STATE MANAGEMENT
@@ -56,10 +56,13 @@ export const safety159_evaluateConsentState = onCall(
         senderId: uid,
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         ...result,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error evaluating consent state:', error);
       throw new HttpsError('internal', error.message);
@@ -104,12 +107,15 @@ export const safety159_getMyScore = onCall(
 
       const activeInterventions = interventionsSnapshot.docs.map(doc => doc.data());
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         score,
         recentEvents,
         activeInterventions,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting safety score:', error);
       throw new HttpsError('internal', error.message);
@@ -141,11 +147,14 @@ export const safety159_checkMessage = onCall(
     try {
       const result = await blockUnsafeMessage(conversationId, messageContent, uid);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         safe: !result.blocked,
         ...result,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error checking message safety:', error);
       throw new HttpsError('internal', error.message);
@@ -197,11 +206,14 @@ export const safety159_submitAppeal = onCall(
 
       logger.info(`Safety appeal submitted: ${appealId} by user ${uid}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         appealId,
         message: 'Your appeal has been submitted and will be reviewed within 48 hours',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error submitting appeal:', error);
       throw new HttpsError('internal', error.message);
@@ -237,10 +249,13 @@ export const safety159_getAppealStatus = onCall(
           throw new HttpsError('permission-denied', 'Cannot access another user\'s appeal');
         }
 
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           appeal,
-        };
+        });
+
+
+        return;
       } else {
         // Get all user's appeals
         const appealsSnapshot = await db
@@ -252,10 +267,13 @@ export const safety159_getAppealStatus = onCall(
 
         const appeals = appealsSnapshot.docs.map(doc => doc.data());
 
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           appeals,
-        };
+        });
+
+
+        return;
       }
     } catch (error: any) {
       logger.error('Error getting appeal status:', error);
@@ -385,10 +403,13 @@ export const safety159_getFeedbackCards = onCall(
         ...doc.data(),
       }));
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         cards,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error getting feedback cards:', error);
       throw new HttpsError('internal', error.message);
@@ -432,10 +453,13 @@ export const safety159_dismissFeedbackCard = onCall(
         dismissedAt: Timestamp.now(),
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         message: 'Feedback card dismissed',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Error dismissing feedback card:', error);
       throw new HttpsError('internal', error.message);

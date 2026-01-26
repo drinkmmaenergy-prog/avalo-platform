@@ -4,7 +4,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db } from './init';
 import { logger } from 'firebase-functions/v2';
 import {
@@ -28,7 +28,7 @@ import {
   getCreatorRankingHistory,
   getCreatorRankingForDate,
 } from './pack324c-ranking-engine';
-import { admin, auth, functions } from './runtime';
+import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -149,12 +149,15 @@ export const pack324c_recalculateTrustScore = onCall<{ userId: string }>(
     try {
       const trustScore = await recalculateCreatorTrustScore(userId);
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         userId: trustScore.userId,
         trustScore: trustScore.trustScore,
         level: trustScore.level,
-      };
+      });
+
+      
+      return;
     } catch (error) {
       logger.error('[PACK 324C] Error recalculating trust score:', error);
       throw new HttpsError('internal', 'Failed to recalculate trust score');
@@ -213,12 +216,15 @@ export const pack324c_getTopTrustedCreators = onCall<TrustScoresFilter>(
         };
       });
       
-      return {
+      console.log('Scheduled job result:', {
         creators,
         totalCount: snapshot.size,
         page: Math.floor(offset / limit),
         pageSize: limit,
-      };
+      });
+
+      
+      return;
     } catch (error) {
       logger.error('[PACK 324C] Error getting top trusted creators:', error);
       throw new HttpsError('internal', 'Failed to get top trusted creators');
@@ -519,12 +525,15 @@ export const pack324c_admin_triggerRankingGeneration = onCall<{ date?: string }>
       // Generate rankings
       const rankingCount = await generateDailyCreatorRanking(targetDate);
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         date: targetDate,
         trustScoresUpdated: trustScoreCount,
         rankingsGenerated: rankingCount,
-      };
+      });
+
+      
+      return;
     } catch (error) {
       logger.error('[PACK 324C] Error in manual ranking trigger:', error);
       throw new HttpsError('internal', 'Failed to generate rankings');

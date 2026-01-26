@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -349,7 +349,7 @@ export const generateStoreDefenseDossier = functions.https.onCall(async (request
 /**
  * Scheduled store policy check
  */
-export const scheduledStorePolicyCheck = functions.pubsub.schedule('every 12 hours').onRun(async () => {
+export const scheduledStorePolicyCheck = onSchedule("every 12 hours", async (event) => {
   try {
     const platforms: Array<'ios' | 'android'> = ['ios', 'android'];
     

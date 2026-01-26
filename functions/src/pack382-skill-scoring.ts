@@ -11,7 +11,7 @@ import {
   CalculateSkillScoreInput,
   CalculateSkillScoreOutput,
 } from './types/pack382-types';
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -708,10 +708,7 @@ function generateQuickRecommendations(profile: CreatorEarningProfile): string[] 
 /**
  * Scheduled job: Recalculate all creator profiles daily
  */
-export const pack382_dailySkillScoreUpdate = functions.pubsub
-  .schedule('0 2 * * *') // 2 AM daily
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack382_dailySkillScoreUpdate = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[PACK382] Starting daily skill score update...');
 
     // Get all creators with recent activity

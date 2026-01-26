@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { HttpsError, auth, onCall, timestamp } from './runtime';
+import { HttpsError, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 // ============================================
 // TYPES
@@ -517,9 +517,7 @@ export const getCdnStats = functions.https.onCall(async (request) => {
 /**
  * Update CDN metrics (scheduled)
  */
-export const updateCdnMetrics = functions.pubsub
-  .schedule("every 5 minutes")
-  .onRun(async (context) => {
+export const updateCdnMetrics = onSchedule("every 5 minutes", async (event) => {
     const db = admin.firestore();
     
     console.log("📊 Updating CDN metrics...");
@@ -588,7 +586,10 @@ export const purgeCache = functions.https.onCall(async (request) => {
     
     console.log(`✅ ${data.assetId} purged`);
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 
@@ -631,10 +632,13 @@ export const purgeAllCache = functions.https.onCall(async (request) => {
     
     console.log(`✅ Purged ${assetsSnapshot.size} assets from cache`);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       assetsPurged: assetsSnapshot.size,
-    };
+    });
+
+    
+    return;
   }
 );
 
@@ -645,9 +649,7 @@ export const purgeAllCache = functions.https.onCall(async (request) => {
 /**
  * Monitor bandwidth usage
  */
-export const monitorBandwidth = functions.pubsub
-  .schedule("every 1 hours")
-  .onRun(async (context) => {
+export const monitorBandwidth = onSchedule("every 1 hours", async (event) => {
     const db = admin.firestore();
     
     console.log("📶 Monitoring bandwidth usage...");

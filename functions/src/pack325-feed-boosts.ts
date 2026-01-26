@@ -20,11 +20,11 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { logger } from 'firebase-functions/v2';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { spendTokens } from './pack277-wallet-service';
-import { admin, auth, functions, increment } from './runtime';
+import { admin, auth, functions, increment, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -279,11 +279,14 @@ export const pack325_cancelFeedBoost = onCall(
 
     logger.info(`Boost cancelled: ${boostId} by ${uid} (no refund)`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       boostId,
       message: 'Boost cancelled (no refund)',
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -316,10 +319,13 @@ export const pack325_getUserBoosts = onCall(
       ...doc.data(),
     }));
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       boosts,
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -348,7 +354,10 @@ export const pack325_trackBoostImpression = onCall(
       updatedAt: new Date().toISOString(),
     });
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -377,7 +386,10 @@ export const pack325_trackBoostClick = onCall(
       updatedAt: new Date().toISOString(),
     });
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -406,7 +418,10 @@ export const pack325_trackBoostProfileVisit = onCall(
       updatedAt: new Date().toISOString(),
     });
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -496,7 +511,7 @@ export async function getActiveBoostForContent(
     .get();
 
   if (boostQuery.empty) {
-    return null;
+    return;
   }
 
   const boostDoc = boostQuery.docs[0];

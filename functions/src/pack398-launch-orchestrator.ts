@@ -12,7 +12,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 // Launch States
 export enum LaunchState {
@@ -96,7 +96,10 @@ export const initializeLaunchControl = functions.https.onCall(async (request) =>
 
   await db.collection('launch_control').doc('global').set(launchControl);
 
-  return { success: true, message: 'Launch control initialized' };
+  console.log('Scheduled job result:', { success: true, message: 'Launch control initialized' });
+
+
+  return;
 });
 
 /**
@@ -225,7 +228,10 @@ export const emergencyStopLaunch = functions.https.onCall(async (request) => {
     severity: 'critical',
   });
 
-  return { success: true, message: 'Emergency stop activated' };
+  console.log('Scheduled job result:', { success: true, message: 'Emergency stop activated' });
+
+
+  return;
 });
 
 /**
@@ -249,24 +255,27 @@ export const resumeLaunch = functions.https.onCall(async (request) => {
     severity: 'info',
   });
 
-  return { success: true, message: 'Launch resumed' };
+  console.log('Scheduled job result:', { success: true, message: 'Launch resumed' });
+
+
+  return;
 });
 
 /**
  * Monitor fraud, churn, and review signals - Auto-adjust states
  */
-export const monitorLaunchHealth = functions.pubsub.schedule('every 5 minutes').onRun(async (context) => {
+export const monitorLaunchHealth = onSchedule("every 5 minutes", async (event) => {
   const launchControlRef = db.collection('launch_control').doc('global');
   const launchControlDoc = await launchControlRef.get();
   
   if (!launchControlDoc.exists) {
-    return null;
+    return;
   }
 
   const launchControl = launchControlDoc.data() as LaunchControl;
 
   if (launchControl.emergencyStop || !launchControl.automationEnabled) {
-    return null;
+    return;
   }
 
   // Check each country
@@ -303,18 +312,18 @@ export const monitorLaunchHealth = functions.pubsub.schedule('every 5 minutes').
     }
   }
 
-  return null;
+  return;
 });
 
 /**
  * Reset daily budgets at midnight UTC
  */
-export const resetDailyBudgets = functions.pubsub.schedule('0 0 * * *').timeZone('UTC').onRun(async (context) => {
+export const resetDailyBudgets = onSchedule({ schedule: "0 0 * * *", timeZone: "UTC" }, async (event) => {
   const launchControlRef = db.collection('launch_control').doc('global');
   const launchControlDoc = await launchControlRef.get();
   
   if (!launchControlDoc.exists) {
-    return null;
+    return;
   }
 
   const launchControl = launchControlDoc.data() as LaunchControl;
@@ -331,7 +340,7 @@ export const resetDailyBudgets = functions.pubsub.schedule('0 0 * * *').timeZone
 
   await launchControlRef.update(updates);
 
-  return null;
+  return;
 });
 
 /**
@@ -512,7 +521,9 @@ export const getLaunchStatus = functions.https.onCall(async (request) => {
   const launchControlDoc = await db.collection('launch_control').doc('global').get();
   
   if (!launchControlDoc.exists) {
-    return { error: 'Launch control not initialized' };
+    console.log('Scheduled job result:', { error: 'Launch control not initialized' });
+
+    return;
   }
 
   const recentEvents = await db.collection('launch_events')

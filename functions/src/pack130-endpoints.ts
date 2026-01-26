@@ -36,7 +36,7 @@ import {
   getCaseStatistics,
 } from './pack130-case-prioritization';
 import { PatrolLogEventInput, PatrolEventType, RiskProfileLevel, CasePriority } from './types/pack130-types';
-import { HttpsError, admin, auth, db, onCall } from './runtime';
+import { HttpsError, admin, auth, db, onCall, onSchedule } from './runtime';
 
 // ============================================================================
 // BEHAVIOR LOGGING
@@ -483,10 +483,7 @@ export const pack130_getCaseStatistics = functions.https.onCall(async (request) 
 /**
  * Cleanup expired logs (daily at 3 AM UTC)
  */
-export const pack130_cleanupExpiredLogs = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async () => {
+export const pack130_cleanupExpiredLogs = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     const result = await cleanupExpiredLogs();
     console.log(`[Patrol AI] Cleaned up ${result.deletedCount} expired logs`);
     return null;

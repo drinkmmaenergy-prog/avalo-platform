@@ -10,7 +10,7 @@
  * - Rate limit bypass attempts
  */
 
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { db, serverTimestamp, generateId } from './init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
@@ -20,7 +20,7 @@ import {
   APIAuditLog,
   ExternalApp,
 } from './pack113-types';
-import { admin, functions, timestamp } from './runtime';
+import { admin, functions, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // ABUSE DETECTION PATTERNS
@@ -61,7 +61,7 @@ async function detectExcessivePosting(
   const ABUSIVE_POST_RATE = 500; // 500+ is clearly abuse
 
   if (postCount < SUSPICIOUS_POST_RATE) {
-    return null;
+    return;
   }
 
   const severity = Math.min(100, (postCount / ABUSIVE_POST_RATE) * 100);
@@ -102,7 +102,7 @@ async function detectBotLikeBehavior(
     .get();
 
   if (logsSnapshot.size < 20) {
-    return null; // Not enough data
+    return; // Not enough data
   }
 
   const logs = logsSnapshot.docs.map(doc => doc.data() as APIAuditLog);
@@ -135,7 +135,7 @@ async function detectBotLikeBehavior(
   const repetitiveEndpoint = Math.max(...Array.from(endpointCounts.values())) > logs.length * 0.8;
 
   if (!uniformIntervals && !repetitiveEndpoint) {
-    return null;
+    return;
   }
 
   const evidence: string[] = [];
@@ -182,14 +182,14 @@ async function detectRateLimitBypass(
     .get();
 
   if (!limitDoc.exists) {
-    return null;
+    return;
   }
 
   const limitData = limitDoc.data()!;
   const violationCount = limitData.violationCount || 0;
 
   if (violationCount < 5) {
-    return null; // Some violations are normal
+    return; // Some violations are normal
   }
 
   // Check if they're trying different tokens or methods
@@ -221,7 +221,7 @@ async function detectRateLimitBypass(
     };
   }
 
-  return null;
+  return;
 }
 
 /**
@@ -243,7 +243,7 @@ async function detectContentSpam(
     .get();
 
   if (postsSnapshot.size < 10) {
-    return null;
+    return;
   }
 
   // Simple spam detection: check for repeated content
@@ -264,14 +264,14 @@ async function detectContentSpam(
   const duplicates = Array.from(contentMap.entries()).filter(([_, count]) => count > 3);
 
   if (duplicates.length === 0) {
-    return null;
+    return;
   }
 
   const totalDuplicates = duplicates.reduce((sum, [_, count]) => sum + count, 0);
   const duplicateRate = totalDuplicates / postsSnapshot.size;
 
   if (duplicateRate < 0.3) {
-    return null; // Less than 30% duplicates
+    return; // Less than 30% duplicates
   }
 
   return {
@@ -311,7 +311,7 @@ async function detectSuspiciousDeletion(
   const deleteCount = deleteLogs.size;
 
   if (deleteCount < 20) {
-    return null; // Normal deletion rate
+    return; // Normal deletion rate
   }
 
   return {
@@ -538,7 +538,7 @@ export const runAbuseDetection = onSchedule(
         totalDetections,
       });
 
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error in abuse detection scan', error);
       throw error;
@@ -572,7 +572,7 @@ export const cleanupOldDetections = onSchedule(
       await batch.commit();
 
       logger.info(`Cleaned up ${oldDetections.size} old abuse detections`);
-      return null;
+      return;
     } catch (error: any) {
       logger.error('Error cleaning up detections', error);
       throw error;

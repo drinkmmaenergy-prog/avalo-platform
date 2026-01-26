@@ -8,7 +8,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import axios from 'axios';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -374,11 +374,14 @@ export const syncTikTokCampaign = functions.https.onCall(async (request) => {
       syncedAt: admin.firestore.Timestamp.now()
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       tiktokCampaignId: tiktokCampaign.campaign_id,
       tiktokAdGroupId: tiktokAdGroup.adgroup_id
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -412,7 +415,10 @@ export const updateTikTokCampaignBudget = functions.https.onCall(async (request)
   try {
     await api.updateAdGroupBudget(tiktokAccount.advertiserId, tiktokAdGroupId, dailyBudget);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
   }
@@ -502,30 +508,31 @@ export const rotateTikTokCreatives = functions.https.onCall(async (request) => {
     }
   }
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     adsCreated: createdAds.length,
     ads: createdAds
-  };
+  });
+
+
+  return;
 });
 
 // ===========================
 // SYNC REPORTS FROM TIKTOK
 // ===========================
 
-export const syncTikTokReports = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const syncTikTokReports = onSchedule("every 1 hours", async (event) => {
     // Get all active TikTok campaigns
     const campaigns = await db.collection('ua_campaigns')
       .where('platform', '==', 'tiktok')
       .where('status', '==', 'active')
       .get();
 
-    if (campaigns.empty) return null;
+    if (campaigns.empty) return;
 
     const tiktokAccountDoc = await db.collection('ua_platform_accounts').doc('tiktok').get();
-    if (!tiktokAccountDoc.exists) return null;
+    if (!tiktokAccountDoc.exists) return;
 
     const tiktokAccount = tiktokAccountDoc.data() as TikTokAdAccount;
     const api = new TikTokAdsAPI(tiktokAccount.accessToken);
@@ -535,7 +542,7 @@ export const syncTikTokReports = functions.pubsub
       .map(doc => doc.data().tiktokIds?.campaignId)
       .filter(id => id);
 
-    if (campaignIds.length === 0) return null;
+    if (campaignIds.length === 0) return;
 
     try {
       const today = new Date().toISOString().split('T')[0];
@@ -577,7 +584,7 @@ export const syncTikTokReports = functions.pubsub
       console.error('Failed to sync TikTok reports:', error);
     }
 
-    return null;
+    return;
   });
 
 // ===========================
@@ -591,7 +598,9 @@ export const trackTikTokEvent = functions.https.onCall(async (request) => {
   // Get TikTok pixel code
   const tiktokAccountDoc = await db.collection('ua_platform_accounts').doc('tiktok').get();
   if (!tiktokAccountDoc.exists) {
-    return { success: false, error: 'TikTok account not configured' };
+    console.log('Scheduled job result:', { success: false, error: 'TikTok account not configured' });
+
+    return;
   }
 
   const tiktokAccount = tiktokAccountDoc.data() as TikTokAdAccount;
@@ -619,11 +628,16 @@ export const trackTikTokEvent = functions.https.onCall(async (request) => {
       }
     );
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
 
   } catch (error: any) {
     console.error('TikTok event tracking failed:', error);
-    return { success: false, error: error.message };
+    console.log('Scheduled job result:', { success: false, error: error.message });
+
+    return;
   }
 });
 

@@ -6,7 +6,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -131,10 +131,13 @@ export const pack370_calculateLTVForecast = functions
       // Trigger ROAS signal update
       await updateROASSignals();
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         forecast: ltvDoc
-      };
+      });
+
+      
+      return;
       
     } catch (error: any) {
       console.error('Error calculating LTV:', error);
@@ -220,7 +223,7 @@ async function gatherUserMetrics(userId: string): Promise<UserMetrics> {
   // Total spent
   const totalSpent = userProfile.exists ? userProfile.data()?.totalSpent || 0 : 0;
   
-  return {
+  console.log('Scheduled job result:', {
     tokenSpendVelocity,
     creatorEarningsInteraction,
     chatConversionRate,
@@ -229,7 +232,10 @@ async function gatherUserMetrics(userId: string): Promise<UserMetrics> {
     fraudSafetyScore,
     daysSinceSignup,
     totalSpent
-  };
+  });
+
+  
+  return;
 }
 
 // ============================================================================
@@ -312,13 +318,12 @@ function determineTier(ltvDay30: number): UserTier {
 // 5️⃣ ROAS SIGNAL GENERATION
 // ============================================================================
 
-export const pack370_pushROASSignals = functions
-  .runWith({ memory: '512MB', timeoutSeconds: 540 })
-  .pubsub.schedule('every 6 hours')
-  .onRun(async (context) => {
+export const pack370_pushROASSignals = onSchedule("every 6 hours", async (event) => {
     try {
       await updateROASSignals();
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      return;
     } catch (error) {
       console.error('Error pushing ROAS signals:', error);
       throw error;
@@ -528,7 +533,9 @@ export const pack370_invalidateLTV = functions.https.onCall(async (request) => {
     }
     
     await invalidateLTV(data.userId);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   }
 );
 
@@ -536,10 +543,7 @@ export const pack370_invalidateLTV = functions.https.onCall(async (request) => {
 // 9️⃣ SCHEDULED LTV RECALCULATION
 // ============================================================================
 
-export const pack370_scheduledLTVRecalc = functions
-  .runWith({ memory: '1GB', timeoutSeconds: 540 })
-  .pubsub.schedule('every 2 hours')
-  .onRun(async (context) => {
+export const pack370_scheduledLTVRecalc = onSchedule("every 2 hours", async (event) => {
     const now = Date.now();
     
     // Find users who need recalculation
@@ -594,17 +598,17 @@ export const pack370_scheduledLTVRecalc = functions
       }
     }
     
-    return { success: true, processed: forecasts.size };
+    console.log('Scheduled job result:', { success: true, processed: forecasts.size });
+
+    
+    return;
   });
 
 // ============================================================================
 // 🔟 GEO-LEVEL LTV INTELLIGENCE
 // ============================================================================
 
-export const pack370_updateGeoLTVProfiles = functions
-  .runWith({ memory: '512MB', timeoutSeconds: 540 })
-  .pubsub.schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack370_updateGeoLTVProfiles = onSchedule("every 24 hours", async (event) => {
     // Get all countries
     const users = await db.collection('users').get();
     const countryMap = new Map<string, { ltv: number[], cpi: number[], whales: number }>();
@@ -660,7 +664,10 @@ export const pack370_updateGeoLTVProfiles = functions
       });
     }
     
-    return { success: true, countries: countryMap.size };
+    console.log('Scheduled job result:', { success: true, countries: countryMap.size });
+
+    
+    return;
   });
 
 // ============================================================================
@@ -707,7 +714,10 @@ export const pack370_adminLTVOverride = functions.https.onCall(async (request) =
       metadata: { targetUserId: userId, overrideLTV, reason }
     });
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
   }
 );
 

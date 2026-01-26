@@ -7,7 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp, storage } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, storage, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -506,11 +506,7 @@ const engine = new BurnRateEngine();
 /**
  * Scheduled function: Calculate burn rate on 1st of each month at 3 AM
  */
-export const calculateMonthlyBurnRate = functions
-  .region('europe-west1')
-  .pubsub.schedule('0 3 1 * *')
-  .timeZone('Europe/Warsaw')
-  .onRun(async (context) => {
+export const calculateMonthlyBurnRate = onSchedule({ schedule: "0 3 1 * *", timeZone: "Europe/Warsaw", region: "europe-west1" }, async (event) => {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth(); // Previous month (0-11)
@@ -526,7 +522,10 @@ export const calculateMonthlyBurnRate = functions
         margin: snapshot.profitMargin,
       });
       
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK 358] Error calculating burn rate:', error);
       throw error;
@@ -593,12 +592,15 @@ export const getFinancialRunway = functions
     try {
       const runwayDays = await engine.calculateRunway(currentCashPLN);
       
-      return {
+      console.log('Scheduled job result:', {
         runwayDays,
         runwayMonths: Math.floor(runwayDays / 30),
         currentCashPLN,
         calculatedAt: new Date().toISOString(),
-      };
+      });
+
+      
+      return;
     } catch (error) {
       console.error('[PACK 358] Error calculating runway:', error);
       throw new functions.https.HttpsError('internal', 'Failed to calculate runway');

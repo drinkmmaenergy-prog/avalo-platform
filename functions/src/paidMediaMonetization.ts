@@ -11,10 +11,10 @@ import {
   Timestamp 
 } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { onCall } from 'firebase-functions/v2/https';
 import * as crypto from 'crypto';
-import { admin, arrayUnion, auth, functions, increment } from './runtime';
+import { admin, arrayUnion, auth, functions, increment, onSchedule } from './runtime';
 
 // ============================================================================
 // Configuration Constants
@@ -258,11 +258,14 @@ const createMediaProduct = onCall(async (request) => {
   
   logger.info(`Created media product ${productRef.id} by ${auth.uid}`);
   
-  return { 
+  console.log('Scheduled job result:', { 
     success: true, 
     productId: productRef.id,
     expiresAt: expiresAt?.toMillis(),
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -323,7 +326,10 @@ const publishMediaProduct = onCall(async (request) => {
   
   logger.info(`Published media product ${productId}`);
   
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+  
+  return;
 });
 
 /**
@@ -342,7 +348,10 @@ const trackMediaImpression = onCall(async (request) => {
     impressions: FieldValue.increment(1),
   });
   
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+  
+  return;
 });
 
 // ============================================================================
@@ -545,12 +554,15 @@ const purchaseMediaProduct = onCall(async (request) => {
     
     logger.info(`Media purchase completed: ${purchaseRef.id}`);
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       purchaseId: purchaseRef.id,
       accessUrls: product.items.map(item => item.url),
       creatorId: product.creatorId, // For "Say Something Now" CTA
-    };
+    });
+
+    
+    return;
     
   } catch (error) {
     logger.error('Purchase transaction failed:', error);
@@ -588,11 +600,14 @@ const getMediaAccess = onCall(async (request) => {
   
   const access = accessDoc.data();
   
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     itemUrls: access?.itemUrls || [],
     purchasedAt: access?.purchasedAt?.toMillis(),
-  };
+  });
+
+  
+  return;
 });
 
 // ============================================================================
@@ -702,7 +717,7 @@ const getCreatorMediaDashboard = onCall(async (request) => {
   
   const averageSalePrice = totalSales > 0 ? totalEarnings / totalSales : 0;
   
-  return {
+  console.log('Scheduled job result:', {
     totalEarnings: Math.floor(totalEarnings),
     earningsToday,
     earningsThisWeek,
@@ -715,7 +730,10 @@ const getCreatorMediaDashboard = onCall(async (request) => {
     draftProducts,
     averageSalePrice: Math.floor(averageSalePrice),
     topSellingProducts: topProducts,
-  };
+  });
+
+  
+  return;
 });
 
 /**
@@ -985,7 +1003,10 @@ const getRecommendedMedia = onCall(async (request) => {
     })
   );
   
-  return { success: true, products };
+  console.log('Scheduled job result:', { success: true, products });
+
+  
+  return;
 });
 
 // ============================================================================

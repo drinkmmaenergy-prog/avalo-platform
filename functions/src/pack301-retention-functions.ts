@@ -36,7 +36,7 @@ import {
 import { enqueueNotification } from './pack293-notification-service';
 import { writeAuditLog } from './pack296-audit-helpers';
 import { isSuperAdmin } from './pack296-audit-helpers';
-import { HttpsError, Timestamp, auth, onCall } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -107,10 +107,13 @@ export const pack301_logUserActivity = functions.https.onCall(async (request) =>
 
       console.log(`[PACK 301A] Activity logged for user ${userId}: ${activityType}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         ...result,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[PACK 301A] Error logging activity:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -152,11 +155,13 @@ export const pack301_updateOnboardingStage = functions.https.onCall(async (reque
 
       // Only update if moving forward
       if (stage <= profile.onboardingStage) {
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           message: 'Stage already completed',
           currentStage: profile.onboardingStage,
-        };
+        });
+
+        return;
       }
 
       // Update onboarding stage
@@ -177,11 +182,14 @@ export const pack301_updateOnboardingStage = functions.https.onCall(async (reque
 
       console.log(`[PACK 301A] Onboarding stage updated for user ${userId}: ${oldStage} → ${stage}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         currentStage: stage,
         previousStage: oldStage,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[PACK 301A] Error updating onboarding stage:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -197,9 +205,7 @@ export const pack301_updateOnboardingStage = functions.https.onCall(async (reque
  * Daily retention sweep - recalculate churn scores and segments
  * Runs once per day to update all user retention profiles
  */
-export const pack301_dailyRetentionSweep = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack301_dailyRetentionSweep = onSchedule("every 24 hours", async (event) => {
     console.log('[PACK 301A] Starting daily retention sweep...');
 
     let processedUsers = 0;
@@ -270,11 +276,14 @@ export const pack301_dailyRetentionSweep = functions.pubsub
 
       console.log(`[PACK 301A] Daily retention sweep complete: ${processedUsers} users processed, ${segmentChanges} segment changes`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         processedUsers,
         segmentChanges,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[PACK 301A] Error in daily retention sweep:', error);
       throw error;
@@ -289,9 +298,7 @@ export const pack301_dailyRetentionSweep = functions.pubsub
  * Daily win-back sweep - send win-back messages to churned users
  * Sends 3-step win-back sequence (Day 1, Day 4, Day 7)
  */
-export const pack301_dailyWinbackSweep = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const pack301_dailyWinbackSweep = onSchedule("every 24 hours", async (event) => {
     console.log('[PACK 301A] Starting daily win-back sweep...');
 
     let processedUsers = 0;
@@ -396,11 +403,14 @@ export const pack301_dailyWinbackSweep = functions.pubsub
 
       console.log(`[PACK 301A] Daily win-back sweep complete: ${processedUsers} users processed, ${messagesSent} messages sent`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         processedUsers,
         messagesSent,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[PACK 301A] Error in daily win-back sweep:', error);
       throw error;
@@ -415,9 +425,7 @@ export const pack301_dailyWinbackSweep = functions.pubsub
  * Onboarding nudge sweep - send nudges to users stuck in onboarding
  * Runs every 6 hours to remind users to complete onboarding steps
  */
-export const pack301_onboardingNudgeSweep = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async (context) => {
+export const pack301_onboardingNudgeSweep = onSchedule("every 6 hours", async (event) => {
     console.log('[PACK 301A] Starting onboarding nudge sweep...');
 
     let processedUsers = 0;
@@ -551,11 +559,14 @@ export const pack301_onboardingNudgeSweep = functions.pubsub
 
       console.log(`[PACK 301A] Onboarding nudge sweep complete: ${processedUsers} users processed, ${nudgesSent} nudges sent`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         processedUsers,
         nudgesSent,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[PACK 301A] Error in onboarding nudge sweep:', error);
       throw error;

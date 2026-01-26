@@ -7,15 +7,13 @@
 import * as functions from 'firebase-functions';
 import { progressRestartStages } from './pack237-breakup-recovery-engine.js';
 import { db } from './init.js';
+import { onSchedule } from './runtime';
 
 /**
  * Daily cron job to progress recovery stages
  * Runs at 2 AM UTC every day
  */
-export const dailyRecoveryProgression = functions.pubsub
-  .schedule('0 2 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dailyRecoveryProgression = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     try {
       console.log('Starting daily recovery progression...');
       
@@ -23,7 +21,10 @@ export const dailyRecoveryProgression = functions.pubsub
       
       console.log(`Recovery progression complete: ${result.updated} states updated`);
       
-      return { success: true, updated: result.updated };
+      console.log('Scheduled job result:', { success: true, updated: result.updated });
+
+      
+      return;
     } catch (error) {
       console.error('Error in daily recovery progression:', error);
       throw error;
@@ -34,10 +35,7 @@ export const dailyRecoveryProgression = functions.pubsub
  * Hourly check for expired end connection requests
  * Runs every hour
  */
-export const hourlyExpiredRequestsCleanup = functions.pubsub
-  .schedule('0 * * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const hourlyExpiredRequestsCleanup = onSchedule({ schedule: "0 * * * *", timeZone: "UTC" }, async (event) => {
     try {
       console.log('Checking for expired end connection requests...');
       
@@ -62,7 +60,10 @@ export const hourlyExpiredRequestsCleanup = functions.pubsub
       
       console.log(`Expired requests cleanup complete: ${expired} requests expired`);
       
-      return { success: true, expired };
+      console.log('Scheduled job result:', { success: true, expired });
+
+      
+      return;
     } catch (error) {
       console.error('Error in expired requests cleanup:', error);
       throw error;
@@ -73,10 +74,7 @@ export const hourlyExpiredRequestsCleanup = functions.pubsub
  * Daily cleanup of completed recovery states older than 30 days
  * Runs at 3 AM UTC every day
  */
-export const dailyCompletedRecoveryCleanup = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dailyCompletedRecoveryCleanup = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     try {
       console.log('Cleaning up old completed recovery states...');
       
@@ -108,7 +106,10 @@ export const dailyCompletedRecoveryCleanup = functions.pubsub
       
       console.log(`Completed recovery cleanup: ${archived} states archived`);
       
-      return { success: true, archived };
+      console.log('Scheduled job result:', { success: true, archived });
+
+      
+      return;
     } catch (error) {
       console.error('Error in completed recovery cleanup:', error);
       throw error;
@@ -119,10 +120,7 @@ export const dailyCompletedRecoveryCleanup = functions.pubsub
  * Hourly generation of new recovery feed items
  * Runs every 6 hours
  */
-export const generateRecoveryFeedItems = functions.pubsub
-  .schedule('0 */6 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const generateRecoveryFeedItems = onSchedule({ schedule: "0 */6 * * *", timeZone: "UTC" }, async (event) => {
     try {
       console.log('Generating new recovery feed items...');
       
@@ -163,7 +161,10 @@ export const generateRecoveryFeedItems = functions.pubsub
       
       console.log(`Recovery feed generation complete: ${generated} items generated`);
       
-      return { success: true, generated };
+      console.log('Scheduled job result:', { success: true, generated });
+
+      
+      return;
     } catch (error) {
       console.error('Error generating recovery feed items:', error);
       throw error;

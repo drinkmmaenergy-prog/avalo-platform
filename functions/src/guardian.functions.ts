@@ -7,7 +7,7 @@ import * as functions from 'firebase-functions';
 import { guardianService } from './services/guardian.service';
 import { guardianRewriteService } from './services/guardianRewrite.service';
 import { RewriteIntent } from './types/guardian.types';
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // Message Analysis Trigger
@@ -26,14 +26,14 @@ export const analyzeMessage = functions.firestore
       
       // Skip system messages
       if (messageData.type === 'system' || !messageData.senderId) {
-        return null;
+        return;
       }
       
       // Get message content
       const content = messageData.content || messageData.text || '';
       
       if (!content || content.trim().length === 0) {
-        return null;
+        return;
       }
       
       // Analyze for risks and trigger intervention if needed
@@ -53,11 +53,11 @@ export const analyzeMessage = functions.firestore
         });
       }
       
-      return null;
+      return;
       
     } catch (error) {
       console.error('Error analyzing message:', error);
-      return null;
+      return;
     }
   });
 
@@ -69,9 +69,7 @@ export const analyzeMessage = functions.firestore
  * Expire cooling sessions automatically
  * Runs every 5 minutes to check for expired sessions
  */
-export const expireCoolingSessions = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const expireCoolingSessions = onSchedule("every 5 minutes", async (event) => {
     try {
       const db = require('./init').db;
       const now = require('firebase-admin').firestore.Timestamp.now();
@@ -99,11 +97,11 @@ export const expireCoolingSessions = functions.pubsub
         console.log(`Expired ${count} cooling sessions`);
       }
       
-      return null;
+      return;
       
     } catch (error) {
       console.error('Error expiring cooling sessions:', error);
-      return null;
+      return;
     }
   });
 
@@ -149,12 +147,15 @@ export const requestMessageRewrite = functions.https.onCall(async (request) => {
       rewriteIntent
     );
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       requestId: result.requestId,
       rewrittenMessage: result.rewrittenMessage,
       alternatives: result.alternatives
-    };
+    });
+
+    
+    return;
     
   } catch (error) {
     console.error('Error requesting rewrite:', error);
@@ -179,7 +180,9 @@ export const acceptRewrite = functions.https.onCall(async (request) => {
   
   try {
     await guardianRewriteService.acceptRewrite(requestId);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
     
   } catch (error) {
     console.error('Error accepting rewrite:', error);
@@ -204,7 +207,9 @@ export const rejectRewrite = functions.https.onCall(async (request) => {
   
   try {
     await guardianRewriteService.rejectRewrite(requestId);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
     
   } catch (error) {
     console.error('Error rejecting rewrite:', error);
@@ -229,7 +234,9 @@ export const resolveIntervention = functions.https.onCall(async (request) => {
   
   try {
     await guardianService.resolveIntervention(interventionId, resolution, feedback);
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
     
   } catch (error) {
     console.error('Error resolving intervention:', error);
@@ -305,7 +312,10 @@ export const updateGuardianSettings = functions.https.onCall(async (request) => 
       });
     }
     
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    
+    return;
     
   } catch (error) {
     console.error('Error updating guardian settings:', error);
@@ -336,7 +346,7 @@ export const getGuardianSettings = functions.https.onCall(async (request) => {
     }
     
     // Return default settings
-    return {
+    console.log('Scheduled job result:', {
       userId,
       enabled: true,
       interventionLevel: 'moderate',
@@ -344,7 +354,9 @@ export const getGuardianSettings = functions.https.onCall(async (request) => {
       notifyOnIntervention: true,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now()
-    };
+    });
+
+    return;
     
   } catch (error) {
     console.error('Error getting guardian settings:', error);

@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { Storage } from '@google-cloud/storage';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 const storage = new Storage();
@@ -803,9 +803,7 @@ export const adminVerificationOverride = functions.https.onCall(async (request) 
 /**
  * Cleanup old selfie data (scheduled)
  */
-export const cleanupOldVerificationData = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async () => {
+export const cleanupOldVerificationData = onSchedule("every 24 hours", async (event) => {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - CONFIG.SELFIE_RETENTION_DAYS);
 

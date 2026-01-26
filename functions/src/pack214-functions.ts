@@ -18,7 +18,7 @@ import {
   batchProcessColdStartSequences,
   batchProcessBreakTracking,
 } from "./pack214-schedulers";
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -279,7 +279,10 @@ export const onUserActivity = functions.https.onCall(async (request) => {
       await updateUserActivity(request.auth.uid);
       await resetBreakTracking(request.auth.uid);
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error) {
       console.error("Error in onUserActivity:", error);
       throw new functions.https.HttpsError("internal", "Failed to update activity");
@@ -294,9 +297,7 @@ export const onUserActivity = functions.https.onCall(async (request) => {
 /**
  * Process cold-start sequences every hour
  */
-export const scheduledColdStartProcessor = functions.pubsub
-  .schedule("every 1 hours")
-  .onRun(async (context) => {
+export const scheduledColdStartProcessor = onSchedule("every 1 hours", async (event) => {
     try {
       await batchProcessColdStartSequences();
       console.log("Cold-start batch processing completed");
@@ -308,9 +309,7 @@ export const scheduledColdStartProcessor = functions.pubsub
 /**
  * Process break tracking every 6 hours
  */
-export const scheduledBreakTracker = functions.pubsub
-  .schedule("every 6 hours")
-  .onRun(async (context) => {
+export const scheduledBreakTracker = onSchedule("every 6 hours", async (event) => {
     try {
       await batchProcessBreakTracking();
       console.log("Break tracking batch processing completed");
@@ -322,10 +321,7 @@ export const scheduledBreakTracker = functions.pubsub
 /**
  * Clean up old trigger stats weekly
  */
-export const scheduledStatsCleanup = functions.pubsub
-  .schedule("every sunday 00:00")
-  .timeZone("UTC")
-  .onRun(async (context) => {
+export const scheduledStatsCleanup = onSchedule({ schedule: "every sunday 00:00", timeZone: "UTC" }, async (event) => {
     try {
       const thirtyDaysAgo = Timestamp.fromMillis(
         Date.now() - 30 * 24 * 60 * 60 * 1000
@@ -406,7 +402,10 @@ export const setUserPanicMode = functions.https.onCall(async (request) => {
     try {
       await setPanicMode(request.auth.uid, enabled, cooldownHours);
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error) {
       console.error("Error in setUserPanicMode:", error);
       throw new functions.https.HttpsError("internal", "Failed to set panic mode");
@@ -433,11 +432,13 @@ export const getReturnTriggerStats = functions.https.onCall(async (request) => {
         .get();
 
       if (!statsDoc.exists) {
-        return {
+        console.log('Scheduled job result:', {
           totalTriggersSent: 0,
           triggersBy7Days: 0,
           triggersBy30Days: 0,
-        };
+        });
+
+        return;
       }
 
       return statsDoc.data();
@@ -480,7 +481,10 @@ export const updateReturnTriggerSettings = functions.https.onCall(async (request
         .doc(request.auth.uid)
         .update(updates);
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error) {
       console.error("Error in updateReturnTriggerSettings:", error);
       throw new functions.https.HttpsError("internal", "Failed to update settings");
@@ -517,7 +521,10 @@ export const processSingleUserColdStart = functions.https.onCall(async (request)
         settings?.accountCreatedAt || Timestamp.now()
       );
 
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+
+      return;
     } catch (error) {
       console.error("Error in processSingleUserColdStart:", error);
       throw new functions.https.HttpsError("internal", "Failed to process cold-start");

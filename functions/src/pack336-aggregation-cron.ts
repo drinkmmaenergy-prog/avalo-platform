@@ -17,16 +17,13 @@ import {
   calculateViralityMetrics,
   getYesterdayDate,
 } from './pack336-kpi-engine.js';
-import { HttpsError, admin, onCall } from './runtime';
+import { HttpsError, admin, onCall, onSchedule } from './runtime';
 
 /**
  * Daily KPI aggregation job
  * Runs at 00:30 UTC every day to aggregate previous day's metrics
  */
-export const pack336_generateDailyKPIs = functions.pubsub
-  .schedule('30 0 * * *') // 00:30 UTC daily
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack336_generateDailyKPIs = onSchedule({ schedule: "30 0 * * *", timeZone: "UTC" }, async (event) => {
     const date = getYesterdayDate();
     
     console.log(`[PACK 336] Starting daily KPI aggregation for ${date}`);

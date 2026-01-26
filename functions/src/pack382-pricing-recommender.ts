@@ -12,7 +12,7 @@ import {
   CreatorEarningProfile,
 } from './types/pack382-types';
 import { v4 as uuidv4 } from 'uuid';
-import { HttpsError, admin, auth, onCall } from './runtime';
+import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -460,10 +460,7 @@ export const pack382_applyPricingRecommendation = functions.https.onCall(async (
 /**
  * Scheduled job: Generate pricing recommendations for all active creators
  */
-export const pack382_weeklyPricingReview = functions.pubsub
-  .schedule('0 3 * * 1') // Monday 3 AM
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack382_weeklyPricingReview = onSchedule({ schedule: "0 3 * * 1", timeZone: "UTC" }, async (event) => {
     console.log('[PACK382] Starting weekly pricing review...');
 
     // Get active creators

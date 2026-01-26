@@ -4,7 +4,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { logger } from 'firebase-functions/v2';
 import {
   checkPack242Eligibility,
@@ -15,7 +15,7 @@ import {
   trackMonthlyEarningsForPack242,
   type Pack242PriceTier
 } from './pack242DynamicChatPricing.js';
-import { admin, auth, db, functions, serverTimestamp, timestamp } from './runtime';
+import { admin, auth, db, functions, serverTimestamp, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // CALLABLE FUNCTIONS
@@ -36,7 +36,9 @@ export const checkPack242EligibilityCallable = onCall(
     
     try {
       const eligibility = await checkPack242Eligibility(userId);
-      return { success: true, data: eligibility };
+      console.log('Scheduled job result:', { success: true, data: eligibility });
+
+      return;
     } catch (error: any) {
       logger.error('Error checking Pack242 eligibility:', error);
       throw new HttpsError('internal', error.message || 'Failed to check eligibility');
@@ -87,7 +89,9 @@ export const getPack242ChatPriceCallable = onCall(
 
     try {
       const price = await getPack242ChatPrice(userId);
-      return { success: true, price };
+      console.log('Scheduled job result:', { success: true, price });
+
+      return;
     } catch (error: any) {
       logger.error('Error getting Pack242 chat price:', error);
       throw new HttpsError('internal', error.message || 'Failed to get chat price');
@@ -117,7 +121,9 @@ export const getPack242AnalyticsCallable = onCall(
 
     try {
       const analytics = await getPack242Analytics();
-      return { success: true, data: analytics };
+      console.log('Scheduled job result:', { success: true, data: analytics });
+
+      return;
     } catch (error: any) {
       logger.error('Error getting Pack242 analytics:', error);
       throw new HttpsError('internal', error.message || 'Failed to get analytics');

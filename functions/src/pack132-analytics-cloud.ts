@@ -13,7 +13,7 @@
 import { db, serverTimestamp } from './init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import {
   AnalyticsPeriod,
@@ -30,7 +30,7 @@ import {
   PrivacyValidationResult,
   AnalyticsErrorCode,
 } from './pack132-types';
-import { admin, functions, timestamp } from './runtime';
+import { admin, functions, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // CONFIGURATION
@@ -382,7 +382,7 @@ async function getPreviousPeriodMetrics(
     };
     
     const previousPeriod = periodMap[currentPeriod];
-    if (!previousPeriod) return null;
+    if (!previousPeriod) return;
     
     // Get cached metrics from previous computation
     const doc = await db
@@ -395,9 +395,9 @@ async function getPreviousPeriodMetrics(
       return data.metrics?.[previousPeriod] || null;
     }
     
-    return null;
+    return;
   } catch (error) {
-    return null;
+    return;
   }
 }
 
@@ -477,11 +477,14 @@ async function calculateRetentionCohorts(
       if (!activity30.empty) activeDay30++;
     }
     
-    return {
+    console.log('Scheduled job result:', {
       day1: (activeDay1 / totalNewFollowers) * 100,
       day7: (activeDay7 / totalNewFollowers) * 100,
       day30: (activeDay30 / totalNewFollowers) * 100,
-    };
+    });
+
+    
+    return;
   } catch (error) {
     logger.error('Error calculating retention cohorts', error);
     return { day1: 0, day7: 0, day30: 0 };

@@ -5,7 +5,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { z } from 'zod';
 import {
   trackBehaviorSignal,
@@ -31,7 +31,7 @@ import {
   passesSafetyFilters,
 } from './pack255-match-ranker';
 import { BehaviorSignalType, EmotionalTrigger } from './pack255-ai-matchmaker-types';
-import { Timestamp, admin, auth, db, functions } from './runtime';
+import { Timestamp, admin, auth, db, functions, onSchedule } from './runtime';
 
 // ============================================================================
 // LOGGER
@@ -83,10 +83,13 @@ export const getAIDiscoveryFeed = onCall(
         result = await generateDiscoveryFeed(uid, limit, excludeUserIds || []);
       }
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         ...result,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Get discovery feed failed:', error);
       throw new HttpsError('internal', 'Failed to generate discovery feed');
@@ -127,7 +130,10 @@ export const trackProfileViewEvent = onCall(
     try {
       await trackProfileView(uid, targetUserId, viewDurationMs);
       
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      
+      return;
     } catch (error: any) {
       logger.error('Track profile view failed:', error);
       throw new HttpsError('internal', 'Failed to track profile view');
@@ -165,7 +171,10 @@ export const trackSwipeEvent = onCall(
     try {
       await trackSwipe(uid, targetUserId, direction, viewDurationMs);
       
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      
+      return;
     } catch (error: any) {
       logger.error('Track swipe failed:', error);
       throw new HttpsError('internal', 'Failed to track swipe');
@@ -203,7 +212,10 @@ export const trackMessageEvent = onCall(
     try {
       await trackMessage(uid, recipientId, isReply, messageLength);
       
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      
+      return;
     } catch (error: any) {
       logger.error('Track message failed:', error);
       throw new HttpsError('internal', 'Failed to track message');
@@ -251,7 +263,10 @@ export const trackPaidInteractionEvent = onCall(
         await activateSwipeHeating(uid, triggerMap[type]);
       }
       
-      return { success: true };
+      console.log('Scheduled job result:', { success: true });
+
+      
+      return;
     } catch (error: any) {
       logger.error('Track paid interaction failed:', error);
       throw new HttpsError('internal', 'Failed to track paid interaction');
@@ -283,13 +298,16 @@ export const getUserBehaviorProfile = onCall(
       const tier = await getUserTier(uid);
       const heatingState = await getHeatingState(uid);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         profile,
         preferences,
         tier,
         heatingState,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       logger.error('Get behavior profile failed:', error);
       throw new HttpsError('internal', 'Failed to get behavior profile');
@@ -325,10 +343,13 @@ export const getUserHeatingStats = onCall(
     try {
       const stats = await getHeatingStats(uid, days);
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         ...stats,
-      };
+      });
+
+      
+      return;
     } catch (error: any) {
       logger.error('Get heating stats failed:', error);
       throw new HttpsError('internal', 'Failed to get heating stats');
@@ -365,11 +386,14 @@ export const previewCandidateRanking = onCall(
       const ranking = await rankCandidate(uid, candidateId);
       const safetyCheck = await passesSafetyFilters(uid, candidateId);
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         ranking,
         safetyCheck,
-      };
+      });
+
+      
+      return;
     } catch (error: any) {
       logger.error('Preview candidate ranking failed:', error);
       throw new HttpsError('internal', 'Failed to preview ranking');
@@ -415,10 +439,13 @@ export const adminUpdateBehaviorProfile = onCall(
     try {
       const profile = await updateBehaviorProfile(targetUserId);
       
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         profile,
-      };
+      });
+
+      
+      return;
     } catch (error: any) {
       logger.error('Admin update behavior profile failed:', error);
       throw new HttpsError('internal', 'Failed to update behavior profile');

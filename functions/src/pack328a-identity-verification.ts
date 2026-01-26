@@ -17,7 +17,7 @@ import {
   DocumentType,
   VERIFICATION_CONFIG,
 } from './pack328a-identity-verification-types';
-import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // Callable Functions (User-facing)
@@ -160,12 +160,15 @@ export const identityVerification_uploadDocuments = functions.https.onCall(async
       // Report to fraud detection system
       await VerificationFraudIntegration.reportToFraudSystem(userId, result);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         verified: result.verified,
         ageConfirmed: result.ageConfirmed,
         documentIds: documentRefs,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[IdentityVerification] Error uploading documents:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -190,12 +193,15 @@ export const identityVerification_triggerCheck = functions.https.onCall(async (r
         data.context
       );
 
-      return {
+      console.log('Scheduled job result:', {
         triggered,
         message: triggered
           ? 'Verification request created'
           : 'No verification triggers matched',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[IdentityVerification] Error triggering check:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -310,11 +316,14 @@ export const identityVerification_manualReview = functions.https.onCall(async (r
         },
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         resultId: resultRef.id,
         verified: approved,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[IdentityVerification] Error in manual review:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -366,9 +375,7 @@ export const identityVerification_getPendingRequests = functions.https.onCall(as
  * Check for timed-out verification requests
  * Runs every hour
  */
-export const identityVerification_checkTimeouts = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const identityVerification_checkTimeouts = onSchedule("every 1 hours", async (event) => {
     console.log('[IdentityVerification] Checking for timeouts...');
 
     try {
@@ -386,7 +393,10 @@ export const identityVerification_checkTimeouts = functions.pubsub
         await VerificationEngine.checkTimeout(doc.id);
       }
 
-      return { processed: snapshot.size };
+      console.log('Scheduled job result:', { processed: snapshot.size });
+
+
+      return;
     } catch (error) {
       console.error('[IdentityVerification] Error checking timeouts:', error);
       throw error;
@@ -397,9 +407,7 @@ export const identityVerification_checkTimeouts = functions.pubsub
  * Send reminder emails for pending verification
  * Runs every 6 hours
  */
-export const identityVerification_sendReminders = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async (context) => {
+export const identityVerification_sendReminders = onSchedule("every 6 hours", async (event) => {
     console.log('[IdentityVerification] Sending reminders...');
 
     try {

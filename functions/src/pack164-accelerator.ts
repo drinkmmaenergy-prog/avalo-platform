@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, generateId, timestamp as Timestamp } from './init';
 import { z } from 'zod';
-import { HttpsError, Timestamp, admin, auth, onCall } from './runtime';
+import { HttpsError, Timestamp, admin, auth, onCall, onSchedule } from './runtime';
 
 const FieldValue = {
   serverTimestamp: serverTimestamp
@@ -785,9 +785,7 @@ async function issueAcceleratorCertificateInternal(userId: string, trackId: stri
 // SCHEDULED FUNCTIONS
 // ============================================================================
 
-export const checkMilestoneDeadlines = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async () => {
+export const checkMilestoneDeadlines = onSchedule("every 24 hours", async (event) => {
     const now = Timestamp.now();
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -825,9 +823,7 @@ export const checkMilestoneDeadlines = functions.pubsub
     console.log(`Sent ${upcomingMilestones.size} milestone reminders`);
   });
 
-export const calculateAcceleratorAnalytics = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async () => {
+export const calculateAcceleratorAnalytics = onSchedule("every 1 hours", async (event) => {
     // Calculate retention metrics (non-emotional)
     const acceptedApplications = await db.collection('accelerator_applications')
       .where('status', '==', 'accepted')

@@ -6,7 +6,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { ASOMetrics } from './pack424-store-reviews.types';
-import { FieldValue, HttpsError, auth, increment, logger, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, increment, logger, onCall, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -354,10 +354,7 @@ export const asoService = new ASOService();
 /**
  * Scheduled function: Track keyword rankings daily
  */
-export const dailyKeywordTracking = functions.pubsub
-  .schedule('0 4 * * *') // Daily at 4 AM UTC
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const dailyKeywordTracking = onSchedule({ schedule: "0 4 * * *", timeZone: "UTC" }, async (event) => {
     functions.logger.info('Starting daily keyword tracking');
 
     const keywords = [
@@ -379,7 +376,7 @@ export const dailyKeywordTracking = functions.pubsub
         await new Promise(resolve => setTimeout(resolve, 2000)); // Rate limit
       }
 
-      return { success: true };
+      return;
     } catch (error) {
       functions.logger.error('Error in daily keyword tracking:', error);
       throw error;

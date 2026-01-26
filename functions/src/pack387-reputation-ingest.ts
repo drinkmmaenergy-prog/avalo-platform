@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, increment, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, increment, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -72,11 +72,14 @@ export const pack387_ingestReputationSignal = functions.https.onCall(
       // Update sentiment analytics
       await updateSentimentAnalytics(signal);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         signalId: signalRef.id,
         threatLevel,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('Error ingesting reputation signal:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -328,9 +331,7 @@ async function updateSentimentAnalytics(signal: ReputationSignal): Promise<void>
 /**
  * Scheduled function to analyze reputation trends
  */
-export const pack387_analyzeReputationTrends = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const pack387_analyzeReputationTrends = onSchedule("every 1 hours", async (event) => {
     console.log('Analyzing reputation trends...');
     
     const now = admin.firestore.Timestamp.now();
@@ -365,5 +366,5 @@ export const pack387_analyzeReputationTrends = functions.pubsub
       }
     });
 
-    return null;
+    return;
   });

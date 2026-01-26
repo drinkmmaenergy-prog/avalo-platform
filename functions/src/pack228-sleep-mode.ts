@@ -6,7 +6,7 @@
 
 import { db, serverTimestamp, increment } from './init';
 import * as functions from 'firebase-functions';
-import { HttpsError, Timestamp, auth, onCall } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, logger, onSchedule } from './runtime';
 
 // ============================================================================
 // INTERFACES
@@ -114,7 +114,10 @@ export const activateSleepMode = functions.https.onCall(async (request) => {
     // Update analytics
     await updateAnalytics('activation', userId);
 
-    return { success: true, message: 'Sleep mode activated' };
+    console.log('Scheduled job result:', { success: true, message: 'Sleep mode activated' });
+
+
+    return;
   } catch (error) {
     console.error('Error activating sleep mode:', error);
     throw new functions.https.HttpsError('internal', 'Failed to activate sleep mode');
@@ -138,7 +141,9 @@ export const deactivateSleepMode = functions.https.onCall(async (request) => {
     const stateSnap = await stateRef.get();
 
     if (!stateSnap.exists || !stateSnap.data()?.isActive) {
-      return { success: false, message: 'Sleep mode not active' };
+      console.log('Scheduled job result:', { success: false, message: 'Sleep mode not active' });
+
+      return;
     }
 
     const now = serverTimestamp();
@@ -180,11 +185,14 @@ export const deactivateSleepMode = functions.https.onCall(async (request) => {
     // Update analytics
     await updateAnalytics('deactivation', userId);
 
-    return { 
+    console.log('Scheduled job result:', { 
       success: true, 
       message: 'Welcome back — continue at your own pace.',
       exitReason 
-    };
+    });
+
+
+    return;
   } catch (error) {
     console.error('Error deactivating sleep mode:', error);
     throw new functions.https.HttpsError('internal', 'Failed to deactivate sleep mode');
@@ -199,9 +207,7 @@ export const deactivateSleepMode = functions.https.onCall(async (request) => {
  * Check if user should be suggested to enter sleep mode
  * Runs daily via scheduled function
  */
-export const checkSleepModeSuggestions = functions.pubsub
-  .schedule('every 24 hours')
-  .onRun(async (context) => {
+export const checkSleepModeSuggestions = onSchedule("every 24 hours", async (event) => {
     try {
       // Get all active users
       const usersSnap = await db.collection('users')
@@ -375,7 +381,9 @@ export const trackSleepModeActivity = functions.https.onCall(async (request) => 
     // Check if user is in sleep mode
     const stateSnap = await db.collection('sleep_mode_states').doc(userId).get();
     if (!stateSnap.exists || !stateSnap.data()?.isActive) {
-      return { success: true, inSleepMode: false };
+      console.log('Scheduled job result:', { success: true, inSleepMode: false });
+
+      return;
     }
 
     // Auto-exit on certain actions
@@ -396,7 +404,10 @@ export const trackSleepModeActivity = functions.https.onCall(async (request) => 
       await triggerMatchComeback(userId);
       await updateAnalytics('deactivation', userId);
       
-      return { success: true, autoExited: true };
+      console.log('Scheduled job result:', { success: true, autoExited: true });
+
+      
+      return;
     }
 
     // Track chat opens for potential auto-exit (3 opens in 24h)
@@ -432,7 +443,10 @@ export const trackSleepModeActivity = functions.https.onCall(async (request) => 
             await updateAnalytics('deactivation', userId);
             await triggerRef.delete();
             
-            return { success: true, autoExited: true };
+            console.log('Scheduled job result:', { success: true, autoExited: true });
+
+            
+            return;
           }
         } else {
           // Reset if older than 24h
@@ -455,7 +469,10 @@ export const trackSleepModeActivity = functions.https.onCall(async (request) => 
       }
     }
 
-    return { success: true, inSleepMode: true, autoExited: false };
+    console.log('Scheduled job result:', { success: true, inSleepMode: true, autoExited: false });
+
+
+    return;
   } catch (error) {
     console.error('Error tracking sleep mode activity:', error);
     throw new functions.https.HttpsError('internal', 'Failed to track activity');
@@ -465,9 +482,7 @@ export const trackSleepModeActivity = functions.https.onCall(async (request) => 
 /**
  * Check for auto-timeout (scheduled function)
  */
-export const checkSleepModeAutoTimeout = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const checkSleepModeAutoTimeout = onSchedule("every 1 hours", async (event) => {
     try {
       const now = new Date();
       
@@ -526,7 +541,10 @@ export const storePendingPayment = functions.https.onCall(async (request) => {
       createdAt: serverTimestamp(),
     });
 
-    return { success: true, message: 'Payment stored, will be processed when user returns' };
+    console.log('Scheduled job result:', { success: true, message: 'Payment stored, will be processed when user returns' });
+
+
+    return;
   } catch (error) {
     console.error('Error storing pending payment:', error);
     throw new functions.https.HttpsError('internal', 'Failed to store payment');

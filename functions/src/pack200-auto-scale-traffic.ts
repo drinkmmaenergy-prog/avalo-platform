@@ -15,7 +15,7 @@ import { db, serverTimestamp, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import * as functions from 'firebase-functions';
 import { trackMetric } from './pack200-track-metrics';
-import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 export type RegionStatus = 'ACTIVE' | 'DEGRADED' | 'COLD' | 'DISABLED';
 export type TrafficAction = 'ROUTE' | 'REROUTE' | 'SCALE_UP' | 'SCALE_DOWN' | 'COLD_SHUTDOWN';
@@ -435,9 +435,7 @@ async function logScalingEvent(input: Omit<ScalingEvent, 'eventId' | 'timestamp'
 /**
  * Scheduled function to monitor and scale every 2 minutes
  */
-export const scheduled_autoScaleTraffic = functions.pubsub
-  .schedule('every 2 minutes')
-  .onRun(async (context) => {
+export const scheduled_autoScaleTraffic = onSchedule("every 2 minutes", async (event) => {
     try {
       await monitorAndScale();
       console.log('[AutoScale] Monitoring cycle completed');
@@ -463,11 +461,14 @@ export const admin_triggerScaling = functions.https.onCall(async (request) => {
   try {
     await monitorAndScale();
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: 'Scaling cycle triggered',
       timestamp: Date.now(),
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('[AutoScale] Manual trigger failed:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -498,11 +499,14 @@ export const admin_getScalingHistory = functions.https.onCall(async (request) =>
     
     const events = snapshot.docs.map(doc => doc.data());
     
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       events,
       total: snapshot.size,
-    };
+    });
+
+    
+    return;
   } catch (error: any) {
     console.error('[AutoScale] Failed to get scaling history:', error);
     throw new functions.https.HttpsError('internal', error.message);

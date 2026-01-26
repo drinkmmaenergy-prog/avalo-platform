@@ -8,7 +8,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import axios from 'axios';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -308,11 +308,14 @@ export const syncMetaCampaign = functions.https.onCall(async (request) => {
       syncedAt: admin.firestore.Timestamp.now()
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       metaCampaignId: metaCampaign.id,
       metaAdSetId: metaAdSet.id
-    };
+    });
+
+
+    return;
 
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
@@ -346,7 +349,10 @@ export const updateMetaCampaignBudget = functions.https.onCall(async (request) =
   try {
     await api.updateCampaignBudget(metaAdSetId, dailyBudget);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   } catch (error: any) {
     throw new functions.https.HttpsError('internal', error.message);
   }
@@ -451,30 +457,31 @@ export const rotateMetaCreatives = functions.https.onCall(async (request) => {
     }
   }
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     adsCreated: createdAds.length,
     ads: createdAds
-  };
+  });
+
+
+  return;
 });
 
 // ===========================
 // SYNC INSIGHTS FROM META
 // ===========================
 
-export const syncMetaInsights = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const syncMetaInsights = onSchedule("every 1 hours", async (event) => {
     // Get all active Meta campaigns
     const campaigns = await db.collection('ua_campaigns')
       .where('platform', '==', 'meta')
       .where('status', '==', 'active')
       .get();
 
-    if (campaigns.empty) return null;
+    if (campaigns.empty) return;
 
     const metaAccountDoc = await db.collection('ua_platform_accounts').doc('meta').get();
-    if (!metaAccountDoc.exists) return null;
+    if (!metaAccountDoc.exists) return;
 
     const metaAccount = metaAccountDoc.data() as MetaAdAccount;
     const api = new MetaAdsAPI(metaAccount.accessToken);
@@ -518,7 +525,7 @@ export const syncMetaInsights = functions.pubsub
       }
     }
 
-    return null;
+    return;
   });
 
 // ===========================
@@ -532,7 +539,9 @@ export const trackMetaPixelEvent = functions.https.onCall(async (request) => {
   // Get Meta pixel ID
   const metaAccountDoc = await db.collection('ua_platform_accounts').doc('meta').get();
   if (!metaAccountDoc.exists) {
-    return { success: false, error: 'Meta account not configured' };
+    console.log('Scheduled job result:', { success: false, error: 'Meta account not configured' });
+
+    return;
   }
 
   const metaAccount = metaAccountDoc.data() as MetaAdAccount;
@@ -555,11 +564,16 @@ export const trackMetaPixelEvent = functions.https.onCall(async (request) => {
       }
     );
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
 
   } catch (error: any) {
     console.error('Meta pixel event tracking failed:', error);
-    return { success: false, error: error.message };
+    console.log('Scheduled job result:', { success: false, error: error.message });
+
+    return;
   }
 });
 

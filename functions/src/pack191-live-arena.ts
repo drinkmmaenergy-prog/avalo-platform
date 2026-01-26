@@ -17,11 +17,11 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
-import { admin, auth, functions, increment, serverTimestamp } from './runtime';
+import { admin, auth, functions, increment, serverTimestamp, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -269,11 +269,14 @@ export const createLiveStream = onCall(
 
     await streamRef.set(stream);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       streamId: streamRef.id,
       stream,
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -313,7 +316,10 @@ export const startLiveStream = onCall(
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -394,13 +400,16 @@ export const endLiveStream = onCall(
       createdAt: FieldValue.serverTimestamp(),
     });
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       duration,
       totalRevenue,
       creatorEarnings,
       platformEarnings,
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -446,7 +455,10 @@ export const joinLiveStream = onCall(
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    return { success: true, stream };
+    console.log('Scheduled job result:', { success: true, stream });
+
+
+    return;
   }
 );
 
@@ -545,7 +557,10 @@ export const sendStreamReaction = onCall(
       });
     });
 
-    return { success: true, tokens, reactionType };
+    console.log('Scheduled job result:', { success: true, tokens, reactionType });
+
+
+    return;
   }
 );
 
@@ -603,7 +618,10 @@ export const createStreamPoll = onCall(
 
     await pollRef.set(poll);
 
-    return { success: true, pollId: pollRef.id, poll };
+    console.log('Scheduled job result:', { success: true, pollId: pollRef.id, poll });
+
+
+    return;
   }
 );
 
@@ -685,7 +703,10 @@ export const voteOnPoll = onCall(
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -750,7 +771,10 @@ export const createStreamChallenge = onCall(
 
     await challengeRef.set(challenge);
 
-    return { success: true, challengeId: challengeRef.id, challenge };
+    console.log('Scheduled job result:', { success: true, challengeId: challengeRef.id, challenge });
+
+
+    return;
   }
 );
 
@@ -830,7 +854,10 @@ export const submitToChallenge = onCall(
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -900,7 +927,10 @@ export const reportStream = onCall(
       });
     }
 
-    return { success: true, reportId: reportRef.id };
+    console.log('Scheduled job result:', { success: true, reportId: reportRef.id });
+
+
+    return;
   }
 );
 

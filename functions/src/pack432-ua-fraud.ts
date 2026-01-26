@@ -11,7 +11,7 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -166,19 +166,20 @@ export const captureDeviceFingerprint = functions.https.onCall(async (request) =
     });
   }
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     suspiciousScore
-  };
+  });
+
+
+  return;
 });
 
 // ===========================
 // FRAUD DETECTION ALGORITHMS
 // ===========================
 
-export const detectDeviceFarms = functions.pubsub
-  .schedule('every 1 hours')
-  .onRun(async (context) => {
+export const detectDeviceFarms = onSchedule("every 1 hours", async (event) => {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     // Find devices with multiple accounts
@@ -261,12 +262,10 @@ export const detectDeviceFarms = functions.pubsub
       }
     }
 
-    return null;
+    return;
   });
 
-export const detectBotBehavior = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async (context) => {
+export const detectBotBehavior = onSchedule("every 6 hours", async (event) => {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     // Get recent user journeys
@@ -346,12 +345,10 @@ export const detectBotBehavior = functions.pubsub
       }
     }
 
-    return null;
+    return;
   });
 
-export const detectCPIManipulation = functions.pubsub
-  .schedule('every 2 hours')
-  .onRun(async (context) => {
+export const detectCPIManipulation = onSchedule("every 2 hours", async (event) => {
     // Get recent campaign performance
     const campaigns = await db.collection('ua_campaigns')
       .where('status', '==', 'active')
@@ -477,7 +474,7 @@ export const detectCPIManipulation = functions.pubsub
       }
     }
 
-    return null;
+    return;
   });
 
 export const detectRefundAbuse = functions.firestore
@@ -544,7 +541,7 @@ export const detectRefundAbuse = functions.firestore
       }
     }
 
-    return null;
+    return;
   });
 
 // ===========================
@@ -579,7 +576,7 @@ async function isVPN(ipAddress: string): Promise<boolean> {
 async function getTimezoneFromIP(ipAddress: string): Promise<string | null> {
   // In production, use IP geolocation API
   // For now, return null
-  return null;
+  return;
 }
 
 // ===========================
@@ -628,7 +625,10 @@ export const reviewFraudSignal = functions.https.onCall(async (request) => {
     });
   }
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 export const getFraudDashboard = functions.https.onCall(async (request) => {

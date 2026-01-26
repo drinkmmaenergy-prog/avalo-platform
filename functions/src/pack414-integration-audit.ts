@@ -17,7 +17,7 @@ import {
   getGreenlightStatus,
   CRITICAL_LAUNCH_REQUIREMENTS 
 } from '../../shared/integration/pack414-registry';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -1134,12 +1134,14 @@ async function auditCloudFunctions(): Promise<AuditCheck> {
 async function auditErrorTracking(): Promise<AuditCheck> {
   try {
     const errorConfig = await db.collection('system_config').doc('error_tracking').get();
-    return {
+    console.log('Scheduled job result:', {
       name: 'Error Tracking',
       status: errorConfig.exists ? 'PASS' : 'WARN',
       message: errorConfig.exists ? 'Error tracking configured' : 'Error tracking config missing',
       category: 'HIGH'
-    };
+    });
+
+    return;
   } catch (error) {
     return {
       name: 'Error Tracking',
@@ -1186,10 +1188,7 @@ function updateRegistryFromChecks(registry: IntegrationStatus[], checks: AuditCh
 /**
  * Scheduled Function: Daily Full Audit (00:00 UTC)
  */
-export const pack414_scheduledDailyAudit = functions
-  .pubsub.schedule('0 0 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const pack414_scheduledDailyAudit = onSchedule({ schedule: "0 0 * * *", timeZone: "UTC" }, async (event) => {
     console.log('Running scheduled daily audit...');
     
     try {
@@ -1246,9 +1245,7 @@ export const pack414_scheduledDailyAudit = functions
 /**
  * Scheduled Function: Warm Health Check (Every 15 minutes)
  */
-export const pack414_scheduledHealthCheck = functions
-  .pubsub.schedule('every 15 minutes')
-  .onRun(async (context) => {
+export const pack414_scheduledHealthCheck = onSchedule("every 15 minutes", async (event) => {
     console.log('Running health check...');
     
     try {

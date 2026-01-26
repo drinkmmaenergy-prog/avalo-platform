@@ -24,9 +24,9 @@
 
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, increment, FieldValue } from './init';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { Timestamp, admin, auth, timestamp } from './runtime';
+import { Timestamp, admin, auth, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -260,7 +260,9 @@ export const initializeCreatorMissions = onCall(
       // Check if already initialized
       const existingDoc = await db.collection('creatorMissions').doc(userId).get();
       if (existingDoc.exists) {
-        return { success: true, data: existingDoc.data() as CreatorMissionProfile };
+        console.log('Scheduled job result:', { success: true, data: existingDoc.data() as CreatorMissionProfile });
+
+        return;
       }
 
       // Get creator level from PACK 262
@@ -289,10 +291,15 @@ export const initializeCreatorMissions = onCall(
       // Assign initial daily missions
       await assignDailyMissions(userId, level);
 
-      return { success: true, data: profile };
+      console.log('Scheduled job result:', { success: true, data: profile });
+
+
+      return;
     } catch (error: any) {
       console.error('Error initializing creator missions:', error);
-      return { success: false, error: error.message };
+      console.log('Scheduled job result:', { success: false, error: error.message });
+
+      return;
     }
   }
 );
@@ -359,10 +366,15 @@ export const getCreatorMissions = onCall(
         ...doc.data(),
       })) as ActiveMission[];
 
-      return { success: true, profile, activeMissions };
+      console.log('Scheduled job result:', { success: true, profile, activeMissions });
+
+
+      return;
     } catch (error: any) {
       console.error('Error getting creator missions:', error);
-      return { success: false, error: error.message };
+      console.log('Scheduled job result:', { success: false, error: error.message });
+
+      return;
     }
   }
 );
@@ -393,7 +405,9 @@ export const recordMissionProgress = onCall(
       const isValid = await validateActivity(userId, activityType, value, metadata);
       if (!isValid) {
         console.warn(`Invalid activity detected for ${userId}: ${activityType}`);
-        return { success: false, error: 'Activity validation failed' };
+        console.log('Scheduled job result:', { success: false, error: 'Activity validation failed' });
+
+        return;
       }
 
       // Get active missions matching this activity type
@@ -452,14 +466,19 @@ export const recordMissionProgress = onCall(
         }
       }
 
-      return { 
+      console.log('Scheduled job result:', { 
         success: true, 
         completedMissions,
         lpAwarded: totalLPAwarded,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('Error recording mission progress:', error);
-      return { success: false, error: error.message };
+      console.log('Scheduled job result:', { success: false, error: error.message });
+
+      return;
     }
   }
 );
@@ -533,10 +552,15 @@ export const claimMissionReward = onCall(
           claimedAt: serverTimestamp(),
         });
 
-      return { success: true, lpAwarded: mission.reward.lp };
+      console.log('Scheduled job result:', { success: true, lpAwarded: mission.reward.lp });
+
+
+      return;
     } catch (error: any) {
       console.error('Error claiming mission reward:', error);
-      return { success: false, error: error.message };
+      console.log('Scheduled job result:', { success: false, error: error.message });
+
+      return;
     }
   }
 );

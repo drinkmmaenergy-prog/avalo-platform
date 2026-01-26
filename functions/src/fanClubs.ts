@@ -23,10 +23,10 @@ import {
   HttpsError,
   CallableRequest,
 } from "firebase-functions/v2/https";
-import { onSchedule } from "firebase-functions/v2/scheduler";
+
 import { getFirestore, FieldValue, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/v2";
-import { admin, arrayUnion, auth, functions, increment, serverTimestamp } from './runtime';
+import { admin, arrayUnion, auth, functions, increment, serverTimestamp, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -339,10 +339,13 @@ export const enableFanClub = onCall<{
 
   logger.info(`Fan Club enabled for creator ${userId}`);
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     settings,
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -370,7 +373,10 @@ export const updateFanClubSettings = onCall<Partial<FanClubSettings>>(
 
     logger.info(`Fan Club settings updated for creator ${userId}`);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -392,7 +398,10 @@ export const disableFanClub = onCall(async (request: CallableRequest) => {
   // Note: Existing memberships remain active until expiration
   logger.info(`Fan Club disabled for creator ${userId}`);
 
-  return { success: true };
+  console.log('Scheduled job result:', { success: true });
+
+
+  return;
 });
 
 // ============================================================================
@@ -556,13 +565,16 @@ export const joinFanClub = onCall<{
 
   logger.info(`Member ${memberId} joined Fan Club of ${creatorId} at ${tier} tier`);
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     membershipId,
     tier,
     nextBillingDate:
       billingType === "monthly" ? calculateNextBillingDate().toMillis() : null,
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -619,13 +631,16 @@ export const leaveFanClub = onCall<{ creatorId: string }>(
 
     logger.info(`Member ${memberId} left Fan Club of ${creatorId}`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       message: "Membership cancelled. Access until end of billing cycle.",
       expiresAt: membership.nextBillingDate
         ? membership.nextBillingDate.toMillis()
         : Date.now(),
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -686,11 +701,14 @@ export const changeFanClubTier = onCall<{
 
   logger.info(`Member ${memberId} changed tier to ${newTier} in Fan Club of ${creatorId}`);
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     newTier,
     message: "Tier updated. New price takes effect on next billing.",
-  };
+  });
+
+
+  return;
 });
 
 // ============================================================================
@@ -863,10 +881,13 @@ export const sendExclusiveDrop = onCall<{
 
   logger.info(`Exclusive drop sent to ${notifications.length} members`);
 
-  return {
+  console.log('Scheduled job result:', {
     success: true,
     notifiedCount: notifications.length,
-  };
+  });
+
+
+  return;
 });
 
 /**
@@ -911,10 +932,13 @@ export const sendFanClubAnnouncement = onCall<{ message: string }>(
 
     logger.info(`Announcement sent to ${notifications.length} members`);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       notifiedCount: notifications.length,
-    };
+    });
+
+
+    return;
   }
 );
 
@@ -1011,12 +1035,14 @@ export const getTopSupporters = onCall<{ limit?: number }>(
     const supporters = membershipsSnapshot.docs
       .map((doc) => {
         const membership = doc.data() as FanClubMembership;
-        return {
+        console.log('Scheduled job result:', {
           memberId: membership.memberId,
           tier: membership.tier,
           totalPaid: membership.totalPaid,
           joinedAt: membership.joinedAt.toMillis(),
-        };
+        });
+
+        return;
       })
       .sort((a, b) => b.totalPaid - a.totalPaid)
       .slice(0, limit);

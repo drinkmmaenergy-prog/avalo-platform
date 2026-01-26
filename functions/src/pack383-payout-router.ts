@@ -13,7 +13,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
 
@@ -354,14 +354,17 @@ export const pack383_initiatePayout = functions.https.onCall(async (request) => 
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         payoutId: payoutRef.id,
         netAmount: taxCalc.netAmount,
         taxAmount: taxCalc.taxAmount,
         estimatedArrival: routeResolution.estimatedArrival,
         provider: routeResolution.provider.name,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('Error initiating payout:', error);
       throw new functions.https.HttpsError('internal', error.message);
@@ -373,9 +376,7 @@ export const pack383_initiatePayout = functions.https.onCall(async (request) => 
  * Queue payout for processing
  * Scheduled function to process pending payouts
  */
-export const pack383_processPayoutQueue = functions.pubsub
-  .schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const pack383_processPayoutQueue = onSchedule("every 5 minutes", async (event) => {
     try {
       // Get pending payouts
       const pendingPayouts = await db
@@ -386,7 +387,7 @@ export const pack383_processPayoutQueue = functions.pubsub
 
       if (pendingPayouts.empty) {
         console.log('No pending payouts to process');
-        return null;
+        return;
       }
 
       const processPromises = pendingPayouts.docs.map(async (payoutDoc) => {
@@ -429,10 +430,10 @@ export const pack383_processPayoutQueue = functions.pubsub
       await Promise.all(processPromises);
 
       console.log(`Processed ${pendingPayouts.size} payouts`);
-      return null;
+      return;
     } catch (error) {
       console.error('Error processing payout queue:', error);
-      return null;
+      return;
     }
   });
 
@@ -455,7 +456,10 @@ async function getUserFraudHistory(userId: string) {
     .where('flagged', '==', true)
     .get();
 
-  return { count: fraudSnapshot.size };
+  console.log('Scheduled job result:', { count: fraudSnapshot.size });
+
+
+  return;
 }
 
 async function calculateRouteScore(

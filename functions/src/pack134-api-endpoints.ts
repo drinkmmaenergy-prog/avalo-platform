@@ -6,7 +6,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { logger } from 'firebase-functions/v2';
 import { Timestamp } from 'firebase-admin/firestore';
 import { db } from './init';
@@ -34,7 +34,7 @@ import {
   UserPersonalizationSettings,
   PersonalizationDashboard,
 } from './types/pack134-types';
-import { admin, auth, functions, timestamp } from './runtime';
+import { admin, auth, functions, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // PERSONALIZED FEED ENDPOINTS
@@ -164,7 +164,9 @@ export const recordInteraction = onCall<{
     const settings = await getUserPersonalizationSettings(auth.uid);
     if (settings.personalizationLevel === 'OFF' || !settings.allowInterestTracking) {
       // Don't track if personalization is disabled
-      return { success: true, tracked: false };
+      console.log('Scheduled job result:', { success: true, tracked: false });
+
+      return;
     }
     
     try {
@@ -180,7 +182,10 @@ export const recordInteraction = onCall<{
       
       await updateInterestGraph(signal);
       
-      return { success: true, tracked: true };
+      console.log('Scheduled job result:', { success: true, tracked: true });
+
+      
+      return;
     } catch (error) {
       logger.error('[Pack134] Record interaction error', { error });
       throw new HttpsError('internal', 'Failed to record interaction');
@@ -445,7 +450,7 @@ async function getUserPersonalizationSettings(
   
   if (!settingsDoc.exists) {
     // Return default settings
-    return {
+    console.log('Scheduled job result:', {
       userId,
       personalizationLevel: 'FULL',
       allowTimeOfDay: true,
@@ -453,7 +458,9 @@ async function getUserPersonalizationSettings(
       allowBehaviorAnalysis: true,
       dataRetentionDays: 90,
       updatedAt: Timestamp.now(),
-    };
+    });
+
+    return;
   }
   
   return settingsDoc.data() as UserPersonalizationSettings;

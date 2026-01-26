@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { HttpsError, auth, onCall, timestamp } from './runtime';
+import { HttpsError, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 // ============================================
 // TYPES
@@ -279,7 +279,7 @@ export async function getRegionHealth(
     const latency = Date.now() - startTime;
     
     if (!regionDoc.exists) {
-      return {
+      console.log('Scheduled job result:', {
         region,
         healthy: false,
         latencyMs: latency,
@@ -288,7 +288,9 @@ export async function getRegionHealth(
         activeConnections: 0,
         errorRate: 1,
         timestamp: Date.now(),
-      };
+      });
+
+      return;
     }
     
     const data = regionDoc.data() as RegionNode;
@@ -313,7 +315,7 @@ export async function getRegionHealth(
       cpuUsage < MAX_CPU_USAGE &&
       errorRate < MAX_ERROR_RATE;
     
-    return {
+    console.log('Scheduled job result:', {
       region,
       healthy,
       latencyMs: latency,
@@ -322,10 +324,13 @@ export async function getRegionHealth(
       activeConnections,
       errorRate,
       timestamp: Date.now(),
-    };
+    });
+
+    
+    return;
   } catch (error) {
     console.error(`Health check failed for ${region}:`, error);
-    return {
+    console.log('Scheduled job result:', {
       region,
       healthy: false,
       latencyMs: 9999,
@@ -334,16 +339,16 @@ export async function getRegionHealth(
       activeConnections: 0,
       errorRate: 1,
       timestamp: Date.now(),
-    };
+    });
+
+    return;
   }
 }
 
 /**
  * Scheduled health check for all regions
  */
-export const runHealthChecks = functions.pubsub
-  .schedule("every 10 seconds")
-  .onRun(async (context) => {
+export const runHealthChecks = onSchedule("every 10 seconds", async (event) => {
     const db = admin.firestore();
     
     console.log("🏥 Running health checks on all regions...");
@@ -581,6 +586,8 @@ export const initializeRegions = functions.https.onCall(async (request) => {
     await batch.commit();
     
     console.log("✅ Regions initialized");
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+    return;
   }
 );

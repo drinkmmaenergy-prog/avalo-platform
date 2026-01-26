@@ -810,7 +810,10 @@ export const cancelAccountDeletionV2 = onCall(
 
     logger.info(`User ${userId} cancelled deletion request: ${requestId}`);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 
@@ -989,7 +992,10 @@ export const updateConsentV1 = onCall(
 
     logger.info(`User ${userId} ${granted ? "granted" : "withdrew"} consent for ${consentType}`);
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   }
 );
 

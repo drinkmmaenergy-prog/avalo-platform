@@ -11,7 +11,7 @@ import {
   processRetentionTriggers,
   resetMonthlySpending,
 } from './supporterAnalytics';
-import { HttpsError, auth, logger, onCall, timestamp } from './runtime';
+import { HttpsError, auth, logger, onCall, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
 // FIRESTORE TRIGGERS
@@ -28,7 +28,7 @@ export const onTokenSpending = functions.firestore
 
     // Only track spending transactions (negative amounts from supporter)
     if (transaction.type !== 'spend' || transaction.amount >= 0) {
-      return null;
+      return;
     }
 
     const supporterId = transaction.userId;
@@ -37,7 +37,7 @@ export const onTokenSpending = functions.firestore
     
     if (!creatorId) {
       functions.logger.warn('No creator ID found in transaction', { transactionId: snap.id });
-      return null;
+      return;
     }
 
     const source = transaction.metadata?.source || 'unknown';
@@ -61,7 +61,7 @@ export const onTokenSpending = functions.firestore
         source: transactionSource,
       });
 
-      return null;
+      return;
     } catch (error) {
       functions.logger.error('Error tracking token spending', { error, transactionId: snap.id });
       throw error;
@@ -80,11 +80,11 @@ export const onCreatorViewsProfile = functions.firestore
 
     // Check if viewer is a creator (has earnOnChat enabled)
     const viewerDoc = await snap.ref.firestore.collection('users').doc(viewerId).get();
-    if (!viewerDoc.exists) return null;
+    if (!viewerDoc.exists) return;
 
     const viewerData = viewerDoc.data();
     if (!viewerData?.earnOnChat) {
-      return null; // Only send notification if viewer is a creator
+      return; // Only send notification if viewer is a creator
     }
 
     try {
@@ -99,10 +99,10 @@ export const onCreatorViewsProfile = functions.firestore
         creatorId: viewerId,
       });
 
-      return null;
+      return;
     } catch (error) {
       functions.logger.error('Error sending profile view notification', { error });
-      return null;
+      return;
     }
   });
 
@@ -148,7 +148,7 @@ export const onCreatorOnlineStatus = functions.firestore
       });
     }
 
-    return null;
+    return;
   });
 
 /**
@@ -190,7 +190,7 @@ export const onNewStory = functions.firestore
       notificationCount: notifications.length,
     });
 
-    return null;
+    return;
   });
 
 /**
@@ -232,7 +232,7 @@ export const onNewPaidMedia = functions.firestore
       notificationCount: notifications.length,
     });
 
-    return null;
+    return;
   });
 
 // ============================================================================
@@ -243,9 +243,7 @@ export const onNewPaidMedia = functions.firestore
  * Process retention triggers every 6 hours
  * Sends notifications to inactive supporters
  */
-export const processRetentionTriggersScheduled = functions.pubsub
-  .schedule('every 6 hours')
-  .onRun(async (context) => {
+export const processRetentionTriggersScheduled = onSchedule("every 6 hours", async (event) => {
     try {
       const triggersProcessed = await processRetentionTriggers();
       
@@ -254,7 +252,7 @@ export const processRetentionTriggersScheduled = functions.pubsub
         timestamp: new Date().toISOString(),
       });
 
-      return null;
+      return;
     } catch (error) {
       functions.logger.error('Error processing retention triggers', { error });
       throw error;
@@ -265,10 +263,7 @@ export const processRetentionTriggersScheduled = functions.pubsub
  * Reset monthly spending at the start of each month
  * Runs on the 1st of every month at 00:00 UTC
  */
-export const resetMonthlySpendingScheduled = functions.pubsub
-  .schedule('0 0 1 * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const resetMonthlySpendingScheduled = onSchedule({ schedule: "0 0 1 * *", timeZone: "UTC" }, async (event) => {
     try {
       const resetCount = await resetMonthlySpending();
       
@@ -277,7 +272,7 @@ export const resetMonthlySpendingScheduled = functions.pubsub
         timestamp: new Date().toISOString(),
       });
 
-      return null;
+      return;
     } catch (error) {
       functions.logger.error('Error resetting monthly spending', { error });
       throw error;
@@ -306,7 +301,7 @@ export const getSupporterAnalytics = functions.https.onCall(async (request) => {
       .get();
 
     if (!analyticsDoc.exists) {
-      return null;
+      return;
     }
 
     return analyticsDoc.data();
@@ -340,7 +335,7 @@ export const getFanLevel = functions.https.onCall(async (request) => {
       .get();
 
     if (!fanLevelDoc.exists) {
-      return null;
+      return;
     }
 
     return fanLevelDoc.data();
@@ -388,7 +383,10 @@ export const markNotificationRead = functions.https.onCall(async (request) => {
       readAt: serverTimestamp(),
     });
 
-    return { success: true };
+    console.log('Scheduled job result:', { success: true });
+
+
+    return;
   } catch (error) {
     functions.logger.error('Error marking notification as read', { error, userId, notificationId });
     throw new functions.https.HttpsError('internal', 'Failed to mark notification as read');

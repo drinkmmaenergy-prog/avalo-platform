@@ -23,9 +23,9 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { logBusinessEvent } from './pack90-logging';
 import * as functions from 'firebase-functions/v2';
 import { onCall } from 'firebase-functions/v2/https';
-import { onSchedule } from 'firebase-functions/v2/scheduler';
+
 import { HttpsError } from 'firebase-functions/v2/https';
-import { admin } from './runtime';
+import { admin, onSchedule } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -134,13 +134,15 @@ export const requestDataExport = onCall(
 
       if (!existingRequests.empty) {
         const existing = existingRequests.docs[0].data() as UserDataExport;
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'EXISTING_REQUEST',
           message: 'A data export request is already in progress',
           requestId: existingRequests.docs[0].id,
           createdAt: existing.createdAt.toMillis(),
-        };
+        });
+
+        return;
       }
 
       // Create new export request
@@ -168,12 +170,15 @@ export const requestDataExport = onCall(
 
       console.log(`[DataRights] Export requested by user ${userId}, requestId: ${exportId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         requestId: exportId,
         message: 'Data export request created. Processing will begin shortly.',
         estimatedTime: '15-30 minutes',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[DataRights] Failed to create export request:', error);
       throw new HttpsError('internal', 'Failed to create data export request');
@@ -365,14 +370,16 @@ async function aggregateUserData(userId: string): Promise<ExportedUserData> {
       .get();
     data.content.stories = storiesSnapshot.docs.map(doc => {
       const story = doc.data();
-      return {
+      console.log('Scheduled job result:', {
         id: doc.id,
         title: story.title,
         price: story.priceTokens,
         views: story.views || 0,
         earnings: story.earnings || 0,
         createdAt: story.createdAt?.toDate?.()?.toISOString(),
-      };
+      });
+
+      return;
     });
 
     // Paid Media Messages (created by user)
@@ -383,14 +390,16 @@ async function aggregateUserData(userId: string): Promise<ExportedUserData> {
       .get();
     data.content.paidMedia = paidMediaSnapshot.docs.map(doc => {
       const media = doc.data();
-      return {
+      console.log('Scheduled job result:', {
         id: doc.id,
         type: media.type,
         price: media.priceTokens,
         unlockedBy: media.unlockedBy?.length || 0,
         earnings: media.totalEarnings || 0,
         createdAt: media.createdAt?.toDate?.()?.toISOString(),
-      };
+      });
+
+      return;
     });
 
     // Gifts (sent or received)
@@ -428,7 +437,7 @@ async function aggregateUserData(userId: string): Promise<ExportedUserData> {
       .get();
     data.monetization.payoutRequests = payoutSnapshot.docs.map(doc => {
       const payout = doc.data();
-      return {
+      console.log('Scheduled job result:', {
         id: doc.id,
         amount: payout.amount,
         status: payout.status,
@@ -436,7 +445,9 @@ async function aggregateUserData(userId: string): Promise<ExportedUserData> {
         createdAt: payout.createdAt?.toDate?.()?.toISOString(),
         completedAt: payout.completedAt?.toDate?.()?.toISOString(),
         // Exclude: bankAccount, routingNumber, etc.
-      };
+      });
+
+      return;
     });
 
     // Creator Balances
@@ -490,13 +501,15 @@ async function aggregateUserData(userId: string): Promise<ExportedUserData> {
       .get();
     data.notifications = notificationsSnapshot.docs.map(doc => {
       const notif = doc.data();
-      return {
+      console.log('Scheduled job result:', {
         type: notif.type,
         title: notif.title,
         message: notif.message,
         read: notif.read,
         createdAt: notif.createdAt?.toDate?.()?.toISOString(),
-      };
+      });
+
+      return;
     });
 
     data.meta.totalRecordCount = countTotalRecords(data);
@@ -552,7 +565,7 @@ export const getMyDataExports = onCall(
 
       const exports = exportsSnapshot.docs.map(doc => {
         const data = doc.data() as UserDataExport;
-        return {
+        console.log('Scheduled job result:', {
           id: doc.id,
           status: data.status,
           createdAt: data.createdAt.toMillis(),
@@ -561,13 +574,18 @@ export const getMyDataExports = onCall(
           expiresAt: data.expiresAt?.toMillis(),
           errorMessage: data.errorMessage,
           fileSize: data.fileSize,
-        };
+        });
+
+        return;
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         exports,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[DataRights] Failed to get exports:', error);
       throw new HttpsError('internal', 'Failed to retrieve export requests');
@@ -612,13 +630,15 @@ export const requestAccountDeletion = onCall(
 
       if (!existingRequests.empty) {
         const existing = existingRequests.docs[0].data() as UserDeletionRequest;
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'EXISTING_REQUEST',
           message: 'An account deletion request is already in progress',
           requestId: existingRequests.docs[0].id,
           createdAt: existing.createdAt.toMillis(),
-        };
+        });
+
+        return;
       }
 
       // Check for financial holds (active payouts, disputes, etc.)
@@ -662,12 +682,15 @@ export const requestAccountDeletion = onCall(
 
       console.log(`[DataRights] Deletion requested by user ${userId}, requestId: ${deletionId}`);
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         requestId: deletionId,
         message: 'Account deletion request created. Processing will begin shortly. This action is irreversible.',
         warning: 'Your account and data will be permanently deleted. Financial records will be pseudonymized but retained for compliance.',
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[DataRights] Failed to create deletion request:', error);
       if (error instanceof HttpsError) throw error;
@@ -1039,10 +1062,12 @@ export const getMyDeletionStatus = onCall(
         .get();
 
       if (deletionSnapshot.empty) {
-        return {
+        console.log('Scheduled job result:', {
           success: true,
           hasPendingDeletion: false,
-        };
+        });
+
+        return;
       }
 
       const deletion = deletionSnapshot.docs[0].data() as UserDeletionRequest;

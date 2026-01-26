@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, increment, auth } from './init';
 import { recordPaidMediaEarning } from './earningsIntegration';
-import { onCall } from './runtime';
+import { onCall, logger, onSchedule } from './runtime';
 // Push notifications - implement based on your notification service
 async function sendPushNotification(
   userId: string,
@@ -84,7 +84,9 @@ const MAX_PRICE = 10000;
  */
 function validatePrice(price: number): { valid: boolean; error?: string } {
   if (!Number.isInteger(price)) {
-    return { valid: false, error: 'Price must be a whole number' };
+    console.log('Scheduled job result:', { valid: false, error: 'Price must be a whole number' });
+
+    return;
   }
 
   if (price < MIN_PRICE) {
@@ -196,11 +198,13 @@ export const sendPaidMediaMessage = functions.https.onCall(async (request) => {
     try {
       // Verify authentication
       if (!request.auth) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'Unauthorized',
           errorCode: 'UNAUTHORIZED',
-        };
+        });
+
+        return;
       }
 
       const senderId = request.auth.uid;
@@ -222,30 +226,36 @@ export const sendPaidMediaMessage = functions.https.onCall(async (request) => {
 
       // Validate required fields
       if (!chatId || !recipientId || !mediaType || !priceTokens || !mediaUrl || !thumbnailUrl) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'Missing required fields',
           errorCode: 'INVALID_REQUEST',
-        };
+        });
+
+        return;
       }
 
       // Validate price
       const priceValidation = validatePrice(priceTokens);
       if (!priceValidation.valid) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: priceValidation.error,
           errorCode: 'INVALID_PRICE',
-        };
+        });
+
+        return;
       }
 
       // Prevent self-sending
       if (senderId === recipientId) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'Cannot send paid media to yourself',
           errorCode: 'SELF_UNLOCK',
-        };
+        });
+
+        return;
       }
 
       // Verify chat exists and user is participant
@@ -253,22 +263,26 @@ export const sendPaidMediaMessage = functions.https.onCall(async (request) => {
       const chatSnap = await chatRef.get();
 
       if (!chatSnap.exists) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'Chat not found',
           errorCode: 'CHAT_NOT_FOUND',
-        };
+        });
+
+        return;
       }
 
       const chatData = chatSnap.data();
       const participants = chatData?.participants || [];
 
       if (!participants.includes(senderId) || !participants.includes(recipientId)) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'User is not a participant in this chat',
           errorCode: 'UNAUTHORIZED',
-        };
+        });
+
+        return;
       }
 
       // Create paid media message document
@@ -321,17 +335,22 @@ export const sendPaidMediaMessage = functions.https.onCall(async (request) => {
         },
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         mediaId: mediaRef.id,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[sendPaidMediaMessage] Error:', error);
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to send paid media',
         errorCode: 'TRANSACTION_FAILED',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -345,11 +364,13 @@ export const unlockPaidMedia = functions.https.onCall(async (request) => {
     try {
       // Verify authentication
       if (!request.auth) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'Unauthorized',
           errorCode: 'UNAUTHORIZED',
-        };
+        });
+
+        return;
       }
 
       const buyerId = request.auth.uid;
@@ -357,11 +378,13 @@ export const unlockPaidMedia = functions.https.onCall(async (request) => {
 
       // Validate required fields
       if (!mediaId || !chatId) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'Missing required fields',
           errorCode: 'INVALID_REQUEST',
-        };
+        });
+
+        return;
       }
 
       // Get paid media document
@@ -369,31 +392,37 @@ export const unlockPaidMedia = functions.https.onCall(async (request) => {
       const mediaSnap = await mediaRef.get();
 
       if (!mediaSnap.exists) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'Media not found',
           errorCode: 'MEDIA_NOT_FOUND',
-        };
+        });
+
+        return;
       }
 
       const mediaData = mediaSnap.data();
       if (!mediaData) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'Media data not found',
           errorCode: 'MEDIA_NOT_FOUND',
-        };
+        });
+
+        return;
       }
 
       const { senderId, priceTokens, mediaUrl } = mediaData;
 
       // Prevent self-unlocking
       if (buyerId === senderId) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'You cannot unlock your own media',
           errorCode: 'SELF_UNLOCK',
-        };
+        });
+
+        return;
       }
 
       // Check if already unlocked
@@ -405,11 +434,13 @@ export const unlockPaidMedia = functions.https.onCall(async (request) => {
         .get();
 
       if (!existingUnlock.empty) {
-        return {
+        console.log('Scheduled job result:', {
           success: false,
           error: 'You have already unlocked this media',
           errorCode: 'ALREADY_UNLOCKED',
-        };
+        });
+
+        return;
       }
 
       // Check buyer's token balance
@@ -510,18 +541,23 @@ export const unlockPaidMedia = functions.https.onCall(async (request) => {
         console.error('[unlockPaidMedia] Error recording in earnings ledger:', error);
       });
 
-      return {
+      console.log('Scheduled job result:', {
         success: true,
         mediaUrl,
         transactionId,
-      };
+      });
+
+
+      return;
     } catch (error: any) {
       console.error('[unlockPaidMedia] Error:', error);
-      return {
+      console.log('Scheduled job result:', {
         success: false,
         error: error.message || 'Failed to unlock media',
         errorCode: 'TRANSACTION_FAILED',
-      };
+      });
+
+      return;
     }
   }
 );
@@ -534,10 +570,7 @@ export const unlockPaidMedia = functions.https.onCall(async (request) => {
  * Optional CRON job to clean up media when sender deletes account
  * Schedule: Every day at 3 AM
  */
-export const cleanupDeletedMedia = functions.pubsub
-  .schedule('0 3 * * *')
-  .timeZone('UTC')
-  .onRun(async (context) => {
+export const cleanupDeletedMedia = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
     try {
       console.log('[cleanupDeletedMedia] Starting cleanup job');
 
@@ -588,7 +621,9 @@ export const cleanupDeletedMedia = functions.pubsub
       }
 
       console.log('[cleanupDeletedMedia] Cleanup complete. Deleted:', deletedCount);
-      return { deletedCount };
+      console.log('Scheduled job result:', { deletedCount });
+
+      return;
     } catch (error) {
       console.error('[cleanupDeletedMedia] Error:', error);
       throw error;

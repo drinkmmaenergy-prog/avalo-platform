@@ -16,7 +16,7 @@ import {
 } from './pack427-messaging-types';
 import { ulid } from 'ulid';
 import { routeRegion } from './pack426-region-router'; // PACK 426
-import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp, onSchedule } from './runtime';
 
 const db = getFirestore();
 
@@ -100,12 +100,15 @@ export const pack427_updateTypingState = functions
       await eventRef.delete();
     }
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       chatId,
       userId,
       isTyping,
-    };
+    });
+
+
+    return;
   });
 
 /**
@@ -189,11 +192,14 @@ export const pack427_markAsRead = functions
     // Update unread counter
     await updateUnreadCounter(chatId, userId, unreadCount);
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       chatId,
       unreadCount,
-    };
+    });
+
+
+    return;
   });
 
 /**
@@ -316,10 +322,13 @@ export const pack427_getUnreadCounts = functions
       })
     );
 
-    return {
+    console.log('Scheduled job result:', {
       unreadCounts,
       totalUnread,
-    };
+    });
+
+
+    return;
   });
 
 /**
@@ -360,10 +369,13 @@ export const pack427_recalculateUnreadCounters = functions
       })
     );
 
-    return {
+    console.log('Scheduled job result:', {
       success: true,
       recalculated,
-    };
+    });
+
+
+    return;
   });
 
 /**
@@ -371,13 +383,7 @@ export const pack427_recalculateUnreadCounters = functions
  * 
  * Scheduled function to remove old typing indicators
  */
-export const pack427_cleanupTypingEvents = functions
-  .runWith({
-    timeoutSeconds: 60,
-    memory: '256MB',
-  })
-  .pubsub.schedule('every 5 minutes')
-  .onRun(async (context) => {
+export const pack427_cleanupTypingEvents = onSchedule("every 5 minutes", async (event) => {
     const regions: Region[] = ['EU', 'US', 'APAC'];
     const now = Timestamp.now();
     let totalDeleted = 0;
@@ -409,7 +415,9 @@ export const pack427_cleanupTypingEvents = functions
     );
 
     console.log(`Cleaned up ${totalDeleted} expired typing events`);
-    return { deleted: totalDeleted };
+    console.log('Scheduled job result:', { deleted: totalDeleted });
+
+    return;
   });
 
 /**
