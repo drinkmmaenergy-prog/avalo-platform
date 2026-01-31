@@ -3,7 +3,7 @@
  * Protects against review bombing, fake installs, coordinated attacks
  */
 
-import * as functions from 'firebase-functions';
+
 import * as admin from 'firebase-admin';
 import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
@@ -497,19 +497,18 @@ async function triggerIncidentResponse(storeId: string, threatData: StoreThreatD
 // MANUAL THREAT ANALYSIS
 // ============================================================================
 
-export const pack392_analyzeStoreThreat = functions
-  .runWith({ timeoutSeconds: 60, memory: '1GB' })
-  .https
-  .onCall(async (request) => {
+export const pack392_analyzeStoreThreat = onCall(
+  { timeoutSeconds: 60, memory: '1GiB' },
+  async (request) => {
   const data = request.data;
     // Admin only
     if (!request.auth?.token.admin) {
-      throw new functions.https.HttpsError('permission-denied', 'Admin required');
+      throw new HttpsError('permission-denied', 'Admin required');
     }
 
     const { storeId } = data;
     if (!storeId) {
-      throw new functions.https.HttpsError('invalid-argument', 'storeId required');
+      throw new HttpsError('invalid-argument', 'storeId required');
     }
 
     await analyzeStoreThreats(storeId);
@@ -528,12 +527,12 @@ export const pack392_getStoreDefenseStatus = functions
   const data = request.data;
     // Admin only
     if (!request.auth?.token.admin) {
-      throw new functions.https.HttpsError('permission-denied', 'Admin required');
+      throw new HttpsError('permission-denied', 'Admin required');
     }
 
     const { storeId } = data;
     if (!storeId) {
-      throw new functions.https.HttpsError('invalid-argument', 'storeId required');
+      throw new HttpsError('invalid-argument', 'storeId required');
     }
 
     const defenseDoc = await db.collection('storeDefense').doc(storeId).get();

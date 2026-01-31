@@ -3,7 +3,7 @@
  * Global app trust scoring based on multiple signals
  */
 
-import * as functions from 'firebase-functions';
+
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule } from './runtime';
 
@@ -368,13 +368,12 @@ function determineTrend(currentScore: number, previousScore: number): 'IMPROVING
 // USER IMPACT TRACKING
 // ============================================================================
 
-export const pack392_trackUserTrustImpact = functions
-  .runWith({ timeoutSeconds: 60 })
-  .https
-  .onCall(async (request) => {
+export const pack392_trackUserTrustImpact = onCall(
+  { timeoutSeconds: 60 },
+  async (request) => {
   const data = request.data;
     if (!request.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
+      throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
     const { userId, event } = data;
@@ -576,7 +575,7 @@ export const pack392_getStoreSafetyRating = functions
     const { storeId } = data;
     
     if (!storeId) {
-      throw new functions.https.HttpsError('invalid-argument', 'storeId required');
+      throw new HttpsError('invalid-argument', 'storeId required');
     }
     
     const ratingDoc = await db.collection('storeSafetyRatings').doc(storeId).get();
@@ -590,13 +589,12 @@ export const pack392_getStoreSafetyRating = functions
     return ratingDoc.data();
   });
 
-export const pack392_recalculateTrustScore = functions
-  .runWith({ timeoutSeconds: 300 })
-  .https
-  .onCall(async (request) => {
+export const pack392_recalculateTrustScore = onCall(
+  { timeoutSeconds: 300 },
+  async (request) => {
   const data = request.data;
     if (!request.auth?.token.admin) {
-      throw new functions.https.HttpsError('permission-denied', 'Admin required');
+      throw new HttpsError('permission-denied', 'Admin required');
     }
 
     // Trigger immediate recalculation

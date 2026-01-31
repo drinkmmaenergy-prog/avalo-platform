@@ -397,7 +397,7 @@ export const getSystemHealthSummary = functions.https.onCall(async (request) => 
  * Lightweight health check endpoint
  * Public endpoint for load balancers and uptime monitoring
  */
-export const healthCheck = functions.https.onRequest((req, res) => {
+export const healthCheck = onRequest({}, (req, res) => {
   res.status(200).json({
     status: 'ok',
     timestamp: Date.now(),

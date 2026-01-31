@@ -115,7 +115,7 @@ function campaignToCandidate(
 // API: GET MY CAMPAIGNS
 // ============================================================================
 
-export const getMyCampaigns = functions.https.onRequest(async (req, res) => {
+export const getMyCampaigns = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'GET') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -148,7 +148,7 @@ export const getMyCampaigns = functions.https.onRequest(async (req, res) => {
 // API: CREATE CAMPAIGN
 // ============================================================================
 
-export const createCampaign = functions.https.onRequest(async (req, res) => {
+export const createCampaign = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -364,7 +364,7 @@ export const createCampaign = functions.https.onRequest(async (req, res) => {
 // API: UPDATE CAMPAIGN
 // ============================================================================
 
-export const updateCampaign = functions.https.onRequest(async (req, res) => {
+export const updateCampaign = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -441,7 +441,7 @@ export const updateCampaign = functions.https.onRequest(async (req, res) => {
 // API: ADD BUDGET
 // ============================================================================
 
-export const addBudget = functions.https.onRequest(async (req, res) => {
+export const addBudget = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -551,7 +551,7 @@ export const addBudget = functions.https.onRequest(async (req, res) => {
 // API: FETCH PROMOTIONS FOR PLACEMENT
 // ============================================================================
 
-export const fetchPromotionsForPlacement = functions.https.onRequest(async (req, res) => {
+export const fetchPromotionsForPlacement = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'GET') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -650,7 +650,7 @@ export const fetchPromotionsForPlacement = functions.https.onRequest(async (req,
 // API: LOG IMPRESSION
 // ============================================================================
 
-export const logPromotionImpression = functions.https.onRequest(async (req, res) => {
+export const logPromotionImpression = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -727,7 +727,7 @@ export const logPromotionImpression = functions.https.onRequest(async (req, res)
 // API: LOG CLICK
 // ============================================================================
 
-export const logPromotionClick = functions.https.onRequest(async (req, res) => {
+export const logPromotionClick = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });

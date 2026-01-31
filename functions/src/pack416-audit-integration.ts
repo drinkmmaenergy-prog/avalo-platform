@@ -367,7 +367,7 @@ export const getFeatureFlagStatsAPI = functions.https.onCall(async (request) => 
  * Export metrics for monitoring dashboards
  * Returns Prometheus-compatible metrics
  */
-export const getFeatureFlagMetrics = functions.https.onRequest(async (req, res) => {
+export const getFeatureFlagMetrics = onRequest({}, async (req, res) => {
   try {
     // Get counts
     const flagsRef = await db.collection('featureFlags').get();

@@ -555,12 +555,12 @@ async function createAlert(alert: { type: string; severity: string; message: str
 // MANUAL TRIGGER (For Testing/Emergency)
 // ============================================
 
-export const pack393_manualOrchestration = functions
-  .runWith({ timeoutSeconds: 540, memory: '2GB' })
-  .https.onCall(async (request) => {
+export const pack393_manualOrchestration = onCall(
+  { timeoutSeconds: 540, memory: '2GiB' },
+  async (request) => {
     // Require admin authentication
     if (!request.auth || request.auth.token.role !== 'admin') {
-      throw new functions.https.HttpsError('permission-denied', 'Admin access required');
+      throw new HttpsError('permission-denied', 'Admin access required');
     }
     
     functions.logger.info('🔧 Manual orchestration triggered by admin:', request.auth.uid);
@@ -578,18 +578,18 @@ export const pack393_manualOrchestration = functions
 // GET ORCHESTRATION STATUS
 // ============================================
 
-export const pack393_getOrchestrationStatus = functions.https.onCall(async (request) => {
+export const pack393_getOrchestrationStatus = onCall(async (request) => {
   const data = request.data;
   // Require marketing manager or admin
   if (!request.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
+    throw new HttpsError('unauthenticated', 'Authentication required');
   }
   
   const userDoc = await db.collection('users').doc(request.auth.uid).get();
   const userRole = userDoc.data()?.role;
   
   if (!['admin', 'marketing_manager'].includes(userRole)) {
-    throw new functions.https.HttpsError('permission-denied', 'Marketing access required');
+    throw new HttpsError('permission-denied', 'Marketing access required');
   }
   
   // Get latest report

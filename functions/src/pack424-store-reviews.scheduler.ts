@@ -153,7 +153,7 @@ export const triggerReviewSync = functions.https.onCall(async (request) => {
  * Webhook endpoint for store notifications
  * Some stores support webhooks for new reviews
  */
-export const storeReviewWebhook = functions.https.onRequest(async (req, res) => {
+export const storeReviewWebhook = onRequest({}, async (req, res) => {
   // Verify webhook signature
   const signature = req.headers['x-store-signature'] as string;
   

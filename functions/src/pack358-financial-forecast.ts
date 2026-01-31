@@ -5,7 +5,7 @@
  * Read-only integration with wallet, retention, and acquisition data
  */
 
-import * as functions from 'firebase-functions';
+
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, auth, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
@@ -494,13 +494,13 @@ export const forecastRevenueNext12Months = onSchedule({ schedule: "0 4 1 * *", t
 /**
  * HTTP function: Generate forecast on demand (admin only)
  */
-export const generateForecastOnDemand = functions
-  .region('europe-west1')
-  .https.onCall(async (request) => {
+export const generateForecastOnDemand = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
   const data = request.data;
     // Verify admin authentication
     if (!request.auth || !request.auth.token.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can generate forecasts on demand'
       );
@@ -509,7 +509,7 @@ export const generateForecastOnDemand = functions
     const { timeframe } = data;
 
     if (!['30d', '90d', '12m'].includes(timeframe)) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'Invalid timeframe. Must be 30d, 90d, or 12m'
       );
@@ -520,20 +520,20 @@ export const generateForecastOnDemand = functions
       return result;
     } catch (error) {
       console.error('[PACK 358] Error generating on-demand forecast:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to generate forecast');
+      throw new HttpsError('internal', 'Failed to generate forecast');
     }
   });
 
 /**
  * HTTP function: Get latest forecast (admin only)
  */
-export const getLatestForecast = functions
-  .region('europe-west1')
-  .https.onCall(async (request) => {
+export const getLatestForecast = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
   const data = request.data;
     // Verify admin authentication
     if (!request.auth || !request.auth.token.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can view forecasts'
       );
@@ -542,7 +542,7 @@ export const getLatestForecast = functions
     const { timeframe } = data;
 
     if (!['30d', '90d', '12m'].includes(timeframe)) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'Invalid timeframe. Must be 30d, 90d, or 12m'
       );
@@ -558,7 +558,7 @@ export const getLatestForecast = functions
         .get();
 
       if (!snapshot.exists) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'not-found',
           'No forecast available for this timeframe'
         );
@@ -567,6 +567,6 @@ export const getLatestForecast = functions
       return snapshot.data();
     } catch (error) {
       console.error('[PACK 358] Error fetching forecast:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to fetch forecast');
+      throw new HttpsError('internal', 'Failed to fetch forecast');
     }
   });

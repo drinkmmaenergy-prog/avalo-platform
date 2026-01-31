@@ -3,7 +3,7 @@
  * Continuous optimization of store presence, keywords, and conversion
  */
 
-import * as functions from 'firebase-functions';
+
 import * as admin from 'firebase-admin';
 import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
@@ -598,19 +598,18 @@ async function autoImplementRecommendation(
 // MANUAL ASO ANALYSIS
 // ============================================================================
 
-export const pack392_runASOAnalysis = functions
-  .runWith({ timeoutSeconds: 60, memory: '1GB' })
-  .https
-  .onCall(async (request) => {
+export const pack392_runASOAnalysis = onCall(
+  { timeoutSeconds: 60, memory: '1GiB' },
+  async (request) => {
   const data = request.data;
     // Admin only
     if (!request.auth?.token.admin) {
-      throw new functions.https.HttpsError('permission-denied', 'Admin required');
+      throw new HttpsError('permission-denied', 'Admin required');
     }
 
     const { storeId, country } = data;
     if (!storeId || !country) {
-      throw new functions.https.HttpsError('invalid-argument', 'storeId and country required');
+      throw new HttpsError('invalid-argument', 'storeId and country required');
     }
 
     await optimizeStoreASO(storeId, country);
@@ -629,12 +628,12 @@ export const pack392_getASODashboard = functions
   const data = request.data;
     // Admin only
     if (!request.auth?.token.admin) {
-      throw new functions.https.HttpsError('permission-denied', 'Admin required');
+      throw new HttpsError('permission-denied', 'Admin required');
     }
 
     const { storeId } = data;
     if (!storeId) {
-      throw new functions.https.HttpsError('invalid-argument', 'storeId required');
+      throw new HttpsError('invalid-argument', 'storeId required');
     }
 
     const asoSnap = await db.collection('asoMetrics')
@@ -654,12 +653,12 @@ export const pack392_addKeyword = functions
   const data = request.data;
     // Admin only
     if (!request.auth?.token.admin) {
-      throw new functions.https.HttpsError('permission-denied', 'Admin required');
+      throw new HttpsError('permission-denied', 'Admin required');
     }
 
     const { storeId, country, keyword, searchVolume, difficulty } = data;
     if (!storeId || !country || !keyword) {
-      throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
+      throw new HttpsError('invalid-argument', 'Missing required fields');
     }
 
     await db.collection('asoKeywords').add({
@@ -684,12 +683,12 @@ export const pack392_removeKeyword = functions
   const data = request.data;
     // Admin only
     if (!request.auth?.token.admin) {
-      throw new functions.https.HttpsError('permission-denied', 'Admin required');
+      throw new HttpsError('permission-denied', 'Admin required');
     }
 
     const { keywordId } = data;
     if (!keywordId) {
-      throw new functions.https.HttpsError('invalid-argument', 'keywordId required');
+      throw new HttpsError('invalid-argument', 'keywordId required');
     }
 
     await db.collection('asoKeywords').doc(keywordId).delete();

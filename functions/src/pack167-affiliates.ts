@@ -621,7 +621,7 @@ export const updateAllAffiliateAnalytics = onSchedule("every 24 hours", async (e
 /**
  * Track clicks on affiliate links
  */
-export const trackAffiliateClick = functions.https.onRequest(async (req, res) => {
+export const trackAffiliateClick = onRequest({}, async (req, res) => {
   const shortCode = req.path.split('/').pop();
 
   if (!shortCode) {

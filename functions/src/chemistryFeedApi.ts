@@ -3,7 +3,7 @@
  * Firebase Functions for adaptive attraction ranking feed
  */
 
-import * as functions from 'firebase-functions';
+
 import { getFeed, invalidateCache } from './services/chemistryFeed/feedEngine';
 import { FeedOptions, AnalyticsEvent } from './services/chemistryFeed/types';
 import { db, increment, arrayUnion } from './init';
@@ -14,14 +14,14 @@ import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
  * Get Chemistry Feed
  * Returns personalized feed with chemistry-based ranking
  */
-export const getChemistryFeed = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const getChemistryFeed = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       // Authentication check
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -32,14 +32,14 @@ export const getChemistryFeed = functions
 
       // Validate inputs
       if (limit > 50 || limit < 1) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           'Limit must be between 1 and 50'
         );
       }
 
       if (offset < 0) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           'Offset must be non-negative'
         );
@@ -77,11 +77,11 @@ export const getChemistryFeed = functions
     } catch (error: any) {
       console.error('[getChemistryFeed] Error:', error);
 
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
 
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         error.message || 'Failed to get chemistry feed'
       );
@@ -92,14 +92,14 @@ export const getChemistryFeed = functions
  * Track Feed Interaction
  * Logs user interactions with feed profiles
  */
-export const trackFeedInteraction = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const trackFeedInteraction = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       // Authentication check
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -122,7 +122,7 @@ export const trackFeedInteraction = functions
       ];
 
       if (!validEvents.includes(eventType)) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           'Invalid event type'
         );
@@ -148,11 +148,11 @@ export const trackFeedInteraction = functions
     } catch (error: any) {
       console.error('[trackFeedInteraction] Error:', error);
 
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
 
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         error.message || 'Failed to track interaction'
       );
@@ -163,13 +163,13 @@ export const trackFeedInteraction = functions
  * Refresh Feed Cache
  * Force refresh the feed cache for a user
  */
-export const refreshFeedCache = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const refreshFeedCache = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
     try {
       // Authentication check
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -193,11 +193,11 @@ export const refreshFeedCache = functions
     } catch (error: any) {
       console.error('[refreshFeedCache] Error:', error);
 
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
 
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         error.message || 'Failed to refresh feed cache'
       );
@@ -208,14 +208,14 @@ export const refreshFeedCache = functions
  * Get Feed Stats
  * Returns statistics about the user's feed
  */
-export const getFeedStats = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const getFeedStats = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       // Authentication check
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -288,11 +288,11 @@ export const getFeedStats = functions
     } catch (error: any) {
       console.error('[getFeedStats] Error:', error);
 
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
 
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         error.message || 'Failed to get feed stats'
       );

@@ -256,10 +256,10 @@ export function guardFeature<T = any, R = any>(
 
 /**
  * Express middleware for HTTP functions
- * 
+ *
  * Example usage:
  * ```typescript
- * export const webhookHandler = functions.https.onRequest(
+ * export const webhookHandler = onRequest({},
  *   featureMiddleware(FeatureFlagKey.webhooks, async (req, res) => {
  *     // Your handler logic here
  *   })

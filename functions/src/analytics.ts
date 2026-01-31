@@ -498,7 +498,7 @@ export const aggregateUserSpendingAnalytics = onSchedule("every 1 hours", async 
  * Returns creator earnings analytics
  * Security: Only accessible by the creator themselves
  */
-export const getCreatorAnalytics = functions.https.onRequest(async (req, res) => {
+export const getCreatorAnalytics = onRequest({}, async (req, res) => {
   // CORS
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -566,7 +566,7 @@ export const getCreatorAnalytics = functions.https.onRequest(async (req, res) =>
  * Returns user spending analytics
  * Security: Only accessible by the user themselves
  */
-export const getUserSpendingAnalytics = functions.https.onRequest(async (req, res) => {
+export const getUserSpendingAnalytics = onRequest({}, async (req, res) => {
   // CORS
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -628,7 +628,7 @@ export const getUserSpendingAnalytics = functions.https.onRequest(async (req, re
  * Returns promotion campaign analytics
  * Security: Only accessible by campaign owner
  */
-export const getPromotionAnalytics = functions.https.onRequest(async (req, res) => {
+export const getPromotionAnalytics = onRequest({}, async (req, res) => {
   // CORS
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');

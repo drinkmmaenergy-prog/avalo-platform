@@ -218,7 +218,7 @@ async function aggregateChannelMetrics(
 /**
  * Generate dashboard summary data
  */
-export const generateDashboardData = functions.https.onRequest(async (req, res) => {
+export const generateDashboardData = onRequest({}, async (req, res) => {
   try {
     const hours = parseInt(req.query.hours as string) || 24;
     const now = new Date();

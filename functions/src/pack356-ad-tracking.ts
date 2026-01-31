@@ -355,7 +355,7 @@ export const updateCampaignBudget = functions.https.onCall(async (request) => {
 /**
  * Webhook: Receive external ad platform events
  */
-export const adPlatformWebhook = functions.https.onRequest(async (req, res) => {
+export const adPlatformWebhook = onRequest({}, async (req, res) => {
   // Verify webhook signature (implement per platform)
   const platform = req.body.platform as CampaignType;
   

@@ -164,7 +164,7 @@ export const getModerationStatusFunction = functions.https.onCall(async (request
  * HTTP function: Get moderation queue for admin
  * Returns pending content requiring manual review
  */
-export const getModerationQueue = functions.https.onRequest(async (req, res) => {
+export const getModerationQueue = onRequest({}, async (req, res) => {
   try {
     // Verify admin authentication (simple token-based for now)
     const authHeader = req.headers.authorization;
@@ -270,7 +270,7 @@ export const getModerationQueue = functions.https.onRequest(async (req, res) => 
  * HTTP function: Admin moderation decision
  * Allows admin to approve or block content
  */
-export const adminModerationDecision = functions.https.onRequest(async (req, res) => {
+export const adminModerationDecision = onRequest({}, async (req, res) => {
   try {
     // Only accept POST requests
     if (req.method !== 'POST') {

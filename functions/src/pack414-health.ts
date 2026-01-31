@@ -24,8 +24,7 @@ interface HealthStatus {
  * Health Check: Wallet System
  * Validates wallet operations, balance tracking, and transactions
  */
-export const health_wallet = functions
-  .https.onRequest(async (req, res) => {
+export const health_wallet = onRequest({}, async (req, res) => {
     try {
       const checks: Record<string, any> = {};
       
@@ -72,8 +71,7 @@ export const health_wallet = functions
  * Health Check: Support System
  * Validates support tickets, SLA tracking, and admin console
  */
-export const health_support = functions
-  .https.onRequest(async (req, res) => {
+export const health_support = onRequest({}, async (req, res) => {
     try {
       const checks: Record<string, any> = {};
       
@@ -119,8 +117,7 @@ export const health_support = functions
  * Health Check: Safety System
  * Validates abuse detection, fraud prevention, and panic mode
  */
-export const health_safety = functions
-  .https.onRequest(async (req, res) => {
+export const health_safety = onRequest({}, async (req, res) => {
     try {
       const checks: Record<string, any> = {};
       
@@ -173,8 +170,7 @@ export const health_safety = functions
  * Health Check: Store Reputation
  * Validates rating defense and keyword monitoring
  */
-export const health_store_reputation = functions
-  .https.onRequest(async (req, res) => {
+export const health_store_reputation = onRequest({}, async (req, res) => {
     try {
       const checks: Record<string, any> = {};
       
@@ -223,8 +219,7 @@ export const health_store_reputation = functions
  * Health Check: AI Systems
  * Validates AI companions, video/voice, and endpoint health
  */
-export const health_ai = functions
-  .https.onRequest(async (req, res) => {
+export const health_ai = onRequest({}, async (req, res) => {
     try {
       const checks: Record<string, any> = {};
       
@@ -273,8 +268,7 @@ export const health_ai = functions
  * Health Check: Notifications
  * Validates push notifications, FCM, and delivery pipeline
  */
-export const health_notifications = functions
-  .https.onRequest(async (req, res) => {
+export const health_notifications = onRequest({}, async (req, res) => {
     try {
       const checks: Record<string, any> = {};
       
@@ -327,8 +321,7 @@ export const health_notifications = functions
  * Health Check: Performance
  * Validates system performance, error tracking, and monitoring
  */
-export const health_performance = functions
-  .https.onRequest(async (req, res) => {
+export const health_performance = onRequest({}, async (req, res) => {
     try {
       const checks: Record<string, any> = {};
       
@@ -381,9 +374,7 @@ export const health_performance = functions
  * Master Health Check
  * Runs all health checks and returns aggregated status
  */
-export const health_master = functions
-  .runWith({ timeoutSeconds: 60 })
-  .https.onRequest(async (req, res) => {
+export const health_master = onRequest({ timeoutSeconds: 60 }, async (req, res) => {
     try {
       const startTime = Date.now();
       

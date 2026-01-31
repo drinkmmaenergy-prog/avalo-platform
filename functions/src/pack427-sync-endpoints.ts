@@ -5,7 +5,7 @@
  * Ensures idempotent sync without double-billing
  */
 
-import * as functions from 'firebase-functions';
+
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import {
   DeviceSyncState,
@@ -28,16 +28,14 @@ const db = getFirestore();
  * Called when user opens app or changes devices
  * Creates/updates sync state for offline message retrieval
  */
-export const pack427_registerDevice = functions
-  .runWith({
-    timeoutSeconds: 30,
-    memory: '256MB',
-  })
-  .https.onCall(async (request) => {
+export const pack427_registerDevice = onCall(
+  { timeoutSeconds: 30,
+    memory: '256MiB', },
+  async (request) => {
   const data = request.data;
     // Authenticate user
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
@@ -47,7 +45,7 @@ export const pack427_registerDevice = functions
     const { deviceId, platform, appVersion } = data;
 
     if (!deviceId) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'deviceId is required'
       );
@@ -102,16 +100,14 @@ export const pack427_registerDevice = functions
  * Returns all messages created since last sync
  * Handles offline users who haven't synced in days/weeks
  */
-export const pack427_syncMessages = functions
-  .runWith({
-    timeoutSeconds: 60,
-    memory: '512MB',
-  })
-  .https.onCall(async (request) => {
+export const pack427_syncMessages = onCall(
+  { timeoutSeconds: 60,
+    memory: '512MiB', },
+  async (request) => {
   const data = request.data;
     // Authenticate user
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
@@ -121,7 +117,7 @@ export const pack427_syncMessages = functions
     const { deviceId, since } = data;
 
     if (!deviceId) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'deviceId is required'
       );
@@ -228,16 +224,14 @@ export const pack427_syncMessages = functions
  * Called by client after successfully receiving and processing messages
  * Idempotent - safe to call multiple times
  */
-export const pack427_ackMessages = functions
-  .runWith({
-    timeoutSeconds: 30,
-    memory: '256MB',
-  })
-  .https.onCall(async (request) => {
+export const pack427_ackMessages = onCall(
+  { timeoutSeconds: 30,
+    memory: '256MiB', },
+  async (request) => {
   const data = request.data;
     // Authenticate user
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
@@ -247,7 +241,7 @@ export const pack427_ackMessages = functions
     const { messageIds, region } = data;
 
     if (!messageIds || !Array.isArray(messageIds)) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'messageIds must be an array'
       );
@@ -292,16 +286,14 @@ export const pack427_ackMessages = functions
  * 
  * Returns user's chats with unread message counts for UI
  */
-export const pack427_getChatList = functions
-  .runWith({
-    timeoutSeconds: 30,
-    memory: '256MB',
-  })
-  .https.onCall(async (request) => {
+export const pack427_getChatList = onCall(
+  { timeoutSeconds: 30,
+    memory: '256MiB', },
+  async (request) => {
   const data = request.data;
     // Authenticate user
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
@@ -362,16 +354,14 @@ export const pack427_getChatList = functions
  * 
  * Used when client detects inconsistency or message gaps
  */
-export const pack427_resyncChat = functions
-  .runWith({
-    timeoutSeconds: 60,
-    memory: '256MB',
-  })
-  .https.onCall(async (request) => {
+export const pack427_resyncChat = onCall(
+  { timeoutSeconds: 60,
+    memory: '256MiB', },
+  async (request) => {
   const data = request.data;
     // Authenticate user
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
@@ -381,7 +371,7 @@ export const pack427_resyncChat = functions
     const { chatId } = data;
 
     if (!chatId) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'chatId is required'
       );
@@ -390,12 +380,12 @@ export const pack427_resyncChat = functions
     // Verify user is participant
     const chatDoc = await db.collection('chats').doc(chatId).get();
     if (!chatDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Chat not found');
+      throw new HttpsError('not-found', 'Chat not found');
     }
 
     const participants = chatDoc.data()!.participants || [];
     if (!participants.includes(userId)) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'User is not a participant in this chat'
       );

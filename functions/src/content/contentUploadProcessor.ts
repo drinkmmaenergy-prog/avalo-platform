@@ -1,4 +1,4 @@
-import * as functions from 'firebase-functions';
+
 import * as admin from 'firebase-admin';
 import { Storage } from '@google-cloud/storage';
 import sharp from 'sharp';
@@ -50,16 +50,14 @@ interface MediaProcessingResult {
  * Process uploaded content media
  * Validates, generates thumbnails, runs NSFW check, enforces policies
  */
-export const processContentUpload = functions
-  .runWith({
-    timeoutSeconds: 300,
-    memory: '2GB'
-  })
-  .https.onCall(async (request) => {
+export const processContentUpload = onCall(
+  { timeoutSeconds: 300,
+    memory: '2GiB' },
+  async (request) => {
   const data = request.data;
     // Authentication check
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
@@ -67,7 +65,7 @@ export const processContentUpload = functions
 
     const userId = request.auth.uid;
     if (data.userId !== userId) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'User ID mismatch'
       );
@@ -79,18 +77,18 @@ export const processContentUpload = functions
       const userData = userDoc.data();
 
       if (!userData) {
-        throw new functions.https.HttpsError('not-found', 'User not found');
+        throw new HttpsError('not-found', 'User not found');
       }
 
       if (!userData.isAdult) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'Content creation requires 18+ verification'
         );
       }
 
       if (userData.banned || userData.shadowBanned) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'Account is restricted from posting content'
         );
@@ -101,7 +99,7 @@ export const processContentUpload = functions
       const riskData = riskDoc.data();
       
       if (riskData && riskData.riskScore > 70) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'Account flagged for high risk - content creation suspended'
         );
@@ -114,7 +112,7 @@ export const processContentUpload = functions
       // Check file exists
       const [exists] = await tempFile.exists();
       if (!exists) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'not-found',
           'Temporary file not found'
         );
@@ -128,7 +126,7 @@ export const processContentUpload = functions
       const maxSize = data.mediaType === 'PHOTO' ? 100 * 1024 * 1024 : 500 * 1024 * 1024;
       if (sizeBytes > maxSize) {
         await tempFile.delete();
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           `File too large. Max size: ${maxSize / (1024 * 1024)}MB`
         );
@@ -158,7 +156,7 @@ export const processContentUpload = functions
         await bucket.file(processingResult.storagePath).delete();
         await bucket.file(processingResult.thumbUrl.split('/').pop()!).delete();
 
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'failed-precondition',
           'Content violates Avalo community guidelines (explicit content detected)'
         );

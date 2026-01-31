@@ -228,7 +228,7 @@ export const pack350_cancelSubscription = functions.https.onCall(async (request)
  * Stripe webhook handler
  * Handles subscription.created, subscription.updated, subscription.deleted events
  */
-export const pack350_stripeWebhook = functions.https.onRequest(async (req, res) => {
+export const pack350_stripeWebhook = onRequest({}, async (req, res) => {
   // TODO: Implement Stripe webhook signature verification
   // TODO: Handle Stripe subscription events
   
@@ -262,7 +262,7 @@ export const pack350_stripeWebhook = functions.https.onRequest(async (req, res) 
 /**
  * Apple App Store Server Notifications handler
  */
-export const pack350_appleWebhook = functions.https.onRequest(async (req, res) => {
+export const pack350_appleWebhook = onRequest({}, async (req, res) => {
   // TODO: Implement Apple webhook signature verification
   // TODO: Handle Apple subscription notifications
   
@@ -281,7 +281,7 @@ export const pack350_appleWebhook = functions.https.onRequest(async (req, res) =
 /**
  * Google Play Real-time Developer Notifications handler
  */
-export const pack350_googleWebhook = functions.https.onRequest(async (req, res) => {
+export const pack350_googleWebhook = onRequest({}, async (req, res) => {
   // TODO: Implement Google webhook verification
   // TODO: Handle Google subscription notifications
   

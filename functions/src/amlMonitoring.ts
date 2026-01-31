@@ -553,7 +553,7 @@ export const aggregateAmlProfiles = onSchedule({ schedule: "0 2 * * *", timeZone
 // API: LIST HIGH-RISK USERS (ADMIN/OPS)
 // ============================================================================
 
-export const getRiskyUsers = functions.https.onRequest(async (req, res) => {
+export const getRiskyUsers = onRequest({}, async (req, res) => {
   try {
     // TODO: Add admin authentication check
     
@@ -631,7 +631,7 @@ export const getRiskyUsers = functions.https.onRequest(async (req, res) => {
 // API: GET AML PROFILE DETAIL (ADMIN/OPS)
 // ============================================================================
 
-export const getAmlProfile = functions.https.onRequest(async (req, res) => {
+export const getAmlProfile = onRequest({}, async (req, res) => {
   try {
     // TODO: Add admin authentication check
     
@@ -719,7 +719,7 @@ export const getAmlProfile = functions.https.onRequest(async (req, res) => {
 // API: SET AML STATUS (ADMIN/OPS)
 // ============================================================================
 
-export const setAmlStatus = functions.https.onRequest(async (req, res) => {
+export const setAmlStatus = onRequest({}, async (req, res) => {
   try {
     // TODO: Add admin authentication check
     
@@ -800,7 +800,7 @@ export const setAmlStatus = functions.https.onRequest(async (req, res) => {
 // API: MARK AML EVENT AS HANDLED (ADMIN/OPS)
 // ============================================================================
 
-export const handleAmlEvent = functions.https.onRequest(async (req, res) => {
+export const handleAmlEvent = onRequest({}, async (req, res) => {
   try {
     // TODO: Add admin authentication check
     
