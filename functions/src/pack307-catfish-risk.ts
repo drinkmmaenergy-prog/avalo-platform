@@ -25,7 +25,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';
 
 const db = admin.firestore();
 
@@ -735,10 +735,10 @@ export const cronRecomputeCatfishRiskDaily = onSchedule({ schedule: "0 3 * * *",
 /**
  * Firestore trigger: Recompute risk when profile photos are updated
  */
-export const onProfilePhotoUpdate = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
-    const userId = context.params.userId;
+export const onProfilePhotoUpdate = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
     const before = change.before.data();
     const after = change.after.data();
     
@@ -765,10 +765,10 @@ export const onProfilePhotoUpdate = functions.firestore
 /**
  * Firestore trigger: Recompute risk when verification is completed
  */
-export const onVerificationComplete = functions.firestore
-  .document('users/{userId}/verification/status')
-  .onUpdate(async (change, context) => {
-    const userId = context.params.userId;
+export const onVerificationComplete = onDocumentUpdated('users/{userId}/verification/status', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
     const before = change.before.data();
     const after = change.after.data();
     
@@ -787,9 +787,9 @@ export const onVerificationComplete = functions.firestore
 /**
  * Firestore trigger: Recompute risk when catfish report is created
  */
-export const onCatfishReport = functions.firestore
-  .document('reports/{reportId}')
-  .onCreate(async (snapshot, context) => {
+export const onCatfishReport = onDocumentCreated('reports/{reportId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     const report = snapshot.data();
     
     if (report.reportType === 'FAKE_PROFILE_OR_CATFISH') {

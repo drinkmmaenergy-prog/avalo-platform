@@ -9,7 +9,7 @@ import * as functions from 'firebase-functions';
 import admin from 'firebase-admin';
 import { recalculateReputation } from './pack422-reputation.service';
 import { sendMetric } from './pack421-metrics.service';
-import { HttpsError, auth, onCall } from './runtime';
+import { HttpsError, auth, onCall, onDocumentCreated, onDocumentUpdated, onDocumentWritten } from './runtime';
 
 const db = admin.firestore();
 
@@ -65,9 +65,9 @@ async function updateReputationDebounced(userId: string, triggerType: string): P
 /**
  * Trigger on billing events (message/call completion)
  */
-export const onBillingEvent = functions.firestore
-  .document('billing/{billingId}')
-  .onWrite(async (change, context) => {
+export const onBillingEvent = onDocumentWritten('billing/{billingId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const after = change.after.exists ? change.after.data() : null;
     
     if (!after) return;
@@ -84,9 +84,9 @@ export const onBillingEvent = functions.firestore
 /**
  * Trigger on abuse reports
  */
-export const onAbuseReport = functions.firestore
-  .document('reports/{reportId}')
-  .onCreate(async (snap, context) => {
+export const onAbuseReport = onDocumentCreated('reports/{reportId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const data = snap.data();
     const reportedUserId = data.reportedUserId;
     
@@ -102,9 +102,9 @@ export const onAbuseReport = functions.firestore
 /**
  * Trigger on meeting status changes
  */
-export const onMeetingStatusChange = functions.firestore
-  .document('meetings/{meetingId}')
-  .onUpdate(async (change, context) => {
+export const onMeetingStatusChange = onDocumentUpdated('meetings/{meetingId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
@@ -122,9 +122,9 @@ export const onMeetingStatusChange = functions.firestore
 /**
  * Trigger on QR verification
  */
-export const onQRVerification = functions.firestore
-  .document('meetings/{meetingId}/verifications/{verificationId}')
-  .onCreate(async (snap, context) => {
+export const onQRVerification = onDocumentCreated('meetings/{meetingId}/verifications/{verificationId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const data = snap.data();
     const userId = data.userId;
     
@@ -140,9 +140,9 @@ export const onQRVerification = functions.firestore
 /**
  * Trigger on transaction completion
  */
-export const onTransactionComplete = functions.firestore
-  .document('transactions/{transactionId}')
-  .onUpdate(async (change, context) => {
+export const onTransactionComplete = onDocumentUpdated('transactions/{transactionId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
@@ -159,9 +159,9 @@ export const onTransactionComplete = functions.firestore
 /**
  * Trigger on dispute creation
  */
-export const onDisputeCreated = functions.firestore
-  .document('disputes/{disputeId}')
-  .onCreate(async (snap, context) => {
+export const onDisputeCreated = onDocumentCreated('disputes/{disputeId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const data = snap.data();
     
     // Update reputation for both parties
@@ -176,9 +176,9 @@ export const onDisputeCreated = functions.firestore
 /**
  * Trigger on fraud alert
  */
-export const onFraudAlert = functions.firestore
-  .document('fraudAlerts/{alertId}')
-  .onCreate(async (snap, context) => {
+export const onFraudAlert = onDocumentCreated('fraudAlerts/{alertId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const data = snap.data();
     const userId = data.userId;
     
@@ -194,9 +194,9 @@ export const onFraudAlert = functions.firestore
 /**
  * Trigger on safety incident
  */
-export const onSafetyIncident = functions.firestore
-  .document('safetyIncidents/{incidentId}')
-  .onCreate(async (snap, context) => {
+export const onSafetyIncident = onDocumentCreated('safetyIncidents/{incidentId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const data = snap.data();
     const userId = data.userId;
     
@@ -208,9 +208,9 @@ export const onSafetyIncident = functions.firestore
 /**
  * Trigger on panic event
  */
-export const onPanicEvent = functions.firestore
-  .document('panicEvents/{eventId}')
-  .onCreate(async (snap, context) => {
+export const onPanicEvent = onDocumentCreated('panicEvents/{eventId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const data = snap.data();
     const userId = data.userId;
     
@@ -222,10 +222,10 @@ export const onPanicEvent = functions.firestore
 /**
  * Trigger on ban/restriction changes
  */
-export const onUserRestrictionChange = functions.firestore
-  .document('userRestrictions/{userId}')
-  .onWrite(async (change, context) => {
-    const userId = context.params.userId;
+export const onUserRestrictionChange = onDocumentWritten('userRestrictions/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
     
     if (!userId) return;
     
@@ -239,9 +239,9 @@ export const onUserRestrictionChange = functions.firestore
 /**
  * Trigger on support ticket creation
  */
-export const onSupportTicketCreated = functions.firestore
-  .document('supportTickets/{ticketId}')
-  .onCreate(async (snap, context) => {
+export const onSupportTicketCreated = onDocumentCreated('supportTickets/{ticketId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const data = snap.data();
     const userId = data.userId;
     
@@ -256,9 +256,9 @@ export const onSupportTicketCreated = functions.firestore
 /**
  * Trigger on support ticket update (admin notes flagged)
  */
-export const onSupportTicketUpdated = functions.firestore
-  .document('supportTickets/{ticketId}')
-  .onUpdate(async (change, context) => {
+export const onSupportTicketUpdated = onDocumentUpdated('supportTickets/{ticketId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
@@ -285,9 +285,9 @@ export const onSupportTicketUpdated = functions.firestore
 /**
  * Trigger on AI NSFW violation
  */
-export const onAIViolation = functions.firestore
-  .document('aiViolations/{violationId}')
-  .onCreate(async (snap, context) => {
+export const onAIViolation = onDocumentCreated('aiViolations/{violationId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const data = snap.data();
     const userId = data.userId;
     
@@ -299,10 +299,10 @@ export const onAIViolation = functions.firestore
 /**
  * Trigger on AI companion blocking user
  */
-export const onAIUserBlocked = functions.firestore
-  .document('aiCompanions/{companionId}/blockedUsers/{userId}')
-  .onCreate(async (snap, context) => {
-    const userId = context.params.userId;
+export const onAIUserBlocked = onDocumentCreated('aiCompanions/{companionId}/blockedUsers/{userId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const userId = event.params.userId;
     
     if (!userId) return;
     
@@ -316,9 +316,9 @@ export const onAIUserBlocked = functions.firestore
 /**
  * Trigger on user churn due to negative interactions
  */
-export const onUserChurn = functions.firestore
-  .document('churnEvents/{eventId}')
-  .onCreate(async (snap, context) => {
+export const onUserChurn = onDocumentCreated('churnEvents/{eventId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const data = snap.data();
     
     // If churn reason includes negative interactions

@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
-import { Timestamp, arrayUnion, increment, logger, onSchedule } from '../runtime';
+import { arrayUnion, increment, logger, onSchedule, onDocumentCreated } from '../runtime';
 
 interface CreatorMetrics {
   creatorId: string;
@@ -44,9 +44,9 @@ interface CreatorMetrics {
 }
 
 // Track creator exposure (profile views, discovery appearances)
-export const trackCreatorExposure = functions.firestore
-  .document('profile_views/{viewId}')
-  .onCreate(async (snap, context) => {
+export const trackCreatorExposure = onDocumentCreated('profile_views/{viewId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const view = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
@@ -74,9 +74,9 @@ export const trackCreatorExposure = functions.firestore
   });
 
 // Track creator engagement (swipes, matches, interactions)
-export const trackCreatorEngagement = functions.firestore
-  .document('matches/{matchId}')
-  .onCreate(async (snap, context) => {
+export const trackCreatorEngagement = onDocumentCreated('matches/{matchId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const match = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
@@ -94,7 +94,7 @@ export const trackCreatorEngagement = functions.firestore
 
           await db.collection('creator_metrics').doc(userId).collection('events').add({
             event_type: 'match_created',
-            match_id: context.params.matchId,
+            match_id: event.params.matchId,
             timestamp: timestamp
           });
         }
@@ -106,16 +106,16 @@ export const trackCreatorEngagement = functions.firestore
   });
 
 // Track chat earnings
-export const trackCreatorChatEarnings = functions.firestore
-  .document('chats/{chatId}/payments/{paymentId}')
-  .onCreate(async (snap, context) => {
+export const trackCreatorChatEarnings = onDocumentCreated('chats/{chatId}/payments/{paymentId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const payment = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
 
     try {
       // Get chat details
-      const chatDoc = await db.collection('chats').doc(context.params.chatId).get();
+      const chatDoc = await db.collection('chats').doc(event.params.chatId).get();
       if (!chatDoc.exists) return;
 
       const chat = chatDoc.data()!;
@@ -135,7 +135,7 @@ export const trackCreatorChatEarnings = functions.firestore
       // Track earning event
       await db.collection('creator_metrics').doc(creatorId).collection('events').add({
         event_type: 'chat_earnings',
-        chat_id: context.params.chatId,
+        chat_id: event.params.chatId,
         tokens: creatorEarnings,
         timestamp: timestamp
       });
@@ -146,17 +146,17 @@ export const trackCreatorChatEarnings = functions.firestore
   });
 
 // Track calendar earnings
-export const trackCreatorCalendarEarnings = functions.firestore
-  .document('calendar_events/{eventId}')
-  .onCreate(async (snap, context) => {
-    const event = snap.data();
+export const trackCreatorCalendarEarnings = onDocumentCreated('calendar_events/{eventId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const eventData = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
 
     try {
-      const creatorId = event.creator_id;
+      const creatorId = eventData.creator_id;
       // Calculate creator's share
-      const creatorEarnings = (event.tokens || 0) * 0.8; // 80% to creator for calendar
+      const creatorEarnings = (eventData.tokens || 0) * 0.8; // 80% to creator for calendar
 
       // Update creator daily metrics
       await db.collection('creator_metrics').doc(creatorId).collection('daily').doc(today).set({
@@ -169,7 +169,7 @@ export const trackCreatorCalendarEarnings = functions.firestore
       // Track earning event
       await db.collection('creator_metrics').doc(creatorId).collection('events').add({
         event_type: 'calendar_earnings',
-        event_id: context.params.eventId,
+        event_id: event.params.eventId,
         tokens: creatorEarnings,
         timestamp: timestamp
       });
@@ -177,7 +177,7 @@ export const trackCreatorCalendarEarnings = functions.firestore
       // Track repeat customers
       const previousBookings = await db.collection('calendar_events')
         .where('creator_id', '==', creatorId)
-        .where('user_id', '==', event.user_id)
+        .where('user_id', '==', eventData.user_id)
         .where('status', '==', 'completed')
         .count()
         .get();

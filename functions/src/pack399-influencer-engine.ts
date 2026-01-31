@@ -13,7 +13,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, logger, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, logger, onSchedule, onDocumentCreated } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -592,9 +592,9 @@ async function checkFraudScore(userId: string, influencerId: string): Promise<nu
 // COMMISSION TRACKING
 // ============================================================================
 
-export const trackInfluencerCommission = functions.firestore
-  .document('transactions/{transactionId}')
-  .onCreate(async (snap, context) => {
+export const trackInfluencerCommission = onDocumentCreated('transactions/{transactionId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const transaction = snap.data();
     const userId = transaction.userId;
 
@@ -634,7 +634,7 @@ export const trackInfluencerCommission = functions.firestore
       influencerId: funnel.influencerId,
       userId,
       
-      transactionId: context.params.transactionId,
+      transactionId: event.params.transactionId,
       transactionAmount: transaction.amount,
       transactionType: transaction.type,
       

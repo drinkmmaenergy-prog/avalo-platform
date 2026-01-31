@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
-import { Timestamp, arrayUnion, increment, logger, onSchedule } from '../runtime';
+import { arrayUnion, increment, logger, onSchedule, onDocumentCreated, onDocumentUpdated } from '../runtime';
 
 interface UserKPIMetrics {
   dau: number;
@@ -14,10 +14,10 @@ interface UserKPIMetrics {
 }
 
 // Track user activity event
-export const trackUserActivity = functions.firestore
-  .document('users/{userId}/activity/{activityId}')
-  .onCreate(async (snap, context) => {
-    const userId = context.params.userId;
+export const trackUserActivity = onDocumentCreated('users/{userId}/activity/{activityId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const userId = event.params.userId;
     const activity = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
@@ -52,10 +52,10 @@ export const trackUserActivity = functions.firestore
   });
 
 // Track registration funnel
-export const trackRegistration = functions.firestore
-  .document('users/{userId}')
-  .onCreate(async (snap, context) => {
-    const userId = context.params.userId;
+export const trackRegistration = onDocumentCreated('users/{userId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const userId = event.params.userId;
     const userData = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
@@ -95,10 +95,10 @@ export const trackRegistration = functions.firestore
   });
 
 // Track profile completion
-export const trackProfileUpdate = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
-    const userId = context.params.userId;
+export const trackProfileUpdate = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
     const before = change.before.data();
     const after = change.after.data();
     const timestamp = Timestamp.now();
@@ -155,10 +155,10 @@ export const trackProfileUpdate = functions.firestore
   });
 
 // Track verification status
-export const trackVerification = functions.firestore
-  .document('users/{userId}/verification/{verificationId}')
-  .onCreate(async (snap, context) => {
-    const userId = context.params.userId;
+export const trackVerification = onDocumentCreated('users/{userId}/verification/{verificationId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const userId = event.params.userId;
     const verification = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
@@ -200,9 +200,9 @@ export const trackVerification = functions.firestore
   });
 
 // Track swipe to match conversion
-export const trackSwipe = functions.firestore
-  .document('swipes/{swipeId}')
-  .onCreate(async (snap, context) => {
+export const trackSwipe = onDocumentCreated('swipes/{swipeId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const swipe = snap.data();
     const timestamp = Timestamp.now();
 
@@ -227,9 +227,9 @@ export const trackSwipe = functions.firestore
   });
 
 // Track match creation
-export const trackMatch = functions.firestore
-  .document('matches/{matchId}')
-  .onCreate(async (snap, context) => {
+export const trackMatch = onDocumentCreated('matches/{matchId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const match = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
@@ -245,7 +245,7 @@ export const trackMatch = functions.firestore
         await db.collection('user_kpis').doc(userId).collection('events').add({
           type: 'match_created',
           timestamp: timestamp,
-          match_id: context.params.matchId
+          match_id: event.params.matchId
         });
       }
 
@@ -263,9 +263,9 @@ export const trackMatch = functions.firestore
   });
 
 // Track profile views
-export const trackProfileView = functions.firestore
-  .document('profile_views/{viewId}')
-  .onCreate(async (snap, context) => {
+export const trackProfileView = onDocumentCreated('profile_views/{viewId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const view = snap.data();
     const timestamp = Timestamp.now();
 

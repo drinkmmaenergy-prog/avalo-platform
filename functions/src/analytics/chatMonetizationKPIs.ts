@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
-import { Timestamp, increment, logger, onSchedule } from '../runtime';
+import { increment, logger, onSchedule, onDocumentCreated, onDocumentUpdated } from '../runtime';
 
 interface ChatMonetizationMetrics {
   date: string;
@@ -21,10 +21,10 @@ interface ChatMonetizationMetrics {
 }
 
 // Track chat start
-export const trackChatStart = functions.firestore
-  .document('chats/{chatId}')
-  .onCreate(async (snap, context) => {
-    const chatId = context.params.chatId;
+export const trackChatStart = onDocumentCreated('chats/{chatId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const chatId = event.params.chatId;
     const chat = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
@@ -58,11 +58,11 @@ export const trackChatStart = functions.firestore
   });
 
 // Track chat message
-export const trackChatMessage = functions.firestore
-  .document('chats/{chatId}/messages/{messageId}')
-  .onCreate(async (snap, context) => {
-    const chatId = context.params.chatId;
-    const messageId = context.params.messageId;
+export const trackChatMessage = onDocumentCreated('chats/{chatId}/messages/{messageId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const chatId = event.params.chatId;
+    const messageId = event.params.messageId;
     const message = snap.data();
     const timestamp = Timestamp.now();
 
@@ -102,10 +102,10 @@ export const trackChatMessage = functions.firestore
   });
 
 // Track free to paid conversion
-export const trackChatPayment = functions.firestore
-  .document('chats/{chatId}/payments/{paymentId}')
-  .onCreate(async (snap, context) => {
-    const chatId = context.params.chatId;
+export const trackChatPayment = onDocumentCreated('chats/{chatId}/payments/{paymentId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const chatId = event.params.chatId;
     const payment = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
@@ -172,10 +172,10 @@ export const trackChatPayment = functions.firestore
   });
 
 // Track chat end/drop-off
-export const trackChatEnd = functions.firestore
-  .document('chats/{chatId}')
-  .onUpdate(async (change, context) => {
-    const chatId = context.params.chatId;
+export const trackChatEnd = onDocumentUpdated('chats/{chatId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const chatId = event.params.chatId;
     const before = change.before.data();
     const after = change.after.data();
     const timestamp = Timestamp.now();
@@ -218,9 +218,9 @@ export const trackChatEnd = functions.firestore
   });
 
 // Track refunds
-export const trackRefund = functions.firestore
-  .document('refunds/{refundId}')
-  .onCreate(async (snap, context) => {
+export const trackRefund = onDocumentCreated('refunds/{refundId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const refund = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
@@ -229,7 +229,7 @@ export const trackRefund = functions.firestore
       // Track refund event
       await db.collection('monetization_events').add({
         event_type: 'refund',
-        refund_id: context.params.refundId,
+        refund_id: event.params.refundId,
         chat_id: refund.chat_id,
         user_id: refund.user_id,
         creator_id: refund.creator_id,

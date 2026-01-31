@@ -11,7 +11,7 @@ import {
   processRetentionTriggers,
   resetMonthlySpending,
 } from './supporterAnalytics';
-import { HttpsError, auth, logger, onCall, timestamp, onSchedule } from './runtime';
+import { HttpsError, auth, logger, onCall, timestamp, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';
 
 // ============================================================================
 // FIRESTORE TRIGGERS
@@ -21,9 +21,9 @@ import { HttpsError, auth, logger, onCall, timestamp, onSchedule } from './runti
  * Track token spending when wallet transactions occur
  * Triggered on new transaction creation
  */
-export const onTokenSpending = functions.firestore
-  .document('walletTransactions/{transactionId}')
-  .onCreate(async (snap, context) => {
+export const onTokenSpending = onDocumentCreated('walletTransactions/{transactionId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const transaction = snap.data();
 
     // Only track spending transactions (negative amounts from supporter)
@@ -71,9 +71,9 @@ export const onTokenSpending = functions.firestore
 /**
  * Send notification when creator views supporter's profile
  */
-export const onCreatorViewsProfile = functions.firestore
-  .document('profileViews/{viewId}')
-  .onCreate(async (snap, context) => {
+export const onCreatorViewsProfile = onDocumentCreated('profileViews/{viewId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const view = snap.data();
     const viewerId = view.viewerId;
     const profileId = view.profileId;
@@ -109,12 +109,12 @@ export const onCreatorViewsProfile = functions.firestore
 /**
  * Send notification when creator comes online
  */
-export const onCreatorOnlineStatus = functions.firestore
-  .document('userPresence/{userId}')
-  .onUpdate(async (change, context) => {
+export const onCreatorOnlineStatus = onDocumentUpdated('userPresence/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
-    const creatorId = context.params.userId;
+    const creatorId = event.params.userId;
 
     // Check if user just came online
     if (before.status !== 'online' && after.status === 'online') {
@@ -154,9 +154,9 @@ export const onCreatorOnlineStatus = functions.firestore
 /**
  * Send notification when creator posts new story
  */
-export const onNewStory = functions.firestore
-  .document('stories/{storyId}')
-  .onCreate(async (snap, context) => {
+export const onNewStory = onDocumentCreated('stories/{storyId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const story = snap.data();
     const creatorId = story.userId;
 
@@ -196,9 +196,9 @@ export const onNewStory = functions.firestore
 /**
  * Send notification when creator posts paid media
  */
-export const onNewPaidMedia = functions.firestore
-  .document('paidMedia/{mediaId}')
-  .onCreate(async (snap, context) => {
+export const onNewPaidMedia = onDocumentCreated('paidMedia/{mediaId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const media = snap.data();
     const creatorId = media.creatorId;
 

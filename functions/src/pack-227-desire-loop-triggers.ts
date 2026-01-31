@@ -16,7 +16,7 @@ import {
   setBreakupCooldown,
   setToxicCooldown,
 } from './pack-227-desire-loop-engine.js';
-import { HttpsError, admin, auth, db, onCall, logger, onSchedule } from './runtime';
+import { HttpsError, admin, auth, db, onCall, logger, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';
 
 // ============================================================================
 // SCHEDULED FUNCTIONS (CRON JOBS)
@@ -101,9 +101,9 @@ export const cleanupDesireLoopData = onSchedule({ schedule: "0 */6 * * *", timeZ
 /**
  * Trigger when user views new profiles (curiosity)
  */
-export const onProfileViewed = functions.firestore
-  .document('profile_views/{viewId}')
-  .onCreate(async (snap, context) => {
+export const onProfileViewed = onDocumentCreated('profile_views/{viewId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const view = snap.data();
     const viewerId = view.viewerId;
     
@@ -118,9 +118,9 @@ export const onProfileViewed = functions.firestore
 /**
  * Trigger when chat message is sent (intimacy)
  */
-export const onChatMessageSent = functions.firestore
-  .document('messages/{messageId}')
-  .onCreate(async (snap, context) => {
+export const onChatMessageSent = onDocumentCreated('messages/{messageId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const message = snap.data();
     const senderId = message.senderId;
     
@@ -135,9 +135,9 @@ export const onChatMessageSent = functions.firestore
 /**
  * Trigger when call is completed (intimacy)
  */
-export const onCallCompleted = functions.firestore
-  .document('calls/{callId}')
-  .onUpdate(async (change, context) => {
+export const onCallCompleted = onDocumentUpdated('calls/{callId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
@@ -159,9 +159,9 @@ export const onCallCompleted = functions.firestore
 /**
  * Trigger when meeting is verified (intimacy)
  */
-export const onMeetingVerified = functions.firestore
-  .document('meetings/{meetingId}')
-  .onUpdate(async (change, context) => {
+export const onMeetingVerified = onDocumentUpdated('meetings/{meetingId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
@@ -183,9 +183,9 @@ export const onMeetingVerified = functions.firestore
 /**
  * Trigger when profile view is received (recognition)
  */
-export const onProfileViewReceived = functions.firestore
-  .document('profile_views/{viewId}')
-  .onCreate(async (snap, context) => {
+export const onProfileViewReceived = onDocumentCreated('profile_views/{viewId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const view = snap.data();
     const profileUserId = view.profileUserId;
     
@@ -200,9 +200,9 @@ export const onProfileViewReceived = functions.firestore
 /**
  * Trigger when compliment is received (recognition)
  */
-export const onComplimentReceived = functions.firestore
-  .document('compliments/{complimentId}')
-  .onCreate(async (snap, context) => {
+export const onComplimentReceived = onDocumentCreated('compliments/{complimentId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const compliment = snap.data();
     const recipientId = compliment.recipientId;
     
@@ -217,9 +217,9 @@ export const onComplimentReceived = functions.firestore
 /**
  * Trigger when fan status changes (recognition)
  */
-export const onFanStatusChanged = functions.firestore
-  .document('fan_status/{statusId}')
-  .onUpdate(async (change, context) => {
+export const onFanStatusChanged = onDocumentUpdated('fan_status/{statusId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
@@ -239,15 +239,15 @@ export const onFanStatusChanged = functions.firestore
 /**
  * Trigger when user levels up (growth)
  */
-export const onUserLevelUp = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
+export const onUserLevelUp = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
     // Check if level increased
     if (after.level > before.level) {
-      const userId = context.params.userId;
+      const userId = event.params.userId;
       
       try {
         await restoreDesireDriver(userId, 'growth', 'level_up');
@@ -261,15 +261,15 @@ export const onUserLevelUp = functions.firestore
 /**
  * Trigger when Royal tier is achieved (growth)
  */
-export const onRoyalTierAchieved = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
+export const onRoyalTierAchieved = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
     // Check if tier changed to royal
     if (before.tier !== 'royal' && after.tier === 'royal') {
-      const userId = context.params.userId;
+      const userId = event.params.userId;
       
       try {
         await restoreDesireDriver(userId, 'growth', 'royal_achieved');
@@ -283,9 +283,9 @@ export const onRoyalTierAchieved = functions.firestore
 /**
  * Trigger when user joins an event (opportunity)
  */
-export const onEventJoined = functions.firestore
-  .document('event_participants/{participantId}')
-  .onCreate(async (snap, context) => {
+export const onEventJoined = onDocumentCreated('event_participants/{participantId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const participant = snap.data();
     const userId = participant.userId;
     
@@ -300,15 +300,15 @@ export const onEventJoined = functions.firestore
 /**
  * Trigger when travel mode is activated (opportunity)
  */
-export const onTravelModeActivated = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
+export const onTravelModeActivated = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
     // Check if travel mode was activated
     if (!before.travelMode?.active && after.travelMode?.active) {
-      const userId = context.params.userId;
+      const userId = event.params.userId;
       
       try {
         await restoreDesireDriver(userId, 'opportunity', 'travel_mode_activated');
@@ -327,9 +327,9 @@ export const onTravelModeActivated = functions.firestore
  * Trigger when breakup recovery starts (PACK 222)
  * Pauses desire loop triggers for cooldown period
  */
-export const onBreakupRecoveryStarted = functions.firestore
-  .document('breakup_recovery/{recoveryId}')
-  .onCreate(async (snap, context) => {
+export const onBreakupRecoveryStarted = onDocumentCreated('breakup_recovery/{recoveryId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const recovery = snap.data();
     const userId = recovery.userId;
     const cooldownDays = recovery.cooldownDays || 14;
@@ -346,9 +346,9 @@ export const onBreakupRecoveryStarted = functions.firestore
  * Trigger when safety incident is created
  * Pauses desire loop for toxic contacts
  */
-export const onSafetyIncident = functions.firestore
-  .document('trust_safety_incidents/{incidentId}')
-  .onCreate(async (snap, context) => {
+export const onSafetyIncident = onDocumentCreated('trust_safety_incidents/{incidentId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const incident = snap.data();
     const userId = incident.userId;
     const severity = incident.severity;
@@ -368,15 +368,15 @@ export const onSafetyIncident = functions.firestore
  * Trigger when romantic momentum drops significantly (PACK 224)
  * Boosts opportunity and curiosity to help recovery
  */
-export const onMomentumDropDetected = functions.firestore
-  .document('romantic_momentum_states/{userId}')
-  .onUpdate(async (change, context) => {
+export const onMomentumDropDetected = onDocumentUpdated('romantic_momentum_states/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
     // Detect significant momentum drop
     if (before.score >= 30 && after.score < 20) {
-      const userId = context.params.userId;
+      const userId = event.params.userId;
       
       try {
         // Generate recovery triggers
@@ -393,9 +393,9 @@ export const onMomentumDropDetected = functions.firestore
  * Trigger when chemistry lock-in activates (PACK 226)
  * Boosts intimacy state
  */
-export const onChemistryLockInActivated = functions.firestore
-  .document('conversations/{conversationId}')
-  .onUpdate(async (change, context) => {
+export const onChemistryLockInActivated = onDocumentUpdated('conversations/{conversationId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
@@ -418,9 +418,9 @@ export const onChemistryLockInActivated = functions.firestore
  * Trigger when romantic journey milestone is unlocked (PACK 221)
  * Boosts growth and intimacy
  */
-export const onJourneyMilestoneUnlocked = functions.firestore
-  .document('journey_milestones/{milestoneId}')
-  .onCreate(async (snap, context) => {
+export const onJourneyMilestoneUnlocked = onDocumentCreated('journey_milestones/{milestoneId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const milestone = snap.data();
     const user1Id = milestone.user1Id;
     const user2Id = milestone.user2Id;

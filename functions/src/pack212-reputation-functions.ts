@@ -29,7 +29,7 @@ import {
   FEEDBACK_LIMITS,
   FEEDBACK_ELIGIBILITY,
 } from './pack212-reputation-types';
-import { HttpsError, Timestamp, auth, onCall } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -588,10 +588,10 @@ export const pack212_admin_getUserReputation = functions.https.onCall(async (req
 /**
  * Initialize reputation on user creation
  */
-export const pack212_onUserCreate = functions.firestore
-  .document('users/{userId}')
-  .onCreate(async (snap, context) => {
-    const userId = context.params.userId;
+export const pack212_onUserCreate = onDocumentCreated('users/{userId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const userId = event.params.userId;
     
     try {
       await initializeUserReputation(userId);

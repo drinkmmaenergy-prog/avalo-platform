@@ -15,7 +15,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, increment, FieldValue } from './init';
 import { logger } from 'firebase-functions/v1';
-import { HttpsError, Timestamp, arrayUnion, auth, onCall, timestamp, onSchedule } from './runtime';
+import { HttpsError, Timestamp, arrayUnion, auth, onCall, timestamp, onSchedule, onDocumentUpdated } from './runtime';
 
 // ============================================================================
 // CONSTANTS & CONFIGURATION
@@ -923,15 +923,15 @@ async function sendBoostActivationNotification(
 /**
  * Notify when top supporter comes online
  */
-export const notifyTopSupporterOnline = functions.firestore
-  .document('users/{userId}/presence/status')
-  .onUpdate(async (change, context) => {
+export const notifyTopSupporterOnline = onDocumentUpdated('users/{userId}/presence/status', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const newStatus = change.after.data();
     const oldStatus = change.before.data();
 
     // Only proceed if user came online
     if (oldStatus.status !== 'online' && newStatus.status === 'online') {
-      const userId = context.params.userId;
+      const userId = event.params.userId;
 
       // Find creators for whom this user is a top supporter
       const supporterDocs = await db

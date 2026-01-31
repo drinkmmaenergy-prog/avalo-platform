@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { FieldValue, HttpsError, Timestamp, arrayRemove, arrayUnion, auth, increment, onCall, serverTimestamp, logger, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, arrayRemove, arrayUnion, auth, increment, onCall, serverTimestamp, logger, onSchedule, onDocumentUpdated } from './runtime';
 
 const db = admin.firestore();
 
@@ -479,12 +479,12 @@ async function formatForGoogle(userIds: string[]): Promise<any> {
 /**
  * Trigger: Add user to appropriate retargeting audience on status change
  */
-export const onUserStatusChange = functions.firestore
-  .document("users/{userId}")
-  .onUpdate(async (change, context) => {
+export const onUserStatusChange = onDocumentUpdated("users/{userId}", async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
-    const userId = context.params.userId;
+    const userId = event.params.userId;
 
     // If user just verified, remove from unverified audience
     if (!before.verified && after.verified) {

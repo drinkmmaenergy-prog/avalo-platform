@@ -6,7 +6,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { onSchedule } from '../runtime';
+import { onSchedule, onDocumentUpdated } from '../runtime';
 import { RankingService } from './ranking-service';
 import { RankingMetrics } from './types';
 
@@ -262,12 +262,12 @@ export const recalculateAllRankingsScheduled = onSchedule({ schedule: "0 3 * * *
 /**
  * Trigger: Recalculate ranking when user metrics change
  */
-export const onUserMetricsUpdate = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
+export const onUserMetricsUpdate = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
-    const userId = context.params.userId;
+    const userId = event.params.userId;
 
     // Check if ranking-relevant metrics changed
     const metricsChanged =

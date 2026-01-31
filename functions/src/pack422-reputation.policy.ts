@@ -13,7 +13,7 @@ import {
   ReputationPolicyAction,
 } from '../../shared/types/pack422-reputation.types';
 import { getReputationProfile } from './pack422-reputation.service';
-import { HttpsError, auth, onCall } from './runtime';
+import { HttpsError, auth, onCall, onDocumentWritten } from './runtime';
 
 const db = admin.firestore();
 
@@ -189,10 +189,10 @@ export async function getUserFeedRankingBoost(userId: string): Promise<number> {
 /**
  * Trigger policy application when reputation changes
  */
-export const onReputationChange = functions.firestore
-  .document('reputationProfiles/{userId}')
-  .onWrite(async (change, context) => {
-    const userId = context.params.userId;
+export const onReputationChange = onDocumentWritten('reputationProfiles/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
     
     if (!change.after.exists) {
       // Profile deleted (GDPR)

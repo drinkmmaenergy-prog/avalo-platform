@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
-import { Timestamp, increment, logger, onSchedule } from '../runtime';
+import { increment, logger, onSchedule, onDocumentCreated, onDocumentUpdated } from '../runtime';
 
 interface CalendarEventMetrics {
   date: string;
@@ -18,11 +18,11 @@ interface CalendarEventMetrics {
 }
 
 // Track calendar booking
-export const trackCalendarBooking = functions.firestore
-  .document('calendar_events/{eventId}')
-  .onCreate(async (snap, context) => {
-    const eventId = context.params.eventId;
-    const event = snap.data();
+export const trackCalendarBooking = onDocumentCreated('calendar_events/{eventId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const eventId = event.params.eventId;
+    const eventData = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
 
@@ -31,10 +31,10 @@ export const trackCalendarBooking = functions.firestore
       await db.collection('calendar_analytics').add({
         event_type: 'booking_created',
         event_id: eventId,
-        user_id: event.user_id,
-        creator_id: event.creator_id,
-        tokens: event.tokens || 0,
-        event_date: event.event_date,
+        user_id: eventData.user_id,
+        creator_id: eventData.creator_id,
+        tokens: eventData.tokens || 0,
+        event_date: eventData.event_date,
         timestamp: timestamp
       });
 
@@ -44,7 +44,7 @@ export const trackCalendarBooking = functions.firestore
         date: today,
         timestamp: timestamp,
         booking_count: FieldValue.increment(1),
-        total_tokens: FieldValue.increment(event.tokens || 0)
+        total_tokens: FieldValue.increment(eventData.tokens || 0)
       }, { merge: true });
 
       // Track creator revenue
@@ -52,7 +52,7 @@ export const trackCalendarBooking = functions.firestore
         metric_type: 'creator_calendar_revenue',
         date: today,
         timestamp: timestamp,
-        [`creator_${event.creator_id}`]: FieldValue.increment(event.tokens || 0)
+        [`creator_${eventData.creator_id}`]: FieldValue.increment(eventData.tokens || 0)
       }, { merge: true });
 
     } catch (error) {
@@ -61,10 +61,10 @@ export const trackCalendarBooking = functions.firestore
   });
 
 // Track booking cancellation
-export const trackBookingCancellation = functions.firestore
-  .document('calendar_events/{eventId}')
-  .onUpdate(async (change, context) => {
-    const eventId = context.params.eventId;
+export const trackBookingCancellation = onDocumentUpdated('calendar_events/{eventId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const eventId = event.params.eventId;
     const before = change.before.data();
     const after = change.after.data();
     const timestamp = Timestamp.now();
@@ -101,10 +101,10 @@ export const trackBookingCancellation = functions.firestore
   });
 
 // Track QR code verification
-export const trackQRVerification = functions.firestore
-  .document('calendar_events/{eventId}/verifications/{verificationId}')
-  .onCreate(async (snap, context) => {
-    const eventId = context.params.eventId;
+export const trackQRVerification = onDocumentCreated('calendar_events/{eventId}/verifications/{verificationId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const eventId = event.params.eventId;
     const verification = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
@@ -114,14 +114,14 @@ export const trackQRVerification = functions.firestore
       const eventDoc = await db.collection('calendar_events').doc(eventId).get();
       if (!eventDoc.exists) return;
 
-      const event = eventDoc.data()!;
+      const calendarEvent = eventDoc.data()!;
 
       // Track verification event
       await db.collection('calendar_analytics').add({
         event_type: 'qr_verification',
         event_id: eventId,
-        user_id: event.user_id,
-        creator_id: event.creator_id,
+        user_id: calendarEvent.user_id,
+        creator_id: calendarEvent.creator_id,
         verification_status: verification.status,
         verified_by: verification.verified_by,
         timestamp: timestamp
@@ -149,10 +149,10 @@ export const trackQRVerification = functions.firestore
   });
 
 // Track mismatch claims
-export const trackMismatchClaim = functions.firestore
-  .document('mismatch_claims/{claimId}')
-  .onCreate(async (snap, context) => {
-    const claimId = context.params.claimId;
+export const trackMismatchClaim = onDocumentCreated('mismatch_claims/{claimId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const claimId = event.params.claimId;
     const claim = snap.data();
     const timestamp = Timestamp.now();
     const today = new Date().toISOString().split('T')[0];
@@ -198,10 +198,10 @@ export const trackMismatchClaim = functions.firestore
   });
 
 // Track event completion
-export const trackEventCompletion = functions.firestore
-  .document('calendar_events/{eventId}')
-  .onUpdate(async (change, context) => {
-    const eventId = context.params.eventId;
+export const trackEventCompletion = onDocumentUpdated('calendar_events/{eventId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const eventId = event.params.eventId;
     const before = change.before.data();
     const after = change.after.data();
     const timestamp = Timestamp.now();

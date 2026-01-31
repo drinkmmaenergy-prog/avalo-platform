@@ -7,7 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, auth, onCall, logger, onSchedule } from './runtime';
+import { HttpsError, auth, onCall, logger, onSchedule, onDocumentUpdated } from './runtime';
 
 // Types
 export interface LanguageProfile {
@@ -502,9 +502,9 @@ export const adminToggleLanguage = functions.https.onCall(async (request) => {
 });
 
 // Trigger: Update user language on country change
-export const onUserCountryChange = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
+export const onUserCountryChange = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
@@ -513,7 +513,7 @@ export const onUserCountryChange = functions.firestore
       return;
     }
     
-    const userId = context.params.userId;
+    const userId = event.params.userId;
     const newCountry = after.country;
     const db = admin.firestore();
     

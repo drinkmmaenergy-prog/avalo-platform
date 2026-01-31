@@ -11,7 +11,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, Timestamp, arrayUnion, increment, onRequest, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
+import { FieldValue, Timestamp, arrayUnion, increment, onRequest, serverTimestamp, timestamp, logger, onSchedule, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -46,9 +46,9 @@ interface AggregatedMetrics {
 /**
  * Process individual latency metrics
  */
-export const trackLatency = functions.firestore
-  .document('pack363_metrics/{metricId}')
-  .onCreate(async (snap, context) => {
+export const trackLatency = onDocumentCreated('pack363_metrics/{metricId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const metric = snap.data();
 
     if (metric.type !== 'latency') return;

@@ -1,3 +1,4 @@
+import { onDocumentCreated } from './runtime';
 /**
  * PACK 54 - Moderation Triggers
  * Firestore triggers for automatic case creation from reports
@@ -10,10 +11,10 @@ import { createOrUpdateCaseFromReport } from './moderationEngine';
  * Firestore onCreate trigger for reports collection
  * Automatically creates or updates moderation cases when new reports are submitted
  */
-export const onReportCreated = functions.firestore
-  .document('reports/{reportId}')
-  .onCreate(async (snapshot, context) => {
-    const reportId = context.params.reportId;
+export const onReportCreated = onDocumentCreated('reports/{reportId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
+    const reportId = event.params.reportId;
     const reportData = snapshot.data();
 
     if (!reportData) {

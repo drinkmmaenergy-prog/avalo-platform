@@ -1,5 +1,5 @@
 import * as functions from 'firebase-functions';
-import { onSchedule } from '../runtime';
+import { onSchedule, onDocumentCreated } from '../runtime';
 import { db } from '../init';
 import { 
   detectConflictTrend,
@@ -14,11 +14,11 @@ import {
 import { aiModerator } from './aiModeration';
 import { CultureSafetyProfile } from './types';
 
-export const onContentCreated = functions.firestore
-  .document('posts/{postId}')
-  .onCreate(async (snap, context) => {
+export const onContentCreated = onDocumentCreated('posts/{postId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const postData = snap.data();
-    const postId = context.params.postId;
+    const postId = event.params.postId;
     
     if (!postData.text) return;
     
@@ -34,11 +34,11 @@ export const onContentCreated = functions.firestore
     }
   });
 
-export const onCommentCreated = functions.firestore
-  .document('posts/{postId}/comments/{commentId}')
-  .onCreate(async (snap, context) => {
+export const onCommentCreated = onDocumentCreated('posts/{postId}/comments/{commentId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const commentData = snap.data();
-    const postId = context.params.postId;
+    const postId = event.params.postId;
     
     if (!commentData.text) return;
     

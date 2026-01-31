@@ -26,7 +26,7 @@ import * as functions from 'firebase-functions';
 import { db, serverTimestamp, increment, FieldValue } from './init';
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { Timestamp, admin, auth, timestamp, onSchedule } from './runtime';
+import { Timestamp, admin, auth, timestamp, onSchedule, onDocumentUpdated } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -958,13 +958,13 @@ async function checkNearCompletionNotifications(creatorId: string): Promise<void
 /**
  * Update mission slots when creator level changes
  */
-export const updateMissionSlotsOnLevelChange = functions.firestore
-  .document('creatorLevels/{creatorId}')
-  .onUpdate(async (change, context) => {
+export const updateMissionSlotsOnLevelChange = onDocumentUpdated('creatorLevels/{creatorId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     try {
       const before = change.before.data();
       const after = change.after.data();
-      const creatorId = context.params.creatorId;
+      const creatorId = event.params.creatorId;
 
       // Check if level changed
       if (before.level !== after.level) {

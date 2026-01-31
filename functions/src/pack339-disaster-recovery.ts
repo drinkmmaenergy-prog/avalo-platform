@@ -19,7 +19,7 @@ import * as functions from 'firebase-functions';
 import { db, admin } from './init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { Storage } from '@google-cloud/storage';
-import { HttpsError, auth, functionsConfig, onCall, storage, timestamp, logger, onSchedule } from './runtime';
+import { HttpsError, auth, functionsConfig, onCall, storage, timestamp, logger, onSchedule, onDocumentCreated } from './runtime';
 
 // ============================================================================
 // TYPES
@@ -890,12 +890,11 @@ export const pack339_requestEvidenceExport = functions.https.onCall(async (reque
  * Process evidence export job (background)
  * This would be triggered by Cloud Tasks or Pub/Sub
  */
-export const pack339_processEvidenceExport = functions
-  .runWith({ timeoutSeconds: 540, memory: '4GB' })
-  .firestore.document('evidenceExportJobs/{jobId}')
-  .onCreate(async (snap, context) => {
+export const pack339_processEvidenceExport = onDocumentCreated('evidenceExportJobs/{jobId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const job = snap.data() as EvidenceExportJob;
-    const jobId = context.params.jobId;
+    const jobId = event.params.jobId;
 
     try {
       console.log(`[Pack339] Processing evidence export: ${jobId}`);

@@ -7,7 +7,7 @@ import * as functions from 'firebase-functions';
 import { guardianService } from './services/guardian.service';
 import { guardianRewriteService } from './services/guardianRewrite.service';
 import { RewriteIntent } from './types/guardian.types';
-import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule, onDocumentCreated } from './runtime';
 
 // ============================================================================
 // Message Analysis Trigger
@@ -17,12 +17,12 @@ import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
  * Analyze new messages for safety risks
  * Triggered when a new message is created in any conversation
  */
-export const analyzeMessage = functions.firestore
-  .document('conversations/{conversationId}/messages/{messageId}')
-  .onCreate(async (snap, context) => {
+export const analyzeMessage = onDocumentCreated('conversations/{conversationId}/messages/{messageId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     try {
       const messageData = snap.data();
-      const { conversationId, messageId } = context.params;
+      const { conversationId, messageId } = event.params;
       
       // Skip system messages
       if (messageData.type === 'system' || !messageData.senderId) {

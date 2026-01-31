@@ -13,7 +13,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, Timestamp, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
+import { FieldValue, Timestamp, serverTimestamp, timestamp, logger, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';
 
 const db = admin.firestore();
 
@@ -39,10 +39,10 @@ interface RealtimeEvent {
 /**
  * Dispatch chat message events
  */
-export const dispatchChatMessage = functions.firestore
-  .document('messages/{messageId}')
-  .onCreate(async (snap, context) => {
-    const messageId = context.params.messageId;
+export const dispatchChatMessage = onDocumentCreated('messages/{messageId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const messageId = event.params.messageId;
     const message = snap.data();
 
     try {
@@ -79,13 +79,13 @@ export const dispatchChatMessage = functions.firestore
 /**
  * Dispatch typing indicators (triggered by client publish)
  */
-export const dispatchTypingIndicator = functions.firestore
-  .document('realtime_chat_events/{eventId}')
-  .onCreate(async (snap, context) => {
-    const event = snap.data();
+export const dispatchTypingIndicator = onDocumentCreated('realtime_chat_events/{eventId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const eventData = snap.data();
     
     // Only process typing_indicator events
-    if (event.type !== 'typing_indicator') return;
+    if (eventData.type !== 'typing_indicator') return;
 
     // Auto-delete after 10 seconds (cleanup)
     setTimeout(async () => {
@@ -104,10 +104,10 @@ export const dispatchTypingIndicator = functions.firestore
 /**
  * Process AI chat requests and dispatch streaming responses
  */
-export const dispatchAIChatRequest = functions.firestore
-  .document('ai_chat_requests/{requestId}')
-  .onCreate(async (snap, context) => {
-    const requestId = context.params.requestId;
+export const dispatchAIChatRequest = onDocumentCreated('ai_chat_requests/{requestId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const requestId = event.params.requestId;
     const request = snap.data();
 
     try {
@@ -221,10 +221,10 @@ async function processAIRequest(requestId: string, request: any) {
 /**
  * Dispatch wallet balance updates
  */
-export const dispatchWalletUpdate = functions.firestore
-  .document('wallets/{userId}')
-  .onUpdate(async (change, context) => {
-    const userId = context.params.userId;
+export const dispatchWalletUpdate = onDocumentUpdated('wallets/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
     const before = change.before.data();
     const after = change.after.data();
 
@@ -255,10 +255,10 @@ export const dispatchWalletUpdate = functions.firestore
 /**
  * Dispatch transaction events
  */
-export const dispatchWalletTransaction = functions.firestore
-  .document('wallet_transactions/{txId}')
-  .onCreate(async (snap, context) => {
-    const txId = context.params.txId;
+export const dispatchWalletTransaction = onDocumentCreated('wallet_transactions/{txId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const txId = event.params.txId;
     const transaction = snap.data();
 
     try {
@@ -284,10 +284,10 @@ export const dispatchWalletTransaction = functions.firestore
     }
   });
 
-export const dispatchWalletTransactionCompleted = functions.firestore
-  .document('wallet_transactions/{txId}')
-  .onUpdate(async (change, context) => {
-    const txId = context.params.txId;
+export const dispatchWalletTransactionCompleted = onDocumentUpdated('wallet_transactions/{txId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const txId = event.params.txId;
     const before = change.before.data();
     const after = change.after.data();
 
@@ -322,10 +322,10 @@ export const dispatchWalletTransactionCompleted = functions.firestore
 /**
  * Dispatch support ticket messages
  */
-export const dispatchSupportMessage = functions.firestore
-  .document('support_messages/{messageId}')
-  .onCreate(async (snap, context) => {
-    const messageId = context.params.messageId;
+export const dispatchSupportMessage = onDocumentCreated('support_messages/{messageId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const messageId = event.params.messageId;
     const message = snap.data();
 
     try {
@@ -353,10 +353,10 @@ export const dispatchSupportMessage = functions.firestore
 /**
  * Dispatch support ticket status changes
  */
-export const dispatchSupportStatusChange = functions.firestore
-  .document('support_tickets/{ticketId}')
-  .onUpdate(async (change, context) => {
-    const ticketId = context.params.ticketId;
+export const dispatchSupportStatusChange = onDocumentUpdated('support_tickets/{ticketId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const ticketId = event.params.ticketId;
     const before = change.before.data();
     const after = change.after.data();
 
@@ -415,11 +415,11 @@ export const dispatchSupportStatusChange = functions.firestore
 /**
  * Dispatch safety events with MAX priority
  */
-export const dispatchSafetyEvent = functions.firestore
-  .document('safety_events/{eventId}')
-  .onCreate(async (snap, context) => {
-    const eventId = context.params.eventId;
-    const event = snap.data();
+export const dispatchSafetyEvent = onDocumentCreated('safety_events/{eventId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const eventId = event.params.eventId;
+    const eventData = snap.data();
 
     try {
       // Determine priority based on severity
@@ -431,10 +431,10 @@ export const dispatchSafetyEvent = functions.firestore
       // Publish safety event
       await db.collection('realtime_safety_events').add({
         channel: 'safety',
-        type: `safety:${event.type}`,
+        type: `safety:${eventData.type}`,
         payload: {
           eventId,
-          userId: event.userId,
+          userId: eventData.userId,
           severity: event.severity,
           location: event.location,
           context: event.context,
@@ -448,7 +448,7 @@ export const dispatchSafetyEvent = functions.firestore
       await db.collection('pack363_audit_log').add({
         eventType: 'safety_event_dispatched',
         eventId,
-        userId: event.userId,
+        userId: eventData.userId,
         severity: event.severity,
         timestamp: admin.firestore.FieldValue.serverTimestamp()
       });

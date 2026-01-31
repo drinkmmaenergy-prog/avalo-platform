@@ -9,7 +9,7 @@ import {
   updateUserActivity,
   updateUserSegmentAndChurnScore,
 } from './pack301-retention-service';
-import { HttpsError, auth, onCall, timestamp } from './runtime';
+import { HttpsError, auth, onCall, timestamp, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -67,9 +67,9 @@ export const trackActivity = functions.https.onCall(async (request) => {
 /**
  * Firestore trigger: Track swipe activity
  */
-export const onSwipeCreated = functions.firestore
-  .document('swipes/{swipeId}')
-  .onCreate(async (snapshot, context) => {
+export const onSwipeCreated = onDocumentCreated('swipes/{swipeId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     try {
       const swipeData = snapshot.data();
       const userId = swipeData.userId;
@@ -86,9 +86,9 @@ export const onSwipeCreated = functions.firestore
 /**
  * Firestore trigger: Track chat message activity
  */
-export const onChatMessageCreated = functions.firestore
-  .document('messages/{messageId}')
-  .onCreate(async (snapshot, context) => {
+export const onChatMessageCreated = onDocumentCreated('messages/{messageId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     try {
       const messageData = snapshot.data();
       const senderId = messageData.senderId;
@@ -105,9 +105,9 @@ export const onChatMessageCreated = functions.firestore
 /**
  * Firestore trigger: Track token purchase activity
  */
-export const onTokenPurchaseCreated = functions.firestore
-  .document('transactions/{transactionId}')
-  .onCreate(async (snapshot, context) => {
+export const onTokenPurchaseCreated = onDocumentCreated('transactions/{transactionId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     try {
       const transactionData = snapshot.data();
       const userId = transactionData.senderUid || transactionData.receiverUid;
@@ -128,9 +128,9 @@ export const onTokenPurchaseCreated = functions.firestore
 /**
  * Firestore trigger: Track calendar booking activity
  */
-export const onCalendarBookingCreated = functions.firestore
-  .document('calendarBookings/{bookingId}')
-  .onCreate(async (snapshot, context) => {
+export const onCalendarBookingCreated = onDocumentCreated('calendarBookings/{bookingId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     try {
       const bookingData = snapshot.data();
       const bookerUserId = bookingData.bookerUserId;
@@ -147,9 +147,9 @@ export const onCalendarBookingCreated = functions.firestore
 /**
  * Firestore trigger: Track event ticket purchase activity
  */
-export const onEventTicketCreated = functions.firestore
-  .document('eventTickets/{ticketId}')
-  .onCreate(async (snapshot, context) => {
+export const onEventTicketCreated = onDocumentCreated('eventTickets/{ticketId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     try {
       const ticketData = snapshot.data();
       const userId = ticketData.userId;

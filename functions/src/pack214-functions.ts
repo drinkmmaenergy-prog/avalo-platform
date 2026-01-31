@@ -18,7 +18,7 @@ import {
   batchProcessColdStartSequences,
   batchProcessBreakTracking,
 } from "./pack214-schedulers";
-import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule, onDocumentCreated } from './runtime';
 
 const db = getFirestore();
 
@@ -29,9 +29,9 @@ const db = getFirestore();
 /**
  * Trigger when a new high-priority match is created
  */
-export const onNewHighPriorityMatch = functions.firestore
-  .document("matches/{matchId}")
-  .onCreate(async (snap, context) => {
+export const onNewHighPriorityMatch = onDocumentCreated("matches/{matchId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     try {
       const matchData = snap.data();
 
@@ -63,12 +63,12 @@ export const onNewHighPriorityMatch = functions.firestore
 /**
  * Trigger when a user receives a new message
  */
-export const onNewMessage = functions.firestore
-  .document("chats/{chatId}/messages/{messageId}")
-  .onCreate(async (snap, context) => {
+export const onNewMessage = onDocumentCreated("chats/{chatId}/messages/{messageId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     try {
       const messageData = snap.data();
-      const { chatId } = context.params;
+      const { chatId } = event.params;
 
       // Get chat document to find recipient
       const chatDoc = await db.collection("chats").doc(chatId).get();
@@ -98,9 +98,9 @@ export const onNewMessage = functions.firestore
 /**
  * Trigger when a user receives likes
  */
-export const onNewLike = functions.firestore
-  .document("likes/{likeId}")
-  .onCreate(async (snap, context) => {
+export const onNewLike = onDocumentCreated("likes/{likeId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     try {
       const likeData = snap.data();
 
@@ -137,9 +137,9 @@ export const onNewLike = functions.firestore
 /**
  * Trigger when a user is added to wishlist
  */
-export const onWishlistAdd = functions.firestore
-  .document("wishlists/{wishlistId}")
-  .onCreate(async (snap, context) => {
+export const onWishlistAdd = onDocumentCreated("wishlists/{wishlistId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     try {
       const wishlistData = snap.data();
 
@@ -159,9 +159,9 @@ export const onWishlistAdd = functions.firestore
 /**
  * Trigger when high-chemistry profile visits user
  */
-export const onProfileVisit = functions.firestore
-  .document("profile_visits/{visitId}")
-  .onCreate(async (snap, context) => {
+export const onProfileVisit = onDocumentCreated("profile_visits/{visitId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     try {
       const visitData = snap.data();
 
@@ -196,9 +196,9 @@ export const onProfileVisit = functions.firestore
 /**
  * Trigger when user receives good vibe mark
  */
-export const onGoodVibeReceived = functions.firestore
-  .document("vibes/{vibeId}")
-  .onCreate(async (snap, context) => {
+export const onGoodVibeReceived = onDocumentCreated("vibes/{vibeId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     try {
       const vibeData = snap.data();
 
@@ -220,9 +220,9 @@ export const onGoodVibeReceived = functions.firestore
 /**
  * Trigger when discovery boost becomes active
  */
-export const onDiscoveryBoostActive = functions.firestore
-  .document("discovery_boosts/{boostId}")
-  .onCreate(async (snap, context) => {
+export const onDiscoveryBoostActive = onDocumentCreated("discovery_boosts/{boostId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     try {
       const boostData = snap.data();
 
@@ -246,11 +246,11 @@ export const onDiscoveryBoostActive = functions.firestore
 /**
  * Initialize return trigger settings on user creation
  */
-export const onUserCreated = functions.firestore
-  .document("users/{userId}")
-  .onCreate(async (snap, context) => {
+export const onUserCreated = onDocumentCreated("users/{userId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     try {
-      const { userId } = context.params;
+      const { userId } = event.params;
       const userData = snap.data();
 
       await initializeReturnTriggerSettings(

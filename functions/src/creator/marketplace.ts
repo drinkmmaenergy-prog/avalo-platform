@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import { db } from '../init';
 import { FieldValue } from 'firebase-admin/firestore';
-import { HttpsError, Timestamp, admin, auth, onCall } from '../runtime';
+import { HttpsError, admin, auth, onCall } from '../runtime';
 
 // ============================================================================
 // TYPES

@@ -9,7 +9,7 @@ import {
   StoreReview,
   AIReviewSuggestion,
 } from './pack424-store-reviews.types';
-import { HttpsError, auth, logger, onCall } from './runtime';
+import { HttpsError, auth, logger, onCall, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -300,9 +300,9 @@ export const getReviewResponseSuggestions = functions.https.onCall(async (reques
 /**
  * Auto-generate suggestions for new negative reviews
  */
-export const autoGenerateSuggestionsForNegativeReviews = functions.firestore
-  .document('storeReviews/{reviewId}')
-  .onCreate(async (snap, context) => {
+export const autoGenerateSuggestionsForNegativeReviews = onDocumentCreated('storeReviews/{reviewId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const review = snap.data() as StoreReview;
 
     // Only generate for negative reviews (1-2 stars)

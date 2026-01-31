@@ -7,7 +7,7 @@ import * as functions from 'firebase-functions';
 import { db, serverTimestamp } from './init';
 import { DATA_RETENTION } from './pack296-audit-helpers';
 import type { RetentionJobResult } from './types/audit.types';
-import { HttpsError, admin, auth, onCall, timestamp, onSchedule } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp, onSchedule, onDocumentCreated } from './runtime';
 
 // ============================================================================
 // DATA RETENTION JOB (Runs daily)
@@ -268,10 +268,10 @@ async function cleanupAdminSessions(): Promise<RetentionJobResult> {
  * Handle user data deletion request (GDPR compliance)
  * Pseudonymize data while preserving compliance requirements
  */
-export const retention_handleUserDeletion = functions.firestore
-  .document('users/{userId}/dataRequests/{requestId}')
-  .onCreate(async (snap, context) => {
-    const { userId } = context.params;
+export const retention_handleUserDeletion = onDocumentCreated('users/{userId}/dataRequests/{requestId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const { userId } = event.params;
     const request = snap.data();
 
     if (request.type !== 'DELETE') {

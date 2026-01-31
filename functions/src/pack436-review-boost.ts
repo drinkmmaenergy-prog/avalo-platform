@@ -10,7 +10,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, auth, increment, onCall, timestamp, onSchedule } from './runtime';
+import { FieldValue, HttpsError, auth, increment, onCall, timestamp, onSchedule, onDocumentCreated } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -55,9 +55,9 @@ interface UserNudgeHistory {
  * Evaluate if user is ready for a review nudge
  * Only triggers at good emotional moments
  */
-export const evaluateReviewNudge = functions.firestore
-  .document('userActions/{actionId}')
-  .onCreate(async (snap, context) => {
+export const evaluateReviewNudge = onDocumentCreated('userActions/{actionId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const action = snap.data();
     const userId = action.userId;
     

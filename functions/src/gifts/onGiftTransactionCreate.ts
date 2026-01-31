@@ -7,17 +7,17 @@
 
 import * as functions from 'firebase-functions';
 import { db, increment, serverTimestamp } from '../init';
-import { timestamp } from '../runtime';
+import { timestamp, onDocumentCreated } from '../runtime';
 
 /**
  * Firestore trigger on gift_transactions creation
  * Updates user statistics and logs analytics
  */
-export const onGiftTransactionCreate = functions.firestore
-  .document('gift_transactions/{transactionId}')
-  .onCreate(async (snapshot, context) => {
+export const onGiftTransactionCreate = onDocumentCreated('gift_transactions/{transactionId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     const transaction = snapshot.data();
-    const transactionId = context.params.transactionId;
+    const transactionId = event.params.transactionId;
 
     console.log(`Processing gift transaction: ${transactionId}`);
 

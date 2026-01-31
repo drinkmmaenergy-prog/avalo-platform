@@ -11,7 +11,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, logger, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, logger, onSchedule, onDocumentUpdated } from './runtime';
 
 // Referral Status
 export enum ReferralStatus {
@@ -213,10 +213,10 @@ export const createReferral = functions.https.onCall(async (request) => {
 /**
  * Complete referral after user meets criteria
  */
-export const completeReferral = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
-    const userId = context.params.userId;
+export const completeReferral = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
     const beforeData = change.before.data();
     const afterData = change.after.data();
 

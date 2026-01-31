@@ -8,7 +8,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { levenshtein } from './utils/string-similarity';
-import { HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule } from './runtime';
+import { HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule, onDocumentCreated, onDocumentWritten } from './runtime';
 
 // Mock functions for dependencies (will be replaced with actual implementations)
 async function sendTrustTeamAlert(data: any): Promise<void> {
@@ -325,9 +325,9 @@ async function executeAttackAutoActions(alertId: string, attacks: AttackPattern[
 /**
  * Fake review classifier using ML patterns
  */
-export const pack379_fakeReviewClassifier = functions.firestore
-  .document('storeReviewSecurity/{reviewId}')
-  .onCreate(async (snap, context) => {
+export const pack379_fakeReviewClassifier = onDocumentCreated('storeReviewSecurity/{reviewId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const review = snap.data();
     
     // Calculate suspicion score
@@ -376,7 +376,7 @@ export const pack379_fakeReviewClassifier = functions.firestore
     // If high suspicion, add to dispute queue
     if (suspicionScore > 60) {
       await db.collection('reviewDisputeQueue').add({
-        reviewId: context.params.reviewId,
+        reviewId: event.params.reviewId,
         platform: review.platform,
         suspicionScore,
         indicators,
@@ -843,10 +843,10 @@ function calculateVolatility(values: number[]): number {
 /**
  * Computes comprehensive trust score for users
  */
-export const pack379_trustScoreEngine = functions.firestore
-  .document('users/{userId}')
-  .onWrite(async (change, context) => {
-    const userId = context.params.userId;
+export const pack379_trustScoreEngine = onDocumentWritten('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
     
     // Calculate trust score
     const trustScore = await calculateTrustScore(userId);

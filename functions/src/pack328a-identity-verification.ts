@@ -17,7 +17,7 @@ import {
   DocumentType,
   VERIFICATION_CONFIG,
 } from './pack328a-identity-verification-types';
-import { HttpsError, admin, auth, onCall, timestamp, logger, onSchedule } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp, logger, onSchedule, onDocumentCreated } from './runtime';
 
 // ============================================================================
 // Callable Functions (User-facing)
@@ -450,9 +450,9 @@ export const identityVerification_sendReminders = onSchedule("every 6 hours", as
 /**
  * Auto-trigger verification when fraud score increases
  */
-export const identityVerification_onFraudSignal = functions.firestore
-  .document('fraudSignals/{signalId}')
-  .onCreate(async (snap, context) => {
+export const identityVerification_onFraudSignal = onDocumentCreated('fraudSignals/{signalId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const signal = snap.data();
 
     if (signal.severity === 'HIGH' && signal.confidence >= 0.7) {
@@ -471,9 +471,9 @@ export const identityVerification_onFraudSignal = functions.firestore
 /**
  * Auto-trigger verification when profile mismatch is reported
  */
-export const identityVerification_onMismatchReport = functions.firestore
-  .document('reports/{reportId}')
-  .onCreate(async (snap, context) => {
+export const identityVerification_onMismatchReport = onDocumentCreated('reports/{reportId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const report = snap.data();
 
     if (report.type === 'PROFILE_MISMATCH' && report.status === 'PENDING') {

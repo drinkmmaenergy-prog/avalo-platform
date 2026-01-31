@@ -23,7 +23,7 @@ import {
 import { sendPushNotification } from './pack293-notification-service'; // PACK 293
 import { checkFraudLimits } from './pack302-fraud-detection'; // PACK 302
 import { routeRegion } from './pack426-region-router'; // PACK 426
-import { admin, timestamp, onSchedule } from './runtime';
+import { admin, timestamp, onSchedule, onDocumentCreated } from './runtime';
 
 const db = getFirestore();
 
@@ -472,15 +472,11 @@ export const pack427_exportQueueStats = onSchedule("every 5 minutes", async (eve
  * 
  * Triggers immediate processing when new messages are enqueued
  */
-export const pack427_onMessageEnqueued = functions
-  .runWith({
-    timeoutSeconds: 60,
-    memory: '256MB',
-  })
-  .firestore.document('regions/{region}/messageQueue/{messageId}')
-  .onCreate(async (snapshot, context) => {
+export const pack427_onMessageEnqueued = onDocumentCreated('regions/{region}/messageQueue/{messageId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     const message = snapshot.data() as QueuedMessage;
-    const region = context.params.region as Region;
+    const region = event.params.region as Region;
 
     // Process immediately if message is high priority
     if (message.status === 'PENDING') {

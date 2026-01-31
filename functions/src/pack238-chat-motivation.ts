@@ -20,7 +20,7 @@ import {
   IntentTracking,
   MonetizationIntent
 } from './types/pack238-chat-motivation';
-import { FieldValue, Timestamp, increment, timestamp, onSchedule } from './runtime';
+import { FieldValue, Timestamp, increment, timestamp, onSchedule, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -722,11 +722,11 @@ function generateBoosterPrompt(
 /**
  * Cloud Function: Analyze message and trigger boosters
  */
-export const onMessageSent = functions.firestore
-  .document('chats/{chatId}/messages/{messageId}')
-  .onCreate(async (snapshot, context) => {
+export const onMessageSent = onDocumentCreated('chats/{chatId}/messages/{messageId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     const messageData = snapshot.data();
-    const { chatId, messageId } = context.params;
+    const { chatId, messageId } = event.params;
     
     try {
       // Analyze message

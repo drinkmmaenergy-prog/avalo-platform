@@ -13,15 +13,15 @@ import {
   AbuseAutoAction 
 } from "./pack346-types";
 import { triggerAlert } from "./pack346-alert-routing";
-import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule, onDocumentCreated } from './runtime';
 
 /**
  * Detect refund loop abuse
  * Triggers on transactions and refunds
  */
-export const detectRefundLoop = functions.firestore
-  .document("refunds/{refundId}")
-  .onCreate(async (snap, context) => {
+export const detectRefundLoop = onDocumentCreated("refunds/{refundId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const refund = snap.data();
     const userId = refund.userId;
 
@@ -57,16 +57,16 @@ export const detectRefundLoop = functions.firestore
 /**
  * Detect panic button spam/false positives
  */
-export const detectPanicSpam = functions.firestore
-  .document("safetyEvents/{eventId}")
-  .onCreate(async (snap, context) => {
-    const event = snap.data();
+export const detectPanicSpam = onDocumentCreated("safetyEvents/{eventId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const eventData = snap.data();
     
-    if (event.type !== "panic_button") {
+    if (eventData.type !== "panic_button") {
       return;
     }
 
-    const userId = event.userId;
+    const userId = eventData.userId;
 
     // Count panic triggers in last 7 days
     const sevenDaysAgo = Timestamp.fromDate(
@@ -100,12 +100,12 @@ export const detectPanicSpam = functions.firestore
 /**
  * Detect fake selfie mismatch claims
  */
-export const detectFakeMismatch = functions.firestore
-  .document("safetyEvents/{eventId}")
-  .onCreate(async (snap, context) => {
-    const event = snap.data();
+export const detectFakeMismatch = onDocumentCreated("safetyEvents/{eventId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const eventData = snap.data();
     
-    if (event.type !== "selfie_mismatch") {
+    if (eventData.type !== "selfie_mismatch") {
       return;
     }
 
@@ -190,9 +190,9 @@ export const detectBotBehavior = onSchedule("every 1 hours", async (event) => {
 /**
  * Detect AI prompt abuse
  */
-export const detectAIAbuse = functions.firestore
-  .document("aiInteractions/{interactionId}")
-  .onCreate(async (snap, context) => {
+export const detectAIAbuse = onDocumentCreated("aiInteractions/{interactionId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const interaction = snap.data();
     const userId = interaction.userId;
 
@@ -312,9 +312,9 @@ export const detectCancellationFarming = onSchedule("every 6 hours", async (even
 /**
  * Detect token drain patterns
  */
-export const detectTokenDrain = functions.firestore
-  .document("transactions/{transactionId}")
-  .onCreate(async (snap, context) => {
+export const detectTokenDrain = onDocumentCreated("transactions/{transactionId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const transaction = snap.data();
     
     if (transaction.amount >= 0) {

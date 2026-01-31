@@ -12,7 +12,7 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp, onDocumentCreated, onDocumentWritten } from './runtime';
 
 const db = admin.firestore();
 
@@ -560,10 +560,10 @@ function calculateAge(dateOfBirth: Date): number {
 /**
  * Automatically detect and update user jurisdiction on registration
  */
-export const onUserRegistration = functions.firestore
-  .document('users/{userId}')
-  .onCreate(async (snap, context) => {
-    const userId = context.params.userId;
+export const onUserRegistration = onDocumentCreated('users/{userId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const userId = event.params.userId;
     const userData = snap.data();
     
     await detectJurisdiction(
@@ -577,12 +577,12 @@ export const onUserRegistration = functions.firestore
 /**
  * Update jurisdiction when user updates payment method
  */
-export const onPaymentMethodUpdate = functions.firestore
-  .document('payment_methods/{userId}')
-  .onWrite(async (change, context) => {
+export const onPaymentMethodUpdate = onDocumentWritten('payment_methods/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     if (!change.after.exists) return;
     
-    const userId = context.params.userId;
+    const userId = event.params.userId;
     const paymentData = change.after.data();
     
     if (paymentData.billingCountry) {

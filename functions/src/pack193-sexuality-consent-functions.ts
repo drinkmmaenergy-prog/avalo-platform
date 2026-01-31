@@ -28,7 +28,7 @@ import {
   CONSENT_VERSION,
   DEFAULT_SESSION_EXPIRATION_HOURS
 } from './pack193-sexuality-consent';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, onSchedule, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -708,11 +708,11 @@ export const autoExpireSessions = onSchedule("every 1 hours", async (event) => {
 /**
  * Monitor content for violations (Firestore trigger)
  */
-export const monitorSexyContent = functions.firestore
-  .document('sexy_content/{contentId}')
-  .onCreate(async (snap, context) => {
+export const monitorSexyContent = onDocumentCreated('sexy_content/{contentId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const content = snap.data() as SexyContent;
-    const contentId = context.params.contentId;
+    const contentId = event.params.contentId;
 
     try {
       // Check for prohibited content patterns

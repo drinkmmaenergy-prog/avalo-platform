@@ -13,7 +13,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -285,9 +285,9 @@ async function runKYCVerificationChecks(userId: string, identityData: any): Prom
 /**
  * Monitor AML patterns
  */
-export const pack388_monitorAMLPatterns = functions.firestore
-  .document('transactions/{transactionId}')
-  .onCreate(async (snap, context) => {
+export const pack388_monitorAMLPatterns = onDocumentCreated('transactions/{transactionId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const transaction = snap.data();
     const userId = transaction.userId;
 

@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
-import { Timestamp, logger, onSchedule } from '../runtime';
+import { logger, onSchedule, onDocumentCreated, onDocumentUpdated } from '../runtime';
 
 interface SafetyScore {
   userId: string;
@@ -22,10 +22,10 @@ interface BehaviorAnomaly {
 }
 
 // NSFW Detection Scoring
-export const analyzeContentForNSFW = functions.firestore
-  .document('users/{userId}/media/{mediaId}')
-  .onCreate(async (snap, context) => {
-    const userId = context.params.userId;
+export const analyzeContentForNSFW = onDocumentCreated('users/{userId}/media/{mediaId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const userId = event.params.userId;
     const media = snap.data();
     const timestamp = Timestamp.now();
 
@@ -51,7 +51,7 @@ export const analyzeContentForNSFW = functions.firestore
       await db.collection('safety_events').add({
         event_type: 'nsfw_detection',
         user_id: userId,
-        media_id: context.params.mediaId,
+        media_id: event.params.mediaId,
         nsfw_score: nsfwScore,
         nsfw_level: nsfwLevel,
         severity: nsfwLevel === 'S3' ? 'high' : nsfwLevel === 'S2' ? 'medium' : 'low',
@@ -89,10 +89,10 @@ export const analyzeContentForNSFW = functions.firestore
   });
 
 // Catfish Probability Detection
-export const analyzeCatfishProbability = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
-    const userId = context.params.userId;
+export const analyzeCatfishProbability = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
     const before = change.before.data();
     const after = change.after.data();
     const timestamp = Timestamp.now();
@@ -179,9 +179,9 @@ export const analyzeCatfishProbability = functions.firestore
   });
 
 // Track Block/Report Events
-export const trackBlockReport = functions.firestore
-  .document('reports/{reportId}')
-  .onCreate(async (snap, context) => {
+export const trackBlockReport = onDocumentCreated('reports/{reportId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const report = snap.data();
     const timestamp = Timestamp.now();
 
@@ -241,10 +241,10 @@ export const trackBlockReport = functions.firestore
   });
 
 // Behavior Anomaly Detection
-export const detectBehaviorAnomalies = functions.firestore
-  .document('user_behavior/{userId}')
-  .onUpdate(async (change, context) => {
-    const userId = context.params.userId;
+export const detectBehaviorAnomalies = onDocumentUpdated('user_behavior/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
     const before = change.before.data();
     const after = change.after.data();
     const timestamp = Timestamp.now();

@@ -17,7 +17,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { getAuth } from 'firebase-admin/auth';
 import * as crypto from 'crypto';
-import { FieldValue, HttpsError, Timestamp, increment, onCall, logger, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, increment, onCall, logger, onSchedule, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 const auth = getAuth();
@@ -520,9 +520,9 @@ async function trackViralEvent(eventData: {
 /**
  * Process social loop completion
  */
-export const pack374_processSocialLoop = functions.firestore
-  .document('viralEvents/{eventId}')
-  .onCreate(async (snap, context) => {
+export const pack374_processSocialLoop = onDocumentCreated('viralEvents/{eventId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const eventData = snap.data();
 
     // Check if this completes a viral loop
@@ -559,7 +559,7 @@ export const pack374_processSocialLoop = functions.firestore
         eventType: 'message_engagement_opportunity',
         targetUserId: eventData.userId,
         loopType: 'message_conversion',
-        metadata: { parentEventId: context.params.eventId },
+        metadata: { parentEventId: event.params.eventId },
       });
     }
 
@@ -755,9 +755,9 @@ async function issueReward(
 /**
  * Lock reward to prevent abuse
  */
-export const pack374_lockRewardAbuse = functions.firestore
-  .document('viralRewards/{rewardId}')
-  .onCreate(async (snap, context) => {
+export const pack374_lockRewardAbuse = onDocumentCreated('viralRewards/{rewardId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const rewardData = snap.data();
 
     // Check if user has excessive rewards (fraud detection)
@@ -777,7 +777,7 @@ export const pack374_lockRewardAbuse = functions.firestore
         status: 'pending_review',
         metadata: {
           rewardCount: recentRewards.data().count,
-          rewardId: context.params.rewardId,
+          rewardId: event.params.rewardId,
         },
         reporterUserId: 'system',
         createdAt: admin.firestore.Timestamp.now(),

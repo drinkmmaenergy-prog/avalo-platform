@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -21,11 +21,11 @@ interface CrisisActions {
  * Main Crisis Response Orchestrator
  * Triggered when a CRITICAL incident is created
  */
-export const pack387_crisisResponseOrchestrator = functions.firestore
-  .document('prIncidents/{incidentId}')
-  .onCreate(async (snapshot, context) => {
+export const pack387_crisisResponseOrchestrator = onDocumentCreated('prIncidents/{incidentId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     const incident = snapshot.data();
-    const incidentId = context.params.incidentId;
+    const incidentId = event.params.incidentId;
 
     // Only orchestrate for CRITICAL or HIGH threat levels
     if (incident.threatLevel !== 'CRITICAL' && incident.threatLevel !== 'HIGH') {

@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -322,9 +322,9 @@ export const detectCrashReviewCorrelation = functions.https.onCall(async (reques
 /**
  * Track uninstall spike
  */
-export const trackUninstallSpike = functions.firestore
-  .document('appUninstalls/{uninstallId}')
-  .onCreate(async (snap, context) => {
+export const trackUninstallSpike = onDocumentCreated('appUninstalls/{uninstallId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     try {
       // Get uninstalls in last 24 hours
       const recentUninstalls = await db.collection('appUninstalls')
