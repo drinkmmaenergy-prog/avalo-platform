@@ -19,7 +19,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { checkSwipeVerificationRequirements, throwVerificationError } from './pack309-swipe-verification';
 import { logDiscoveryAnalyticsEvent } from './pack309-analytics-integration';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, onDocumentWritten } from './runtime';
 
 const db = admin.firestore();
 
@@ -507,10 +507,10 @@ export const getProfileVisitors = functions.https.onCall(async (request) => {
 // SYNC USER TO DISCOVERY PRESENCE (TRIGGER)
 // ============================================================================
 
-export const syncUserToDiscoveryPresence = functions.firestore
-  .document('users/{userId}')
-  .onWrite(async (change, context) => {
-    const userId = context.params.userId;
+export const syncUserToDiscoveryPresence = onDocumentWritten('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
 
     // If user deleted, remove from discovery
     if (!change.after.exists) {

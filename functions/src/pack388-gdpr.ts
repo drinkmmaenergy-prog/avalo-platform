@@ -14,7 +14,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { pack296_auditLog } from './pack296-audit';
 import { pack277_freezeWallet } from './pack277-wallet-engine';
-import { HttpsError, Timestamp, auth, onCall, storage, logger, onSchedule } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, storage, logger, onSchedule, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -177,9 +177,9 @@ export const pack388_requestDataExport = functions.https.onCall(async (request) 
 /**
  * Process data export (background function)
  */
-export const pack388_processDataExport = functions.firestore
-  .document('tasks/{taskId}')
-  .onCreate(async (snap, context) => {
+export const pack388_processDataExport = onDocumentCreated('tasks/{taskId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const task = snap.data();
     
     if (task.type !== 'PROCESS_DATA_EXPORT') {

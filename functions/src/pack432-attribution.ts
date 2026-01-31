@@ -7,7 +7,7 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, serverTimestamp, timestamp, logger, onSchedule, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -476,9 +476,9 @@ export const generateCohortAnalysis = onSchedule({ schedule: "every day 03:00", 
 // FEED INTO OPTIMIZATION
 // ===========================
 
-export const updateCampaignLTVOptimization = functions.firestore
-  .document('ua_cohort_analysis/{cohortId}')
-  .onCreate(async (snap, context) => {
+export const updateCampaignLTVOptimization = onDocumentCreated('ua_cohort_analysis/{cohortId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const cohort = snap.data() as CohortAnalysis;
 
     if (!cohort.campaignId) return; // Skip organic

@@ -7,7 +7,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { StoreReview } from './pack424-store-reviews.types';
-import { FieldValue, HttpsError, arrayUnion, auth, increment, logger, onCall, timestamp } from './runtime';
+import { FieldValue, HttpsError, arrayUnion, auth, increment, logger, onCall, timestamp, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -363,9 +363,9 @@ export const reviewRetentionService = new ReviewRetentionService();
 /**
  * Firestore trigger: Process new reviews for retention
  */
-export const processNewReviewForRetention = functions.firestore
-  .document('storeReviews/{reviewId}')
-  .onCreate(async (snap, context) => {
+export const processNewReviewForRetention = onDocumentCreated('storeReviews/{reviewId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const review = snap.data() as StoreReview;
 
     try {

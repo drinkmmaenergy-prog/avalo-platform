@@ -19,7 +19,7 @@ import {
   disableReferralCode,
   freezeUserReferrals,
 } from './pack355-referral-service';
-import { HttpsError, Timestamp, auth, onCall } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, onDocumentUpdated } from './runtime';
 
 /**
  * Generate or get user's referral code
@@ -434,12 +434,12 @@ export const adminCreateCampaignCode = functions.https.onCall(async (request) =>
 /**
  * Background function to auto-activate referrals when user reaches milestones
  */
-export const onUserMilestoneReached = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
+export const onUserMilestoneReached = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
-    const userId = context.params.userId;
+    const userId = event.params.userId;
 
     // Check if user just completed required milestones
     const beforeReady = before.ageVerified && before.selfieVerified && before.totalMessagesSent > 0;

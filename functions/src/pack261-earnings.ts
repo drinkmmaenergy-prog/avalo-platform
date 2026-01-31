@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule, onDocumentUpdated } from './runtime';
 
 const db = admin.firestore();
 
@@ -557,15 +557,15 @@ export const getEarningsDashboard = functions.https.onCall(async (request) => {
 });
 
 // Notify creator when top supporter is active
-export const notifyTopSupporterActive = functions.firestore
-  .document('users/{userId}/presence/status')
-  .onUpdate(async (change, context) => {
+export const notifyTopSupporterActive = onDocumentUpdated('users/{userId}/presence/status', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const newStatus = change.after.data();
     const oldStatus = change.before.data();
 
     // Check if user just came online
     if (newStatus.online && !oldStatus.online) {
-      const userId = context.params.userId;
+      const userId = event.params.userId;
 
       // Find creators where this user is a top supporter
       const topSupporterQuery = await db.collectionGroup('topSupporters')

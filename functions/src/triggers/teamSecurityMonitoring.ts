@@ -7,14 +7,14 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, arrayUnion, auth, db, onCall, serverTimestamp, timestamp } from '../runtime';
+import { FieldValue, HttpsError, arrayUnion, auth, db, onCall, serverTimestamp, timestamp, onDocumentCreated } from '../runtime';
 
 /**
  * Monitor team activity for suspicious patterns
  */
-export const monitorTeamActivity = functions.firestore
-  .document('team_activity_log/{logId}')
-  .onCreate(async (snapshot, context) => {
+export const monitorTeamActivity = onDocumentCreated('team_activity_log/{logId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     const db = admin.firestore();
     const activity = snapshot.data();
 

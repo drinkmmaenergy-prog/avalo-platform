@@ -11,7 +11,7 @@
 
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule, onDocumentUpdated } from './runtime';
 
 const db = admin.firestore();
 
@@ -477,9 +477,9 @@ export const detectCPIManipulation = onSchedule("every 2 hours", async (event) =
     return;
   });
 
-export const detectRefundAbuse = functions.firestore
-  .document('payments/{paymentId}')
-  .onUpdate(async (change, context) => {
+export const detectRefundAbuse = onDocumentUpdated('payments/{paymentId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
 

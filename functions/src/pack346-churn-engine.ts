@@ -7,14 +7,14 @@ import * as functions from "firebase-functions";
 import { db, serverTimestamp } from "./init.js";
 import { Timestamp } from "firebase-admin/firestore";
 import { ChurnRecord, ChurnCause } from "./pack346-types";
-import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
+import { HttpsError, admin, auth, onCall, logger, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';
 
 /**
  * Track user activity and update churn score
  */
-export const trackUserActivity = functions.firestore
-  .document("sessions/{sessionId}")
-  .onCreate(async (snap, context) => {
+export const trackUserActivity = onDocumentCreated("sessions/{sessionId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const session = snap.data();
     const userId = session.userId;
 
@@ -29,9 +29,9 @@ export const trackUserActivity = functions.firestore
 /**
  * Track refunds (increases churn risk)
  */
-export const trackRefundForChurn = functions.firestore
-  .document("refunds/{refundId}")
-  .onCreate(async (snap, context) => {
+export const trackRefundForChurn = onDocumentCreated("refunds/{refundId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const refund = snap.data();
     const userId = refund.userId;
 
@@ -46,16 +46,16 @@ export const trackRefundForChurn = functions.firestore
 /**
  * Track panic events (increases churn risk)
  */
-export const trackPanicForChurn = functions.firestore
-  .document("safetyEvents/{eventId}")
-  .onCreate(async (snap, context) => {
-    const event = snap.data();
+export const trackPanicForChurn = onDocumentCreated("safetyEvents/{eventId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const eventData = snap.data();
     
-    if (event.type !== "panic_button") {
+    if (eventData.type !== "panic_button") {
       return;
     }
 
-    const userId = event.userId;
+    const userId = eventData.userId;
 
     await updateChurnRecord(userId, {
       lastPanic: serverTimestamp() as any,
@@ -67,9 +67,9 @@ export const trackPanicForChurn = functions.firestore
 /**
  * Track calendar cancellations
  */
-export const trackCancelForChurn = functions.firestore
-  .document("calendarBookings/{bookingId}")
-  .onUpdate(async (change, context) => {
+export const trackCancelForChurn = onDocumentUpdated("calendarBookings/{bookingId}", async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
 

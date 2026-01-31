@@ -10,7 +10,7 @@ import { IntelligentPayoutEscrowService } from './services/IntelligentPayoutEscr
 import { ProgressiveFreezeController } from './services/ProgressiveFreezeController';
 import { CreatorPayoutStatusAPI } from './services/CreatorPayoutStatusAPI';
 import { ComplianceEscalationOrchestrator } from './services/ComplianceEscalationOrchestrator';
-import { HttpsError, Timestamp, auth, db, onCall, logger, onSchedule } from '../runtime';
+import { HttpsError, Timestamp, auth, db, onCall, logger, onSchedule, onDocumentCreated } from '../runtime';
 
 const db = admin.firestore();
 
@@ -25,9 +25,9 @@ const complianceOrchestrator = new ComplianceEscalationOrchestrator(db);
  * Trigger: On new payout request
  * Creates escrow and evaluates freeze conditions
  */
-export const onPayoutCreated = functions.firestore
-  .document('payout_requests/{payoutId}')
-  .onCreate(async (snap, context) => {
+export const onPayoutCreated = onDocumentCreated('payout_requests/{payoutId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const data = snap.data();
     
     try {

@@ -7,7 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, auth, onCall } from './runtime';
+import { HttpsError, auth, onCall, onDocumentUpdated } from './runtime';
 
 // Types
 export interface RegionalUXRules {
@@ -677,9 +677,9 @@ export const adminGetAllCountryRules = functions.https.onCall(async (request) =>
 });
 
 // Trigger: Update user UX config on country change
-export const onUserCountryChangeUX = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
+export const onUserCountryChangeUX = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
@@ -688,7 +688,7 @@ export const onUserCountryChangeUX = functions.firestore
       return;
     }
     
-    const userId = context.params.userId;
+    const userId = event.params.userId;
     const newCountry = after.country;
     const db = admin.firestore();
     

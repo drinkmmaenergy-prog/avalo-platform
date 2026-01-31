@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, storage, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, storage, timestamp, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -95,15 +95,10 @@ export interface TimelineEvent {
 // CORE: INCIDENT RESPONSE TRIGGER
 // ============================================================================
 
-export const pack392_handleStoreIncident = functions
-  .runWith({ 
-    timeoutSeconds: 300,
-    memory: '1GB'
-  })
-  .firestore
-  .document('storeIncidents/{incidentId}')
-  .onCreate(async (snapshot, context) => {
-    const incidentId = context.params.incidentId;
+export const pack392_handleStoreIncident = onDocumentCreated('storeIncidents/{incidentId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
+    const incidentId = event.params.incidentId;
     const incidentData = snapshot.data();
     
     console.log(`[PACK 392] INCIDENT RESPONSE: Handling incident ${incidentId}`);

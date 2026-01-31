@@ -24,7 +24,7 @@ import {
   unregisterDevice,
   updateDeviceLastSeen,
 } from './pack293-notification-delivery';
-import { HttpsError, Timestamp, auth, onCall, logger, onSchedule } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, logger, onSchedule, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -305,10 +305,10 @@ export const updateDeviceActivity = functions.https.onCall(async (request) => {
  * Process newly created notifications
  * Triggered when a notification document is created
  */
-export const processNotification = functions.firestore
-  .document('notifications/{notificationId}')
-  .onCreate(async (snapshot, context) => {
-    const notificationId = context.params.notificationId;
+export const processNotification = onDocumentCreated('notifications/{notificationId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
+    const notificationId = event.params.notificationId;
     const notification = snapshot.data() as NotificationDocument;
 
     try {

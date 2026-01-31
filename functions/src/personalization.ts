@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, generateId } from './init';
 import { computeTasteProfile, aggregateEventCounters } from '../personalizationEngine';
-import { HttpsError, Timestamp, auth, onCall, onSchedule } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, onSchedule, onDocumentCreated } from './runtime';
 
 // ============================================================================
 // TYPES
@@ -337,13 +337,12 @@ export const scheduledProfileUpdate = onSchedule({ schedule: "every 6 hours", re
  * Trigger on personalization event creation
  * Updates user profile when new events are logged
  */
-export const onPersonalizationEventCreated = functions
-  .region('europe-west3')
-  .firestore.document('personalization_events/{eventId}')
-  .onCreate(async (snap, context) => {
+export const onPersonalizationEventCreated = onDocumentCreated('personalization_events/{eventId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     try {
-      const event = snap.data();
-      const userId = event.userId;
+      const eventData = snap.data();
+      const userId = eventData.userId;
 
       if (!userId) {
         console.warn('[onPersonalizationEventCreated] Event missing userId');

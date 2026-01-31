@@ -14,7 +14,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { getJurisdictionProfile, getUserJurisdiction } from './pack359-jurisdiction-engine';
-import { FieldValue, HttpsError, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, increment, onCall, serverTimestamp, timestamp, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -490,10 +490,10 @@ export const calculateCreatorEarnings = functions.https.onCall(async (request) =
 /**
  * Automatically calculate and log tax on wallet transactions
  */
-export const onWalletTransaction = functions.firestore
-  .document('wallet_transactions/{transactionId}')
-  .onCreate(async (snap, context) => {
-    const transactionId = context.params.transactionId;
+export const onWalletTransaction = onDocumentCreated('wallet_transactions/{transactionId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const transactionId = event.params.transactionId;
     const transaction = snap.data();
     
     if (transaction.type === 'token_purchase') {
@@ -517,10 +517,10 @@ export const onWalletTransaction = functions.firestore
 /**
  * Calculate and log tax on calendar bookings
  */
-export const onCalendarBooking = functions.firestore
-  .document('calendar_bookings/{bookingId}')
-  .onCreate(async (snap, context) => {
-    const bookingId = context.params.bookingId;
+export const onCalendarBooking = onDocumentCreated('calendar_bookings/{bookingId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const bookingId = event.params.bookingId;
     const booking = snap.data();
     
     const { consumerTax, creatorEarnings } = await calculateCalendarBookingTax(

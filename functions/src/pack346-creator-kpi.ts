@@ -7,14 +7,14 @@ import * as functions from "firebase-functions";
 import { db, serverTimestamp, increment } from "./init.js";
 import { Timestamp } from "firebase-admin/firestore";
 import { CreatorKPI } from "./pack346-types";
-import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
+import { HttpsError, admin, auth, onCall, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';
 
 /**
  * Update creator KPI on chat completion
  */
-export const updateCreatorKPIOnChat = functions.firestore
-  .document("chats/{chatId}")
-  .onUpdate(async (change, context) => {
+export const updateCreatorKPIOnChat = onDocumentUpdated("chats/{chatId}", async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after =change.after.data();
 
@@ -36,9 +36,9 @@ export const updateCreatorKPIOnChat = functions.firestore
 /**
  * Update creator KPI on call completion
  */
-export const updateCreatorKPIOnCall = functions.firestore
-  .document("calls/{callId}")
-  .onUpdate(async (change, context) => {
+export const updateCreatorKPIOnCall = onDocumentUpdated("calls/{callId}", async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
 
@@ -60,9 +60,9 @@ export const updateCreatorKPIOnCall = functions.firestore
 /**
  * Update creator KPI on calendar booking
  */
-export const updateCreatorKPIOnBooking = functions.firestore
-  .document("calendarBookings/{bookingId}")
-  .onUpdate(async (change, context) => {
+export const updateCreatorKPIOnBooking = onDocumentUpdated("calendarBookings/{bookingId}", async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
 
@@ -96,9 +96,9 @@ export const updateCreatorKPIOnBooking = functions.firestore
 /**
  * Update creator KPI on refund
  */
-export const updateCreatorKPIOnRefund = functions.firestore
-  .document("refunds/{refundId}")
-  .onCreate(async (snap, context) => {
+export const updateCreatorKPIOnRefund = onDocumentCreated("refunds/{refundId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const refund = snap.data();
     const creatorId = refund.creatorId;
 
@@ -112,10 +112,10 @@ export const updateCreatorKPIOnRefund = functions.firestore
 /**
  * Update creator KPI on safety event
  */
-export const updateCreatorKPIOnSafety = functions.firestore
-  .document("safetyEvents/{eventId}")
-  .onCreate(async (snap, context) => {
-    const event = snap.data();
+export const updateCreatorKPIOnSafety = onDocumentCreated("safetyEvents/{eventId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const eventData = snap.data();
     const creatorId = event.reportedUser;
 
     if (!creatorId) {
@@ -123,7 +123,7 @@ export const updateCreatorKPIOnSafety = functions.firestore
     }
 
     // Track panic rate
-    if (event.type === "panic_button") {
+    if (eventData.type === "panic_button") {
       await incrementCreatorMetric(creatorId, {
         reportCount: 1,
       });
@@ -131,7 +131,7 @@ export const updateCreatorKPIOnSafety = functions.firestore
     }
 
     // Track mismatch rate
-    if (event.type === "selfie_mismatch") {
+    if (eventData.type === "selfie_mismatch") {
       await incrementCreatorMetric(creatorId, {
         reportCount: 1,
       });

@@ -18,7 +18,7 @@ import {
   sendLockInActivatedNotification,
   sendConversionSuggestionNotification
 } from '../notifications/chemistryLockInNotifications';
-import { HttpsError, admin, auth, logger, onCall, serverTimestamp, timestamp, onSchedule } from '../runtime';
+import { HttpsError, admin, auth, logger, onCall, server, timestamp, onSchedule, onDocumentCreated, onDocumentUpdated } from '../runtime';
 
 // ============================================================================
 // MESSAGE TRIGGERS
@@ -27,10 +27,10 @@ import { HttpsError, admin, auth, logger, onCall, serverTimestamp, timestamp, on
 /**
  * Trigger: Check for chemistry signals on new message
  */
-export const onMessageCreated = functions.firestore
-  .document('conversations/{conversationId}/messages/{messageId}')
-  .onCreate(async (snapshot, context) => {
-    const { conversationId } = context.params;
+export const onMessageCreated = onDocumentCreated('conversations/{conversationId}/messages/{messageId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
+    const { conversationId } = event.params;
     const message = snapshot.data();
 
     try {
@@ -122,9 +122,9 @@ export const onMessageCreated = functions.firestore
 /**
  * Trigger: Update chemistry signals on call completion
  */
-export const onCallCompleted = functions.firestore
-  .document('calls/{callId}')
-  .onUpdate(async (change, context) => {
+export const onCallCompleted = onDocumentUpdated('calls/{callId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
 
@@ -172,7 +172,7 @@ export const onCallCompleted = functions.firestore
         }
       } catch (error) {
         functions.logger.error('Error in onCallCompleted trigger', {
-          callId: context.params.callId,
+          callId: event.params.callId,
           error: error instanceof Error ? error.message : 'Unknown error'
         });
       }

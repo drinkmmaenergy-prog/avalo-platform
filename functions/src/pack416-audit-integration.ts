@@ -18,7 +18,7 @@ import {
   FeatureFlagChangeEvent,
   CRITICAL_FEATURES,
 } from '../../shared/config/pack416-feature-flags';
-import { HttpsError, admin, auth, increment, onCall, onRequest, serverTimestamp, timestamp } from './runtime';
+import { HttpsError, admin, auth, increment, onCall, onRequest, serverTimestamp, timestamp, onDocumentUpdated } from './runtime';
 
 const db = getFirestore();
 
@@ -307,13 +307,13 @@ export async function getFeatureFlagStats(
  * Cloud Function: Log feature flag change
  * Called whenever a feature flag is updated
  */
-export const onFeatureFlagChanged = functions.firestore
-  .document('featureFlags/{flagKey}')
-  .onUpdate(async (change, context) => {
+export const onFeatureFlagChanged = onDocumentUpdated('featureFlags/{flagKey}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     try {
       const before = change.before.data() as FeatureFlagConfig;
       const after = change.after.data() as FeatureFlagConfig;
-      const flagKey = context.params.flagKey as FeatureFlagKey;
+      const flagKey = event.params.flagKey as FeatureFlagKey;
       
       const event: FeatureFlagChangeEvent = {
         flagKey,

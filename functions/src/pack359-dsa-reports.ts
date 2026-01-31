@@ -17,7 +17,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { checkDSAApplicability } from './pack359-jurisdiction-engine';
-import { FieldValue, HttpsError, arrayUnion, auth, onCall, serverTimestamp, timestamp, onSchedule } from './runtime';
+import { FieldValue, HttpsError, arrayUnion, auth, onCall, serverTimestamp, timestamp, onSchedule, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -663,27 +663,27 @@ export const reportDSAIncident = functions.https.onCall(async (request) => {
 /**
  * Automatically monitor fraud detections for DSA reporting
  */
-export const onFraudDetection = functions.firestore
-  .document('fraud_detections/{fraudId}')
-  .onCreate(async (snap, context) => {
+export const onFraudDetection = onDocumentCreated('fraud_detections/{fraudId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const fraud = snap.data();
     
     // Auto-report high-risk fraud to DSA
     if (fraud.riskLevel === 'critical' || fraud.riskLevel === 'high') {
-      await createDSAReportFromFraud(context.params.fraudId);
+      await createDSAReportFromFraud(event.params.fraudId);
     }
   });
 
 /**
  * Automatically monitor abuse reports for DSA reporting
  */
-export const onAbuseReport = functions.firestore
-  .document('abuse_reports/{reportId}')
-  .onCreate(async (snap, context) => {
+export const onAbuseReport = onDocumentCreated('abuse_reports/{reportId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const abuse = snap.data();
     
     // Auto-report serious abuse to DSA
     if (abuse.severity === 'critical' || abuse.type === 'minor_safety' || abuse.type === 'exploitation') {
-      await createDSAReportFromAbuse(context.params.reportId);
+      await createDSAReportFromAbuse(event.params.reportId);
     }
   });

@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';
 
 const db = admin.firestore();
 
@@ -24,12 +24,12 @@ export interface Attribution {
 /**
  * Trigger: When user gets verified, update attribution
  */
-export const onUserVerified = functions.firestore
-  .document("users/{userId}")
-  .onUpdate(async (change, context) => {
+export const onUserVerified = onDocumentUpdated("users/{userId}", async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
-    const userId = context.params.userId;
+    const userId = event.params.userId;
 
     // Check if user just got verified
     if (!before.verified && after.verified) {
@@ -68,9 +68,9 @@ export const onUserVerified = functions.firestore
 /**
  * Trigger: When user makes first purchase, update attribution revenue
  */
-export const onTokenPurchase = functions.firestore
-  .document("transactions/{transactionId}")
-  .onCreate(async (snap, context) => {
+export const onTokenPurchase = onDocumentCreated("transactions/{transactionId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const transaction = snap.data();
     const userId = transaction.userId;
     const amount = transaction.amount || 0;

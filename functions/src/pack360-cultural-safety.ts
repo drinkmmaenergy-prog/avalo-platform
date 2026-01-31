@@ -7,7 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, auth, onCall, timestamp } from './runtime';
+import { HttpsError, auth, onCall, timestamp, onDocumentCreated } from './runtime';
 
 // Types
 export interface CulturalSafetyProfile {
@@ -626,9 +626,9 @@ export const adminGetAllSafetyProfiles = functions.https.onCall(async (request) 
 });
 
 // Trigger: Auto-moderate user content on creation
-export const onContentCreated = functions.firestore
-  .document('user-content/{contentId}')
-  .onCreate(async (snap, context) => {
+export const onContentCreated = onDocumentCreated('user-content/{contentId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const content = snap.data();
     const db = admin.firestore();
     
@@ -679,7 +679,7 @@ export const onContentCreated = functions.firestore
       
       // Create moderation log
       await db.collection('content-moderation-logs').add({
-        contentId: context.params.contentId,
+        contentId: event.params.contentId,
         userId: content.userId,
         country,
         autoBlock,
@@ -688,7 +688,7 @@ export const onContentCreated = functions.firestore
         timestamp: Date.now()
       });
       
-      console.log(`Auto-moderated content ${context.params.contentId}: ${autoBlock ? 'blocked' : needsReview ? 'review' : 'approved'}`);
+      console.log(`Auto-moderated content ${event.params.contentId}: ${autoBlock ? 'blocked' : needsReview ? 'review' : 'approved'}`);
     } catch (error) {
       console.error('Error auto-moderating content:', error);
     }

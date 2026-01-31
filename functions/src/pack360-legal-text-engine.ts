@@ -7,7 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, auth, onCall } from './runtime';
+import { HttpsError, auth, onCall, onDocumentUpdated } from './runtime';
 
 // Types
 export interface LegalDocument {
@@ -501,9 +501,9 @@ export const onUserLogin = functions.https.onCall(async (request) => {
 });
 
 // Trigger: Auto-check legal compliance on country change
-export const onUserCountryChangeLegal = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
+export const onUserCountryChangeLegal = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
     
@@ -512,7 +512,7 @@ export const onUserCountryChangeLegal = functions.firestore
       return;
     }
     
-    const userId = context.params.userId;
+    const userId = event.params.userId;
     const newCountry = after.country;
     const db = admin.firestore();
     

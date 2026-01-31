@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, onSchedule, onDocumentWritten } from './runtime';
 
 const db = admin.firestore();
 
@@ -368,10 +368,10 @@ export const applyTrustScoreToRankings = functions.https.onCall(async (request) 
 /**
  * Flag user with low trust score
  */
-export const flagLowTrustUser = functions.firestore
-  .document('publicTrustScores/{userId}')
-  .onWrite(async (change, context) => {
-    const userId = context.params.userId;
+export const flagLowTrustUser = onDocumentWritten('publicTrustScores/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
     
     if (!change.after.exists) return;
     

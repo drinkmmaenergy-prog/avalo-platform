@@ -12,7 +12,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, auth, onCall, timestamp } from './runtime';
+import { HttpsError, auth, onCall, timestamp, onDocumentWritten } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -81,10 +81,10 @@ interface MetadataHealthReport {
 /**
  * Monitor metadata changes and validate before submission
  */
-export const validateMetadataChange = functions.firestore
-  .document('appMetadata/{platform}')
-  .onWrite(async (change, context) => {
-    const platform = context.params.platform as 'ios' | 'android';
+export const validateMetadataChange = onDocumentWritten('appMetadata/{platform}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const platform = event.params.platform as 'ios' | 'android';
     
     if (!change.after.exists) return null;
     

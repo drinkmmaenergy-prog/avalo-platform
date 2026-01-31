@@ -8,7 +8,7 @@ import { db, admin } from './init';
 import * as functions from 'firebase-functions';
 import { collectAndAnalyzeFraudSignals } from './fraudEngine';
 import { logEvent } from './observability';
-import { HttpsError, Timestamp, auth, onCall, logger, onSchedule } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, logger, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';
 
 // ============================================================================
 // WEEKLY FRAUD RECALCULATION
@@ -139,9 +139,9 @@ export const weeklyFraudRecalculation = onSchedule({ schedule: "0 2 * * 0", time
 /**
  * Trigger fraud recalculation when a payout is requested
  */
-export const onPayoutRequestFraudCheck = functions.firestore
-  .document('payout_requests/{requestId}')
-  .onCreate(async (snap, context) => {
+export const onPayoutRequestFraudCheck = onDocumentCreated('payout_requests/{requestId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const payoutRequest = snap.data();
     const userId = payoutRequest.userId;
     
@@ -175,7 +175,7 @@ export const onPayoutRequestFraudCheck = functions.firestore
         details: {
           extra: {
             error: error.message,
-            requestId: context.params.requestId
+            requestId: event.params.requestId
           }
         }
       });
@@ -185,9 +185,9 @@ export const onPayoutRequestFraudCheck = functions.firestore
 /**
  * Trigger fraud recalculation when a dispute is created
  */
-export const onDisputeCreatedFraudCheck = functions.firestore
-  .document('disputes/{disputeId}')
-  .onCreate(async (snap, context) => {
+export const onDisputeCreatedFraudCheck = onDocumentCreated('disputes/{disputeId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const dispute = snap.data();
     const userId = dispute.userId || dispute.creatorId;
     
@@ -221,7 +221,7 @@ export const onDisputeCreatedFraudCheck = functions.firestore
         details: {
           extra: {
             error: error.message,
-            disputeId: context.params.disputeId
+            disputeId: event.params.disputeId
           }
         }
       });
@@ -231,12 +231,12 @@ export const onDisputeCreatedFraudCheck = functions.firestore
 /**
  * Trigger fraud recalculation when AML profile is updated with high risk
  */
-export const onAmlProfileUpdateFraudCheck = functions.firestore
-  .document('aml_profiles/{userId}')
-  .onUpdate(async (change, context) => {
+export const onAmlProfileUpdateFraudCheck = onDocumentUpdated('aml_profiles/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
-    const userId = context.params.userId;
+    const userId = event.params.userId;
     
     // Only recalculate if risk level changed to HIGH or CRITICAL
     const riskLevelChanged = before.riskLevel !== after.riskLevel;

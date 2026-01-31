@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
-import { Timestamp, arrayUnion, logger, onSchedule } from '../runtime';
+import { arrayUnion, logger, onSchedule, onDocumentCreated } from '../runtime';
 
 interface FraudScore {
   userId: string;
@@ -28,10 +28,10 @@ interface DeviceFingerprint {
 }
 
 // Multi-Account Detection
-export const detectMultipleAccounts = functions.firestore
-  .document('users/{userId}')
-  .onCreate(async (snap, context) => {
-    const userId = context.params.userId;
+export const detectMultipleAccounts = onDocumentCreated('users/{userId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const userId = event.params.userId;
     const userData = snap.data();
     const timestamp = Timestamp.now();
 
@@ -144,9 +144,9 @@ export const detectMultipleAccounts = functions.firestore
   });
 
 // Device Fingerprint Analysis
-export const analyzeDeviceFingerprint = functions.firestore
-  .document('user_sessions/{sessionId}')
-  .onCreate(async (snap, context) => {
+export const analyzeDeviceFingerprint = onDocumentCreated('user_sessions/{sessionId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const session = snap.data();
     const timestamp = Timestamp.now();
 
@@ -233,7 +233,7 @@ export const analyzeDeviceFingerprint = functions.firestore
         await db.collection('fraud_alerts').add({
           alert_type: 'suspicious_device',
           user_id: session.user_id,
-          session_id: context.params.sessionId,
+          session_id: event.params.sessionId,
           risk_score: deviceFingerprintScore,
           signals: signals,
           severity: deviceFingerprintScore > 80 ? 'critical' : 'high',
@@ -248,9 +248,9 @@ export const analyzeDeviceFingerprint = functions.firestore
   });
 
 // Chargeback Prediction
-export const predictChargebackRisk = functions.firestore
-  .document('purchases/{purchaseId}')
-  .onCreate(async (snap, context) => {
+export const predictChargebackRisk = onDocumentCreated('purchases/{purchaseId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const purchase = snap.data();
     const timestamp = Timestamp.now();
 
@@ -345,7 +345,7 @@ export const predictChargebackRisk = functions.firestore
       }, { merge: true });
 
       // Tag purchase with risk score
-      await db.collection('purchases').doc(context.params.purchaseId).update({
+      await db.collection('purchases').doc(event.params.purchaseId).update({
         chargeback_risk_score: chargebackRiskScore,
         fraud_signals: signals
       });
@@ -355,7 +355,7 @@ export const predictChargebackRisk = functions.firestore
         await db.collection('fraud_alerts').add({
           alert_type: 'high_chargeback_risk',
           user_id: userId,
-          purchase_id: context.params.purchaseId,
+          purchase_id: event.params.purchaseId,
           risk_score: chargebackRiskScore,
           signals: signals,
           severity: chargebackRiskScore > 85 ? 'critical' : 'high',

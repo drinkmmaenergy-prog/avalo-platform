@@ -16,7 +16,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, admin, generateId } from './init';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';
 
 // =====================================================
 // TYPES
@@ -266,10 +266,10 @@ export const generateReferralLink = functions.https.onCall(async (request) => {
 /**
  * Track referral when new user signs up
  */
-export const onUserCreated = functions.firestore
-  .document('users/{userId}')
-  .onCreate(async (snap, context) => {
-    const userId = context.params.userId;
+export const onUserCreated = onDocumentCreated('users/{userId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const userId = event.params.userId;
     const userData = snap.data();
     const referralCode = userData.referralCode;
 
@@ -324,10 +324,10 @@ export const onUserCreated = functions.firestore
 /**
  * Process selfie verification and grant rewards
  */
-export const onSelfieVerified = functions.firestore
-  .document('users/{userId}')
-  .onUpdate(async (change, context) => {
-    const userId = context.params.userId;
+export const onSelfieVerified = onDocumentUpdated('users/{userId}', async (event) => {
+  const change = event.data;
+  if (!change) return;
+    const userId = event.params.userId;
     const before = change.before.data();
     const after = change.after.data();
 
@@ -414,9 +414,9 @@ export const onSelfieVerified = functions.firestore
 /**
  * Track social proof moments (wishlist adds)
  */
-export const onWishlistAdd = functions.firestore
-  .document('wishlists/{wishlistId}')
-  .onCreate(async (snap, context) => {
+export const onWishlistAdd = onDocumentCreated('wishlists/{wishlistId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const data = snap.data();
     const targetUserId = data.target_user_id;
     const sourceUserId = data.user_id;
@@ -458,9 +458,9 @@ export const onWishlistAdd = functions.firestore
 /**
  * Track social proof moments (meetings booked)
  */
-export const onMeetingBooked = functions.firestore
-  .document('meetings/{meetingId}')
-  .onCreate(async (snap, context) => {
+export const onMeetingBooked = onDocumentCreated('meetings/{meetingId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const data = snap.data();
     const creatorUserId = data.creator_user_id;
     const bookerUserId = data.user_id;

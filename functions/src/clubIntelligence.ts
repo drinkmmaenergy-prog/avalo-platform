@@ -32,7 +32,7 @@ import {
   isValidRoleType,
   isForbiddenRoleType,
 } from './types/clubIntelligence';
-import { HttpsError, auth, onCall } from './runtime';
+import { HttpsError, auth, onCall, onDocumentCreated } from './runtime';
 
 // ============================================
 // CONTRIBUTION MANAGEMENT
@@ -583,9 +583,9 @@ async function applyAntiCliqueMitigation(
 /**
  * Detect and log toxicity events
  */
-export const detectToxicity = functions.firestore
-  .document('club_posts/{postId}')
-  .onCreate(async (snapshot, context) => {
+export const detectToxicity = onDocumentCreated('club_posts/{postId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     const postData = snapshot.data();
     const { clubId, userId, content, type } = postData;
 

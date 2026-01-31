@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -144,14 +144,14 @@ export const pack390_runAMLScan = functions.https.onCall(async (request) => {
 /**
  * Automatic AML scan on payout request
  */
-export const pack390_autoAMLScanOnPayout = functions.firestore
-  .document('payoutRequests/{payoutId}')
-  .onCreate(async (snap, context) => {
+export const pack390_autoAMLScanOnPayout = onDocumentCreated('payoutRequests/{payoutId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const payoutData = snap.data();
     const { userId, tokens, currency, fiatAmount } = payoutData;
     
     try {
-      console.log(`Auto AML scan for payout ${context.params.payoutId}`);
+      console.log(`Auto AML scan for payout ${event.params.payoutId}`);
       
       // Get user data
       const userDoc = await db.collection('users').doc(userId).get();
@@ -176,7 +176,7 @@ export const pack390_autoAMLScanOnPayout = functions.firestore
         userId,
         scanDate: admin.firestore.FieldValue.serverTimestamp(),
         triggeredBy: 'payout_request',
-        payoutId: context.params.payoutId,
+        payoutId: event.params.payoutId,
         checks,
         riskScore,
         riskLevel,

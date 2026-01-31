@@ -16,7 +16,7 @@ import {
 } from './pack427-messaging-types';
 import { ulid } from 'ulid';
 import { routeRegion } from './pack426-region-router'; // PACK 426
-import { HttpsError, admin, auth, onCall, timestamp, onSchedule } from './runtime';
+import { HttpsError, admin, auth, onCall, timestamp, onSchedule, onDocumentCreated } from './runtime';
 
 const db = getFirestore();
 
@@ -497,14 +497,10 @@ async function updateUnreadCounter(
 /**
  * Trigger: Update unread counter on new message
  */
-export const pack427_onNewMessage = functions
-  .runWith({
-    timeoutSeconds: 30,
-    memory: '256MB',
-  })
-  .firestore.document('chats/{chatId}/messages/{messageId}')
-  .onCreate(async (snapshot, context) => {
-    const chatId = context.params.chatId;
+export const pack427_onNewMessage = onDocumentCreated('chats/{chatId}/messages/{messageId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
+    const chatId = event.params.chatId;
     const messageData = snapshot.data();
     const senderId = messageData.senderId;
 

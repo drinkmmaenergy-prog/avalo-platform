@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -369,9 +369,9 @@ export const scheduledStorePolicyCheck = onSchedule("every 12 hours", async (eve
 /**
  * Auto-remediation for certain violations
  */
-export const autoRemediateViolation = functions.firestore
-  .document('storeSafetyAlerts/{alertId}')
-  .onCreate(async (snap, context) => {
+export const autoRemediateViolation = onDocumentCreated('storeSafetyAlerts/{alertId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const alert = snap.data() as StoreSafetyAlert;
 
     if (alert.riskLevel === 'critical') {

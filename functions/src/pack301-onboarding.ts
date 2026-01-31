@@ -17,7 +17,7 @@ import {
 } from './pack301-retention-service';
 import { enqueueNotification } from './pack293-notification-service';
 import { writeAuditLog } from './pack296-audit-helpers';
-import { HttpsError, Timestamp, auth, onCall, timestamp } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -247,10 +247,10 @@ export const getOnboardingProgress = functions.https.onCall(async (request) => {
 /**
  * Firestore trigger: Auto-track photo uploads for onboarding
  */
-export const onPhotoUploaded = functions.firestore
-  .document('users/{userId}/photos/{photoId}')
-  .onCreate(async (snapshot, context) => {
-    const userId = context.params.userId;
+export const onPhotoUploaded = onDocumentCreated('users/{userId}/photos/{photoId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
+    const userId = event.params.userId;
 
     try {
       const profile = await getUserRetentionProfile(userId);

@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -126,9 +126,9 @@ export const pack387_shouldSuppressReviewPrompt = functions.https.onCall(async (
 /**
  * Detect mass negative review clustering
  */
-export const pack387_detectNegativeReviewClustering = functions.firestore
-  .document('appStoreReviews/{reviewId}')
-  .onCreate(async (snapshot, context) => {
+export const pack387_detectNegativeReviewClustering = onDocumentCreated('appStoreReviews/{reviewId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) return;
     const review = snapshot.data();
 
     // Only process negative reviews (rating < 3)

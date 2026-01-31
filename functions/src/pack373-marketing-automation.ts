@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, increment, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
+import { FieldValue, HttpsError, increment, onCall, serverTimestamp, timestamp, logger, onSchedule, onDocumentCreated } from './runtime';
 
 const db = admin.firestore();
 
@@ -67,11 +67,11 @@ export const pack373_rotateASOVariants = onSchedule({ schedule: "every monday 00
 /**
  * Track store conversion rates
  */
-export const pack373_trackStoreConversion = functions.firestore
-  .document('users/{userId}')
-  .onCreate(async (snap, context) => {
+export const pack373_trackStoreConversion = onDocumentCreated('users/{userId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const userData = snap.data();
-    const userId = context.params.userId;
+    const userId = event.params.userId;
     
     // Check if user came from store listing (has install metadata)
     if (!userData.installMetadata) {
@@ -251,9 +251,9 @@ export const pack373_trackPartnerInstall = functions.https.onCall(async (request
 /**
  * Calculate partner commissions on revenue
  */
-export const pack373_calculatePartnerCommission = functions.firestore
-  .document('transactions/{transactionId}')
-  .onCreate(async (snap, context) => {
+export const pack373_calculatePartnerCommission = onDocumentCreated('transactions/{transactionId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const transaction = snap.data();
     const userId = transaction.userId;
     
@@ -490,10 +490,10 @@ export const pack373_updateCampaignMetrics = onSchedule({ schedule: "every day 0
 /**
  * Validate install on user creation
  */
-export const pack373_validateInstall = functions.firestore
-  .document('users/{userId}')
-  .onCreate(async (snap, context) => {
-    const userId = context.params.userId;
+export const pack373_validateInstall = onDocumentCreated('users/{userId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+    const userId = event.params.userId;
     const userData = snap.data();
     
     if (!userData.installMetadata) {

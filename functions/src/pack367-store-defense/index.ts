@@ -8,7 +8,7 @@ import * as admin from 'firebase-admin';
 import { ReviewScanner } from './reviewScanner';
 import { DefenseActionManager } from './defenseActions';
 import { ReviewFunnelManager } from './reviewFunnel';
-import { onSchedule } from '../runtime';
+import { onSchedule, onDocumentCreated } from '../runtime';
 import {
   ReviewScanRequest,
   ReviewScanResult,
@@ -365,15 +365,15 @@ export const pack367_cleanupExpiredPrompts = onSchedule("every 24 hours", async 
  * FIRESTORE TRIGGER: Monitor Rating Changes
  * Automatically detect rating drops when reviews are added
  */
-export const pack367_monitorReviews = functions.firestore
-  .document('storeReviewsMirror/{reviewId}')
-  .onCreate(async (snap, context) => {
+export const pack367_monitorReviews = onDocumentCreated('storeReviewsMirror/{reviewId}', async (event) => {
+  const snap = event.data;
+  if (!snap) return;
     const review = snap.data();
     
     // If flagged or low rating, check for crisis patterns
     if (review.flagLevel !== 'none' || review.rating <= 2) {
       functions.logger.info('Flagged review detected, checking for patterns', {
-        reviewId: context.params.reviewId,
+        reviewId: event.params.reviewId,
         flagLevel: review.flagLevel,
         rating: review.rating,
       });
