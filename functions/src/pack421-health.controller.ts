@@ -44,7 +44,7 @@ function getEnvironment(): string {
  * - Build version
  * - Current timestamp
  */
-export const pack421_health_public = functions.https.onRequest(
+export const pack421_health_public = onRequest({},
   async (req, res) => {
     try {
       const response: HealthCheckResponse = {
@@ -226,7 +226,7 @@ function calculateOverallStatus(components: HealthComponent[]): HealthStatus {
  * 
  * Authentication: Requires admin/internal role (PACK 296/300A)
  */
-export const pack421_health_internal = functions.https.onRequest(
+export const pack421_health_internal = onRequest({},
   async (req, res) => {
     try {
       // TODO: Add authentication check using PACK 296 audit system
@@ -399,7 +399,7 @@ export const pack421_health_featureMatrix = functions.https.onCall(async (reques
 /**
  * HTTP version of feature matrix (for admin dashboard)
  */
-export const pack421_health_featureMatrix_http = functions.https.onRequest(
+export const pack421_health_featureMatrix_http = onRequest({},
   async (req, res) => {
     try {
       // TODO: Add authentication check

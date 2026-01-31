@@ -300,7 +300,7 @@ export const pack386_scaleHighROI = onSchedule("every 6 hours", async (event) =>
 // UPDATE CAMPAIGN METRICS (WEBHOOK)
 // ============================================================================
 
-export const pack386_updateCampaignMetrics = functions.https.onRequest(
+export const pack386_updateCampaignMetrics = onRequest({},
   async (req, res) => {
     // Verify webhook signature (implementation depends on ad platform)
     const signature = req.headers['x-webhook-signature'];

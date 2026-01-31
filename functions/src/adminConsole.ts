@@ -32,7 +32,7 @@ import { logger, onRequest } from './runtime';
  * POST /admin/users/search
  * Search for users by email, userId, or username
  */
-export const adminUsersSearch = functions.https.onRequest(async (req, res) => {
+export const adminUsersSearch = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -125,7 +125,7 @@ export const adminUsersSearch = functions.https.onRequest(async (req, res) => {
  * GET /admin/users/detail
  * Get detailed view of a user including all related data
  */
-export const adminUsersDetail = functions.https.onRequest(async (req, res) => {
+export const adminUsersDetail = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'GET') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -229,7 +229,7 @@ export const adminUsersDetail = functions.https.onRequest(async (req, res) => {
  * POST /admin/enforcement/update
  * Apply enforcement actions to a user
  */
-export const adminEnforcementUpdate = functions.https.onRequest(async (req, res) => {
+export const adminEnforcementUpdate = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -295,7 +295,7 @@ export const adminEnforcementUpdate = functions.https.onRequest(async (req, res)
  * POST /admin/aml/set-status
  * Update AML status for a user
  */
-export const adminAmlSetStatus = functions.https.onRequest(async (req, res) => {
+export const adminAmlSetStatus = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -382,7 +382,7 @@ export const adminAmlSetStatus = functions.https.onRequest(async (req, res) => {
  * POST /admin/disputes/resolve
  * Resolve a dispute
  */
-export const adminDisputesResolve = functions.https.onRequest(async (req, res) => {
+export const adminDisputesResolve = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -457,7 +457,7 @@ export const adminDisputesResolve = functions.https.onRequest(async (req, res) =
  * POST /admin/payouts/decision
  * Approve or reject a payout request
  */
-export const adminPayoutsDecision = functions.https.onRequest(async (req, res) => {
+export const adminPayoutsDecision = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -547,7 +547,7 @@ export const adminPayoutsDecision = functions.https.onRequest(async (req, res) =
  * POST /admin/promotions/set-status
  * Update promotion campaign status
  */
-export const adminPromotionsSetStatus = functions.https.onRequest(async (req, res) => {
+export const adminPromotionsSetStatus = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -625,7 +625,7 @@ export const adminPromotionsSetStatus = functions.https.onRequest(async (req, re
  * POST /admin/deletion/review
  * Review and approve/reject deletion request
  */
-export const adminDeletionReview = functions.https.onRequest(async (req, res) => {
+export const adminDeletionReview = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
@@ -711,7 +711,7 @@ export const adminDeletionReview = functions.https.onRequest(async (req, res) =>
  * POST /admin/audit/search
  * Search and filter audit logs
  */
-export const adminAuditSearch = functions.https.onRequest(async (req, res) => {
+export const adminAuditSearch = onRequest({}, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });

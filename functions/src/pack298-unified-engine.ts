@@ -3,7 +3,7 @@
  * Server-side ranking, pool generation, and safety filtering
  */
 
-import * as functions from 'firebase-functions';
+
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, auth, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
@@ -49,13 +49,13 @@ const RANKING_WEIGHTS = {
 /**
  * Cloud Function: Calculate and update feed rankings for a user
  */
-export const calculateFeedRankings = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const calculateFeedRankings = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     // Authenticate
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
@@ -127,7 +127,7 @@ export const calculateFeedRankings = functions
       return;
     } catch (error) {
       console.error('Feed ranking error:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to calculate rankings');
+      throw new HttpsError('internal', 'Failed to calculate rankings');
     }
   });
 
@@ -273,12 +273,12 @@ function calculateDistance(
 /**
  * Cloud Function: Generate swipe pool for a user
  */
-export const generateSwipePool = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const generateSwipePool = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     if (!request.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
+      throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
     const userId = request.auth.uid;
@@ -387,7 +387,7 @@ export const generateSwipePool = functions
       return;
     } catch (error) {
       console.error('Swipe pool generation error:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to generate swipe pool');
+      throw new HttpsError('internal', 'Failed to generate swipe pool');
     }
   });
 
@@ -580,12 +580,12 @@ function calculateProfileCompleteness(userData: any): number {
 /**
  * Cloud Function: Validate content safety
  */
-export const validateContentSafety = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const validateContentSafety = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     if (!request.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Authentication required');
+      throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
     const { contentId, contentType } = data;
@@ -633,6 +633,6 @@ export const validateContentSafety = functions
       };
     } catch (error) {
       console.error('Safety validation error:', error);
-      throw new functions.https.HttpsError('internal', 'Safety validation failed');
+      throw new HttpsError('internal', 'Safety validation failed');
     }
   });

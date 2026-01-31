@@ -7,13 +7,43 @@
 import Stripe from "stripe";
 import * as functions from "firebase-functions";
 
-// Initialize Stripe with secret key from environment
-const stripe = new Stripe(
-  functions.config().stripe?.secret_key || process.env.STRIPE_SECRET_KEY || "",
-  {
-    apiVersion: "2023-10-16",
+// Get Stripe key from config or environment - safe for emulator
+const stripeApiKey = functions.config().stripe?.secret_key || process.env.STRIPE_SECRET_KEY || "";
+
+// Lazy initialization flag to avoid crashes on module load
+let stripeInstance: Stripe | null = null;
+
+/**
+ * Safe Stripe getter - returns null and logs warning when no API key available
+ * This allows the emulator to boot without crashing on missing Stripe key
+ */
+function getStripe(): Stripe | null {
+  if (stripeInstance) {
+    return stripeInstance;
   }
-);
+  
+  if (!stripeApiKey) {
+    console.warn("[stripeConnect] STRIPE_SECRET_KEY not configured - Stripe operations disabled");
+    return null;
+  }
+  
+  stripeInstance = new Stripe(stripeApiKey, {
+    apiVersion: "2023-10-16",
+  });
+  
+  return stripeInstance;
+}
+
+/**
+ * Guard function that throws if Stripe is not configured
+ */
+function requireStripe(): Stripe {
+  const stripe = getStripe();
+  if (!stripe) {
+    throw new Error("Stripe is not configured - STRIPE_SECRET_KEY is missing");
+  }
+  return stripe;
+}
 
 export interface CreateConnectAccountParams {
   userId: string;
@@ -71,6 +101,8 @@ export interface GetAccountStatusResult {
 export async function createOrUpdateStripeAccount(
   params: CreateConnectAccountParams
 ): Promise<CreateConnectAccountResult> {
+  const stripe = requireStripe();
+  
   try {
     // Create a new Connect Express account
     const account = await stripe.accounts.create({
@@ -109,6 +141,8 @@ export async function createOrUpdateStripeAccount(
 export async function createStripeOnboardingLink(
   params: CreateOnboardingLinkParams
 ): Promise<CreateOnboardingLinkResult> {
+  const stripe = requireStripe();
+  
   try {
     const accountLink = await stripe.accountLinks.create({
       account: params.accountId,
@@ -133,6 +167,8 @@ export async function createStripeOnboardingLink(
 export async function getStripeAccountStatus(
   accountId: string
 ): Promise<GetAccountStatusResult> {
+  const stripe = requireStripe();
+  
   try {
     const account = await stripe.accounts.retrieve(accountId);
 
@@ -169,6 +205,8 @@ export async function getStripeAccountStatus(
 export async function createStripeTransfer(
   params: CreateTransferParams
 ): Promise<CreateTransferResult> {
+  const stripe = requireStripe();
+  
   try {
     const transfer = await stripe.transfers.create({
       amount: params.amountCents,
@@ -197,6 +235,8 @@ export async function createStripeTransfer(
 export async function getStripeTransfer(
   transferId: string
 ): Promise<CreateTransferResult> {
+  const stripe = requireStripe();
+  
   try {
     const transfer = await stripe.transfers.retrieve(transferId);
 

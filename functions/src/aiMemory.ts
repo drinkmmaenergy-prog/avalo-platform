@@ -19,7 +19,7 @@
  * @module aiMemory
  */
 
-import * as functions from 'firebase-functions';
+
 import * as logger from 'firebase-functions/logger';
 import { getFirestore } from 'firebase-admin/firestore';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
@@ -606,14 +606,14 @@ Return ONLY valid JSON in this exact format:
  * GET /ai/memory?userId=...&companionId=...
  * Fetch AI user memory
  */
-export const getAiUserMemory = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const getAiUserMemory = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       // Verify authentication
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -624,7 +624,7 @@ export const getAiUserMemory = functions
 
       // Verify the caller is requesting their own memory
       if (callerId !== userId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'Cannot access other users\' AI memory'
         );
@@ -658,11 +658,11 @@ export const getAiUserMemory = functions
     } catch (error: any) {
       logger.error('[getAiUserMemory] Error:', error);
       
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       
-      throw new functions.https.HttpsError('internal', error.message || 'Failed to get AI memory');
+      throw new HttpsError('internal', error.message || 'Failed to get AI memory');
     }
   });
 
@@ -670,14 +670,14 @@ export const getAiUserMemory = functions
  * POST /ai/memory/rebuild
  * Rebuild AI user memory manually
  */
-export const rebuildAiUserMemoryEndpoint = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const rebuildAiUserMemoryEndpoint = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       // Verify authentication
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -688,7 +688,7 @@ export const rebuildAiUserMemoryEndpoint = functions
 
       // Verify the caller is acting on their own behalf
       if (callerId !== userId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'Cannot rebuild memory for other users'
         );
@@ -712,11 +712,11 @@ export const rebuildAiUserMemoryEndpoint = functions
     } catch (error: any) {
       logger.error('[rebuildAiUserMemoryEndpoint] Error:', error);
       
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       
-      throw new functions.https.HttpsError('internal', error.message || 'Failed to rebuild AI memory');
+      throw new HttpsError('internal', error.message || 'Failed to rebuild AI memory');
     }
   });
 

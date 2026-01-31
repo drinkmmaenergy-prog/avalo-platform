@@ -5,7 +5,7 @@
  * Provides real-time UX without impacting tokenomics
  */
 
-import * as functions from 'firebase-functions';
+
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import {
   TypingEvent,
@@ -26,16 +26,14 @@ const db = getFirestore();
  * Creates ephemeral typing event with TTL
  * Clients subscribe to typingEvents collection for real-time updates
  */
-export const pack427_updateTypingState = functions
-  .runWith({
-    timeoutSeconds: 10,
-    memory: '128MB',
-  })
-  .https.onCall(async (request) => {
+export const pack427_updateTypingState = onCall(
+  { timeoutSeconds: 10,
+    memory: '128MiB', },
+  async (request) => {
   const data = request.data;
     // Authenticate user
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
@@ -45,7 +43,7 @@ export const pack427_updateTypingState = functions
     const { chatId, isTyping } = data;
 
     if (!chatId || typeof isTyping !== 'boolean') {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'chatId and isTyping are required'
       );
@@ -54,12 +52,12 @@ export const pack427_updateTypingState = functions
     // Verify user is participant in chat
     const chatDoc = await db.collection('chats').doc(chatId).get();
     if (!chatDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Chat not found');
+      throw new HttpsError('not-found', 'Chat not found');
     }
 
     const participants = chatDoc.data()!.participants || [];
     if (!participants.includes(userId)) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'User is not a participant'
       );
@@ -117,16 +115,14 @@ export const pack427_updateTypingState = functions
  * Updates read receipt and recalculates unread counter
  * Idempotent - safe to call multiple times
  */
-export const pack427_markAsRead = functions
-  .runWith({
-    timeoutSeconds: 30,
-    memory: '256MB',
-  })
-  .https.onCall(async (request) => {
+export const pack427_markAsRead = onCall(
+  { timeoutSeconds: 30,
+    memory: '256MiB', },
+  async (request) => {
   const data = request.data;
     // Authenticate user
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
@@ -136,7 +132,7 @@ export const pack427_markAsRead = functions
     const { chatId, readUpToMessageId } = data;
 
     if (!chatId || !readUpToMessageId) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'chatId and readUpToMessageId are required'
       );
@@ -145,12 +141,12 @@ export const pack427_markAsRead = functions
     // Verify user is participant
     const chatDoc = await db.collection('chats').doc(chatId).get();
     if (!chatDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Chat not found');
+      throw new HttpsError('not-found', 'Chat not found');
     }
 
     const participants = chatDoc.data()!.participants || [];
     if (!participants.includes(userId)) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'User is not a participant'
       );
@@ -165,7 +161,7 @@ export const pack427_markAsRead = functions
       .get();
 
     if (!messageDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Message not found');
+      throw new HttpsError('not-found', 'Message not found');
     }
 
     const readUpToTimestamp = messageDoc.data()!.createdAt as Timestamp;
@@ -207,16 +203,14 @@ export const pack427_markAsRead = functions
  * 
  * Returns list of users currently typing
  */
-export const pack427_getTypingStatus = functions
-  .runWith({
-    timeoutSeconds: 10,
-    memory: '128MB',
-  })
-  .https.onCall(async (request) => {
+export const pack427_getTypingStatus = onCall(
+  { timeoutSeconds: 10,
+    memory: '128MiB', },
+  async (request) => {
   const data = request.data;
     // Authenticate user
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
@@ -226,7 +220,7 @@ export const pack427_getTypingStatus = functions
     const { chatId, region } = data;
 
     if (!chatId) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'chatId is required'
       );
@@ -268,16 +262,14 @@ export const pack427_getTypingStatus = functions
  * 
  * Used for badge display in UI
  */
-export const pack427_getUnreadCounts = functions
-  .runWith({
-    timeoutSeconds: 30,
-    memory: '256MB',
-  })
-  .https.onCall(async (request) => {
+export const pack427_getUnreadCounts = onCall(
+  { timeoutSeconds: 30,
+    memory: '256MiB', },
+  async (request) => {
   const data = request.data;
     // Authenticate user
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
@@ -336,15 +328,13 @@ export const pack427_getUnreadCounts = functions
  * 
  * Background task to fix any drift in unread counts
  */
-export const pack427_recalculateUnreadCounters = functions
-  .runWith({
-    timeoutSeconds: 120,
-    memory: '512MB',
-  })
-  .https.onCall(async (request) => {
+export const pack427_recalculateUnreadCounters = onCall(
+  { timeoutSeconds: 120,
+    memory: '512MiB', },
+  async (request) => {
     // Authenticate user
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );

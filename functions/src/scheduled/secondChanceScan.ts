@@ -4,7 +4,7 @@
  * Runs at 03:00 local time
  */
 
-import * as functions from 'firebase-functions';
+
 import { db, admin } from '../init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import {
@@ -17,21 +17,20 @@ import {
   SecondChanceSettings
 } from '../types/secondChance.types';
 import { selectSecondChanceTemplate } from '../services/secondChanceTemplates';
-import { HttpsError, auth, increment, onCall, timestamp } from '../runtime';
+import { HttpsError, auth, increment, onCall, onSchedule, timestamp } from '../runtime';
 
 /**
  * Main scheduled function - runs daily at 03:00 local time
  * Process matches in batches to handle scale efficiently
  */
-export const runSecondChanceScan = functions
-  .runWith({
+export const runSecondChanceScan = onSchedule(
+  {
+    schedule: '0 3 * * *', // Every day at 03:00
+    timeZone: 'UTC',
     timeoutSeconds: 540, // 9 minutes
-    memory: '2GB'
-  })
-  .pubsub
-  .schedule('0 3 * * *') // Every day at 03:00
-  .timeZone('UTC') // Each user's local time will be calculated
-  .onRun(async (context) => {
+    memory: '2GiB'
+  },
+  async (event) => {
     const scanContext: SecondChanceScanContext = {
       startTime: Timestamp.now(),
       matchesScanned: 0,
@@ -102,7 +101,7 @@ export const runSecondChanceScan = functions
         completedAt: Timestamp.now()
       });
 
-      return { success: true, context: scanContext };
+      return;
 
     } catch (error) {
       console.error('Second Chance scan failed:', error);
@@ -423,16 +422,13 @@ async function sendPushNotification(userId: string, message: string): Promise<vo
 /**
  * HTTP endpoint to manually trigger Second Chance scan (for testing)
  */
-export const triggerSecondChanceScan = functions
-  .runWith({
-    timeoutSeconds: 540,
-    memory: '2GB'
-  })
-  .https
-  .onCall(async (request) => {
+export const triggerSecondChanceScan = onCall(
+  { timeoutSeconds: 540,
+    memory: '2GiB' },
+  async (request) => {
     // Verify admin
     if (!request.auth?.token?.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can trigger manual scans'
       );

@@ -19,7 +19,7 @@ import { FieldValue, auth, onRequest, serverTimestamp, timestamp } from '../runt
  *   - userId: Optional user ID for personalized flags
  *   - platform: mobile | web | desktop
  */
-export const getFeatureFlags = functions.https.onRequest(async (req, res) => {
+export const getFeatureFlags = onRequest({}, async (req, res) => {
   // CORS headers
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -79,7 +79,7 @@ export const getFeatureFlags = functions.https.onRequest(async (req, res) => {
  * Endpoint: POST /api/admin/featureFlags
  * Requires admin authentication
  */
-export const updateFeatureFlags = functions.https.onRequest(async (req, res) => {
+export const updateFeatureFlags = onRequest({}, async (req, res) => {
   // CORS headers
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -310,7 +310,7 @@ function applyPlatformFlags(
 /**
  * Health check endpoint for feature flags service
  */
-export const healthCheck = functions.https.onRequest((req, res) => {
+export const healthCheck = onRequest({}, (req, res) => {
   res.status(200).json({
     status: 'healthy',
     service: 'feature-flags',

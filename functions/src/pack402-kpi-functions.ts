@@ -163,12 +163,10 @@ export const pack402_getKpis = functions.https.onCall(async (request) => {
  * HTTPS Callable: Backfill daily KPIs (admin only)
  * Use sparingly, for historical data recovery
  */
-export const pack402_backfillDailyKpis = functions
-  .runWith({
+export const pack402_backfillDailyKpis = onCall({
     timeoutSeconds: 540, // 9 minutes
-    memory: '2GB',
-  })
-  .https.onCall(async (request) => {
+    memory: '2GiB',
+  }, async (request) => {
   const data = request.data;
     // Auth check
     if (!request.auth) {
@@ -228,7 +226,7 @@ export const pack402_backfillDailyKpis = functions
  * HTTPS endpoint: Get KPIs (alternative to callable, for admin web)
  * Returns JSON directly
  */
-export const pack402_getKpisHttp = functions.https.onRequest(async (req, res) => {
+export const pack402_getKpisHttp = onRequest({}, async (req, res) => {
   // CORS
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');

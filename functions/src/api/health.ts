@@ -34,7 +34,7 @@ interface HealthCheckResult {
  * Main health check endpoint
  * GET /health
  */
-export const health = functions.https.onRequest(async (req, res) => {
+export const health = onRequest({}, async (req, res) => {
   // CORS headers
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -97,7 +97,7 @@ export const health = functions.https.onRequest(async (req, res) => {
  * Detailed health check with component testing
  * GET /health/detailed
  */
-export const healthDetailed = functions.https.onRequest(async (req, res) => {
+export const healthDetailed = onRequest({}, async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.set('Cache-Control', 'no-cache');
@@ -144,7 +144,7 @@ export const healthDetailed = functions.https.onRequest(async (req, res) => {
  * Liveness probe - simple check that process is running
  * GET /health/live
  */
-export const healthLive = functions.https.onRequest((req, res) => {
+export const healthLive = onRequest({}, (req, res) => {
   res.set('Cache-Control', 'no-cache');
   res.status(200).json({
     status: 'alive',
@@ -156,7 +156,7 @@ export const healthLive = functions.https.onRequest((req, res) => {
  * Readiness probe - check if ready to serve traffic
  * GET /health/ready
  */
-export const healthReady = functions.https.onRequest(async (req, res) => {
+export const healthReady = onRequest({}, async (req, res) => {
   res.set('Cache-Control', 'no-cache');
 
   try {
@@ -361,7 +361,7 @@ async function checkStorageDetailed() {
  * System metrics endpoint
  * GET /health/metrics
  */
-export const healthMetrics = functions.https.onRequest(async (req, res) => {
+export const healthMetrics = onRequest({}, async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.set('Cache-Control', 'no-cache');

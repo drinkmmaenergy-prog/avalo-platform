@@ -5,7 +5,7 @@
  * Provides risk assessment and survival runway
  */
 
-import * as functions from 'firebase-functions';
+
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, auth, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
@@ -621,13 +621,13 @@ export const runMonthlyStressScenarios = onSchedule({ schedule: "0 4 5 * *", tim
 /**
  * HTTP function: Run specific scenario (admin only)
  */
-export const runStressScenario = functions
-  .region('europe-west1')
-  .https.onCall(async (request) => {
+export const runStressScenario = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
   const data = request.data;
     // Verify admin authentication
     if (!request.auth || !request.auth.token.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can run stress scenarios'
       );
@@ -636,7 +636,7 @@ export const runStressScenario = functions
     const { scenarioId } = data;
 
     if (!scenarioId) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'Scenario ID required'
       );
@@ -647,19 +647,19 @@ export const runStressScenario = functions
       return result;
     } catch (error) {
       console.error('[PACK 358] Error running scenario:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to run scenario');
+      throw new HttpsError('internal', 'Failed to run scenario');
     }
   });
 
 /**
  * HTTP function: Get available scenarios (admin only)
  */
-export const getAvailableScenarios = functions
-  .region('europe-west1')
-  .https.onCall(async (request) => {
+export const getAvailableScenarios = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
     // Verify admin authentication
     if (!request.auth || !request.auth.token.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can view scenarios'
       );
@@ -671,13 +671,13 @@ export const getAvailableScenarios = functions
 /**
  * HTTP function: Get scenario results (admin only)
  */
-export const getScenarioResults = functions
-  .region('europe-west1')
-  .https.onCall(async (request) => {
+export const getScenarioResults = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
   const data = request.data;
     // Verify admin authentication
     if (!request.auth || !request.auth.token.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can view scenario results'
       );
@@ -688,12 +688,12 @@ export const getScenarioResults = functions
       const doc = await db.collection('finance').doc('scenarios').get();
 
       if (!doc.exists) {
-        throw new functions.https.HttpsError('not-found', 'No scenario results available');
+        throw new HttpsError('not-found', 'No scenario results available');
       }
 
       return doc.data();
     } catch (error) {
       console.error('[PACK 358] Error fetching scenario results:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to fetch results');
+      throw new HttpsError('internal', 'Failed to fetch results');
     }
   });

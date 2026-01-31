@@ -51,7 +51,7 @@ export interface LaunchCheckResponse {
  * GET /system/launch-check
  * Returns system readiness status
  */
-export const launchCheck = functions.https.onRequest(async (req, res) => {
+export const launchCheck = onRequest({}, async (req, res) => {
   // Only allow GET requests
   if (req.method !== 'GET') {
     res.status(405).json({ error: 'Method not allowed' });

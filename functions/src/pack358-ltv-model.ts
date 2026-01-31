@@ -5,7 +5,7 @@
  * Used for ad spend caps and risk exposure
  */
 
-import * as functions from 'firebase-functions';
+
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, auth, onCall, serverTimestamp, logger, onSchedule } from './runtime';
 
@@ -567,13 +567,13 @@ export const calculateSegmentLTVs = onSchedule({ schedule: "0 3 * * 0", timeZone
 /**
  * HTTP function: Get LTV profiles (admin only)
  */
-export const getLTVProfiles = functions
-  .region('europe-west1')
-  .https.onCall(async (request) => {
+export const getLTVProfiles = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
   const data = request.data;
     // Verify admin authentication
     if (!request.auth || !request.auth.token.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can view LTV profiles'
       );
@@ -584,26 +584,26 @@ export const getLTVProfiles = functions
       const doc = await db.collection('finance').doc('ltv').get();
 
       if (!doc.exists) {
-        throw new functions.https.HttpsError('not-found', 'No LTV data available');
+        throw new HttpsError('not-found', 'No LTV data available');
       }
 
       return doc.data();
     } catch (error) {
       console.error('[PACK 358] Error fetching LTV profiles:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to fetch LTV profiles');
+      throw new HttpsError('internal', 'Failed to fetch LTV profiles');
     }
   });
 
 /**
  * HTTP function: Calculate LTV for specific segment (admin only)
  */
-export const calculateSegmentLTVOnDemand = functions
-  .region('europe-west1')
-  .https.onCall(async (request) => {
+export const calculateSegmentLTVOnDemand = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
   const data = request.data;
     // Verify admin authentication
     if (!request.auth || !request.auth.token.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can calculate LTV'
       );
@@ -613,7 +613,7 @@ export const calculateSegmentLTVOnDemand = functions
 
     const validSegments = ['NEW', 'ACTIVE', 'DORMANT', 'CHURN_RISK', 'RETURNING', 'ROYAL', 'VIP'];
     if (!segment || !validSegments.includes(segment)) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         `Invalid segment. Must be one of: ${validSegments.join(', ')}`
       );
@@ -624,20 +624,20 @@ export const calculateSegmentLTVOnDemand = functions
       return profile;
     } catch (error) {
       console.error('[PACK 358] Error calculating segment LTV:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to calculate segment LTV');
+      throw new HttpsError('internal', 'Failed to calculate segment LTV');
     }
   });
 
 /**
  * HTTP function: Get LTV trends (admin only)
  */
-export const getLTVTrends = functions
-  .region('europe-west1')
-  .https.onCall(async (request) => {
+export const getLTVTrends = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
   const data = request.data;
     // Verify admin authentication
     if (!request.auth || !request.auth.token.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can view LTV trends'
       );
@@ -664,6 +664,6 @@ export const getLTVTrends = functions
       return { trends };
     } catch (error) {
       console.error('[PACK 358] Error fetching LTV trends:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to fetch LTV trends');
+      throw new HttpsError('internal', 'Failed to fetch LTV trends');
     }
   });

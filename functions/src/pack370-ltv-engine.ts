@@ -4,7 +4,7 @@
  * Core LTV prediction and ROAS feedback system
  */
 
-import * as functions from 'firebase-functions';
+
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule } from './runtime';
 
@@ -67,13 +67,13 @@ const LTV_TIERS = {
 // 1️⃣ MAIN LTV CALCULATION FUNCTION
 // ============================================================================
 
-export const pack370_calculateLTVForecast = functions
-  .runWith({ memory: '512MB', timeoutSeconds: 300 })
-  .https.onCall(async (request) => {
+export const pack370_calculateLTVForecast = onCall(
+  { memory: '512MiB', timeoutSeconds: 300 },
+  async (request) => {
   const data = request.data;
     
     if (!request.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     const { userId } = data;
@@ -85,7 +85,7 @@ export const pack370_calculateLTVForecast = functions
       // Check fraud score - if too high, invalidate LTV
       if (metrics.fraudSafetyScore > 0.25) {
         await invalidateLTV(userId);
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'failed-precondition',
           'User LTV invalidated due to fraud score'
         );
@@ -141,7 +141,7 @@ export const pack370_calculateLTVForecast = functions
       
     } catch (error: any) {
       console.error('Error calculating LTV:', error);
-      throw new functions.https.HttpsError('internal', error.message);
+      throw new HttpsError('internal', error.message);
     }
   });
 
@@ -526,10 +526,10 @@ async function invalidateLTV(userId: string) {
   });
 }
 
-export const pack370_invalidateLTV = functions.https.onCall(async (request) => {
+export const pack370_invalidateLTV = onCall(async (request) => {
   const data = request.data;
     if (!request.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+      throw new HttpsError('unauthenticated', 'Must be authenticated');
     }
     
     await invalidateLTV(data.userId);
@@ -674,16 +674,16 @@ export const pack370_updateGeoLTVProfiles = onSchedule("every 24 hours", async (
 // 1️⃣1️⃣ ADMIN LTV OVERRIDE
 // ============================================================================
 
-export const pack370_adminLTVOverride = functions.https.onCall(async (request) => {
+export const pack370_adminLTVOverride = onCall(async (request) => {
   const data = request.data;
     if (!request.auth) {
-      throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+      throw new HttpsError('unauthenticated', 'Must be authenticated');
     }
     
     // Check admin role
     const adminDoc = await db.collection('users').doc(request.auth.uid).get();
     if (!adminDoc.exists || !['admin', 'superadmin'].includes(adminDoc.data()?.role)) {
-      throw new functions.https.HttpsError('permission-denied', 'Admin access required');
+      throw new HttpsError('permission-denied', 'Admin access required');
     }
     
     const { userId, overrideLTV, reason } = data;

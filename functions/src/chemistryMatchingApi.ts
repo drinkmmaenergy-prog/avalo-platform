@@ -3,7 +3,7 @@
  * Chemistry-Based Discovery API Endpoints
  */
 
-import * as functions from 'firebase-functions';
+
 import {
   calculateChemistryScore,
   evaluateChemistryBoost,
@@ -21,13 +21,13 @@ import { HttpsError, auth, increment, onCall } from './runtime';
  * Calculate Chemistry Score
  * Returns detailed chemistry score between viewer and target
  */
-export const calculateChemistryScoreCallable = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const calculateChemistryScoreCallable = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -37,7 +37,7 @@ export const calculateChemistryScoreCallable = functions
       const { targetUserId } = data;
 
       if (!targetUserId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           'targetUserId is required'
         );
@@ -50,11 +50,11 @@ export const calculateChemistryScoreCallable = functions
     } catch (error: any) {
       console.error('[calculateChemistryScoreCallable] Error:', error);
 
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
 
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         error.message || 'Failed to calculate chemistry score'
       );
@@ -65,13 +65,13 @@ export const calculateChemistryScoreCallable = functions
  * Evaluate Chemistry Boost
  * Checks if users qualify for visibility boost
  */
-export const evaluateChemistryBoostCallable = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const evaluateChemistryBoostCallable = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -81,7 +81,7 @@ export const evaluateChemistryBoostCallable = functions
       const { targetUserId } = data;
 
       if (!targetUserId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           'targetUserId is required'
         );
@@ -98,11 +98,11 @@ export const evaluateChemistryBoostCallable = functions
     } catch (error: any) {
       console.error('[evaluateChemistryBoostCallable] Error:', error);
 
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
 
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         error.message || 'Failed to evaluate chemistry boost'
       );
@@ -113,13 +113,13 @@ export const evaluateChemistryBoostCallable = functions
  * Track Interaction
  * Updates interaction metrics for chemistry calculations
  */
-export const trackInteractionCallable = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const trackInteractionCallable = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -133,7 +133,7 @@ export const trackInteractionCallable = functions
       } = data;
 
       if (!targetUserId || !interactionType) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           'targetUserId and interactionType are required'
         );
@@ -190,7 +190,7 @@ export const trackInteractionCallable = functions
           break;
 
         default:
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'invalid-argument',
             `Unknown interaction type: ${interactionType}`
           );
@@ -208,11 +208,11 @@ export const trackInteractionCallable = functions
     } catch (error: any) {
       console.error('[trackInteractionCallable] Error:', error);
 
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
 
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         error.message || 'Failed to track interaction'
       );
@@ -223,13 +223,13 @@ export const trackInteractionCallable = functions
  * Check Spam Status
  * Checks if user's behavior is flagged as spam
  */
-export const checkSpamStatusCallable = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const checkSpamStatusCallable = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -239,7 +239,7 @@ export const checkSpamStatusCallable = functions
       const { targetUserId } = data;
 
       if (!targetUserId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           'targetUserId is required'
         );
@@ -255,11 +255,11 @@ export const checkSpamStatusCallable = functions
     } catch (error: any) {
       console.error('[checkSpamStatusCallable] Error:', error);
 
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
 
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         error.message || 'Failed to check spam status'
       );
@@ -270,13 +270,13 @@ export const checkSpamStatusCallable = functions
  * Get Chemistry Feed Scores
  * Calculates chemistry scores for all candidates in feed
  */
-export const getChemistryFeedScoresCallable = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const getChemistryFeedScoresCallable = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -286,14 +286,14 @@ export const getChemistryFeedScoresCallable = functions
       const { candidateIds } = data;
 
       if (!candidateIds || !Array.isArray(candidateIds)) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           'candidateIds array is required'
         );
       }
 
       if (candidateIds.length > 50) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           'Cannot calculate scores for more than 50 candidates at once'
         );
@@ -315,11 +315,11 @@ export const getChemistryFeedScoresCallable = functions
     } catch (error: any) {
       console.error('[getChemistryFeedScoresCallable] Error:', error);
 
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
 
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         error.message || 'Failed to get chemistry feed scores'
       );

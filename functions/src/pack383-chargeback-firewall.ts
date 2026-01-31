@@ -374,7 +374,7 @@ export const pack383_releaseExpiredHolds = onSchedule("every 6 hours", async (ev
  * Webhook: Handle chargeback notification
  * Called by payment processors
  */
-export const pack383_handleChargebackNotification = functions.https.onRequest(
+export const pack383_handleChargebackNotification = onRequest({},
   async (req, res) => {
     // Verify webhook signature (implement based on payment processor)
     // if (!verifyWebhookSignature(req)) {

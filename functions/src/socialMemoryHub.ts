@@ -9,7 +9,6 @@
  * - No AI gossip or manipulation
  */
 
-import * as functions from 'firebase-functions';
 import * as logger from 'firebase-functions/logger';
 import { db, serverTimestamp, increment } from './init.js';
 import { Timestamp } from 'firebase-admin/firestore';
@@ -67,13 +66,13 @@ async function getOrCreateMemoryPermissions(
 /**
  * Share preference across AIs
  */
-export const sharePreferenceAcrossAis = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const sharePreferenceAcrossAis = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -81,7 +80,7 @@ export const sharePreferenceAcrossAis = functions
 
       const callerId = request.auth.uid;
       if (callerId !== data.userId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'Cannot share preferences for other users'
         );
@@ -90,14 +89,14 @@ export const sharePreferenceAcrossAis = functions
       const permissions = await getOrCreateMemoryPermissions(data.userId);
 
       if (!permissions.crossAiSharingEnabled) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'failed-precondition',
           'Cross-AI sharing is disabled for this user'
         );
       }
 
       if (!permissions.allowedCategories.includes(data.category)) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'failed-precondition',
           `Category "${data.category}" is not enabled for sharing`
         );
@@ -118,7 +117,7 @@ export const sharePreferenceAcrossAis = functions
           reason: validationResult.reason,
         });
 
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           validationResult.reason || 'Preference sharing validation failed'
         );
@@ -163,24 +162,24 @@ export const sharePreferenceAcrossAis = functions
     } catch (error: any) {
       logger.error('[sharePreferenceAcrossAis] Error:', error);
 
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
 
-      throw new functions.https.HttpsError('internal', error.message);
+      throw new HttpsError('internal', error.message);
     }
   });
 
 /**
  * Get shared preferences for an AI
  */
-export const getSharedPreferencesForAi = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const getSharedPreferencesForAi = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
       try {
         if (!request.auth) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'unauthenticated',
             'User must be authenticated'
           );
@@ -188,7 +187,7 @@ export const getSharedPreferencesForAi = functions
 
         const callerId = request.auth.uid;
         if (callerId !== data.userId) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'permission-denied',
             'Cannot access other users\' preferences'
           );
@@ -292,11 +291,11 @@ export const getSharedPreferencesForAi = functions
       } catch (error: any) {
         logger.error('[getSharedPreferencesForAi] Error:', error);
 
-        if (error instanceof functions.https.HttpsError) {
+        if (error instanceof HttpsError) {
           throw error;
         }
 
-        throw new functions.https.HttpsError('internal', error.message);
+        throw new HttpsError('internal', error.message);
       }
     }
   );
@@ -304,13 +303,13 @@ export const getSharedPreferencesForAi = functions
 /**
  * Store user story progress
  */
-export const storeUserStoryProgress = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const storeUserStoryProgress = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
       try {
         if (!request.auth) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'unauthenticated',
             'User must be authenticated'
           );
@@ -318,7 +317,7 @@ export const storeUserStoryProgress = functions
 
         const callerId = request.auth.uid;
         if (callerId !== data.userId) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'permission-denied',
             'Cannot store story progress for other users'
           );
@@ -327,7 +326,7 @@ export const storeUserStoryProgress = functions
         const permissions = await getOrCreateMemoryPermissions(data.userId);
 
         if (!permissions.crossAiSharingEnabled) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'failed-precondition',
             'Cross-AI sharing is disabled'
           );
@@ -370,11 +369,11 @@ export const storeUserStoryProgress = functions
       } catch (error: any) {
         logger.error('[storeUserStoryProgress] Error:', error);
 
-        if (error instanceof functions.https.HttpsError) {
+        if (error instanceof HttpsError) {
           throw error;
         }
 
-        throw new functions.https.HttpsError('internal', error.message);
+        throw new HttpsError('internal', error.message);
       }
     }
   );
@@ -382,13 +381,13 @@ export const storeUserStoryProgress = functions
 /**
  * Update memory permissions
  */
-export const updateMemoryPermissions = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const updateMemoryPermissions = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
       try {
         if (!request.auth) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'unauthenticated',
             'User must be authenticated'
           );
@@ -396,7 +395,7 @@ export const updateMemoryPermissions = functions
 
         const callerId = request.auth.uid;
         if (callerId !== data.userId) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'permission-denied',
             'Cannot update permissions for other users'
           );
@@ -431,11 +430,11 @@ export const updateMemoryPermissions = functions
       } catch (error: any) {
         logger.error('[updateMemoryPermissions] Error:', error);
 
-        if (error instanceof functions.https.HttpsError) {
+        if (error instanceof HttpsError) {
           throw error;
         }
 
-        throw new functions.https.HttpsError('internal', error.message);
+        throw new HttpsError('internal', error.message);
       }
     }
   );
@@ -443,13 +442,13 @@ export const updateMemoryPermissions = functions
 /**
  * Block preference sharing
  */
-export const blockPreferenceSharing = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const blockPreferenceSharing = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
       try {
         if (!request.auth) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'unauthenticated',
             'User must be authenticated'
           );
@@ -457,7 +456,7 @@ export const blockPreferenceSharing = functions
 
         const callerId = request.auth.uid;
         if (callerId !== data.userId) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'permission-denied',
             'Cannot block preferences for other users'
           );
@@ -479,18 +478,18 @@ export const blockPreferenceSharing = functions
           return { ok: true };
         }
 
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'not-found',
           'Preference not found or unauthorized'
         );
       } catch (error: any) {
         logger.error('[blockPreferenceSharing] Error:', error);
 
-        if (error instanceof functions.https.HttpsError) {
+        if (error instanceof HttpsError) {
           throw error;
         }
 
-        throw new functions.https.HttpsError('internal', error.message);
+        throw new HttpsError('internal', error.message);
       }
     }
   );
@@ -498,13 +497,13 @@ export const blockPreferenceSharing = functions
 /**
  * Resolve preference conflict (when AIs disagree)
  */
-export const resolvePreferenceConflict = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const resolvePreferenceConflict = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
       try {
         if (!request.auth) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'unauthenticated',
             'User must be authenticated'
           );
@@ -512,7 +511,7 @@ export const resolvePreferenceConflict = functions
 
         const callerId = request.auth.uid;
         if (callerId !== data.userId) {
-          throw new functions.https.HttpsError(
+          throw new HttpsError(
             'permission-denied',
             'Cannot resolve conflicts for other users'
           );
@@ -537,11 +536,11 @@ export const resolvePreferenceConflict = functions
       } catch (error: any) {
         logger.error('[resolvePreferenceConflict] Error:', error);
 
-        if (error instanceof functions.https.HttpsError) {
+        if (error instanceof HttpsError) {
           throw error;
         }
 
-        throw new functions.https.HttpsError('internal', error.message);
+        throw new HttpsError('internal', error.message);
       }
     }
   );
@@ -549,13 +548,13 @@ export const resolvePreferenceConflict = functions
 /**
  * Get memory analytics for transparency
  */
-export const getMemoryAnalytics = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const getMemoryAnalytics = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -563,7 +562,7 @@ export const getMemoryAnalytics = functions
 
       const callerId = request.auth.uid;
       if (callerId !== data.userId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'Cannot access analytics for other users'
         );
@@ -606,24 +605,24 @@ export const getMemoryAnalytics = functions
     } catch (error: any) {
       logger.error('[getMemoryAnalytics] Error:', error);
 
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
 
-      throw new functions.https.HttpsError('internal', error.message);
+      throw new HttpsError('internal', error.message);
     }
   });
 
 /**
  * Wipe all shared memory for user
  */
-export const wipeUserMemory = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const wipeUserMemory = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -631,7 +630,7 @@ export const wipeUserMemory = functions
 
       const callerId = request.auth.uid;
       if (callerId !== data.userId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'Cannot wipe memory for other users'
         );
@@ -682,11 +681,11 @@ export const wipeUserMemory = functions
     } catch (error: any) {
       logger.error('[wipeUserMemory] Error:', error);
 
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
 
-      throw new functions.https.HttpsError('internal', error.message);
+      throw new HttpsError('internal', error.message);
     }
   });
 

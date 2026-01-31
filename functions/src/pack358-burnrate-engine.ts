@@ -5,7 +5,7 @@
  * Integrates infrastructure, marketing, support, and moderation costs
  */
 
-import * as functions from 'firebase-functions';
+
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, auth, onCall, serverTimestamp, storage, logger, onSchedule } from './runtime';
 
@@ -535,13 +535,13 @@ export const calculateMonthlyBurnRate = onSchedule({ schedule: "0 3 1 * *", time
 /**
  * HTTP function: Calculate burn rate on demand (admin only)
  */
-export const calculateBurnRateOnDemand = functions
-  .region('europe-west1')
-  .https.onCall(async (request) => {
+export const calculateBurnRateOnDemand = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
   const data = request.data;
     // Verify admin authentication
     if (!request.auth || !request.auth.token.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can calculate burn rate'
       );
@@ -550,7 +550,7 @@ export const calculateBurnRateOnDemand = functions
     const { year, month } = data;
 
     if (!year || !month || month < 1 || month > 12) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'Valid year and month (1-12) required'
       );
@@ -561,20 +561,20 @@ export const calculateBurnRateOnDemand = functions
       return snapshot;
     } catch (error) {
       console.error('[PACK 358] Error calculating burn rate:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to calculate burn rate');
+      throw new HttpsError('internal', 'Failed to calculate burn rate');
     }
   });
 
 /**
  * HTTP function: Get runway calculation (admin only)
  */
-export const getFinancialRunway = functions
-  .region('europe-west1')
-  .https.onCall(async (request) => {
+export const getFinancialRunway = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
   const data = request.data;
     // Verify admin authentication
     if (!request.auth || !request.auth.token.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can view runway'
       );
@@ -583,7 +583,7 @@ export const getFinancialRunway = functions
     const { currentCashPLN } = data;
 
     if (!currentCashPLN || currentCashPLN < 0) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'Valid current cash amount required'
       );
@@ -603,20 +603,20 @@ export const getFinancialRunway = functions
       return;
     } catch (error) {
       console.error('[PACK 358] Error calculating runway:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to calculate runway');
+      throw new HttpsError('internal', 'Failed to calculate runway');
     }
   });
 
 /**
  * HTTP function: Get burn rate history (admin only)
  */
-export const getBurnRateHistory = functions
-  .region('europe-west1')
-  .https.onCall(async (request) => {
+export const getBurnRateHistory = onCall(
+  { region: 'europe-west1' },
+  async (request) => {
   const data = request.data;
     // Verify admin authentication
     if (!request.auth || !request.auth.token.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can view burn rate history'
       );
@@ -639,6 +639,6 @@ export const getBurnRateHistory = functions
       return { history };
     } catch (error) {
       console.error('[PACK 358] Error fetching burn rate history:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to fetch history');
+      throw new HttpsError('internal', 'Failed to fetch history');
     }
   });

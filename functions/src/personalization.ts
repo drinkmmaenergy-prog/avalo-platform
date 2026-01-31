@@ -3,7 +3,6 @@
  * Records user behavior events and exposes taste profile summaries
  */
 
-import * as functions from 'firebase-functions';
 import { db, serverTimestamp, generateId } from './init';
 import { computeTasteProfile, aggregateEventCounters } from '../personalizationEngine';
 import { HttpsError, Timestamp, auth, onCall, onSchedule, onDocumentCreated } from './runtime';
@@ -52,14 +51,14 @@ interface UserTasteProfile {
  * POST /personalization/event
  * Log a personalization event
  */
-export const recordPersonalizationEvent = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const recordPersonalizationEvent = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       // Verify authentication
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -70,7 +69,7 @@ export const recordPersonalizationEvent = functions
 
       // Verify the caller is acting on their own behalf
       if (callerId !== userId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'Cannot record events for other users'
         );
@@ -88,7 +87,7 @@ export const recordPersonalizationEvent = functions
       ];
 
       if (!validTypes.includes(type)) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'invalid-argument',
           `Invalid event type: ${type}`
         );
@@ -124,11 +123,11 @@ export const recordPersonalizationEvent = functions
     } catch (error: any) {
       console.error('[recordPersonalizationEvent] Error:', error);
       
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       
-      throw new functions.https.HttpsError('internal', error.message || 'Failed to record event');
+      throw new HttpsError('internal', error.message || 'Failed to record event');
     }
   });
 
@@ -136,14 +135,14 @@ export const recordPersonalizationEvent = functions
  * GET /personalization/profile?userId=...
  * Get user's taste profile summary
  */
-export const getPersonalizationProfile = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const getPersonalizationProfile = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       // Verify authentication
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -154,7 +153,7 @@ export const getPersonalizationProfile = functions
 
       // Verify the caller is requesting their own profile
       if (callerId !== userId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'Cannot access other users\' profiles'
         );
@@ -204,11 +203,11 @@ export const getPersonalizationProfile = functions
     } catch (error: any) {
       console.error('[getPersonalizationProfile] Error:', error);
       
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       
-      throw new functions.https.HttpsError('internal', error.message || 'Failed to get profile');
+      throw new HttpsError('internal', error.message || 'Failed to get profile');
     }
   });
 

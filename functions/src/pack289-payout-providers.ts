@@ -276,7 +276,7 @@ export async function startPayout(
  * 
  * @see https://api-docs.wise.com/webhooks
  */
-export const payouts_wiseWebhook = functions.https.onRequest(async (req, res) => {
+export const payouts_wiseWebhook = onRequest({}, async (req, res) => {
   try {
     console.log('[Wise Webhook] Received event:', req.body);
 
@@ -333,7 +333,7 @@ export const payouts_wiseWebhook = functions.https.onRequest(async (req, res) =>
  * Generic payout webhook handler
  * For custom banking integrations
  */
-export const payouts_genericWebhook = functions.https.onRequest(async (req, res) => {
+export const payouts_genericWebhook = onRequest({}, async (req, res) => {
   try {
     console.log('[Generic Webhook] Received event:', req.body);
 

@@ -3,7 +3,6 @@
  * Ingests and processes reviews from Google Play and Apple App Store
  */
 
-import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import {
   StoreReview,
@@ -203,12 +202,12 @@ async function logAnalyticsEvent(review: StoreReview): Promise<void> {
  * Import Google Play reviews
  * Scheduled function or webhook-driven
  */
-export const pack411_importStoreReviewsGoogle = functions
-  .runWith({ 
+export const pack411_importStoreReviewsGoogle = onRequest(
+  { 
     timeoutSeconds: 540,
-    memory: '1GB' 
-  })
-  .https.onRequest(async (req, res) => {
+    memory: '1GiB' 
+  },
+  async (req, res) => {
     try {
       // Verify admin/service account auth
       const authHeader = req.headers.authorization;
@@ -273,12 +272,12 @@ export const pack411_importStoreReviewsGoogle = functions
  * Import Apple App Store reviews
  * Scheduled function or webhook-driven
  */
-export const pack411_importStoreReviewsApple = functions
-  .runWith({ 
+export const pack411_importStoreReviewsApple = onRequest(
+  { 
     timeoutSeconds: 540,
-    memory: '1GB' 
-  })
-  .https.onRequest(async (req, res) => {
+    memory: '1GiB' 
+  },
+  async (req, res) => {
     try {
       // Verify admin/service account auth
       const authHeader = req.headers.authorization;

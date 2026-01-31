@@ -5,10 +5,11 @@
  * WITHOUT deleting chat history
  */
 
-import * as functions from 'firebase-functions';
+
 import { db, admin } from '../init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { HttpsError, auth, increment, onCall, timestamp } from '../runtime';
+import { HttpsError, onCall } from './runtime';
 
 interface RewriteFirstMessageRequest {
   matchId: string;
@@ -26,17 +27,14 @@ interface RewriteFirstMessageResponse {
  * Rewrite the first message in a match
  * This creates a new conversation thread while archiving the old one
  */
-export const rewriteFirstMessage = functions
-  .runWith({
-    timeoutSeconds: 60,
-    memory: '512MB'
-  })
-  .https
-  .onCall(async (request) => {
+export const rewriteFirstMessage = onCall(
+  { timeoutSeconds: 60,
+    memory: '512MiB' },
+  async (request) => {
   const data = request.data;
     // Verify authentication
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated to rewrite first message'
       );
@@ -47,14 +45,14 @@ export const rewriteFirstMessage = functions
 
     // Validate input
     if (!matchId || !newMessage) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'matchId and newMessage are required'
       );
     }
 
     if (newMessage.trim().length === 0) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'Message cannot be empty'
       );
@@ -66,7 +64,7 @@ export const rewriteFirstMessage = functions
       const matchDoc = await matchRef.get();
 
       if (!matchDoc.exists) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'not-found',
           'Match not found'
         );
@@ -76,7 +74,7 @@ export const rewriteFirstMessage = functions
 
       // Verify user is part of this match
       if (matchData.userId1 !== userId && matchData.userId2 !== userId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'User is not part of this match'
         );
@@ -88,7 +86,7 @@ export const rewriteFirstMessage = functions
 
       // Check if Second Chance is active for this match
       if (!matchData.secondChance?.eligible) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'failed-precondition',
           'Second Chance is not active for this match'
         );
@@ -104,7 +102,7 @@ export const rewriteFirstMessage = functions
       const otherUserData = otherUserDoc.data();
 
       if (!userData || !otherUserData) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'not-found',
           'User data not found'
         );
@@ -121,7 +119,7 @@ export const rewriteFirstMessage = functions
       // Check if user has enough tokens
       const userTokens = userData.tokens || 0;
       if (userTokens < tokensCharged) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'failed-precondition',
           `Insufficient tokens. Required: ${tokensCharged}, Available: ${userTokens}`
         );
@@ -260,11 +258,11 @@ export const rewriteFirstMessage = functions
     } catch (error) {
       console.error('Error rewriting first message:', error);
       
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         'Failed to rewrite first message'
       );
@@ -347,7 +345,7 @@ export const getArchivedConversations = functions
   .onCall(async (request) => {
   const data = request.data;
     if (!request.auth) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'unauthenticated',
         'User must be authenticated'
       );
@@ -360,12 +358,12 @@ export const getArchivedConversations = functions
       // Verify user is part of match
       const matchDoc = await db.collection('matches').doc(matchId).get();
       if (!matchDoc.exists) {
-        throw new functions.https.HttpsError('not-found', 'Match not found');
+        throw new HttpsError('not-found', 'Match not found');
       }
 
       const matchData = matchDoc.data()!;
       if (matchData.userId1 !== userId && matchData.userId2 !== userId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'User is not part of this match'
         );
@@ -387,9 +385,9 @@ export const getArchivedConversations = functions
 
     } catch (error) {
       console.error('Error getting archived conversations:', error);
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
-      throw new functions.https.HttpsError('internal', 'Failed to get archived conversations');
+      throw new HttpsError('internal', 'Failed to get archived conversations');
     }
   });

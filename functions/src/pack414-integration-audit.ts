@@ -8,7 +8,7 @@
  * Purpose: Run comprehensive integration audits and update registry
  */
 
-import * as functions from 'firebase-functions';
+
 import * as admin from 'firebase-admin';
 import { 
   AvaloIntegrationRegistry, 
@@ -42,12 +42,12 @@ interface AuditCheck {
  * 1) PACK 414 — Run Full Integration Audit
  * Runs 40+ checks across all critical systems
  */
-export const pack414_runFullAudit = functions
-  .runWith({ timeoutSeconds: 540, memory: '2GB' })
-  .https.onCall(async (request) => {
+export const pack414_runFullAudit = onCall(
+  { timeoutSeconds: 540, memory: '2GiB' },
+  async (request) => {
     // Require admin authentication
     if (!request.auth?.token?.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can run integration audits'
       );
@@ -172,7 +172,7 @@ export const pack414_runFullAudit = functions
 
     } catch (error) {
       console.error('Audit failed:', error);
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         `Audit failed: ${error.message}`
       );
@@ -183,13 +183,13 @@ export const pack414_runFullAudit = functions
  * 2) PACK 414 — Run Pack-Specific Audit
  * Audits a specific pack and updates the Integration Registry
  */
-export const pack414_runPackAudit = functions
-  .runWith({ timeoutSeconds: 60 })
-  .https.onCall(async (request) => {
+export const pack414_runPackAudit = onCall(
+  { timeoutSeconds: 60 },
+  async (request) => {
   const data = request.data;
     // Require admin authentication
     if (!request.auth?.token?.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can run pack audits'
       );
@@ -198,7 +198,7 @@ export const pack414_runPackAudit = functions
     const { packId } = data;
 
     if (!packId || typeof packId !== 'number') {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'invalid-argument',
         'packId is required and must be a number'
       );
@@ -214,7 +214,7 @@ export const pack414_runPackAudit = functions
       // Find pack in registry
       const packIndex = registry.findIndex((item: IntegrationStatus) => item.packId === packId);
       if (packIndex === -1) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'not-found',
           `Pack ${packId} not found in registry`
         );
@@ -247,7 +247,7 @@ export const pack414_runPackAudit = functions
 
     } catch (error) {
       console.error(`Pack audit failed for pack ${packId}:`, error);
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         `Pack audit failed: ${error.message}`
       );
@@ -263,7 +263,7 @@ export const pack414_getGreenlightMatrix = functions
   const data = request.data;
     // Require admin authentication
     if (!request.auth?.token?.admin) {
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'permission-denied',
         'Only admins can view greenlight matrix'
       );
@@ -322,7 +322,7 @@ export const pack414_getGreenlightMatrix = functions
 
     } catch (error) {
       console.error('Failed to get greenlight matrix:', error);
-      throw new functions.https.HttpsError(
+      throw new HttpsError(
         'internal',
         `Failed to get greenlight matrix: ${error.message}`
       );

@@ -3,7 +3,7 @@ import { db, auth } from '../init';
 import { admin, onRequest, timestamp } from '../runtime';
 
 // Get analytics dashboard data for mobile/web
-export const getAnalyticsDashboard = functions.https.onRequest(async (req, res) => {
+export const getAnalyticsDashboard = onRequest({}, async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -150,7 +150,7 @@ export const getAnalyticsDashboard = functions.https.onRequest(async (req, res) 
 });
 
 // Get creator metrics (for creator's own dashboard)
-export const getCreatorMetrics = functions.https.onRequest(async (req, res) => {
+export const getCreatorMetrics = onRequest({}, async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -205,7 +205,7 @@ export const getCreatorMetrics = functions.https.onRequest(async (req, res) => {
 });
 
 // Get safety alerts (admin only)
-export const getSafetyAlerts = functions.https.onRequest(async (req, res) => {
+export const getSafetyAlerts = onRequest({}, async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -261,7 +261,7 @@ export const getSafetyAlerts = functions.https.onRequest(async (req, res) => {
 });
 
 // Get fraud alerts (admin only)
-export const getFraudAlerts = functions.https.onRequest(async (req, res) => {
+export const getFraudAlerts = onRequest({}, async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -317,7 +317,7 @@ export const getFraudAlerts = functions.https.onRequest(async (req, res) => {
 });
 
 // Get realtime dashboard metrics
-export const getRealtimeMetrics = functions.https.onRequest(async (req, res) => {
+export const getRealtimeMetrics = onRequest({}, async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');

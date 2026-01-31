@@ -6,7 +6,7 @@
  * It's a scrollable discovery feed optimized for monetization.
  */
 
-import * as functions from 'firebase-functions';
+
 import { db, serverTimestamp } from './init';
 import { getUserRiskProfile } from './trustEngine';
 import { getRoyalState, RoyalTier } from './royalEngine';
@@ -54,14 +54,14 @@ interface UserTasteProfile {
  * GET /discovery/feed
  * Returns personalized discovery feed with Royal priority and Trust filtering
  */
-export const getDiscoveryFeed = functions
-  .region('europe-west3')
-  .https.onCall(async (request) => {
+export const getDiscoveryFeed = onCall(
+  { region: 'europe-west3' },
+  async (request) => {
   const data = request.data;
     try {
       // Verify authentication
       if (!request.auth) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'unauthenticated',
           'User must be authenticated'
         );
@@ -72,7 +72,7 @@ export const getDiscoveryFeed = functions
 
       // Verify the caller is requesting their own feed
       if (callerId !== userId) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
           'permission-denied',
           'Cannot access other users\' feeds'
         );
@@ -193,11 +193,11 @@ export const getDiscoveryFeed = functions
     } catch (error: any) {
       console.error('[getDiscoveryFeed] Error:', error);
       
-      if (error instanceof functions.https.HttpsError) {
+      if (error instanceof HttpsError) {
         throw error;
       }
       
-      throw new functions.https.HttpsError('internal', error.message || 'Failed to get discovery feed');
+      throw new HttpsError('internal', error.message || 'Failed to get discovery feed');
     }
   });
 
