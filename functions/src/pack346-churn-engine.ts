@@ -355,7 +355,7 @@ export const identifyAtRiskUsers = onSchedule({ schedule: "0 10 * * *", timeZone
     }
 
     console.log(`Triggered retention campaigns for ${triggered} users`);
-    return { triggered };
+    // Scheduler functions must return void
   });
 
 /**

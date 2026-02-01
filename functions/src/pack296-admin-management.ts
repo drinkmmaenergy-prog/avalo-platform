@@ -297,7 +297,7 @@ export const admin_listAdmins = functions.https.onCall(async (request) => {
  */
 export const admin_getProfile = functions.https.onCall(async (request) => {
   const data = request.data;
-  const { adminId } = await requireMinimumRole(context, 'VIEWER');
+  const { adminId } = await requireMinimumRole(request, 'VIEWER');
 
   try {
     const adminDoc = await db.collection('adminUsers').doc(adminId).get();

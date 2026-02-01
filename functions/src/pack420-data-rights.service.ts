@@ -14,7 +14,7 @@ import {
   CreateDataRightsRequestInput,
   UpdateDataRightsRequestInput,
   DeletionJobResult,
-} from '../../shared/types/pack420-data-rights.types';
+} from './types/shared/types/pack420-data-rights.types';
 import { generateUserDataExport } from './pack420-data-export.adapter';
 import { performUserDataDeletion } from './pack420-data-deletion.adapter';
 import { storage } from './runtime';

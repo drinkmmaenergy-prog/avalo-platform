@@ -369,7 +369,7 @@ export const completeAICompanionOnboarding = onCall<Partial<AICompanionOnboardin
       console.log('Scheduled job result:', { success: true });
 
 
-      return;
+      return { success: true };
     } catch (error: any) {
       console.error('Error in completeAICompanionOnboarding:', error);
       throw new HttpsError('internal', error.message || 'Internal server error');

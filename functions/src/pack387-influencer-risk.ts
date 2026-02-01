@@ -168,9 +168,9 @@ async function handleCriticalInfluencerRisk(influencerId: string, riskScore: num
     // Notify admin team
     const admins = await db.collection('users').where('role', 'in', ['admin', 'executive']).get();
 
-    const notificationPromises = admins.docs.map(admin =>
+    const notificationPromises = admins.docs.map(adminDoc =>
       db.collection('notifications').add({
-        userId: admin.id,
+        userId: adminDoc.id,
         type: 'INFLUENCER_RISK_CRITICAL',
         priority: 'HIGH',
         title: 'Critical Influencer Risk Detected',

@@ -1,0 +1,4 @@
+packages:
+  - "functions"
+  - "app-mobile"
+  - "app-web"

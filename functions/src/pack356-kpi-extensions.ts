@@ -5,7 +5,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp, onSchedule } from './runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, onSchedule, logger } from './runtime';
 
 const db = admin.firestore();
 
@@ -26,7 +26,7 @@ export const updateAdKPIs = onSchedule({ schedule: "0 6 * * *", timeZone: "UTC" 
       }, { merge: true });
 
       console.log("Ad KPIs updated successfully");
-      return { success: true, kpis };
+      logger.info('Scheduler completed', { success: true, kpis }); return;
     } catch (error) {
       console.error("Error updating ad KPIs:", error);
       throw error;

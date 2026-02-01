@@ -17,7 +17,7 @@ import {
   calculateViralityMetrics,
   getYesterdayDate,
 } from './pack336-kpi-engine.js';
-import { HttpsError, admin, onCall, onSchedule } from './runtime';
+import { HttpsError, admin, onCall, onSchedule, logger } from './runtime';
 
 /**
  * Daily KPI aggregation job
@@ -37,7 +37,7 @@ export const pack336_generateDailyKPIs = onSchedule({ schedule: "30 0 * * *", ti
       
       if (!existingSnapshot.empty) {
         console.log(`[PACK 336] KPIs already aggregated for ${date}, skipping`);
-        return { success: true, skipped: true, date };
+        logger.info('Scheduler completed', { success: true, skipped: true, date }); return;
       }
       
       // Calculate all metrics in parallel for efficiency
@@ -94,7 +94,7 @@ export const pack336_generateDailyKPIs = onSchedule({ schedule: "30 0 * * *", ti
       // Check for alert thresholds
       await checkAlertThresholds(date, dailyGlobal);
       
-      return {
+      logger.info('Scheduler completed', {
         success: true,
         date,
         metrics: {
@@ -104,7 +104,8 @@ export const pack336_generateDailyKPIs = onSchedule({ schedule: "30 0 * * *", ti
           refundRate: dailyGlobal.refundRate,
           countries: dailyByCountry.length,
         },
-      };
+      });
+      // Scheduler functions must return void
     } catch (error) {
       console.error(`[PACK 336] Error aggregating KPIs for ${date}:`, error);
       throw error;

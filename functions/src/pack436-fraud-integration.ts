@@ -490,8 +490,4 @@ export async function detectBrandSabotage(): Promise<void> {
 // EXPORTS
 // ============================================================================
 
-export {
-  ReviewFraudNode,
-  ReviewFraudPattern,
-  ReviewerCluster,
-};
+// Note: ReviewFraudNode, ReviewFraudPattern, ReviewerCluster are already exported above

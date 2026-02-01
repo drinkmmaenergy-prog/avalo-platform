@@ -8,7 +8,7 @@
 
 import { moderateUploadedContent, getModerationStatusForUI } from './moderationIntegration';
 // TODO: Fix missing module path
-// import { ModeratedContentType } from '../../shared/types/contentModeration';
+// import { ModeratedContentType } from './types/shared/types/contentModeration';
 type ModeratedContentType = any;
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { admin, arrayUnion, auth, functions, onCall, storage } from './runtime';

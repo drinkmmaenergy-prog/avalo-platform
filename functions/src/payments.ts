@@ -13,6 +13,8 @@ import Stripe from "stripe";
 import { TransactionType } from './config.js';
 import { Transaction, FunctionResponse } from "./types.js";
 import { auth, db, functions, generateId, increment, onCall, onRequest, serverTimestamp } from './runtime';
+import { getStripeSecretKey, getStripeWebhookSecret } from './lib/stubs';
+
 ;
 
 // Lazy Stripe initialization with Secret Manager
@@ -22,7 +24,7 @@ const getStripe = async (): Promise<Stripe> => {
   if (!stripe) {
     const secretKey = await getStripeSecretKey();
     stripe = new Stripe(secretKey, {
-      apiVersion: "2025-02-24.acacia",
+      apiVersion: "2025-02-24.acacia" as any,
     });
   }
   return stripe;

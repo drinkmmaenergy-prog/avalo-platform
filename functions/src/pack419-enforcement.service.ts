@@ -22,7 +22,7 @@ import {
   EnforcementDecisionUserView,
   EnforcementStats,
   EnforcementReasonCode,
-} from '../../shared/types/pack419-enforcement.types';
+} from './types/shared/types/pack419-enforcement.types';
 import { FieldValue, serverTimestamp, timestamp } from './runtime';
 
 const db = admin.firestore();
@@ -699,6 +699,13 @@ export async function enforceRestriction(
       [EnforcementScope.AI_COMPANIONS]: 'AI_COMPANIONS_RESTRICTED',
       [EnforcementScope.MONETIZATION]: 'MONETIZATION_RESTRICTED',
       [EnforcementScope.ACCOUNT_FULL]: 'ACCOUNT_RESTRICTED',
+      [EnforcementScope.ACCOUNT]: 'ACCOUNT_RESTRICTED',
+      [EnforcementScope.CONTENT]: 'CONTENT_RESTRICTED',
+      [EnforcementScope.FEATURE]: 'FEATURE_RESTRICTED',
+      [EnforcementScope.GLOBAL]: 'GLOBAL_RESTRICTED',
+      [EnforcementScope.MESSAGING]: 'MESSAGING_RESTRICTED',
+      [EnforcementScope.PAYMENTS]: 'PAYMENTS_RESTRICTED',
+      [EnforcementScope.PROFILE]: 'PROFILE_RESTRICTED',
     };
 
     throw new EnforcementError(

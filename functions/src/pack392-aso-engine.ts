@@ -5,7 +5,7 @@
 
 
 import * as admin from 'firebase-admin';
-import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule, functions } from './runtime';
 
 const db = admin.firestore();
 
@@ -253,15 +253,16 @@ async function getKeywordPerformance(storeId: string, country: string, keyword: 
   const conversion = totalImpressions > 0 ? totalInstalls / totalImpressions : 0;
   const trending = recentImpressions > oldImpressions * 1.2; // 20% growth
   
-  console.log('Scheduled job result:', {
+  const result = {
     conversion,
     impressions: totalImpressions,
     installs: totalInstalls,
     trending
-  });
+  };
+  console.log('Scheduled job result:', result);
 
   
-  return;
+  return result;
 }
 
 // ============================================================================
@@ -454,13 +455,14 @@ async function getConversionMetrics(storeId: string, country: string) {
     totalRegistrations += data.registrations || 0;
   });
   
-  console.log('Scheduled job result:', {
+  const result = {
     conversionRate: totalViews > 0 ? totalInstalls / totalViews : 0,
     installToRegistration: totalInstalls > 0 ? totalRegistrations / totalInstalls : 0
-  });
+  };
+  console.log('Scheduled job result:', result);
 
   
-  return;
+  return result;
 }
 
 // ============================================================================

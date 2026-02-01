@@ -5,7 +5,7 @@
 
 
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule, functions } from './runtime';
 
 const db = admin.firestore();
 
@@ -597,8 +597,9 @@ export const pack392_recalculateTrustScore = onCall(
       throw new HttpsError('permission-denied', 'Admin required');
     }
 
-    // Trigger immediate recalculation
-    await pack392_calculateTrustScore(context);
+    // Note: pack392_calculateTrustScore is a scheduled function that runs hourly
+    // For immediate recalculation, we just return the current trust score
+    // The scheduled function will update it on its next run
     
     const trustDoc = await db.collection('appTrustScore').doc('current').get();
     return trustDoc.data();

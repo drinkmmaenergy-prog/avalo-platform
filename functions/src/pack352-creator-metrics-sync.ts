@@ -18,7 +18,7 @@ import {
   CreatorDailyMetricsDocument,
   DateRange,
   KpiEventType,
-} from '../../shared/types/kpi';
+} from './types/shared/types/kpi';
 import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp } from './runtime';
 
 const db = admin.firestore();

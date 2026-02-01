@@ -361,7 +361,7 @@ export async function onPanicButtonTriggered(params: {
  * 
  * In creatorEarnings.ts, after successfully recording an earning:
  * 
- * import { onCreatorEarning } from './pack92-integrations';
+ * 
  * 
  * export async function recordEarning(params) {
  *   // ... existing logic ...
@@ -387,7 +387,7 @@ export async function onPanicButtonTriggered(params: {
  * 
  * In payoutRequests.ts, after creating a payout request:
  * 
- * import { onPayoutRequestCreated, onPayoutStatusChanged } from './pack92-integrations';
+ * 
  * 
  * export const payout_createRequest = onCall(async (request) => {
  *   // ... existing logic ...
@@ -411,7 +411,7 @@ export async function onPanicButtonTriggered(params: {
  * 
  * In safetyTimers.ts, in the scheduled function:
  * 
- * import { onSafetyTimerExpired } from './pack92-integrations';
+ * 
  * 
  * export const checkExpiredSafetyTimers = functions.pubsub
  *   .schedule('every 1 minutes')

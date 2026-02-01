@@ -43,7 +43,8 @@ import {
   validateRevenueShare,
   canEnableCertificate,
 } from './validation';
-import { FieldValue, HttpsError, Timestamp, auth, db, functions, increment, onCall, timestamp } from '../runtime';
+import { FieldValue, HttpsError, Timestamp, auth, functions, increment, onCall, timestamp } from "../runtime";
+
 
 const db = admin.firestore();
 

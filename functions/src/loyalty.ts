@@ -28,6 +28,8 @@ import { HttpsError } from 'firebase-functions/v2/https';
 ;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, auth, getFirestore, increment, onCall, onDocumentCreated, onSchedule, serverTimestamp } from './runtime';
+import { logServerEvent } from './lib/stubs';
+
 ;
 const logAnalyticsEvent = (eventName: string, properties: any) => {
   return logServerEvent(eventName, properties, properties.userId || "system");

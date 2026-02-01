@@ -1,0 +1,1050 @@
+
+> avalo-cloud-functions@1.0.0 build C:\a\avalo\functions
+> tsc
+
+src/accountLifecycle.ts(456,58): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/adminAuth.ts(20,7): error TS2741: Property 'TALENT_MANAGER' is missing in type '{ SUPERADMIN: { canViewUsers: true; canEditEnforcement: true; canEditAmlStatus: true; canResolveDisputes: true; canApprovePayouts: true; canReviewDeletionRequests: true; canManagePromotions: true; canManagePolicies: true; }; COMPLIANCE: { ...; }; MODERATION: { ...; }; SUPPORT: { ...; }; FINANCE: { ...; }; }' but required in type 'Record<AdminRole, AdminPermissions>'.
+src/aiGenerationService.ts(122,15): error TS2339: Property 'choices' does not exist on type 'unknown'.
+src/aiGenerationService.ts(163,15): error TS2339: Property 'content' does not exist on type 'unknown'.
+src/aiModerationEngine.ts(312,7): error TS2353: Object literal may only specify known properties, and 'reviewedByAdmin' does not exist in type 'ContentModerationRecord'.
+src/aiModerationEngine.ts(342,5): error TS2739: Type '{ labels: ModerationLabels; decision: ModerationDecision; reason: string; shouldEscalate: boolean; confidence: number; }' is missing the following properties from type 'ModerationResult': safe, action
+src/aiModerationEngine.ts(360,5): error TS2739: Type '{ labels: { adult: number; violence: number; hateful: number; illegal: number; selfHarm: number; minorPresence: number; }; decision: "REVIEW_REQUIRED"; reason: string; shouldEscalate: false; confidence: number; }' is missing the following properties from type 'ModerationResult': safe, action
+src/api/featureFlags.ts(150,35): error TS2339: Property 'value' does not exist on type 'RemoteConfigParameterValue'.
+  Property 'value' does not exist on type 'InAppDefaultValue'.
+src/api/featureFlags.ts(151,49): error TS2339: Property 'value' does not exist on type 'RemoteConfigParameterValue'.
+  Property 'value' does not exist on type 'InAppDefaultValue'.
+src/auditFramework.ts(580,30): error TS2339: Property 'score' does not exist on type 'void'.
+src/auditFramework.ts(581,27): error TS2339: Property 'score' does not exist on type 'void'.
+src/auditFramework.ts(582,33): error TS2339: Property 'score' does not exist on type 'void'.
+src/auditFramework.ts(583,25): error TS2339: Property 'score' does not exist on type 'void'.
+src/auditFramework.ts(623,5): error TS2322: Type '{ overallScore: number; level: "A" | "AA" | "AAA"; breakdown: { perceivable: void; operable: void; understandable: void; robust: void; }; criteria: WCAGCriterion[]; recommendations: any[]; }' is not assignable to type '{ overallScore: number; level: "A" | "AA" | "AAA"; breakdown: { perceivable: { score: number; passed: number; total: number; }; operable: { score: number; passed: number; total: number; }; understandable: { ...; }; robust: { ...; }; }; criteria: WCAGCriterion[]; recommendations: string[]; }'.
+  The types of 'breakdown.perceivable' are incompatible between these types.
+    Type 'void' is not assignable to type '{ score: number; passed: number; total: number; }'.
+src/calendarEngine.ts(250,7): error TS2353: Object literal may only specify known properties, and 'refundedUserTokens' does not exist in type 'PaymentInfo'.
+src/calendarEngine.ts(261,7): error TS2561: Object literal may only specify known properties, but 'createdAt' does not exist in type '{ created: any; updated?: any; cancelled?: any; completed?: any; }'. Did you mean to write 'created'?
+src/calendarEngine.ts(327,14): error TS2339: Property 'refundPercentage' does not exist on type 'RefundPolicy'.
+  Property 'refundPercentage' does not exist on type '"custom"'.
+src/calendarEngine.ts(330,21): error TS2339: Property 'refundPercentage' does not exist on type 'RefundPolicy'.
+  Property 'refundPercentage' does not exist on type '"custom"'.
+src/calendarEngine.ts(345,7): error TS2353: Object literal may only specify known properties, and 'refundedUserTokens' does not exist in type 'PaymentInfo'.
+src/calendarEngine.ts(350,7): error TS2561: Object literal may only specify known properties, but 'cancelledAt' does not exist in type '{ created: any; updated?: any; cancelled?: any; completed?: any; }'. Did you mean to write 'cancelled'?
+src/calendarEngine.ts(364,30): error TS2339: Property 'description' does not exist on type 'RefundPolicy'.
+  Property 'description' does not exist on type '"custom"'.
+src/calendarEngine.ts(419,7): error TS2353: Object literal may only specify known properties, and 'refundedUserTokens' does not exist in type 'PaymentInfo'.
+src/calendarEngine.ts(424,7): error TS2561: Object literal may only specify known properties, but 'cancelledAt' does not exist in type '{ created: any; updated?: any; cancelled?: any; completed?: any; }'. Did you mean to write 'cancelled'?
+src/calendarEngine.ts(484,7): error TS2561: Object literal may only specify known properties, but 'updatedAt' does not exist in type '{ created: any; updated?: any; cancelled?: any; completed?: any; }'. Did you mean to write 'updated'?
+src/calendarEngine.ts(492,5): error TS2322: Type '"meeting_started"' is not assignable to type 'SafetyEventType'.
+src/calendarEngine.ts(548,7): error TS2353: Object literal may only specify known properties, and 'refundedUserTokens' does not exist in type 'PaymentInfo'.
+src/calendarEngine.ts(554,7): error TS2561: Object literal may only specify known properties, but 'mismatchReportedAt' does not exist in type 'SafetyInfo'. Did you mean to write 'mismatchReported'?
+src/calendarEngine.ts(558,7): error TS2561: Object literal may only specify known properties, but 'updatedAt' does not exist in type '{ created: any; updated?: any; cancelled?: any; completed?: any; }'. Did you mean to write 'updated'?
+src/calendarEngine.ts(589,5): error TS2322: Type '"mismatch_reported"' is not assignable to type 'SafetyEventType'.
+src/calendarEngine.ts(637,7): error TS2820: Type '"COMPLETED"' is not assignable to type 'BookingStatus'. Did you mean '"completed"'?
+src/calendarEngine.ts(644,9): error TS2561: Object literal may only specify known properties, but 'completedAt' does not exist in type '{ created: any; updated?: any; cancelled?: any; completed?: any; }'. Did you mean to write 'completed'?
+src/calendarEngine.ts(657,7): error TS2820: Type '"NO_SHOW"' is not assignable to type 'BookingStatus'. Did you mean '"no_show"'?
+src/calendarEngine.ts(660,9): error TS2561: Object literal may only specify known properties, but 'completedAt' does not exist in type '{ created: any; updated?: any; cancelled?: any; completed?: any; }'. Did you mean to write 'completed'?
+src/calendarEngine.ts(687,22): error TS2339: Property 'hostId' does not exist on type 'GoodwillRefundRequest'.
+src/calendarEngine.ts(703,7): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"COMPLETED"' have no overlap.
+src/calendarEngine.ts(714,5): error TS2322: Type '"COMPLETED_GOODWILL"' is not assignable to type 'BookingStatus'.
+src/calendarEngine.ts(717,7): error TS2353: Object literal may only specify known properties, and 'refundedUserTokens' does not exist in type 'PaymentInfo'.
+src/calendarEngine.ts(722,7): error TS2561: Object literal may only specify known properties, but 'updatedAt' does not exist in type '{ created: any; updated?: any; cancelled?: any; completed?: any; }'. Did you mean to write 'updated'?
+src/chatMediaFunctions.ts(318,34): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/content/contentUploadProcessor.ts(110,30): error TS2554: Expected 1-2 arguments, but got 0.
+src/content/contentUploadProcessor.ts(124,34): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/content/contentUploadProcessor.ts(297,26): error TS2554: Expected 1-2 arguments, but got 0.
+src/content/contentUploadProcessor.ts(366,26): error TS2554: Expected 1-2 arguments, but got 0.
+src/content/contentUploadProcessor.ts(438,28): error TS2554: Expected 1-2 arguments, but got 0.
+src/content/engagementEngine.ts(258,39): error TS2339: Property 'commentId' does not exist on type '{ author: any; }'.
+src/creatorStore.ts(129,69): error TS2554: Expected 1-2 arguments, but got 3.
+src/deviceTrust.ts(94,83): error TS2554: Expected 1-2 arguments, but got 3.
+src/fanClubs.ts(1047,25): error TS2339: Property 'totalPaid' does not exist on type 'void'.
+src/fanClubs.ts(1047,39): error TS2339: Property 'totalPaid' does not exist on type 'void'.
+src/globalFeed.ts(143,9): error TS2554: Expected 2-3 arguments, but got 4.
+src/globalFeed.ts(546,13): error TS2554: Expected 2-3 arguments, but got 4.
+src/integrations/dataAccess.ts(118,7): error TS2304: Cannot find name 'context'.
+src/integrations/dataAccess.ts(582,16): error TS2552: Cannot find name 'request'. Did you mean 'Request'?
+src/integrations/dataAccess.ts(590,16): error TS2552: Cannot find name 'request'. Did you mean 'Request'?
+src/integrations/dataAccess.ts(591,16): error TS2552: Cannot find name 'request'. Did you mean 'Request'?
+src/integrations/integrationOperations.ts(146,10): error TS2448: Block-scoped variable 'request' used before its declaration.
+src/integrations/integrationOperations.ts(146,18): error TS2339: Property 'auth' does not exist on type 'IntegrationRequest'.
+src/integrations/integrationOperations.ts(165,39): error TS2339: Property 'auth' does not exist on type 'IntegrationRequest'.
+src/integrations/integrationOperations.ts(221,29): error TS2339: Property 'auth' does not exist on type 'IntegrationRequest'.
+src/integrations/integrationOperations.ts(260,10): error TS2448: Block-scoped variable 'request' used before its declaration.
+src/integrations/integrationOperations.ts(260,18): error TS2339: Property 'auth' does not exist on type 'IntegrationRequest'.
+src/integrations/integrationOperations.ts(279,39): error TS2339: Property 'auth' does not exist on type 'IntegrationRequest'.
+src/integrations/integrationOperations.ts(296,27): error TS2339: Property 'auth' does not exist on type 'IntegrationRequest'.
+src/leaderboardEngine.ts(594,31): error TS2554: Expected 4 arguments, but got 3.
+src/legal/pack338a-acceptLegal.ts(65,34): error TS2339: Property 'terms' does not exist on type 'Record<LegalDocType, { currentVersion: string; requiredForSignup: boolean; }>'.
+src/legal/pack338a-acceptLegal.ts(66,36): error TS2551: Property 'privacy' does not exist on type 'Record<LegalDocType, { currentVersion: string; requiredForSignup: boolean; }>'. Did you mean 'PRIVACY'?
+src/legal/pack338a-acceptLegal.ts(67,39): error TS2339: Property 'guidelines' does not exist on type 'Record<LegalDocType, { currentVersion: string; requiredForSignup: boolean; }>'.
+src/legal/pack338a-acceptLegal.ts(68,36): error TS2339: Property 'refunds' does not exist on type 'Record<LegalDocType, { currentVersion: string; requiredForSignup: boolean; }>'.
+src/legal/pack338a-acceptLegal.ts(69,44): error TS2339: Property 'ageVerification' does not exist on type 'Record<LegalDocType, { currentVersion: string; requiredForSignup: boolean; }>'.
+src/lib/errorTracking.ts(126,14): error TS2304: Cannot find name 'eventId'.
+src/lib/logger.ts(12,10): error TS2305: Module '"../shared"' has no exported member 'db'.
+src/live.ts(34,48): error TS2554: Expected 1-2 arguments, but got 3.
+src/loyalty.ts(35,48): error TS2554: Expected 1-2 arguments, but got 3.
+src/media.ts(667,28): error TS2339: Property 'action' does not exist on type '{ safe: boolean; labels: string[]; }'.
+src/media.ts(670,47): error TS2339: Property 'reasons' does not exist on type '{ safe: boolean; labels: string[]; }'.
+src/media.ts(680,46): error TS2339: Property 'action' does not exist on type '{ safe: boolean; labels: string[]; }'.
+src/media.ts(687,44): error TS2339: Property 'action' does not exist on type '{ safe: boolean; labels: string[]; }'.
+src/middleware/teamPermissions.ts(84,8): error TS2552: Cannot find name 'request'. Did you mean 'Request'?
+src/middleware/teamPermissions.ts(84,28): error TS2552: Cannot find name 'request'. Did you mean 'Request'?
+src/middleware/teamPermissions.ts(104,8): error TS2552: Cannot find name 'request'. Did you mean 'Request'?
+src/middleware/teamPermissions.ts(106,13): error TS2552: Cannot find name 'request'. Did you mean 'Request'?
+src/middleware/teamPermissions.ts(130,7): error TS2304: Cannot find name 'request'.
+src/middleware/teamPermissions.ts(135,10): error TS2304: Cannot find name 'request'.
+src/middleware/teamPermissions.ts(157,8): error TS2304: Cannot find name 'request'.
+src/middleware/teamPermissions.ts(157,28): error TS2304: Cannot find name 'request'.
+src/middleware/teamPermissions.ts(165,8): error TS2304: Cannot find name 'request'.
+src/middleware/teamPermissions.ts(242,26): error TS2304: Cannot find name 'context'.
+src/moderation.ts(66,7): error TS2353: Object literal may only specify known properties, and 'associatedId' does not exist in type 'ModerationContext'.
+src/moderation.ts(233,9): error TS2322: Type 'string' is not assignable to type 'number'.
+  Type 'string' is not assignable to type 'number'.
+src/moderationIntegration.ts(46,7): error TS2353: Object literal may only specify known properties, and 'associatedId' does not exist in type 'ModerationContext'.
+src/pack114-analytics-api.ts(337,16): error TS2322: Type 'void[]' is not assignable to type '{ creatorId: string; username: string; avatarUrl?: string; linkStatus: string; agencyPercentage: number; totalEarnings: number; agencyShare: number; linkedSince: string; }[]'.
+  Type 'void' is not assignable to type '{ creatorId: string; username: string; avatarUrl?: string; linkStatus: string; agencyPercentage: number; totalEarnings: number; agencyShare: number; linkedSince: string; }'.
+src/pack133-safety-validator.ts(78,7): error TS2345: Argument of type '{ contentType: string; userId: string; isAdultVerified: boolean; }' is not assignable to parameter of type 'ModerationContext'.
+  Property 'source' is missing in type '{ contentType: string; userId: string; isAdultVerified: boolean; }' but required in type 'ModerationContext'.
+src/pack133-safety-validator.ts(208,7): error TS2345: Argument of type '{ contentType: string; userId: string; isAdultVerified: false; }' is not assignable to parameter of type 'ModerationContext'.
+  Property 'source' is missing in type '{ contentType: string; userId: string; isAdultVerified: false; }' but required in type 'ModerationContext'.
+src/pack133-safety-validator.ts(252,7): error TS2345: Argument of type '{ contentType: string; userId: string; isAdultVerified: false; }' is not assignable to parameter of type 'ModerationContext'.
+  Property 'source' is missing in type '{ contentType: string; userId: string; isAdultVerified: false; }' but required in type 'ModerationContext'.
+src/pack141-api-endpoints.ts(345,3): error TS2345: Argument of type '(request: CallableRequest<Partial<AICompanionOnboarding>>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<Partial<AICompanionOnboarding>>) => Promise<{ success: boolean; }>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<{ success: boolean; }>'.
+    Type 'void' is not assignable to type '{ success: boolean; }'.
+src/pack147-fraud-detection.ts(87,30): error TS2339: Property 'metrics' does not exist on type '{ isFraud: boolean; pattern?: FraudPattern; confidence: number; severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"; metrics?: Record<string, any>; } | { isFraud: boolean; pattern?: FraudPattern; confidence: number; severity?: "LOW" | ... 2 more ... | "CRITICAL"; metrics?: Record<...>; } | { ...; } | { ...; } | { ...;...'.
+  Property 'metrics' does not exist on type '{ isFraud: boolean; pattern?: FraudPattern; confidence: number; severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"; }'.
+src/pack179-reputation.ts(17,3): error TS2724: '"./types/reputation.types"' has no exported member named 'ReputationAuditLog'. Did you mean 'ReputationBadge'?
+src/pack244-creator-league.ts(184,19): error TS2339: Property 'senderId' does not exist on type 'void'.
+src/pack244-creator-league.ts(184,43): error TS2339: Property 'senderId' does not exist on type 'void'.
+src/pack244-creator-league.ts(185,39): error TS2339: Property 'createdAt' does not exist on type 'void'.
+src/pack244-creator-league.ts(185,71): error TS2339: Property 'createdAt' does not exist on type 'void'.
+src/pack244-creator-league.ts(472,7): error TS2740: Type 'LeagueBadges' is missing the following properties from type 'string[]': length, pop, push, concat, and 29 more.
+src/pack244-creator-league.ts(480,7): error TS2353: Object literal may only specify known properties, and 'globalRank' does not exist in type 'Partial<CreatorLeague>'.
+src/pack244-creator-league.ts(487,51): error TS2345: Argument of type '"global"' is not assignable to parameter of type 'LeagueCategory'.
+src/pack244-creator-league.ts(542,9): error TS2740: Type 'LeagueBadges' is missing the following properties from type 'string[]': length, pop, push, concat, and 29 more.
+src/pack244-creator-league.ts(550,9): error TS2353: Object literal may only specify known properties, and 'countryRank' does not exist in type 'Partial<CreatorLeague>'.
+src/pack244-creator-league.ts(611,9): error TS2740: Type 'LeagueBadges' is missing the following properties from type 'string[]': length, pop, push, concat, and 29 more.
+src/pack244-creator-league.ts(619,9): error TS2353: Object literal may only specify known properties, and 'cityRank' does not exist in type 'Partial<CreatorLeague>'.
+src/pack244-creator-league.ts(669,7): error TS2740: Type 'LeagueBadges' is missing the following properties from type 'string[]': length, pop, push, concat, and 29 more.
+src/pack244-creator-league.ts(677,7): error TS2353: Object literal may only specify known properties, and 'newCreatorRank' does not exist in type 'Partial<CreatorLeague>'.
+src/pack244-creator-league.ts(722,5): error TS2353: Object literal may only specify known properties, and 'champion' does not exist in type 'LeagueBadges'.
+src/pack244-creator-league.ts(800,7): error TS2353: Object literal may only specify known properties, and 'userId' does not exist in type 'LeaguePrivileges'.
+src/pack244-creator-league.ts(845,41): error TS2345: Argument of type '"safety_flag"' is not assignable to parameter of type 'LeagueIneligibilityReason'.
+src/pack244-creator-league.ts(859,41): error TS2345: Argument of type '"stalker_risk"' is not assignable to parameter of type 'LeagueIneligibilityReason'.
+src/pack244-creator-league.ts(872,41): error TS2345: Argument of type '"fraud_abuse"' is not assignable to parameter of type 'LeagueIneligibilityReason'.
+src/pack244-creator-league.ts(886,43): error TS2345: Argument of type '"artificial_manipulation"' is not assignable to parameter of type 'LeagueIneligibilityReason'.
+src/pack244-creator-league.ts(1018,41): error TS2820: Type '"global"' is not assignable to type 'LeagueCategory'. Did you mean '"GLOBAL"'?
+src/pack244-creator-league.ts(1018,51): error TS2820: Type '"country"' is not assignable to type 'LeagueCategory'. Did you mean '"COUNTRY"'?
+src/pack244-creator-league.ts(1018,62): error TS2820: Type '"city"' is not assignable to type 'LeagueCategory'. Did you mean '"CITY"'?
+src/pack244-creator-league.ts(1018,70): error TS2820: Type '"newCreator"' is not assignable to type 'LeagueCategory'. Did you mean '"NEW_CREATOR"'?
+src/pack244-creator-league.ts(1040,27): error TS2339: Property 'userId' does not exist on type 'LeagueRankEntry'.
+src/pack244-creator-league.ts(1052,46): error TS2339: Property 'userId' does not exist on type 'LeagueRankEntry'.
+src/pack244-creator-league.ts(1091,7): error TS2353: Object literal may only specify known properties, and 'month' does not exist in type 'HallOfFameAchievement'.
+src/pack263-missions-integration.ts(34,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(48,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(75,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(108,13): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(149,13): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(165,13): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(194,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(235,13): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(270,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(302,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(337,13): error TS2554: Expected 2 arguments, but got 1.
+src/pack281-legal-system.ts(388,10): error TS2304: Cannot find name 'request'.
+src/pack281-legal-system.ts(396,54): error TS2304: Cannot find name 'request'.
+src/pack281-legal-system.ts(429,120): error TS2304: Cannot find name 'request'.
+src/pack291-ai-assist.ts(67,3): error TS2345: Argument of type '(request: CallableRequest<GetDailyInsightsRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetDailyInsightsRequest>) => Promise<GetDailyInsightsResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetDailyInsightsResponse>'.
+    Type 'void' is not assignable to type 'GetDailyInsightsResponse'.
+src/pack291-ai-assist.ts(138,3): error TS2345: Argument of type '(request: CallableRequest<GetWeeklyOptimizationRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetWeeklyOptimizationRequest>) => Promise<GetWeeklyOptimizationResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetWeeklyOptimizationResponse>'.
+    Type 'void' is not assignable to type 'GetWeeklyOptimizationResponse'.
+src/pack291-ai-assist.ts(207,3): error TS2345: Argument of type '(request: CallableRequest<GetContentRecommendationsRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetContentRecommendationsRequest>) => Promise<GetContentRecommendationsResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetContentRecommendationsResponse>'.
+    Type 'void' is not assignable to type 'GetContentRecommendationsResponse'.
+src/pack291-ai-assist.ts(260,3): error TS2345: Argument of type '(request: CallableRequest<GetChatOptimizationRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetChatOptimizationRequest>) => Promise<GetChatOptimizationResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetChatOptimizationResponse>'.
+    Type 'void' is not assignable to type 'GetChatOptimizationResponse'.
+src/pack291-ai-assist.ts(322,3): error TS2345: Argument of type '(request: CallableRequest<GetCalendarOptimizationRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetCalendarOptimizationRequest>) => Promise<GetCalendarOptimizationResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetCalendarOptimizationResponse>'.
+    Type 'void' is not assignable to type 'GetCalendarOptimizationResponse'.
+src/pack291-ai-assist.ts(376,3): error TS2345: Argument of type '(request: CallableRequest<GetEventOptimizationRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetEventOptimizationRequest>) => Promise<GetEventOptimizationResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetEventOptimizationResponse>'.
+    Type 'void' is not assignable to type 'GetEventOptimizationResponse'.
+src/pack291-ai-assist.ts(430,3): error TS2345: Argument of type '(request: CallableRequest<GetProfileHealthRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetProfileHealthRequest>) => Promise<GetProfileHealthResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetProfileHealthResponse>'.
+    Type 'void' is not assignable to type 'GetProfileHealthResponse'.
+src/pack296-admin-management.ts(300,48): error TS2304: Cannot find name 'context'.
+src/pack296-data-retention.ts(33,14): error TS2552: Cannot find name 'request'. Did you mean 'Request'?
+src/pack300-support-functions.ts(65,9): error TS2554: Expected 1 arguments, but got 4.
+src/pack300-support-functions.ts(78,9): error TS2353: Object literal may only specify known properties, and 'ticketId' does not exist in type 'SupportTicketExtended'.
+src/pack300-support-functions.ts(100,9): error TS2353: Object literal may only specify known properties, and 'messageId' does not exist in type 'SupportTicketMessage'.
+src/pack300-support-functions.ts(112,44): error TS2339: Property 'severity' does not exist on type 'string'.
+src/pack300-support-functions.ts(113,48): error TS2559: Type 'string' has no properties in common with type 'SafetyTicketMetadata'.
+src/pack300-support-functions.ts(121,9): error TS2353: Object literal may only specify known properties, and 'subject' does not exist in type 'NotificationIntegrationPayload'.
+src/pack300-support-functions.ts(127,9): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'AuditIntegrationPayload'.
+src/pack300-support-functions.ts(135,37): error TS2339: Property 'isSafety' does not exist on type 'string'.
+src/pack300-support-functions.ts(136,37): error TS2339: Property 'severity' does not exist on type 'string'.
+src/pack300-support-functions.ts(151,9): error TS2353: Object literal may only specify known properties, and 'error' does not exist in type 'CreateTicketResponse'.
+src/pack300-support-functions.ts(206,9): error TS2353: Object literal may only specify known properties, and 'messageId' does not exist in type 'SupportTicketMessage'.
+src/pack300-support-functions.ts(219,9): error TS2353: Object literal may only specify known properties, and 'lastMessageAt' does not exist in type 'Partial<SupportTicket>'.
+src/pack300-support-functions.ts(236,11): error TS2353: Object literal may only specify known properties, and 'subject' does not exist in type 'NotificationIntegrationPayload'.
+src/pack300-support-functions.ts(243,9): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'AuditIntegrationPayload'.
+src/pack300-support-functions.ts(265,9): error TS2353: Object literal may only specify known properties, and 'error' does not exist in type 'AddMessageResponse'.
+src/pack300-support-functions.ts(318,9): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type 'Partial<SupportTicket>'.
+src/pack300-support-functions.ts(324,19): error TS2339: Property 'resolvedAt' does not exist on type 'Partial<SupportTicket>'.
+src/pack300-support-functions.ts(333,17): error TS2339: Property 'adminAssignedId' does not exist on type 'Partial<SupportTicket>'.
+src/pack300-support-functions.ts(337,17): error TS2339: Property 'adminNotes' does not exist on type 'Partial<SupportTicket>'.
+src/pack300-support-functions.ts(348,11): error TS2353: Object literal may only specify known properties, and 'subject' does not exist in type 'NotificationIntegrationPayload'.
+src/pack300-support-functions.ts(355,9): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'AuditIntegrationPayload'.
+src/pack300-support-functions.ts(375,9): error TS2353: Object literal may only specify known properties, and 'error' does not exist in type 'UpdateTicketResponse'.
+src/pack300-support-functions.ts(401,33): error TS2339: Property 'ticketId' does not exist on type 'SupportTicketExtended'.
+src/pack300-support-functions.ts(404,102): error TS2339: Property 'ticketId' does not exist on type 'SupportTicketExtended'.
+src/pack300-support-functions.ts(408,54): error TS2339: Property 'ticketId' does not exist on type 'SupportTicketExtended'.
+src/pack300-support-functions.ts(415,9): error TS2353: Object literal may only specify known properties, and 'userId' does not exist in type 'RiskIntegrationPayload'.
+src/pack300-support-functions.ts(418,26): error TS2339: Property 'ticketId' does not exist on type 'SupportTicketExtended'.
+src/pack300-support-functions.ts(420,38): error TS2339: Property 'safetyType' does not exist on type 'SafetyTicketMetadata'.
+src/pack300-support-functions.ts(421,37): error TS2339: Property 'safetyType' does not exist on type 'SafetyTicketMetadata'.
+src/pack300-support-functions.ts(428,24): error TS2339: Property 'ticketId' does not exist on type 'SupportTicketExtended'.
+src/pack300-support-functions.ts(431,7): error TS2353: Object literal may only specify known properties, and 'subject' does not exist in type 'NotificationIntegrationPayload'.
+src/pack300-support-functions.ts(437,7): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'AuditIntegrationPayload'.
+src/pack300-support-functions.ts(440,24): error TS2339: Property 'ticketId' does not exist on type 'SupportTicketExtended'.
+src/pack300-support-functions.ts(444,36): error TS2339: Property 'safetyType' does not exist on type 'SafetyTicketMetadata'.
+src/pack300-support-functions.ts(486,9): error TS2561: Object literal may only specify known properties, but 'actionId' does not exist in type 'AccountActionRecord'. Did you mean to write 'action'?
+src/pack300-support-functions.ts(540,9): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'AuditIntegrationPayload'.
+src/pack300-support-functions.ts(564,9): error TS2353: Object literal may only specify known properties, and 'error' does not exist in type 'AccountActionResponse'.
+src/pack300-support-functions.ts(623,9): error TS2353: Object literal may only specify known properties, and 'inProgressTickets' does not exist in type 'SupportMetrics'.
+src/pack300-support-functions.ts(667,21): error TS2339: Property 'subject' does not exist on type 'NotificationIntegrationPayload'.
+src/pack300-support-functions.ts(670,27): error TS2339: Property 'priority' does not exist on type 'NotificationIntegrationPayload'.
+src/pack300-support-functions.ts(707,53): error TS2339: Property 'userId' does not exist on type 'RiskIntegrationPayload'.
+src/pack300-support-functions.ts(709,23): error TS2339: Property 'riskType' does not exist on type 'RiskIntegrationPayload'.
+src/pack300-support-functions.ts(710,27): error TS2339: Property 'severity' does not exist on type 'RiskIntegrationPayload'.
+src/pack300-support-functions.ts(713,20): error TS2339: Property 'metadata' does not exist on type 'RiskIntegrationPayload'.
+src/pack300-support-functions.ts(716,17): error TS2339: Property 'severity' does not exist on type 'RiskIntegrationPayload'.
+src/pack300-support-functions.ts(716,56): error TS2339: Property 'severity' does not exist on type 'RiskIntegrationPayload'.
+src/pack301-onboarding.ts(71,9): error TS2322: Type '"RETENTION_ONBOARDING_COMPLETED"' is not assignable to type 'ActionType'.
+src/pack301-onboarding.ts(192,7): error TS2322: Type '"RETENTION_NUDGE_SENT"' is not assignable to type 'ActionType'.
+src/pack303-endpoints.ts(82,49): error TS2345: Argument of type 'CallableRequest<any>' is not assignable to parameter of type 'GetEarningsDashboardRequest'.
+  Property 'userId' is missing in type 'CallableRequest<any>' but required in type 'GetEarningsDashboardRequest'.
+src/pack303-endpoints.ts(119,48): error TS2345: Argument of type 'CallableRequest<any>' is not assignable to parameter of type 'GetMonthlyStatementRequest'.
+  Type 'CallableRequest<any>' is missing the following properties from type 'GetMonthlyStatementRequest': userId, year, month
+src/pack303-endpoints.ts(158,44): error TS2345: Argument of type 'CallableRequest<any>' is not assignable to parameter of type 'ExportStatementRequest'.
+  Type 'CallableRequest<any>' is missing the following properties from type 'ExportStatementRequest': userId, year, month, format
+src/pack303-endpoints.ts(290,49): error TS2345: Argument of type 'CallableRequest<any>' is not assignable to parameter of type 'GetEarningsDashboardRequest'.
+  Property 'userId' is missing in type 'CallableRequest<any>' but required in type 'GetEarningsDashboardRequest'.
+src/pack305-legal-snapshots/api.ts(192,39): error TS2339: Property 'getTopic' does not exist on type 'Messaging'.
+src/pack306-verification.ts(188,6): error TS2339: Property 'collection' does not exist on type 'CollectionReference<DocumentData, DocumentData>'.
+src/pack306-verification.ts(633,6): error TS2339: Property 'collection' does not exist on type 'CollectionReference<DocumentData, DocumentData>'.
+src/pack328c-selfie-verification-engine.ts(88,9): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"AWAITING_SELFIE"' have no overlap.
+src/pack328c-selfie-verification-engine.ts(99,38): error TS2339: Property 'meetupSelfieTimeoutAt' does not exist on type 'SafetyInfo'.
+src/pack328c-selfie-verification-engine.ts(99,86): error TS2339: Property 'meetupSelfieTimeoutAt' does not exist on type 'SafetyInfo'.
+src/pack328c-selfie-verification-engine.ts(127,24): error TS2339: Property 'guestSelfieSubmitted' does not exist on type 'SafetyInfo'.
+src/pack328c-selfie-verification-engine.ts(128,24): error TS2339: Property 'hostSelfieSubmitted' does not exist on type 'SafetyInfo'.
+src/pack328c-selfie-verification-engine.ts(192,9): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"AWAITING_SELFIE"' have no overlap.
+src/pack328c-selfie-verification-engine.ts(192,49): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"ACTIVE"' have no overlap.
+src/pack328c-selfie-verification-engine.ts(296,9): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"AWAITING_SELFIE"' have no overlap.
+src/pack328c-selfie-verification-engine.ts(302,42): error TS2339: Property 'hostSelfieSubmitted' does not exist on type 'SafetyInfo'.
+src/pack328c-selfie-verification-engine.ts(302,80): error TS2339: Property 'guestSelfieSubmitted' does not exist on type 'SafetyInfo'.
+src/pack328c-selfie-verification-engine.ts(346,25): error TS2339: Property 'hostSelfieSubmitted' does not exist on type 'SafetyInfo'.
+src/pack328c-selfie-verification-engine.ts(360,25): error TS2339: Property 'guestSelfieSubmitted' does not exist on type 'SafetyInfo'.
+src/pack328c-selfie-verification-engine.ts(404,43): error TS2367: This comparison appears to be unintentional because the types '"completed" | "cancelled" | "pending" | "PENDING" | "confirmed" | "no_show" | "CANCELLED_BY_GUEST" | "CANCELLED_BY_HOST" | "MISMATCH_REFUND"' and '"AWAITING_SELFIE"' have no overlap.
+src/pack328c-selfie-verification-functions.ts(10,14): error TS2724: '"./init"' has no exported member named 'Timestamp'. Did you mean 'timestamp'?
+src/pack337-launch-ops/countryGating.ts(7,10): error TS2305: Module '"../config"' has no exported member 'db'.
+src/pack346-abuse-detection.ts(112,26): error TS2339: Property 'reportedBy' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack346-abuse-detection.ts(113,29): error TS2339: Property 'reportedUser' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack346-creator-kpi.ts(119,29): error TS2339: Property 'reportedUser' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack352-creator-metrics-sync.ts(141,9): error TS2353: Object literal may only specify known properties, and 'startDate' does not exist in type 'DateRange'.
+src/pack352-creator-metrics-sync.ts(247,45): error TS2339: Property 'startDate' does not exist on type 'DateRange'.
+src/pack352-creator-metrics-sync.ts(247,66): error TS2339: Property 'endDate' does not exist on type 'DateRange'.
+src/pack352-creator-metrics-sync.ts(364,25): error TS2339: Property 'PAYOUT_REQUESTED' does not exist on type 'typeof KpiEventType'.
+src/pack352-creator-metrics-sync.ts(372,25): error TS2339: Property 'PAYOUT_COMPLETED' does not exist on type 'typeof KpiEventType'.
+src/pack352-creator-metrics-sync.ts(379,25): error TS2339: Property 'FRAUD_FLAG_RAISED' does not exist on type 'typeof KpiEventType'.
+src/pack352-creator-metrics-sync.ts(380,25): error TS2339: Property 'USER_BANNED' does not exist on type 'typeof KpiEventType'.
+src/pack352-creator-metrics-sync.ts(381,25): error TS2339: Property 'USER_SUSPENDED' does not exist on type 'typeof KpiEventType'.
+src/pack352-creator-metrics-sync.ts(398,5): error TS2353: Object literal may only specify known properties, and 'date' does not exist in type 'CreatorPerformanceMetrics'.
+src/pack352-creator-metrics-sync.ts(486,45): error TS2339: Property 'startDate' does not exist on type 'DateRange'.
+src/pack352-creator-metrics-sync.ts(486,66): error TS2339: Property 'endDate' does not exist on type 'DateRange'.
+src/pack352-creator-metrics-sync.ts(497,9): error TS2353: Object literal may only specify known properties, and 'date' does not exist in type 'CreatorPerformanceMetrics'.
+src/pack352-creator-metrics-sync.ts(498,28): error TS2339: Property 'tokensEarned' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(499,32): error TS2339: Property 'tokensEarnedChat' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(500,38): error TS2339: Property 'tokensEarnedVoiceCalls' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(501,38): error TS2339: Property 'tokensEarnedVideoCalls' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(502,36): error TS2339: Property 'tokensEarnedCalendar' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(503,34): error TS2339: Property 'tokensEarnedEvents' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(504,30): error TS2339: Property 'tokensEarnedAI' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(505,32): error TS2339: Property 'tokensEarnedTips' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(506,33): error TS2339: Property 'tokensEarnedMedia' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(507,32): error TS2339: Property 'payoutsRequested' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(508,32): error TS2339: Property 'payoutsCompleted' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(509,30): error TS2339: Property 'payoutsPending' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(510,32): error TS2339: Property 'chatSessionsPaid' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(511,30): error TS2339: Property 'voiceCallsPaid' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(512,30): error TS2339: Property 'videoCallsPaid' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(513,32): error TS2339: Property 'calendarBookings' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(514,32): error TS2339: Property 'eventTicketsSold' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(515,35): error TS2339: Property 'aiCompanionSessions' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(516,33): error TS2339: Property 'uniquePayingUsers' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(517,36): error TS2339: Property 'returningPayersCount' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(518,32): error TS2339: Property 'hasActivePayouts' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(519,25): error TS2339: Property 'isFlagged' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(520,30): error TS2339: Property 'isTopPerformer' does not exist on type 'CreatorDailyMetricsDocument'.
+src/pack352-creator-metrics-sync.ts(538,42): error TS2339: Property 'date' does not exist on type 'CreatorPerformanceMetrics'.
+src/pack352-creator-metrics-sync.ts(543,7): error TS2353: Object literal may only specify known properties, and 'computedAt' does not exist in type 'CreatorDailyMetricsDocument'.
+src/pack352-daily-aggregator.ts(193,3): error TS2739: Type '{ date: string; newSignups: number; verifiedUsers: number; completedProfiles: number; activeUsersDaily: number; activeUsersWeeklyRolling: number; activeUsersMonthlyRolling: number; totalSwipes: number; totalLikes: number; totalPasses: number; totalMatches: number; }' is missing the following properties from type 'DailyGrowthMetrics': newUsers, activeUsers, returningUsers, churnedUsers, retentionRate
+src/pack352-daily-aggregator.ts(349,3): error TS2739: Type '{ date: string; totalTokenPurchases: number; totalTokensSold: number; totalTokensBurned: number; totalPlatformRevenueTokens: number; payingUsersCount: number; newPayingUsersCount: number; ... 5 more ...; payoutTotalAmount: number; }' is missing the following properties from type 'DailyMonetizationMetrics': totalRevenue, averageRevenuePerUser, payingUsers, conversionRate
+src/pack352-daily-aggregator.ts(468,3): error TS2739: Type '{ date: string; supportTicketsTotal: number; supportTicketsSafety: number; supportTicketsResolved: number; panicEventsCount: number; bansCount: number; suspensionsCount: number; fraudFlagsCount: number; fraudByType: Record<...>; fraudBySeverity: { ...; }; highRiskRegions: any; }' is missing the following properties from type 'DailySafetyMetrics': reportsReceived, reportsResolved, fraudCases, banCount
+src/pack352-kpi-events.ts(47,7): error TS2353: Object literal may only specify known properties, and 'eventId' does not exist in type 'KpiEvent'.
+src/pack352-kpi-events.ts(50,24): error TS2339: Property 'eventType' does not exist on type 'KpiEventInput'.
+src/pack352-kpi-events.ts(51,38): error TS2339: Property 'context' does not exist on type 'KpiEventInput'.
+src/pack352-kpi-events.ts(56,51): error TS2339: Property 'eventId' does not exist on type 'KpiEvent'.
+src/pack352-kpi-events.ts(67,21): error TS2339: Property 'eventId' does not exist on type 'KpiEvent'.
+src/pack352-kpi-events.ts(136,9): error TS2353: Object literal may only specify known properties, and 'eventId' does not exist in type 'KpiEvent'.
+src/pack352-kpi-events.ts(175,5): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'KpiEventInput'.
+src/pack352-kpi-events.ts(175,29): error TS2339: Property 'SIGNUP' does not exist on type 'typeof KpiEventType'.
+src/pack352-kpi-events.ts(192,5): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'KpiEventInput'.
+src/pack352-kpi-events.ts(214,24): error TS2551: Property 'VOICE_CALL_STARTED' does not exist on type 'typeof KpiEventType'. Did you mean 'CALL_STARTED'?
+src/pack352-kpi-events.ts(217,22): error TS2551: Property 'VIDEO_CALL_STARTED' does not exist on type 'typeof KpiEventType'. Did you mean 'CALL_STARTED'?
+src/pack352-kpi-events.ts(222,5): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'KpiEventInput'.
+src/pack352-kpi-events.ts(243,22): error TS2551: Property 'CALENDAR_BOOKING_CREATED' does not exist on type 'typeof KpiEventType'. Did you mean 'CALENDAR_BOOKING_COMPLETED'?
+src/pack352-kpi-events.ts(245,22): error TS2551: Property 'CALENDAR_BOOKING_CANCELLED' does not exist on type 'typeof KpiEventType'. Did you mean 'CALENDAR_BOOKING_COMPLETED'?
+src/pack352-kpi-events.ts(250,5): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'KpiEventInput'.
+src/pack352-kpi-events.ts(270,5): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'KpiEventInput'.
+src/pack352-kpi-events.ts(270,29): error TS2339: Property 'TOKEN_PURCHASE' does not exist on type 'typeof KpiEventType'.
+src/pack352-kpi-events.ts(288,5): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'KpiEventInput'.
+src/pack352-kpi-events.ts(288,29): error TS2339: Property 'PANIC_TRIGGERED' does not exist on type 'typeof KpiEventType'.
+src/pack352-kpi-events.ts(307,22): error TS2339: Property 'SUPPORT_TICKET_CREATED' does not exist on type 'typeof KpiEventType'.
+src/pack352-kpi-events.ts(308,22): error TS2339: Property 'SUPPORT_TICKET_RESOLVED' does not exist on type 'typeof KpiEventType'.
+src/pack352-kpi-events.ts(312,5): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'KpiEventInput'.
+src/pack352-kpi-events.ts(331,5): error TS2353: Object literal may only specify known properties, and 'eventType' does not exist in type 'KpiEventInput'.
+src/pack352-kpi-events.ts(331,29): error TS2339: Property 'FRAUD_FLAG_RAISED' does not exist on type 'typeof KpiEventType'.
+src/pack352-kpi-events.ts(349,14): error TS2339: Property 'eventType' does not exist on type 'KpiEventInput'.
+src/pack352-kpi-events.ts(356,51): error TS2339: Property 'eventType' does not exist on type 'KpiEventInput'.
+src/pack352-kpi-events.ts(359,35): error TS2339: Property 'eventType' does not exist on type 'KpiEventInput'.
+src/pack352-kpi-events.ts(363,14): error TS2339: Property 'context' does not exist on type 'KpiEventInput'.
+src/pack352-kpi-events.ts(363,38): error TS2339: Property 'context' does not exist on type 'KpiEventInput'.
+src/pack352-kpi-events.ts(371,17): error TS2339: Property 'eventType' does not exist on type 'KpiEventInput'.
+src/pack352-kpi-events.ts(372,23): error TS2339: Property 'SIGNUP' does not exist on type 'typeof KpiEventType'.
+src/pack352-kpi-events.ts(381,23): error TS2339: Property 'TOKEN_PURCHASE' does not exist on type 'typeof KpiEventType'.
+src/pack352-kpi-events.ts(382,37): error TS2339: Property 'context' does not exist on type 'KpiEventInput'.
+src/pack353-payment-failsafe.ts(156,5): error TS2322: Type 'void' is not assignable to type '{ success: boolean; tokensAssigned?: number; }'.
+src/pack356-ad-tracking.ts(72,10): error TS2304: Cannot find name 'request'.
+src/pack356-ad-tracking.ts(76,20): error TS2304: Cannot find name 'request'.
+src/pack356-ad-tracking.ts(257,10): error TS2304: Cannot find name 'request'.
+src/pack356-ad-tracking.ts(261,54): error TS2304: Cannot find name 'request'.
+src/pack359-gdpr-retention.ts(200,8): error TS2304: Cannot find name 'request'.
+src/pack359-gdpr-retention.ts(208,10): error TS2304: Cannot find name 'request'.
+src/pack359-gdpr-retention.ts(370,8): error TS2304: Cannot find name 'request'.
+src/pack359-gdpr-retention.ts(377,10): error TS2304: Cannot find name 'request'.
+src/pack363-realtime-dispatcher.ts(427,15): error TS2339: Property 'severity' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack363-realtime-dispatcher.ts(428,15): error TS2339: Property 'severity' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack363-realtime-dispatcher.ts(438,27): error TS2339: Property 'severity' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack363-realtime-dispatcher.ts(440,26): error TS2339: Property 'context' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack363-realtime-dispatcher.ts(452,25): error TS2339: Property 'severity' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack363-realtime-dispatcher.ts(459,17): error TS2339: Property 'severity' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack365-feature-flags.service.ts(230,9): error TS2740: Type 'Query<DocumentData, DocumentData>' is missing the following properties from type 'CollectionReference<DocumentData, DocumentData>': id, parent, path, listDocuments, and 2 more.
+src/pack381-regional-risk.ts(338,67): error TS2554: Expected 2 arguments, but got 1.
+src/pack383-kyc-aml.ts(533,27): error TS2367: This comparison appears to be unintentional because the types '"low" | "medium" | "high"' and '"critical"' have no overlap.
+src/pack383-payout-router.ts(128,40): error TS2339: Property 'count' does not exist on type 'void'.
+src/pack384-store-policy-monitor.ts(230,17): error TS2304: Cannot find name 'context'.
+src/pack384-trust-score.ts(241,39): error TS2554: Expected 2 arguments, but got 1.
+src/pack384-trust-score.ts(271,52): error TS2554: Expected 2 arguments, but got 1.
+src/pack384-trust-score.ts(284,31): error TS2554: Expected 2 arguments, but got 1.
+src/pack386-influencers.ts(88,10): error TS2304: Cannot find name 'request'.
+src/pack386-influencers.ts(92,25): error TS2304: Cannot find name 'request'.
+src/pack387-incidents.ts(50,10): error TS2304: Cannot find name 'request'.
+src/pack387-incidents.ts(67,22): error TS2304: Cannot find name 'request'.
+src/pack387-influencer-risk.ts(180,26): error TS2339: Property 'firestore' does not exist on type 'QueryDocumentSnapshot<DocumentData, DocumentData>'.
+src/pack388-gdpr.ts(135,20): error TS2448: Block-scoped variable 'request' used before its declaration.
+src/pack388-gdpr.ts(135,28): error TS2339: Property 'rawRequest' does not exist on type 'DataRequest'.
+src/pack388-gdpr.ts(136,20): error TS2448: Block-scoped variable 'request' used before its declaration.
+src/pack388-gdpr.ts(136,28): error TS2339: Property 'rawRequest' does not exist on type 'DataRequest'.
+src/pack388-gdpr.ts(144,11): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack388-gdpr.ts(263,13): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack388-gdpr.ts(350,20): error TS2448: Block-scoped variable 'request' used before its declaration.
+src/pack388-gdpr.ts(350,28): error TS2339: Property 'rawRequest' does not exist on type 'DataRequest'.
+src/pack388-gdpr.ts(351,20): error TS2448: Block-scoped variable 'request' used before its declaration.
+src/pack388-gdpr.ts(351,28): error TS2339: Property 'rawRequest' does not exist on type 'DataRequest'.
+src/pack388-gdpr.ts(359,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack388-gdpr.ts(372,11): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack388-gdpr.ts(478,15): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack388-gdpr.ts(546,11): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack388-gdpr.ts(627,11): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack392-aso-engine.ts(162,39): error TS2339: Property 'conversionRate' does not exist on type 'void'.
+src/pack392-aso-engine.ts(163,46): error TS2339: Property 'installToRegistration' does not exist on type 'void'.
+src/pack392-aso-engine.ts(205,27): error TS2339: Property 'conversion' does not exist on type 'void'.
+src/pack392-aso-engine.ts(206,28): error TS2339: Property 'impressions' does not exist on type 'void'.
+src/pack392-aso-engine.ts(207,25): error TS2339: Property 'installs' does not exist on type 'void'.
+src/pack392-aso-engine.ts(208,25): error TS2339: Property 'trending' does not exist on type 'void'.
+src/pack392-trust-score.ts(601,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack392-trust-score.ts(601,39): error TS2304: Cannot find name 'context'.
+src/pack393-marketing-orchestrator.ts(569,26): error TS2554: Expected 2 arguments, but got 1.
+src/pack398-aso-engine.ts(435,20): error TS2740: Type 'Query<DocumentData, DocumentData>' is missing the following properties from type 'CollectionReference<DocumentData, DocumentData>': id, parent, path, listDocuments, and 2 more.
+src/pack398-aso-engine.ts(436,17): error TS2740: Type 'Query<DocumentData, DocumentData>' is missing the following properties from type 'CollectionReference<DocumentData, DocumentData>': id, parent, path, listDocuments, and 2 more.
+src/pack411-rating-trigger.ts(18,3): error TS2353: Object literal may only specify known properties, and 'enabled' does not exist in type 'InAppRatingConfig'.
+src/pack411-rating-trigger.ts(97,37): error TS2339: Property 'appVersion' does not exist on type 'RatingPromptLog'.
+src/pack411-rating-trigger.ts(148,19): error TS2339: Property 'enabled' does not exist on type 'InAppRatingConfig'.
+src/pack411-rating-trigger.ts(169,49): error TS2339: Property 'eligibility' does not exist on type 'InAppRatingConfig'.
+src/pack411-rating-trigger.ts(178,18): error TS2339: Property 'eligibility' does not exist on type 'InAppRatingConfig'.
+src/pack411-rating-trigger.ts(210,47): error TS2339: Property 'eligibility' does not exist on type 'InAppRatingConfig'.
+src/pack411-rating-trigger.ts(220,51): error TS2339: Property 'eligibility' does not exist on type 'InAppRatingConfig'.
+src/pack411-rating-trigger.ts(232,61): error TS2339: Property 'appVersion' does not exist on type 'RatingPromptLog'.
+src/pack411-rating-trigger.ts(235,43): error TS2339: Property 'throttling' does not exist on type 'InAppRatingConfig'.
+src/pack411-rating-trigger.ts(249,31): error TS2551: Property 'promptedAt' does not exist on type 'RatingPromptLog'. Did you mean 'prompted'?
+src/pack411-rating-trigger.ts(252,42): error TS2339: Property 'throttling' does not exist on type 'InAppRatingConfig'.
+src/pack411-rating-trigger.ts(266,45): error TS2551: Property 'promptedAt' does not exist on type 'RatingPromptLog'. Did you mean 'prompted'?
+src/pack411-rating-trigger.ts(270,42): error TS2339: Property 'throttling' does not exist on type 'InAppRatingConfig'.
+src/pack411-rating-trigger.ts(321,9): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'RatingPromptLog'.
+src/pack411-rating-trigger.ts(331,55): error TS2339: Property 'id' does not exist on type 'RatingPromptLog'.
+src/pack411-rating-trigger.ts(352,42): error TS2339: Property 'id' does not exist on type 'RatingPromptLog'.
+src/pack411-reputation-defense.ts(20,3): error TS2353: Object literal may only specify known properties, and 'enabled' does not exist in type 'ReputationDefenseConfig'.
+src/pack411-reputation-defense.ts(150,7): error TS2322: Type '"NEW"' is not assignable to type '"ACTIVE" | "RESOLVED" | "FALSE_POSITIVE"'.
+src/pack411-reputation-defense.ts(188,56): error TS2339: Property 'body' does not exist on type 'StoreReview'.
+src/pack411-reputation-defense.ts(214,7): error TS2322: Type '"NEW"' is not assignable to type '"ACTIVE" | "RESOLVED" | "FALSE_POSITIVE"'.
+src/pack411-reputation-defense.ts(252,32): error TS2339: Property 'metadata' does not exist on type 'StoreReview'.
+src/pack411-reputation-defense.ts(273,28): error TS2339: Property 'metadata' does not exist on type 'StoreReview'.
+src/pack411-reputation-defense.ts(282,9): error TS2322: Type '"NEW"' is not assignable to type '"ACTIVE" | "RESOLVED" | "FALSE_POSITIVE"'.
+src/pack411-reputation-defense.ts(333,7): error TS2339: Property 'status' does not exist on type 'StoreReview'.
+src/pack411-reputation-defense.ts(337,5): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'ReputationSnapshot'.
+src/pack411-reputation-defense.ts(353,29): error TS2339: Property 'id' does not exist on type 'ReputationSnapshot'.
+src/pack411-reputation-defense.ts(365,19): error TS2339: Property 'enabled' does not exist on type 'ReputationDefenseConfig'.
+src/pack411-reputation-defense.ts(370,36): error TS2322: Type '"GOOGLE_PLAY"' is not assignable to type 'StoreType'.
+src/pack411-reputation-defense.ts(370,51): error TS2322: Type '"APPLE_APP_STORE"' is not assignable to type 'StoreType'.
+src/pack411-reputation-defense.ts(375,20): error TS2339: Property 'spikeDetection' does not exist on type 'ReputationDefenseConfig'.
+src/pack411-reputation-defense.ts(378,20): error TS2339: Property 'spikeDetection' does not exist on type 'ReputationDefenseConfig'.
+src/pack411-reputation-defense.ts(379,20): error TS2339: Property 'spikeDetection' does not exist on type 'ReputationDefenseConfig'.
+src/pack411-reputation-defense.ts(380,20): error TS2339: Property 'spikeDetection' does not exist on type 'ReputationDefenseConfig'.
+src/pack411-reputation-defense.ts(388,20): error TS2339: Property 'brigadingDetection' does not exist on type 'ReputationDefenseConfig'.
+src/pack411-reputation-defense.ts(391,20): error TS2339: Property 'brigadingDetection' does not exist on type 'ReputationDefenseConfig'.
+src/pack411-reputation-defense.ts(400,20): error TS2339: Property 'brigadingDetection' does not exist on type 'ReputationDefenseConfig'.
+src/pack411-reputation-defense.ts(418,20): error TS2339: Property 'alerting' does not exist on type 'ReputationDefenseConfig'.
+src/pack411-reputation-defense.ts(421,29): error TS2339: Property 'severity' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-reputation-defense.ts(426,32): error TS2339: Property 'alertType' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-reputation-defense.ts(427,36): error TS2339: Property 'affectedStore' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-reputation-defense.ts(428,30): error TS2339: Property 'metrics' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-reputation-defense.ts(429,43): error TS2339: Property 'suspectedReviewIds' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-reputation-defense.ts(435,17): error TS2339: Property 'linkedRiskCaseId' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-reputation-defense.ts(446,30): error TS2339: Property 'alertType' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-reputation-defense.ts(447,29): error TS2339: Property 'severity' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-reputation-defense.ts(448,34): error TS2339: Property 'affectedStore' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-reputation-defense.ts(449,32): error TS2339: Property 'suspectedReviewIds' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-reputation-defense.ts(455,20): error TS2339: Property 'alerting' does not exist on type 'ReputationDefenseConfig'.
+src/pack411-reputation-defense.ts(459,28): error TS2339: Property 'alertType' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-reputation-defense.ts(459,59): error TS2339: Property 'affectedStore' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-reputation-defense.ts(460,29): error TS2339: Property 'severity' does not exist on type 'ReviewBrigadeAlert'.
+src/pack411-store-reviews-ingestion.ts(26,32): error TS2339: Property 'keywords' does not exist on type 'ReviewTagPattern'.
+src/pack411-store-reviews-ingestion.ts(30,17): error TS2345: Argument of type 'string' is not assignable to parameter of type 'ReviewTag'.
+src/pack411-store-reviews-ingestion.ts(42,5): error TS2322: Type 'string' is not assignable to type 'ReviewTag'.
+src/pack411-store-reviews-ingestion.ts(43,5): error TS2322: Type 'string' is not assignable to type 'ReviewTag'.
+src/pack411-store-reviews-ingestion.ts(44,5): error TS2322: Type 'string' is not assignable to type 'ReviewTag'.
+src/pack411-store-reviews-ingestion.ts(45,5): error TS2322: Type 'string' is not assignable to type 'ReviewTag'.
+src/pack411-store-reviews-ingestion.ts(46,5): error TS2322: Type 'string' is not assignable to type 'ReviewTag'.
+src/pack411-store-reviews-ingestion.ts(47,5): error TS2322: Type 'string' is not assignable to type 'ReviewTag'.
+src/pack411-store-reviews-ingestion.ts(48,5): error TS2322: Type 'string' is not assignable to type 'ReviewTag'.
+src/pack411-store-reviews-ingestion.ts(49,5): error TS2322: Type 'string' is not assignable to type 'ReviewTag'.
+src/pack411-store-reviews-ingestion.ts(67,5): error TS2353: Object literal may only specify known properties, and 'store' does not exist in type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(104,25): error TS2339: Property 'body' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(105,20): error TS2339: Property 'linkedUserId' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(108,21): error TS2339: Property 'store' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(109,26): error TS2339: Property 'appVersion' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(127,21): error TS2339: Property 'store' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(152,21): error TS2339: Property 'store' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(153,26): error TS2339: Property 'appVersion' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(156,26): error TS2339: Property 'body' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(157,23): error TS2339: Property 'country' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(159,20): error TS2339: Property 'linkedUserId' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(168,20): error TS2339: Property 'linkedUserId' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(172,21): error TS2339: Property 'store' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(187,20): error TS2339: Property 'linkedUserId' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(190,21): error TS2339: Property 'store' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(192,24): error TS2339: Property 'language' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(193,23): error TS2339: Property 'country' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(195,26): error TS2339: Property 'appVersion' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(228,57): error TS2345: Argument of type '"GOOGLE_PLAY"' is not assignable to parameter of type 'StoreType'.
+src/pack411-store-reviews-ingestion.ts(237,34): error TS2339: Property 'lastSeenAt' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(238,32): error TS2339: Property 'metadata' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(246,22): error TS2339: Property 'linkedSupportTicketId' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(251,22): error TS2339: Property 'linkedRiskCaseId' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(298,57): error TS2345: Argument of type '"APPLE_APP_STORE"' is not assignable to parameter of type 'StoreType'.
+src/pack411-store-reviews-ingestion.ts(307,34): error TS2339: Property 'lastSeenAt' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(308,32): error TS2339: Property 'metadata' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(316,22): error TS2339: Property 'linkedSupportTicketId' does not exist on type 'StoreReview'.
+src/pack411-store-reviews-ingestion.ts(321,22): error TS2339: Property 'linkedRiskCaseId' does not exist on type 'StoreReview'.
+src/pack412-growth-integration.ts(24,7): error TS2322: Type '"FULL_LIVE"' is not assignable to type 'LaunchStage'.
+src/pack412-growth-integration.ts(35,7): error TS2322: Type '"FULL_LIVE"' is not assignable to type 'LaunchStage'.
+src/pack412-growth-integration.ts(43,5): error TS2322: Type '"FULL_LIVE"' is not assignable to type 'LaunchStage'.
+src/pack412-growth-integration.ts(60,7): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"PAUSED"' have no overlap.
+src/pack412-growth-integration.ts(60,29): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"ROLLED_BACK"' have no overlap.
+src/pack412-growth-integration.ts(65,7): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"SOFT_LIVE"' have no overlap.
+src/pack412-growth-integration.ts(70,7): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"FULL_LIVE"' have no overlap.
+src/pack412-growth-integration.ts(86,10): error TS2678: Type '"NOT_PLANNED"' is not comparable to type 'LaunchStage'.
+src/pack412-growth-integration.ts(87,10): error TS2678: Type '"PLANNED"' is not comparable to type 'LaunchStage'.
+src/pack412-growth-integration.ts(88,10): error TS2678: Type '"READY_FOR_SOFT"' is not comparable to type 'LaunchStage'.
+src/pack412-growth-integration.ts(91,10): error TS2678: Type '"SOFT_LIVE"' is not comparable to type 'LaunchStage'.
+src/pack412-growth-integration.ts(94,10): error TS2678: Type '"READY_FOR_FULL"' is not comparable to type 'LaunchStage'.
+src/pack412-growth-integration.ts(97,10): error TS2678: Type '"FULL_LIVE"' is not comparable to type 'LaunchStage'.
+src/pack412-growth-integration.ts(100,10): error TS2678: Type '"PAUSED"' is not comparable to type 'LaunchStage'.
+src/pack412-growth-integration.ts(101,10): error TS2678: Type '"ROLLED_BACK"' is not comparable to type 'LaunchStage'.
+src/pack412-growth-integration.ts(123,12): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"PAUSED"' have no overlap.
+src/pack412-growth-integration.ts(123,41): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"ROLLED_BACK"' have no overlap.
+src/pack412-growth-integration.ts(145,9): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"FULL_LIVE"' have no overlap.
+src/pack412-growth-integration.ts(150,9): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"SOFT_LIVE"' have no overlap.
+src/pack412-growth-integration.ts(150,48): error TS2339: Property 'maxConcurrentUsersHint' does not exist on type 'LaunchRegionConfig'.
+src/pack412-growth-integration.ts(151,21): error TS2339: Property 'maxConcurrentUsersHint' does not exist on type 'LaunchRegionConfig'.
+src/pack412-growth-integration.ts(194,24): error TS2339: Property 'id' does not exist on type 'LaunchRegionConfig'.
+src/pack412-growth-integration.ts(216,7): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"PAUSED"' have no overlap.
+src/pack412-growth-integration.ts(216,29): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"ROLLED_BACK"' have no overlap.
+src/pack412-growth-integration.ts(221,7): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"SOFT_LIVE"' have no overlap.
+src/pack412-growth-integration.ts(227,10): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"FULL_LIVE"' have no overlap.
+src/pack412-launch-orchestrator.ts(37,7): error TS2353: Object literal may only specify known properties, and 'checkName' does not exist in type 'LaunchDependencyCheck'.
+src/pack412-launch-orchestrator.ts(46,7): error TS2353: Object literal may only specify known properties, and 'checkName' does not exist in type 'LaunchDependencyCheck'.
+src/pack412-launch-orchestrator.ts(69,7): error TS2353: Object literal may only specify known properties, and 'checkName' does not exist in type 'LaunchDependencyCheck'.
+src/pack412-launch-orchestrator.ts(78,7): error TS2353: Object literal may only specify known properties, and 'checkName' does not exist in type 'LaunchDependencyCheck'.
+src/pack412-launch-orchestrator.ts(100,7): error TS2353: Object literal may only specify known properties, and 'checkName' does not exist in type 'LaunchDependencyCheck'.
+src/pack412-launch-orchestrator.ts(109,7): error TS2353: Object literal may only specify known properties, and 'checkName' does not exist in type 'LaunchDependencyCheck'.
+src/pack412-launch-orchestrator.ts(143,7): error TS2353: Object literal may only specify known properties, and 'checkName' does not exist in type 'LaunchDependencyCheck'.
+src/pack412-launch-orchestrator.ts(163,7): error TS2353: Object literal may only specify known properties, and 'checkName' does not exist in type 'LaunchDependencyCheck'.
+src/pack412-launch-orchestrator.ts(172,7): error TS2353: Object literal may only specify known properties, and 'checkName' does not exist in type 'LaunchDependencyCheck'.
+src/pack412-launch-orchestrator.ts(192,40): error TS2339: Property 'passed' does not exist on type 'LaunchDependencyCheck'.
+src/pack412-launch-orchestrator.ts(207,44): error TS2339: Property 'passed' does not exist on type 'LaunchDependencyCheck'.
+src/pack412-launch-orchestrator.ts(208,41): error TS2339: Property 'passed' does not exist on type 'LaunchDependencyCheck'.
+src/pack412-launch-orchestrator.ts(213,5): error TS2353: Object literal may only specify known properties, and 'checks' does not exist in type 'LaunchReadinessSummary'.
+src/pack412-launch-orchestrator.ts(319,13): error TS2339: Property 'crashRate' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(319,32): error TS2339: Property 'crashRate' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(319,55): error TS2339: Property 'crashRateMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(323,7): error TS2561: Object literal may only specify known properties, but 'thresholdId' does not exist in type 'LaunchGuardrailViolation'. Did you mean to write 'threshold'?
+src/pack412-launch-orchestrator.ts(323,31): error TS2339: Property 'id' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(325,28): error TS2339: Property 'crashRate' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(326,34): error TS2339: Property 'crashRateMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(327,23): error TS2339: Property 'crashRate' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(327,46): error TS2339: Property 'crashRateMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(335,13): error TS2339: Property 'paymentErrorRate' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(335,39): error TS2339: Property 'paymentErrorRate' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(335,69): error TS2339: Property 'paymentErrorRateMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(339,7): error TS2561: Object literal may only specify known properties, but 'thresholdId' does not exist in type 'LaunchGuardrailViolation'. Did you mean to write 'threshold'?
+src/pack412-launch-orchestrator.ts(339,31): error TS2339: Property 'id' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(341,28): error TS2339: Property 'paymentErrorRate' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(342,34): error TS2339: Property 'paymentErrorRateMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(343,23): error TS2339: Property 'paymentErrorRate' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(343,53): error TS2339: Property 'paymentErrorRateMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(351,13): error TS2339: Property 'safetyIncidentsPer1k' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(351,43): error TS2339: Property 'safetyIncidentsPer1k' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(351,77): error TS2339: Property 'safetyIncidentRateMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(355,7): error TS2561: Object literal may only specify known properties, but 'thresholdId' does not exist in type 'LaunchGuardrailViolation'. Did you mean to write 'threshold'?
+src/pack412-launch-orchestrator.ts(355,31): error TS2339: Property 'id' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(357,28): error TS2339: Property 'safetyIncidentsPer1k' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(358,34): error TS2339: Property 'safetyIncidentRateMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(367,13): error TS2339: Property 'oneStarShare' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(367,35): error TS2339: Property 'oneStarShare' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(367,61): error TS2339: Property 'oneStarShareMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(371,7): error TS2561: Object literal may only specify known properties, but 'thresholdId' does not exist in type 'LaunchGuardrailViolation'. Did you mean to write 'threshold'?
+src/pack412-launch-orchestrator.ts(371,31): error TS2339: Property 'id' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(373,28): error TS2339: Property 'oneStarShare' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(374,34): error TS2339: Property 'oneStarShareMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(383,13): error TS2339: Property 'supportBacklog' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(383,37): error TS2339: Property 'supportBacklog' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(383,65): error TS2339: Property 'supportBacklogMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(387,7): error TS2561: Object literal may only specify known properties, but 'thresholdId' does not exist in type 'LaunchGuardrailViolation'. Did you mean to write 'threshold'?
+src/pack412-launch-orchestrator.ts(387,31): error TS2339: Property 'id' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(389,28): error TS2339: Property 'supportBacklog' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(390,34): error TS2339: Property 'supportBacklogMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(399,13): error TS2339: Property 'riskScore' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(399,32): error TS2339: Property 'riskScore' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(399,55): error TS2339: Property 'riskScoreMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(403,7): error TS2561: Object literal may only specify known properties, but 'thresholdId' does not exist in type 'LaunchGuardrailViolation'. Did you mean to write 'threshold'?
+src/pack412-launch-orchestrator.ts(403,31): error TS2339: Property 'id' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(405,28): error TS2339: Property 'riskScore' does not exist on type 'Partial<LaunchRegionStats>'.
+src/pack412-launch-orchestrator.ts(406,34): error TS2339: Property 'riskScoreMax' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(433,97): error TS2339: Property 'metricName' does not exist on type 'LaunchGuardrailViolation'.
+src/pack412-launch-orchestrator.ts(440,24): error TS2339: Property 'id' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(451,31): error TS2339: Property 'id' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(452,80): error TS2339: Property 'metricName' does not exist on type 'LaunchGuardrailViolation'.
+src/pack412-launch-orchestrator.ts(459,17): error TS2339: Property 'actionTaken' does not exist on type 'LaunchGuardrailViolation'.
+src/pack412-launch-orchestrator.ts(464,51): error TS2339: Property 'currentTrafficCapPct' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(473,24): error TS2339: Property 'id' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(475,55): error TS2339: Property 'currentTrafficCapPct' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(476,46): error TS2339: Property 'currentTrafficCapPct' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(484,31): error TS2339: Property 'id' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(485,91): error TS2339: Property 'metricName' does not exist on type 'LaunchGuardrailViolation'.
+src/pack412-launch-orchestrator.ts(492,17): error TS2339: Property 'actionTaken' does not exist on type 'LaunchGuardrailViolation'.
+src/pack412-launch-orchestrator.ts(502,24): error TS2339: Property 'id' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(507,26): error TS2339: Property 'currentTrafficCapPct' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(508,43): error TS2339: Property 'currentTrafficCapPct' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(508,97): error TS2339: Property 'currentTrafficCapPct' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(535,21): error TS2339: Property 'id' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(540,69): error TS2339: Property 'id' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(547,7): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(551,22): error TS2339: Property 'countries' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(552,15): error TS2339: Property 'dependenciesOk' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(552,79): error TS2339: Property 'id' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(552,96): error TS2339: Property 'countries' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(559,30): error TS2339: Property 'id' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(569,24): error TS2339: Property 'id' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(570,29): error TS2339: Property 'cluster' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(571,31): error TS2339: Property 'countries' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(572,7): error TS2322: Type '"NOT_PLANNED"' is not assignable to type 'LaunchStage'.
+src/pack412-launch-orchestrator.ts(574,7): error TS2322: Type 'undefined[] | Record<string, boolean>' is not assignable to type 'Record<string, boolean>'.
+  Type 'undefined[]' is not assignable to type 'Record<string, boolean>'.
+    Index signature for type 'string' is missing in type 'undefined[]'.
+src/pack412-launch-orchestrator.ts(575,70): error TS2339: Property 'id' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(575,87): error TS2339: Property 'countries' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(585,30): error TS2339: Property 'id' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(599,30): error TS2339: Property 'id' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(604,80): error TS2339: Property 'id' does not exist on type 'Partial<LaunchRegionConfig>'.
+src/pack412-launch-orchestrator.ts(641,8): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"READY_FOR_SOFT"' have no overlap.
+src/pack412-launch-orchestrator.ts(641,38): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"SOFT_LIVE"' have no overlap.
+src/pack412-launch-orchestrator.ts(641,63): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"READY_FOR_FULL"' have no overlap.
+src/pack412-launch-orchestrator.ts(641,93): error TS2367: This comparison appears to be unintentional because the types 'LaunchStage' and '"FULL_LIVE"' have no overlap.
+src/pack412-launch-orchestrator.ts(641,127): error TS2339: Property 'dependenciesOk' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(710,25): error TS2339: Property 'currentTrafficCapPct' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(761,19): error TS2339: Property 'id' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(766,83): error TS2339: Property 'id' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(771,5): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(782,28): error TS2339: Property 'id' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(787,81): error TS2339: Property 'id' does not exist on type 'LaunchGuardrailThresholds'.
+src/pack412-launch-orchestrator.ts(822,44): error TS2339: Property 'id' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(825,54): error TS2339: Property 'id' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(831,53): error TS2339: Property 'id' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(834,78): error TS2339: Property 'id' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(841,26): error TS2339: Property 'id' does not exist on type 'LaunchRegionConfig'.
+src/pack412-launch-orchestrator.ts(843,80): error TS2339: Property 'metricName' does not exist on type 'LaunchGuardrailViolation'.
+src/pack412-launch-orchestrator.ts(891,5): error TS2353: Object literal may only specify known properties, and 'proposedRegions' does not exist in type 'MarketExpansionProposal'.
+src/pack412-launch-orchestrator.ts(915,7): error TS2322: Type '"FULL_LIVE"' is not assignable to type 'LaunchStage'.
+src/pack412-launch-orchestrator.ts(925,7): error TS2322: Type '"FULL_LIVE"' is not assignable to type 'LaunchStage'.
+src/pack412-launch-orchestrator.ts(932,5): error TS2322: Type '"FULL_LIVE"' is not assignable to type 'LaunchStage'.
+src/pack413-kpi-command-center.ts(65,7): error TS2353: Object literal may only specify known properties, and 'timestamp' does not exist in type 'ToplineKpiData'.
+src/pack413-kpi-command-center.ts(113,7): error TS2353: Object literal may only specify known properties, and 'launchStage' does not exist in type 'RegionalKpiData'.
+src/pack413-kpi-command-center.ts(148,7): error TS2353: Object literal may only specify known properties, and 'segmentKey' does not exist in type 'SegmentKpiData'.
+src/pack413-kpi-command-center.ts(209,5): error TS2353: Object literal may only specify known properties, and 'evaluated' does not exist in type 'AlertEvaluationResult'.
+src/pack413-kpi-command-center.ts(217,67): error TS2339: Property 'regionId' does not exist on type 'KpiAlertRule'.
+src/pack413-kpi-command-center.ts(224,67): error TS2339: Property 'thresholdValue' does not exist on type 'KpiAlertRule'.
+src/pack413-kpi-command-center.ts(224,88): error TS2551: Property 'thresholdType' does not exist on type 'KpiAlertRule'. Did you mean 'threshold'?
+src/pack413-kpi-command-center.ts(227,34): error TS2339: Property 'firstViolatedAt' does not exist on type 'KpiAlertState'.
+src/pack413-kpi-command-center.ts(230,19): error TS2339: Property 'isViolated' does not exist on type 'KpiAlertState'.
+src/pack413-kpi-command-center.ts(235,33): error TS2339: Property 'firstViolatedAt' does not exist on type 'KpiAlertState'.
+src/pack413-kpi-command-center.ts(245,74): error TS2339: Property 'minDurationMinutes' does not exist on type 'KpiAlertRule'.
+src/pack413-kpi-command-center.ts(250,7): error TS2353: Object literal may only specify known properties, and 'metricId' does not exist in type 'KpiAlertState'.
+src/pack413-kpi-command-center.ts(252,70): error TS2339: Property 'lastViolatedAt' does not exist on type 'KpiAlertState'.
+src/pack413-kpi-command-center.ts(255,28): error TS2339: Property 'thresholdValue' does not exist on type 'KpiAlertRule'.
+src/pack413-kpi-command-center.ts(263,12): error TS2339: Property 'evaluated' does not exist on type 'AlertEvaluationResult'.
+src/pack413-kpi-command-center.ts(266,35): error TS2339: Property 'shouldTrigger' does not exist on type 'KpiAlertState'.
+src/pack413-kpi-command-center.ts(266,60): error TS2339: Property 'isViolated' does not exist on type 'KpiAlertState'.
+src/pack413-kpi-command-center.ts(272,9): error TS2353: Object literal may only specify known properties, and 'regionId' does not exist in type 'KpiAlertEvent'.
+src/pack413-kpi-command-center.ts(272,24): error TS2339: Property 'regionId' does not exist on type 'KpiAlertRule'.
+src/pack413-kpi-command-center.ts(276,30): error TS2339: Property 'thresholdValue' does not exist on type 'KpiAlertRule'.
+src/pack413-kpi-command-center.ts(282,34): error TS2339: Property 'notificationChannels' does not exist on type 'KpiAlertRule'.
+src/pack413-kpi-command-center.ts(284,16): error TS2339: Property 'notificationsSent' does not exist on type 'AlertEvaluationResult'.
+src/pack413-kpi-command-center.ts(291,16): error TS2339: Property 'linkedPanicModeId' does not exist on type 'KpiAlertRule'.
+src/pack413-kpi-command-center.ts(292,47): error TS2339: Property 'linkedPanicModeId' does not exist on type 'KpiAlertRule'.
+src/pack413-kpi-command-center.ts(293,16): error TS2339: Property 'proposedPanicMode' does not exist on type 'AlertEvaluationResult'.
+src/pack413-kpi-command-center.ts(293,41): error TS2339: Property 'linkedPanicModeId' does not exist on type 'KpiAlertRule'.
+src/pack413-kpi-command-center.ts(301,12): error TS2339: Property 'errors' does not exist on type 'AlertEvaluationResult'.
+src/pack413-kpi-command-center.ts(335,44): error TS2339: Property 'NEW_REGISTRATIONS' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(336,44): error TS2339: Property 'VERIFIED_USERS' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(337,44): error TS2339: Property 'FIRST_CHAT_CONVERSION' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(342,44): error TS2339: Property 'CHATS_PER_USER' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(343,44): error TS2339: Property 'ACTIVE_CHATS' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(344,44): error TS2339: Property 'EVENTS_BOOKED' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(349,44): error TS2339: Property 'TOKEN_PURCHASES' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(349,61): error TS2345: Argument of type '"REVENUE"' is not assignable to parameter of type 'KpiCategory'.
+src/pack413-kpi-command-center.ts(350,50): error TS2345: Argument of type '"REVENUE"' is not assignable to parameter of type 'KpiCategory'.
+src/pack413-kpi-command-center.ts(351,44): error TS2339: Property 'PAYING_USERS' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(351,58): error TS2345: Argument of type '"REVENUE"' is not assignable to parameter of type 'KpiCategory'.
+src/pack413-kpi-command-center.ts(356,44): error TS2339: Property 'INCIDENT_RATE' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(357,44): error TS2339: Property 'PANIC_BUTTON_TRIGGERS' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(358,44): error TS2339: Property 'BLOCKED_ACCOUNTS' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(363,44): error TS2339: Property 'OPEN_TICKETS' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(363,58): error TS2345: Argument of type '"SUPPORT"' is not assignable to parameter of type 'KpiCategory'.
+src/pack413-kpi-command-center.ts(364,44): error TS2339: Property 'SLA_BREACHES' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(364,58): error TS2345: Argument of type '"SUPPORT"' is not assignable to parameter of type 'KpiCategory'.
+src/pack413-kpi-command-center.ts(365,44): error TS2339: Property 'AVG_FIRST_RESPONSE_TIME' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(365,69): error TS2345: Argument of type '"SUPPORT"' is not assignable to parameter of type 'KpiCategory'.
+src/pack413-kpi-command-center.ts(370,44): error TS2339: Property 'AVG_RATING' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(370,56): error TS2345: Argument of type '"STORE_REPUTATION"' is not assignable to parameter of type 'KpiCategory'.
+src/pack413-kpi-command-center.ts(371,44): error TS2339: Property 'ONE_STAR_SHARE' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(371,60): error TS2345: Argument of type '"STORE_REPUTATION"' is not assignable to parameter of type 'KpiCategory'.
+src/pack413-kpi-command-center.ts(372,44): error TS2339: Property 'NEGATIVE_REVIEW_VOLUME' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(372,68): error TS2345: Argument of type '"STORE_REPUTATION"' is not assignable to parameter of type 'KpiCategory'.
+src/pack413-kpi-command-center.ts(377,44): error TS2339: Property 'CRASH_RATE' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(378,44): error TS2339: Property 'P95_LATENCY' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'.
+src/pack413-kpi-command-center.ts(379,44): error TS2551: Property 'API_ERROR_RATE' does not exist on type '{ DAU: string; MAU: string; REVENUE: string; ARPU: string; CHURN_RATE: string; NPS: string; ERROR_RATE: string; LATENCY_P99: string; }'. Did you mean 'ERROR_RATE'?
+src/pack413-kpi-command-center.ts(404,5): error TS2353: Object literal may only specify known properties, and 'label' does not exist in type 'KpiMetric'.
+src/pack413-kpi-command-center.ts(433,32): error TS2322: Type '"FLAT"' is not assignable to type 'KpiTrend'.
+src/pack413-kpi-command-center.ts(446,38): error TS2322: Type '"WARN"' is not assignable to type 'KpiSeverity'.
+src/pack413-kpi-command-center.ts(465,62): error TS2322: Type '"REVENUE"' is not assignable to type 'KpiCategory'.
+src/pack413-kpi-command-center.ts(465,83): error TS2322: Type '"SUPPORT"' is not assignable to type 'KpiCategory'.
+src/pack413-kpi-command-center.ts(465,94): error TS2322: Type '"STORE_REPUTATION"' is not assignable to type 'KpiCategory'.
+src/pack413-kpi-command-center.ts(467,3): error TS2322: Type '{ category: KpiCategory; metrics: KpiMetric[]; summary: { totalMetrics: number; criticalCount: number; warningCount: number; avgChangePct: number; }; }[]' is not assignable to type 'GroupedKpis[]'.
+  Type '{ category: KpiCategory; metrics: KpiMetric[]; summary: { totalMetrics: number; criticalCount: number; warningCount: number; avgChangePct: number; }; }' is missing the following properties from type 'GroupedKpis': byCategory, byRegion, bySegment
+src/pack413-kpi-command-center.ts(474,54): error TS2339: Property 'severity' does not exist on type 'KpiMetric'.
+src/pack413-kpi-command-center.ts(475,53): error TS2339: Property 'severity' does not exist on type 'KpiMetric'.
+src/pack413-kpi-command-center.ts(476,67): error TS2339: Property 'changePct' does not exist on type 'KpiMetric'.
+src/pack413-kpi-command-center.ts(576,74): error TS2339: Property 'currentValue' does not exist on type 'KpiAlertEvent'.
+src/pack413-kpi-command-center.ts(576,108): error TS2339: Property 'thresholdValue' does not exist on type 'KpiAlertEvent'.
+src/pack413-panic-modes.ts(28,5): error TS2322: Type '"SLOWDOWN_GROWTH"' is not assignable to type 'PanicModeId'.
+src/pack413-panic-modes.ts(44,5): error TS2322: Type '"SAFETY_LOCKDOWN"' is not assignable to type 'PanicModeId'.
+src/pack413-panic-modes.ts(61,5): error TS2322: Type '"PAYMENT_PROTECT"' is not assignable to type 'PanicModeId'.
+src/pack413-panic-modes.ts(78,5): error TS2322: Type '"SUPPORT_OVERLOAD"' is not assignable to type 'PanicModeId'.
+src/pack413-panic-modes.ts(96,5): error TS2322: Type '"STORE_DEFENSE"' is not assignable to type 'PanicModeId'.
+src/pack413-panic-modes.ts(178,7): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'PanicModeProposal'.
+src/pack413-panic-modes.ts(185,27): error TS2339: Property 'manualOnly' does not exist on type 'PanicModeConfig'.
+src/pack413-panic-modes.ts(197,45): error TS2339: Property 'label' does not exist on type 'PanicModeConfig'.
+src/pack413-panic-modes.ts(198,25): error TS2339: Property 'proposedBy' does not exist on type 'PanicModeProposal'.
+src/pack413-panic-modes.ts(198,66): error TS2339: Property 'label' does not exist on type 'PanicModeConfig'.
+src/pack413-panic-modes.ts(247,33): error TS2339: Property 'allowedStages' does not exist on type 'PanicModeConfig'.
+src/pack413-panic-modes.ts(256,7): error TS2353: Object literal may only specify known properties, and 'activatedAt' does not exist in type 'ActivePanicMode'.
+src/pack413-panic-modes.ts(287,49): error TS2339: Property 'label' does not exist on type 'PanicModeConfig'.
+src/pack413-panic-modes.ts(296,73): error TS2339: Property 'label' does not exist on type 'PanicModeConfig'.
+src/pack413-panic-modes.ts(338,33): error TS2339: Property 'metadata' does not exist on type 'ActivePanicMode'.
+src/pack413-panic-modes.ts(351,33): error TS2339: Property 'activatedAt' does not exist on type 'ActivePanicMode'.
+src/pack413-panic-modes.ts(369,53): error TS2339: Property 'regionIds' does not exist on type 'ActivePanicMode'.
+src/pack414-integration-audit.ts(58,26): error TS2488: Type 'Record<string, IntegrationConfig>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/pack414-integration-audit.ts(211,47): error TS2488: Type 'Record<string, IntegrationConfig>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/pack414-integration-audit.ts(212,15): error TS2488: Type 'Record<string, IntegrationConfig>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/pack414-integration-audit.ts(215,78): error TS2339: Property 'packId' does not exist on type 'IntegrationStatus'.
+  Property 'packId' does not exist on type '"ACTIVE"'.
+src/pack414-integration-audit.ts(292,23): error TS2339: Property 'category' does not exist on type 'IntegrationStatus'.
+  Property 'category' does not exist on type '"ACTIVE"'.
+src/pack414-integration-audit.ts(293,20): error TS2339: Property 'category' does not exist on type 'IntegrationStatus'.
+  Property 'category' does not exist on type '"ACTIVE"'.
+src/pack414-integration-audit.ts(295,18): error TS2339: Property 'category' does not exist on type 'IntegrationStatus'.
+  Property 'category' does not exist on type '"ACTIVE"'.
+src/pack414-integration-audit.ts(303,70): error TS2339: Property 'ready' does not exist on type 'IntegrationStatus'.
+  Property 'ready' does not exist on type '"ACTIVE"'.
+src/pack414-integration-audit.ts(319,37): error TS2339: Property 'overall' does not exist on type 'GreenlightStatus'.
+  Property 'overall' does not exist on type '"GREEN"'.
+src/pack414-integration-audit.ts(1178,53): error TS2339: Property 'module' does not exist on type 'IntegrationStatus'.
+  Property 'module' does not exist on type '"ACTIVE"'.
+src/pack414-integration-audit.ts(1180,20): error TS2339: Property 'ready' does not exist on type 'IntegrationStatus'.
+  Property 'ready' does not exist on type '"ACTIVE"'.
+src/pack414-integration-audit.ts(1181,20): error TS2339: Property 'lastVerifiedAt' does not exist on type 'IntegrationStatus'.
+  Property 'lastVerifiedAt' does not exist on type '"ACTIVE"'.
+src/pack414-integration-audit.ts(1182,20): error TS2339: Property 'missingDependencies' does not exist on type 'IntegrationStatus'.
+  Property 'missingDependencies' does not exist on type '"ACTIVE"'.
+src/pack414-integration-audit.ts(1183,20): error TS2339: Property 'comments' does not exist on type 'IntegrationStatus'.
+  Property 'comments' does not exist on type '"ACTIVE"'.
+src/pack414-integration-audit.ts(1197,28): error TS2488: Type 'Record<string, IntegrationConfig>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/pack416-audit-integration.ts(36,23): error TS2339: Property 'flagKey' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(37,21): error TS2339: Property 'after' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(37,45): error TS2339: Property 'before' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(38,18): error TS2339: Property 'after' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(42,22): error TS2339: Property 'flagKey' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(43,21): error TS2339: Property 'before' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(44,20): error TS2339: Property 'after' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(51,24): error TS2339: Property 'changedAt' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(52,24): error TS2339: Property 'ipAddress' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(53,24): error TS2339: Property 'deviceInfo' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(57,52): error TS2339: Property 'flagKey' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(59,32): error TS2339: Property 'before' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(60,27): error TS2339: Property 'after' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(61,32): error TS2339: Property 'before' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(62,27): error TS2339: Property 'after' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(67,42): error TS2339: Property 'flagKey' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(73,22): error TS2339: Property 'flagKey' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(74,21): error TS2339: Property 'after' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(74,45): error TS2339: Property 'before' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(75,18): error TS2339: Property 'after' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(95,40): error TS2339: Property 'flagKey' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(96,42): error TS2339: Property 'flagKey' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(97,15): error TS2339: Property 'after' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(101,25): error TS2339: Property 'flagKey' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(102,21): error TS2339: Property 'after' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(115,23): error TS2339: Property 'before' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(116,22): error TS2339: Property 'after' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(122,53): error TS2339: Property 'flagKey' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(316,23): error TS2448: Block-scoped variable 'event' used before its declaration.
+src/pack416-audit-integration.ts(316,29): error TS2339: Property 'params' does not exist on type 'FeatureFlagChangeEvent'.
+src/pack416-audit-integration.ts(319,9): error TS2353: Object literal may only specify known properties, and 'flagKey' does not exist in type 'FeatureFlagChangeEvent'.
+src/pack416-feature-guard.ts(87,5): error TS2353: Object literal may only specify known properties, and 'rolloutBucket' does not exist in type 'FeatureFlagUserContext'.
+src/pack416-feature-guard.ts(87,29): error TS2554: Expected 2 arguments, but got 1.
+src/pack416-feature-guard.ts(88,33): error TS2339: Property 'country' does not exist on type 'Partial<FeatureFlagUserContext>'.
+src/pack416-feature-guard.ts(89,31): error TS2339: Property 'isVip' does not exist on type 'Partial<FeatureFlagUserContext>'.
+src/pack416-feature-guard.ts(90,33): error TS2339: Property 'isRoyal' does not exist on type 'Partial<FeatureFlagUserContext>'.
+src/pack416-feature-guard.ts(91,35): error TS2339: Property 'isCreator' does not exist on type 'Partial<FeatureFlagUserContext>'.
+src/pack416-feature-guard.ts(92,33): error TS2339: Property 'isAdmin' does not exist on type 'Partial<FeatureFlagUserContext>'.
+src/pack416-feature-guard.ts(118,37): error TS2345: Argument of type 'FeatureFlagConfig' is not assignable to parameter of type 'string'.
+src/pack416-feature-guard.ts(174,34): error TS2345: Argument of type 'FeatureFlagConfig' is not assignable to parameter of type 'string'.
+src/pack418-compliance.service.ts(141,45): error TS2339: Property 'type' does not exist on type 'TokenomicsContext'.
+src/pack418-compliance.service.ts(143,20): error TS2339: Property 'creatorShare' does not exist on type 'TokenomicsContext'.
+src/pack418-compliance.service.ts(143,45): error TS2339: Property 'avaloShare' does not exist on type 'TokenomicsContext'.
+src/pack418-compliance.service.ts(144,5): error TS2554: Expected 1 arguments, but got 2.
+src/pack418-compliance.service.ts(147,42): error TS2339: Property 'payoutRatePlnPerToken' does not exist on type 'TokenomicsContext'.
+src/pack418-compliance.service.ts(152,26): error TS2339: Property 'transactionId' does not exist on type 'TokenomicsContext'.
+src/pack418-compliance.service.ts(154,29): error TS2339: Property 'type' does not exist on type 'TokenomicsContext'.
+src/pack418-compliance.service.ts(156,37): error TS2339: Property 'creator' does not exist on type 'RevenueSplit'.
+src/pack418-compliance.service.ts(157,35): error TS2339: Property 'avalo' does not exist on type 'RevenueSplit'.
+src/pack418-compliance.service.ts(161,27): error TS2339: Property 'creatorShare' does not exist on type 'TokenomicsContext'.
+src/pack418-compliance.service.ts(162,25): error TS2339: Property 'avaloShare' does not exist on type 'TokenomicsContext'.
+src/pack418-compliance.service.ts(163,25): error TS2339: Property 'payoutRatePlnPerToken' does not exist on type 'TokenomicsContext'.
+src/pack418-compliance.service.ts(176,50): error TS2339: Property 'type' does not exist on type 'TokenomicsContext'.
+src/pack418-compliance.service.ts(176,88): error TS2339: Property 'creator' does not exist on type 'RevenueSplit'.
+src/pack418-compliance.service.ts(176,113): error TS2339: Property 'avalo' does not exist on type 'RevenueSplit'.
+src/pack418-compliance.service.ts(176,131): error TS2339: Property 'creatorShare' does not exist on type 'TokenomicsContext'.
+src/pack418-compliance.service.ts(176,151): error TS2339: Property 'avaloShare' does not exist on type 'TokenomicsContext'.
+src/pack418-compliance.service.ts(210,58): error TS2339: Property 'isEarning' does not exist on type 'UserComplianceContext'.
+src/pack418-compliance.service.ts(210,80): error TS2339: Property 'isVerified' does not exist on type 'UserComplianceContext'.
+src/pack418-compliance.service.ts(215,57): error TS2339: Property 'hasActiveMeetingsOrEvents' does not exist on type 'UserComplianceContext'.
+src/pack418-compliance.service.ts(215,95): error TS2339: Property 'isVerified' does not exist on type 'UserComplianceContext'.
+src/pack418-compliance.service.ts(223,25): error TS2339: Property 'entityId' does not exist on type 'UserComplianceContext'.
+src/pack418-compliance.service.ts(227,29): error TS2339: Property 'isVerified' does not exist on type 'UserComplianceContext'.
+src/pack418-compliance.service.ts(228,28): error TS2339: Property 'isEarning' does not exist on type 'UserComplianceContext'.
+src/pack418-compliance.service.ts(229,44): error TS2339: Property 'hasActiveMeetingsOrEvents' does not exist on type 'UserComplianceContext'.
+src/pack418-compliance.service.ts(264,18): error TS2339: Property 'isMinorFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(264,51): error TS2339: Property 'banMinorsAnyContext' does not exist on type '{ maxFileSize: number; allowedImageTypes: string[]; allowedVideoTypes: string[]; maxVideoDuration: number; requireModeration: boolean; }'.
+src/pack418-compliance.service.ts(269,18): error TS2339: Property 'isCSAMFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(269,50): error TS2339: Property 'banCSAM' does not exist on type '{ maxFileSize: number; allowedImageTypes: string[]; allowedVideoTypes: string[]; maxVideoDuration: number; requireModeration: boolean; }'.
+src/pack418-compliance.service.ts(274,18): error TS2339: Property 'isBrutalViolentSexFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(274,62): error TS2339: Property 'banViolentSexualContent' does not exist on type '{ maxFileSize: number; allowedImageTypes: string[]; allowedVideoTypes: string[]; maxVideoDuration: number; requireModeration: boolean; }'.
+src/pack418-compliance.service.ts(280,18): error TS2339: Property 'isPoliticsWarSpamFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(280,61): error TS2339: Property 'banPoliticalReligiousWars' does not exist on type '{ maxFileSize: number; allowedImageTypes: string[]; allowedVideoTypes: string[]; maxVideoDuration: number; requireModeration: boolean; }'.
+src/pack418-compliance.service.ts(285,18): error TS2339: Property 'isReligiousHateFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(285,59): error TS2339: Property 'banPoliticalReligiousWars' does not exist on type '{ maxFileSize: number; allowedImageTypes: string[]; allowedVideoTypes: string[]; maxVideoDuration: number; requireModeration: boolean; }'.
+src/pack418-compliance.service.ts(294,26): error TS2339: Property 'userId' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(297,36): error TS2339: Property 'isMinorFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(298,35): error TS2339: Property 'isCSAMFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(299,47): error TS2339: Property 'isBrutalViolentSexFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(300,46): error TS2339: Property 'isPoliticsWarSpamFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(301,44): error TS2339: Property 'isReligiousHateFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(313,41): error TS2339: Property 'userId' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(364,26): error TS2339: Property 'userId' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(367,36): error TS2339: Property 'isMinorFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(368,35): error TS2339: Property 'isCSAMFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(369,47): error TS2339: Property 'isBrutalViolentSexFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(370,46): error TS2339: Property 'isPoliticsWarSpamFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-compliance.service.ts(371,44): error TS2339: Property 'isReligiousHateFlagged' does not exist on type 'ContentComplianceContext'.
+src/pack418-integration-examples.ts(44,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'TokenomicsContext'.
+  Type 'string' is not assignable to type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(48,5): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(49,25): error TS2339: Property 'creator' does not exist on type 'RevenueSplit'.
+src/pack418-integration-examples.ts(50,23): error TS2339: Property 'avalo' does not exist on type 'RevenueSplit'.
+src/pack418-integration-examples.ts(80,5): error TS2353: Object literal may only specify known properties, and 'isVerified' does not exist in type 'UserComplianceContext'.
+src/pack418-integration-examples.ts(87,5): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(123,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(125,5): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(126,25): error TS2339: Property 'creator' does not exist on type 'RevenueSplit'.
+src/pack418-integration-examples.ts(127,23): error TS2339: Property 'avalo' does not exist on type 'RevenueSplit'.
+src/pack418-integration-examples.ts(136,4): error TS2353: Object literal may only specify known properties, and 'isVerified' does not exist in type 'UserComplianceContext'.
+src/pack418-integration-examples.ts(175,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(177,5): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(178,25): error TS2339: Property 'creator' does not exist on type 'RevenueSplit'.
+src/pack418-integration-examples.ts(179,23): error TS2339: Property 'avalo' does not exist on type 'RevenueSplit'.
+src/pack418-integration-examples.ts(189,5): error TS2353: Object literal may only specify known properties, and 'isVerified' does not exist in type 'UserComplianceContext'.
+src/pack418-integration-examples.ts(222,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(224,5): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(225,25): error TS2339: Property 'creator' does not exist on type 'RevenueSplit'.
+src/pack418-integration-examples.ts(226,23): error TS2339: Property 'avalo' does not exist on type 'RevenueSplit'.
+src/pack418-integration-examples.ts(236,5): error TS2353: Object literal may only specify known properties, and 'isVerified' does not exist in type 'UserComplianceContext'.
+src/pack418-integration-examples.ts(269,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(271,5): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(272,25): error TS2339: Property 'creator' does not exist on type 'RevenueSplit'.
+src/pack418-integration-examples.ts(273,23): error TS2339: Property 'avalo' does not exist on type 'RevenueSplit'.
+src/pack418-integration-examples.ts(304,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(306,5): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(307,25): error TS2339: Property 'creator' does not exist on type 'RevenueSplit'.
+src/pack418-integration-examples.ts(308,23): error TS2339: Property 'avalo' does not exist on type 'RevenueSplit'.
+src/pack418-integration-examples.ts(317,5): error TS2353: Object literal may only specify known properties, and 'isVerified' does not exist in type 'UserComplianceContext'.
+src/pack418-integration-examples.ts(347,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'TokenomicsContext'.
+  Type 'string' is not assignable to type 'TokenomicsContext'.
+src/pack418-integration-examples.ts(355,51): error TS2339: Property 'creator' does not exist on type 'RevenueSplit'.
+src/pack419-enforcement.service.ts(691,11): error TS2740: Type '{ CHAT: string; CALLS: string; MEETINGS: string; EVENTS: string; FEED: string; DISCOVERY: string; SWIPE: string; AI_COMPANIONS: string; MONETIZATION: string; ACCOUNT_FULL: string; }' is missing the following properties from type 'Record<EnforcementScope, string>': ACCOUNT, CONTENT, FEATURE, GLOBAL, and 3 more.
+src/pack420-account-lifecycle.guard.ts(27,3): error TS2353: Object literal may only specify known properties, and 'SWIPE' does not exist in type 'Record<GatedFeature, AccountLifecycleState[]>'.
+src/pack420-data-rights.service.ts(11,3): error TS2724: '"./types/shared/types/pack420-data-rights.types"' has no exported member named 'DataRightsRequest'. Did you mean 'DataRightsRequestInput'?
+src/pack421-alerting.config.ts(39,5): error TS2322: Type '"P0"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(47,5): error TS2322: Type '"P0"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(55,5): error TS2322: Type '"P0"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(67,5): error TS2322: Type '"P1"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(75,5): error TS2322: Type '"P1"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(83,5): error TS2322: Type '"P1"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(91,5): error TS2322: Type '"P1"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(99,5): error TS2322: Type '"P1"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(112,5): error TS2322: Type '"P2"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(121,5): error TS2322: Type '"P2"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(130,5): error TS2322: Type '"P2"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(138,5): error TS2322: Type '"P2"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(146,5): error TS2322: Type '"P2"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(158,5): error TS2322: Type '"P3"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(166,5): error TS2322: Type '"P3"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(174,5): error TS2322: Type '"P3"' is not assignable to type '"CRITICAL" | "INFO" | "WARNING"'.
+src/pack421-alerting.config.ts(189,3): error TS2353: Object literal may only specify known properties, and 'oncall_slack' does not exist in type 'Record<AlertChannel, { type: string; target: string; enabled: boolean; }>'.
+src/pack421-alerting.config.ts(299,3): error TS2353: Object literal may only specify known properties, and 'P4' does not exist in type 'Record<AlertSeverity, number>'.
+src/pack421-health.controller.ts(51,9): error TS2322: Type '"ok"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(90,9): error TS2322: Type '"error"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(99,7): error TS2322: Type '"ok"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(106,7): error TS2322: Type '"error"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(128,9): error TS2322: Type '"error"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(137,7): error TS2322: Type '"ok"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(144,7): error TS2322: Type '"error"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(162,7): error TS2322: Type '"ok" | "degraded"' is not assignable to type 'HealthStatus'.
+  Type '"ok"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(170,7): error TS2322: Type '"error"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(192,7): error TS2322: Type '"error"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(200,5): error TS2322: Type '"ok"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(209,41): error TS2367: This comparison appears to be unintentional because the types 'HealthStatus' and '"error"' have no overlap.
+src/pack421-health.controller.ts(210,44): error TS2367: This comparison appears to be unintentional because the types 'HealthStatus' and '"degraded"' have no overlap.
+src/pack421-health.controller.ts(212,17): error TS2322: Type '"error"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(213,20): error TS2820: Type '"degraded"' is not assignable to type 'HealthStatus'. Did you mean '"DEGRADED"'?
+src/pack421-health.controller.ts(214,3): error TS2322: Type '"ok"' is not assignable to type 'HealthStatus'.
+src/pack421-health.controller.ts(260,9): error TS2353: Object literal may only specify known properties, and 'environment' does not exist in type 'HealthCheckResponse'.
+src/pack421-health.controller.ts(265,26): error TS2367: This comparison appears to be unintentional because the types 'HealthStatus' and '"ok"' have no overlap.
+src/pack421-health.controller.ts(265,57): error TS2367: This comparison appears to be unintentional because the types 'HealthStatus' and '"degraded"' have no overlap.
+src/pack421-health.controller.ts(287,7): error TS2322: Type '"Production ready"' is not assignable to type '"ACTIVE" | "DISABLED" | "ROLLING_OUT"'.
+src/pack421-health.controller.ts(293,7): error TS2322: Type '"Production ready"' is not assignable to type '"ACTIVE" | "DISABLED" | "ROLLING_OUT"'.
+src/pack421-health.controller.ts(299,7): error TS2322: Type '"Production ready"' is not assignable to type '"ACTIVE" | "DISABLED" | "ROLLING_OUT"'.
+src/pack421-health.controller.ts(305,7): error TS2322: Type '"Production ready"' is not assignable to type '"ACTIVE" | "DISABLED" | "ROLLING_OUT"'.
+src/pack421-health.controller.ts(311,7): error TS2322: Type '"Production ready"' is not assignable to type '"ACTIVE" | "DISABLED" | "ROLLING_OUT"'.
+src/pack421-health.controller.ts(317,7): error TS2322: Type '"Production ready"' is not assignable to type '"ACTIVE" | "DISABLED" | "ROLLING_OUT"'.
+src/pack421-health.controller.ts(323,7): error TS2322: Type '"Production ready"' is not assignable to type '"ACTIVE" | "DISABLED" | "ROLLING_OUT"'.
+src/pack421-health.controller.ts(329,7): error TS2322: Type '"Production ready"' is not assignable to type '"ACTIVE" | "DISABLED" | "ROLLING_OUT"'.
+src/pack421-health.controller.ts(335,7): error TS2322: Type '"Production ready"' is not assignable to type '"ACTIVE" | "DISABLED" | "ROLLING_OUT"'.
+src/pack421-health.controller.ts(341,7): error TS2322: Type '"Production ready"' is not assignable to type '"ACTIVE" | "DISABLED" | "ROLLING_OUT"'.
+src/pack421-health.controller.ts(347,7): error TS2322: Type '"Production ready"' is not assignable to type '"ACTIVE" | "DISABLED" | "ROLLING_OUT"'.
+src/pack421-health.controller.ts(353,7): error TS2322: Type '"Production ready"' is not assignable to type '"ACTIVE" | "DISABLED" | "ROLLING_OUT"'.
+src/pack421-health.controller.ts(379,61): error TS2339: Property 'ready' does not exist on type 'FeatureStatus'.
+src/pack421-health.controller.ts(382,9): error TS2740: Type 'Record<string, FeatureStatus>' is missing the following properties from type 'FeatureStatus[]': length, pop, push, concat, and 29 more.
+src/pack421-health.controller.ts(415,61): error TS2339: Property 'ready' does not exist on type 'FeatureStatus'.
+src/pack421-health.controller.ts(418,9): error TS2740: Type 'Record<string, FeatureStatus>' is missing the following properties from type 'FeatureStatus[]': length, pop, push, concat, and 29 more.
+src/pack421-metrics.adapter.ts(160,5): error TS2322: Type 'MetricTag[]' is not assignable to type 'Record<string, string>'.
+  Index signature for type 'string' is missing in type 'MetricTag[]'.
+src/pack421-metrics.adapter.ts(180,5): error TS2322: Type 'MetricTag[]' is not assignable to type 'Record<string, string>'.
+  Index signature for type 'string' is missing in type 'MetricTag[]'.
+src/pack421-metrics.adapter.ts(200,5): error TS2322: Type 'MetricTag[]' is not assignable to type 'Record<string, string>'.
+  Index signature for type 'string' is missing in type 'MetricTag[]'.
+src/pack421-metrics.adapter.ts(269,9): error TS2322: Type 'any[]' is not assignable to type 'Record<string, string>'.
+  Index signature for type 'string' is missing in type 'any[]'.
+src/pack421-metrics.adapter.ts(269,32): error TS2488: Type 'undefined[] | Record<string, string>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/pack421-metrics.adapter.ts(286,14): error TS2322: Type '{ key: string; value: string; }' is not assignable to type 'string'.
+src/pack422-reputation.policy.ts(38,7): error TS2740: Type '{ CRITICAL: { visibilityReduction: number; discoveryEnabled: false; passiveLikesEnabled: false; canStartChats: false; canHostEvents: false; canSendFirstMessage: false; requirePrepayment: true; ... 4 more ...; feedRankingBoost: number; }; HIGH: { ...; }; MEDIUM: { ...; }; LOW: { ...; }; }' is missing the following properties from type 'Record<RiskLabel, PolicyConfig>': BANNED, FLAGGED, HIGH_RISK, NEW_USER, and 2 more.
+src/pack422-reputation.policy.ts(146,9): error TS2322: Type '{ riskLabel: RiskLabel; action: string; description: string; appliedAt: number; }' is not assignable to type 'ReputationPolicyAction'.
+src/pack422-reputation.policy.ts(157,38): error TS2345: Argument of type 'string' is not assignable to parameter of type 'WithFieldValue<DocumentData>'.
+  Type 'string' is not assignable to type 'WithFieldValue<DocumentData>'.
+src/pack422-reputation.triggers.ts(50,11): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack423-integrations.ts(23,60): error TS2339: Property 'avgRating' does not exist on type 'number'.
+src/pack423-integrations.ts(25,40): error TS2339: Property 'avgRating' does not exist on type 'number'.
+src/pack423-integrations.ts(26,40): error TS2339: Property 'avgRating' does not exist on type 'number'.
+src/pack423-integrations.ts(28,62): error TS2339: Property 'avgRating' does not exist on type 'number'.
+src/pack423-nps.service.ts(226,5): error TS2322: Type '{ start: number; end: number; }' is not assignable to type 'string'.
+src/pack424-store-reviews.scheduler.ts(219,23): error TS2349: This expression is not callable.
+  Type 'typeof import("c:/a/avalo/functions/node_modules/firebase-functions/lib/v1/providers/firestore")' has no call signatures.
+src/pack426-ai-regional-engine.ts(360,19): error TS2339: Property 'choices' does not exist on type 'unknown'.
+src/pack426-ai-regional-engine.ts(361,22): error TS2339: Property 'usage' does not exist on type 'unknown'.
+src/pack427-message-queue-service.ts(46,55): error TS2345: Argument of type '{ action: string; recipientId: string; timestamp: Date; }' is not assignable to parameter of type 'string'.
+src/pack427-message-queue-service.ts(52,18): error TS2339: Property 'blocked' does not exist on type 'FraudCheckResult'.
+src/pack427-message-workers.ts(23,10): error TS2305: Module '"./pack293-notification-service"' has no exported member 'sendPushNotification'.
+src/pack427-message-workers.ts(167,50): error TS2345: Argument of type 'string' is not assignable to parameter of type 'Region'.
+src/pack427-message-workers.ts(171,48): error TS2345: Argument of type 'Region | RouteResult' is not assignable to parameter of type 'Region'.
+  Type 'RouteResult' is not assignable to type 'Region'.
+src/pack427-message-workers.ts(183,65): error TS2345: Argument of type '{ action: string; recipientId: string; timestamp: Date; }' is not assignable to parameter of type 'string'.
+src/pack427-message-workers.ts(189,20): error TS2339: Property 'blocked' does not exist on type 'FraudCheckResult'.
+src/pack427-realtime-signals.ts(69,11): error TS2322: Type '"US" | RouteResult' is not assignable to type 'Region'.
+  Type 'RouteResult' is not assignable to type 'Region'.
+src/pack427-realtime-signals.ts(234,7): error TS2322: Type '"US" | RouteResult' is not assignable to type 'Region'.
+  Type 'RouteResult' is not assignable to type 'Region'.
+src/pack427-sync-endpoints.ts(57,11): error TS2322: Type '"US" | RouteResult' is not assignable to type 'Region'.
+  Type 'RouteResult' is not assignable to type 'Region'.
+src/pack427-sync-endpoints.ts(129,11): error TS2322: Type '"US" | RouteResult' is not assignable to type 'Region'.
+  Type 'RouteResult' is not assignable to type 'Region'.
+src/pack429-crisis-mode.ts(83,20): error TS2345: Argument of type '{ eventType: string; userId: string; resource: string; action: string; metadata: { type: "MANUAL" | "AUTOMATIC"; trigger: { eventId: string; eventType: DefenseEventType; severity: EventSeverity; }; }; }' is not assignable to parameter of type 'string'.
+src/pack429-crisis-mode.ts(162,20): error TS2345: Argument of type '{ eventType: string; userId: string; resource: string; action: string; metadata: { impactAnalysis: { [key: string]: any; ratingChange: number; reviewCount: number; recoveryActions: number; }; }; }' is not assignable to parameter of type 'string'.
+src/pack429-review-defense-engine.ts(112,5): error TS2322: Type '"CRITICAL"' is not assignable to type 'EventSeverity'.
+src/pack429-review-defense-engine.ts(114,5): error TS2322: Type '"HIGH"' is not assignable to type 'EventSeverity'.
+src/pack429-review-defense-engine.ts(116,5): error TS2322: Type '"MEDIUM"' is not assignable to type 'EventSeverity'.
+src/pack429-review-defense-engine.ts(121,7): error TS2322: Type '"SPIKE"' is not assignable to type 'DefenseEventType'.
+src/pack429-review-defense-engine.ts(125,7): error TS2820: Type '"REVIEWS"' is not assignable to type 'TriggerSource'. Did you mean 'TriggerSource.REVIEWS'?
+src/pack429-review-defense-engine.ts(187,7): error TS2322: Type '"BOT_ATTACK"' is not assignable to type 'DefenseEventType'.
+src/pack429-review-defense-engine.ts(190,7): error TS2322: Type '"HIGH" | "CRITICAL"' is not assignable to type 'EventSeverity'.
+  Type '"HIGH"' is not assignable to type 'EventSeverity'.
+src/pack429-review-defense-engine.ts(191,7): error TS2820: Type '"REVIEWS"' is not assignable to type 'TriggerSource'. Did you mean 'TriggerSource.REVIEWS'?
+src/pack429-review-defense-engine.ts(236,9): error TS2322: Type '"SABOTAGE"' is not assignable to type 'DefenseEventType'.
+src/pack429-review-defense-engine.ts(239,9): error TS2322: Type '"MEDIUM" | "HIGH"' is not assignable to type 'EventSeverity'.
+  Type '"MEDIUM"' is not assignable to type 'EventSeverity'.
+src/pack429-review-defense-engine.ts(240,9): error TS2820: Type '"REVIEWS"' is not assignable to type 'TriggerSource'. Did you mean 'TriggerSource.REVIEWS'?
+src/pack429-review-defense-engine.ts(301,9): error TS2322: Type '"SABOTAGE"' is not assignable to type 'DefenseEventType'.
+src/pack429-review-defense-engine.ts(304,9): error TS2322: Type '"HIGH"' is not assignable to type 'EventSeverity'.
+src/pack429-review-defense-engine.ts(305,9): error TS2820: Type '"FRAUD"' is not assignable to type 'TriggerSource'. Did you mean 'TriggerSource.FRAUD'?
+src/pack429-review-ingestion.ts(16,10): error TS2305: Module '"./pack293-notifications"' has no exported member 'notifyOps'.
+src/pack429-review-ingestion.ts(359,20): error TS2345: Argument of type '{ eventType: string; userId: string; resource: string; action: string; metadata: { platform: Platform; imported: number; failed: number; attackPatternsDetected: number; }; }' is not assignable to parameter of type 'string'.
+src/pack429-review-ingestion.ts(377,9): error TS2322: Type '"BOT_ATTACK"' is not assignable to type 'DefenseEventType'.
+src/pack429-review-ingestion.ts(380,9): error TS2322: Type '"HIGH" | "CRITICAL"' is not assignable to type 'EventSeverity'.
+  Type '"HIGH"' is not assignable to type 'EventSeverity'.
+src/pack429-review-ingestion.ts(381,9): error TS2820: Type '"REVIEWS"' is not assignable to type 'TriggerSource'. Did you mean 'TriggerSource.REVIEWS'?
+src/pack432-ua-fraud.ts(668,19): error TS2339: Property 'signalType' does not exist on type '{ id: string; }'.
+src/pack432-ua-fraud.ts(668,48): error TS2339: Property 'signalType' does not exist on type '{ id: string; }'.
+src/pack432-ua-fraud.ts(669,23): error TS2339: Property 'severity' does not exist on type '{ id: string; }'.
+src/pack432-ua-fraud.ts(669,54): error TS2339: Property 'severity' does not exist on type '{ id: string; }'.
+src/pack434-ambassador-onboarding.ts(435,46): error TS2448: Block-scoped variable 'profile' used before its declaration.
+src/pack434-fraud-detection.ts(504,38): error TS2345: Argument of type '{ type: FraudType.MULTI_DEVICE_SPOOFING; severity: "medium"; userIds: string[]; deviceIds: string[]; evidence: { description: string; dataPoints: { device: string; }[]; patterns: string[]; }; estimatedLoss: number; affectedCount: number; confidence: number; }' is not assignable to parameter of type 'Omit<FraudAlert, "status" | "detectedAt" | "actions" | "id" | "detectionMethod">'.
+  Property 'ambassadorIds' is missing in type '{ type: FraudType.MULTI_DEVICE_SPOOFING; severity: "medium"; userIds: string[]; deviceIds: string[]; evidence: { description: string; dataPoints: { device: string; }[]; patterns: string[]; }; estimatedLoss: number; affectedCount: number; confidence: number; }' but required in type 'Omit<FraudAlert, "status" | "detectedAt" | "actions" | "id" | "detectionMethod">'.
+src/pack435-event-billing.ts(109,9): error TS2367: This comparison appears to be unintentional because the types 'EventStatus' and '"published"' have no overlap.
+src/pack435-event-billing.ts(202,48): error TS2339: Property 'PAID' does not exist on type 'typeof AttendeeStatus'.
+src/pack435-event-billing.ts(443,24): error TS2367: This comparison appears to be unintentional because the types 'EventStatus' and '"ended"' have no overlap.
+src/pack436-fraud-integration.ts(494,3): error TS2484: Export declaration conflicts with exported declaration of 'ReviewFraudNode'.
+src/pack436-fraud-integration.ts(495,3): error TS2484: Export declaration conflicts with exported declaration of 'ReviewFraudPattern'.
+src/pack436-fraud-integration.ts(496,3): error TS2484: Export declaration conflicts with exported declaration of 'ReviewerCluster'.
+src/pack441/AbuseRetentionCorrelationModel.ts(13,3): error TS2305: Module '"./types"' has no exported member 'SourceQualityMetrics'.
+src/pack441/AbuseRetentionCorrelationModel.ts(49,7): error TS2322: Type '{ abuseToChurnCorrelation: number; abuseToLTVCorrelation: number; qualityScore: number; }' is not assignable to type 'number'.
+src/pack441/AdaptiveGrowthThrottle.ts(11,3): error TS2305: Module '"./types"' has no exported member 'GrowthThrottleConfig'.
+src/pack441/AdaptiveGrowthThrottle.ts(12,3): error TS2305: Module '"./types"' has no exported member 'GrowthThrottleEvent'.
+src/pack441/GrowthSafetyDashboard.ts(14,3): error TS2305: Module '"./types"' has no exported member 'InviteQualityScore'.
+src/pack441/GrowthSafetyDashboard.ts(15,3): error TS2305: Module '"./types"' has no exported member 'SourceQualityMetrics'.
+src/pack441/index.ts(146,38): error TS2551: Property 'getOrCalculateRiskScore' does not exist on type 'ViralLoopRiskScorer'. Did you mean 'calculateRiskScore'?
+src/pack441/ReferralAbuseDetector.ts(43,7): error TS2322: Type '{ detected: boolean; members: string[]; }' is not assignable to type 'boolean'.
+src/pack441/ReferralAbuseDetector.ts(53,7): error TS2322: Type '"low" | "medium" | "high" | "critical"' is not assignable to type '"LOW" | "MEDIUM" | "HIGH" | "CRITICAL"'.
+  Type '"low"' is not assignable to type '"LOW" | "MEDIUM" | "HIGH" | "CRITICAL"'. Did you mean '"LOW"'?
+src/pack441/ReferralAbuseDetector.ts(454,7): error TS2322: Type '"reward_throttle" | "delayed_unlock" | "soft_cap" | "manual_review" | "account_flag"' is not assignable to type '"WARN" | "RESTRICT" | "SUSPEND" | "BAN" | "REVIEW"'.
+  Type '"reward_throttle"' is not assignable to type '"WARN" | "RESTRICT" | "SUSPEND" | "BAN" | "REVIEW"'.
+src/pack441/ReferralAbuseDetector.ts(477,9): error TS2367: This comparison appears to be unintentional because the types '"LOW" | "MEDIUM" | "HIGH" | "CRITICAL"' and '"critical"' have no overlap.
+src/pack441/ReferralAbuseDetector.ts(478,9): error TS2367: This comparison appears to be unintentional because the types '"LOW" | "MEDIUM" | "HIGH" | "CRITICAL"' and '"high"' have no overlap.
+src/pack441/ReferralAbuseDetector.ts(581,7): error TS2820: Type '"high"' is not assignable to type '"LOW" | "MEDIUM" | "HIGH" | "CRITICAL"'. Did you mean '"HIGH"'?
+src/pack441/ReferralAbuseDetector.ts(591,7): error TS2322: Type '"active"' is not assignable to type '"OPEN" | "INVESTIGATING" | "RESOLVED" | "DISMISSED"'.
+src/pack442/dynamicOfferOrchestrator.ts(4,10): error TS2305: Module '"../pack299/analyticsEngine"' has no exported member 'getPack299Analytics'.
+src/pack442/dynamicOfferOrchestrator.ts(392,53): error TS2339: Property 'predictConversionAtPrice' does not exist on type '{ calculateOptimalPrice(basePrice: number, elasticity: number, demandChange: number): number; estimateDemand(currentDemand: number, currentPrice: number, newPrice: number, elasticity: number): number; calculateRevenueImpact(currentPrice: number, newPrice: number, currentDemand: number, elasticity: number): number; g...'.
+src/pack442/pricingIntelligenceDashboard.ts(154,54): error TS2339: Property 'getElasticityCurve' does not exist on type '{ calculateOptimalPrice(basePrice: number, elasticity: number, demandChange: number): number; estimateDemand(currentDemand: number, currentPrice: number, newPrice: number, elasticity: number): number; calculateRevenueImpact(currentPrice: number, newPrice: number, currentDemand: number, elasticity: number): number; g...'.
+src/pack442/pricingIntelligenceDashboard.ts(160,56): error TS2339: Property 'calculatePriceSensitivity' does not exist on type '{ calculateOptimalPrice(basePrice: number, elasticity: number, demandChange: number): number; estimateDemand(currentDemand: number, currentPrice: number, newPrice: number, elasticity: number): number; calculateRevenueImpact(currentPrice: number, newPrice: number, currentDemand: number, elasticity: number): number; g...'.
+src/pack442/pricingIntelligenceDashboard.ts(250,56): error TS2339: Property 'calculatePriceSensitivity' does not exist on type '{ calculateOptimalPrice(basePrice: number, elasticity: number, demandChange: number): number; estimateDemand(currentDemand: number, currentPrice: number, newPrice: number, elasticity: number): number; calculateRevenueImpact(currentPrice: number, newPrice: number, currentDemand: number, elasticity: number): number; g...'.
+src/pack442/pricingIntelligenceDashboard.ts(490,56): error TS2339: Property 'calculatePriceSensitivity' does not exist on type '{ calculateOptimalPrice(basePrice: number, elasticity: number, demandChange: number): number; estimateDemand(currentDemand: number, currentPrice: number, newPrice: number, elasticity: number): number; calculateRevenueImpact(currentPrice: number, newPrice: number, currentDemand: number, elasticity: number): number; g...'.
+src/pack95-anomaly-detection.ts(91,25): error TS2367: This comparison appears to be unintentional because the types '"LOW" | "MEDIUM" | "HIGH"' and '"CRITICAL"' have no overlap.
+src/payments.providers.ts(224,49): error TS2322: Type '"2025-02-24.acacia"' is not assignable to type '"2023-10-16"'.
+src/payments.ts(27,7): error TS2322: Type '"2025-02-24.acacia"' is not assignable to type '"2023-10-16"'.
+src/paymentsComplete.ts(224,9): error TS2322: Type '"2025-02-24.acacia"' is not assignable to type '"2023-10-16"'.
+src/paymentsComplete.ts(280,63): error TS2554: Expected 1-2 arguments, but got 3.
+src/paymentsComplete.ts(326,9): error TS2322: Type '"2025-02-24.acacia"' is not assignable to type '"2023-10-16"'.
+src/paymentsComplete.ts(464,68): error TS2554: Expected 1-2 arguments, but got 3.
+src/paymentsComplete.ts(597,55): error TS2554: Expected 1-2 arguments, but got 3.
+src/paymentsComplete.ts(631,14): error TS2339: Property 'status' does not exist on type 'unknown'.
+src/paymentsComplete.ts(636,56): error TS2339: Property 'status' does not exist on type 'unknown'.
+src/paymentsComplete.ts(1584,56): error TS2554: Expected 1-2 arguments, but got 3.
+src/performanceOptimization.ts(451,7): error TS2322: Type '"2025-02-24.acacia"' is not assignable to type '"2023-10-16"'.
+src/presence.ts(58,68): error TS2554: Expected 1-2 arguments, but got 3.
+src/presence.ts(112,13): error TS2554: Expected 3 arguments, but got 2.
+src/presence.ts(219,68): error TS2554: Expected 1-2 arguments, but got 3.
+src/presence.ts(271,13): error TS2554: Expected 3 arguments, but got 2.
+src/presence.ts(363,17): error TS2554: Expected 3 arguments, but got 2.
+src/realtimeEngine.ts(80,7): error TS2554: Expected 1-2 arguments, but got 3.
+src/realtimeEngine.ts(119,69): error TS2554: Expected 1-2 arguments, but got 3.
+src/recommender.ts(102,70): error TS2554: Expected 1-2 arguments, but got 3.
+src/reputation-system.ts(93,21): error TS2339: Property 'valid' does not exist on type 'boolean'.
+src/reputation-system.ts(96,51): error TS2339: Property 'errors' does not exist on type 'boolean'.
+src/reputation-system.ts(133,11): error TS2741: Property '[ReputationDimension.EXPERTISE_VALIDATION]' is missing in type '{ RELIABILITY: number; COMMUNICATION: number; DELIVERY: number; EXPERTISE: number; SAFETY_CONSISTENCY: number; }' but required in type 'Record<ReputationDimension, number>'.
+src/reputation-system.ts(154,80): error TS2345: Argument of type 'boolean' is not assignable to parameter of type 'number'.
+src/reputation-system.ts(161,7): error TS2554: Expected 1-2 arguments, but got 5.
+src/reputation-system.ts(317,52): error TS2554: Expected 1 arguments, but got 2.
+src/services/guardian.service.ts(173,7): error TS2353: Object literal may only specify known properties, and 'activeCoolingSessions' does not exist in type 'GuardianContext'.
+src/tax-documents.ts(221,18): error TS2349: This expression is not callable.
+  Type 'Storage' has no call signatures.
+src/uploadFlowIntegrations.ts(63,5): error TS2322: Type '"PPM_MEDIA"' is not assignable to type 'ModeratedContentType'.
+src/uploadFlowIntegrations.ts(135,9): error TS2322: Type '"POST_MEDIA"' is not assignable to type 'ModeratedContentType'.
+src/uploadFlowIntegrations.ts(200,5): error TS2322: Type '"PROFILE_PHOTO"' is not assignable to type 'ModeratedContentType'.
+src/uploadFlowIntegrations.ts(262,9): error TS2322: Type '"CAROUSEL_PHOTO"' is not assignable to type 'ModeratedContentType'.
+src/uploadFlowIntegrations.ts(325,5): error TS2322: Type '"AI_COMPANION_AVATAR"' is not assignable to type 'ModeratedContentType'.
+src/uploadFlowIntegrations.ts(390,5): error TS2322: Type '"VERIFICATION_PHOTO"' is not assignable to type 'ModeratedContentType'.
+src/uploadFlowIntegrations.ts(408,7): error TS2322: Type '"VERIFICATION_PHOTO"' is not assignable to type 'ModeratedContentType'.
+src/uploadFlowIntegrations.ts(426,5): error TS2322: Type '"VERIFICATION_PHOTO"' is not assignable to type 'ModeratedContentType'.
+src/uploadFlowIntegrations.ts(490,5): error TS2322: Type '"MESSAGE_MEDIA"' is not assignable to type 'ModeratedContentType'.
+src/walletFintech.ts(67,3): error TS2322: Type '"2025-02-24.acacia"' is not assignable to type '"2023-10-16"'.
+src/workers/payoutProcessor.ts(112,27): error TS2339: Property 'transferId' does not exist on type 'void'.
+src/workers/payoutProcessor.ts(113,31): error TS2339: Property 'status' does not exist on type 'void'.
+src/workers/payoutProcessor.ts(116,27): error TS2339: Property 'transferId' does not exist on type 'void'.
+src/workers/payoutProcessor.ts(117,31): error TS2339: Property 'status' does not exist on type 'void'.
+ ELIFECYCLE  Command failed with exit code 2.

@@ -315,7 +315,7 @@ export const processMediaUpload = onObjectFinalized(
       const file = bucket.file(filePath);
       const [metadata] = await file.getMetadata();
       
-      const sizeBytes = parseInt(metadata.size || '0');
+      const sizeBytes = parseInt(String(metadata.size || '0'));
       const contentType = metadata.contentType || 'application/octet-stream';
       
       // Validate content policy (NSFW check)

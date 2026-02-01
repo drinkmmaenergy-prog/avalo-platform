@@ -16,6 +16,8 @@ import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { RealtimeEventType } from './realtimeEngine.js';
 import { admin, arrayRemove, arrayUnion, auth, functions, getFirestore, logger, onCall, z } from './runtime';
 
+import { getFeatureFlag, broadcastToUsers, broadcastToUser } from './lib/stubs';
+
 const db = getFirestore();
 
 /**

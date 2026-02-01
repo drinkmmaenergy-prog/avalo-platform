@@ -407,7 +407,7 @@ export const pack385_approvePayoutRequest = functions.https.onCall(async (reques
     throw new functions.https.HttpsError('not-found', 'Payout request not found');
   }
 
-  const request = requestDoc.data() as PayoutRequest;
+  const innerRequest= requestDoc.data() as PayoutRequest;
 
   if (request.status === 'APPROVED' || request.status === 'PAID') {
     throw new functions.https.HttpsError('already-exists', 'Payout already approved');

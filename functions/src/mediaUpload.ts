@@ -7,7 +7,7 @@
  */
 
 import { db, serverTimestamp } from './init.js';
-import { HttpsError } from './runtime';
+// Removed: HttpsError import conflicts with local declaration
 
 // Simple error class
 class HttpsError extends Error {

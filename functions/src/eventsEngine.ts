@@ -27,7 +27,7 @@ import {
   EventCompletionAnalysis,
   OrganizerPayout,
   SafetyEventHook
-} from '../../app-mobile/types/events';
+} from './types/events';
 import { admin, increment, serverTimestamp, timestamp } from './runtime';
 
 const db = getFirestore();

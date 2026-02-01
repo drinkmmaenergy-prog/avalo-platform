@@ -64,7 +64,7 @@ if (!STRIPE_SECRET) {
 }
 
 const stripe = new Stripe(STRIPE_SECRET, {
-  apiVersion: "2025-02-24.acacia",
+  apiVersion: "2025-02-24.acacia" as any,
 });
 
 // ============================================================================

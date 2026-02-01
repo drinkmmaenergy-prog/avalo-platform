@@ -16,7 +16,7 @@ import {
   MetricPoint,
   MetricName,
   MetricTag,
-} from '../../shared/types/pack421-observability.types';
+} from './types/shared/types/pack421-observability.types';
 import { db, logger, timestamp } from './runtime';
 
 /**
@@ -266,7 +266,7 @@ export function createTaggedEmitter(baseTags: MetricTag[]) {
     emit: (point: MetricPoint) =>
       emitMetric({
         ...point,
-        tags: [...baseTags, ...(point.tags || [])],
+        tags: [...baseTags, ...(Array.isArray(point.tags) ? point.tags : [])],
       }),
   };
 }

@@ -4,7 +4,7 @@
  */
 
 import { firestore } from 'firebase-admin';
-import { db } from '../config';
+import { db } from '../runtime';
 import {
   GeoRolloutCountry,
   CountryResolutionResult,

@@ -19,7 +19,7 @@ import type {
   ClaudeApiRequest,
   ClaudeApiResponse,
 } from './types/aiBot.js';
-import { HttpsError, functions } from './runtime';
+import { functions } from './runtime';
 
 // Simple error class
 class HttpsError extends Error {

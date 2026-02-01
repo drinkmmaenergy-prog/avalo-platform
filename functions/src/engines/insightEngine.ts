@@ -12,7 +12,8 @@ import * as functions from "firebase-functions/v2";
 import { HttpsError } from 'firebase-functions/v2/https';
 ;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
-import { admin, auth, db, getFirestore, increment, onCall, onDocumentCreated, serverTimestamp, timestamp, z } from '../runtime';
+import { admin, auth, getFirestore, increment, onCall, onDocumentCreated, serverTimestamp, timestamp, z } from "../runtime";
+
 ;
 
 const db = getFirestore();

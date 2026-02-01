@@ -20,6 +20,8 @@ import { HttpsError } from 'firebase-functions/v2/https';
 ;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, auth, functions, getFirestore, logger, onCall, onSchedule, serverTimestamp, z } from './runtime';
+import { getCached, invalidateCacheByTags } from './lib/stubs';
+
 ;
 ;
 ;

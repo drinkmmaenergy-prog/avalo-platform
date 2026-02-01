@@ -12,6 +12,8 @@ import { CHAT_INITIAL_DEPOSIT_TOKENS, CHAT_FREE_MESSAGES_PER_USER, CHAT_PLATFORM
 import { UserProfile, UserWallet, Chat, Message, Transaction, FunctionResponse, ChatRoles } from './types.js';
 import { auth, db, functions, generateId, increment, onCall, serverTimestamp } from './runtime';
 
+import { containsBannedTerms } from './lib/stubs';
+
 /**
  * Determine who pays and who earns based on gender and settings
  */

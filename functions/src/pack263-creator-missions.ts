@@ -380,6 +380,78 @@ export const getCreatorMissions = onCall(
 );
 
 /**
+ * Internal helper to record mission progress (server-side callable)
+ * This is the internal implementation that can be called from other functions
+ */
+export async function recordMissionProgressInternal(
+  userId: string,
+  activityType: string,
+  value: number,
+  metadata?: Record<string, any>
+): Promise<{ 
+  success: boolean; 
+  completedMissions?: string[];
+  lpAwarded?: number;
+  error?: string;
+}> {
+  try {
+    if (!userId) {
+      return { success: false, error: 'User ID required' };
+    }
+
+    // Validate revenue-linked activity
+    const isValid = await validateActivity(userId, activityType, value, metadata);
+    if (!isValid) {
+      console.warn(`Invalid activity detected for ${userId}: ${activityType}`);
+      return { success: false, error: 'Activity validation failed' };
+    }
+
+    // Get active missions matching this activity type
+    const activeMissionsSnapshot = await db
+      .collection('creatorMissions')
+      .doc(userId)
+      .collection('activeMissions')
+      .where('status', '==', 'active')
+      .where('objective.type', '==', activityType)
+      .get();
+
+    const completedMissions: string[] = [];
+    let totalLPAwarded = 0;
+
+    // Update progress for each matching mission
+    for (const missionDoc of activeMissionsSnapshot.docs) {
+      const mission = missionDoc.data() as ActiveMission;
+      const newProgress = Math.min(
+        mission.progress.current + value,
+        mission.objective.target
+      );
+      const newPercentage = Math.floor((newProgress / mission.objective.target) * 100);
+
+      // Update mission progress
+      await missionDoc.ref.update({
+        'progress.current': newProgress,
+        'progress.percentage': newPercentage,
+      });
+
+      // Check if mission completed
+      if (newProgress >= mission.objective.target && mission.status === 'active') {
+        completedMissions.push(missionDoc.id);
+        totalLPAwarded += mission.reward.lp;
+      }
+    }
+
+    return {
+      success: true,
+      completedMissions,
+      lpAwarded: totalLPAwarded,
+    };
+  } catch (error: any) {
+    console.error('Error recording mission progress:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Record mission progress from various activities
  */
 export const recordMissionProgress = onCall(

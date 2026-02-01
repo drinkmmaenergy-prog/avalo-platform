@@ -18,7 +18,7 @@ import {
   sendLockInActivatedNotification,
   sendConversionSuggestionNotification
 } from '../notifications/chemistryLockInNotifications';
-import { HttpsError, admin, auth, logger, onCall, server, timestamp, onSchedule, onDocumentCreated, onDocumentUpdated } from '../runtime';
+import { HttpsError, admin, auth, logger, onCall, timestamp, onSchedule, onDocumentCreated, onDocumentUpdated } from '../runtime';
 
 // ============================================================================
 // MESSAGE TRIGGERS

@@ -47,7 +47,7 @@ interface PRIncident {
 export const pack387_createIncident = functions.https.onCall(
   async (data: Omit<PRIncident, 'id' | 'createdAt' | 'updatedAt'>, context) => {
     // Verify admin/staff auth
-    if (!request.auth) {
+    if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
@@ -64,7 +64,7 @@ export const pack387_createIncident = functions.https.onCall(
       await db.collection('crisisResponseLogs').add({
         incidentId: incidentRef.id,
         actionType: 'INCIDENT_CREATED',
-        performedBy: request.auth.uid,
+        performedBy: context.auth.uid,
         timestamp: admin.firestore.Timestamp.now(),
         metadata: { incident },
       });

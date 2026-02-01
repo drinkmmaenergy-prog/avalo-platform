@@ -372,7 +372,7 @@ export const checkKPIThresholds = onSchedule("every 5 minutes", async (event) =>
       .get();
 
     if (!kpiSnap.exists) {
-      return { status: "no_kpi_data" };
+      logger.info('Scheduler completed', { status: "no_kpi_data" }); return;
     }
 
     const kpi = kpiSnap.data();
@@ -387,7 +387,7 @@ export const checkKPIThresholds = onSchedule("every 5 minutes", async (event) =>
 
     if (!thresholdsSnap.exists) {
       console.warn("No KPI thresholds configured");
-      return { status: "no_thresholds" };
+      logger.info('Scheduler completed', { status: "no_thresholds" }); return;
     }
 
     const thresholds = thresholdsSnap.data();
@@ -461,5 +461,5 @@ export const checkKPIThresholds = onSchedule("every 5 minutes", async (event) =>
       }
     }
 
-    return { status: "checked" };
+    logger.info('Scheduler completed', { status: "checked" }); return;
   });

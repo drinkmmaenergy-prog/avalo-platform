@@ -34,7 +34,7 @@ export const pack154_translateMessage = functions.https.onCall(async (request) =
 
   const userId = request.auth.uid;
 
-  const request: TranslationRequest = {
+  const innerRequest: TranslationRequest = {
     content: data.content,
     sourceLanguage: data.sourceLanguage,
     targetLanguage: data.targetLanguage,
@@ -80,7 +80,7 @@ export const pack154_translateVoice = functions.https.onCall(async (request) => 
 
   const userId = request.auth.uid;
 
-  const request = {
+  const innerRequest= {
     transcript: data.transcript,
     sourceLanguage: data.sourceLanguage,
     targetLanguage: data.targetLanguage,

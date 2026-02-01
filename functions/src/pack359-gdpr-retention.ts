@@ -185,7 +185,7 @@ export async function requestDataErasure(
   // Check if user is in GDPR jurisdiction
   const gdprApplies = await checkGDPRApplicability(userId);
   
-  const request: DataErasureRequest = {
+  const erasureRequest: DataErasureRequest = {
     userId,
     requestedAt: new Date(),
     reason,
@@ -197,7 +197,7 @@ export async function requestDataErasure(
   
   // Store erasure request
   const requestRef = await db.collection('data_erasure_requests').add({
-    ...request,
+    ...erasureRequest,
     requestedAt: admin.firestore.FieldValue.serverTimestamp(),
     gdprApplies,
   });
@@ -205,7 +205,7 @@ export async function requestDataErasure(
   // Start async processing
   processDataErasure(requestRef.id, userId);
   
-  return request;
+  return erasureRequest;
 }
 
 /**
@@ -358,7 +358,7 @@ export async function requestDataExport(
   userId: string,
   format: 'json' | 'zip' = 'json'
 ): Promise<DataExportRequest> {
-  const request: DataExportRequest = {
+  const exportRequest: DataExportRequest = {
     userId,
     requestedAt: new Date(),
     status: 'pending',
@@ -367,14 +367,14 @@ export async function requestDataExport(
   
   // Store export request
   const requestRef = await db.collection('data_export_requests').add({
-    ...request,
+    ...exportRequest,
     requestedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
   
   // Start async processing
   processDataExport(requestRef.id, userId, format);
   
-  return request;
+  return exportRequest;
 }
 
 /**
@@ -577,7 +577,7 @@ export const requestErasure = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('already-exists', 'Erasure request already in progress');
   }
   
-  const request = await requestDataErasure(userId, reason);
+  const innerRequest= await requestDataErasure(userId, reason);
   
   return {
     message: 'Data erasure request submitted. This may take up to 30 days to complete.',
@@ -597,7 +597,7 @@ export const requestExport = functions.https.onCall(async (request) => {
   const userId = request.auth.uid;
   const { format } = data;
   
-  const request = await requestDataExport(userId, format || 'json');
+  const innerRequest= await requestDataExport(userId, format || 'json');
   
   return {
     message: 'Data export request submitted. You will receive a download link within 24 hours.',

@@ -69,11 +69,11 @@ export const trackAdEvent = functions.https.onCall(
     source?: string;
     metadata?: Record<string, any>;
   }, context) => {
-    if (!request.auth) {
+    if (!context.auth) {
       throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const userId = request.auth.uid;
+    const userId = context.auth.uid;
 
     try {
       // Check feature flag
@@ -254,11 +254,11 @@ async function updateCampaignPerformance(
 export const createAdCampaign = functions.https.onCall(
   async (data: Omit<AdCampaign, "createdAt">, context) => {
     // Verify admin
-    if (!request.auth) {
+    if (!context.auth) {
       throw new functions.https.HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const userDoc = await db.collection("users").doc(request.auth.uid).get();
+    const userDoc = await db.collection("users").doc(context.auth.uid).get();
     if (userDoc.data()?.role !== "admin") {
       throw new functions.https.HttpsError("permission-denied", "Admin access required");
     }

@@ -15,14 +15,8 @@
  */
 
 import * as functions from "firebase-functions/v2";
-import { HttpsError } from 'firebase-functions/v2/https';
-;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
-import { admin, auth, db, getFirestore, onCall, onDocumentCreated, serverTimestamp, timestamp, z } from '../runtime';
-;
-;
-
-const db = getFirestore();
+import { admin, auth, db, HttpsError, onCall, onDocumentCreated, serverTimestamp, timestamp, z } from "../runtime";
 
 /**
  * Risk level enum
@@ -468,7 +462,7 @@ export const banUserCallable = onCall(
 
       // Disable Firebase Auth account (shadowban behavior)
       try {
-        await getAuth().updateUser(targetUserId, { disabled: true });
+        await auth.updateUser(targetUserId, { disabled: true });
       } catch (error) {
         console.error(`Failed to disable auth for ${targetUserId}:`, error);
       }

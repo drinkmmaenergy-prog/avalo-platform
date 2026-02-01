@@ -8,7 +8,7 @@ import {
   ModerationContext,
   ModeratedContentType,
   ModerationDecision,
-} from '../../shared/types/contentModeration';
+} from './types/shared/types/contentModeration';
 import { getFirestore } from 'firebase-admin/firestore';
 import { logEvent } from './observability';
 import { admin, functions } from './runtime';

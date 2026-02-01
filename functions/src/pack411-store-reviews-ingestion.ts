@@ -10,7 +10,7 @@ import {
   ReviewTag,
   DEFAULT_TAG_PATTERNS,
   ReviewTagPattern,
-} from '../../shared/types/pack411-reviews';
+} from './types/shared/types/pack411-reviews';
 import { FieldValue, auth, onRequest, serverTimestamp, timestamp } from './runtime';
 
 const db = admin.firestore();

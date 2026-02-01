@@ -68,6 +68,16 @@ const ROLE_PERMISSIONS: Record<AdminRole, AdminPermissions> = {
     canManagePromotions: true,
     canManagePolicies: false,
   },
+  TALENT_MANAGER: {
+    canViewUsers: true,
+    canEditEnforcement: false,
+    canEditAmlStatus: false,
+    canResolveDisputes: false,
+    canApprovePayouts: false,
+    canReviewDeletionRequests: false,
+    canManagePromotions: true,
+    canManagePolicies: false,
+  },
 };
 
 // ============================================================================

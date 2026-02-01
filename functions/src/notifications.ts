@@ -24,6 +24,8 @@
 import { FieldValue } from 'firebase-admin/firestore';
 import { admin, getFirestore, logger, serverTimestamp } from './runtime';
 
+import { sgMail } from './lib/stubs';
+
 // ============================================================================
 // CONFIGURATION
 // ============================================================================

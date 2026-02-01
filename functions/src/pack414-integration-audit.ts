@@ -16,8 +16,8 @@ import {
   GreenlightStatus,
   getGreenlightStatus,
   CRITICAL_LAUNCH_REQUIREMENTS 
-} from '../../shared/integration/pack414-registry';
-import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
+} from './types/shared/integration/pack414-registry';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp, logger, onSchedule , functions} from './runtime';
 
 const db = admin.firestore();
 
@@ -55,7 +55,7 @@ export const pack414_runFullAudit = onCall(
 
     const startTime = Date.now();
     const checks: AuditCheck[] = [];
-    const registry = [...AvaloIntegrationRegistry];
+    const registry = Object.values(AvaloIntegrationRegistry);
 
     try {
       // CATEGORY 1: AUTHENTICATION & IDENTITY
@@ -208,11 +208,11 @@ export const pack414_runPackAudit = onCall(
       // Get current registry
       const registryDoc = await db.collection('pack414_registry').doc('current').get();
       const registry = registryDoc.exists 
-        ? registryDoc.data()?.registry || [...AvaloIntegrationRegistry]
-        : [...AvaloIntegrationRegistry];
+        ? registryDoc.data()?.registry || Object.values(AvaloIntegrationRegistry)
+        : Object.values(AvaloIntegrationRegistry);
 
-      // Find pack in registry
-      const packIndex = registry.findIndex((item: IntegrationStatus) => item.packId === packId);
+      // Find pack in registry (packId is number but IntegrationStatus.packId is string)
+      const packIndex = registry.findIndex((item: IntegrationStatus) => item.packId === String(packId));
       if (packIndex === -1) {
         throw new HttpsError(
           'not-found',
@@ -1194,7 +1194,7 @@ export const pack414_scheduledDailyAudit = onSchedule({ schedule: "0 0 * * *", t
     try {
       // Run full audit (simulated admin context)
       const checks: AuditCheck[] = [];
-      const registry = [...AvaloIntegrationRegistry];
+      const registry = Object.values(AvaloIntegrationRegistry);
       
       // Run all audits
       checks.push(await auditAuthentication());

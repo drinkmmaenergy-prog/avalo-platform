@@ -11,6 +11,7 @@
 ;
 ;
 import { HttpsError } from 'firebase-functions/v2/https';
+import { storage } from './init';
 ;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, arrayUnion, auth, functions, getFirestore, logger, onCall, onSchedule, serverTimestamp, timestamp, z } from './runtime';
@@ -19,7 +20,7 @@ import { admin, arrayUnion, auth, functions, getFirestore, logger, onCall, onSch
 ;
 
 const db = getFirestore();
-const storage = getStorage();
+// Removed self-reference: const storage = storage;
 
 /**
  * Privacy request types

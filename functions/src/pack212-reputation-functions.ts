@@ -49,7 +49,7 @@ export const pack212_getMyReputationHint = functions.https.onCall(async (request
       );
     }
 
-    const request: GetReputationHintRequest = {
+    const innerRequest: GetReputationHintRequest = {
       userId: request.auth.uid,
     };
 

@@ -251,13 +251,13 @@ export interface HarassmentPattern {
 // ============================================================================
 
 export interface GuardianContext {
-  conversationId: string;
-  currentUserId: string;
-  otherUserId: string;
-  userSettings: GuardianSettings;
-  activeCoolin
-gSessions: GuardianCoolingSession[];
-  recentInterventions: GuardianIntervention[];
+  conversationId?: string;
+  currentUserId?: string;
+  otherUserId?: string;
+  userSettings?: GuardianSettings;
+  activeCoolingSessions?: GuardianCoolingSession[];
+  recentInterventions?: GuardianIntervention[];
+  [key: string]: any;
 }
 
 export interface GuardianAnalysis {

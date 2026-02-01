@@ -8,8 +8,7 @@
 
 import { db, admin } from '../init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
-import { HttpsError, auth, increment, onCall, timestamp } from '../runtime';
-import { HttpsError, onCall } from './runtime';
+import { HttpsError, auth, increment, onCall, timestamp, functions } from '../runtime';
 
 interface RewriteFirstMessageRequest {
   matchId: string;

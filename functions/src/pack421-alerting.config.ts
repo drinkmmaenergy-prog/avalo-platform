@@ -14,7 +14,7 @@ import {
   AlertSeverity,
   AlertChannel,
   MetricName,
-} from '../../shared/types/pack421-observability.types';
+} from './types/shared/types/pack421-observability.types';
 import { db, timestamp } from './runtime';
 
 /**
@@ -181,11 +181,11 @@ export const ALERT_RULES: AlertRule[] = [
  * Alert channel configurations
  * Maps channel identifiers to actual notification targets
  */
-export const ALERT_CHANNELS: Record<AlertChannel, {
+export const ALERT_CHANNELS: Partial<Record<AlertChannel, {
   type: string;
   target: string;
   enabled: boolean;
-}> = {
+}>> = {
   oncall_slack: {
     type: 'slack',
     target: process.env.SLACK_ONCALL_WEBHOOK || '',
@@ -291,12 +291,15 @@ export async function evaluateAlerts(windowMinutes: number): Promise<{
 /**
  * Alert severity response time SLAs (in minutes)
  */
-export const ALERT_RESPONSE_TIMES: Record<AlertSeverity, number> = {
+export const ALERT_RESPONSE_TIMES: Partial<Record<AlertSeverity, number>> = {
   P0: 5,    // 5 minutes - immediate response
   P1: 15,   // 15 minutes - urgent response
   P2: 60,   // 1 hour - timely response
   P3: 1440, // 24 hours - next business day
   P4: 10080, // 1 week - best effort
+  INFO: 10080, // 1 week - informational
+  WARNING: 1440, // 24 hours - warning
+  CRITICAL: 5, // 5 minutes - critical
 };
 
 /**

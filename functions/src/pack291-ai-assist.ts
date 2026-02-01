@@ -82,7 +82,10 @@ export const creator_ai_insights_daily = onCall<GetDailyInsightsRequest, Promise
           error: 'Insufficient data. Continue earning for at least 7 days to see insights.',
         });
 
-        return;
+        return {
+          success: false,
+          error: 'Insufficient data. Continue earning for at least 7 days to see insights.',
+        };
       }
 
       // Get data for the day
@@ -173,7 +176,10 @@ export const creator_ai_insights_weekly = onCall<GetWeeklyOptimizationRequest, P
       });
 
 
-      return;
+      return {
+        success: true,
+        data: optimization,
+      };
     } catch (error: any) {
       logger.error('Error generating weekly optimization:', error);
       console.log('Scheduled job result:', {
@@ -226,7 +232,11 @@ export const creator_ai_recommendations_content = onCall<GetContentRecommendatio
       });
 
 
-      return;
+      return {
+        success: true,
+        data: recommendations,
+        postingTime,
+      };
     } catch (error: any) {
       logger.error('Error generating content recommendations:', error);
       console.log('Scheduled job result:', {
@@ -234,7 +244,10 @@ export const creator_ai_recommendations_content = onCall<GetContentRecommendatio
         error: error.message || 'Failed to generate recommendations',
       });
 
-      return;
+      return {
+        success: false,
+        error: error.message || 'Failed to generate recommendations',
+      };
     }
   }
 );
@@ -288,7 +301,11 @@ export const creator_ai_recommendations_chat = onCall<GetChatOptimizationRequest
       });
 
 
-      return;
+      return {
+        success: true,
+        metrics,
+        suggestions,
+      };
     } catch (error: any) {
       logger.error('Error generating chat optimization:', error);
       console.log('Scheduled job result:', {
@@ -296,7 +313,10 @@ export const creator_ai_recommendations_chat = onCall<GetChatOptimizationRequest
         error: error.message || 'Failed to generate chat optimization',
       });
 
-      return;
+      return {
+        success: false,
+        error: error.message || 'Failed to generate chat optimization',
+      };
     }
   }
 );
@@ -342,7 +362,10 @@ export const creator_ai_recommendations_calendar = onCall<GetCalendarOptimizatio
       });
 
 
-      return;
+      return {
+        success: true,
+        data: calendarInsight,
+      };
     } catch (error: any) {
       logger.error('Error generating calendar optimization:', error);
       console.log('Scheduled job result:', {
@@ -350,7 +373,10 @@ export const creator_ai_recommendations_calendar = onCall<GetCalendarOptimizatio
         error: error.message || 'Failed to generate calendar insights',
       });
 
-      return;
+      return {
+        success: false,
+        error: error.message || 'Failed to generate calendar insights',
+      };
     }
   }
 );
@@ -396,7 +422,10 @@ export const creator_ai_recommendations_events = onCall<GetEventOptimizationRequ
       });
 
 
-      return;
+      return {
+        success: true,
+        data: eventInsight,
+      };
     } catch (error: any) {
       logger.error('Error generating event optimization:', error);
       console.log('Scheduled job result:', {
@@ -404,7 +433,10 @@ export const creator_ai_recommendations_events = onCall<GetEventOptimizationRequ
         error: error.message || 'Failed to generate event insights',
       });
 
-      return;
+      return {
+        success: false,
+        error: error.message || 'Failed to generate event insights',
+      };
     }
   }
 );
@@ -447,7 +479,10 @@ export const creator_ai_profile_health = onCall<GetProfileHealthRequest, Promise
       });
 
 
-      return;
+      return {
+        success: true,
+        data: healthScore,
+      };
     } catch (error: any) {
       logger.error('Error generating profile health:', error);
       console.log('Scheduled job result:', {
@@ -455,7 +490,10 @@ export const creator_ai_profile_health = onCall<GetProfileHealthRequest, Promise
         error: error.message || 'Failed to generate profile health',
       });
 
-      return;
+      return {
+        success: false,
+        error: error.message || 'Failed to generate profile health',
+      };
     }
   }
 );

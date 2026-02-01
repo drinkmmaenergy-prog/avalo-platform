@@ -318,19 +318,20 @@ export const getAgencyLinkedCreators = onCall(
           const userDoc = await db.collection('users').doc(link.creatorUserId).get();
           const userData = userDoc.exists ? userDoc.data() : {};
 
-          console.log('Scheduled job result:', {
+          const result = {
             creatorId: link.creatorUserId,
-            username: userData.username || 'Unknown',
-            avatarUrl: userData.avatarUrl,
+            username: (userData as any).username || 'Unknown',
+            avatarUrl: (userData as any).avatarUrl,
             linkStatus: link.status,
             agencyPercentage: link.percentageForAgency,
             totalEarnings: link.totalEarningsGenerated,
             agencyShare: link.agencyEarningsTotal,
             linkedSince: link.createdAt.toDate().toISOString(),
-          });
+          };
+          console.log('Scheduled job result:', result);
 
 
-          return;
+          return result;
         })
       );
 

@@ -11,7 +11,7 @@ import {
   getInternalReputationScore,
 } from './pack115-reputation-engine';
 import { getReputationDisclaimer } from './pack115-types';
-import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
+import { HttpsError, admin, auth, onCall, onSchedule, logger } from './runtime';
 
 // ============================================================================
 // USER-FACING ENDPOINTS
@@ -32,10 +32,10 @@ export const reputation_getPublicProfile = functions.https.onCall(async (request
 
     const profile = await getPublicReputationProfile(userId);
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       profile,
-    };
+    }); return;
   } catch (error: any) {
     console.error('[Reputation] Error in getPublicProfile:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -68,10 +68,10 @@ export const reputation_updateDisplaySettings = functions.https.onCall(async (re
 
     console.log(`[Reputation] User ${userId} updated display settings: displayBadge=${displayBadge}`);
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       displayBadge,
-    };
+    }); return;
   } catch (error: any) {
     console.error('[Reputation] Error updating display settings:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -86,10 +86,10 @@ export const reputation_getDisclaimer = functions.https.onCall(async (request) =
   try {
     const disclaimer = getReputationDisclaimer();
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       disclaimer,
-    };
+    }); return;
   } catch (error: any) {
     console.error('[Reputation] Error getting disclaimer:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -112,11 +112,11 @@ export const reputation_recalculateMyScore = functions.https.onCall(async (reque
 
     console.log(`[Reputation] User ${userId} manually recalculated score: ${score.internalScore} (${score.publicLevel})`);
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       level: score.publicLevel,
       message: 'Your trust level has been updated',
-    };
+    }); return;
   } catch (error: any) {
     console.error('[Reputation] Error in manual recalculation:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -153,10 +153,10 @@ export const reputation_admin_getInternalScore = functions.https.onCall(async (r
       throw new functions.https.HttpsError('not-found', 'Reputation score not found');
     }
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       score,
-    };
+    }); return;
   } catch (error: any) {
     console.error('[Reputation] Error in admin_getInternalScore:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -185,12 +185,12 @@ export const reputation_admin_recalculateUser = functions.https.onCall(async (re
 
     console.log(`[Reputation] Admin recalculated score for user ${userId}: ${score.internalScore} (${score.publicLevel})`);
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       userId,
       internalScore: score.internalScore,
       publicLevel: score.publicLevel,
-    };
+    }); return;
   } catch (error: any) {
     console.error('[Reputation] Error in admin recalculation:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -222,10 +222,10 @@ export const reputation_admin_getAbuseAttempts = functions.https.onCall(async (r
     const snapshot = await query.get();
     const attempts = snapshot.docs.map(doc => doc.data());
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       attempts,
-    };
+    }); return;
   } catch (error: any) {
     console.error('[Reputation] Error getting abuse attempts:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -293,10 +293,10 @@ export const reputation_dailyRecalculation = onSchedule({ schedule: "0 6 * * *",
 
       console.log('[Reputation] Daily recalculation completed', results);
 
-      return {
+      logger.info('Scheduler completed', {
         success: true,
         ...results,
-      };
+      }); return;
     } catch (error: any) {
       console.error('[Reputation] Error in daily recalculation job:', error);
       throw error;
@@ -320,7 +320,7 @@ export const reputation_cleanupOldAuditLogs = onSchedule({ schedule: "0 3 * * 0"
 
       if (oldLogsSnapshot.empty) {
         console.log('[Reputation] No old audit logs to cleanup');
-        return { success: true, deleted: 0 };
+        logger.info('Scheduler completed', { success: true, deleted: 0 }); return;
       }
 
       // Delete in batches
@@ -333,10 +333,10 @@ export const reputation_cleanupOldAuditLogs = onSchedule({ schedule: "0 3 * * 0"
 
       console.log(`[Reputation] Cleaned up ${oldLogsSnapshot.size} old audit logs`);
 
-      return {
+      logger.info('Scheduler completed', {
         success: true,
         deleted: oldLogsSnapshot.size,
-      };
+      }); return;
     } catch (error: any) {
       console.error('[Reputation] Error in cleanup job:', error);
       throw error;

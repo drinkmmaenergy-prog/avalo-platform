@@ -14,6 +14,8 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, arrayUnion, auth, functions, getFirestore, increment, logger, onCall, timestamp, z } from './runtime';
+import { getFeatureFlag } from './lib/stubs';
+
 ;
 ;
 ;

@@ -339,7 +339,7 @@ export const pack381_validateAction = functions.https.onCall(async (request) => 
         data: { userId },
         auth: request.auth,
         rawRequest: request.rawRequest,
-      });
+      } as any, {} as any);
       
       return {
         allowed: riskResult.riskLevel !== 'critical',

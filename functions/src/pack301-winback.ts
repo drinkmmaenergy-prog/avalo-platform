@@ -15,7 +15,7 @@ import {
 } from './pack301-retention-service';
 import { enqueueNotification } from './pack293-notification-service';
 import { writeAuditLog } from './pack296-audit-helpers';
-import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
+import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule, logger } from './runtime';
 
 const db = admin.firestore();
 
@@ -95,7 +95,8 @@ export const dailyWinBackSequence = onSchedule({ schedule: "0 3 * * *", timeZone
         { merge: true }
       );
 
-      return summary;
+      logger.info('Scheduler completed', summary);
+      return;
     } catch (error) {
       console.error('[WinBack] Error in daily win-back sequence:', error);
       throw error;
@@ -183,10 +184,10 @@ export const markWinBackReturn = functions.https.onCall(async (request) => {
 
     // Check if user was in win-back sequence
     if (!profile.winBackSequenceStarted) {
-      return {
+      logger.info('Scheduler completed', {
         success: false,
         message: 'User was not in win-back sequence',
-      };
+      }); return;
     }
 
     // Mark as returned
@@ -194,11 +195,11 @@ export const markWinBackReturn = functions.https.onCall(async (request) => {
 
     console.log(`[WinBack] User ${userId} returned from win-back`);
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       message: 'Successfully marked as returned',
       winBackStep: profile.winBackSequenceStep,
-    };
+    }); return;
   } catch (error: any) {
     console.error('[WinBack] Error marking return:', error);
     throw new functions.https.HttpsError('internal', error.message);

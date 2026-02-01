@@ -216,7 +216,7 @@ export const dailyReviewMetrics = onSchedule({ schedule: "0 3 * * *", timeZone: 
       const stats30d = await storeReviewService.getReviewStats(thirtyDaysAgo, now);
 
       // Store metrics
-      await functions.firestore().collection('reviewMetrics').add({
+      await admin.firestore().collection('reviewMetrics').add({
         timestamp: now,
         period_24h: stats24h,
         period_7d: stats7d,

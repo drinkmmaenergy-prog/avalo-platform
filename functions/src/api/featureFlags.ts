@@ -147,8 +147,9 @@ async function getRemoteConfigFlags(): Promise<FeatureFlagsConfig> {
     const template = await admin.remoteConfig().getTemplate();
     const flagsParam = template.parameters?.featureFlags;
     
-    if (flagsParam?.defaultValue?.value) {
-      return JSON.parse(flagsParam.defaultValue.value as string);
+    const defaultValue = flagsParam?.defaultValue as { value?: string } | undefined;
+    if (defaultValue?.value) {
+      return JSON.parse(defaultValue.value);
     }
   } catch (error) {
     console.warn('Failed to fetch Remote Config flags, using defaults:', error);

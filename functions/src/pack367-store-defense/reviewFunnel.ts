@@ -10,7 +10,8 @@ import {
   ChurnSegment,
   Platform,
 } from './types';
-import { Timestamp, db, functions, timestamp } from '../runtime';
+import { Timestamp, functions, timestamp } from "../runtime";
+
 
 const db = admin.firestore();
 

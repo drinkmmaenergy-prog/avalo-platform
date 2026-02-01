@@ -4,7 +4,7 @@
  */
 
 import * as admin from 'firebase-admin';
-import { UserRatingSummary } from '../../shared/types/pack423-ratings.types';
+import { UserRatingSummary } from './types/shared/types/pack423-ratings.types';
 import { getAggregatedUserRatings } from './pack423-ratings.service';
 import { isRecentDetractor } from './pack423-nps.service';
 

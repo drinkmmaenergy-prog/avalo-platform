@@ -21,26 +21,29 @@ export enum ReviewSentiment {
   NEGATIVE = 'NEGATIVE',
 }
 
-export enum DefenseEventType {
-  SPIKE = 'SPIKE',
-  BOT_ATTACK = 'BOT_ATTACK',
-  SABOTAGE = 'SABOTAGE',
-  RECOVERY = 'RECOVERY',
-}
+export type DefenseEventType = 'SPIKE' | 'BOT_ATTACK' | 'SABOTAGE' | 'RECOVERY';
+export const DefenseEventType = {
+  SPIKE: 'SPIKE' as DefenseEventType,
+  BOT_ATTACK: 'BOT_ATTACK' as DefenseEventType,
+  SABOTAGE: 'SABOTAGE' as DefenseEventType,
+  RECOVERY: 'RECOVERY' as DefenseEventType,
+};
 
-export enum EventSeverity {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-  CRITICAL = 'CRITICAL',
-}
+export type EventSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export const EventSeverity = {
+  LOW: 'LOW' as EventSeverity,
+  MEDIUM: 'MEDIUM' as EventSeverity,
+  HIGH: 'HIGH' as EventSeverity,
+  CRITICAL: 'CRITICAL' as EventSeverity,
+};
 
-export enum TriggerSource {
-  REVIEWS = 'reviews',
-  FRAUD = 'fraud',
-  SOCIAL = 'social',
-  PRESS = 'press',
-}
+export type TriggerSource = 'reviews' | 'fraud' | 'social' | 'press' | 'REVIEWS' | 'FRAUD' | 'SOCIAL' | 'PRESS';
+export const TriggerSource = {
+  REVIEWS: 'REVIEWS' as TriggerSource,
+  FRAUD: 'FRAUD' as TriggerSource,
+  SOCIAL: 'SOCIAL' as TriggerSource,
+  PRESS: 'PRESS' as TriggerSource,
+};
 
 // ============================================================================
 // STORE REVIEWS MIRROR

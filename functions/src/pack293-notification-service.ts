@@ -492,3 +492,71 @@ export async function logNotificationFailure(
     blocked: false,
   });
 }
+
+/**
+ * Send push notification to a user
+ * This is a wrapper around FCM for sending push notifications
+ * Supports both (userId, notification) and single object form
+ */
+export async function sendPushNotification(
+  userIdOrOptions: string | {
+    userId: string;
+    type?: string;
+    title: string;
+    body: string;
+    data?: Record<string, string>;
+    throttleKey?: string;
+  },
+  notification?: {
+    title: string;
+    body: string;
+    data?: Record<string, string>;
+  }
+): Promise<void> {
+  // Normalize arguments
+  let userId: string;
+  let notif: { title: string; body: string; data?: Record<string, string> };
+  
+  if (typeof userIdOrOptions === 'string') {
+    userId = userIdOrOptions;
+    notif = notification!;
+  } else {
+    userId = userIdOrOptions.userId;
+    notif = {
+      title: userIdOrOptions.title,
+      body: userIdOrOptions.body,
+      data: userIdOrOptions.data,
+    };
+  }
+  // Get user's FCM tokens
+  const tokensSnap = await db
+    .collection('users')
+    .doc(userId)
+    .collection('fcmTokens')
+    .get();
+
+  if (tokensSnap.empty) {
+    console.log(`No FCM tokens found for user ${userId}`);
+    return;
+  }
+
+  const tokens = tokensSnap.docs.map(doc => doc.id);
+
+  // Send to all tokens
+  const message: admin.messaging.MulticastMessage = {
+    tokens,
+    notification: {
+      title: notif.title,
+      body: notif.body,
+    },
+    data: notif.data,
+  };
+
+  try {
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log(`Push notification sent to ${response.successCount}/${tokens.length} devices`);
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+    throw error;
+  }
+}

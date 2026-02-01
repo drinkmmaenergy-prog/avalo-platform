@@ -18,7 +18,7 @@ import {
   UpdateTicketRequest,
   UpdateTicketResponse,
   getAutoPriority,
-} from '../../shared/types/support';
+} from './types/shared/types/support';
 import {
   SupportTicketExtended,
   SafetyTicketMetadata,
@@ -32,7 +32,7 @@ import {
   NotificationIntegrationPayload,
   AuditIntegrationPayload,
   RiskIntegrationPayload,
-} from '../../shared/types/support-300b';
+} from './types/shared/types/support-300b';
 import { FieldValue, HttpsError, arrayUnion, auth, increment, onCall, timestamp } from './runtime';
 
 const db = admin.firestore();

@@ -116,7 +116,7 @@ export const updateCreatorKPIOnSafety = onDocumentCreated("safetyEvents/{eventId
   const snap = event.data;
   if (!snap) return;
     const eventData = snap.data();
-    const creatorId = event.reportedUser;
+    const creatorId = eventData.reportedUser;
 
     if (!creatorId) {
       return null;
@@ -303,7 +303,7 @@ export const refreshCreatorKPIs = onSchedule({ schedule: "0 2 * * *", timeZone: 
     }
 
     console.log(`Refreshed KPIs for ${processed} creators`);
-    return { processed };
+    // Scheduler functions must return void
   });
 
 /**

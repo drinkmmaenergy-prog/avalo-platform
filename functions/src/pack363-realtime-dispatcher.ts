@@ -424,8 +424,8 @@ export const dispatchSafetyEvent = onDocumentCreated('safety_events/{eventId}', 
     try {
       // Determine priority based on severity
       const priority: EventPriority = 
-        event.severity === 'emergency' ? 'max' :
-        event.severity === 'critical' ? 'high' :
+        eventData.severity === 'emergency' ? 'max' :
+        eventData.severity === 'critical' ? 'high' :
         'normal';
 
       // Publish safety event
@@ -435,9 +435,9 @@ export const dispatchSafetyEvent = onDocumentCreated('safety_events/{eventId}', 
         payload: {
           eventId,
           userId: eventData.userId,
-          severity: event.severity,
-          location: event.location,
-          context: event.context,
+          severity: eventData.severity,
+          location: eventData.location,
+          context: eventData.context,
           timestamp: Date.now()
         },
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -449,15 +449,15 @@ export const dispatchSafetyEvent = onDocumentCreated('safety_events/{eventId}', 
         eventType: 'safety_event_dispatched',
         eventId,
         userId: eventData.userId,
-        severity: event.severity,
+        severity: eventData.severity,
         timestamp: admin.firestore.FieldValue.serverTimestamp()
       });
 
       console.log(`[SAFETY] Dispatched ${priority} priority event: ${eventId}`);
 
       // If emergency, trigger additional alerts
-      if (event.severity === 'emergency') {
-        await triggerEmergencyProtocol(eventId, event);
+      if (eventData.severity === 'emergency') {
+        await triggerEmergencyProtocol(eventId, eventData);
       }
 
     } catch (error) {

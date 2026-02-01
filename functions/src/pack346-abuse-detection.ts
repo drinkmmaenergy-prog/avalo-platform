@@ -109,8 +109,8 @@ export const detectFakeMismatch = onDocumentCreated("safetyEvents/{eventId}", as
       return;
     }
 
-    const userId = event.reportedBy;
-    const creatorId = event.reportedUser;
+    const userId = eventData.reportedBy;
+    const creatorId = eventData.reportedUser;
 
     // Count mismatch reports by this user in last 30 days
     const thirtyDaysAgo = Timestamp.fromDate(

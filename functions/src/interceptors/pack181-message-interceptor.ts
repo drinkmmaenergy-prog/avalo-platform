@@ -6,7 +6,8 @@ import {
   checkActiveRestriction
 } from '../services/pack181-independence.service';
 import { BoundaryViolationContext } from '../types/pack181-independence.types';
-import { admin, db, timestamp } from '../runtime';
+import { admin, timestamp } from "../runtime";
+
 
 const db = getFirestore();
 

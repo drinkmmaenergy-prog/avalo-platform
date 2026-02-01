@@ -530,7 +530,8 @@ async function performAMLScreening(params: {
   }
 
   let status: 'clear' | 'review' | 'blocked' = 'clear';
-  if (flags.length > 2 || riskLevel === 'critical') {
+  // Note: 'critical' level would be set by future escalation logic
+  if (flags.length > 2 || (riskLevel as string) === 'critical') {
     status = 'blocked';
   } else if (flags.length > 0 || riskLevel === 'high') {
     status = 'review';

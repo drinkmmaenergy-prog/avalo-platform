@@ -30,7 +30,7 @@ export const retention_dailyCleanup = onSchedule({ schedule: "0 3 * * *", timeZo
 
     // Log results to a tracking collection
     await db.collection('retentionJobRuns').add({
-      jobId: context.eventId,
+      jobId: event.jobName || 'retention_dailyCleanup',
       runAt: serverTimestamp(),
       results,
     });

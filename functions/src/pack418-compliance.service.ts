@@ -26,7 +26,7 @@ import {
   TokenomicsContext,
   UserComplianceContext,
   ContentComplianceContext,
-} from '../../shared/compliance/pack418-compliance-constants';
+} from './types/shared/compliance/pack418-compliance-constants';
 import { FieldValue, serverTimestamp, timestamp } from './runtime';
 
 // =============================================================================

@@ -238,7 +238,7 @@ export const batchRecomputeTrustScores = onSchedule("every 24 hours", async (eve
     for (const userDoc of usersSnapshot.docs) {
       try {
         // Call compute function for each user
-        await computePublicTrustScore.run({ data: { userId: userDoc.id } } as any);
+        await computePublicTrustScore.run({ data: { userId: userDoc.id } } as any, {} as any);
         processed++;
       } catch (error) {
         console.error(`Error computing trust score for user ${userDoc.id}:`, error);
@@ -271,7 +271,7 @@ export const getPublicTrustScore = functions.https.onCall(async (request) => {
       const result = await computePublicTrustScore.run({ 
         data: { userId: targetUserId },
         auth: request.auth as any
-      } as any);
+      } as any, {} as any);
       return result;
     }
 
@@ -284,7 +284,7 @@ export const getPublicTrustScore = functions.https.onCall(async (request) => {
       computePublicTrustScore.run({ 
         data: { userId: targetUserId },
         auth: request.auth as any
-      } as any).catch(err => console.error('Background trust score update failed:', err));
+      } as any, {} as any).catch(err => console.error('Background trust score update failed:', err));
     }
 
     return trustData;

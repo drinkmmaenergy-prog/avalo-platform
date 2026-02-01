@@ -12,10 +12,8 @@
  * - Fraud detection
  */
 
-import { db, serverTimestamp, increment, generateId, timestamp as Timestamp } from './init';
+import { db, serverTimestamp, increment, generateId, FieldValue } from './init';
 import { Timestamp, arrayUnion } from './runtime';
-
-const FieldValue = db.constructor.FieldValue;
 
 // ============================================================================
 // TYPES & INTERFACES

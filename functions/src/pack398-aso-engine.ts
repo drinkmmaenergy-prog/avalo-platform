@@ -431,7 +431,7 @@ export const getASODashboard = functions.https.onCall(async (request) => {
   const testsSnapshot = await testsQuery.get();
 
   // Get keyword performance
-  let keywordsQuery = db.collection('keyword_performance');
+  let keywordsQuery: FirebaseFirestore.Query | FirebaseFirestore.CollectionReference = db.collection('keyword_performance');
   if (countryCode) keywordsQuery = keywordsQuery.where('countryCode', '==', countryCode);
   if (platform) keywordsQuery = keywordsQuery.where('platform', '==', platform);
   const keywordsSnapshot = await keywordsQuery.orderBy('currentRank', 'asc').limit(50).get();

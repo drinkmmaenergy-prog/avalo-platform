@@ -24,7 +24,7 @@ import {
   STANDARD_METRIC_IDS,
   KpiSeverity,
   KpiTrend,
-} from '../../shared/types/pack413-kpi';
+} from './types/shared/types/pack413-kpi';
 import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();

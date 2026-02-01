@@ -18,7 +18,7 @@ import {
   validateTaxProfile,
   hasDoubleTaxTreaty
 } from './tax-rules';
-import { admin, server, timestamp } from '../runtime';
+import { admin, timestamp } from '../runtime';
 
 export async function registerTaxProfile(data: {
   userId: string;

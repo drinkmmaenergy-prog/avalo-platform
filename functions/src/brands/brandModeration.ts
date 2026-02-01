@@ -489,9 +489,9 @@ export const resolveReport = functions.https.onCall(async (request) => {
 
     if (action === 'ban') {
       if (reportData.target_type === 'brand_profile') {
-        await banBrandProfile.run({ brand_id: reportData.target_id, reason: reportData.reason }, context);
+        await banBrandProfile.run({ brand_id: reportData.target_id, reason: reportData.reason }, request);
       } else if (reportData.target_type === 'brand_product') {
-        await banProduct.run({ product_id: reportData.target_id, reason: reportData.reason }, context);
+        await banProduct.run({ product_id: reportData.target_id, reason: reportData.reason }, request);
       }
     } else if (action === 'suspend') {
       const collection = reportData.target_type === 'brand_profile' ? 'brand_profiles' : 'brand_products';

@@ -150,7 +150,7 @@ export async function confirmTransaction(
       console.log('Scheduled job result:', { success: true, tokensAssigned: data.tokenAmount });
 
       
-      return;
+      return { success: true };
     });
     
     return result;
@@ -158,7 +158,7 @@ export async function confirmTransaction(
     console.error('Transaction confirmation error:', error);
     console.log('Scheduled job result:', { success: false });
 
-    return;
+    return { success: false };
   }
 }
 

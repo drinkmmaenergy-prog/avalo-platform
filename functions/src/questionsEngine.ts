@@ -34,7 +34,7 @@ import type {
 // Import existing engines for integration
 import { recordRankingAction } from './rankingEngine';
 import { recordRiskEvent } from './trustEngine';
-import { HttpsError, timestamp } from './runtime';
+import { timestamp } from './runtime';
 
 // ============================================================================
 // CONSTANTS - PRICING & SPLITS

@@ -428,7 +428,8 @@ export const pack379_reviewVelocityGuard = onSchedule("every 5 minutes", async (
       }
     }
     
-    return { alerts };
+    console.log('Review velocity guard completed', { alertCount: alerts.length });
+    // Scheduler functions must return void
   });
 
 // ========================================
@@ -656,7 +657,8 @@ export const pack379_asoBoostOptimizer = onSchedule("every 6 hours", async (even
       });
     }
     
-    return { generated: optimizations.length };
+    console.log('ASO boost optimizer completed', { generated: optimizations.length });
+    // Scheduler functions must return void
   });
 
 async function fetchLatestASOMetrics(platform: 'ios' | 'android'): Promise<any> {
@@ -997,7 +999,8 @@ export const pack379_storePolicyWatcher = onSchedule("every 24 hours", async (ev
       }
     }
     
-    return { checks: complianceChecks.length };
+    console.log('Store policy watcher completed', { checks: complianceChecks.length });
+    // Scheduler functions must return void
   });
 
 async function runComplianceChecks(): Promise<any[]> {

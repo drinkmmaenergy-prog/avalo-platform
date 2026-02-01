@@ -21,7 +21,7 @@ import { auth, functions, onCall } from './runtime';
  * 
  * Usage in existing Cloud Functions:
  * ```typescript
- * import { enforceStepUpForAction } from './pack96-twoFactorIntegrations';
+ * 
  * 
  * export const createPayoutRequest = onCall(async (request) => {
  *   await enforceStepUpForAction(request.auth?.uid, 'PAYOUT_REQUEST_CREATE');
@@ -168,7 +168,7 @@ export async function enforceStepUpForEarnEnable(userId: string): Promise<void> 
  * 
  * After (with step-up):
  * ```typescript
- * import { enforceStepUpForPayoutRequest } from './pack96-twoFactorIntegrations';
+ * 
  * 
  * export const payout_createRequest_callable = onCall(async (request) => {
  *   const userId = request.auth?.uid;
@@ -187,7 +187,7 @@ export async function enforceStepUpForEarnEnable(userId: string): Promise<void> 
  * Example 2: KYC Submission with Step-Up
  * 
  * ```typescript
- * import { enforceStepUpForKYC } from './pack96-twoFactorIntegrations';
+ * 
  * 
  * export const kyc_submitApplication_callable = onCall(async (request) => {
  *   const userId = request.auth?.uid;
@@ -206,7 +206,7 @@ export async function enforceStepUpForEarnEnable(userId: string): Promise<void> 
  * Example 3: Conditional Step-Up Check
  * 
  * ```typescript
- * import { checkIfStepUpRequired } from './pack96-twoFactorIntegrations';
+ * 
  * 
  * export const getPayoutAvailability = onCall(async (request) => {
  *   const userId = request.auth?.uid;

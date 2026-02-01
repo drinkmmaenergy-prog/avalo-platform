@@ -15,7 +15,7 @@ import {
   ModeratedContentType,
   AdminReviewRequest,
   ModerationQueueItem,
-} from '../../shared/types/contentModeration';
+} from './types/shared/types/contentModeration';
 import { logEvent } from './observability';
 import { HttpsError, admin, onCall, onRequest, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
 

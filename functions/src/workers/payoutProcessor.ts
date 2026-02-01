@@ -182,13 +182,14 @@ async function executeStripeTransfer(payout: PayoutRequest) {
     },
   });
 
-  console.log('Scheduled job result:', {
+  const transferResult = {
     transferId: result.transferId,
-    status: result.status,
-  });
+    status: result.status as "PENDING" | "PROCESSING" | "PAID" | "FAILED",
+  };
+  console.log('Scheduled job result:', transferResult);
 
 
-  return;
+  return transferResult;
 }
 
 /**
@@ -228,13 +229,14 @@ async function executeWiseTransfer(payout: PayoutRequest) {
     },
   });
 
-  console.log('Scheduled job result:', {
+  const transferResult = {
     transferId: result.transferId,
-    status: result.status,
-  });
+    status: result.status as "PENDING" | "PROCESSING" | "PAID" | "FAILED",
+  };
+  console.log('Scheduled job result:', transferResult);
 
 
-  return;
+  return transferResult;
 }
 
 /**

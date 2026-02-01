@@ -13,18 +13,17 @@
  * - handleProviderWebhook: Unified webhook handler for all providers
  */
 
+import * as crypto from 'crypto';
+
 import * as functions from "firebase-functions/v2";
 import { HttpsError } from 'firebase-functions/v2/https';
-;
 import { FieldValue } from 'firebase-admin/firestore';
 import Stripe from "stripe";
 import { admin, auth, getFirestore, increment, onCall, onRequest, serverTimestamp } from './runtime';
-// ; // Requires axios package
-;
-;
-// ; // Requires currency module
+import { logServerEvent } from './lib/stubs';
+
 const logAnalyticsEvent = (eventName: string, properties: any) => {
-  return logServerEvent(eventName, properties, properties.userId || "system");
+  logServerEvent(eventName, properties);
 };
 // Axios placeholder - requires axios package installation
 const axios = {
@@ -222,7 +221,7 @@ async function createStripeSession(
   tokens: number
 ): Promise<{ paymentUrl: string; providerSessionId: string }> {
   const config = getProviderConfig(PaymentProvider.STRIPE);
-  const stripe = new Stripe(config.secretKey, { apiVersion: "2025-02-24.acacia" });
+  const stripe = new Stripe(config.secretKey, { apiVersion: "2025-02-24.acacia" as any });
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],

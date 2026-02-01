@@ -16,7 +16,7 @@ import type {
   LaunchDependencyCheck,
   MarketExpansionProposal,
   LaunchStage,
-} from '../../shared/types/pack412-launch';
+} from './types/shared/types/pack412-launch';
 import { HttpsError, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 const db = admin.firestore();
@@ -565,18 +565,21 @@ export const pack412_createOrUpdateRegionConfig = functions.https.onCall(async (
     });
   } else {
     // Create new
-    const newRegion: LaunchRegionConfig = {
+    const newRegion = {
       id: regionConfig.id,
+      regionId: regionConfig.regionId || regionConfig.id,
       cluster: regionConfig.cluster || 'GLOBAL_OTHER',
       countries: regionConfig.countries || [],
       stage: 'NOT_PLANNED',
       currentTrafficCapPct: 0,
-      featureFlags: regionConfig.featureFlags || [],
+      featureFlags: regionConfig.featureFlags || {},
       dependenciesOk: await computeRegionDependenciesOk(regionConfig.id, regionConfig.countries || []),
       createdAt: now,
       updatedAt: now,
+      enabled: regionConfig.enabled ?? false,
+      rolloutPercentage: regionConfig.rolloutPercentage ?? 0,
       ...regionConfig,
-    };
+    } as LaunchRegionConfig;
     
     await regionRef.set(newRegion);
     

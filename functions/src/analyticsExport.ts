@@ -10,10 +10,10 @@
  * Region: europe-west3
  */
 
-;
 import { Timestamp } from 'firebase-admin/firestore';
+import { storage as firebaseStorage } from './init';
 import { admin, getFirestore, logger, onSchedule, serverTimestamp } from './runtime';
-// import { BigQuery } from "@google-cloud/bigquery"; // Requires @google-cloud/bigquery package
+//  // Requires @google-cloud/bigquery package
 // BigQuery placeholder - requires package installation
 class BigQuery {
   async getDatasets() {
@@ -36,12 +36,10 @@ class BigQuery {
     };
   }
 }
-;
-;
 
 const db = getFirestore();
 const bigquery = new BigQuery();
-const storage = getStorage();
+const storage = firebaseStorage;
 
 const DATASET_ID = "avalo";
 const TABLE_ID = "analytics_events";
