@@ -1,0 +1,6 @@
+
+> avalo-cloud-functions@1.0.0 build C:\a\avalo\functions
+> tsc ";" "Get-Content" "build_output.txt" "-Head" "200"
+
+error TS5023: Unknown compiler option '-Head'.
+ ELIFECYCLE  Command failed with exit code 1.

@@ -456,10 +456,11 @@ async function getUserFraudHistory(userId: string) {
     .where('flagged', '==', true)
     .get();
 
-  console.log('Scheduled job result:', { count: fraudSnapshot.size });
+  const result = { count: fraudSnapshot.size };
+  console.log('Scheduled job result:', result);
 
 
-  return;
+  return result;
 }
 
 async function calculateRouteScore(

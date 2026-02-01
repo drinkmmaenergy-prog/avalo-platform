@@ -243,7 +243,7 @@ export const twoFactor_checkRequirement_callable = onCall<{ action: SensitiveAct
  * Helper function to enforce step-up verification in other Cloud Functions
  * Usage:
  * 
- * import { requireStepUpVerification } from './pack96-twoFactorEndpoints';
+ * 
  * 
  * export const myFunction = onCall(async (request) => {
  *   await requireStepUpVerification(request.auth?.uid, 'PAYOUT_REQUEST_CREATE');

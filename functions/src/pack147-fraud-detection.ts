@@ -84,7 +84,7 @@ export async function detectFraudPattern(params: {
       pattern: fraudDetected.pattern!,
       confidence: fraudDetected.confidence,
       severity: fraudDetected.severity!,
-      metrics: fraudDetected.metrics || {},
+      metrics: (fraudDetected as any).metrics || {},
       action
     });
     

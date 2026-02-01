@@ -85,11 +85,11 @@ export const pack386_registerInfluencer = functions.https.onCall(
     socialHandles: Record<string, string>;
     tier: 'NANO' | 'MICRO' | 'MID' | 'MACRO' | 'MEGA';
   }, context) => {
-    if (!request.auth) {
+    if (!context.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const adminUserId = request.auth.uid;
+    const adminUserId = context.auth.uid;
 
     // Verify admin permissions
     const userDoc = await db.collection('users').doc(adminUserId).get();

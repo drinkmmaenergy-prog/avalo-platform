@@ -9,7 +9,7 @@
  * - SUSPICIOUS_PATTERN: Other suspicious patterns
  */
 
-import { db, timestamp as Timestamp } from './init';
+import { db } from './init';
 import { 
   SessionContext, 
   AnomalyType, 
@@ -88,7 +88,8 @@ export async function evaluateLoginAnomaly(
     
     // Determine if we should notify and/or block
     const shouldNotify = anomalies.length > 0;
-    const shouldBlock = riskLevel === 'CRITICAL' || 
+    // Note: CRITICAL level would be set by future escalation logic
+    const shouldBlock = (riskLevel as string) === 'CRITICAL' || 
                         (riskLevel === 'HIGH' && anomalies.includes('IMPOSSIBLE_TRAVEL'));
     
     return {

@@ -11,7 +11,7 @@
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions/v2';
-import { db, serverTimestamp, timestamp as Timestamp, generateId } from './init';
+import { db, serverTimestamp, generateId } from './init';
 import {
   RegisterDeviceAndSessionRequest,
   RegisterDeviceAndSessionResponse,

@@ -17,7 +17,7 @@ import {
   FeatureFlagConfig,
   FeatureFlagChangeEvent,
   CRITICAL_FEATURES,
-} from '../../shared/config/pack416-feature-flags';
+} from './types/shared/config/pack416-feature-flags';
 import { HttpsError, admin, auth, increment, onCall, onRequest, serverTimestamp, timestamp, onDocumentUpdated } from './runtime';
 
 const db = getFirestore();
@@ -315,7 +315,7 @@ export const onFeatureFlagChanged = onDocumentUpdated('featureFlags/{flagKey}', 
       const after = change.after.data() as FeatureFlagConfig;
       const flagKey = event.params.flagKey as FeatureFlagKey;
       
-      const event: FeatureFlagChangeEvent = {
+      const changeEvent: FeatureFlagChangeEvent = {
         flagKey,
         before: {
           enabled: before.enabled,

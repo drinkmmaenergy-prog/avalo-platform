@@ -22,7 +22,7 @@ import type {
   MismatchReportRequest,
   GoodwillRefundRequest,
   CompleteMeetingRequest,
-} from '../../shared/src/types/calendar';
+} from './types/shared/src/types/calendar';
 import { HttpsError, auth, db, onCall, logger, onSchedule } from './runtime';
 
 /**

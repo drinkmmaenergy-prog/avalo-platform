@@ -689,7 +689,7 @@ export async function getPayoutRequests(params: {
   };
 }
 // Stub export for missing function
-export async function getPendingWithdrawals(userId: string): Promise<any[]> {
+export async function getPendingWithdrawals(userIdOrLimit?: string | number): Promise<any[]> {
   // TODO: Implement
   return [];
 }

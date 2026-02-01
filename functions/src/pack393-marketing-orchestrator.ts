@@ -566,7 +566,7 @@ export const pack393_manualOrchestration = onCall(
     functions.logger.info('🔧 Manual orchestration triggered by admin:', request.auth.uid);
     
     // Run orchestration immediately
-    const result = await pack393_marketingOrchestrator(null as any);
+    const result = await pack393_marketingOrchestrator(null as any, {} as any);
     
     console.log('Scheduled job result:', { success: true, result });
 

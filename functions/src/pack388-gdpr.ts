@@ -124,7 +124,7 @@ export const pack388_requestDataExport = functions.https.onCall(async (request) 
       new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
     );
 
-    const request: DataRequest = {
+    const dataRequest: DataRequest = {
       id: requestRef.id,
       userId,
       type: DataRequestType.EXPORT,
@@ -132,13 +132,13 @@ export const pack388_requestDataExport = functions.https.onCall(async (request) 
       createdAt: admin.firestore.Timestamp.now(),
       legalDeadline: deadline,
       metadata: {
-        ipAddress: request.rawRequest?.ip,
-        userAgent: request.rawRequest?.headers['user-agent'],
+        ipAddress: (request as any).rawRequest?.ip,
+        userAgent: (request as any).rawRequest?.headers?.['user-agent'],
         jurisdiction: jurisdiction || 'EU'
       }
     };
 
-    await requestRef.set(request);
+    await requestRef.set(dataRequest);
 
     // Audit log
     await pack296_auditLog({
@@ -339,7 +339,7 @@ export const pack388_executeRightToBeForgotten = functions.https.onCall(async (r
       new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
     );
 
-    const request: DataRequest = {
+    const deleteRequest: DataRequest = {
       id: requestRef.id,
       userId,
       type: DataRequestType.DELETE,
@@ -347,13 +347,13 @@ export const pack388_executeRightToBeForgotten = functions.https.onCall(async (r
       createdAt: admin.firestore.Timestamp.now(),
       legalDeadline: deadline,
       metadata: {
-        ipAddress: request.rawRequest?.ip,
-        userAgent: request.rawRequest?.headers['user-agent'],
+        ipAddress: (request as any).rawRequest?.ip,
+        userAgent: (request as any).rawRequest?.headers?.['user-agent'],
         jurisdiction: 'EU'
       }
     };
 
-    await requestRef.set(request);
+    await requestRef.set(deleteRequest);
 
     // Freeze wallet immediately
     await pack277_freezeWallet({ userId, reason: 'RIGHT_TO_BE_FORGOTTEN' });

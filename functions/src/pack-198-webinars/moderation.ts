@@ -6,7 +6,8 @@
 import * as admin from 'firebase-admin';
 import { EventModerationFlag, ModerationAction } from './types';
 import { calculateToxicityScore, shouldAutoModerate } from './validation';
-import { FieldValue, Timestamp, db, increment, timestamp } from '../runtime';
+import { FieldValue, Timestamp, increment, timestamp } from "../runtime";
+
 
 const db = admin.firestore();
 

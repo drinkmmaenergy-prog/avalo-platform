@@ -13,7 +13,7 @@ import {
   DEFAULT_REPUTATION_WEIGHTS,
   RiskLabel,
   ReputationHistoryEvent,
-} from '../../shared/types/pack422-reputation.types';
+} from './types/shared/types/pack422-reputation.types';
 import { timestamp } from './runtime';
 
 const db = admin.firestore();

@@ -227,7 +227,7 @@ export const storePolicyViolationMonitor = functions.https.onCall(async (request
       // Generate defense dossier
       await generateStoreDefenseDossier({
         data: { alertId: alert.timestamp.toMillis().toString(), platform }
-      } as any, context);
+      } as any, request);
     }
 
     return alert;

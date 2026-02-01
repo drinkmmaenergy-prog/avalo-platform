@@ -22,7 +22,7 @@ import {
   TOKEN_PAYOUT_RATE_PLN,
   TokenomicsContext,
   UserComplianceContext,
-} from '../../shared/compliance/pack418-compliance-constants';
+} from './types/shared/compliance/pack418-compliance-constants';
 
 // =============================================================================
 // EXAMPLE 1: WALLET / TOKEN SPEND INTEGRATION (PACK 277)

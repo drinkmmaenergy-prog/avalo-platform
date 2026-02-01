@@ -40,7 +40,7 @@ export class ReferralAbuseDetector {
 
     const signalStrength = this.calculateSignalStrength(totalIndicators);
     const confidenceScore = await this.calculateConfidenceScore(userId, {
-      inviteRing,
+      inviteRing: inviteRing.detected,
       selfReferral,
       farmIndicators,
     });
@@ -428,7 +428,7 @@ export class ReferralAbuseDetector {
   private async storeFraudSignals(signals: ReferralFraudSignals): Promise<void> {
     await this.db.collection('pack441_fraud_signals').doc(signals.userId).set({
       ...signals,
-      detectedAt: Firestore.FieldValue.serverTimestamp(),
+      detectedAt: FieldValue.serverTimestamp(),
     });
 
     // Also store in history
@@ -438,7 +438,7 @@ export class ReferralAbuseDetector {
       .collection('history')
       .add({
         ...signals,
-        detectedAt: Firestore.FieldValue.serverTimestamp(),
+        detectedAt: FieldValue.serverTimestamp(),
       });
   }
 
@@ -535,7 +535,7 @@ export class ReferralAbuseDetector {
   private async applyFraudAction(action: ReferralFraudAction): Promise<void> {
     await this.db.collection('pack441_fraud_actions').doc(action.userId).set({
       ...action,
-      appliedAt: Firestore.FieldValue.serverTimestamp(),
+      appliedAt: FieldValue.serverTimestamp(),
     });
 
     // Update user's trust score
@@ -559,8 +559,8 @@ export class ReferralAbuseDetector {
     await this.db.collection('pack441_trust_scores').doc(userId).set({
       userId,
       currentScore: newScore,
-      lastUpdated: Firestore.FieldValue.serverTimestamp(),
-      history: Firestore.FieldValue.arrayUnion({
+      lastUpdated: FieldValue.serverTimestamp(),
+      history: FieldValue.arrayUnion({
         score: newScore,
         timestamp: new Date(),
         reason: `Fraud action applied (severity: ${severity})`,
@@ -593,7 +593,7 @@ export class ReferralAbuseDetector {
 
     await this.db.collection('pack441_alerts').add({
       ...alert,
-      detectedAt: Firestore.FieldValue.serverTimestamp(),
+      detectedAt: FieldValue.serverTimestamp(),
     });
   }
 

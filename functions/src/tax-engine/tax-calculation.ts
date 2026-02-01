@@ -21,7 +21,7 @@ import {
   getGSTRate
 } from './tax-rules';
 import { getTaxProfile } from './tax-profile';
-import { admin, server, timestamp } from '../runtime';
+import { admin, timestamp } from '../runtime';
 
 export async function calculateTaxLiability(
   context: TaxCalculationContext

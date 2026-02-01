@@ -419,7 +419,7 @@ async function calculatePopularInCityMetric(
   userId: string,
   weekStart: Date,
   weekEnd: Date,
-  region: string
+  region: string = 'global'
 ): Promise<number> {
   const weekStartTs = Timestamp.fromDate(weekStart);
   const weekEndTs = Timestamp.fromDate(weekEnd);

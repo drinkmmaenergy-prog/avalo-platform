@@ -7,7 +7,7 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { LEGAL_DOCS, type LegalLang } from '../../../shared/legal/legalRegistry';
+import { LEGAL_DOCS, type LegalLang } from '../types/shared/legal/legalRegistry';
 import { FieldValue, HttpsError, auth, db, onCall, serverTimestamp, timestamp } from '../runtime';
 
 interface AcceptLegalRequest {
@@ -62,11 +62,11 @@ export const pack338a_acceptLegal = functions.https.onCall(async (request) => {
 
       // Get current document versions
       const acceptance: LegalAcceptance = {
-        termsVersion: LEGAL_DOCS.terms[lang].version,
-        privacyVersion: LEGAL_DOCS.privacy[lang].version,
-        guidelinesVersion: LEGAL_DOCS.guidelines[lang].version,
-        refundsVersion: LEGAL_DOCS.refunds[lang].version,
-        ageVerificationVersion: LEGAL_DOCS.ageVerification[lang].version,
+        termsVersion: LEGAL_DOCS.TOS.currentVersion,
+        privacyVersion: LEGAL_DOCS.PRIVACY.currentVersion,
+        guidelinesVersion: LEGAL_DOCS.COMMUNITY.currentVersion,
+        refundsVersion: LEGAL_DOCS.PAYMENT_TERMS.currentVersion,
+        ageVerificationVersion: LEGAL_DOCS.TOS.currentVersion, // Age verification uses TOS version
         acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
         lang,
         platform,

@@ -7,9 +7,18 @@ import { v4 as uuidv4 } from 'uuid';
 const storage = new Storage();
 const db = admin.firestore();
 
+// Default bucket name - uses Firebase default storage bucket
+const DEFAULT_BUCKET = process.env.FIREBASE_STORAGE_BUCKET || 'avalo-default.appspot.com';
+
+// Helper to get bucket with default
+function getDefaultBucket() {
+  return storage.bucket(DEFAULT_BUCKET);
+}
+
 // Reuse NSFW classifier from PACK 287
 import { classifyNSFW, NSFWFlag } from '../media/nsfwClassifier';
-import { FieldValue, HttpsError, Timestamp, auth, db, increment, onCall, storage, logger, onSchedule } from '../runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, logger, onSchedule } from "../runtime";
+
 
 /**
  * Content Policy Rules (from PACK 267, 268):
@@ -106,7 +115,7 @@ export const processContentUpload = onCall(
       }
 
       // Process media based on type
-      const bucket = storage.bucket();
+      const bucket = getDefaultBucket();
       const tempFile = bucket.file(data.tempPath);
 
       // Check file exists
@@ -120,7 +129,7 @@ export const processContentUpload = onCall(
 
       // Get file metadata
       const [metadata] = await tempFile.getMetadata();
-      const sizeBytes = parseInt(metadata.size || '0');
+      const sizeBytes = typeof metadata.size === 'number' ? metadata.size : parseInt(String(metadata.size || '0'));
 
       // Validate file size (max 100MB for photos, 500MB for videos)
       const maxSize = data.mediaType === 'PHOTO' ? 100 * 1024 * 1024 : 500 * 1024 * 1024;
@@ -293,7 +302,7 @@ async function processPhotoUpload(
   userId: string,
   sizeBytes: number
 ): Promise<MediaProcessingResult> {
-  const bucket = storage.bucket();
+  const bucket = getDefaultBucket();
   const contentId = uuidv4();
   
   // Determine storage path based on content type
@@ -362,7 +371,7 @@ async function processVideoUpload(
   userId: string,
   sizeBytes: number
 ): Promise<MediaProcessingResult> {
-  const bucket = storage.bucket();
+  const bucket = getDefaultBucket();
   const contentId = uuidv4();
   
   const basePath = contentType === 'POST' ? 'feed' : 
@@ -434,7 +443,7 @@ export const cleanupExpiredStories = onSchedule("every 1 hours", async (event) =
       .get();
 
     const batch = db.batch();
-    const bucket = storage.bucket();
+    const bucket = getDefaultBucket();
 
     for (const doc of expiredStories.docs) {
       const story = doc.data();

@@ -103,7 +103,7 @@ import { Timestamp, functions, timestamp } from '../runtime';
  * 
  * Usage:
  * ```typescript
- * import { RetentionEngine } from './pack301/retentionEngine';
+ * 
  * 
  * // Get user profile
  * const profile = await RetentionEngine.getUserRetentionProfile(userId);

@@ -17,8 +17,8 @@ import {
   DEFAULT_REVENUE_BY_VERTICAL,
   DEFAULT_FRAUD_BY_SEVERITY,
   KpiEventType,
-} from '../../shared/types/kpi';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, onSchedule } from './runtime';
+} from './types/kpi';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, onSchedule, logger } from './runtime';
 
 const db = admin.firestore();
 
@@ -67,7 +67,7 @@ export const aggregateDailyKpis = onSchedule({ schedule: "0 2 * * *", timeZone: 
       // Also aggregate creator metrics for the day
       await aggregateCreatorMetrics(dateString);
 
-      return { success: true, date: dateString };
+      logger.info('Scheduler completed', { success: true, date: dateString }); return;
     } catch (error) {
       console.error('Error in daily KPI aggregation:', error);
       throw error;
@@ -119,7 +119,7 @@ export const aggregateKpisForDate = functions.https.onCall(async (request) => {
 
       await aggregateCreatorMetrics(date);
 
-      return { success: true, date };
+      logger.info('Scheduler completed', { success: true, date }); return;
     } catch (error) {
       console.error(`Error aggregating KPIs for ${date}:`, error);
       throw new functions.https.HttpsError(

@@ -11,7 +11,7 @@
  */
 
 import { db } from './init';
-import { recordMissionProgress } from './pack263-creator-missions';
+import { recordMissionProgressInternal } from './pack263-creator-missions';
 import { auth, functions, onCall, timestamp, onDocumentUpdated } from './runtime';
 
 // ============================================================================
@@ -31,31 +31,27 @@ export async function integrateWithChatMonetization(
 ): Promise<void> {
   try {
     // Track "reply to paid messages" mission
-    await recordMissionProgress({
-      data: {
-        activityType: 'reply_messages',
-        value: messageCount,
-        metadata: {
-          source: 'paid_chat',
-          tokensEarned,
-          payerId,
-        },
-      },
-      auth: { uid: creatorId },
-    } as any);
+    await recordMissionProgressInternal(
+      creatorId,
+      'reply_messages',
+      messageCount,
+      {
+        source: 'paid_chat',
+        tokensEarned,
+        payerId,
+      }
+    );
 
     // Track "earn tokens" mission (weekly)
-    await recordMissionProgress({
-      data: {
-        activityType: 'earn_tokens',
-        value: tokensEarned,
-        metadata: {
-          source: 'chat',
-          payerId,
-        },
-      },
-      auth: { uid: creatorId },
-    } as any);
+    await recordMissionProgressInternal(
+      creatorId,
+      'earn_tokens',
+      tokensEarned,
+      {
+        source: 'chat',
+        payerId,
+      }
+    );
 
     console.log(`✅ Chat mission progress recorded for creator ${creatorId}`);
   } catch (error) {
@@ -72,17 +68,15 @@ export async function trackPaidChatFromDiscover(
   conversationId: string
 ): Promise<void> {
   try {
-    await recordMissionProgress({
-      data: {
-        activityType: 'start_paid_chat',
-        value: 1,
-        metadata: {
-          source: 'discover',
-          conversationId,
-        },
-      },
-      auth: { uid: creatorId },
-    } as any);
+    await recordMissionProgressInternal(
+      creatorId,
+      'start_paid_chat',
+      1,
+      {
+        source: 'discover',
+        conversationId,
+      }
+    );
 
     console.log(`✅ Paid chat from Discover tracked for ${creatorId}`);
   } catch (error) {
@@ -105,17 +99,15 @@ export async function trackDormantSupporterReactivation(
 
     // Only count if supporter was dormant for 7+ days
     if (daysSinceLastActivity >= 7) {
-      await recordMissionProgress({
-        data: {
-          activityType: 'reactivate_supporter',
-          value: 1,
-          metadata: {
-            supporterId,
-            daysDormant: daysSinceLastActivity,
-          },
-        },
-        auth: { uid: creatorId },
-      } as any);
+      await recordMissionProgressInternal(
+        creatorId,
+        'reactivate_supporter',
+        1,
+        {
+          supporterId,
+          daysDormant: daysSinceLastActivity,
+        }
+      );
 
       console.log(`✅ Dormant supporter reactivation tracked for ${creatorId}`);
     }
@@ -146,33 +138,29 @@ export async function integrateWithLiveBroadcast(
   try {
     // Track "host live" mission (requires minimum 2 viewers)
     if (sessionData.averageViewers >= 2) {
-      await recordMissionProgress({
-        data: {
-          activityType: 'host_live',
-          value: sessionData.durationMinutes,
-          metadata: {
-            viewerCount: sessionData.averageViewers,
-            peakViewers: sessionData.peakViewers,
-            giftsReceived: sessionData.giftsReceived,
-          },
-        },
-        auth: { uid: creatorId },
-      } as any);
+      await recordMissionProgressInternal(
+        creatorId,
+        'host_live',
+        sessionData.durationMinutes,
+        {
+          viewerCount: sessionData.averageViewers,
+          peakViewers: sessionData.peakViewers,
+          giftsReceived: sessionData.giftsReceived,
+        }
+      );
     }
 
     // Track tokens earned from gifts
     if (sessionData.tokensEarned > 0) {
-      await recordMissionProgress({
-        data: {
-          activityType: 'earn_tokens',
-          value: sessionData.tokensEarned,
-          metadata: {
-            source: 'live_gifts',
-            sessionDuration: sessionData.durationMinutes,
-          },
-        },
-        auth: { uid: creatorId },
-      } as any);
+      await recordMissionProgressInternal(
+        creatorId,
+        'earn_tokens',
+        sessionData.tokensEarned,
+        {
+          source: 'live_gifts',
+          sessionDuration: sessionData.durationMinutes,
+        }
+      );
     }
 
     console.log(`✅ Live broadcast mission progress recorded for ${creatorId}`);
@@ -191,18 +179,16 @@ export async function trackPPVTicketSale(
   liveId: string
 ): Promise<void> {
   try {
-    await recordMissionProgress({
-      data: {
-        activityType: 'sell_ppv_tickets',
-        value: 1,
-        metadata: {
-          buyerId,
-          ticketPrice,
-          liveId,
-        },
-      },
-      auth: { uid: creatorId },
-    } as any);
+    await recordMissionProgressInternal(
+      creatorId,
+      'sell_ppv_tickets',
+      1,
+      {
+        buyerId,
+        ticketPrice,
+        liveId,
+      }
+    );
 
     console.log(`✅ PPV ticket sale tracked for ${creatorId}`);
   } catch (error) {
@@ -232,19 +218,17 @@ export async function integrateWithEvents(
 
     // Only count if event has legitimate attendance
     if (checkinCount >= 5) {
-      await recordMissionProgress({
-        data: {
-          activityType: 'sell_event_tickets',
-          value: 1,
-          metadata: {
-            eventId,
-            buyerId,
-            ticketPrice,
-            checkinCount,
-          },
-        },
-        auth: { uid: creatorId },
-      } as any);
+      await recordMissionProgressInternal(
+        creatorId,
+        'sell_event_tickets',
+        1,
+        {
+          eventId,
+          buyerId,
+          ticketPrice,
+          checkinCount,
+        }
+      );
 
       console.log(`✅ Event ticket sale tracked for ${creatorId}`);
     }
@@ -267,18 +251,16 @@ export async function integrateWithFanClub(
   subscriptionPrice: number
 ): Promise<void> {
   try {
-    await recordMissionProgress({
-      data: {
-        activityType: 'fan_club_subs',
-        value: 1,
-        metadata: {
-          subscriberId,
-          tier: subscriptionTier,
-          price: subscriptionPrice,
-        },
-      },
-      auth: { uid: creatorId },
-    } as any);
+    await recordMissionProgressInternal(
+      creatorId,
+      'fan_club_subs',
+      1,
+      {
+        subscriberId,
+        tier: subscriptionTier,
+        price: subscriptionPrice,
+      }
+    );
 
     console.log(`✅ Fan Club subscription tracked for ${creatorId}`);
   } catch (error) {
@@ -299,18 +281,16 @@ export async function trackStoryPost(
   mediaType: 'photo' | 'video'
 ): Promise<void> {
   try {
-    await recordMissionProgress({
-      data: {
-        activityType: 'post_story',
-        value: 1,
-        metadata: {
-          storyId,
-          mediaType,
-          timestamp: new Date().toISOString(),
-        },
-      },
-      auth: { uid: creatorId },
-    } as any);
+    await recordMissionProgressInternal(
+      creatorId,
+      'post_story',
+      1,
+      {
+        storyId,
+        mediaType,
+        timestamp: new Date().toISOString(),
+      }
+    );
 
     console.log(`✅ Story post tracked for ${creatorId}`);
   } catch (error) {
@@ -334,17 +314,15 @@ export async function trackChatReplySpeed(
   try {
     // Only track if in top 10%
     if (percentileRanking <= 10) {
-      await recordMissionProgress({
-        data: {
-          activityType: 'chat_reply_speed',
-          value: percentileRanking,
-          metadata: {
-            percentile: percentileRanking,
-            calculatedAt: new Date().toISOString(),
-          },
-        },
-        auth: { uid: creatorId },
-      } as any);
+      await recordMissionProgressInternal(
+        creatorId,
+        'chat_reply_speed',
+        percentileRanking,
+        {
+          percentile: percentileRanking,
+          calculatedAt: new Date().toISOString(),
+        }
+      );
 
       console.log(`✅ Chat reply speed ranking tracked for ${creatorId}`);
     }
@@ -404,7 +382,7 @@ export async function getActiveMissionsForActivity(
  * EXAMPLE 1: In Chat Billing Function
  * 
  * ```typescript
- * import { integrateWithChatMonetization } from './pack263-missions-integration';
+ * 
  * 
  * export const processChatPayment = functions.https.onCall(async (request) => {
  *   // ... existing chat billing logic ...
@@ -428,7 +406,7 @@ export async function getActiveMissionsForActivity(
  * EXAMPLE 2: In Live Session End Handler
  * 
  * ```typescript
- * import { integrateWithLiveBroadcast } from './pack263-missions-integration';
+ * 
  * 
  * export const endLiveSession = functions.firestore
  *   .document('live_sessions/{sessionId}')
@@ -452,7 +430,7 @@ export async function getActiveMissionsForActivity(
  * EXAMPLE 3: In Fan Club Subscription Handler
  * 
  * ```typescript
- * import { integrateWithFanClub } from './pack263-missions-integration';
+ * 
  * 
  * export const handleFanClubSubscription = functions.https.onCall(async (request) => {
  *   // ... existing subscription logic ...

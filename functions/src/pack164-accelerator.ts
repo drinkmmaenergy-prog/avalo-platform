@@ -1,5 +1,5 @@
 import * as functions from 'firebase-functions';
-import { db, serverTimestamp, generateId, timestamp as Timestamp } from './init';
+import { db, serverTimestamp, generateId } from './init';
 import { z } from 'zod';
 import { HttpsError, Timestamp, admin, auth, onCall, onSchedule } from './runtime';
 

@@ -21,6 +21,8 @@
  * @section SECURITY_LAYER
  */
 
+import * as crypto from 'crypto';
+
 ;
 ;
 import { HttpsError } from 'firebase-functions/v2/https';

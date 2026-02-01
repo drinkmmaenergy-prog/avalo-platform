@@ -16,15 +16,13 @@
  * @section CREATOR_ECONOMY
  */
 
+import * as crypto from 'crypto';
 import { HttpsError } from 'firebase-functions/v2/https';
+import { storage } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { admin, arrayUnion, auth, functions, getFirestore, increment, logger, onCall, serverTimestamp } from './runtime';
-;
-;
-;
 
 const db = getFirestore();
-const storage = getStorage();
 
 // ============================================================================
 // TYPES & INTERFACES

@@ -4,7 +4,7 @@
  */
 
 import { db, serverTimestamp, generateId } from './init';
-import { computeTasteProfile, aggregateEventCounters } from '../personalizationEngine';
+import { computeTasteProfile, aggregateEventCounters } from './personalizationEngine';
 import { HttpsError, Timestamp, auth, onCall, onSchedule, onDocumentCreated } from './runtime';
 
 // ============================================================================

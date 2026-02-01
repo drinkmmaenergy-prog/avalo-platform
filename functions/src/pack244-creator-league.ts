@@ -29,8 +29,9 @@ import type {
   LeagueIneligibilityReason,
   LeaguePrivileges,
   HallOfFameAchievement,
-} from '../../shared/src/types/creatorLeague';
-import { HttpsError, admin, auth, onCall, timestamp, logger, onSchedule } from './runtime';
+} from './types/shared/src/types/creatorLeague';
+import { HttpsError, admin, auth, onCall, timestamp, onSchedule } from "./runtime";
+
 
 const logger = functions.logger;
 
@@ -165,14 +166,15 @@ async function calculateTimeEfficiencyMultiplier(
     // Calculate average reply time
     const messages = messagesSnapshot.docs.map(doc => {
       const data = doc.data();
-      console.log('Scheduled job result:', {
+      const result = {
         id: doc.id,
         senderId: data.senderId,
         createdAt: data.createdAt,
         ...data,
-      });
+      };
+      console.log('Scheduled job result:', result);
 
-      return;
+      return result;
     });
     
     for (let i = 1; i < messages.length; i++) {

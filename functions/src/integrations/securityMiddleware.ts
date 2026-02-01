@@ -14,7 +14,8 @@ import {
   IntegrationStatus,
   CONSENT_REFRESH_MS
 } from '../types/integrations';
-import { db, functions, timestamp } from '../runtime';
+import { functions, timestamp } from "../runtime";
+
 
 const db = admin.firestore();
 

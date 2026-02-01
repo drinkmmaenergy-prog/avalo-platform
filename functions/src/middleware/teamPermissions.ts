@@ -10,6 +10,8 @@ import * as functions from 'firebase-functions';
 import { TeamPermission, ROLE_PERMISSIONS } from '../types/team';
 import { HttpsError, auth, db } from '../runtime';
 
+import { CallableRequest } from '../lib/stubs';
+
 export interface TeamContext {
   isOwner: boolean;
   isTeamMember: boolean;
@@ -237,6 +239,6 @@ export function withTeamPermission(
       requiredPermission
     );
 
-    return handler(data, context, teamContext);
+    return handler(data, request, teamContext);
   };
 }

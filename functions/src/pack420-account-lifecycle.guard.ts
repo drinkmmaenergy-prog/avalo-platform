@@ -12,7 +12,7 @@ import {
   LifecycleCheckResult,
   DataRightsError,
   DataRightsErrorCode,
-} from '../../shared/types/pack420-data-rights.types';
+} from './types/shared/types/pack420-data-rights.types';
 import { auth } from './runtime';
 
 const db = admin.firestore();
@@ -29,6 +29,7 @@ const FEATURE_ACCESS_MATRIX: Record<GatedFeature, AccountLifecycleState[]> = {
   // Communication (only ACTIVE users)
   CHAT: [AccountLifecycleState.ACTIVE],
   CALLS: [AccountLifecycleState.ACTIVE],
+  MESSAGING: [AccountLifecycleState.ACTIVE],
   
   // Meetings and events (only ACTIVE users)
   MEETINGS: [AccountLifecycleState.ACTIVE],
@@ -37,10 +38,15 @@ const FEATURE_ACCESS_MATRIX: Record<GatedFeature, AccountLifecycleState[]> = {
   // Monetization features (only ACTIVE users)
   EARN: [AccountLifecycleState.ACTIVE],
   WITHDRAW: [AccountLifecycleState.ACTIVE],
+  PAYMENTS: [AccountLifecycleState.ACTIVE],
   
   // Content creation (only ACTIVE users)
   POST: [AccountLifecycleState.ACTIVE],
   AI_COMPANIONS: [AccountLifecycleState.ACTIVE],
+  CONTENT_UPLOAD: [AccountLifecycleState.ACTIVE],
+  
+  // Profile management
+  PROFILE_EDIT: [AccountLifecycleState.ACTIVE],
 };
 
 /**

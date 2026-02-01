@@ -14,7 +14,8 @@ import {
   RateLimitStatus
 } from '../types/integrations';
 import * as crypto from 'crypto';
-import { FieldValue, HttpsError, auth, db, functions, increment, onCall, timestamp } from '../runtime';
+import { FieldValue, HttpsError, auth, functions, increment, onCall, timestamp } from "../runtime";
+
 
 const db = admin.firestore();
 
@@ -52,45 +53,45 @@ export const getIntegrationDataset = https.onCall(async (request) => {
     ]);
 
     if (!partnerDoc.exists) {
-      await logAccessAttempt(partnerId, integrationId, dataType, 404, Date.now() - startTime, context, 'Partner not found');
+      await logAccessAttempt(partnerId, integrationId, dataType, 404, Date.now() - startTime, request, 'Partner not found');
       throw new https.HttpsError('not-found', 'Partner not found');
     }
 
     const partner = partnerDoc.data();
 
     if (partner?.apiKey !== apiKey) {
-      await logAccessAttempt(partnerId, integrationId, dataType, 401, Date.now() - startTime, context, 'Invalid API key');
+      await logAccessAttempt(partnerId, integrationId, dataType, 401, Date.now() - startTime, request, 'Invalid API key');
       throw new https.HttpsError('permission-denied', 'Invalid API key');
     }
 
     if (partner?.status === IntegrationStatus.BANNED || 
         partner?.status === IntegrationStatus.SUSPENDED) {
-      await logAccessAttempt(partnerId, integrationId, dataType, 403, Date.now() - startTime, context, 'Partner suspended/banned');
+      await logAccessAttempt(partnerId, integrationId, dataType, 403, Date.now() - startTime, request, 'Partner suspended/banned');
       throw new https.HttpsError('permission-denied', 'Partner access suspended');
     }
 
     if (!integrationDoc.exists) {
-      await logAccessAttempt(partnerId, integrationId, dataType, 404, Date.now() - startTime, context, 'Integration not found');
+      await logAccessAttempt(partnerId, integrationId, dataType, 404, Date.now() - startTime, request, 'Integration not found');
       throw new https.HttpsError('not-found', 'Integration not found');
     }
 
     const integration = integrationDoc.data();
 
     if (integration?.status !== IntegrationStatus.ACTIVE) {
-      await logAccessAttempt(partnerId, integrationId, dataType, 403, Date.now() - startTime, context, 'Integration not active');
+      await logAccessAttempt(partnerId, integrationId, dataType, 403, Date.now() - startTime, request, 'Integration not active');
       throw new https.HttpsError('permission-denied', 'Integration not active');
     }
 
     // Check consent expiration
     const now = new Date();
     if (integration?.consentExpiresAt && new Date(integration.consentExpiresAt) < now) {
-      await logAccessAttempt(partnerId, integrationId, dataType, 403, Date.now() - startTime, context, 'Consent expired');
+      await logAccessAttempt(partnerId, integrationId, dataType, 403, Date.now() - startTime, request, 'Consent expired');
       throw new https.HttpsError('permission-denied', 'Consent expired - renewal required');
     }
 
     // Check permissions
     if (!integration?.approvedPermissions?.includes(dataType)) {
-      await logAccessAttempt(partnerId, integrationId, dataType, 403, Date.now() - startTime, context, 'Permission not granted', ViolationType.RESTRICTED_DATA_ACCESS);
+      await logAccessAttempt(partnerId, integrationId, dataType, 403, Date.now() - startTime, request, 'Permission not granted', ViolationType.RESTRICTED_DATA_ACCESS);
       throw new https.HttpsError('permission-denied', 'Permission not granted for this data type');
     }
 
@@ -114,9 +115,9 @@ export const getIntegrationDataset = https.onCall(async (request) => {
       dataType,
       200,
       responseTime,
-      context,
+      request,
       'Success',
-      null,
+      undefined,
       dataset.recordCount
     );
 
@@ -578,7 +579,7 @@ async function logAccessAttempt(
     logId,
     partnerId,
     integrationId,
-    creatorId: request.auth?.uid || 'unknown',
+    creatorId: context?.auth?.uid || 'unknown',
     endpoint: 'getIntegrationDataset',
     method: 'POST',
     requestedData: [dataType as DataPermissionType],
@@ -586,8 +587,8 @@ async function logAccessAttempt(
     responseTime,
     dataReturned: statusCode === 200,
     recordCount,
-    ipAddress: request.rawRequest?.ip || 'unknown',
-    userAgent: request.rawRequest?.headers['user-agent'] || 'unknown',
+    ipAddress: context?.rawRequest?.ip || 'unknown',
+    userAgent: context?.rawRequest?.headers?.['user-agent'] || 'unknown',
     timestamp: new Date(),
     anomalyScore: 0,
     flaggedForReview: violation !== undefined,

@@ -546,7 +546,7 @@ export function getReputationDisplay(overallScore: number): {
  * In functions/src/expertMarketplace.ts, completeMentorshipSession function:
  * 
  * ```typescript
- * import { trackMentorshipSessionCompleted } from './reputation-integrations';
+ * 
  * 
  * // After marking session as completed
  * await trackMentorshipSessionCompleted(expertId, userId, sessionId);
@@ -557,7 +557,7 @@ export function getReputationDisplay(overallScore: number): {
  * In functions/src/events.ts, check-in function:
  * 
  * ```typescript
- * import { trackEventAttended } from './reputation-integrations';
+ * 
  * 
  * // After successful check-in
  * await trackEventAttended(userId, eventId);
@@ -568,7 +568,7 @@ export function getReputationDisplay(overallScore: number): {
  * In pack126-harassment-shield.ts:
  * 
  * ```typescript
- * import { trackHarassmentDetected } from './reputation-integrations';
+ * 
  * 
  * // When harassment detected
  * await trackHarassmentDetected(userId, caseId, level);

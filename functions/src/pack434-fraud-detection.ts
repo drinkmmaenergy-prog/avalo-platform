@@ -31,7 +31,7 @@ export interface FraudAlert {
   severity: 'low' | 'medium' | 'high' | 'critical';
   
   // Entities involved
-  ambassadorIds: string[];
+  ambassadorIds?: string[];
   userIds?: string[];
   deviceIds?: string[];
   eventIds?: string[];

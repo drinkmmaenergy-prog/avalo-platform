@@ -5,7 +5,7 @@
 
 import * as functions from 'firebase-functions';
 import { db, admin } from './init';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, onSchedule, logger } from './runtime';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -566,7 +566,7 @@ export const amlDailyMonitor = onSchedule("0 2 * * *", async (event) => {
       }
 
       console.log(`[AML Monitor] Processed ${processedCount} AML profiles`);
-      return { success: true, count: processedCount };
+      logger.info('Scheduler completed', { success: true, count: processedCount }); return;
     } catch (error: any) {
       console.error('[AML Monitor] Error in daily monitor:', error);
       throw error;
@@ -614,11 +614,11 @@ export const requestDataErasure = functions.https.onCall(async (request) => {
 
     console.log(`GDPR erasure request created: ${requestId} for user ${userId}`);
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       requestId,
       status: 'PENDING',
-    };
+    }); return;
   } catch (error: any) {
     console.error('Error in requestDataErasure:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -661,11 +661,11 @@ export const requestDataExport = functions.https.onCall(async (request) => {
 
     console.log(`GDPR export request created: ${requestId} for user ${userId}`);
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       requestId,
       status: 'PENDING',
-    };
+    }); return;
   } catch (error: any) {
     console.error('Error in requestDataExport:', error);
     throw new functions.https.HttpsError('internal', error.message);
@@ -816,11 +816,11 @@ export const acceptPolicy = functions.https.onCall(async (request) => {
 
     console.log(`User ${userId} accepted ${policyType} version ${version}`);
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       policyType,
       acceptedVersion: version,
-    };
+    }); return;
   } catch (error: any) {
     console.error('Error in acceptPolicy:', error);
     throw new functions.https.HttpsError('internal', error.message);

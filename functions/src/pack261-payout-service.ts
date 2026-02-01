@@ -73,7 +73,7 @@ export const processPendingPayouts = onSchedule("0 * * * *", async (event) => {
     }
 
     console.log('Payout processing results:', results);
-    return results;
+    // Scheduler functions must return void
   });
 
 // Process a single payout request

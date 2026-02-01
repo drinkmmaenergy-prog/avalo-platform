@@ -11,7 +11,7 @@ import {
   ReputationSnapshot,
   ReviewBrigadeAlert,
   ReputationDefenseConfig,
-} from '../../shared/types/pack411-reviews';
+} from './types/shared/types/pack411-reviews';
 import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp, onSchedule } from './runtime';
 
 const db = admin.firestore();

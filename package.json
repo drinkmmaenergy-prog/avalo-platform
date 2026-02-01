@@ -1,0 +1,27 @@
+{
+  "name": "avalo",
+  "version": "1.0.0",
+  "description": "**Version:** 1.0.0 **Firebase Project:** avalo-c8c46 **Status:** Phase 6 Complete (AI Companions Ready)",
+  "main": ".eslintrc.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "tests"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drinkmmaenergy-prog/avalo-platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/drinkmmaenergy-prog/avalo-platform/issues"
+  },
+  "homepage": "https://github.com/drinkmmaenergy-prog/avalo-platform#readme"
+}

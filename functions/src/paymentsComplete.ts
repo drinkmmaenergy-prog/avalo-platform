@@ -26,6 +26,9 @@ import { HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import Stripe from "stripe";
 import { admin, auth, functions, getFirestore, increment, logger, onCall, onRequest, onSchedule, serverTimestamp } from './runtime';
+import { logServerEvent } from './lib/stubs';
+import * as crypto from 'crypto';
+
 ;
 ;
 ;
@@ -218,7 +221,7 @@ export const createStripeCheckoutSession = onCall(
 
       // Initialize Stripe
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-        apiVersion: "2025-02-24.acacia",
+        apiVersion: "2025-02-24.acacia" as any,
       });
 
       // Create Stripe session with idempotency
@@ -320,7 +323,7 @@ export const stripeWebhookV2 = onRequest(
     try {
       // Verify webhook signature
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-        apiVersion: "2025-02-24.acacia",
+        apiVersion: "2025-02-24.acacia" as any,
       });
 
       event = stripe.webhooks.constructEvent(
@@ -623,7 +626,7 @@ async function verifyAppleReceiptWithServer(receiptData: string): Promise<{ vali
     }),
   });
 
-  const result = await response.json();
+  const result = await response.json() as { status: number };
 
   if (result.status === 21007) {
     // Retry with sandbox

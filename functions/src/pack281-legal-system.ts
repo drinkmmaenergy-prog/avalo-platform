@@ -385,7 +385,7 @@ export const adminCreateLegalDocument = functions.https.onCall(
     effectiveAt?: string;
   }, context) => {
     // Require authentication and admin role
-    if (!request.auth) {
+    if (!context.auth) {
       throw new functions.https.HttpsError(
         'unauthenticated',
         'User must be authenticated'
@@ -393,7 +393,7 @@ export const adminCreateLegalDocument = functions.https.onCall(
     }
 
     // Check if user is admin
-    const userDoc = await db.collection('users').doc(request.auth.uid).get();
+    const userDoc = await db.collection('users').doc(context.auth.uid).get();
     if (!userDoc.exists || userDoc.data()?.role !== 'admin') {
       throw new functions.https.HttpsError(
         'permission-denied',
@@ -426,7 +426,7 @@ export const adminCreateLegalDocument = functions.https.onCall(
 
       await docRef.set(documentData);
 
-      console.log(`Legal document ${docId} version ${version} ${existingDoc.exists ? 'updated' : 'created'} by admin ${request.auth.uid}`);
+      console.log(`Legal document ${docId} version ${version} ${existingDoc.exists ? 'updated' : 'created'} by admin ${context.auth.uid}`);
 
       return {
         success: true,

@@ -249,9 +249,16 @@ export interface IntegrationRequest {
   reviewedBy?: string;
   denialReason?: string;
   
+  // Auth
+  auth?: {
+    uid?: string;
+    [key: string]: any;
+  };
+  
   // Metadata
   createdAt: Date;
   updatedAt: Date;
+  [key: string]: any;
 }
 
 export interface PartnerSecurityAgreement {

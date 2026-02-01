@@ -354,7 +354,10 @@ async function callAIAPI(
     throw new Error(`AI API error: ${response.status} ${response.statusText}`);
   }
   
-  const data = await response.json();
+  const data = await response.json() as { 
+    choices: Array<{ message: { content: string } }>;
+    usage: { total_tokens: number };
+  };
   
   return {
     content: data.choices[0].message.content,

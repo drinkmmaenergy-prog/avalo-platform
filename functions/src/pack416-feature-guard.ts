@@ -19,7 +19,7 @@ import {
   isFeatureEnabled as checkFeatureEnabled,
   calculateRolloutBucket,
   SAFE_DEFAULTS,
-} from '../../shared/config/pack416-feature-flags';
+} from './types/shared/config/pack416-feature-flags';
 import { HttpsError, admin, auth, onCall, onRequest, serverTimestamp, timestamp , CallableRequest} from './runtime';
 
 const db = getFirestore();

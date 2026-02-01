@@ -221,13 +221,13 @@ export class FeatureFlagService {
     environment?: FeatureEnvironment
   ): Promise<FeatureFlag[]> {
     try {
-      let query = db
+      let query: FirebaseFirestore.Query | FirebaseFirestore.CollectionReference = db
         .collection("config")
         .doc("featureFlags")
         .collection("flags");
 
       if (environment) {
-        query = query.where("environment", "==", environment) as FirebaseFirestore.Query;
+        query = query.where("environment", "==", environment);
       }
 
       const snapshot = await query.get();

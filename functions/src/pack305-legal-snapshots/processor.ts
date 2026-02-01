@@ -11,7 +11,8 @@ import {
   InternalComplianceSnapshot,
   SnapshotType,
 } from './types';
-import { FieldValue, db, functions, serverTimestamp, storage, timestamp } from '../runtime';
+import { FieldValue, functions, serverTimestamp, storage, timestamp } from "../runtime";
+
 
 const db = admin.firestore();
 

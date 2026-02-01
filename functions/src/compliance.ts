@@ -37,15 +37,9 @@
  */
 
 ;
-;
-;
-;
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
-;
-;
-;
 import type { CallableRequest } from "firebase-functions/v2/https";
-import { admin, arrayUnion, functions, getFirestore, logger, onCall, onSchedule, serverTimestamp, timestamp } from './runtime';
+import { admin, arrayUnion, functions, getFirestore, logger, onCall, onSchedule, serverTimestamp, timestamp, storage, auth } from './runtime';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -379,7 +373,6 @@ async function collectUserData(userId: string): Promise<Record<string, any>> {
  * Generate data export file
  */
 async function generateDataExport(userId: string, requestId: string): Promise<string> {
-  const storage = getStorage();
   const bucket = storage.bucket();
 
   // Collect all data
@@ -418,7 +411,6 @@ async function generateDataExport(userId: string, requestId: string): Promise<st
  */
 async function permanentlyDeleteUserData(userId: string): Promise<void> {
   const db = getFirestore();
-  const auth = getAuth();
 
   logger.info(`Permanently deleting data for user ${userId}`);
 

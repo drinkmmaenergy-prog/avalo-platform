@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { Storage } from '@google-cloud/storage';
-import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, timestamp, onSchedule } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, serverTimestamp, timestamp, onSchedule, logger } from './runtime';
 
 const db = admin.firestore();
 const storage = new Storage();
@@ -184,8 +184,7 @@ async function canAttemptVerification(
   const attemptsRef = db
     .collection('users')
     .doc(userId)
-    .collection('verification')
-    .collection('attempts')
+    .collection('verification_attempts')
     .where('attemptedAt', '>', admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000));
   
   const recentAttempts = await attemptsRef.get();
@@ -358,7 +357,7 @@ export const startVerification = functions.https.onCall(async (request) => {
 
   await logAuditEvent('VERIFICATION_STARTED', userId);
 
-  return { success: true, message: 'Verification started' };
+  logger.info('Scheduler completed', { success: true, message: 'Verification started' }); return;
 });
 
 /**
@@ -464,12 +463,12 @@ export const verifySelfie = functions.https.onCall(async (request) => {
       ageEstimate: ageResult.age,
     });
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       livenessScore: liveness.score,
       ageVerified: true,
       estimatedAge: ageResult.age,
-    };
+    }); return;
 
   } catch (error: any) {
     console.error('Selfie verification error:', error);
@@ -571,11 +570,11 @@ export const verifyProfilePhotos = functions.https.onCall(async (request) => {
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
-      return {
+      logger.info('Scheduler completed', {
         success: true,
         requiresReview: true,
         message: 'Photos submitted for manual review',
-      };
+      }); return;
     }
 
     // All photos verified
@@ -595,11 +594,11 @@ export const verifyProfilePhotos = functions.https.onCall(async (request) => {
     await recordVerificationAttempt(userId, 'SUCCESS');
     await logAuditEvent('VERIFICATION_SUCCESS', userId);
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       verified: true,
       matchScores,
-    };
+    }); return;
 
   } catch (error: any) {
     console.error('Photo verification error:', error);
@@ -629,8 +628,7 @@ async function recordVerificationAttempt(
   await db
     .collection('users')
     .doc(userId)
-    .collection('verification')
-    .collection('attempts')
+    .collection('verification_attempts')
     .add(attempt);
 
   // Update status
@@ -797,7 +795,7 @@ export const adminVerificationOverride = functions.https.onCall(async (request) 
     notes,
   });
 
-  return { success: true };
+  logger.info('Scheduler completed', { success: true }); return;
 });
 
 /**
@@ -825,5 +823,5 @@ export const cleanupOldVerificationData = onSchedule("every 24 hours", async (ev
     }
 
     console.log(`Deleted ${deletedCount} old verification files`);
-    return { deletedCount };
+    // Scheduler functions must return void
   });

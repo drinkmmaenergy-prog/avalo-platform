@@ -436,7 +436,7 @@ export const identityVerification_sendReminders = onSchedule("every 6 hours", as
         });
       }
 
-      return { remindersSent: snapshot.size };
+      logger.info('Scheduler completed', { remindersSent: snapshot.size }); return;
     } catch (error) {
       console.error('[IdentityVerification] Error sending reminders:', error);
       throw error;

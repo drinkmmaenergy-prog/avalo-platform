@@ -20,7 +20,7 @@ import type {
   SafetyEvent,
   SafetyEventType,
   RefundPolicy,
-} from '../../shared/src/types/calendar';
+} from './types/shared/src/types/calendar';
 import { serverTimestamp } from './runtime';
 
 /**

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./lib",
-    "composite": true,
+    "composite": false,
     "incremental": true,
     "tsBuildInfoFile": "./lib/.tsbuildinfo",
     "module": "commonjs",
@@ -16,7 +16,9 @@
     "noImplicitAny": false,
     "strictNullChecks": false,
     "skipLibCheck": true,
-    "isolatedModules": false
+    "isolatedModules": false,
+    "declaration": false,
+    "declarationMap": false
   },
   "include": [
     "src/**/*.ts"

@@ -16,7 +16,8 @@ import {
   AppConfig,
 } from "../services/configService";
 import { FUNCTIONS_REGION } from "../config";
-import { admin, auth, db, functions, timestamp } from '../runtime';
+import { admin, auth, functions, timestamp } from "../runtime";
+
 
 const db = getFirestore();
 

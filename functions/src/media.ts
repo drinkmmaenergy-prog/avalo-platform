@@ -25,14 +25,17 @@
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
+import { storage } from './init';
 ;
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { admin, arrayUnion, auth, functions, getFirestore, increment, logger, onCall, serverTimestamp, z } from './runtime';
+import { moderateImage, moderateVideo } from './lib/stubs';
+
 ;
 ;
 ;
 
-const storage = getStorage();
+// Removed self-reference: const storage = storage;
 const db = getFirestore();
 const bucket = storage.bucket();
 

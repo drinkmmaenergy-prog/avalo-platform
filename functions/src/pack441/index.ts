@@ -143,7 +143,7 @@ export async function canPerformGrowthAction(
   }
 
   // Check risk score for additional gating
-  const riskScore = await riskScorer.getOrCalculateRiskScore(userId);
+  const riskScore = await riskScorer.calculateRiskScore(userId);
   if (riskScore.classification === 'abusive') {
     return {
       allowed: false,

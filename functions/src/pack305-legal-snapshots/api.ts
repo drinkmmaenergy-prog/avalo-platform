@@ -13,7 +13,8 @@ import {
   AdminRole,
   SnapshotAuditLog,
 } from './types';
-import { FieldValue, HttpsError, auth, db, onCall, serverTimestamp, timestamp } from '../runtime';
+import { FieldValue, HttpsError, auth, onCall, serverTimestamp, timestamp } from "../runtime";
+
 
 const db = admin.firestore();
 
@@ -188,7 +189,6 @@ export const createLegalSnapshot = functions.https.onCall(async (request) => {
       
       // Trigger background processing (via Pub/Sub or direct call)
       // For now, we'll use Pub/Sub to decouple the processing
-      const topic = admin.messaging().getTopic('legal-snapshot-processing');
       await admin.messaging().send({
         topic: 'legal-snapshot-processing',
         data: {

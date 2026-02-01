@@ -22,7 +22,7 @@ import {
   IdentityCheckStatus,
   IDENTITY_THRESHOLDS,
 } from './types/pack142-types';
-import { admin, logger } from './runtime';
+import { admin } from './runtime';
 
 const db = getFirestore();
 

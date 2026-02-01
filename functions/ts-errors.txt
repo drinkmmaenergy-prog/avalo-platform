@@ -1,0 +1,795 @@
+src/accountLifecycle.ts(456,58): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/aiBotEngine.ts(116,5): error TS2739: Type '{ perMessage: number; perImage: number; perVoiceNote: number; perVideo: number; }' is missing the following properties from type 'BotPricing': basePrice, currency
+src/aiGenerationService.ts(122,15): error TS2339: Property 'choices' does not exist on type 'unknown'.
+src/aiGenerationService.ts(163,15): error TS2339: Property 'content' does not exist on type 'unknown'.
+src/api/featureFlags.ts(149,35): error TS2339: Property 'value' does not exist on type 'RemoteConfigParameterValue'.
+  Property 'value' does not exist on type 'InAppDefaultValue'.
+src/api/featureFlags.ts(150,49): error TS2339: Property 'value' does not exist on type 'RemoteConfigParameterValue'.
+  Property 'value' does not exist on type 'InAppDefaultValue'.
+src/auditFramework.ts(549,30): error TS2339: Property 'score' does not exist on type 'void'.
+src/auditFramework.ts(550,27): error TS2339: Property 'score' does not exist on type 'void'.
+src/auditFramework.ts(551,33): error TS2339: Property 'score' does not exist on type 'void'.
+src/auditFramework.ts(552,25): error TS2339: Property 'score' does not exist on type 'void'.
+src/auditFramework.ts(590,5): error TS2322: Type '{ overallScore: number; level: "A" | "AA" | "AAA"; breakdown: { perceivable: void; operable: void; understandable: void; robust: void; }; criteria: WCAGCriterion[]; recommendations: any[]; }' is not assignable to type '{ overallScore: number; level: "A" | "AA" | "AAA"; breakdown: { perceivable: { score: number; passed: number; total: number; }; operable: { score: number; passed: number; total: number; }; understandable: { ...; }; robust: { ...; }; }; criteria: WCAGCriterion[]; recommendations: string[]; }'.
+  The types of 'breakdown.perceivable' are incompatible between these types.
+    Type 'void' is not assignable to type '{ score: number; passed: number; total: number; }'.
+src/brands/brandModeration.ts(493,98): error TS2304: Cannot find name 'context'.
+src/brands/brandModeration.ts(495,95): error TS2304: Cannot find name 'context'.
+src/calendarEngine.ts(45,7): error TS2353: Object literal may only specify known properties, and 'refundPercentage' does not exist in type 'RefundPolicy'.
+src/calendarEngine.ts(49,7): error TS2353: Object literal may only specify known properties, and 'refundPercentage' does not exist in type 'RefundPolicy'.
+src/calendarEngine.ts(53,7): error TS2353: Object literal may only specify known properties, and 'refundPercentage' does not exist in type 'RefundPolicy'.
+src/calendarEngine.ts(168,25): error TS2339: Property 'availableSlots' does not exist on type 'Calendar'.
+src/calendarEngine.ts(190,11): error TS2339: Property 'hostId' does not exist on type 'CreateBookingRequest'.
+src/calendarEngine.ts(190,19): error TS2339: Property 'guestId' does not exist on type 'CreateBookingRequest'.
+src/calendarEngine.ts(190,28): error TS2339: Property 'slotId' does not exist on type 'CreateBookingRequest'.
+src/calendarEngine.ts(190,36): error TS2339: Property 'start' does not exist on type 'CreateBookingRequest'.
+src/calendarEngine.ts(190,43): error TS2339: Property 'end' does not exist on type 'CreateBookingRequest'.
+src/calendarEngine.ts(190,48): error TS2339: Property 'priceTokens' does not exist on type 'CreateBookingRequest'.
+src/calendarEngine.ts(211,61): error TS2339: Property 'minAdvanceHours' does not exist on type 'CalendarSettings'.
+src/calendarEngine.ts(212,67): error TS2339: Property 'minAdvanceHours' does not exist on type 'CalendarSettings'.
+src/calendarEngine.ts(238,7): error TS2353: Object literal may only specify known properties, and 'totalTokensPaid' does not exist in type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(244,7): error TS2353: Object literal may only specify known properties, and 'qrCode' does not exist in type 'SafetyInfo'.
+src/calendarEngine.ts(250,7): error TS2561: Object literal may only specify known properties, but 'createdAt' does not exist in type '{ created: Date; updated: Date; }'. Did you mean to write 'created'?
+src/calendarEngine.ts(270,39): error TS2339: Property 'availableSlots' does not exist on type 'Calendar'.
+src/calendarEngine.ts(309,37): error TS2339: Property 'userShareTokens' does not exist on type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(312,14): error TS2339: Property 'refundPercentage' does not exist on type 'RefundPolicy'.
+src/calendarEngine.ts(315,21): error TS2339: Property 'refundPercentage' does not exist on type 'RefundPolicy'.
+src/calendarEngine.ts(330,7): error TS2353: Object literal may only specify known properties, and 'refundedUserTokens' does not exist in type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(334,7): error TS2353: Object literal may only specify known properties, and 'cancelledAt' does not exist in type '{ created: Date; updated: Date; }'.
+src/calendarEngine.ts(339,36): error TS2345: Argument of type 'CalendarBooking' is not assignable to parameter of type '{ [x: string]: any; } & AddPrefixToKeys<string, any>'.
+  Type 'CalendarBooking' is not assignable to type 'AddPrefixToKeys<string, any>'.
+    Index signature for type '`${string}.${string}`' is missing in type 'CalendarBooking'.
+src/calendarEngine.ts(346,30): error TS2339: Property 'description' does not exist on type 'RefundPolicy'.
+src/calendarEngine.ts(390,38): error TS2339: Property 'totalTokensPaid' does not exist on type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(391,42): error TS2339: Property 'avaloShareTokens' does not exist on type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(399,7): error TS2353: Object literal may only specify known properties, and 'refundedUserTokens' does not exist in type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(403,7): error TS2353: Object literal may only specify known properties, and 'cancelledAt' does not exist in type '{ created: Date; updated: Date; }'.
+src/calendarEngine.ts(408,36): error TS2345: Argument of type 'CalendarBooking' is not assignable to parameter of type '{ [x: string]: any; } & AddPrefixToKeys<string, any>'.
+  Type 'CalendarBooking' is not assignable to type 'AddPrefixToKeys<string, any>'.
+    Index signature for type '`${string}.${string}`' is missing in type 'CalendarBooking'.
+src/calendarEngine.ts(424,22): error TS2339: Property 'qrCode' does not exist on type 'CheckInRequest'.
+src/calendarEngine.ts(424,30): error TS2339: Property 'userId' does not exist on type 'CheckInRequest'.
+src/calendarEngine.ts(435,22): error TS2339: Property 'qrCode' does not exist on type 'SafetyInfo'.
+src/calendarEngine.ts(456,7): error TS2353: Object literal may only specify known properties, and 'checkInAt' does not exist in type 'SafetyInfo'.
+src/calendarEngine.ts(459,7): error TS2561: Object literal may only specify known properties, but 'updatedAt' does not exist in type '{ created: Date; updated: Date; }'. Did you mean to write 'updated'?
+src/calendarEngine.ts(461,27): error TS2345: Argument of type 'CalendarBooking' is not assignable to parameter of type '{ [x: string]: any; } & AddPrefixToKeys<string, any>'.
+  Type 'CalendarBooking' is not assignable to type 'AddPrefixToKeys<string, any>'.
+    Index signature for type '`${string}.${string}`' is missing in type 'CalendarBooking'.
+src/calendarEngine.ts(468,5): error TS2322: Type 'string' is not assignable to type 'Date'.
+src/calendarEngine.ts(480,22): error TS2339: Property 'reportedBy' does not exist on type 'MismatchReportRequest'.
+src/calendarEngine.ts(480,34): error TS2339: Property 'reason' does not exist on type 'MismatchReportRequest'.
+src/calendarEngine.ts(496,23): error TS2339: Property 'checkInAt' does not exist on type 'SafetyInfo'.
+src/calendarEngine.ts(501,47): error TS2339: Property 'checkInAt' does not exist on type 'SafetyInfo'.
+src/calendarEngine.ts(510,38): error TS2339: Property 'totalTokensPaid' does not exist on type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(511,42): error TS2339: Property 'avaloShareTokens' does not exist on type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(516,5): error TS2322: Type '"MISMATCH_REFUND"' is not assignable to type 'BookingStatus'.
+src/calendarEngine.ts(519,7): error TS2353: Object literal may only specify known properties, and 'refundedUserTokens' does not exist in type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(523,7): error TS2353: Object literal may only specify known properties, and 'mismatchReported' does not exist in type 'SafetyInfo'.
+src/calendarEngine.ts(527,7): error TS2561: Object literal may only specify known properties, but 'updatedAt' does not exist in type '{ created: Date; updated: Date; }'. Did you mean to write 'updated'?
+src/calendarEngine.ts(531,36): error TS2345: Argument of type 'CalendarBooking' is not assignable to parameter of type '{ [x: string]: any; } & AddPrefixToKeys<string, any>'.
+  Type 'CalendarBooking' is not assignable to type 'AddPrefixToKeys<string, any>'.
+    Index signature for type '`${string}.${string}`' is missing in type 'CalendarBooking'.
+src/calendarEngine.ts(557,5): error TS2322: Type 'string' is not assignable to type 'Date'.
+src/calendarEngine.ts(584,39): error TS2339: Property 'end' does not exist on type 'CalendarBooking'.
+src/calendarEngine.ts(592,40): error TS2339: Property 'checkInAt' does not exist on type 'SafetyInfo'.
+src/calendarEngine.ts(600,7): error TS2820: Type '"COMPLETED"' is not assignable to type 'BookingStatus'. Did you mean '"completed"'?
+src/calendarEngine.ts(603,9): error TS2353: Object literal may only specify known properties, and 'checkOutAt' does not exist in type 'SafetyInfo'.
+src/calendarEngine.ts(606,9): error TS2353: Object literal may only specify known properties, and 'completedAt' does not exist in type '{ created: Date; updated: Date; }'.
+src/calendarEngine.ts(610,53): error TS2339: Property 'userShareTokens' does not exist on type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(616,7): error TS2820: Type '"NO_SHOW"' is not assignable to type 'BookingStatus'. Did you mean '"no_show"'?
+src/calendarEngine.ts(619,9): error TS2353: Object literal may only specify known properties, and 'completedAt' does not exist in type '{ created: Date; updated: Date; }'.
+src/calendarEngine.ts(623,53): error TS2339: Property 'userShareTokens' does not exist on type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(628,27): error TS2345: Argument of type 'CalendarBooking' is not assignable to parameter of type '{ [x: string]: any; } & AddPrefixToKeys<string, any>'.
+  Type 'CalendarBooking' is not assignable to type 'AddPrefixToKeys<string, any>'.
+    Index signature for type '`${string}.${string}`' is missing in type 'CalendarBooking'.
+src/calendarEngine.ts(643,22): error TS2339: Property 'hostId' does not exist on type 'GoodwillRefundRequest'.
+src/calendarEngine.ts(659,7): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"COMPLETED"' have no overlap.
+src/calendarEngine.ts(664,37): error TS2339: Property 'userShareTokens' does not exist on type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(670,5): error TS2322: Type '"COMPLETED_GOODWILL"' is not assignable to type 'BookingStatus'.
+src/calendarEngine.ts(673,7): error TS2353: Object literal may only specify known properties, and 'refundedUserTokens' does not exist in type '{ amount: number; currency: string; status: string; }'.
+src/calendarEngine.ts(678,7): error TS2561: Object literal may only specify known properties, but 'updatedAt' does not exist in type '{ created: Date; updated: Date; }'. Did you mean to write 'updated'?
+src/calendarEngine.ts(682,36): error TS2345: Argument of type 'CalendarBooking' is not assignable to parameter of type '{ [x: string]: any; } & AddPrefixToKeys<string, any>'.
+  Type 'CalendarBooking' is not assignable to type 'AddPrefixToKeys<string, any>'.
+    Index signature for type '`${string}.${string}`' is missing in type 'CalendarBooking'.
+src/chatMediaFunctions.ts(319,34): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/compliancePack55.ts(539,32): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ success: boolean; count: number; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ success: boolean; count: number; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ success: boolean; count: number; }>' is not assignable to type 'Promise<void>'.
+          Type '{ success: boolean; count: number; }' is not assignable to type 'void'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'ScheduleOptions'.
+src/content/contentUploadProcessor.ts(11,63): error TS2440: Import declaration conflicts with local declaration of 'storage'.
+src/content/contentUploadProcessor.ts(108,30): error TS2554: Expected 1-2 arguments, but got 0.
+src/content/contentUploadProcessor.ts(122,34): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'string'.
+  Type 'number' is not assignable to type 'string'.
+src/content/contentUploadProcessor.ts(295,26): error TS2554: Expected 1-2 arguments, but got 0.
+src/content/contentUploadProcessor.ts(364,26): error TS2554: Expected 1-2 arguments, but got 0.
+src/content/contentUploadProcessor.ts(436,28): error TS2554: Expected 1-2 arguments, but got 0.
+src/content/engagementEngine.ts(256,39): error TS2339: Property 'commentId' does not exist on type '{ author: any; }'.
+src/creatorStore.ts(124,32): error TS2304: Cannot find name 'getFeatureFlag'.
+src/deviceTrust.ts(89,39): error TS2304: Cannot find name 'getFeatureFlag'.
+src/engines/riskEngine.ts(466,15): error TS2304: Cannot find name 'getAuth'.
+src/fanClubs.ts(1007,25): error TS2339: Property 'totalPaid' does not exist on type 'void'.
+src/fanClubs.ts(1007,39): error TS2339: Property 'totalPaid' does not exist on type 'void'.
+src/globalFeed.ts(125,32): error TS2304: Cannot find name 'getCached'.
+src/globalFeed.ts(463,15): error TS2304: Cannot find name 'invalidateCacheByTags'.
+src/globalFeed.ts(466,15): error TS2304: Cannot find name 'invalidateCacheByTags'.
+src/globalFeed.ts(523,17): error TS2304: Cannot find name 'getCached'.
+src/index.ts(666,37): error TS2305: Module '"./pack93-data-rights"' has no exported member 'exportJson'.
+src/index.ts(690,31): error TS2305: Module '"./privacy"' has no exported member 'exportData'.
+src/init.ts(7,10): error TS2395: Individual declarations in merged declaration 'db' must be all exported or all local.
+src/init.ts(7,10): error TS2440: Import declaration conflicts with local declaration of 'db'.
+src/init.ts(18,14): error TS2395: Individual declarations in merged declaration 'db' must be all exported or all local.
+src/integrations/dataAccess.ts(53,95): error TS2304: Cannot find name 'context'.
+src/integrations/dataAccess.ts(60,95): error TS2304: Cannot find name 'context'.
+src/integrations/dataAccess.ts(66,95): error TS2304: Cannot find name 'context'.
+src/integrations/dataAccess.ts(71,95): error TS2304: Cannot find name 'context'.
+src/integrations/dataAccess.ts(78,95): error TS2304: Cannot find name 'context'.
+src/integrations/dataAccess.ts(85,95): error TS2304: Cannot find name 'context'.
+src/integrations/dataAccess.ts(91,95): error TS2304: Cannot find name 'context'.
+src/integrations/dataAccess.ts(115,7): error TS2304: Cannot find name 'context'.
+src/integrations/dataAccess.ts(579,16): error TS2304: Cannot find name 'request'.
+src/integrations/dataAccess.ts(587,16): error TS2304: Cannot find name 'request'.
+src/integrations/dataAccess.ts(588,16): error TS2304: Cannot find name 'request'.
+src/integrations/integrationOperations.ts(143,10): error TS2448: Block-scoped variable 'request' used before its declaration.
+src/integrations/integrationOperations.ts(143,18): error TS2339: Property 'auth' does not exist on type 'IntegrationRequest'.
+src/integrations/integrationOperations.ts(162,39): error TS2339: Property 'auth' does not exist on type 'IntegrationRequest'.
+src/integrations/integrationOperations.ts(218,29): error TS2339: Property 'auth' does not exist on type 'IntegrationRequest'.
+src/integrations/integrationOperations.ts(257,10): error TS2448: Block-scoped variable 'request' used before its declaration.
+src/integrations/integrationOperations.ts(257,18): error TS2339: Property 'auth' does not exist on type 'IntegrationRequest'.
+src/integrations/integrationOperations.ts(276,39): error TS2339: Property 'auth' does not exist on type 'IntegrationRequest'.
+src/integrations/integrationOperations.ts(293,27): error TS2339: Property 'auth' does not exist on type 'IntegrationRequest'.
+src/leaderboardEngine.ts(593,31): error TS2554: Expected 4 arguments, but got 3.
+src/legal/pack338a-acceptLegal.ts(12,10): error TS2305: Module '"../shared/legal/legalRegistry"' has no exported member 'LEGAL_DOCS'.
+src/legal/pack338a-acceptLegal.ts(12,27): error TS2305: Module '"../shared/legal/legalRegistry"' has no exported member 'LegalLang'.
+src/lib/alerting.ts(9,22): error TS2305: Module '"../shared/index"' has no exported member 'FUNCTIONS_REGION'.
+src/lib/errorTracking.ts(8,10): error TS2305: Module '"../shared"' has no exported member 'logger'.
+src/lib/errorTracking.ts(126,14): error TS2304: Cannot find name 'eventId'.
+src/lib/healthChecks.ts(221,7): error TS18004: No value exists in scope for the shorthand property 'latencyMs'. Either declare one or provide an initializer.
+src/lib/healthChecks.ts(240,15): error TS2304: Cannot find name 'latencyMs'.
+src/lib/healthChecks.ts(241,7): error TS18004: No value exists in scope for the shorthand property 'latencyMs'. Either declare one or provide an initializer.
+src/lib/healthChecks.ts(246,7): error TS18004: No value exists in scope for the shorthand property 'latencyMs'. Either declare one or provide an initializer.
+src/lib/healthChecks.ts(265,15): error TS2304: Cannot find name 'latencyMs'.
+src/lib/healthChecks.ts(266,7): error TS18004: No value exists in scope for the shorthand property 'latencyMs'. Either declare one or provide an initializer.
+src/lib/healthChecks.ts(271,7): error TS18004: No value exists in scope for the shorthand property 'latencyMs'. Either declare one or provide an initializer.
+src/lib/healthChecks.ts(302,15): error TS2304: Cannot find name 'latencyMs'.
+src/lib/healthChecks.ts(303,7): error TS18004: No value exists in scope for the shorthand property 'latencyMs'. Either declare one or provide an initializer.
+src/lib/healthChecks.ts(308,7): error TS18004: No value exists in scope for the shorthand property 'latencyMs'. Either declare one or provide an initializer.
+src/lib/healthChecks.ts(334,7): error TS18004: No value exists in scope for the shorthand property 'latencyMs'. Either declare one or provide an initializer.
+src/lib/healthChecks.ts(339,7): error TS18004: No value exists in scope for the shorthand property 'latencyMs'. Either declare one or provide an initializer.
+src/lib/logger.ts(11,10): error TS2305: Module '"../shared"' has no exported member 'db'.
+src/lib/metricsAggregation.ts(10,22): error TS2305: Module '"../shared"' has no exported member 'FUNCTIONS_REGION'.
+src/live.ts(33,10): error TS2304: Cannot find name 'logServerEvent'.
+src/loyalty.ts(34,10): error TS2304: Cannot find name 'logServerEvent'.
+src/media.ts(301,34): error TS2304: Cannot find name 'moderateImage'.
+src/media.ts(303,34): error TS2304: Cannot find name 'moderateVideo'.
+src/media.ts(631,38): error TS2304: Cannot find name 'moderateImage'.
+src/middleware/teamPermissions.ts(213,14): error TS2304: Cannot find name 'CallableRequest'.
+src/middleware/teamPermissions.ts(217,37): error TS2304: Cannot find name 'CallableRequest'.
+src/middleware/teamPermissions.ts(234,26): error TS2304: Cannot find name 'context'.
+src/notifications.ts(40,3): error TS2304: Cannot find name 'sgMail'.
+src/notifications.ts(700,11): error TS2304: Cannot find name 'sgMail'.
+src/pack-225-match-comeback.ts(37,20): error TS2304: Cannot find name 'ConnectionDepth'.
+src/pack-225-match-comeback.ts(50,37): error TS2304: Cannot find name 'ConnectionDepth'.
+src/pack-225-match-comeback.ts(87,65): error TS2304: Cannot find name 'CooledChatCriteria'.
+src/pack-225-match-comeback.ts(155,4): error TS2304: Cannot find name 'ConnectionDepth'.
+src/pack-225-match-comeback.ts(209,41): error TS2304: Cannot find name 'RekindleEligibilityStatus'.
+src/pack-225-match-comeback.ts(332,40): error TS2304: Cannot find name 'RekindleEligibilityStatus'.
+src/pack-225-match-comeback.ts(462,15): error TS2304: Cannot find name 'CooledChatCriteria'.
+src/pack-225-match-comeback.ts(512,43): error TS2304: Cannot find name 'CooledChatCriteria'.
+src/pack-225-match-comeback.ts(528,37): error TS2304: Cannot find name 'CooledChatCriteria'.
+src/pack-225-match-comeback.ts(688,29): error TS2304: Cannot find name 'ConnectionDepth'.
+src/pack-225-match-comeback.ts(733,35): error TS2304: Cannot find name 'ConnectionDepth'.
+src/pack113-api-gateway.ts(2,13): error TS2440: Import declaration conflicts with local declaration of 'crypto'.
+src/pack113-api-gateway.ts(39,7): error TS2440: Import declaration conflicts with local declaration of 'crypto'.
+src/pack113-webhooks.ts(2,13): error TS2440: Import declaration conflicts with local declaration of 'crypto'.
+src/pack113-webhooks.ts(29,7): error TS2440: Import declaration conflicts with local declaration of 'crypto'.
+src/pack114-analytics-api.ts(330,16): error TS2322: Type 'void[]' is not assignable to type '{ creatorId: string; username: string; avatarUrl?: string; linkStatus: string; agencyPercentage: number; totalEarnings: number; agencyShare: number; linkedSince: string; }[]'.
+  Type 'void' is not assignable to type '{ creatorId: string; username: string; avatarUrl?: string; linkStatus: string; agencyPercentage: number; totalEarnings: number; agencyShare: number; linkedSince: string; }'.
+src/pack115-reputation-endpoints.ts(234,46): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ processed: number; succeeded: number; failed: number; errors: any[]; success: boolean; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ processed: number; succeeded: number; failed: number; errors: any[]; success: boolean; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ processed: number; succeeded: number; failed: number; errors: any[]; success: boolean; }>' is not assignable to type 'Promise<void>'.
+          Type '{ processed: number; succeeded: number; failed: number; errors: any[]; success: boolean; }' is not assignable to type 'void'.
+src/pack115-reputation-endpoints.ts(298,47): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ success: boolean; deleted: number; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ success: boolean; deleted: number; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ success: boolean; deleted: number; }>' is not assignable to type 'Promise<void>'.
+          Type '{ success: boolean; deleted: number; }' is not assignable to type 'void'.
+src/pack126-evidence-vault.ts(176,43): error TS2304: Cannot find name 'request'.
+src/pack126-evidence-vault.ts(178,10): error TS2304: Cannot find name 'request'.
+src/pack141-api-endpoints.ts(334,3): error TS2345: Argument of type '(request: CallableRequest<Partial<AICompanionOnboarding>>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<Partial<AICompanionOnboarding>>) => Promise<{ success: boolean; }>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<{ success: boolean; }>'.
+    Type 'void' is not assignable to type '{ success: boolean; }'.
+src/pack142-identity-fraud-engine.ts(29,17): error TS2440: Import declaration conflicts with local declaration of 'logger'.
+src/pack142-liveness-engine.ts(25,17): error TS2440: Import declaration conflicts with local declaration of 'logger'.
+src/pack142-photo-consistency-engine.ts(30,17): error TS2440: Import declaration conflicts with local declaration of 'logger'.
+src/pack142-stolen-photo-deepfake-engine.ts(28,17): error TS2440: Import declaration conflicts with local declaration of 'logger'.
+src/pack142-voice-signature-engine.ts(25,17): error TS2440: Import declaration conflicts with local declaration of 'logger'.
+src/pack147-fraud-detection.ts(89,30): error TS2339: Property 'metrics' does not exist on type '{ isFraud: boolean; pattern?: FraudPattern; confidence: number; severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"; metrics?: Record<string, any>; } | { isFraud: boolean; pattern?: FraudPattern; confidence: number; severity?: "LOW" | ... 2 more ... | "CRITICAL"; metrics?: Record<...>; } | { ...; } | { ...; } | { ...;...'.
+  Property 'metrics' does not exist on type '{ isFraud: boolean; pattern?: FraudPattern; confidence: number; severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"; }'.
+src/pack193-sexuality-consent-functions.ts(669,35): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ expired: number; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ expired: number; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ expired: number; }>' is not assignable to type 'Promise<void>'.
+          Type '{ expired: number; }' is not assignable to type 'void'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'ScheduleOptions'.
+src/pack242DynamicChatPricing.ts(61,32): error TS2304: Cannot find name 'FieldValue'.
+src/pack242DynamicChatPricing.ts(63,28): error TS2304: Cannot find name 'FieldValue'.
+src/pack242DynamicChatPricing.ts(87,26): error TS2304: Cannot find name 'FieldValue'.
+src/pack242DynamicChatPricing.ts(88,26): error TS2304: Cannot find name 'FieldValue'.
+src/pack242DynamicChatPricing.ts(89,37): error TS2304: Cannot find name 'FieldValue'.
+src/pack242DynamicChatPricing.ts(99,26): error TS2304: Cannot find name 'FieldValue'.
+src/pack242DynamicChatPricing.ts(113,26): error TS2304: Cannot find name 'FieldValue'.
+src/pack244-creator-league.ts(22,3): error TS2305: Module '"./shared/src/types/creatorLeague"' has no exported member 'EarningsScoreFactors'.
+src/pack244-creator-league.ts(23,3): error TS2305: Module '"./shared/src/types/creatorLeague"' has no exported member 'TimeEfficiencyMetrics'.
+src/pack244-creator-league.ts(24,3): error TS2305: Module '"./shared/src/types/creatorLeague"' has no exported member 'ReplyQualityMetrics'.
+src/pack244-creator-league.ts(25,3): error TS2305: Module '"./shared/src/types/creatorLeague"' has no exported member 'ConversionMetrics'.
+src/pack244-creator-league.ts(26,3): error TS2305: Module '"./shared/src/types/creatorLeague"' has no exported member 'LeagueCategory'.
+src/pack244-creator-league.ts(27,3): error TS2305: Module '"./shared/src/types/creatorLeague"' has no exported member 'LeagueBadges'.
+src/pack244-creator-league.ts(28,3): error TS2724: '"./shared/src/types/creatorLeague"' has no exported member named 'LeagueRanking'. Did you mean 'LeagueStanding'?
+src/pack244-creator-league.ts(29,3): error TS2305: Module '"./shared/src/types/creatorLeague"' has no exported member 'LeagueRankEntry'.
+src/pack244-creator-league.ts(30,3): error TS2305: Module '"./shared/src/types/creatorLeague"' has no exported member 'LeagueSafetyCheck'.
+src/pack244-creator-league.ts(31,3): error TS2305: Module '"./shared/src/types/creatorLeague"' has no exported member 'LeagueIneligibilityReason'.
+src/pack244-creator-league.ts(32,3): error TS2305: Module '"./shared/src/types/creatorLeague"' has no exported member 'LeaguePrivileges'.
+src/pack244-creator-league.ts(33,3): error TS2305: Module '"./shared/src/types/creatorLeague"' has no exported member 'HallOfFameAchievement'.
+src/pack244-creator-league.ts(179,19): error TS2339: Property 'senderId' does not exist on type 'void'.
+src/pack244-creator-league.ts(179,43): error TS2339: Property 'senderId' does not exist on type 'void'.
+src/pack244-creator-league.ts(180,39): error TS2339: Property 'createdAt' does not exist on type 'void'.
+src/pack244-creator-league.ts(180,71): error TS2339: Property 'createdAt' does not exist on type 'void'.
+src/pack244-creator-league.ts(472,7): error TS2353: Object literal may only specify known properties, and 'globalRank' does not exist in type 'Partial<CreatorLeague>'.
+src/pack244-creator-league.ts(539,9): error TS2353: Object literal may only specify known properties, and 'countryRank' does not exist in type 'Partial<CreatorLeague>'.
+src/pack244-creator-league.ts(605,9): error TS2353: Object literal may only specify known properties, and 'cityRank' does not exist in type 'Partial<CreatorLeague>'.
+src/pack244-creator-league.ts(660,7): error TS2353: Object literal may only specify known properties, and 'newCreatorRank' does not exist in type 'Partial<CreatorLeague>'.
+src/pack246-integration.ts(37,36): error TS2304: Cannot find name 'request'.
+src/pack246-integration.ts(68,36): error TS2304: Cannot find name 'request'.
+src/pack246-integration.ts(100,36): error TS2304: Cannot find name 'request'.
+src/pack246-integration.ts(128,36): error TS2304: Cannot find name 'request'.
+src/pack246-integration.ts(162,36): error TS2304: Cannot find name 'request'.
+src/pack246-integration.ts(194,36): error TS2304: Cannot find name 'request'.
+src/pack246-integration.ts(217,36): error TS2304: Cannot find name 'request'.
+src/pack246-integration.ts(238,36): error TS2304: Cannot find name 'request'.
+src/pack246-integration.ts(259,36): error TS2304: Cannot find name 'request'.
+src/pack246-integration.ts(281,36): error TS2304: Cannot find name 'request'.
+src/pack246-integration.ts(298,36): error TS2304: Cannot find name 'request'.
+src/pack261-payout-service.ts(39,38): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ processed: number; failed: number; errors: string[]; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ processed: number; failed: number; errors: string[]; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ processed: number; failed: number; errors: string[]; }>' is not assignable to type 'Promise<void>'.
+          Type '{ processed: number; failed: number; errors: string[]; }' is not assignable to type 'void'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'ScheduleOptions'.
+src/pack263-missions-integration.ts(34,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(45,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(69,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(99,13): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(137,13): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(150,13): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(176,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(214,13): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(246,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(275,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack263-missions-integration.ts(307,13): error TS2554: Expected 2 arguments, but got 1.
+src/pack281-legal-system.ts(388,10): error TS2304: Cannot find name 'request'.
+src/pack281-legal-system.ts(396,54): error TS2304: Cannot find name 'request'.
+src/pack281-legal-system.ts(429,120): error TS2304: Cannot find name 'request'.
+src/pack291-ai-assist.ts(61,3): error TS2345: Argument of type '(request: CallableRequest<GetDailyInsightsRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetDailyInsightsRequest>) => Promise<GetDailyInsightsResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetDailyInsightsResponse>'.
+    Type 'void' is not assignable to type 'GetDailyInsightsResponse'.
+src/pack291-ai-assist.ts(128,3): error TS2345: Argument of type '(request: CallableRequest<GetWeeklyOptimizationRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetWeeklyOptimizationRequest>) => Promise<GetWeeklyOptimizationResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetWeeklyOptimizationResponse>'.
+    Type 'void' is not assignable to type 'GetWeeklyOptimizationResponse'.
+src/pack291-ai-assist.ts(194,3): error TS2345: Argument of type '(request: CallableRequest<GetContentRecommendationsRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetContentRecommendationsRequest>) => Promise<GetContentRecommendationsResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetContentRecommendationsResponse>'.
+    Type 'void' is not assignable to type 'GetContentRecommendationsResponse'.
+src/pack291-ai-assist.ts(244,3): error TS2345: Argument of type '(request: CallableRequest<GetChatOptimizationRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetChatOptimizationRequest>) => Promise<GetChatOptimizationResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetChatOptimizationResponse>'.
+    Type 'void' is not assignable to type 'GetChatOptimizationResponse'.
+src/pack291-ai-assist.ts(303,3): error TS2345: Argument of type '(request: CallableRequest<GetCalendarOptimizationRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetCalendarOptimizationRequest>) => Promise<GetCalendarOptimizationResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetCalendarOptimizationResponse>'.
+    Type 'void' is not assignable to type 'GetCalendarOptimizationResponse'.
+src/pack291-ai-assist.ts(354,3): error TS2345: Argument of type '(request: CallableRequest<GetEventOptimizationRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetEventOptimizationRequest>) => Promise<GetEventOptimizationResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetEventOptimizationResponse>'.
+    Type 'void' is not assignable to type 'GetEventOptimizationResponse'.
+src/pack291-ai-assist.ts(405,3): error TS2345: Argument of type '(request: CallableRequest<GetProfileHealthRequest>) => Promise<void>' is not assignable to parameter of type '(request: CallableRequest<GetProfileHealthRequest>) => Promise<GetProfileHealthResponse>'.
+  Type 'Promise<void>' is not assignable to type 'Promise<GetProfileHealthResponse>'.
+    Type 'void' is not assignable to type 'GetProfileHealthResponse'.
+src/pack296-admin-management.ts(292,48): error TS2304: Cannot find name 'context'.
+src/pack296-data-retention.ts(34,14): error TS2304: Cannot find name 'context'.
+src/pack300-support-functions.ts(58,24): error TS2693: 'getAutoPriority' only refers to a type, but is being used as a value here.
+src/pack300-support-functions.ts(61,30): error TS2693: 'classifyTicketSafety' only refers to a type, but is being used as a value here.
+src/pack301-daily-churn.ts(26,40): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ processed: number; segmentTransitions: number; winBackTriggered: number; timestamp: string; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ processed: number; segmentTransitions: number; winBackTriggered: number; timestamp: string; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ processed: number; segmentTransitions: number; winBackTriggered: number; timestamp: string; }>' is not assignable to type 'Promise<void>'.
+          Type '{ processed: number; segmentTransitions: number; winBackTriggered: number; timestamp: string; }' is not assignable to type 'void'.
+src/pack301-onboarding.ts(67,9): error TS2322: Type '"RETENTION_ONBOARDING_COMPLETED"' is not assignable to type 'ActionType'.
+src/pack301-onboarding.ts(181,7): error TS2322: Type '"RETENTION_NUDGE_SENT"' is not assignable to type 'ActionType'.
+src/pack301-winback.ts(23,37): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ processed: number; messagesStep1: number; messagesStep2: number; messagesStep3: number; timestamp: string; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ processed: number; messagesStep1: number; messagesStep2: number; messagesStep3: number; timestamp: string; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ processed: number; messagesStep1: number; messagesStep2: number; messagesStep3: number; timestamp: string; }>' is not assignable to type 'Promise<void>'.
+          Type '{ processed: number; messagesStep1: number; messagesStep2: number; messagesStep3: number; timestamp: string; }' is not assignable to type 'void'.
+src/pack303-endpoints.ts(78,49): error TS2345: Argument of type 'CallableRequest<any>' is not assignable to parameter of type 'GetEarningsDashboardRequest'.
+  Property 'userId' is missing in type 'CallableRequest<any>' but required in type 'GetEarningsDashboardRequest'.
+src/pack303-endpoints.ts(114,48): error TS2345: Argument of type 'CallableRequest<any>' is not assignable to parameter of type 'GetMonthlyStatementRequest'.
+  Type 'CallableRequest<any>' is missing the following properties from type 'GetMonthlyStatementRequest': userId, year, month
+src/pack303-endpoints.ts(152,44): error TS2345: Argument of type 'CallableRequest<any>' is not assignable to parameter of type 'ExportStatementRequest'.
+  Type 'CallableRequest<any>' is missing the following properties from type 'ExportStatementRequest': userId, year, month, format
+src/pack303-endpoints.ts(192,25): error TS2304: Cannot find name 'context'.
+src/pack303-endpoints.ts(221,25): error TS2304: Cannot find name 'context'.
+src/pack303-endpoints.ts(256,25): error TS2304: Cannot find name 'context'.
+src/pack303-endpoints.ts(280,49): error TS2345: Argument of type 'CallableRequest<any>' is not assignable to parameter of type 'GetEarningsDashboardRequest'.
+  Property 'userId' is missing in type 'CallableRequest<any>' but required in type 'GetEarningsDashboardRequest'.
+src/pack305-legal-snapshots/api.ts(184,39): error TS2339: Property 'getTopic' does not exist on type 'Messaging'.
+src/pack306-verification.ts(187,6): error TS2339: Property 'collection' does not exist on type 'CollectionReference<DocumentData, DocumentData>'.
+src/pack306-verification.ts(609,6): error TS2339: Property 'collection' does not exist on type 'CollectionReference<DocumentData, DocumentData>'.
+src/pack306-verification.ts(776,43): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ deletedCount: number; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ deletedCount: number; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ deletedCount: number; }>' is not assignable to type 'Promise<void>'.
+          Type '{ deletedCount: number; }' is not assignable to type 'void'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'ScheduleOptions'.
+src/pack328a-identity-verification.ts(393,51): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ remindersSent: number; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ remindersSent: number; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ remindersSent: number; }>' is not assignable to type 'Promise<void>'.
+          Type '{ remindersSent: number; }' is not assignable to type 'void'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'ScheduleOptions'.
+src/pack328c-selfie-verification-engine.ts(9,53): error TS2307: Cannot find module '../../shared/src/types/calendar' or its corresponding type declarations.
+src/pack336-aggregation-cron.ts(25,42): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ success: boolean; skipped: boolean; date: string; metrics?: undefined; } | { success: boolean; date: string; metrics: { northStar: number; dau: number; revenue: number; refundRate: number; countries: number; }; skipped?: undefined; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ success: boolean; skipped: boolean; date: string; metrics?: undefined; } | { success: boolean; date: string; metrics: { northStar: number; dau: number; revenue: number; refundRate: number; countries: number; }; skipped?: undefined; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ success: boolean; skipped: boolean; date: string; metrics?: undefined; } | { success: boolean; date: string; metrics: { northStar: number; dau: number; revenue: number; refundRate: number; countries: number; }; skipped?: undefined; }>' is not assignable to type 'Promise<void>'.
+          Type '{ success: boolean; skipped: boolean; date: string; metrics?: undefined; } | { success: boolean; date: string; metrics: { northStar: number; dau: number; revenue: number; refundRate: number; countries: number; }; skipped?: undefined; }' is not assignable to type 'void'.
+            Type '{ success: boolean; skipped: boolean; date: string; metrics?: undefined; }' is not assignable to type 'void'.
+src/pack337-launch-ops/countryGating.ts(9,10): error TS2305: Module '"../config"' has no exported member 'db'.
+src/pack346-abuse-detection.ts(109,26): error TS2339: Property 'reportedBy' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack346-abuse-detection.ts(110,29): error TS2339: Property 'reportedUser' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack346-alert-routing.ts(348,35): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ status: string; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ status: string; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ status: string; }>' is not assignable to type 'Promise<void>'.
+          Type '{ status: string; }' is not assignable to type 'void'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'ScheduleOptions'.
+src/pack346-churn-engine.ts(294,36): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ triggered: number; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ triggered: number; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ triggered: number; }>' is not assignable to type 'Promise<void>'.
+          Type '{ triggered: number; }' is not assignable to type 'void'.
+src/pack346-creator-kpi.ts(118,29): error TS2339: Property 'reportedUser' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack346-creator-kpi.ts(281,35): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ processed: number; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ processed: number; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ processed: number; }>' is not assignable to type 'Promise<void>'.
+          Type '{ processed: number; }' is not assignable to type 'void'.
+src/pack350-call-pricing.ts(14,3): error TS2305: Module '"./pack350-subscriptions.js"' has no exported member 'SubscriptionTier'.
+src/pack350-chat-pricing.ts(15,3): error TS2305: Module '"./pack350-subscriptions.js"' has no exported member 'SubscriptionTier'.
+src/pack350-subscriptions.ts(18,9): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(76,29): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(86,39): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(86,60): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(107,12): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(115,34): error TS2304: Cannot find name 'UserSubscription'.
+src/pack350-subscriptions.ts(147,33): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(154,35): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(161,36): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(168,47): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(175,47): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(182,41): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(200,39): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(224,49): error TS2304: Cannot find name 'UserSubscription'.
+src/pack350-subscriptions.ts(253,39): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(276,49): error TS2304: Cannot find name 'UserSubscription'.
+src/pack350-subscriptions.ts(304,39): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(329,49): error TS2304: Cannot find name 'UserSubscription'.
+src/pack350-subscriptions.ts(357,11): error TS2304: Cannot find name 'SubscriptionSource'.
+src/pack350-subscriptions.ts(358,12): error TS2304: Cannot find name 'SubscriptionTier'.
+src/pack350-subscriptions.ts(456,12): error TS2304: Cannot find name 'UserSubscription'.
+src/pack350-subscriptions.ts(464,29): error TS2304: Cannot find name 'UserSubscription'.
+src/pack352-creator-metrics-sync.ts(310,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(311,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(319,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(327,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(335,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(343,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(351,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(359,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(367,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(374,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(375,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(376,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(440,9): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(441,9): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(442,9): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(443,9): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-creator-metrics-sync.ts(444,9): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(33,35): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ success: boolean; date: string; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ success: boolean; date: string; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ success: boolean; date: string; }>' is not assignable to type 'Promise<void>'.
+          Type '{ success: boolean; date: string; }' is not assignable to type 'void'.
+src/pack352-daily-aggregator.ts(164,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(167,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(170,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(173,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(177,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(264,34): error TS2693: 'DEFAULT_REVENUE_BY_VERTICAL' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(271,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(280,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(281,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(289,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(290,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(297,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(298,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(305,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(306,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(314,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(322,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(329,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(334,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(380,33): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(416,32): error TS2693: 'DEFAULT_FRAUD_BY_SEVERITY' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(423,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(430,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(434,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(438,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(442,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(446,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(586,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(587,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(596,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(604,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(612,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(621,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(630,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(638,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-daily-aggregator.ts(643,12): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(171,16): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(186,16): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(206,11): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(207,11): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(209,9): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(210,9): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(233,9): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(235,9): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(236,9): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(258,16): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(274,16): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(291,9): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(292,9): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(313,16): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(336,22): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(352,10): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack352-kpi-events.ts(361,10): error TS2693: 'KpiEventType' only refers to a type, but is being used as a value here.
+src/pack353-payment-failsafe.ts(149,5): error TS2322: Type 'void' is not assignable to type '{ success: boolean; tokensAssigned?: number; }'.
+src/pack356-ad-tracking.ts(72,10): error TS2304: Cannot find name 'request'.
+src/pack356-ad-tracking.ts(76,20): error TS2304: Cannot find name 'request'.
+src/pack356-ad-tracking.ts(253,10): error TS2304: Cannot find name 'request'.
+src/pack356-ad-tracking.ts(257,54): error TS2304: Cannot find name 'request'.
+src/pack356-kpi-extensions.ts(14,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ success: boolean; kpis: { totalSpend: number; totalRevenue: number; totalImpressions: number; totalClicks: number; totalInstalls: number; totalVerified: number; ... 10 more ...; payingConversionRate: number; }; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ success: boolean; kpis: { totalSpend: number; totalRevenue: number; totalImpressions: number; totalClicks: number; totalInstalls: number; totalVerified: number; totalPaying: number; cpa: number; ... 8 more ...; payingConversionRate: number; }; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ success: boolean; kpis: { totalSpend: number; totalRevenue: number; totalImpressions: number; totalClicks: number; totalInstalls: number; totalVerified: number; totalPaying: number; cpa: number; ... 8 more ...; payingConversionRate: number; }; }>' is not assignable to type 'Promise<void>'.
+          Type '{ success: boolean; kpis: { totalSpend: number; totalRevenue: number; totalImpressions: number; totalClicks: number; totalInstalls: number; totalVerified: number; totalPaying: number; cpa: number; ... 8 more ...; payingConversionRate: number; }; }' is not assignable to type 'void'.
+src/pack357-review-engine.ts(188,61): error TS2304: Cannot find name 'request'.
+src/pack357-review-engine.ts(197,10): error TS2304: Cannot find name 'request'.
+src/pack363-realtime-dispatcher.ts(427,15): error TS2339: Property 'severity' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack363-realtime-dispatcher.ts(428,15): error TS2339: Property 'severity' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack363-realtime-dispatcher.ts(438,27): error TS2339: Property 'severity' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack363-realtime-dispatcher.ts(440,26): error TS2339: Property 'context' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack363-realtime-dispatcher.ts(452,25): error TS2339: Property 'severity' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack363-realtime-dispatcher.ts(459,17): error TS2339: Property 'severity' does not exist on type 'FirestoreEvent<QueryDocumentSnapshot, { eventId: string; }>'.
+src/pack365-feature-flags.service.ts(226,9): error TS2740: Type 'Query<DocumentData, DocumentData>' is missing the following properties from type 'CollectionReference<DocumentData, DocumentData>': id, parent, path, listDocuments, and 2 more.
+src/pack367-store-defense/defenseActions.ts(14,41): error TS2440: Import declaration conflicts with local declaration of 'db'.
+src/pack379-aso-reputation.ts(393,44): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ alerts: any[]; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ alerts: any[]; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ alerts: any[]; }>' is not assignable to type 'Promise<void>'.
+          Type '{ alerts: any[]; }' is not assignable to type 'void'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'ScheduleOptions'.
+src/pack379-aso-reputation.ts(626,42): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ generated: number; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ generated: number; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ generated: number; }>' is not assignable to type 'Promise<void>'.
+          Type '{ generated: number; }' is not assignable to type 'void'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'ScheduleOptions'.
+src/pack379-aso-reputation.ts(976,43): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ checks: number; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ checks: number; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ checks: number; }>' is not assignable to type 'Promise<void>'.
+          Type '{ checks: number; }' is not assignable to type 'void'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'ScheduleOptions'.
+src/pack381-regional-risk.ts(327,67): error TS2554: Expected 2 arguments, but got 1.
+src/pack383-kyc-aml.ts(511,27): error TS2367: This comparison appears to be unintentional because the types '"low" | "medium" | "high"' and '"critical"' have no overlap.
+src/pack383-payout-router.ts(128,40): error TS2339: Property 'count' does not exist on type 'void'.
+src/pack384-store-policy-monitor.ts(229,17): error TS2304: Cannot find name 'context'.
+src/pack384-trust-score.ts(240,39): error TS2554: Expected 2 arguments, but got 1.
+src/pack384-trust-score.ts(270,52): error TS2554: Expected 2 arguments, but got 1.
+src/pack384-trust-score.ts(283,31): error TS2554: Expected 2 arguments, but got 1.
+src/pack385-launch-payout-safety.ts(391,75): error TS2300: Duplicate identifier 'request'.
+src/pack385-launch-payout-safety.ts(410,9): error TS2300: Duplicate identifier 'request'.
+src/pack386-influencers.ts(87,10): error TS2304: Cannot find name 'request'.
+src/pack386-influencers.ts(91,25): error TS2304: Cannot find name 'request'.
+src/pack387-incidents.ts(49,10): error TS2304: Cannot find name 'request'.
+src/pack387-incidents.ts(65,22): error TS2304: Cannot find name 'request'.
+src/pack387-influencer-risk.ts(175,26): error TS2339: Property 'firestore' does not exist on type 'QueryDocumentSnapshot<DocumentData, DocumentData>'.
+src/pack388-gdpr.ts(143,11): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack388-gdpr.ts(262,13): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack388-gdpr.ts(358,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack388-gdpr.ts(371,11): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack388-gdpr.ts(477,15): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack388-gdpr.ts(545,11): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack388-gdpr.ts(626,11): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack388-retention.ts(97,46): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(schedule: string, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '{ schedule: string; timeZone: string; }' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(options: ScheduleOptions, handler: (event: ScheduledEvent) => void | Promise<void>): ScheduleFunction', gave the following error.
+    Argument of type '(event: ScheduledEvent) => Promise<{ totalPurged: number; byDataType: Record<string, number>; errors: string[]; }>' is not assignable to parameter of type '(event: ScheduledEvent) => void | Promise<void>'.
+      Type 'Promise<{ totalPurged: number; byDataType: Record<string, number>; errors: string[]; }>' is not assignable to type 'void | Promise<void>'.
+        Type 'Promise<{ totalPurged: number; byDataType: Record<string, number>; errors: string[]; }>' is not assignable to type 'Promise<void>'.
+          Type '{ totalPurged: number; byDataType: Record<string, number>; errors: string[]; }' is not assignable to type 'void'.
+src/pack392-aso-engine.ts(162,39): error TS2339: Property 'conversionRate' does not exist on type 'void'.
+src/pack392-aso-engine.ts(163,46): error TS2339: Property 'installToRegistration' does not exist on type 'void'.
+src/pack392-aso-engine.ts(205,27): error TS2339: Property 'conversion' does not exist on type 'void'.
+src/pack392-aso-engine.ts(206,28): error TS2339: Property 'impressions' does not exist on type 'void'.
+src/pack392-aso-engine.ts(207,25): error TS2339: Property 'installs' does not exist on type 'void'.
+src/pack392-aso-engine.ts(208,25): error TS2339: Property 'trending' does not exist on type 'void'.
+src/pack392-aso-engine.ts(625,40): error TS2552: Cannot find name 'functions'. Did you mean 'Function'?
+src/pack392-aso-engine.ts(650,35): error TS2552: Cannot find name 'functions'. Did you mean 'Function'?
+src/pack392-aso-engine.ts(680,38): error TS2552: Cannot find name 'functions'. Did you mean 'Function'?
+src/pack392-trust-score.ts(600,11): error TS2554: Expected 2 arguments, but got 1.
+src/pack392-trust-score.ts(600,39): error TS2304: Cannot find name 'context'.
+src/pack393-marketing-orchestrator.ts(568,26): error TS2554: Expected 2 arguments, but got 1.
+src/pack398-aso-engine.ts(424,20): error TS2740: Type 'Query<DocumentData, DocumentData>' is missing the following properties from type 'CollectionReference<DocumentData, DocumentData>': id, parent, path, listDocuments, and 2 more.
+src/pack398-aso-engine.ts(425,17): error TS2740: Type 'Query<DocumentData, DocumentData>' is missing the following properties from type 'CollectionReference<DocumentData, DocumentData>': id, parent, path, listDocuments, and 2 more.
+src/pack411-store-reviews-ingestion.ts(24,25): error TS2488: Type 'Record<string, RegExp[]>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/pack412-growth-integration.ts(7,54): error TS2307: Cannot find module '../../shared/types/pack412-launch' or its corresponding type declarations.
+src/pack412-launch-orchestrator.ts(18,22): error TS2307: Cannot find module '../../shared/types/pack412-launch' or its corresponding type declarations.
+src/pack414-integration-audit.ts(56,26): error TS2488: Type 'Record<string, any>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/pack414-integration-audit.ts(209,47): error TS2488: Type 'Record<string, any>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/pack414-integration-audit.ts(210,15): error TS2488: Type 'Record<string, any>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/pack414-integration-audit.ts(286,52): error TS2554: Expected 0 arguments, but got 1.
+src/pack414-integration-audit.ts(317,37): error TS2339: Property 'overall' does not exist on type 'Promise<{ status: string; issues: any[]; }>'.
+src/pack414-integration-audit.ts(1195,28): error TS2488: Type 'Record<string, any>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/pack416-audit-integration.ts(303,23): error TS2448: Block-scoped variable 'event' used before its declaration.
+src/pack418-compliance.service.ts(139,5): error TS2554: Expected 1 arguments, but got 2.
+src/pack418-compliance.service.ts(152,35): error TS2339: Property 'avalo' does not exist on type '{ creator: number; platform: number; }'.
+src/pack418-compliance.service.ts(168,113): error TS2339: Property 'avalo' does not exist on type '{ creator: number; platform: number; }'.
+src/pack418-integration-examples.ts(43,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+  Type 'string' is not assignable to type 'number'.
+src/pack418-integration-examples.ts(49,23): error TS2339: Property 'avalo' does not exist on type '{ creator: number; platform: number; }'.
+src/pack418-integration-examples.ts(119,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/pack418-integration-examples.ts(123,23): error TS2339: Property 'avalo' does not exist on type '{ creator: number; platform: number; }'.
+src/pack418-integration-examples.ts(169,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/pack418-integration-examples.ts(173,23): error TS2339: Property 'avalo' does not exist on type '{ creator: number; platform: number; }'.
+src/pack418-integration-examples.ts(214,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/pack418-integration-examples.ts(218,23): error TS2339: Property 'avalo' does not exist on type '{ creator: number; platform: number; }'.
+src/pack418-integration-examples.ts(259,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/pack418-integration-examples.ts(263,23): error TS2339: Property 'avalo' does not exist on type '{ creator: number; platform: number; }'.
+src/pack418-integration-examples.ts(293,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/pack418-integration-examples.ts(297,23): error TS2339: Property 'avalo' does not exist on type '{ creator: number; platform: number; }'.
+src/pack418-integration-examples.ts(334,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+  Type 'string' is not assignable to type 'number'.
+src/pack420-account-lifecycle.guard.ts(124,48): error TS2339: Property 'SOFT_FROZEN' does not exist on type 'typeof AccountLifecycleState'.
+src/pack420-account-lifecycle.guard.ts(156,41): error TS2339: Property 'ACCOUNT_DELETED' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-account-lifecycle.guard.ts(159,41): error TS2339: Property 'ACCOUNT_PENDING_DELETION' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-account-lifecycle.guard.ts(161,34): error TS2339: Property 'SOFT_FROZEN' does not exist on type 'typeof AccountLifecycleState'.
+src/pack420-account-lifecycle.guard.ts(162,41): error TS2339: Property 'ACCOUNT_FROZEN' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-account-lifecycle.guard.ts(171,7): error TS2554: Expected 2 arguments, but got 3.
+src/pack420-account-lifecycle.guard.ts(217,27): error TS2339: Property 'USER_NOT_FOUND' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-account-lifecycle.guard.ts(329,26): error TS2339: Property 'details' does not exist on type 'DataRightsError'.
+src/pack420-data-rights.service.ts(77,27): error TS2339: Property 'USER_NOT_FOUND' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(85,27): error TS2339: Property 'USER_ALREADY_DELETED' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(97,76): error TS2339: Property 'IN_PROGRESS' does not exist on type 'typeof DataRequestStatus'.
+src/pack420-data-rights.service.ts(102,29): error TS2339: Property 'DUPLICATE_ACTIVE_DELETE_REQUEST' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(117,29): error TS2339: Property 'EXPORT_RATE_LIMIT_EXCEEDED' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(138,24): error TS2304: Cannot find name 'request'.
+src/pack420-data-rights.service.ts(144,15): error TS2304: Cannot find name 'request'.
+src/pack420-data-rights.service.ts(150,10): error TS2304: Cannot find name 'request'.
+src/pack420-data-rights.service.ts(165,27): error TS2339: Property 'REQUEST_NOT_FOUND' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(174,27): error TS2339: Property 'INVALID_STATUS_TRANSITION' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(181,31): error TS2339: Property 'IN_PROGRESS' does not exist on type 'typeof DataRequestStatus'.
+src/pack420-data-rights.service.ts(192,36): error TS2339: Property 'IN_PROGRESS' does not exist on type 'typeof DataRequestStatus'.
+src/pack420-data-rights.service.ts(209,27): error TS2339: Property 'REQUEST_NOT_FOUND' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(218,27): error TS2339: Property 'INVALID_STATUS_TRANSITION' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(257,27): error TS2339: Property 'REQUEST_NOT_FOUND' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(266,27): error TS2339: Property 'INVALID_STATUS_TRANSITION' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(275,31): error TS2339: Property 'IN_PROGRESS' does not exist on type 'typeof DataRequestStatus'.
+src/pack420-data-rights.service.ts(294,36): error TS2339: Property 'IN_PROGRESS' does not exist on type 'typeof DataRequestStatus'.
+src/pack420-data-rights.service.ts(314,27): error TS2339: Property 'REQUEST_NOT_FOUND' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(323,31): error TS2339: Property 'REJECTED' does not exist on type 'typeof DataRequestStatus'.
+src/pack420-data-rights.service.ts(329,87): error TS2339: Property 'IN_PROGRESS' does not exist on type 'typeof DataRequestStatus'.
+src/pack420-data-rights.service.ts(344,36): error TS2339: Property 'REJECTED' does not exist on type 'typeof DataRequestStatus'.
+src/pack420-data-rights.service.ts(370,27): error TS2339: Property 'REQUEST_NOT_FOUND' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(386,27): error TS2339: Property 'INVALID_STATUS_TRANSITION' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(391,54): error TS2339: Property 'IN_PROGRESS' does not exist on type 'typeof DataRequestStatus'.
+src/pack420-data-rights.service.ts(393,27): error TS2339: Property 'INVALID_STATUS_TRANSITION' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(400,31): error TS2339: Property 'REJECTED' does not exist on type 'typeof DataRequestStatus'.
+src/pack420-data-rights.service.ts(419,36): error TS2339: Property 'REJECTED' does not exist on type 'typeof DataRequestStatus'.
+src/pack420-data-rights.service.ts(441,46): error TS2339: Property 'IN_PROGRESS' does not exist on type 'typeof DataRequestStatus'.
+src/pack420-data-rights.service.ts(552,27): error TS2339: Property 'REQUEST_NOT_FOUND' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack420-data-rights.service.ts(559,27): error TS2339: Property 'INVALID_STATUS_TRANSITION' does not exist on type 'typeof DataRightsErrorCode'.
+src/pack422-reputation.triggers.ts(48,11): error TS2554: Expected 2-3 arguments, but got 1.
+src/pack424-store-reviews.scheduler.ts(213,23): error TS2349: This expression is not callable.
+  Type 'typeof import("C:/a/avalo/functions/node_modules/firebase-functions/lib/v1/providers/firestore")' has no call signatures.
+src/pack426-ai-regional-engine.ts(342,19): error TS2339: Property 'choices' does not exist on type 'unknown'.
+src/pack426-ai-regional-engine.ts(343,22): error TS2339: Property 'usage' does not exist on type 'unknown'.
+src/pack427-message-queue-service.ts(48,61): error TS2554: Expected 1 arguments, but got 2.
+src/pack427-message-queue-service.ts(53,18): error TS2339: Property 'blocked' does not exist on type 'boolean'.
+src/pack427-message-queue-service.ts(90,24): error TS2345: Argument of type '{ action: string; userId: string; resourceId: string; metadata: { chatId: string; recipientId: string; region: Region; }; }' is not assignable to parameter of type 'string'.
+src/pack427-message-queue-service.ts(135,24): error TS2345: Argument of type '{ action: string; userId: string; resourceId: string; metadata: { chatId: string; attempts: number; }; }' is not assignable to parameter of type 'string'.
+src/pack427-message-queue-service.ts(181,26): error TS2345: Argument of type '{ action: string; userId: string; resourceId: string; metadata: { chatId: string; reason: string; attempts: number; }; }' is not assignable to parameter of type 'string'.
+src/pack427-message-queue-service.ts(196,26): error TS2345: Argument of type '{ action: string; userId: string; resourceId: string; metadata: { chatId: string; reason: string; attempts: number; }; }' is not assignable to parameter of type 'string'.
+src/pack427-message-workers.ts(22,10): error TS2305: Module '"./pack293-notification-service"' has no exported member 'sendPushNotification'.
+src/pack427-message-workers.ts(163,24): error TS2304: Cannot find name 'routeRegion'.
+src/pack427-message-workers.ts(167,48): error TS2345: Argument of type 'string' is not assignable to parameter of type 'Region'.
+src/pack427-message-workers.ts(178,71): error TS2554: Expected 1 arguments, but got 2.
+src/pack427-message-workers.ts(183,20): error TS2339: Property 'blocked' does not exist on type 'boolean'.
+src/pack427-realtime-signals.ts(69,11): error TS2322: Type 'string' is not assignable to type 'Region'.
+src/pack427-realtime-signals.ts(69,28): error TS2304: Cannot find name 'routeRegion'.
+src/pack427-realtime-signals.ts(230,7): error TS2322: Type 'string' is not assignable to type 'Region'.
+src/pack427-realtime-signals.ts(230,22): error TS2304: Cannot find name 'routeRegion'.
+src/pack427-sync-endpoints.ts(56,11): error TS2322: Type 'string' is not assignable to type 'Region'.
+src/pack427-sync-endpoints.ts(56,28): error TS2304: Cannot find name 'routeRegion'.
+src/pack427-sync-endpoints.ts(126,11): error TS2322: Type 'string' is not assignable to type 'Region'.
+src/pack427-sync-endpoints.ts(126,28): error TS2304: Cannot find name 'routeRegion'.
+src/pack427-sync-endpoints.ts(246,45): error TS2304: Cannot find name 'routeRegion'.
+src/pack429-crisis-mode.ts(78,20): error TS2345: Argument of type '{ eventType: string; userId: string; resource: string; action: string; metadata: { type: "MANUAL" | "AUTOMATIC"; trigger: { eventId: string; eventType: DefenseEventType; severity: EventSeverity; }; }; }' is not assignable to parameter of type 'string'.
+src/pack429-crisis-mode.ts(152,20): error TS2345: Argument of type '{ eventType: string; userId: string; resource: string; action: string; metadata: { impactAnalysis: { [key: string]: any; ratingChange: number; reviewCount: number; recoveryActions: number; }; }; }' is not assignable to parameter of type 'string'.
+src/pack429-review-defense-engine.ts(109,5): error TS2322: Type '"CRITICAL"' is not assignable to type 'EventSeverity'.
+src/pack429-review-defense-engine.ts(111,5): error TS2322: Type '"HIGH"' is not assignable to type 'EventSeverity'.
+src/pack429-review-defense-engine.ts(113,5): error TS2322: Type '"MEDIUM"' is not assignable to type 'EventSeverity'.
+src/pack429-review-defense-engine.ts(118,7): error TS2322: Type '"SPIKE"' is not assignable to type 'DefenseEventType'.
+src/pack429-review-defense-engine.ts(122,7): error TS2820: Type '"REVIEWS"' is not assignable to type 'TriggerSource'. Did you mean 'TriggerSource.REVIEWS'?
+src/pack429-review-defense-engine.ts(182,7): error TS2322: Type '"BOT_ATTACK"' is not assignable to type 'DefenseEventType'.
+src/pack429-review-defense-engine.ts(185,7): error TS2322: Type '"HIGH" | "CRITICAL"' is not assignable to type 'EventSeverity'.
+  Type '"HIGH"' is not assignable to type 'EventSeverity'.
+src/pack429-review-defense-engine.ts(186,7): error TS2820: Type '"REVIEWS"' is not assignable to type 'TriggerSource'. Did you mean 'TriggerSource.REVIEWS'?
+src/pack429-review-defense-engine.ts(229,9): error TS2322: Type '"SABOTAGE"' is not assignable to type 'DefenseEventType'.
+src/pack429-review-defense-engine.ts(232,9): error TS2322: Type '"MEDIUM" | "HIGH"' is not assignable to type 'EventSeverity'.
+  Type '"MEDIUM"' is not assignable to type 'EventSeverity'.
+src/pack429-review-defense-engine.ts(233,9): error TS2820: Type '"REVIEWS"' is not assignable to type 'TriggerSource'. Did you mean 'TriggerSource.REVIEWS'?
+src/pack429-review-defense-engine.ts(292,9): error TS2322: Type '"SABOTAGE"' is not assignable to type 'DefenseEventType'.
+src/pack429-review-defense-engine.ts(295,9): error TS2322: Type '"HIGH"' is not assignable to type 'EventSeverity'.
+src/pack429-review-defense-engine.ts(296,9): error TS2820: Type '"FRAUD"' is not assignable to type 'TriggerSource'. Did you mean 'TriggerSource.FRAUD'?
+src/pack429-review-ingestion.ts(351,26): error TS2345: Argument of type '{ eventType: string; userId: string; resource: string; action: string; metadata: { platform: Platform; imported: number; failed: number; attackPatternsDetected: number; }; }' is not assignable to parameter of type 'string'.
+src/pack429-review-ingestion.ts(367,9): error TS2322: Type '"BOT_ATTACK"' is not assignable to type 'DefenseEventType'.
+src/pack429-review-ingestion.ts(370,9): error TS2322: Type '"HIGH" | "CRITICAL"' is not assignable to type 'EventSeverity'.
+  Type '"HIGH"' is not assignable to type 'EventSeverity'.
+src/pack429-review-ingestion.ts(371,9): error TS2820: Type '"REVIEWS"' is not assignable to type 'TriggerSource'. Did you mean 'TriggerSource.REVIEWS'?
+src/pack429-review-ingestion.ts(380,29): error TS2345: Argument of type '{ title: string; message: string; priority: string; link: string; }' is not assignable to parameter of type 'string'.
+src/pack432-ua-fraud.ts(667,19): error TS2339: Property 'signalType' does not exist on type '{ id: string; }'.
+src/pack432-ua-fraud.ts(667,48): error TS2339: Property 'signalType' does not exist on type '{ id: string; }'.
+src/pack432-ua-fraud.ts(668,23): error TS2339: Property 'severity' does not exist on type '{ id: string; }'.
+src/pack432-ua-fraud.ts(668,54): error TS2339: Property 'severity' does not exist on type '{ id: string; }'.
+src/pack434-ambassador-onboarding.ts(429,46): error TS2448: Block-scoped variable 'profile' used before its declaration.
+src/pack434-fraud-detection.ts(484,38): error TS2345: Argument of type '{ type: FraudType.MULTI_DEVICE_SPOOFING; severity: "medium"; userIds: string[]; deviceIds: string[]; evidence: { description: string; dataPoints: { device: string; }[]; patterns: string[]; }; estimatedLoss: number; affectedCount: number; confidence: number; }' is not assignable to parameter of type 'Omit<FraudAlert, "status" | "detectedAt" | "actions" | "id" | "detectionMethod">'.
+  Property 'ambassadorIds' is missing in type '{ type: FraudType.MULTI_DEVICE_SPOOFING; severity: "medium"; userIds: string[]; deviceIds: string[]; evidence: { description: string; dataPoints: { device: string; }[]; patterns: string[]; }; estimatedLoss: number; affectedCount: number; confidence: number; }' but required in type 'Omit<FraudAlert, "status" | "detectedAt" | "actions" | "id" | "detectionMethod">'.
+src/pack435-creator-events.ts(37,6): error TS2300: Duplicate identifier 'CreatorEvent'.
+src/pack435-creator-events.ts(47,18): error TS2300: Duplicate identifier 'CreatorEvent'.
+src/pack435-creator-events.ts(303,25): error TS2693: 'TicketTier' only refers to a type, but is being used as a value here.
+src/pack435-creator-events.ts(303,41): error TS2693: 'TicketTier' only refers to a type, but is being used as a value here.
+src/pack435-event-billing.ts(239,11): error TS2739: Type '{ attendeeId: string; eventId: string; userId: string; status: any; ticketTier: TicketTier; ticketId: string; qrCode: string; amountPaid: any; currency: any; paymentId: string; paidAt: Timestamp; ... 4 more ...; registeredAt: Timestamp; }' is missing the following properties from type 'EventAttendee': id, ticketTierId, purchasedAt
+src/pack435-event-billing.ts(243,33): error TS2693: 'AttendeeStatus' only refers to a type, but is being used as a value here.
+src/pack435-event-billing.ts(243,55): error TS2693: 'AttendeeStatus' only refers to a type, but is being used as a value here.
+src/pack435-event-billing.ts(377,15): error TS2693: 'AttendeeStatus' only refers to a type, but is being used as a value here.
+src/pack435-event-billing.ts(466,38): error TS2339: Property 'toMillis' does not exist on type 'Date'.
+src/pack435-event-billing.ts(492,7): error TS2739: Type 'Date' is missing the following properties from type 'Timestamp': seconds, nanoseconds, toDate, toMillis, isEqual
+src/pack435-speed-dating-engine.ts(143,28): error TS2693: 'AttendeeStatus' only refers to a type, but is being used as a value here.
+src/pack436-fraud-integration.ts(464,3): error TS2484: Export declaration conflicts with exported declaration of 'ReviewFraudNode'.
+src/pack436-fraud-integration.ts(465,3): error TS2484: Export declaration conflicts with exported declaration of 'ReviewFraudPattern'.
+src/pack436-fraud-integration.ts(466,3): error TS2484: Export declaration conflicts with exported declaration of 'ReviewerCluster'.
+src/pack441/index.ts(83,50): error TS2554: Expected 0-1 arguments, but got 2.
+src/pack441/index.ts(138,38): error TS2339: Property 'getOrCalculateRiskScore' does not exist on type 'ViralLoopRiskScorer'.
+src/pack441/ReferralAbuseDetector.ts(44,7): error TS2322: Type '{ detected: boolean; members: string[]; }' is not assignable to type 'boolean'.
+src/pack442/dynamicOfferOrchestrator.ts(380,53): error TS2339: Property 'predictConversionAtPrice' does not exist on type '{ calculateElasticity(productId: string, priceHistory: PricePoint[]): Promise<ElasticityResult>; predictDemand(baseQuantity: number, basePrice: number, newPrice: number, elasticity: number): number; getRecommendations(productId: string): Promise<...>; }'.
+src/pack442/pricingIntelligenceDashboard.ts(152,54): error TS2339: Property 'getElasticityCurve' does not exist on type '{ calculateElasticity(productId: string, priceHistory: PricePoint[]): Promise<ElasticityResult>; predictDemand(baseQuantity: number, basePrice: number, newPrice: number, elasticity: number): number; getRecommendations(productId: string): Promise<...>; }'.
+src/pack442/pricingIntelligenceDashboard.ts(157,56): error TS2339: Property 'calculatePriceSensitivity' does not exist on type '{ calculateElasticity(productId: string, priceHistory: PricePoint[]): Promise<ElasticityResult>; predictDemand(baseQuantity: number, basePrice: number, newPrice: number, elasticity: number): number; getRecommendations(productId: string): Promise<...>; }'.
+src/pack442/pricingIntelligenceDashboard.ts(243,56): error TS2339: Property 'calculatePriceSensitivity' does not exist on type '{ calculateElasticity(productId: string, priceHistory: PricePoint[]): Promise<ElasticityResult>; predictDemand(baseQuantity: number, basePrice: number, newPrice: number, elasticity: number): number; getRecommendations(productId: string): Promise<...>; }'.
+src/pack442/pricingIntelligenceDashboard.ts(475,56): error TS2339: Property 'calculatePriceSensitivity' does not exist on type '{ calculateElasticity(productId: string, priceHistory: PricePoint[]): Promise<ElasticityResult>; predictDemand(baseQuantity: number, basePrice: number, newPrice: number, elasticity: number): number; getRecommendations(productId: string): Promise<...>; }'.
+src/pack90-integrations.ts(42,7): error TS2554: Expected 1-2 arguments, but got 5.
+src/pack90-integrations.ts(80,7): error TS2554: Expected 1-2 arguments, but got 5.
+src/pack90-integrations.ts(117,7): error TS2554: Expected 1-2 arguments, but got 5.
+src/pack90-integrations.ts(150,7): error TS2554: Expected 1-2 arguments, but got 4.
+src/pack90-integrations.ts(179,7): error TS2554: Expected 1-2 arguments, but got 4.
+src/pack90-integrations.ts(188,62): error TS2554: Expected 1-2 arguments, but got 3.
+src/pack90-integrations.ts(190,59): error TS2554: Expected 1-2 arguments, but got 4.
+src/pack95-anomaly-detection.ts(92,25): error TS2367: This comparison appears to be unintentional because the types '"LOW" | "MEDIUM" | "HIGH"' and '"CRITICAL"' have no overlap.
+src/payments.providers.ts(29,54): error TS2554: Expected 1-2 arguments, but got 3.
+src/paymentsComplete.ts(268,69): error TS2554: Expected 1-2 arguments, but got 3.
+src/paymentsComplete.ts(445,74): error TS2554: Expected 1-2 arguments, but got 3.
+src/paymentsComplete.ts(573,61): error TS2554: Expected 1-2 arguments, but got 3.
+src/paymentsComplete.ts(604,14): error TS2339: Property 'status' does not exist on type 'unknown'.
+src/paymentsComplete.ts(609,56): error TS2339: Property 'status' does not exist on type 'unknown'.
+src/paymentsComplete.ts(1520,62): error TS2554: Expected 1-2 arguments, but got 3.
+src/personalization.ts(250,13): error TS2339: Property 'counters' does not exist on type 'Promise<Record<string, number>>'.
+src/personalization.ts(250,23): error TS2339: Property 'interestCounts' does not exist on type 'Promise<Record<string, number>>'.
+src/personalization.ts(250,39): error TS2339: Property 'genderCounts' does not exist on type 'Promise<Record<string, number>>'.
+src/personalization.ts(250,85): error TS2345: Argument of type '{ type: any; tokensSpent: any; interestsContext: any; targetGender: any; }[]' is not assignable to parameter of type 'string'.
+src/personalization.ts(253,47): error TS2345: Argument of type '{ counters: any; interestCounts: any; genderCounts: any; agePrefMin: null; agePrefMax: null; distanceKm: null; }' is not assignable to parameter of type 'string'.
+src/personalization.ts(264,32): error TS2339: Property 'preferredAgeMin' does not exist on type 'Promise<any>'.
+src/personalization.ts(265,32): error TS2339: Property 'preferredAgeMax' does not exist on type 'Promise<any>'.
+src/personalization.ts(266,36): error TS2339: Property 'preferredDistanceKm' does not exist on type 'Promise<any>'.
+src/personalization.ts(267,31): error TS2339: Property 'likedInterests' does not exist on type 'Promise<any>'.
+src/personalization.ts(268,34): error TS2339: Property 'dislikedInterests' does not exist on type 'Promise<any>'.
+src/personalization.ts(269,33): error TS2339: Property 'preferredGenders' does not exist on type 'Promise<any>'.
+src/personalization.ts(270,42): error TS2339: Property 'interactionIntensityScore' does not exist on type 'Promise<any>'.
+src/personalization.ts(271,29): error TS2339: Property 'spenderScore' does not exist on type 'Promise<any>'.
+src/personalization.ts(272,29): error TS2339: Property 'aiUsageScore' does not exist on type 'Promise<any>'.
+src/personalization.ts(277,96): error TS2339: Property 'interactionIntensityScore' does not exist on type 'Promise<any>'.
+src/personalization.ts(277,143): error TS2339: Property 'spenderScore' does not exist on type 'Promise<any>'.
+src/personalization.ts(277,172): error TS2339: Property 'aiUsageScore' does not exist on type 'Promise<any>'.
+src/presence.ts(54,74): error TS2554: Expected 1-2 arguments, but got 3.
+src/presence.ts(106,19): error TS2554: Expected 3 arguments, but got 2.
+src/presence.ts(208,74): error TS2554: Expected 1-2 arguments, but got 3.
+src/presence.ts(257,19): error TS2554: Expected 3 arguments, but got 2.
+src/presence.ts(345,23): error TS2554: Expected 3 arguments, but got 2.
+src/realtimeEngine.ts(75,7): error TS2554: Expected 1-2 arguments, but got 3.
+src/realtimeEngine.ts(113,75): error TS2554: Expected 1-2 arguments, but got 3.
+src/recommender.ts(97,76): error TS2554: Expected 1-2 arguments, but got 3.
+src/services/guardian.service.ts(174,7): error TS2353: Object literal may only specify known properties, and 'activeCoolingSessions' does not exist in type 'GuardianContext'.
+src/smartSocialGraph/backgroundJobs.ts(22,28): error TS2440: Import declaration conflicts with local declaration of 'logger'.
+src/tax-documents.ts(214,18): error TS2349: This expression is not callable.
+  Type 'Storage' has no call signatures.
+src/workers/payoutProcessor.ts(58,60): error TS2367: This comparison appears to be unintentional because the types '"pending"' and '"fulfilled"' have no overlap.
+src/workers/payoutProcessor.ts(59,57): error TS2367: This comparison appears to be unintentional because the types '"pending"' and '"rejected"' have no overlap.
+src/workers/payoutProcessor.ts(110,28): error TS2339: Property 'transferId' does not exist on type 'void'.
+src/workers/payoutProcessor.ts(111,32): error TS2339: Property 'status' does not exist on type 'void'.
+src/workers/payoutProcessor.ts(114,28): error TS2339: Property 'transferId' does not exist on type 'void'.
+src/workers/payoutProcessor.ts(115,32): error TS2339: Property 'status' does not exist on type 'void'.
+src/workers/payoutProcessor.ts(349,60): error TS2367: This comparison appears to be unintentional because the types '"pending"' and '"fulfilled"' have no overlap.
+src/workers/payoutProcessor.ts(350,57): error TS2367: This comparison appears to be unintentional because the types '"pending"' and '"rejected"' have no overlap.
+src/workers/payoutProcessor.ts(368,7): error TS2322: Type '"pending" | "PENDING" | "PAID" | "FAILED"' is not assignable to type '"PENDING" | "PROCESSING" | "PAID" | "FAILED"'.
+  Type '"pending"' is not assignable to type '"PENDING" | "PROCESSING" | "PAID" | "FAILED"'. Did you mean '"PENDING"'?
+src/workers/payoutProcessor.ts(371,7): error TS2322: Type '"pending" | "PENDING" | "PROCESSING" | "PAID" | "FAILED"' is not assignable to type '"PENDING" | "PROCESSING" | "PAID" | "FAILED"'.
+  Type '"pending"' is not assignable to type '"PENDING" | "PROCESSING" | "PAID" | "FAILED"'. Did you mean '"PENDING"'?
+src/workers/payoutProcessor.ts(378,9): error TS5076: '&&' and '??' operations cannot be mixed without parentheses.
+src/workers/payoutProcessor.ts(378,56): error TS2367: This comparison appears to be unintentional because the types '"pending"' and '"PAID"' have no overlap.
+src/workers/payoutProcessor.ts(388,16): error TS5076: '&&' and '??' operations cannot be mixed without parentheses.
+src/workers/payoutProcessor.ts(388,65): error TS2367: This comparison appears to be unintentional because the types '"pending"' and '"FAILED"' have no overlap.

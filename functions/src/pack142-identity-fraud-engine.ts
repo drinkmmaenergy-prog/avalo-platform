@@ -26,7 +26,7 @@ import {
   IDENTITY_THRESHOLDS,
   shouldBlockUser,
 } from './types/pack142-types';
-import { admin, logger, timestamp } from './runtime';
+import { admin, timestamp } from './runtime';
 
 const db = getFirestore();
 

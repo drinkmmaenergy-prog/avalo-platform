@@ -9,7 +9,7 @@
  * - PACK 121: Ads category restrictions
  */
 
-import { db, timestamp as Timestamp } from './init';
+import { db } from './init';
 import { logger } from 'firebase-functions/v2';
 import {
   RegionPolicyProfile,

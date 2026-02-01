@@ -419,8 +419,9 @@ export class AmbassadorOnboardingService {
       application.targetRegion.country
     );
 
+    const profileId = this.db.collection('ambassadors').doc().id;
     const profile: AmbassadorProfile = {
-      id: this.db.collection('ambassadors').doc().id,
+      id: profileId,
       userId: application.userId,
       role: application.role,
       tier: AmbassadorTier.BRONZE,
@@ -432,7 +433,7 @@ export class AmbassadorOnboardingService {
       },
       referralCode,
       qrCode: `https://avalo.app/r/${referralCode}`,
-      digitalIdCard: `https://avalo.app/id/${profile.id}`,
+      digitalIdCard: `https://avalo.app/id/${profileId}`,
       kpis: ambassadorTypeService.getDefaultKPIs(application.role),
       compensation: {
         cpi: 2.0 * regionalConfig.multiplier,

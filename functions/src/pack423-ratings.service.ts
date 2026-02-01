@@ -11,7 +11,7 @@ import {
   CompanionRatingSummary,
   RatingEligibility,
   InteractionType,
-} from '../../shared/types/pack423-ratings.types';
+} from './types/shared/types/pack423-ratings.types';
 
 
 const db = admin.firestore();

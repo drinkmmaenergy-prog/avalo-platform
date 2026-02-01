@@ -73,13 +73,13 @@ export const getEarningsDashboardCallable = onCall(
       throw new HttpsError('invalid-argument', 'Invalid year/month combination');
     }
     
-    const request: GetEarningsDashboardRequest = {
+    const innerRequest: GetEarningsDashboardRequest = {
       userId,
       year,
       month,
     };
     
-    const response = await getEarningsDashboard(request);
+    const response = await getEarningsDashboard(innerRequest);
     
     if (!response.success) {
       throw new HttpsError('internal', response.error || 'Failed to get dashboard');
@@ -107,7 +107,7 @@ export const getMonthlyStatementCallable = onCall(
       throw new HttpsError('invalid-argument', 'Invalid year/month combination');
     }
     
-    const request: GetMonthlyStatementRequest = {
+    const innerRequest: GetMonthlyStatementRequest = {
       userId,
       year,
       month,
@@ -116,7 +116,7 @@ export const getMonthlyStatementCallable = onCall(
     // Log access
     await logStatementAudit('USER', userId, 'STATEMENT_VIEWED', userId, year, month);
     
-    const response = await getMonthlyStatement(request);
+    const response = await getMonthlyStatement(innerRequest);
     
     if (!response.success) {
       throw new HttpsError('internal', response.error || 'Failed to get statement');
@@ -148,14 +148,14 @@ export const exportStatementCallable = onCall(
       throw new HttpsError('invalid-argument', 'Format must be "pdf" or "csv"');
     }
     
-    const request: ExportStatementRequest = {
+    const innerRequest: ExportStatementRequest = {
       userId,
       year,
       month,
       format,
     };
     
-    const response = await exportStatement(request);
+    const response = await exportStatement(innerRequest);
     
     if (!response.success) {
       throw new HttpsError('internal', response.error || 'Failed to export statement');
@@ -196,7 +196,7 @@ export const adminTriggerAggregation = onCall(
   { region: 'europe-west3' },
   async (request) => {
   const data = request.data;
-    requireFinanceAdmin(context);
+    requireFinanceAdmin(request);
     
     const { userId, year, month } = data;
     
@@ -226,7 +226,7 @@ export const adminBackfillAggregation = onCall(
   { region: 'europe-west3', timeoutSeconds: 540, memory: '512MiB' },
   async (request) => {
   const data = request.data;
-    requireFinanceAdmin(context);
+    requireFinanceAdmin(request);
     
     const { userId, startYear, startMonth, endYear, endMonth } = data;
     
@@ -262,7 +262,7 @@ export const adminViewUserEarnings = onCall(
   { region: 'europe-west3' },
   async (request) => {
   const data = request.data;
-    requireFinanceAdmin(context);
+    requireFinanceAdmin(request);
     const adminId = request.auth!.uid;
     
     const { userId, year, month } = data;
@@ -276,7 +276,7 @@ export const adminViewUserEarnings = onCall(
       throw new HttpsError('invalid-argument', 'Invalid year/month combination');
     }
     
-    const request: GetEarningsDashboardRequest = {
+    const innerRequest: GetEarningsDashboardRequest = {
       userId,
       year,
       month,
@@ -287,7 +287,7 @@ export const adminViewUserEarnings = onCall(
       await logStatementAudit('ADMIN', adminId, 'STATEMENT_VIEWED', userId, year, month);
     }
     
-    const response = await getEarningsDashboard(request);
+    const response = await getEarningsDashboard(innerRequest);
     
     if (!response.success) {
       throw new HttpsError('internal', response.error || 'Failed to get dashboard');

@@ -14,7 +14,7 @@ import {
   KpiEventInput,
   KpiEventType,
   KpiEventContext,
-} from '../../shared/types/kpi';
+} from './types/shared/types/kpi';
 import { FieldValue, HttpsError, auth, onCall, serverTimestamp } from './runtime';
 
 // Initialize Firestore
@@ -452,7 +452,7 @@ async function publishToAggregator(event: KpiEvent): Promise<void> {
  * 
  * 1. Chat Engine (PACK 268):
  *    ```typescript
- *    import { logChatPaidStarted } from './pack352-kpi-events';
+ *    
  *    
  *    // When paid chat starts:
  *    await logChatPaidStarted(chatId, userId, creatorId, tokensCharged);
@@ -460,7 +460,7 @@ async function publishToAggregator(event: KpiEvent): Promise<void> {
  * 
  * 2. Voice/Video Calls:
  *    ```typescript
- *    import { logCallEvent } from './pack352-kpi-events';
+ *    
  *    
  *    // When call starts:
  *    await logCallEvent(callId, userId, creatorId, 'voice', 'started');
@@ -471,7 +471,7 @@ async function publishToAggregator(event: KpiEvent): Promise<void> {
  * 
  * 3. Calendar Bookings:
  *    ```typescript
- *    import { logCalendarBooking } from './pack352-kpi-events';
+ *    
  *    
  *    // When booking created:
  *    await logCalendarBooking(bookingId, userId, creatorId, 'created', tokensCharged, durationMinutes);
@@ -479,7 +479,7 @@ async function publishToAggregator(event: KpiEvent): Promise<void> {
  * 
  * 4. Wallet/Token Purchases (PACK 277):
  *    ```typescript
- *    import { logTokenPurchase } from './pack352-kpi-events';
+ *    
  *    
  *    // When user purchases tokens:
  *    await logTokenPurchase(userId, amount, fiatValue, currency, paymentMethod, packageId);
@@ -487,7 +487,7 @@ async function publishToAggregator(event: KpiEvent): Promise<void> {
  * 
  * 5. Support & Panic (PACK 300/300A/300B/351):
  *    ```typescript
- *    import { logPanicEvent, logSupportTicket } from './pack352-kpi-events';
+ *    
  *    
  *    // When panic button pressed:
  *    await logPanicEvent(userId, reason, location);
@@ -498,7 +498,7 @@ async function publishToAggregator(event: KpiEvent): Promise<void> {
  * 
  * 6. Fraud Detection (PACK 302):
  *    ```typescript
- *    import { logFraudFlag } from './pack352-kpi-events';
+ *    
  *    
  *    // When fraud detected:
  *    await logFraudFlag(userId, targetUserId, flagType, severity, reason);

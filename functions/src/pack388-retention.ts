@@ -140,11 +140,10 @@ export const pack388_executeRetentionPurge = onSchedule({ schedule: "every 24 ho
 
       console.log(`🗑️ Retention purge complete. Total purged: ${purgeResults.totalPurged}`);
 
-      return purgeResults;
+      // Scheduler functions must return void
 
     } catch (error) {
       console.error('Error executing retention purge:', error);
-      return;
     }
   });
 

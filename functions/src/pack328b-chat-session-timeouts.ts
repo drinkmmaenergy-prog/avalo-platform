@@ -22,7 +22,7 @@ import type {
   Pack328bCallFraudSignal,
 } from './pack328b-chat-session-timeouts-types.js';
 import { PACK_328B_TIMEOUTS } from './pack328b-chat-session-timeouts-types.js';
-import { HttpsError } from './runtime';
+// Removed: HttpsError import conflicts with local declaration
 
 // Simple error class
 class HttpsError extends Error {

@@ -10,7 +10,8 @@ import { IntelligentPayoutEscrowService } from './services/IntelligentPayoutEscr
 import { ProgressiveFreezeController } from './services/ProgressiveFreezeController';
 import { CreatorPayoutStatusAPI } from './services/CreatorPayoutStatusAPI';
 import { ComplianceEscalationOrchestrator } from './services/ComplianceEscalationOrchestrator';
-import { HttpsError, Timestamp, auth, db, onCall, logger, onSchedule, onDocumentCreated } from '../runtime';
+import { HttpsError, Timestamp, auth, onCall, logger, onSchedule, onDocumentCreated } from "../runtime";
+
 
 const db = admin.firestore();
 

@@ -58,7 +58,11 @@ export type ActionType =
   | 'ADMIN_NOTE_ADDED'
   | 'ADMIN_RISK_OVERRIDE'
   | 'ADMIN_AUDIT_VIEW'
-  | 'ADMIN_EXPORT_CREATED';
+  | 'ADMIN_EXPORT_CREATED'
+  
+  // Retention & Onboarding
+  | 'RETENTION_ONBOARDING_COMPLETED'
+  | 'RETENTION_NUDGE_SENT';
 
 export type ResourceType =
   | 'USER'

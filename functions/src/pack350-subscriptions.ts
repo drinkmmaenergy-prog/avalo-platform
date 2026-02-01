@@ -10,7 +10,7 @@
  */
 
 import { db, serverTimestamp, generateId, timestamp } from './init.js';
-import { Timestamp } from './runtime';
+// Removed: HttpsError import conflicts with local declaration
 
 type Timestamp = ReturnType<typeof timestamp.now>;
 

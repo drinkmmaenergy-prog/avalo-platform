@@ -13,15 +13,18 @@
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
+import { storage } from './init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, auth, functions, getFirestore, increment, logger, onCall, z } from './runtime';
+import { getFeatureFlag } from './lib/stubs';
+
 ;
 ;
 ;
 ;
 
 const db = getFirestore();
-const storage = getStorage();
+// Removed self-reference: const storage = storage;
 
 /**
  * Product types

@@ -90,10 +90,13 @@ export async function recordReputationEvent(params: {
     
     // Validate event
     const validation = validateReputationEvent(event);
-    if (!validation.valid) {
+    const validationResult = typeof validation === 'boolean' 
+      ? { valid: validation, errors: validation ? [] : ['Validation failed'] }
+      : validation;
+    if (!validationResult.valid) {
       return {
         success: false,
-        message: `Validation failed: ${validation.errors.join(', ')}`,
+        message: `Validation failed: ${validationResult.errors.join(', ')}`,
       };
     }
     
@@ -135,6 +138,7 @@ export async function calculateReputationScore(userId: string): Promise<Reputati
       [ReputationDimension.COMMUNICATION]: 100,
       [ReputationDimension.DELIVERY]: 100,
       [ReputationDimension.EXPERTISE]: 100,
+      [ReputationDimension.EXPERTISE_VALIDATION]: 100,
       [ReputationDimension.SAFETY_CONSISTENCY]: 100,
     };
     

@@ -647,7 +647,7 @@ export const getFraudDashboard = functions.https.onCall(async (request) => {
   const signals = signalsSnap.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
-  }));
+  })) as Array<{ id: string; signalType: string; severity: string; [key: string]: any }>;
 
   // Get blocked sources
   const blocksSnap = await db.collection('ua_fraud_blocks')

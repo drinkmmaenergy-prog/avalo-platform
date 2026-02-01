@@ -18,7 +18,8 @@ import {
   AmbassadorComplianceIncident,
   EventType
 } from './types';
-import { FieldValue, HttpsError, auth, db, increment, onCall } from '../runtime';
+import { FieldValue, HttpsError, auth, increment, onCall } from "../runtime";
+
 
 const db = admin.firestore();
 

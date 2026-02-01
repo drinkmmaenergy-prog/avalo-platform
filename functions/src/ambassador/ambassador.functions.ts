@@ -24,7 +24,8 @@ import {
 } from '../types/ambassador.types';
 import { detectNSFWContent, detectRomanticContent, detectInappropriateLanguage } from './nsfw-detection';
 import { generateReferralCode } from '../utils/referral-utils';
-import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, db, increment, onCall, serverTimestamp } from '../runtime';
+import { FieldValue, HttpsError, Timestamp, arrayUnion, auth, increment, onCall, serverTimestamp } from "../runtime";
+
 
 const db = admin.firestore();
 

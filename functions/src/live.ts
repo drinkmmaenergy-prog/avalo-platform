@@ -27,6 +27,8 @@ import { HttpsError } from 'firebase-functions/v2/https';
 ;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, arrayRemove, arrayUnion, auth, getFirestore, increment, onCall, onSchedule, serverTimestamp, timestamp } from './runtime';
+import { logServerEvent } from './lib/stubs';
+
 ;
 const logAnalyticsEvent = (eventName: string, properties: any) => {
   return logServerEvent(eventName, properties, properties.userId || "system");

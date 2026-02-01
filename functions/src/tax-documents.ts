@@ -218,7 +218,7 @@ async function uploadDocument(
   format: DocumentFormat,
   content: Buffer
 ): Promise<string> {
-  const bucket = storage().bucket();
+  const bucket = storage.bucket();
   const fileName = `tax-documents/${userId}/${documentId}.${format.toLowerCase()}`;
   const file = bucket.file(fileName);
 

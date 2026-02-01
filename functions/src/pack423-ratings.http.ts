@@ -20,7 +20,7 @@ import {
   getUserNpsHistory,
   isRecentDetractor,
 } from './pack423-nps.service';
-import { CreateRatingInput, CreateNpsInput } from '../../shared/types/pack423-ratings.types';
+import { CreateRatingInput, CreateNpsInput } from './types/shared/types/pack423-ratings.types';
 import { HttpsError, auth, onCall } from './runtime';
 
 /**

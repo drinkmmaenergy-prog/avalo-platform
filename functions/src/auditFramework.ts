@@ -560,13 +560,13 @@ export const runAccessibilityAuditV1 = onCall(
     const understandable = WCAG_CRITERIA.filter((c) => c.criterionId.startsWith("3."));
     const robust = WCAG_CRITERIA.filter((c) => c.criterionId.startsWith("4."));
 
-    const calcCategoryScore = (criteria: WCAGCriterion[]) => {
+    const calcCategoryScore = (criteria: WCAGCriterion[]): { score: number; passed: number; total: number } => {
       const passed = criteria.filter((c) => c.status === "pass").length;
       const total = criteria.length;
       const score = total > 0 ? Math.round((passed / total) * 100) : 100;
       console.log('Scheduled job result:', { score, passed, total });
 
-      return;
+      return { score, passed, total };
     };
 
     const breakdown = {

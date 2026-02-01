@@ -105,8 +105,8 @@ export async function bookEventTicket(
     
     const event = eventDoc.data() as EventConfig;
     
-    // 2. Validate event status
-    if (event.status !== 'published') {
+    // 2. Validate event status (EventStatus uses uppercase)
+    if (event.status !== 'PUBLISHED') {
       return { success: false, error: 'Event not available for booking' };
     }
     
@@ -439,8 +439,8 @@ export async function calculateEventPayout(eventId: string): Promise<PayoutSched
       ? (completedVerifications / requiredVerifications) * 100
       : 0;
     
-    // Check unlock conditions
-    const eventEnded = event.status === 'ended' || 
+    // Check unlock conditions (EventStatus uses COMPLETED not 'ended')
+    const eventEnded = event.status === 'COMPLETED' || 
                        event.endTime.toMillis() < Date.now();
     const verificationRateReached = verificationRate >= 70;
     const noSafetyIncidents = event.safetyIncidents === 0;

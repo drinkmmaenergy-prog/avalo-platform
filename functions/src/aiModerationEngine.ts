@@ -10,7 +10,7 @@ import {
   ModerationContext,
   ModerationDecision,
   ContentModerationRecord,
-} from '../../shared/types/contentModeration';
+} from './types/shared/types/contentModeration';
 import { logEvent } from './observability';
 import { admin, arrayUnion, functions, increment, serverTimestamp, timestamp } from './runtime';
 

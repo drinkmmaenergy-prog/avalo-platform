@@ -17,6 +17,8 @@
  * @module securityMiddleware
  */
 
+import * as crypto from 'crypto';
+
 // import React from 'react'; // Commented out - not needed in Cloud Functions
 import { Request } from "firebase-functions/v2/https";
 import { Timestamp, admin, functions, logger } from './runtime';

@@ -28,7 +28,7 @@ import {
   CONSENT_VERSION,
   DEFAULT_SESSION_EXPIRATION_HOURS
 } from './pack193-sexuality-consent';
-import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, onSchedule, onDocumentCreated } from './runtime';
+import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, onSchedule, onDocumentCreated, logger } from './runtime';
 
 const db = admin.firestore();
 
@@ -697,7 +697,7 @@ export const autoExpireSessions = onSchedule("every 1 hours", async (event) => {
     await batch.commit();
 
     console.log(`Auto-expired ${expiredSessions.size} sessions`);
-    return { expired: expiredSessions.size };
+    logger.info('Scheduler completed', { expired: expiredSessions.size }); return;
 
   } catch (error) {
     console.error('Error auto-expiring sessions:', error);

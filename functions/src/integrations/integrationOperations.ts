@@ -15,7 +15,8 @@ import {
   FORBIDDEN_DATA_TYPES,
   CONSENT_REFRESH_MS
 } from '../types/integrations';
-import { FieldValue, HttpsError, arrayUnion, auth, db, functions, onCall } from '../runtime';
+import { FieldValue, HttpsError, arrayUnion, auth, functions, onCall } from "../runtime";
+
 
 const db = admin.firestore();
 
@@ -159,16 +160,16 @@ export const approveIntegrationRequest = https.onCall(async (request) => {
       throw new https.HttpsError('not-found', 'Request not found');
     }
 
-    const request = requestDoc.data() as IntegrationRequest;
+    const integrationRequest = requestDoc.data() as IntegrationRequest;
 
-    if (request.creatorId !== request.auth.uid) {
+    if (integrationRequest.creatorId !== request.auth.uid) {
       throw new https.HttpsError(
         'permission-denied',
         'Only the creator can approve this request'
       );
     }
 
-    if (request.status !== 'pending') {
+    if (integrationRequest.status !== 'pending') {
       throw new https.HttpsError(
         'failed-precondition',
         'Request already processed'
@@ -182,13 +183,13 @@ export const approveIntegrationRequest = https.onCall(async (request) => {
 
     const integration: APIIntegration = {
       integrationId,
-      partnerId: request.partnerId,
-      creatorId: request.creatorId,
-      integrationName: request.integrationName,
-      description: request.purpose,
-      category: request.category,
-      requestedPermissions: request.requestedPermissions,
-      approvedPermissions: request.requestedPermissions,
+      partnerId: integrationRequest.partnerId,
+      creatorId: integrationRequest.creatorId,
+      integrationName: integrationRequest.integrationName,
+      description: integrationRequest.purpose,
+      category: integrationRequest.category,
+      requestedPermissions: integrationRequest.requestedPermissions,
+      approvedPermissions: integrationRequest.requestedPermissions,
       consentGrantedAt: now,
       consentExpiresAt: expiresAt,
       autoRenew: false,
@@ -273,16 +274,16 @@ export const denyIntegrationRequest = https.onCall(async (request) => {
       throw new https.HttpsError('not-found', 'Request not found');
     }
 
-    const request = requestDoc.data() as IntegrationRequest;
+    const integrationRequest = requestDoc.data() as IntegrationRequest;
 
-    if (request.creatorId !== request.auth.uid) {
+    if (integrationRequest.creatorId !== request.auth.uid) {
       throw new https.HttpsError(
         'permission-denied',
         'Only the creator can deny this request'
       );
     }
 
-    if (request.status !== 'pending') {
+    if (integrationRequest.status !== 'pending') {
       throw new https.HttpsError(
         'failed-precondition',
         'Request already processed'
@@ -299,8 +300,8 @@ export const denyIntegrationRequest = https.onCall(async (request) => {
 
     logger.info('Integration request denied', {
       requestId,
-      partnerId: request.partnerId,
-      creatorId: request.creatorId
+      partnerId: integrationRequest.partnerId,
+      creatorId: integrationRequest.creatorId
     });
 
     return {

@@ -448,7 +448,7 @@ export async function getLazyStripe() {
   if (!lazyImports.stripe) {
     const Stripe = await import("stripe");
     lazyImports.stripe = new Stripe.default(process.env.STRIPE_SECRET_KEY || "", {
-      apiVersion: "2025-02-24.acacia",
+      apiVersion: "2025-02-24.acacia" as any,
     });
   }
   return lazyImports.stripe;

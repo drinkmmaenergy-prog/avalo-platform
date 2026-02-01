@@ -1,6 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { FieldValue, HttpsError, Timestamp, auth, db, increment, onCall } from '../runtime';
+import { FieldValue, HttpsError, Timestamp, auth, increment, onCall } from "../runtime";
+
 
 const db = admin.firestore();
 
@@ -250,6 +251,7 @@ export const getComments = functions.https.onCall(async (request) => {
 
     const comments = commentsSnapshot.docs.map(doc => ({
       ...doc.data(),
+      commentId: doc.id,
       author: authorsData[doc.data().authorId]
     }));
 

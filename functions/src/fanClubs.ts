@@ -1035,14 +1035,15 @@ export const getTopSupporters = onCall<{ limit?: number }>(
     const supporters = membershipsSnapshot.docs
       .map((doc) => {
         const membership = doc.data() as FanClubMembership;
-        console.log('Scheduled job result:', {
+        const result = {
           memberId: membership.memberId,
           tier: membership.tier,
           totalPaid: membership.totalPaid,
           joinedAt: membership.joinedAt.toMillis(),
-        });
+        };
+        console.log('Scheduled job result:', result);
 
-        return;
+        return result;
       })
       .sort((a, b) => b.totalPaid - a.totalPaid)
       .slice(0, limit);

@@ -7,7 +7,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 
 import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { logger } from 'firebase-functions/v2';
-import { db, Timestamp } from './init';
+import { db, timestamp as Timestamp } from './init';
 import {
   initializeSelfieVerification,
   uploadMeetupSelfie,

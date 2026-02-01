@@ -18,7 +18,7 @@ import {
 } from './pack301-retention-types';
 import { enqueueNotification } from './pack293-notification-service';
 import { writeAuditLog } from './pack296-audit-helpers';
-import { HttpsError, Timestamp, onCall, timestamp, onSchedule } from './runtime';
+import { HttpsError, Timestamp, onCall, timestamp, onSchedule, logger } from './runtime';
 
 const db = admin.firestore();
 
@@ -115,7 +115,8 @@ export const dailyChurnRecalculation = onSchedule({ schedule: "0 2 * * *", timeZ
         { merge: true }
       );
 
-      return summary;
+      logger.info('Scheduler completed', summary);
+      return;
     } catch (error) {
       console.error('[ChurnDaily] Error in daily churn recalculation:', error);
       throw error;
@@ -250,10 +251,10 @@ export const triggerChurnRecalculation = functions.https.onCall(async (request) 
       };
     } else {
       // Trigger full daily recalculation
-      return {
+      logger.info('Scheduler completed', {
         success: true,
         message: 'Full recalculation triggered - check logs for progress',
-      };
+      }); return;
     }
   } catch (error: any) {
     console.error('[ChurnDaily] Error in manual trigger:', error);
@@ -298,11 +299,11 @@ export const getChurnStatistics = functions.https.onCall(async (request) => {
       }
     });
 
-    return {
+    logger.info('Scheduler completed', {
       success: true,
       statistics: stats,
       timestamp: new Date().toISOString(),
-    };
+    }); return;
   } catch (error: any) {
     console.error('[ChurnDaily] Error getting statistics:', error);
     throw new functions.https.HttpsError('internal', error.message);

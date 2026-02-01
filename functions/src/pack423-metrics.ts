@@ -3,7 +3,7 @@
  * Integration with PACK 421 telemetry pipeline
  */
 
-import { InteractionType } from '../../shared/types/pack423-ratings.types';
+import { InteractionType } from './types/shared/types/pack423-ratings.types';
 import { timestamp } from './runtime';
 
 /**

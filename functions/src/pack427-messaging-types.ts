@@ -17,7 +17,7 @@ import { admin, timestamp } from './runtime';
 /**
  * Supported regions aligned with PACK 426
  */
-export type Region = 'EU' | 'US' | 'APAC';
+export type Region = 'EU' | 'US' | 'APAC' | string;
 
 /**
  * Message delivery status
