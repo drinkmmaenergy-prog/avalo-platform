@@ -40,7 +40,7 @@ const CreatorAnalyticsScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Creator analytics</Text>
         <Text style={styles.subtitle}>
-          Preview of your token performance and revenue (mock data for dev).
+          Preview of your token performance and revenue
         </Text>
 
         <View style={styles.card}>
@@ -74,7 +74,6 @@ const CreatorAnalyticsScreen: React.FC = () => {
               x="label"
               y="tokens"
               cornerRadius={4}
-              barRatio={0.6}
             />
           </VictoryChart>
         </View>
