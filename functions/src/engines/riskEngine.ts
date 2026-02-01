@@ -424,12 +424,19 @@ export const banUserCallable = onCall(
       throw new HttpsError("permission-denied", "Only admins can ban users");
     }
 
-    // Validate input
+    // Validate input (Zod safeParse – correct narrowing)
     const validationResult = BanUserSchema.safeParse(request.data);
-    if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+
+    if (validationResult.success === false) {
+      const errorResult = validationResult;
+      const message =
+        errorResult.error.issues?.[0]?.message ??
+        "Invalid request payload";
+
+      throw new HttpsError("invalid-argument", message);
     }
 
+    // Safe typed access after success
     const { targetUserId, reason, durationDays } = validationResult.data;
 
     try {
