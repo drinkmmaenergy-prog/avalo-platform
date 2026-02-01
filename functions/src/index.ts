@@ -594,6 +594,8 @@ export * from './payments.providers';
 export { creditTokensCallable } from './payments';
 export { TokenPack, TOKEN_PACKS, Transaction, UserWallet, EscrowRecord, Settlement, createStripeCheckoutSession, stripeWebhookV2, validateAppleReceipt, initiateChat, releaseEscrowIncremental, autoRefundInactiveEscrows, generateMonthlySettlements, getWalletBalance, getTransactionHistory, completeCalendarBooking, getCreatorSettlements, getPendingSettlements } from './paymentsComplete';
 export { TransactionType, TransactionStatus, purchaseTokensV2, getTransactionHistoryV2, getUserWalletsV2, getExchangeRatesV1, syncExchangeRatesScheduler, generateComplianceReportsScheduler } from './paymentsV2';
+// PHASE 3.1: Stripe webhook with treasury invariants (NO_DISCOUNTS, NO_FREE_TOKENS, idempotency)
+export { stripeWebhookV1, CANONICAL_TOKEN_PACKS } from './payments/stripe';
 export * from './payoutRequests';
 export * from './personalization';
 export * from './predictiveAnalytics';
