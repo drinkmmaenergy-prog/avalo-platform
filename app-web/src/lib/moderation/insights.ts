@@ -1,3 +1,6 @@
-export async function getModerationInsights() {
-  return [];
+export async function generateAIInsights() {
+  return {
+    summary: '',
+    recommendations: [],
+  };
 }
