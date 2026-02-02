@@ -8,7 +8,7 @@
 'use client';
 
 import React from 'react';
-import ErrorTracking from '../lib/errorTracking';
+import ErrorTracking from '@/lib/errorTracking';
 import { getErrorMessage } from '../lib/errorMessages';
 
 interface Props {
