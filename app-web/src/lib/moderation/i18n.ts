@@ -1,3 +1,3 @@
-export function t(key: string) {
-  return key;
+export function useTranslations() {
+  return (key: string) => key;
 }

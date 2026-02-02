@@ -5,3 +5,7 @@ export async function requireModerator() {
 export async function requireAdmin() {
   return true;
 }
+
+export async function checkModeratorAccess() {
+  return true;
+}

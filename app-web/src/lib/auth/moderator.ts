@@ -1,3 +1,7 @@
-export function isModerator() {
-  return false;
+export function getRoleBadgeColor() {
+  return 'gray';
+}
+
+export function getRoleDisplayName() {
+  return 'Moderator';
 }

@@ -1,1 +1,6 @@
-export const sdk = {};
+const sdk = {
+  auth: {},
+  api: {},
+};
+
+export default sdk;
