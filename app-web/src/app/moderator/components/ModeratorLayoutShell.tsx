@@ -2,7 +2,7 @@
 
 import { ModeratorSidebar } from './ModeratorSidebar';
 import { ModeratorTopbar } from './ModeratorTopbar';
-import type { CurrentUser } from '@/lib/auth/moderator';
+import type { CurrentUser } from '@/lib/auth/moderator.server';
 
 interface ModeratorLayoutShellProps {
   children: React.ReactNode;

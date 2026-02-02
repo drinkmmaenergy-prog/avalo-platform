@@ -23,7 +23,7 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { Suspense, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRoleGate } from '@/hooks/useRoleGate';
@@ -36,13 +36,13 @@ import type { CanonicalTokenPack } from '@/types/phase33.types';
 
 type Currency = 'USD' | 'EUR' | 'PLN' | 'GBP';
 
-export default function WalletBuyPage() {
+function WalletBuyContent() {
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   
   // Extract app→web redirect params (NOT trusted, passes through to backend)
-  const sourceApp = searchParams.get('source') === 'app';
-  const passedUserId = searchParams.get('userId');
+  const sourceApp = searchParams?.get('source') === 'app';
+  const passedUserId = searchParams?.get('userId');
   
   // Auth is relaxed for app→web flow (backend handles verification)
   const { isAuthorized, isLoading: roleLoading } = useRoleGate({
@@ -245,5 +245,23 @@ export default function WalletBuyPage() {
       
       <Footer />
     </div>
+  );
+}
+
+export default function WalletBuyPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+          <Header />
+          <main className="flex-1 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600" />
+          </main>
+          <Footer />
+        </div>
+      }
+    >
+      <WalletBuyContent />
+    </Suspense>
   );
 }

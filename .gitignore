@@ -91,3 +91,5 @@ app-web/_legacy_pages/
 
 # Shared stubs (not prod)
 shared/
+
+/shared/
