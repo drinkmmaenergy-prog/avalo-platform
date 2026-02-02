@@ -10,6 +10,7 @@
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, auth, functions, getFirestore, increment, logger, onCall, z } from './runtime';
 import { getFeatureFlag } from './featureFlags';
@@ -85,7 +86,7 @@ export const startCallV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { type, participantIds, pricePerMinute } = validationResult.data;

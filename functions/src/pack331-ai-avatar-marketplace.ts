@@ -9,6 +9,7 @@
  */
 
 import { https } from 'firebase-functions/v2';
+import { getZodErrorMessage } from './common';
 import { CallableRequest } from 'firebase-functions/v2/https';
 import { db, generateId, serverTimestamp, increment } from './init';
 import { z } from 'zod';
@@ -154,7 +155,7 @@ export const pack331_createAiAvatarTemplate = https.onCall(
       if (!validation.success) {
         return { 
           success: false, 
-          error: `Validation error: ${validation.error.message}` 
+          error: `Validation error: ${getZodErrorMessage(validation)!}` 
         };
       }
       
@@ -264,7 +265,7 @@ export const pack331_purchaseAiAvatarTemplate = https.onCall(
       if (!validation.success) {
         return { 
           success: false, 
-          error: `Validation error: ${validation.error.message}` 
+          error: `Validation error: ${getZodErrorMessage(validation)!}` 
         };
       }
       

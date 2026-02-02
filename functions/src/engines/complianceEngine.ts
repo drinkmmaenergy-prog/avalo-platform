@@ -11,6 +11,7 @@
  */
 
 import * as functions from "firebase-functions/v2";
+import { getZodErrorMessage } from '../common';
 import { HttpsError } from 'firebase-functions/v2/https';
 ;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
@@ -111,7 +112,7 @@ export const generateAuditReportCallable = onCall(
     // Validate input
     const validationResult = GenerateAuditReportSchema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { startDate, endDate, actorId, actionType } = validationResult.data;

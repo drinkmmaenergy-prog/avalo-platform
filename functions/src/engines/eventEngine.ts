@@ -16,6 +16,7 @@
  */
 
 import * as functions from "firebase-functions/v2";
+import { getZodErrorMessage } from '../common';
 import { HttpsError } from 'firebase-functions/v2/https';
 ;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
@@ -104,7 +105,7 @@ export const enqueueEventCallable = onCall(
     // Validate input
     const validationResult = EnqueueEventSchema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { type, priority, payload, ttlMinutes, maxRetries } = validationResult.data;

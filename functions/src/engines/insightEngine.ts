@@ -9,6 +9,7 @@
  */
 
 import * as functions from "firebase-functions/v2";
+import { getZodErrorMessage } from '../common';
 import { HttpsError } from 'firebase-functions/v2/https';
 ;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
@@ -210,7 +211,7 @@ export const recommendProfilesCallable = onCall(
     // Validate input
     const validationResult = RecommendProfilesSchema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { maxDistance, ageRange, limit } = validationResult.data;
@@ -362,7 +363,7 @@ export const recommendAICompanionsCallable = onCall(
     // Validate input
     const validationResult = RecommendAISchema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { limit } = validationResult.data;

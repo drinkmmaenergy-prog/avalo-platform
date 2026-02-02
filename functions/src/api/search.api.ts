@@ -4,6 +4,7 @@
  */
 
 import { Request, Response } from 'express';
+import { asString } from '../common';
 import { searchService } from '../services/search.service';
 import {
   SearchQuery,
@@ -101,8 +102,8 @@ export async function getAutocompleteSuggestions(req: Request, res: Response): P
       return;
     }
 
-    const query = req.query.q as string;
-    const limit = parseInt(req.query.limit as string) || DEFAULT_SEARCH_CONFIG.autocompleteMaxResults;
+    const query = asString(req.query.q);
+    const limit = parseInt(asString(req.query.limit) || '0') || DEFAULT_SEARCH_CONFIG.autocompleteMaxResults;
 
     if (!query || query.length < DEFAULT_SEARCH_CONFIG.autocompleteMinLength) {
       res.json({ suggestions: [] });
@@ -130,7 +131,7 @@ export async function getSearchHistory(req: Request, res: Response): Promise<voi
       return;
     }
 
-    const limit = parseInt(req.query.limit as string) || 50;
+    const limit = parseInt(asString(req.query.limit) || '0') || 50;
     const history = await searchService.getSearchHistory(userId, limit);
 
     res.json({ history });
@@ -179,7 +180,7 @@ export async function deleteSearchHistoryEntry(req: Request, res: Response): Pro
       return;
     }
 
-    await searchService.deleteSearchHistoryEntry(userId, entryId);
+    await searchService.deleteSearchHistoryEntry(userId, asString(entryId));
 
     res.json({ success: true, message: 'Search history entry deleted' });
   } catch (error: any) {
@@ -283,7 +284,7 @@ export async function removeFromIndex(req: Request, res: Response): Promise<void
       return;
     }
 
-    await searchService.removeFromIndex(itemId);
+    await searchService.removeFromIndex(asString(itemId));
 
     res.json({ success: true, message: 'Item removed from index' });
   } catch (error: any) {

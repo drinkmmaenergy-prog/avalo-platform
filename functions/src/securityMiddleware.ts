@@ -22,7 +22,7 @@ import * as crypto from 'crypto';
 // import React from 'react'; // Commented out - not needed in Cloud Functions
 import { Request } from "firebase-functions/v2/https";
 import { Timestamp, admin, functions, logger } from './runtime';
-import { getHmacSecret } from './common';
+import { getHmacSecret, toUint8Array } from './common';
 
 import { getAuth } from 'firebase-admin/auth';
 
@@ -141,9 +141,7 @@ export async function validateHMAC(
 
   // Verify signature
   const expectedSignature = await generateHMAC(body, timestampNum);
-  const isValid = crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
+  const isValid = crypto.timingSafeEqual(toUint8Array(Buffer.from(signature)), toUint8Array(Buffer.from(expectedSignature))
   );
 
   if (!isValid) {

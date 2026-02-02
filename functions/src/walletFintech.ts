@@ -48,24 +48,48 @@ const db = getFirestore();
 // INIT STRIPE (FULLY FIXED VERSION)
 // ============================================================================
 
+/**
+ * Detect if this is deploy-time analysis.
+ * Firebase deploy analysis runs the code to extract function definitions,
+ * but does NOT have access to runtime secrets.
+ * 
+ * Detection rule:
+ * - NOT in Cloud Run runtime (K_SERVICE not set)
+ * - NOT in emulator (FUNCTIONS_EMULATOR not set)
+ * → Must be deploy-time analysis
+ */
+const IS_DEPLOY_TIME_ANALYSIS = !process.env.K_SERVICE && process.env.FUNCTIONS_EMULATOR !== 'true';
+
 // Load stripe secret from:
 // 1) .env (emulator)
 // 2) firebase functions:config:set stripe.secret="xxx"
-// 3) crash early if missing
+// 3) crash early if missing (except during deploy analysis)
 const STRIPE_SECRET =
   process.env.STRIPE_SECRET_KEY ||
   functionsConfig().stripe?.secret ||
   "";
 
 if (!STRIPE_SECRET) {
-  throw new Error(
-    "❌ Stripe secret key missing. Add STRIPE_SECRET_KEY to functions/.env or run: firebase functions:config:set stripe.secret=\"sk_test_XXX\""
-  );
+  if (IS_DEPLOY_TIME_ANALYSIS) {
+    // During deploy analysis, warn but allow to continue
+    // Functions will fail at runtime if actually called without the key
+    console.warn(
+      "[walletFintech] ⚠️ Deploy-time analysis: Stripe secret key missing. Using placeholder to allow deploy."
+    );
+  } else {
+    // In Cloud Run (runtime) or Emulator, fail hard
+    throw new Error(
+      "❌ Stripe secret key missing. Add STRIPE_SECRET_KEY to functions/.env or run: firebase functions:config:set stripe.secret=\"sk_test_XXX\""
+    );
+  }
 }
 
-const stripe = new Stripe(STRIPE_SECRET, {
-  apiVersion: "2025-02-24.acacia" as any,
-});
+// Create Stripe client (or placeholder during deploy analysis)
+const stripe = STRIPE_SECRET 
+  ? new Stripe(STRIPE_SECRET, {
+      apiVersion: "2025-02-24.acacia" as any,
+    })
+  : null as unknown as Stripe; // Placeholder during deploy analysis - will error at runtime if used
 
 // ============================================================================
 // TYPES & INTERFACES

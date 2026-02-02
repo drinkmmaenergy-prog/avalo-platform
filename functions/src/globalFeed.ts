@@ -17,6 +17,7 @@
 ;
 ;
 import { HttpsError } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 ;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, auth, functions, getFirestore, logger, onCall, onSchedule, serverTimestamp, z } from './runtime';
@@ -117,7 +118,7 @@ export const getGlobalFeedV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const params = validationResult.data;
@@ -466,7 +467,7 @@ export const invalidateFeedCacheV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { postId, region, language } = validationResult.data;

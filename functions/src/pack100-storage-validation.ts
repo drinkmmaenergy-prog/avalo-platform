@@ -11,6 +11,7 @@
  */
 
 import { storage } from './init';
+import { toUint8Array } from './common';
 import { logTechEvent } from './pack90-logging';
 import * as crypto from 'crypto';
 
@@ -241,7 +242,7 @@ export function sanitizeFilename(filename: string): StorageValidationResult {
  * Used for duplicate detection (optional)
  */
 export function generateContentHash(buffer: Buffer): string {
-  return crypto.createHash('sha256').update(buffer).digest('hex');
+  return crypto.createHash('sha256').update(toUint8Array(buffer)).digest('hex');
 }
 
 /**

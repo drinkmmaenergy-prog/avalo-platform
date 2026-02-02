@@ -4,6 +4,7 @@
  */
 
 import { db, admin } from './init';
+import { toUint8Array } from './common';
 import * as crypto from 'crypto';
 import { Timestamp } from 'firebase-admin/firestore';
 import { functions, timestamp } from './runtime';
@@ -49,17 +50,17 @@ export async function generateLocalEncryptionKeys(
   const salt = crypto.randomBytes(16);
   
   const derivedKey = crypto.pbkdf2Sync(
-    masterKey,
-    salt,
+    toUint8Array(masterKey),
+    toUint8Array(salt),
     100000,
     32,
     'sha256'
   );
   
   const encryptedMasterKey = Buffer.concat([
-    salt,
-    derivedKey
-  ]).toString('base64');
+    salt as unknown as Uint8Array,
+    derivedKey as unknown as Uint8Array
+  ] as unknown as Uint8Array[]).toString('base64');
   
   const keyMetadata: EncryptionKeyMetadata = {
     userId,

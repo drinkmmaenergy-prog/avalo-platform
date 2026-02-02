@@ -14,6 +14,7 @@
 ;
 ;
 import { HttpsError } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, arrayUnion, auth, functions, getFirestore, logger, onCall, onSchedule, z } from './runtime';
 ;
@@ -560,7 +561,7 @@ export const getSecurityIncidentsV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { status, severity, limit } = validationResult.data;
@@ -621,7 +622,7 @@ export const updateSecurityIncidentV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { incidentId, status, resolutionNotes, actionsTaken } = validationResult.data;

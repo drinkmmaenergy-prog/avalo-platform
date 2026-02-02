@@ -9,6 +9,7 @@
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 ;
 ;
@@ -69,7 +70,7 @@ export const updatePresenceV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { status, platform, customStatus } = validationResult.data;
@@ -229,7 +230,7 @@ export const sendTypingIndicatorV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { chatId, isTyping } = validationResult.data;
@@ -308,7 +309,7 @@ export const sendReadReceiptV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { chatId, messageId } = validationResult.data;

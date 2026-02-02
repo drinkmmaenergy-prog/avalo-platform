@@ -10,6 +10,7 @@
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 import { Timestamp } from 'firebase-admin/firestore';
 import { admin, auth, ethers, functions, getFirestore, logger, onCall, z } from './runtime';
 import { getFeatureFlag } from './featureFlags';
@@ -61,7 +62,7 @@ export const connectWalletV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { walletAddress, blockchain, signedMessage } = validationResult.data;
@@ -131,7 +132,7 @@ export const initiateDepositV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { blockchain, amountUSDC } = validationResult.data;
@@ -190,7 +191,7 @@ export const confirmDepositV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { depositId, txHash } = validationResult.data;
@@ -334,7 +335,7 @@ export const initiateWithdrawalV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { blockchain, amountTokens } = validationResult.data;

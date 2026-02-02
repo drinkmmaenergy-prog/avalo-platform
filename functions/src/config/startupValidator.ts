@@ -12,9 +12,32 @@
  * - No test keys in production
  * - Required secrets must exist
  * - Environment must be deterministic
+ * 
+ * DEPLOY-TIME ANALYSIS DETECTION:
+ * - Firebase deploy analysis does NOT have runtime secrets
+ * - Detect via: !K_SERVICE && !FUNCTIONS_EMULATOR
+ * - Allow deploy analysis to continue with WARN
+ * - Still HARD FAIL in Cloud Run (Gen2 runtime) and Emulator
  */
 
-import { logger } from '../runtime';
+// ============================================================================
+// LOGGER UTILITIES (avoid circular import with runtime.ts)
+// ============================================================================
+
+/**
+ * Logger that uses console to avoid circular dependency with runtime.ts
+ */
+const validatorLogger = {
+  info: (msg: string, data?: Record<string, unknown>) => {
+    console.log(`[StartupValidator] ${msg}`, data ? JSON.stringify(data) : '');
+  },
+  warn: (msg: string, data?: Record<string, unknown>) => {
+    console.warn(`[StartupValidator] ${msg}`, data ? JSON.stringify(data) : '');
+  },
+  error: (msg: string, data?: Record<string, unknown>) => {
+    console.error(`[StartupValidator] ${msg}`, data ? JSON.stringify(data) : '');
+  },
+};
 
 // ============================================================================
 // TYPES
@@ -34,9 +57,24 @@ export interface StartupValidationResult {
 // ============================================================================
 
 const IS_EMULATOR = process.env.FUNCTIONS_EMULATOR === 'true';
+const IS_CLOUD_RUN = !!process.env.K_SERVICE; // Gen2 runtime sets K_SERVICE
 const NODE_ENV = process.env.NODE_ENV || 'production';
 const GCLOUD_PROJECT = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || '';
 const FIREBASE_CONFIG = process.env.FIREBASE_CONFIG || '';
+
+/**
+ * Detect if this is deploy-time analysis.
+ * Firebase deploy analysis runs the code to extract function definitions,
+ * but does NOT have access to runtime secrets.
+ * 
+ * Detection rule:
+ * - NOT in Cloud Run runtime (K_SERVICE not set)
+ * - NOT in emulator (FUNCTIONS_EMULATOR not set)
+ * → Must be deploy-time analysis
+ */
+function isDeployTimeAnalysis(): boolean {
+  return !IS_CLOUD_RUN && !IS_EMULATOR;
+}
 
 /**
  * Detect if this is a production environment
@@ -100,7 +138,7 @@ function validateStripeKeyNotTest(): { valid: boolean; violation?: string } {
   
   // Also check for live key in non-production (warning only)
   if (!isProd && stripeKey.startsWith('sk_live_')) {
-    logger.warn('[StartupValidator] Live Stripe key in non-production environment');
+    validatorLogger.warn('Live Stripe key in non-production environment');
   }
   
   return { valid: true };
@@ -215,19 +253,29 @@ export function runStartupValidation(): StartupValidationResult {
   
   // Log validation result
   if (result.valid) {
-    logger.info('[StartupValidator] ✅ All production startup validations passed', {
+    validatorLogger.info('✅ All production startup validations passed', {
       environment,
       checks,
     });
   } else {
-    logger.error('[StartupValidator] ❌ Startup validation FAILED', {
+    validatorLogger.error('❌ Startup validation FAILED', {
       environment,
       errors,
       checks,
     });
   }
   
-  // In production, throw if validation fails
+  // Deploy-time analysis: WARN only, allow to continue
+  // This allows firebase deploy --only functions to pass analysis phase
+  if (isDeployTimeAnalysis() && !result.valid) {
+    validatorLogger.warn('⚠️ Deploy-time analysis detected, validation failures are warnings only', {
+      reason: 'Deploy analysis does not have access to runtime secrets (K_SERVICE/FUNCTIONS_EMULATOR not set)',
+      errors,
+    });
+    return result; // Return without throwing, allow deploy to continue
+  }
+  
+  // In production (Cloud Run or Emulator), throw if validation fails
   if (isProd && !result.valid) {
     throw new Error(
       `[PRODUCTION STARTUP FAILURE] Cannot boot: ${errors.join('; ')}`
@@ -270,6 +318,7 @@ export function initStartupValidation(): StartupValidationResult {
 // Export check functions for testing
 export const _internal = {
   detectProductionEnvironment,
+  isDeployTimeAnalysis,
   validateRequiredEnvVars,
   validateStripeKeyNotTest,
   validateEmulatorNotInProd,

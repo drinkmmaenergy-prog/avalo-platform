@@ -1,4 +1,5 @@
 import * as admin from 'firebase-admin';
+import { toUint8Array } from '../common';
 import * as crypto from 'crypto';
 import { SafetyVaultRecord } from './types';
 import { FieldValue, arrayUnion, db, serverTimestamp, storage, timestamp } from '../runtime';
@@ -27,7 +28,7 @@ export class SafetyVault {
     authTag: string;
   } {
     const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv(ENCRYPTION_ALGORITHM, key, iv);
+    const cipher = crypto.createCipheriv(ENCRYPTION_ALGORITHM, toUint8Array(key), toUint8Array(iv));
     
     let encrypted = cipher.update(data, 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -49,11 +50,11 @@ export class SafetyVault {
   ): string {
     const decipher = crypto.createDecipheriv(
       ENCRYPTION_ALGORITHM,
-      key,
-      Buffer.from(iv, 'hex')
+      toUint8Array(key),
+      toUint8Array(Buffer.from(iv, 'hex'))
     );
     
-    decipher.setAuthTag(Buffer.from(authTag, 'hex'));
+    decipher.setAuthTag(toUint8Array(Buffer.from(authTag, 'hex')));
     
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');

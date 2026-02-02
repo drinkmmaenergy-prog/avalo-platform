@@ -11,6 +11,7 @@
  */
 
 import { db, serverTimestamp, generateId } from './init';
+import { toUint8Array } from './common';
 import {
   WatermarkMetadata,
   PiracyDetection,
@@ -162,7 +163,7 @@ async function encryptWatermark(metadata: WatermarkMetadata): Promise<string> {
   const iv = randomBytes(IV_LENGTH);
   const key = Buffer.from(ENCRYPTION_KEY.substring(0, 32));
   
-  const cipher = createCipheriv('aes-256-cbc', key, iv);
+  const cipher = createCipheriv('aes-256-cbc', toUint8Array(key), toUint8Array(iv));
   
   const metadataString = JSON.stringify(metadata);
   let encrypted = cipher.update(metadataString, 'utf8', 'hex');
@@ -181,7 +182,7 @@ async function decryptWatermark(encryptedData: string): Promise<WatermarkMetadat
   const encrypted = parts[1];
   
   const key = Buffer.from(ENCRYPTION_KEY.substring(0, 32));
-  const decipher = createDecipheriv('aes-256-cbc', key, iv);
+  const decipher = createDecipheriv('aes-256-cbc', toUint8Array(key), toUint8Array(iv));
   
   let decrypted = decipher.update(encrypted, 'hex', 'utf8');
   decrypted += decipher.final('utf8');

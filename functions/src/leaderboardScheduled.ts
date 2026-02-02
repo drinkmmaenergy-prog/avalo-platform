@@ -1,10 +1,14 @@
 /**
  * PACK 216: Creator Competition Engine
  * Scheduled functions for weekly reset and monthly summary
+ * 
+ * NOTE: This file uses direct firebase-functions imports to avoid
+ * circular dependency with runtime.ts → init.ts → startupValidator.ts
  */
 
 
 import * as logger from 'firebase-functions/logger';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { weeklyReset, monthlyReset } from './leaderboardEngine';
 
 // ============================================================================
@@ -187,7 +191,8 @@ export const hourlyLeaderboardCleanup = onSchedule(
 // ============================================================================
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { Timestamp, admin, auth, db, functions, serverTimestamp, timestamp, onSchedule } from './runtime';
+// NOTE: Removed top-level import from './runtime' to break circular dependency
+// All runtime imports (db, Timestamp, etc.) are done lazily inside handlers via await import('./init')
 
 /**
  * Manual weekly reset trigger (admin only)

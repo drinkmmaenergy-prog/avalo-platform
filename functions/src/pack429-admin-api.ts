@@ -4,6 +4,7 @@
  */
 
 import * as admin from 'firebase-admin';
+import { asString } from './common';
 import { Request, Response } from 'express';
 import {
   StoreDefenseDashboard,
@@ -236,7 +237,7 @@ export async function importReviewsEndpoint(req: Request, res: Response): Promis
 export async function getRecentReviewsEndpoint(req: Request, res: Response): Promise<void> {
   await requireAdmin(req, res, async (userId) => {
     const platform = req.query.platform as Platform | undefined;
-    const limit = parseInt(req.query.limit as string) || 50;
+    const limit = parseInt(asString(req.query.limit) || '0') || 50;
     
     const reviews = await getRecentReviews(platform, limit);
     
@@ -251,7 +252,7 @@ export async function getRecentReviewsEndpoint(req: Request, res: Response): Pro
 export async function getAttackPatternsEndpoint(req: Request, res: Response): Promise<void> {
   await requireAdmin(req, res, async (userId) => {
     const platform = req.query.platform as Platform | undefined;
-    const limit = parseInt(req.query.limit as string) || 100;
+    const limit = parseInt(asString(req.query.limit) || '0') || 100;
     
     const reviews = await getAttackPatternReviews(platform, limit);
     
@@ -292,7 +293,7 @@ export async function getEventsEndpoint(req: Request, res: Response): Promise<vo
  */
 export async function resolveEventEndpoint(req: Request, res: Response): Promise<void> {
   await requireAdmin(req, res, async (userId) => {
-    const eventId = req.params.eventId;
+    const eventId = asString(req.params.eventId);
     
     if (!eventId) {
       throw new Error('Event ID required');
@@ -372,7 +373,7 @@ export async function recalculateTrustScoreEndpoint(req: Request, res: Response)
  */
 export async function getRecoveryStatsEndpoint(req: Request, res: Response): Promise<void> {
   await requireAdmin(req, res, async (userId) => {
-    const days = parseInt(req.query.days as string) || 7;
+    const days = parseInt(asString(req.query.days) || '0') || 7;
     
     const stats = await getRecoveryStats(days);
     
@@ -386,7 +387,7 @@ export async function getRecoveryStatsEndpoint(req: Request, res: Response): Pro
  */
 export async function getPendingPromptsEndpoint(req: Request, res: Response): Promise<void> {
   await requireAdmin(req, res, async (userId) => {
-    const limit = parseInt(req.query.limit as string) || 100;
+    const limit = parseInt(asString(req.query.limit) || '0') || 100;
     
     const prompts = await getAllPendingPrompts(limit);
     
@@ -411,7 +412,7 @@ export async function markPromptDeliveredEndpoint(req: Request, res: Response): 
     const token = authHeader.split('Bearer ')[1];
     await admin.auth().verifyIdToken(token);
     
-    const promptId = req.params.promptId;
+    const promptId = asString(req.params.promptId);
     
     if (!promptId) {
       throw new Error('Prompt ID required');
@@ -443,7 +444,7 @@ export async function markPromptRespondedEndpoint(req: Request, res: Response): 
     const token = authHeader.split('Bearer ')[1];
     await admin.auth().verifyIdToken(token);
     
-    const promptId = req.params.promptId;
+    const promptId = asString(req.params.promptId);
     const leftReview = req.body.leftReview === true;
     
     if (!promptId) {

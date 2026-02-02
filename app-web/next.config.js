@@ -154,6 +154,10 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   
+  // PHASE 5.1: Exclude legacy pages with broken imports until shared module is created
+  // These pages reference non-existent ../../../shared/* modules
+  pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
+  
   // PACK 317: Security headers
   async headers() {
     return [

@@ -25,6 +25,7 @@
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 import { storage } from './init';
 ;
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
@@ -161,7 +162,7 @@ export const getUploadURLV1 = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError("invalid-argument", validation.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validation)!);
     }
 
     const { mediaType, filename, mimeType, fileSize, accessType, unlockPrice } = validation.data;
