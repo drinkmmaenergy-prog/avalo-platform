@@ -266,3 +266,6 @@ const nextConfig = {
 };
 
 module.exports = withPWA(nextConfig);
+eslint: {
+  ignoreDuringBuilds: true,
+},

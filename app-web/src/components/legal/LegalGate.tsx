@@ -5,11 +5,12 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { LEGAL_DOCS, getAllLegalDocKeys } from '../../../../shared/legal/legalRegistry';
+import React, { useState, useEffect, useCallback } from 'react';
+import { LEGAL_DOCS, getAllLegalDocKeys } from '../../lib/legal/legalRegistry';
+import type { LegalDocKey } from '../../lib/legal/legalRegistry';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../providers/AuthProvider';
 
 interface LegalAcceptance {
   termsVersion: string;
@@ -22,18 +23,28 @@ interface LegalAcceptance {
   platform: 'mobile' | 'web';
 }
 
+type CheckboxKey = 'terms' | 'privacy' | 'guidelines' | 'refunds' | 'ageVerification';
+
+interface CheckboxState {
+  terms: boolean;
+  privacy: boolean;
+  guidelines: boolean;
+  refunds: boolean;
+  ageVerification: boolean;
+}
+
 interface LegalGateProps {
   onAccepted?: () => void;
 }
 
 export default function LegalGate({ onAccepted }: LegalGateProps) {
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
   const [lang] = useState<'en' | 'pl'>('en'); // TODO: detect from browser locale
 
-  const [checkboxes, setCheckboxes] = useState({
+  const [checkboxes, setCheckboxes] = useState<CheckboxState>({
     terms: false,
     privacy: false,
     guidelines: false,
@@ -41,13 +52,7 @@ export default function LegalGate({ onAccepted }: LegalGateProps) {
     ageVerification: false,
   });
 
-  useEffect(() => {
-    if (user) {
-      checkAcceptance();
-    }
-  }, [user]);
-
-  const checkAcceptance = async () => {
+  const checkAcceptance = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -80,27 +85,34 @@ export default function LegalGate({ onAccepted }: LegalGateProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, lang, onAccepted]);
 
-  const handleCheckbox = (key: keyof typeof checkboxes) => {
+  useEffect(() => {
+    if (user) {
+      checkAcceptance();
+    }
+  }, [user, checkAcceptance]);
+
+  const handleCheckbox = (key: CheckboxKey) => {
     setCheckboxes((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const allChecked = Object.values(checkboxes).every((v) => v);
 
   const handleAccept = async () => {
-    if (!allChecked || !user) return;
+    if (!allChecked || !firebaseUser) return;
 
     try {
       setAccepting(true);
 
+      const token = await firebaseUser.getIdToken();
       const response = await fetch(
         `https://us-central1-${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.cloudfunctions.net/pack338a_acceptLegal`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${await user.getIdToken()}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ lang }),
         }
@@ -130,6 +142,11 @@ export default function LegalGate({ onAccepted }: LegalGateProps) {
 
   if (!visible) return null;
 
+  // Get valid checkbox keys by filtering the legal doc keys
+  const validCheckboxKeys = getAllLegalDocKeys().filter(
+    (key): key is CheckboxKey => key in checkboxes
+  );
+
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-y-auto">
       <div className="max-w-2xl mx-auto px-4 py-12">
@@ -151,8 +168,8 @@ export default function LegalGate({ onAccepted }: LegalGateProps) {
         </div>
 
         <div className="space-y-4 mb-8">
-          {getAllLegalDocKeys().map((key) => {
-            const doc = LEGAL_DOCS[key][lang];
+          {validCheckboxKeys.map((key) => {
+            const legalDoc = LEGAL_DOCS[key][lang];
             return (
               <button
                 key={key}
@@ -174,9 +191,9 @@ export default function LegalGate({ onAccepted }: LegalGateProps) {
                 </div>
                 <div>
                   <p className="font-medium">
-                    I accept the <span className="text-pink-500">{doc.title}</span>
+                    I accept the <span className="text-pink-500">{legalDoc.title}</span>
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">Version {doc.version}</p>
+                  <p className="text-sm text-gray-500 mt-1">Version {legalDoc.version}</p>
                 </div>
               </button>
             );

@@ -1,11 +1,8 @@
+'use client';
+
 import { Users } from 'lucide-react';
 import { DataTable } from '../components/DataTable';
 import { Badge } from '../components/Badge';
-
-export const metadata = {
-  title: 'Users | Avalo Moderator',
-  description: 'View and manage platform users',
-};
 
 // Dummy data for PACK 1 (read-only display)
 const mockUsers = [

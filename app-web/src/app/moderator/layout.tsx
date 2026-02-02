@@ -1,7 +1,7 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import { ModeratorLayoutShell } from './components/ModeratorLayoutShell';
-import { getCurrentUserWithRole } from '@/lib/auth/moderator';
+import { getCurrentUserWithRole } from '@/lib/auth/moderator.server';
 
 export const metadata = {
   title: 'Moderator Dashboard | Avalo TrustShield',

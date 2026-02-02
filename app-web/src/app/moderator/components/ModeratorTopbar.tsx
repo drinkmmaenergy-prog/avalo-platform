@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import type { CurrentUser } from '@/lib/auth/moderator';
+import type { CurrentUser } from '@/lib/auth/moderator.server';
 import { getRoleDisplayName, getRoleBadgeColor } from '@/lib/auth/moderator';
 
 interface ModeratorTopbarProps {
