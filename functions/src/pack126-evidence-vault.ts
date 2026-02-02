@@ -6,6 +6,7 @@
  */
 
 import { db } from './init';
+import { toUint8Array } from './common';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import * as crypto from 'crypto';
 import {
@@ -320,8 +321,8 @@ function encryptData(data: string, key: string): string {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(
     ENCRYPTION_ALGORITHM,
-    Buffer.from(key, 'hex'),
-    iv
+    toUint8Array(Buffer.from(key, 'hex')),
+    toUint8Array(iv)
   );
   
   let encrypted = cipher.update(data, 'utf8', 'hex');
@@ -344,11 +345,11 @@ function decryptData(encryptedData: string, key: string): string {
   
   const decipher = crypto.createDecipheriv(
     ENCRYPTION_ALGORITHM,
-    Buffer.from(key, 'hex'),
-    Buffer.from(iv, 'hex')
+    toUint8Array(Buffer.from(key, 'hex')),
+    toUint8Array(Buffer.from(iv, 'hex'))
   );
   
-  decipher.setAuthTag(Buffer.from(authTag, 'hex'));
+  decipher.setAuthTag(toUint8Array(Buffer.from(authTag, 'hex')));
   
   let decrypted = decipher.update(encrypted, 'hex', 'utf8');
   decrypted += decipher.final('utf8');

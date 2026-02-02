@@ -6,6 +6,7 @@
  */
 
 import * as crypto from 'crypto';
+import { toUint8Array } from './common';
 import { db } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { SealedLegalEvidence } from './types/pack158-legal-evidence.types';
@@ -34,18 +35,19 @@ export async function encryptEvidence(
   
   const cipher = crypto.createCipheriv(
     ENCRYPTION_ALGORITHM,
-    Buffer.from(masterKey, 'hex'),
-    iv
+    toUint8Array(Buffer.from(masterKey, 'hex')),
+    toUint8Array(iv)
   );
   
-  let encrypted = cipher.update(dataBuffer);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  const encryptedPart1 = cipher.update(toUint8Array(dataBuffer)) as unknown as Uint8Array;
+  const encryptedPart2 = cipher.final() as unknown as Uint8Array;
+  const encrypted = Buffer.concat([encryptedPart1, encryptedPart2] as unknown as Uint8Array[]);
   
   const authTag = cipher.getAuthTag();
   
   const hashChecksum = crypto
     .createHash('sha256')
-    .update(dataBuffer)
+    .update(toUint8Array(dataBuffer))
     .digest('hex');
   
   return {
@@ -67,14 +69,15 @@ export async function decryptEvidence(
   
   const decipher = crypto.createDecipheriv(
     ENCRYPTION_ALGORITHM,
-    Buffer.from(masterKey, 'hex'),
-    Buffer.from(encryptionIV, 'hex')
+    toUint8Array(Buffer.from(masterKey, 'hex')),
+    toUint8Array(Buffer.from(encryptionIV, 'hex'))
   );
   
-  decipher.setAuthTag(Buffer.from(authTag, 'hex'));
+  decipher.setAuthTag(toUint8Array(Buffer.from(authTag, 'hex')));
   
-  let decrypted = decipher.update(Buffer.from(encryptedPayload, 'base64'));
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  const decryptedPart1 = decipher.update(toUint8Array(Buffer.from(encryptedPayload, 'base64'))) as unknown as Uint8Array;
+  const decryptedPart2 = decipher.final() as unknown as Uint8Array;
+  const decrypted = Buffer.concat([decryptedPart1, decryptedPart2] as unknown as Uint8Array[]);
   
   return decrypted.toString('utf-8');
 }
@@ -85,7 +88,7 @@ export function verifyEvidenceIntegrity(
 ): boolean {
   const currentHash = crypto
     .createHash('sha256')
-    .update(Buffer.from(decryptedData, 'utf-8'))
+    .update(toUint8Array(Buffer.from(decryptedData, 'utf-8')))
     .digest('hex');
   
   return currentHash === originalHash;

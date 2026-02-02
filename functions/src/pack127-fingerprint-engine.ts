@@ -10,6 +10,7 @@
  */
 
 import { db, serverTimestamp, generateId } from './init';
+import { toUint8Array } from './common';
 import {
   IPFingerprint,
   FingerprintMatch,
@@ -133,7 +134,7 @@ async function generateWaveformSignature(input: RegisterFingerprintInput): Promi
  */
 function generateFileChecksum(fileData: Buffer): string {
   return createHash('sha256')
-    .update(fileData)
+    .update(toUint8Array(fileData))
     .digest('hex');
 }
 

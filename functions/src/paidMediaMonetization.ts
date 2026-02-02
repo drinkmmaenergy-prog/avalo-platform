@@ -10,6 +10,7 @@ import {
   getFirestore, 
   Timestamp 
 } from 'firebase-admin/firestore';
+import { toUint8Array } from './common';
 import { logger } from 'firebase-functions/v2';
 
 import { onCall } from 'firebase-functions/v2/https';
@@ -98,7 +99,7 @@ interface PaidMediaProduct {
  */
 function generatePerceptualHash(content: Buffer): string {
   const hash = crypto.createHash('sha256');
-  hash.update(content);
+  hash.update(toUint8Array(content));
   return hash.digest('hex').substring(0, 16);
 }
 

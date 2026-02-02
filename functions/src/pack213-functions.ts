@@ -10,6 +10,7 @@
 
 import { onCall } from 'firebase-functions/v2/https';
 
+import { getZodErrorMessage } from './common';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { z } from 'zod';
 import {
@@ -78,7 +79,7 @@ export const getDiscoveryFeedV2 = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { filters, limit, cursor, usePriorityRanking } = validation.data;
@@ -136,7 +137,7 @@ export const getHighPriorityMatchesV1 = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { limit, minScore } = validation.data;
@@ -180,7 +181,7 @@ export const getSuggestedProfilesV1 = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { context, limit } = validation.data;
@@ -228,7 +229,7 @@ export const trackProfileLikeV1 = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { targetUserId } = validation.data;
@@ -275,7 +276,7 @@ export const trackProfileViewV1 = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { targetUserId, dwellTimeSeconds } = validation.data;
@@ -323,7 +324,7 @@ export const trackMediaExpansionV1 = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { targetUserId } = validation.data;
@@ -371,7 +372,7 @@ export const trackProfileWishlistV1 = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { targetUserId } = validation.data;
@@ -418,7 +419,7 @@ export const applyTokenPurchaseBoostV1 = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { amount } = validation.data;
@@ -467,7 +468,7 @@ export const calculateMatchPriorityV1 = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { candidateId } = validation.data;
@@ -542,7 +543,7 @@ export const onChatCompletedWebhook = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { userId, chatId, wasPaid } = validation.data;
@@ -583,7 +584,7 @@ export const onMeetingCompletedWebhook = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { userId, meetingId, wasPaid } = validation.data;
@@ -624,7 +625,7 @@ export const onEventHostedWebhook = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { organizerId, eventId, wasSuccessful } = validation.data;
@@ -664,7 +665,7 @@ export const onGoodVibeReceivedWebhook = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError('invalid-argument', validation.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validation)!);
     }
 
     const { userId, meetingId } = validation.data;

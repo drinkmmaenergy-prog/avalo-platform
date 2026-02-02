@@ -43,6 +43,7 @@
 ;
 ;
 import { HttpsError } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 ;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, auth, functions, getFirestore, increment, logger, onCall, onSchedule, serverTimestamp, timestamp, z } from './runtime';
@@ -503,7 +504,7 @@ export const calculateDynamicPriceV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { itemType, itemId, basePrice, promoCode } = validationResult.data;
@@ -533,7 +534,7 @@ export const getCreatorPricingProfileV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { creatorId } = validationResult.data;
@@ -564,7 +565,7 @@ export const updateCreatorPricingV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const updates = validationResult.data;
@@ -602,7 +603,7 @@ export const validatePromoCodeV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { code, itemType, basePrice } = validationResult.data;

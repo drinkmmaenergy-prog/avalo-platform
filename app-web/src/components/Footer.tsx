@@ -23,7 +23,7 @@ export default function Footer() {
                   href="/legal/terms"
                   className="text-gray-400 hover:text-white transition text-sm"
                 >
-                  Terms & Conditions
+                  Terms of Service
                 </Link>
               </li>
               <li>
@@ -32,6 +32,14 @@ export default function Footer() {
                   className="text-gray-400 hover:text-white transition text-sm"
                 >
                   Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/legal/creator-agreement"
+                  className="text-gray-400 hover:text-white transition text-sm"
+                >
+                  Creator Agreement
                 </Link>
               </li>
               <li>
@@ -48,14 +56,6 @@ export default function Footer() {
                   className="text-gray-400 hover:text-white transition text-sm"
                 >
                   Safety Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/legal/creator-monetization"
-                  className="text-gray-400 hover:text-white transition text-sm"
-                >
-                  Creator Monetization Policy
                 </Link>
               </li>
               <li>

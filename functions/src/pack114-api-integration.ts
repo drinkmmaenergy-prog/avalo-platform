@@ -10,6 +10,7 @@
  */
 
 import { db } from './init';
+import { asString } from './common';
 import { logger } from 'firebase-functions/v2';
 import { onRequest } from 'firebase-functions/v2/https';
 import {
@@ -125,7 +126,7 @@ export const apiAgencyDashboard = onRequest(
       }
 
       const token = authHeader.substring(7);
-      const agencyId = req.params.agencyId || (req.query.agencyId as string);
+      const agencyId = asString(req.params.agencyId) || asString(req.query.agencyId);
 
       if (!agencyId) {
         res.status(400).json(
@@ -218,7 +219,7 @@ export const apiAgencyCreators = onRequest(
       }
 
       const token = authHeader.substring(7);
-      const agencyId = req.params.agencyId || (req.query.agencyId as string);
+      const agencyId = asString(req.params.agencyId) || asString(req.query.agencyId);
 
       if (!agencyId) {
         res.status(400).json(
@@ -311,8 +312,8 @@ export const apiAgencyCreatorAnalytics = onRequest(
       }
 
       const token = authHeader.substring(7);
-      const agencyId = req.params.agencyId || (req.query.agencyId as string);
-      const creatorId = req.params.creatorId || (req.query.creatorId as string);
+      const agencyId = asString(req.params.agencyId) || asString(req.query.agencyId);
+      const creatorId = req.params.creatorId || (asString(req.query.creatorId));
 
       if (!agencyId || !creatorId) {
         res.status(400).json(
@@ -405,8 +406,8 @@ export const apiAgencyEarningsTimeline = onRequest(
       }
 
       const token = authHeader.substring(7);
-      const agencyId = req.params.agencyId || (req.query.agencyId as string);
-      const days = parseInt((req.query.days as string) || '30', 10);
+      const agencyId = asString(req.params.agencyId) || asString(req.query.agencyId);
+      const days = parseInt((asString(req.query.days)) || '30', 10);
 
       if (!agencyId) {
         res.status(400).json(

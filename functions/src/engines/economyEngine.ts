@@ -9,6 +9,7 @@
  */
 
 import * as functions from "firebase-functions/v2";
+import { getZodErrorMessage } from '../common';
 import { HttpsError } from 'firebase-functions/v2/https';
 ;
 ;
@@ -361,7 +362,7 @@ export const analyzeFlowCallable = onCall(
     // Validate input
     const validationResult = AnalyzeFlowSchema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { startDate, endDate } = validationResult.data;

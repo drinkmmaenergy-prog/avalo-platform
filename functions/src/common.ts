@@ -39,7 +39,106 @@ export const functionsConfig = functionsV1.config;
 // ============================================================================
 // VALIDATION (Zod)
 // ============================================================================
-export { z } from 'zod';
+import { z, type SafeParseSuccess, type SafeParseError } from 'zod';
+export { z };
+
+/**
+ * Type guard for zod safeParse failure result.
+ */
+export function isZodError<T>(
+  result: SafeParseSuccess<T> | SafeParseError<unknown>
+): result is SafeParseError<unknown> {
+  return !result.success;
+}
+
+/**
+ * Type-safe assertion helper for zod safeParse results.
+ * Throws HttpsError with "invalid-argument" if validation failed.
+ *
+ * @example
+ * const parsed = assertValid(schema.safeParse(data));
+ * // parsed is now fully typed as T
+ */
+export function assertValid<T>(
+  result: SafeParseSuccess<T> | SafeParseError<unknown>
+): T {
+  if (!result.success) {
+    // Import HttpsError lazily to avoid circular dependency
+    const { HttpsError } = require('firebase-functions/v2/https');
+    throw new HttpsError('invalid-argument', (result as SafeParseError<unknown>).error.message);
+  }
+  return result.data;
+}
+
+/**
+ * Get the error message from a zod SafeParseReturnType when it's a failure.
+ * Use this when you need access to the error message but can't use assertValid.
+ */
+export function getZodErrorMessage<T>(
+  result: SafeParseSuccess<T> | SafeParseError<unknown>
+): string | null {
+  if (!result.success) {
+    return (result as SafeParseError<unknown>).error.message;
+  }
+  return null;
+}
+
+// ============================================================================
+// QUERY PARAM HELPERS
+// ============================================================================
+
+import type { ParsedQs } from 'qs';
+
+/**
+ * Normalize req.query params from string | string[] | ParsedQs | undefined to string.
+ * Returns the first element if array, or empty string if undefined/object.
+ */
+export function asString(value: string | string[] | ParsedQs | (string | ParsedQs)[] | undefined): string {
+  if (value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) {
+    const first = value[0];
+    if (typeof first === 'string') return first;
+    return '';
+  }
+  // ParsedQs object - return empty string
+  return '';
+}
+
+/**
+ * Normalize req.query params to string, with default value support.
+ */
+export function asStringOr(value: string | string[] | undefined, defaultValue: string): string {
+  const result = asString(value);
+  return result === '' ? defaultValue : result;
+}
+
+/**
+ * Parse req.query param as integer with default.
+ */
+export function asInt(value: string | string[] | undefined, defaultValue: number): number {
+  const str = asString(value);
+  if (str === '') return defaultValue;
+  const parsed = parseInt(str, 10);
+  return isNaN(parsed) ? defaultValue : parsed;
+}
+
+/**
+ * Parse req.query param as float with default.
+ */
+export function asFloat(value: string | string[] | undefined, defaultValue: number): number {
+  const str = asString(value);
+  if (str === '') return defaultValue;
+  const parsed = parseFloat(str);
+  return isNaN(parsed) ? defaultValue : parsed;
+}
+
+/**
+ * Parse req.query param as boolean.
+ */
+export function asBool(value: string | string[] | undefined): boolean {
+  return asString(value) === 'true';
+}
 
 // ============================================================================
 // FIRESTORE HELPERS
@@ -83,26 +182,62 @@ export async function getFeatureFlag(
 }
 
 // ============================================================================
-// CRYPTO UTILITIES
+// CRYPTO UTILITIES (Node 20 compatible)
 // ============================================================================
 import * as crypto from 'crypto';
-import { HttpsError, admin, arrayRemove, arrayUnion, auth, db, functions, generateId, increment, onCall, onMessagePublished, onRequest, onSchedule, serverTimestamp, storage, timestamp, z } from './runtime';
+import { HttpsError, admin, arrayRemove, arrayUnion, auth, db, functions, generateId, increment, onCall, onMessagePublished, onRequest, onSchedule, serverTimestamp, storage, timestamp } from './runtime';
 
 export { crypto };
+
+/**
+ * Convert Buffer to Uint8Array for Node 20 crypto compatibility.
+ * Node 20 tightened types for crypto functions - requires Uint8Array<ArrayBuffer>.
+ */
+export function toUint8Array(buffer: Buffer): Uint8Array<ArrayBuffer> {
+  // Create a new ArrayBuffer copy to ensure we have ArrayBuffer, not SharedArrayBuffer
+  const arrayBuffer = new ArrayBuffer(buffer.byteLength);
+  const uint8Array = new Uint8Array(arrayBuffer);
+  uint8Array.set(buffer);
+  return uint8Array;
+}
 
 // Helper for creating hashes
 export function createHash(algorithm: string = 'sha256'): crypto.Hash {
   return crypto.createHash(algorithm);
 }
 
-// Helper for creating HMAC
+// Helper for creating HMAC - Node 20 compatible
 export function createHmac(algorithm: string, key: string | Buffer): crypto.Hmac {
-  return crypto.createHmac(algorithm, key);
+  return crypto.createHmac(algorithm, typeof key === 'string' ? key : toUint8Array(key));
 }
 
-// Helper for timing safe comparison
+// Helper for timing safe comparison - Node 20 compatible
 export function timingSafeEqual(a: Buffer, b: Buffer): boolean {
-  return crypto.timingSafeEqual(a, b);
+  return crypto.timingSafeEqual(toUint8Array(a), toUint8Array(b));
+}
+
+/**
+ * Create cipher with Node 20 compatible types.
+ * Use this helper instead of crypto.createCipheriv directly.
+ */
+export function createCipheriv(
+  algorithm: string,
+  key: Buffer,
+  iv: Buffer
+): crypto.Cipher | crypto.CipherGCM {
+  return crypto.createCipheriv(algorithm, toUint8Array(key), toUint8Array(iv));
+}
+
+/**
+ * Create decipher with Node 20 compatible types.
+ * Use this helper instead of crypto.createDecipheriv directly.
+ */
+export function createDecipheriv(
+  algorithm: string,
+  key: Buffer,
+  iv: Buffer
+): crypto.Decipher | crypto.DecipherGCM {
+  return crypto.createDecipheriv(algorithm, toUint8Array(key), toUint8Array(iv));
 }
 
 // ============================================================================

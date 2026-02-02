@@ -17,6 +17,7 @@
 ;
 ;
 import { HttpsError } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 ;
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, auth, functions, getFirestore, logger, onCall, z } from './runtime';
@@ -98,7 +99,7 @@ export const generatePredictionsV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { window, batchSize, userId } = validationResult.data;
@@ -600,7 +601,7 @@ export const exportMetricsV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { format, dateRange } = validationResult.data;

@@ -28,6 +28,7 @@
 ;
 ;
 import { HttpsError } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { admin, auth, functions, getFirestore, logger, onCall, serverTimestamp, timestamp, z } from './runtime';
 ;
@@ -125,7 +126,7 @@ export const likeUserV1 = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError("invalid-argument", validation.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validation)!);
     }
 
     const { targetUserId } = validation.data;
@@ -451,7 +452,7 @@ export const getDiscoveryFeedV1 = onCall(
 
     const validation = schema.safeParse(request.data);
     if (!validation.success) {
-      throw new HttpsError("invalid-argument", validation.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validation)!);
     }
 
     const { limit, filters } = validation.data;

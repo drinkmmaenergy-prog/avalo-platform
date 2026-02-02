@@ -14,6 +14,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { z } from 'zod';
@@ -464,7 +465,7 @@ export const updateVibeProfile = onCall(
     
     const validationResult = UpdateVibeProfileSchema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError('invalid-argument', validationResult.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validationResult)!);
     }
     
     const updates = validationResult.data;
@@ -504,7 +505,7 @@ export const updateAttractionPreferences = onCall(
     
     const validationResult = UpdateAttractionPreferencesSchema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError('invalid-argument', validationResult.error.message);
+      throw new HttpsError('invalid-argument', getZodErrorMessage(validationResult)!);
     }
     
     const preferences = validationResult.data;

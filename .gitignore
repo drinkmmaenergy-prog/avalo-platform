@@ -74,3 +74,20 @@ SDK_SHARED_FULL_ANALYSIS.md
 app-mobile/AVALO_MOBILE_FIX_REPORT.md
 app-mobile/TURBO_FIX_COMPLETION_SUMMARY.md
 app-mobile/typecheck-output.txt
+# Next.js
+app-web/.next/
+app-web/.vercel/
+
+# Build logs
+build-output-*.txt
+functions/build-*.txt
+
+# Temp scripts
+functions/fix-*.js
+
+# Legacy (archived)
+app-web/_legacy_app/
+app-web/_legacy_pages/
+
+# Shared stubs (not prod)
+shared/

@@ -15,6 +15,7 @@
  */
 
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 import { Timestamp, FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { z } from 'zod';
@@ -120,7 +121,7 @@ export const assignVariantV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { testKey } = validationResult.data;
@@ -256,7 +257,7 @@ export const trackABEventV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { testKey, metric, value, metadata, idempotencyKey } = validationResult.data;
@@ -416,7 +417,7 @@ export const getABResultsV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { testKey } = validationResult.data;

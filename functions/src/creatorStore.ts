@@ -13,6 +13,7 @@
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 import { storage } from './init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, auth, functions, getFirestore, increment, logger, onCall, z } from './runtime';
@@ -152,7 +153,7 @@ export const createCreatorProductV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { type, title, description, price, durationMinutes, tags, category } =

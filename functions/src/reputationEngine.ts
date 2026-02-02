@@ -14,6 +14,7 @@
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
+import { getZodErrorMessage } from './common';
 ;
 import { Timestamp } from 'firebase-admin/firestore';
 import { admin, auth, functions, getFirestore, logger, onCall, onSchedule, z } from './runtime';
@@ -112,7 +113,7 @@ export const submitReviewV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { reviewedUserId, interactionId, interactionType, rating, tags, comment } =
@@ -196,7 +197,7 @@ export const getReputationProfileV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { userId } = validationResult.data;
@@ -239,7 +240,7 @@ export const getUserReviewsV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { userId, limit, startAfter } = validationResult.data;
@@ -289,7 +290,7 @@ export const reportReviewV1 = onCall(
 
     const validationResult = schema.safeParse(request.data);
     if (!validationResult.success) {
-      throw new HttpsError("invalid-argument", validationResult.error.message);
+      throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
     const { reviewId, reason, description } = validationResult.data;

@@ -23,6 +23,7 @@
 
 import * as crypto from 'crypto';
 
+import { toUint8Array } from './common';
 ;
 ;
 import { HttpsError } from 'firebase-functions/v2/https';
@@ -650,7 +651,7 @@ function getTrustLevel(score: number): "untrusted" | "low" | "medium" | "high" |
  * Generate media fingerprint
  */
 export function generateMediaFingerprint(buffer: Buffer): string {
-  return crypto.createHash('sha256').update(buffer).digest('hex');
+  return crypto.createHash('sha256').update(toUint8Array(buffer)).digest('hex');
 }
 
 /**

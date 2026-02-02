@@ -4,6 +4,7 @@
  */
 
 import { db, admin } from './init';
+import { toUint8Array } from './common';
 import { Timestamp } from 'firebase-admin/firestore';
 import { generateLocalEncryptionKeys, destroyLocalEncryptionKeys } from './pack160-encryption-keys';
 import { logSecurityEvent } from './pack160-device-security';
@@ -87,7 +88,7 @@ export async function encryptMessage(
   const key = Buffer.from(keyResult.encryptedMasterKey, 'base64').slice(16, 48);
   const iv = crypto.randomBytes(12);
   
-  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const cipher = crypto.createCipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(iv));
   let encryptedContent = cipher.update(content, 'utf8', 'base64');
   encryptedContent += cipher.final('base64');
   const authTag = cipher.getAuthTag();
@@ -98,10 +99,11 @@ export async function encryptMessage(
     encryptedAttachments = [];
     for (const attachment of attachments) {
       const attachmentIv = crypto.randomBytes(12);
-      const attachmentCipher = crypto.createCipheriv('aes-256-gcm', key, attachmentIv);
+      const attachmentCipher = crypto.createCipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(attachmentIv));
       
-      let encryptedData = attachmentCipher.update(attachment.data);
-      encryptedData = Buffer.concat([encryptedData, attachmentCipher.final()]);
+      const encPart1 = attachmentCipher.update(toUint8Array(attachment.data)) as unknown as Uint8Array;
+      const encPart2 = attachmentCipher.final() as unknown as Uint8Array;
+      const encryptedData = Buffer.concat([encPart1, encPart2] as unknown as Uint8Array[]);
       const attachmentAuthTag = attachmentCipher.getAuthTag();
       
       encryptedAttachments.push({
@@ -164,8 +166,8 @@ export async function decryptMessage(
   const iv = Buffer.from(message.iv, 'base64');
   const authTag = Buffer.from(message.authTag, 'base64');
   
-  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-  decipher.setAuthTag(authTag);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(iv));
+  decipher.setAuthTag(toUint8Array(authTag));
   
   let content = decipher.update(message.encryptedContent, 'base64', 'utf8');
   content += decipher.final('utf8');
@@ -177,12 +179,13 @@ export async function decryptMessage(
     for (const attachment of message.encryptedAttachments) {
       const attachmentIv = Buffer.from(attachment.iv, 'base64');
       const attachmentAuthTag = Buffer.from(attachment.authTag, 'base64');
-      const attachmentDecipher = crypto.createDecipheriv('aes-256-gcm', key, attachmentIv);
-      attachmentDecipher.setAuthTag(attachmentAuthTag);
+      const attachmentDecipher = crypto.createDecipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(attachmentIv));
+      attachmentDecipher.setAuthTag(toUint8Array(attachmentAuthTag));
       
       const encryptedData = Buffer.from(attachment.encryptedData, 'base64');
-      let data = attachmentDecipher.update(encryptedData);
-      data = Buffer.concat([data, attachmentDecipher.final()]);
+      const decPart1 = attachmentDecipher.update(toUint8Array(encryptedData)) as unknown as Uint8Array;
+      const decPart2 = attachmentDecipher.final() as unknown as Uint8Array;
+      const data = Buffer.concat([decPart1, decPart2] as unknown as Uint8Array[]);
       
       attachments.push({
         data,
@@ -209,9 +212,10 @@ export async function encryptMedia(
   const key = Buffer.from(keyResult.encryptedMasterKey, 'base64').slice(16, 48);
   const iv = crypto.randomBytes(12);
   
-  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
-  let encryptedData = cipher.update(mediaData);
-  encryptedData = Buffer.concat([encryptedData, cipher.final()]);
+  const cipher = crypto.createCipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(iv));
+  const encPart1 = cipher.update(toUint8Array(mediaData)) as unknown as Uint8Array;
+  const encPart2 = cipher.final() as unknown as Uint8Array;
+  const encryptedData = Buffer.concat([encPart1, encPart2] as unknown as Uint8Array[]);
   const authTag = cipher.getAuthTag();
   
   const mediaId = crypto.randomBytes(16).toString('hex');
@@ -266,12 +270,13 @@ export async function decryptMedia(
   const iv = Buffer.from(media.iv, 'base64');
   const authTag = Buffer.from(media.authTag, 'base64');
   
-  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-  decipher.setAuthTag(authTag);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(iv));
+  decipher.setAuthTag(toUint8Array(authTag));
   
   const encryptedData = Buffer.from(media.encryptedData, 'base64');
-  let data = decipher.update(encryptedData);
-  data = Buffer.concat([data, decipher.final()]);
+  const decPart1 = decipher.update(toUint8Array(encryptedData)) as unknown as Uint8Array;
+  const decPart2 = decipher.final() as unknown as Uint8Array;
+  const data = Buffer.concat([decPart1, decPart2] as unknown as Uint8Array[]);
   
   return data;
 }
@@ -289,7 +294,7 @@ export async function encryptPurchase(
   const key = Buffer.from(keyResult.encryptedMasterKey, 'base64').slice(16, 48);
   const iv = crypto.randomBytes(12);
   
-  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const cipher = crypto.createCipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(iv));
   const detailsJson = JSON.stringify(purchaseDetails);
   let encryptedDetails = cipher.update(detailsJson, 'utf8', 'base64');
   encryptedDetails += cipher.final('base64');
@@ -297,7 +302,7 @@ export async function encryptPurchase(
   
   let encryptedReceipt: string | undefined;
   if (receiptData) {
-    const receiptCipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    const receiptCipher = crypto.createCipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(iv));
     encryptedReceipt = receiptCipher.update(receiptData, 'utf8', 'base64');
     encryptedReceipt += receiptCipher.final('base64');
   }
@@ -349,8 +354,8 @@ export async function decryptPurchase(
   const iv = Buffer.from(purchase.iv, 'base64');
   const authTag = Buffer.from(purchase.authTag, 'base64');
   
-  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-  decipher.setAuthTag(authTag);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(iv));
+  decipher.setAuthTag(toUint8Array(authTag));
   
   let detailsJson = decipher.update(purchase.encryptedDetails, 'base64', 'utf8');
   detailsJson += decipher.final('utf8');
@@ -358,8 +363,8 @@ export async function decryptPurchase(
   
   let receipt: string | undefined;
   if (purchase.encryptedReceipt) {
-    const receiptDecipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-    receiptDecipher.setAuthTag(authTag);
+    const receiptDecipher = crypto.createDecipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(iv));
+    receiptDecipher.setAuthTag(toUint8Array(authTag));
     receipt = receiptDecipher.update(purchase.encryptedReceipt, 'base64', 'utf8');
     receipt += receiptDecipher.final('utf8');
   }
@@ -385,7 +390,7 @@ export async function encryptCallData(
   const key = Buffer.from(keyResult.encryptedMasterKey, 'base64').slice(16, 48);
   const iv = crypto.randomBytes(12);
   
-  const metadataCipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const metadataCipher = crypto.createCipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(iv));
   const metadataJson = JSON.stringify(metadata);
   let encryptedMetadata = metadataCipher.update(metadataJson, 'utf8', 'base64');
   encryptedMetadata += metadataCipher.final('base64');
@@ -393,9 +398,10 @@ export async function encryptCallData(
   
   let encryptedBuffer: string | undefined;
   if (bufferData) {
-    const bufferCipher = crypto.createCipheriv('aes-256-gcm', key, iv);
-    let encrypted = bufferCipher.update(bufferData);
-    encrypted = Buffer.concat([encrypted, bufferCipher.final()]);
+    const bufferCipher = crypto.createCipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(iv));
+    const encPart1 = bufferCipher.update(toUint8Array(bufferData)) as unknown as Uint8Array;
+    const encPart2 = bufferCipher.final() as unknown as Uint8Array;
+    const encrypted = Buffer.concat([encPart1, encPart2] as unknown as Uint8Array[]);
     encryptedBuffer = encrypted.toString('base64');
   }
   
@@ -448,8 +454,8 @@ export async function decryptCallData(
   const iv = Buffer.from(call.iv, 'base64');
   const authTag = Buffer.from(call.authTag, 'base64');
   
-  const metadataDecipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-  metadataDecipher.setAuthTag(authTag);
+  const metadataDecipher = crypto.createDecipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(iv));
+  metadataDecipher.setAuthTag(toUint8Array(authTag));
   
   let metadataJson = metadataDecipher.update(call.encryptedMetadata, 'base64', 'utf8');
   metadataJson += metadataDecipher.final('utf8');
@@ -457,12 +463,12 @@ export async function decryptCallData(
   
   let buffer: Buffer | undefined;
   if (call.encryptedBuffer) {
-    const bufferDecipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-    bufferDecipher.setAuthTag(authTag);
+    const bufferDecipher = crypto.createDecipheriv('aes-256-gcm', toUint8Array(key), toUint8Array(iv));
+    bufferDecipher.setAuthTag(toUint8Array(authTag));
     const encryptedData = Buffer.from(call.encryptedBuffer, 'base64');
-    let data = bufferDecipher.update(encryptedData);
-    data = Buffer.concat([data, bufferDecipher.final()]);
-    buffer = data;
+    const decPart1 = bufferDecipher.update(toUint8Array(encryptedData)) as unknown as Uint8Array;
+    const decPart2 = bufferDecipher.final() as unknown as Uint8Array;
+    buffer = Buffer.concat([decPart1, decPart2] as unknown as Uint8Array[]);
   }
   
   return { metadata, buffer };
