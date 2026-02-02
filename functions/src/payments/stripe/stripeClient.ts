@@ -1,5 +1,5 @@
 /**
- * PACK PHASE 3.1 — Centralized Stripe Client
+ * PACK PHASE 3.1 + 4.1 — Centralized Stripe Client
  *
  * CANONICAL RULES:
  * - Single Stripe instance per process (lazy init)
@@ -7,14 +7,20 @@
  * - Non-webhook endpoints can operate without webhook secret
  * - No silent failures in production
  *
+ * PACK 4.1 PRODUCTION HARDENING:
+ * - HARD FAIL if sk_test_* key is used in production
+ * - Explicit guard against test keys in prod
+ *
  * @module payments/stripe/stripeClient
  */
 
 import Stripe from 'stripe';
+import { logger } from '../../runtime';
 
 // Environment detection
 const IS_EMULATOR = process.env.FUNCTIONS_EMULATOR === 'true';
 const NODE_ENV = process.env.NODE_ENV || 'production';
+const IS_PRODUCTION = NODE_ENV === 'production' && !IS_EMULATOR;
 
 // Lazy-loaded instances
 let stripeInstance: Stripe | null = null;
@@ -22,8 +28,27 @@ let stripeSecretKey: string | null = null;
 let stripeWebhookSecret: string | null = null;
 
 /**
+ * PACK 4.1 PRODUCTION GUARD: Assert that test keys are not used in production
+ * @throws Error if sk_test_* key detected in production
+ */
+function assertNoTestKeyInProduction(key: string): void {
+  if (IS_PRODUCTION && key.startsWith('sk_test_')) {
+    logger.error('[stripeClient] CRITICAL SECURITY VIOLATION: Test Stripe key in production', {
+      keyPrefix: key.substring(0, 12) + '...',
+      environment: NODE_ENV,
+    });
+    throw new Error(
+      '[PRODUCTION_VIOLATION] Stripe test key (sk_test_*) detected in production environment. ' +
+      'This is a critical security violation. Use a live key (sk_live_*) in production.'
+    );
+  }
+}
+
+/**
  * Load Stripe secret key from environment.
  * Checks multiple sources for compatibility.
+ *
+ * PACK 4.1: Validates key is not a test key in production
  */
 function loadStripeSecretKey(): string {
   if (stripeSecretKey !== null) {
@@ -34,7 +59,10 @@ function loadStripeSecretKey(): string {
   const key = process.env.STRIPE_SECRET_KEY || '';
 
   if (!key) {
-    console.error('[stripeClient] STRIPE_SECRET_KEY not configured');
+    logger.error('[stripeClient] STRIPE_SECRET_KEY not configured');
+  } else {
+    // PACK 4.1: Guard against test keys in production
+    assertNoTestKeyInProduction(key);
   }
 
   stripeSecretKey = key;

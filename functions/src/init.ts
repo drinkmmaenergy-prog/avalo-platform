@@ -1,6 +1,10 @@
 /**
  * Firebase Admin Initialization
  * Single source of truth for Firestore, Auth, and Storage instances
+ *
+ * PACK 4.1 PRODUCTION HARDENING:
+ * - Cold-start startup validation
+ * - Environment sanity checks
  */
 
 import * as admin from "firebase-admin";
@@ -9,6 +13,20 @@ import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 // Initialize Firebase Admin SDK only once
 if (!admin.apps.length) {
   admin.initializeApp();
+}
+
+// PACK 4.1: Run startup validation at cold start (after admin init)
+// Import dynamically to avoid circular dependencies
+import { initStartupValidation } from './config/startupValidator';
+try {
+  initStartupValidation();
+} catch (validationError: any) {
+  // In production, this will throw and prevent partial boot
+  // In development, it will log but continue
+  console.error('[INIT] Startup validation failed:', validationError.message);
+  if (process.env.NODE_ENV === 'production') {
+    throw validationError;
+  }
 }
 
 // Firestore instance (with modern API)
