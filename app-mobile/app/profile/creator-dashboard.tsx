@@ -33,7 +33,7 @@ export default function CreatorDashboardScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Creator dashboard</Text>
         <Text style={styles.subtitle}>
-          Monetization overview (mock data – dev mode)
+          Monetization overview
         </Text>
 
         {/* Weekly Tokens */}

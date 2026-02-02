@@ -1,0 +1,36 @@
+/**
+ * PACK 451 — Creator Agreement (B2B) Firestore Security Rules
+ * PHASE 4.2 — B2B Creator Agreement Implementation
+ *
+ * Collection: creatorAgreements/{userId}
+ *
+ * SECURITY MODEL:
+ * - Users can READ their own agreement status
+ * - ONLY server-side (callable functions) can WRITE
+ * - Admin can read all for audit purposes
+ *
+ * @version v1.0
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // CREATOR AGREEMENTS COLLECTION
+    // =========================================================================
+    match /creatorAgreements/{userId} {
+      // Allow users to read their own agreement document
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Write operations are ONLY allowed from backend (callable functions)
+      // Client-side writes are BLOCKED to ensure audit integrity
+      allow write: if false;
+      
+      // Admin read access for auditing
+      allow read: if request.auth != null 
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+
+  }
+}

@@ -1,6 +1,6 @@
 /**
  * PACK 56 — Payout HTTP Callable Handlers
- * 
+ *
  * Cloud Functions v2 callable handlers for payout operations.
  */
 
@@ -12,6 +12,7 @@ import {
   getPayoutRequests,
 } from "../payouts";
 import { auth, functions } from '../runtime';
+import { enforceCreatorAgreement } from '../pack451-creator-agreement';
 
 /**
  * Get payout state for authenticated user.
@@ -53,6 +54,10 @@ export const setupPayoutAccountCallable = onCall(
     }
 
     const userId = request.auth.uid;
+    
+    // PHASE 4.2: Enforce B2B Creator Agreement acceptance
+    await enforceCreatorAgreement(userId);
+
     const { preferredRail, country, currency } = request.data;
 
     try {
@@ -92,6 +97,10 @@ export const requestPayoutCallable = onCall(
     }
 
     const userId = request.auth.uid;
+    
+    // PHASE 4.2: Enforce B2B Creator Agreement acceptance
+    await enforceCreatorAgreement(userId);
+
     const { tokensRequested } = request.data;
 
     if (!tokensRequested || tokensRequested <= 0) {

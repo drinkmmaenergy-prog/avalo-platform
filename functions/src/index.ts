@@ -97,6 +97,8 @@ export * from './creator/marketplace';
 export * from './creatorAnalytics';
 export * from './creatorEarnings';
 export { CreatorLevel, QuestType, QuestStatus, CreatorDashboard, Quest, PricingRecommendation, CreatorWithdrawal, FanProfile, getCreatorDashboard, getCreatorQuests, claimQuestReward, requestWithdrawal, getCreatorFanbase, getMessageTemplates, saveMessageTemplate, getPricingRecommendations } from './creatorHub';
+// PACK 451 - B2B Creator Agreement
+export { acceptCreatorAgreementV1, getCreatorAgreementStatusV1, CREATOR_AGREEMENT_CURRENT_VERSION, enforceCreatorAgreement, checkCreatorAgreementStatus } from './pack451-creator-agreement';
 export { CreatorStats, GatedPost, Referral, enableCreatorModeV1, getCreatorDashboardV1, createGatedPostV1, unlockGatedPostV1, setMessagePricingV1, generateReferralCodeV1, applyReferralCodeV1, processReferralReward, requestWithdrawalV1, getWithdrawalHistoryV1, getTopFansV1 } from './creatorMode';
 export { ProductType, ProductStatus, ContentRating, CreatorProduct, MediaFile, ProductPurchase, createCreatorProduct, uploadProductMedia, publishCreatorProduct, purchaseCreatorProduct, getProductAccessUrls, getCreatorProducts, getMyPurchases, getCreatorStats, updateCreatorProduct, toggleProductStatus, archiveCreatorProduct } from './creatorShop';
 export { createCreatorProductV1, publishCreatorProductV1, getCreatorProductsV1, purchaseCreatorProductV1, getMyPurchasesV1, deactivateProductV1, getCreatorAnalyticsV1 } from './creatorStore';
