@@ -24,6 +24,7 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { admin, auth, functions, getFirestore, increment, logger, onCall, serverTimestamp } from './runtime';
+import { enforceCreatorAgreement } from './pack451-creator-agreement';
 ;
 
 const db = getFirestore();
@@ -256,6 +257,9 @@ export const getCreatorDashboard = onCall(
     if (!uid) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
+
+    // PHASE 4.2: Enforce B2B Creator Agreement acceptance
+    await enforceCreatorAgreement(uid);
 
     // Check if user is a creator
     const userDoc = await db.collection("users").doc(uid).get();
