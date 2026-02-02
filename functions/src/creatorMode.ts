@@ -30,6 +30,7 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { admin, arrayUnion, auth, functions, getFirestore, increment, logger, onCall, serverTimestamp, z } from './runtime';
+import { enforceCreatorAgreement } from './pack451-creator-agreement';
 ;
 ;
 
@@ -165,6 +166,9 @@ export const enableCreatorModeV1 = onCall(
       throw new HttpsError("unauthenticated", "Authentication required");
     }
 
+    // PHASE 4.2: Enforce B2B Creator Agreement acceptance
+    await enforceCreatorAgreement(uid);
+
     try {
       // Get user profile
       const userDoc = await db.collection("users").doc(uid).get();
@@ -272,6 +276,9 @@ export const getCreatorDashboardV1 = onCall(
       throw new HttpsError("unauthenticated", "Authentication required");
     }
 
+    // PHASE 4.2: Enforce B2B Creator Agreement acceptance
+    await enforceCreatorAgreement(uid);
+
     try {
       // Verify creator status
       const userDoc = await db.collection("users").doc(uid).get();
@@ -354,11 +361,16 @@ export const createGatedPostV1 = onCall(
     });
 
     const validation = schema.safeParse(request.data);
-    if (!validation.success) {
-      throw new HttpsError("invalid-argument", validation.error.message);
+    if (validation.success === false) {
+      const errorResult = validation;
+      const message =
+        errorResult.error.issues?.[0]?.message ??
+        "Invalid request payload";
+      throw new HttpsError("invalid-argument", message);
     }
 
-    const { content, mediaUrls, unlockPrice, isGated } = validation.data;
+    const parsed = validation.data;
+    const { content, mediaUrls, unlockPrice, isGated } = parsed;
 
     try {
       // Verify creator status
@@ -561,11 +573,16 @@ export const setMessagePricingV1 = onCall(
     });
 
     const validation = schema.safeParse(request.data);
-    if (!validation.success) {
-      throw new HttpsError("invalid-argument", validation.error.message);
+    if (validation.success === false) {
+      const errorResult = validation;
+      const message =
+        errorResult.error.issues?.[0]?.message ??
+        "Invalid request payload";
+      throw new HttpsError("invalid-argument", message);
     }
 
-    const { wordsPerToken, customPricing } = validation.data;
+    const parsed = validation.data;
+    const { wordsPerToken, customPricing } = parsed;
 
     try {
       await db.collection("users").doc(uid).update({
@@ -805,6 +822,9 @@ export const requestWithdrawalV1 = onCall(
       throw new HttpsError("unauthenticated", "Authentication required");
     }
 
+    // PHASE 4.2: Enforce B2B Creator Agreement acceptance
+    await enforceCreatorAgreement(uid);
+
     const schema = z.object({
       amount: z.number().min(WITHDRAWAL_SETTINGS.minAmount).max(WITHDRAWAL_SETTINGS.maxAmount),
       method: z.enum(["bank_transfer", "crypto", "paypal"]),
@@ -812,11 +832,16 @@ export const requestWithdrawalV1 = onCall(
     });
 
     const validation = schema.safeParse(request.data);
-    if (!validation.success) {
-      throw new HttpsError("invalid-argument", validation.error.message);
+    if (validation.success === false) {
+      const errorResult = validation;
+      const message =
+        errorResult.error.issues?.[0]?.message ??
+        "Invalid request payload";
+      throw new HttpsError("invalid-argument", message);
     }
 
-    const { amount, method, accountDetails } = validation.data;
+    const parsed = validation.data;
+    const { amount, method, accountDetails } = parsed;
 
     try {
       // Check balance
