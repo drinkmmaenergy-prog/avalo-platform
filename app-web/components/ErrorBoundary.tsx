@@ -9,7 +9,7 @@
 
 import React from 'react';
 import ErrorTracking from '@/lib/errorTracking';
-import { getErrorMessage } from '../lib/errorMessages';
+import { getErrorMessage } from '@/lib/errorMessages';
 
 interface Props {
   children: React.ReactNode;
