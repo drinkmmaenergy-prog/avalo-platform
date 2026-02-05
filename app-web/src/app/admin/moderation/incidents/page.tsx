@@ -84,7 +84,7 @@ const getStatusVariant = (status: string): 'success' | 'warning' | 'info' | 'neu
 
 export default function IncidentsPage() {
   const router = useRouter();
-  const { incidents, loading, error } = useRealtimeIncidents(100);
+  const { incidents, loading } = useRealtimeIncidents(100);
   
   // Use real-time data if available, fallback to mock data
   const displayIncidents = loading ? mockIncidents : incidents.length > 0 ? incidents : mockIncidents;
@@ -229,14 +229,6 @@ export default function IncidentsPage() {
         data={displayIncidents}
         emptyMessage="No incidents found"
       />
-
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-          <p className="text-sm text-red-400">
-            ⚠️ <strong>Connection Error:</strong> {error}. Showing cached data.
-          </p>
-        </div>
-      )}
 
       {/* Info Banner */}
       <div className="bg-[#40E0D0]/10 border border-[#40E0D0]/30 rounded-lg p-4">

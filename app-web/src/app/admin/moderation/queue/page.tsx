@@ -12,7 +12,7 @@ import { useTranslations } from '@/lib/moderation/i18n';
 export default function QueuePage() {
   const router = useRouter();
   const t = useTranslations('en'); // Can be made dynamic based on user preference
-  const { incidents, loading, error } = useRealtimeIncidents(100);
+  const { incidents, loading } = useRealtimeIncidents(100);
   const [sortedIncidents, setSortedIncidents] = useState<RealtimeIncident[]>([]);
   const [isStarting, setIsStarting] = useState(false);
 
@@ -83,14 +83,6 @@ export default function QueuePage() {
           <div className="inline-block w-16 h-16 border-4 border-[#40E0D0] border-t-transparent rounded-full animate-spin mb-4"></div>
           <p className="text-gray-400">{t.common.loading}</p>
         </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6">
-        <p className="text-red-500">Error loading queue: {error}</p>
       </div>
     );
   }
@@ -241,7 +233,9 @@ export default function QueuePage() {
                         <Clock className="w-4 h-4" />
                         <span>
                           {incident.timestamp
-                            ? new Date(incident.timestamp.toMillis()).toLocaleString()
+                            ? typeof incident.timestamp === 'string'
+                              ? new Date(incident.timestamp).toLocaleString()
+                              : new Date(incident.timestamp.toMillis()).toLocaleString()
                             : 'Unknown'}
                         </span>
                       </div>
