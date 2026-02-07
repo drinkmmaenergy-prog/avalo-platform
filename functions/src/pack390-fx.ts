@@ -14,8 +14,10 @@ const db = admin.firestore();
 // CONSTANTS
 // ============================================================================
 
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+
 const SUPPORTED_CURRENCIES = ['PLN', 'EUR', 'USD', 'GBP', 'CZK', 'RON', 'BGN', 'HRK', 'UAH', 'TRY'];
-const BASE_TOKEN_VALUE_PLN = 0.20; // 1 token = 0.20 PLN (fixed)
+const BASE_TOKEN_VALUE_PLN = TOKEN_PAYOUT_PLN; // derived from TOKEN_PAYOUT_USD (0.03 USD)
 
 // ECB API for European currencies
 const ECB_API_URL = 'https://api.exchangerate-api.com/v4/latest/PLN';

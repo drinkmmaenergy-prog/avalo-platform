@@ -1,7 +1,7 @@
 /**
  * PACK 277 — Token Packs Configuration & Purchase Logic (Enhanced with PACK 321)
  * FINAL token pack configuration - do not modify without approval
- * Payout rate: 1 token = 0.20 PLN (fixed, immutable)
+ * Payout rate: derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
  */
 
 import { db, generateId, serverTimestamp } from './init';
@@ -10,7 +10,7 @@ import { TokenPack, PurchaseRequest, PurchaseResponse } from './types/pack277-wa
 import { admin, increment, timestamp } from './runtime';
 
 // PACK 321: FINAL Token Pack Definitions (immutable)
-// Sale prices ONLY - payout rate remains 0.20 PLN/token regardless of purchase price
+// Sale prices ONLY - payout rate from economyConfig.ts (TOKEN_PAYOUT_USD) regardless of purchase price
 export const DEFAULT_TOKEN_PACKS: Omit<TokenPack, 'createdAt' | 'updatedAt'>[] = [
   {
     id: 'mini',
@@ -85,12 +85,14 @@ export const DEFAULT_TOKEN_PACKS: Omit<TokenPack, 'createdAt' | 'updatedAt'>[] =
   },
 ];
 
+import { TOKEN_PAYOUT_USD, TOKEN_PAYOUT_PLN } from './config/economyConfig';
+
 /**
  * PACK 321: Payout rate constant
- * 1 token = 0.20 PLN when cashing out
+ * Derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
  * This is independent of purchase price
  */
-export const TOKEN_PAYOUT_RATE_PLN = 0.20;
+export const TOKEN_PAYOUT_RATE_PLN = TOKEN_PAYOUT_PLN;
 
 /**
  * Initialize token packs in Firestore (run once on deployment)

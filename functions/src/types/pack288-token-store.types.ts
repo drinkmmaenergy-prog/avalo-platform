@@ -194,7 +194,9 @@ export interface AgeVerification {
 // PAYOUT TYPES (from PACK 277, extended for PACK 288)
 // ============================================================================
 
-export const PAYOUT_RATE_PLN = 0.20; // 1 token = 0.20 PLN
+import { TOKEN_PAYOUT_PLN } from '../config/economyConfig';
+
+export const PAYOUT_RATE_PLN = TOKEN_PAYOUT_PLN; // derived from TOKEN_PAYOUT_USD (0.03 USD)
 
 /**
  * Payout request

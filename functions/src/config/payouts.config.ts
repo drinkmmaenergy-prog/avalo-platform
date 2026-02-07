@@ -10,12 +10,14 @@
  * - No refunds on completed payouts (only on rejected requests)
  */
 
+import { TOKEN_PAYOUT_EUR } from './economyConfig';
+
 export const PAYOUT_CONFIG = {
   // Minimum withdrawable amount in tokens
   MIN_PAYOUT_TOKENS: 5000,
 
-  // Fixed conversion rate: tokens → EUR (read-only, controlled by Avalo admins)
-  PAYOUT_TOKEN_TO_EUR_RATE: 0.20, // 1 token = 0.20 EUR
+  // Derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
+  PAYOUT_TOKEN_TO_EUR_RATE: TOKEN_PAYOUT_EUR,
 
   // Supported payout methods
   SUPPORTED_PAYOUT_METHODS: ['BANK_TRANSFER', 'WISE', 'STRIPE_CONNECT'] as const,

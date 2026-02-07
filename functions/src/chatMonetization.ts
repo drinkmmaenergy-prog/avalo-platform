@@ -26,6 +26,11 @@ import { getPack242ChatEntryPrice, calculatePack242RevenueSplit } from './pack24
 import { trackTokenSpend } from './fanKissEconomy.js';
 // PACK 221: Romantic Journeys
 import { onChatMessageSent } from './romanticJourneysIntegration.js';
+// PACK 452: Monetization Engine vNext
+import { getEffectiveChatEntryTokens } from './pack452-entry-threshold';
+import { getChatBurnParameters, calculatePremiumBurn, executePremiumBurn } from './pack452-premium-burn-engine';
+import { canEarnerRespondInChat, updateExclusiveActivity } from './pack452-exclusive-mode';
+import { releasePremiumOnChatEnd } from './pack452-premium-offer-engine';
 
 
 // Simple error class for compatibility
@@ -563,6 +568,64 @@ export async function processMessageBilling(
     needsEscrow: chat.needsEscrow,
     freeMessageLimit: chat.freeMessageLimit
   };
+
+  // PACK 452: Check exclusive mode — earner can only respond in exclusive chat
+  if (roles.earnerId && senderId === roles.earnerId) {
+    try {
+      const exclusiveCheck = await canEarnerRespondInChat(roles.earnerId, chatId);
+      if (!exclusiveCheck.allowed) {
+        return {
+          allowed: false,
+          reason: exclusiveCheck.reason || 'Exclusive mode active in another chat',
+          tokensCost: 0,
+        };
+      }
+    } catch (_exclusiveErr) {
+      // Non-blocking — if exclusive check fails, allow message
+    }
+  }
+
+  // PACK 452: Check if premium burn applies
+  const monetizationState = chat.monetizationState;
+  if (monetizationState === 'PAID_PREMIUM' || monetizationState === 'EXCLUSIVE_ACTIVE') {
+    try {
+      const burnParams = await getChatBurnParameters(chatId);
+      if (burnParams.multiplier > 1 && roles.earnerId && senderId === roles.earnerId) {
+        // Premium burn path — earner's message triggers multiplied burn
+        const burnResult = calculatePremiumBurn(
+          messageText,
+          burnParams.wordsPerToken,
+          burnParams.monetizationState,
+          burnParams.multiplier,
+          burnParams.offerId,
+          burnParams.exclusive
+        );
+
+        if (burnResult.totalTokensBurned > 0) {
+          await executePremiumBurn(chatId, roles.payerId, roles.earnerId, burnResult);
+
+          // PACK 452: Update exclusive activity timestamp
+          if (burnParams.exclusive) {
+            updateExclusiveActivity(roles.earnerId, chatId).catch(() => {});
+          }
+
+          // PACK 220: Track fan milestone progression (async, non-blocking)
+          trackTokenSpend(roles.payerId, roles.earnerId, burnResult.totalTokensBurned, 'chat')
+            .catch(err => logger.error('Failed to track fan spend:', err));
+
+          // PACK 221: Track romantic journey activity (async, non-blocking)
+          onChatMessageSent(senderId, roles.payerId, burnResult.totalTokensBurned)
+            .catch(err => logger.error('Failed to track journey activity:', err));
+
+          return { allowed: true, tokensCost: burnResult.totalTokensBurned };
+        }
+
+        return { allowed: true, tokensCost: 0 };
+      }
+    } catch (_premiumErr) {
+      // Fall through to standard billing if premium burn fails
+    }
+  }
   
   // Check free messages
   const senderFreeRemaining = chat.billing.freeMessagesRemaining[senderId] || 0;
@@ -701,8 +764,12 @@ export async function processChatDeposit(
     throw new HttpsError('permission-denied', 'Only payer can make deposit');
   }
   
+  // PACK 452: Get configurable entry threshold (base), then PACK 242 adjusts
+  const pack452EntryTokens = await getEffectiveChatEntryTokens(chat.roles.earnerId);
   // PACK 242: Get dynamic entry price based on earner's performance tier
-  const depositAmount = await getPack242ChatEntryPrice(chat.roles.earnerId);
+  // Uses the PACK 452 entry threshold as the base if higher than PACK 242 default
+  const pack242Price = await getPack242ChatEntryPrice(chat.roles.earnerId);
+  const depositAmount = Math.max(pack452EntryTokens, pack242Price);
   const { earnerAmount, platformAmount } = calculatePack242RevenueSplit(depositAmount);
   const escrowAmount = earnerAmount;
   const platformFee = platformAmount;
@@ -827,6 +894,13 @@ export async function closeAndSettleChat(
     // Non-blocking - don't fail chat closure if risk recording fails
   }
   
+  // PACK 452: Release premium offer reserved tokens and exclusive lock on chat end
+  try {
+    await releasePremiumOnChatEnd(chatId);
+  } catch (_premiumReleaseErr) {
+    // Non-blocking — don't fail chat closure if premium release fails
+  }
+
   return { refundedToPayerPending: remainingEscrow };
 }
 

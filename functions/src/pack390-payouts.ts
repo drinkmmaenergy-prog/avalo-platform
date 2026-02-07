@@ -6,6 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
 
 const db = admin.firestore();
 
@@ -382,7 +383,7 @@ export const pack390_reverseFailedTransfer = functions.https.onCall(async (reque
 // ============================================================================
 
 async function convertTokensToFiat(tokens: number, currency: string) {
-  const BASE_TOKEN_VALUE_PLN = 0.20;
+  const BASE_TOKEN_VALUE_PLN = TOKEN_PAYOUT_PLN; // derived from TOKEN_PAYOUT_USD (0.03 USD)
   const plnValue = tokens * BASE_TOKEN_VALUE_PLN;
   
   if (currency === 'PLN') {

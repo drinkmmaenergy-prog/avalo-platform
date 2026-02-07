@@ -7,6 +7,7 @@
 
 import { Timestamp } from 'firebase-admin/firestore';
 import { admin } from './runtime';
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
 
 // ============================================================================
 // PLATFORM KPI TYPES
@@ -217,8 +218,8 @@ export interface SafetyKpiResponse {
 // ============================================================================
 
 export const KPI_CONFIG = {
-  // Revenue conversion rate
-  TOKEN_TO_PLN_RATE: 0.20,
+  // Revenue conversion rate — derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
+  TOKEN_TO_PLN_RATE: TOKEN_PAYOUT_PLN,
   
   // Aggregation schedule
   DAILY_AGGREGATION_HOUR_UTC: 0, // 00:10 UTC

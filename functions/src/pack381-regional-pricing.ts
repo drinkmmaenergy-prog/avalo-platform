@@ -10,10 +10,12 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { HttpsError, auth, onCall, timestamp } from './runtime';
 
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+
 const db = admin.firestore();
 
-// Base token value in PLN (Polish Złoty)
-const BASE_TOKEN_VALUE_PLN = 0.20;
+// Base token value in PLN — derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
+const BASE_TOKEN_VALUE_PLN = TOKEN_PAYOUT_PLN;
 
 export interface RegionalPricePolicy {
   regionId: string;

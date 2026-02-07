@@ -62,8 +62,10 @@ export interface CountryPaymentProfile {
   updatedAt: FirebaseFirestore.Timestamp;
 }
 
-// Standard token conversion rate
-export const TOKEN_TO_PLN_RATE = 0.2; // 1 token = 0.20 PLN
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+
+// Standard token conversion rate — derived from TOKEN_PAYOUT_USD (0.03 USD)
+export const TOKEN_TO_PLN_RATE = TOKEN_PAYOUT_PLN;
 
 // Currency database (simplified - in production use forex API)
 export const CURRENCIES: { [code: string]: CurrencyInfo } = {
