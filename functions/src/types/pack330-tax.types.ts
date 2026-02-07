@@ -235,9 +235,11 @@ export interface PayoutComplianceCheck {
 // CONSTANTS
 // ============================================================================
 
+import { TOKEN_PAYOUT_PLN } from '../config/economyConfig';
+
 export const TAX_CONFIG = {
-  // Conversion rate (from PACK 277)
-  TOKEN_TO_PLN_RATE: 0.20,
+  // Conversion rate — derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
+  TOKEN_TO_PLN_RATE: TOKEN_PAYOUT_PLN,
   
   // Report periods
   PERIODS: {

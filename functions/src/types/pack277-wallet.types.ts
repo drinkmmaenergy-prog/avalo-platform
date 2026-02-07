@@ -18,6 +18,8 @@ export interface WalletData {
   lifetimeEarnedTokens: number;
   lastUpdated: Timestamp;
   createdAt?: Timestamp;
+  /** PACK 452: Tokens reserved for pending premium offers. Default = 0. */
+  reservedTokens?: number;
 }
 
 export type TransactionType = 
@@ -150,7 +152,10 @@ export interface VerifyReceiptResponse {
 // PAYOUT TYPES
 // ============================================================================
 
-export const PAYOUT_RATE = 0.20; // 1 token = 0.20 PLN
+import { TOKEN_PAYOUT_USD, TOKEN_PAYOUT_PLN } from '../config/economyConfig';
+
+/** @deprecated Use TOKEN_PAYOUT_USD from config/economyConfig.ts — kept for backward-compat re-exports */
+export const PAYOUT_RATE = TOKEN_PAYOUT_PLN; // derived from TOKEN_PAYOUT_USD (0.03 USD)
 export const MIN_PAYOUT_TOKENS = 1000; // Minimum 200 PLN payout
 
 export interface PayoutRequest {

@@ -252,9 +252,11 @@ export interface AnomalyDetectionResult {
 // CONSTANTS
 // ============================================================================
 
+import { TOKEN_PAYOUT_PLN } from '../config/economyConfig';
+
 export const FINANCE_CONSTANTS = {
-  // Tokenomics (read-only, from PACK 289)
-  PAYOUT_RATE_PLN_PER_TOKEN: 0.20,
+  // Tokenomics — derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
+  PAYOUT_RATE_PLN_PER_TOKEN: TOKEN_PAYOUT_PLN,
   
   // Revenue Splits (read-only, from existing packs)
   SPLIT_CHAT_CREATOR: 0.65,

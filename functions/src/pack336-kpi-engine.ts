@@ -24,8 +24,9 @@ import type {
   KpiAggregationOptions,
 } from './pack336-types.js';
 import { functions } from './runtime';
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
 
-const TOKEN_TO_PLN = 0.20; // 1 token = 0.20 PLN
+const TOKEN_TO_PLN = TOKEN_PAYOUT_PLN; // derived from TOKEN_PAYOUT_USD (0.03 USD)
 
 // ============================================================================
 // NORTH STAR METRIC CALCULATOR

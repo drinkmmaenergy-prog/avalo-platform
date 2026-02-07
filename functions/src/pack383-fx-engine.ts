@@ -13,11 +13,12 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
 
 const db = admin.firestore();
 
-// Constants from PACK 277
-const TOKEN_TO_PLN_RATE = 0.20;
+// Constants from PACK 277 — derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
+const TOKEN_TO_PLN_RATE = TOKEN_PAYOUT_PLN;
 
 // FX Rate Interface
 interface FXRate {

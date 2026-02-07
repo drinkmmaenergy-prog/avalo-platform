@@ -3,8 +3,10 @@
  * Based on AVALO_CORE_FULL_SPEC.md
  */
 
-// Token Economy
-export const SETTLEMENT_RATE_PLN = 0.20; // 1 token = 0.20 PLN for all settlements
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+
+// Token Economy — derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
+export const SETTLEMENT_RATE_PLN = TOKEN_PAYOUT_PLN;
 
 // Chat Configuration
 export const CHAT_INITIAL_DEPOSIT_TOKENS = 100;

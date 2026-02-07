@@ -227,9 +227,15 @@ export const wallet_getBalance = https.onCall(
         throw new HttpsError('not-found', 'Wallet not found');
       }
 
+      // PACK 452: Include reservedTokens and availableTokens
+      const reservedTokens = wallet.reservedTokens || 0;
+      const availableTokens = wallet.tokensBalance - reservedTokens;
+
       return {
         success: true,
         balance: wallet.tokensBalance,
+        reservedTokens,
+        availableTokens,
         lifetimePurchased: wallet.lifetimePurchasedTokens,
         lifetimeSpent: wallet.lifetimeSpentTokens,
         lifetimeEarned: wallet.lifetimeEarnedTokens,

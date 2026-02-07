@@ -46,7 +46,9 @@ const db = admin.firestore();
 // CONSTANTS
 // ============================================================================
 
-const PAYOUT_RATE_PLN = 0.20;  // 1 token = 0.20 PLN
+import { TOKEN_PAYOUT_USD, TOKEN_PAYOUT_PLN } from './config/economyConfig';
+
+const PAYOUT_RATE_PLN = TOKEN_PAYOUT_PLN;  // derived from TOKEN_PAYOUT_USD (0.03 USD)
 const LIMITS = DEFAULT_WITHDRAWAL_LIMITS;
 
 // ============================================================================

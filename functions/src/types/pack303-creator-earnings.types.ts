@@ -242,10 +242,12 @@ export const REVENUE_SPLITS = {
   OTHER: { creator: 0.65, avalo: 0.35 },
 } as const;
 
+import { TOKEN_PAYOUT_USD, TOKEN_PAYOUT_PLN } from '../config/economyConfig';
+
 /**
- * Payout rate: 1 token = 0.20 PLN (FIXED)
+ * Payout rate derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
  */
-export const TOKEN_PAYOUT_RATE_PLN = 0.20;
+export const TOKEN_PAYOUT_RATE_PLN = TOKEN_PAYOUT_PLN;
 
 /**
  * Statement export file storage settings

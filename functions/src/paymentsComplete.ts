@@ -26,6 +26,7 @@ import { HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import Stripe from "stripe";
 import { admin, auth, functions, getFirestore, increment, logger, onCall, onRequest, onSchedule, serverTimestamp } from './runtime';
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
 import { logServerEvent } from './lib/stubs';
 import * as crypto from 'crypto';
 
@@ -1024,8 +1025,8 @@ export const generateMonthlySettlements = onSchedule(
 
       if (totalTokens === 0) continue;
 
-      // Calculate payout
-      const settlementRate = 0.20; // PLN per token
+      // Calculate payout — rate from economyConfig.ts (TOKEN_PAYOUT_USD = 0.03)
+      const settlementRate = TOKEN_PAYOUT_PLN;
       const fiatAmount = totalTokens * settlementRate;
 
       // Get VAT rate

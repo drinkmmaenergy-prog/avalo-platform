@@ -6,6 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
 
 const db = admin.firestore();
 
@@ -445,9 +446,9 @@ export const requestPayout = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('resource-exhausted', `Monthly limit exceeded (${limits.monthlyLimit} PLN)`);
   }
   
-  // Check available balance (tokens * 0.20 PLN)
+  // Check available balance (tokens * TOKEN_PAYOUT_PLN)
   const tokenBalance = user.tokenBalance || 0;
-  const availableBalance = tokenBalance * 0.20;
+  const availableBalance = tokenBalance * TOKEN_PAYOUT_PLN;
   
   if (amount > availableBalance) {
     throw new functions.https.HttpsError('failed-precondition', `Insufficient balance. Available: ${availableBalance} PLN`);
@@ -484,7 +485,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
   });
   
   // Update user token balance (deduct equivalent tokens)
-  const tokensToDeduct = amount / 0.20;
+  const tokensToDeduct = amount / TOKEN_PAYOUT_PLN;
   await db.collection('users').doc(creatorId).update({
     tokenBalance: admin.firestore.FieldValue.increment(-tokensToDeduct),
     pendingPayouts: admin.firestore.FieldValue.increment(amount)

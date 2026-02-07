@@ -249,7 +249,9 @@ export const CURRENCY_CONFIGS: Record<string, CurrencyConfig> = {
 // CONSTANTS
 // ============================================================================
 
-export const PAYOUT_RATE_PLN_PER_TOKEN = 0.20; // Fixed: 1 token = 0.20 PLN
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+
+export const PAYOUT_RATE_PLN_PER_TOKEN = TOKEN_PAYOUT_PLN; // Derived from TOKEN_PAYOUT_USD (0.03 USD)
 
 // Call discount factors
 export const CALL_DISCOUNT_NONE = 1.0;

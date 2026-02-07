@@ -105,6 +105,7 @@ async function ensureWallet(userId: string): Promise<void> {
       lifetimeEarnedTokens: 0,
       lastUpdated: serverTimestamp() as any,
       createdAt: serverTimestamp() as any,
+      reservedTokens: 0, // PACK 452: Premium offer reservation
     };
     await walletRef.set(wallet);
   }
@@ -193,8 +194,10 @@ export async function spendTokens(
       const walletDoc = await transaction.get(walletRef);
       const wallet = walletDoc.data() as WalletData;
 
-      // Check sufficient balance
-      if (wallet.tokensBalance < amountTokens) {
+      // PACK 452: Check sufficient AVAILABLE balance (total - reserved)
+      const reservedTokens = wallet.reservedTokens || 0;
+      const availableBalance = wallet.tokensBalance - reservedTokens;
+      if (availableBalance < amountTokens) {
         throw new Error('INSUFFICIENT_FUNDS');
       }
 

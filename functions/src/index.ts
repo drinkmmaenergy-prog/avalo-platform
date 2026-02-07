@@ -678,3 +678,9 @@ export * from './webOperations';
 export * from './webrtcSignaling';
 export { checkPayoutStatus } from './workers/payoutProcessor';
 
+// ============================================
+// PACK 452 — Monetization Engine vNext (8 files)
+// ============================================
+export * from './pack452-endpoints';
+export * from './pack452-scheduled';
+

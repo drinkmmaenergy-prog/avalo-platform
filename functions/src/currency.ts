@@ -1,4 +1,5 @@
 import { z } from './runtime';
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
 
 ;
 ;
@@ -218,8 +219,8 @@ export async function calculateTokensForAmount(
   // Convert to PLN
   const amountPLN = await convertCurrency(amount, currency, Currency.PLN);
 
-  // 1 token = 0.20 PLN
-  const tokens = Math.floor(amountPLN / 0.20);
+  // rate derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
+  const tokens = Math.floor(amountPLN / TOKEN_PAYOUT_PLN);
 
   return tokens;
 }

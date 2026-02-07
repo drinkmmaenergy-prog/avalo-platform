@@ -272,7 +272,9 @@ export interface Invoice {
 // CONSTANTS
 // ============================================================================
 
-const SETTLEMENT_RATE = 0.20; // 1 token = 0.20 PLN
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+
+const SETTLEMENT_RATE = TOKEN_PAYOUT_PLN; // derived from TOKEN_PAYOUT_USD (0.03 USD)
 
 const TOKEN_PACKS: TokenPack[] = [
   {

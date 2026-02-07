@@ -26,8 +26,10 @@ import { admin } from '../runtime';
 // CONSTANTS
 // ============================================================================
 
+import { TOKEN_PAYOUT_PLN } from '../config/economyConfig';
+
 export const CREATOR_ANALYTICS_CONSTANTS = {
-  TOKEN_TO_PLN_RATE: 0.20,  // Fixed: 1 token = 0.20 PLN
+  TOKEN_TO_PLN_RATE: TOKEN_PAYOUT_PLN,  // derived from TOKEN_PAYOUT_USD (0.03 USD)
   DEFAULT_TIME_RANGE_DAYS: 30,
   MAX_TIME_RANGE_DAYS: 365,
   TOP_PAYERS_LIMIT: 10,

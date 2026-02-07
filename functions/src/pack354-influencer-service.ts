@@ -21,6 +21,7 @@ import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { admin, functions, serverTimestamp } from './runtime';
+import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
 
 const db = getFirestore();
 
@@ -223,14 +224,14 @@ export const TIER_CONFIG = {
   },
 } as const;
 
-// Original economy rules (UNCHANGED)
+// Original economy rules — revenue splits UNCHANGED, payout rate from economyConfig
 export const ECONOMY_RULES = {
   chat: { creatorShare: 0.65, avaloShare: 0.35 },
   calls: { creatorShare: 0.80, avaloShare: 0.20 },
   calendar: { creatorShare: 0.80, avaloShare: 0.20 },
   events: { creatorShare: 0.80, avaloShare: 0.20 },
   tips: { creatorShare: 0.90, avaloShare: 0.10 },
-  tokenPayoutRate: 0.2, // PLN per token
+  tokenPayoutRate: TOKEN_PAYOUT_PLN, // derived from TOKEN_PAYOUT_USD (0.03 USD)
 } as const;
 
 // Safety thresholds
