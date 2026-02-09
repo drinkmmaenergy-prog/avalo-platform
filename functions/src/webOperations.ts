@@ -19,7 +19,7 @@ interface FunctionResponse<T = any> {
  * Cloud Function: purchaseContent
  */
 export const purchaseContentCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request): Promise<FunctionResponse<{ contentId: string; unlocked: boolean }>> => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be authenticated");
@@ -170,7 +170,7 @@ export const purchaseContentCallable = onCall(
  * Cloud Function: updateAge18Plus
  */
 export const updateAge18PlusCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request): Promise<FunctionResponse<{ updated: boolean }>> => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be authenticated");
@@ -207,7 +207,7 @@ export const updateAge18PlusCallable = onCall(
  * Cloud Function: createWebTokenCheckoutSession
  */
 export const createWebTokenCheckoutSessionCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request): Promise<FunctionResponse<{ sessionId: string; url: string }>> => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be authenticated");
@@ -234,7 +234,7 @@ export const createWebTokenCheckoutSessionCallable = onCall(
  * Cloud Function: createSubscriptionCheckoutSession
  */
 export const createSubscriptionCheckoutSessionCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request): Promise<FunctionResponse<{ sessionId: string; url: string }>> => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be authenticated");
@@ -261,7 +261,7 @@ export const createSubscriptionCheckoutSessionCallable = onCall(
  * Cloud Function: getUserContentPurchases
  */
 export const getUserContentPurchasesCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request): Promise<FunctionResponse<{ purchases: any[] }>> => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be authenticated");

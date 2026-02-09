@@ -55,7 +55,7 @@ interface UserTasteProfile {
  * Returns personalized discovery feed with Royal priority and Trust filtering
  */
 export const getDiscoveryFeed = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {

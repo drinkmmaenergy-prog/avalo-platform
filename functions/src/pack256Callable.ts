@@ -20,7 +20,7 @@ import { auth, functions } from './runtime';
 // ============================================================================
 
 export const generateAiReplySuggestions = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -119,7 +119,7 @@ export const generateAiReplySuggestions = onCall(
 // ============================================================================
 
 export const checkSuggestionTriggers = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -170,7 +170,7 @@ export const checkSuggestionTriggers = onCall(
 // ============================================================================
 
 export const trackAiSuggestionAction = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -236,7 +236,7 @@ export const trackAiSuggestionAction = onCall(
 // ============================================================================
 
 export const updateAiSuggestionPreferences = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -300,7 +300,7 @@ export const updateAiSuggestionPreferences = onCall(
 // ============================================================================
 
 export const getAiSuggestionAnalytics = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');

@@ -607,7 +607,7 @@ Return ONLY valid JSON in this exact format:
  * Fetch AI user memory
  */
 export const getAiUserMemory = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {
@@ -671,7 +671,7 @@ export const getAiUserMemory = onCall(
  * Rebuild AI user memory manually
  */
 export const rebuildAiUserMemoryEndpoint = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {
@@ -724,7 +724,7 @@ export const rebuildAiUserMemoryEndpoint = onCall(
  * Scheduled job: Rebuild memories for active users
  * Runs daily to keep memories fresh
  */
-export const scheduledMemoryRebuild = onSchedule({ schedule: "every 24 hours", region: "europe-west3" }, async (event) => {
+export const scheduledMemoryRebuild = onSchedule({ schedule: "every 24 hours", region: "europe-west1" }, async (event) => {
     try {
       logger.info('[AI Memory] Starting scheduled memory rebuild');
 

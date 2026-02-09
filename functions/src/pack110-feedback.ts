@@ -231,7 +231,7 @@ function validateFeatureKey(featureKey: string): boolean {
  * Submit NPS feedback
  */
 export const submitNpsFeedback = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<SubmitNpsFeedbackResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -324,7 +324,7 @@ export const submitNpsFeedback = onCall(
  * Check if should ask for NPS
  */
 export const getShouldAskForNps = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetShouldAskForNpsResponse> => {
     if (!request.auth) {
       return {
@@ -381,7 +381,7 @@ export const getShouldAskForNps = onCall(
  * Submit feature-specific feedback
  */
 export const submitFeatureFeedback = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<SubmitFeatureFeedbackResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -485,7 +485,7 @@ export const submitFeatureFeedback = onCall(
  * Check if should ask for feature feedback
  */
 export const getShouldAskForFeatureFeedback = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetShouldAskForFeatureFeedbackResponse> => {
     if (!request.auth) {
       return {
@@ -553,7 +553,7 @@ export const getShouldAskForFeatureFeedback = onCall(
  * Submit free-form feedback
  */
 export const submitFreeFormFeedback = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<SubmitFreeFormFeedbackResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -639,7 +639,7 @@ export const submitFreeFormFeedback = onCall(
  * Mark feedback as declined
  */
 export const declineFeedback = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<DeclineFeedbackResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

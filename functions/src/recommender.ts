@@ -9,7 +9,7 @@
  * - Risk dampening (block/complaint history)
  *
  * Feature flag: discovery_rank_v2
- * Region: europe-west3
+ * Region: europe-west1
  * No changes to existing monetization
  */
 
@@ -89,7 +89,7 @@ const RANKING_WEIGHTS = {
  */
 export const getDiscoveryRankV2 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 60,
     memory: "512MiB",
   },
@@ -590,7 +590,7 @@ function isRecentlyActive(lastActiveAt: Timestamp): boolean {
 export const dailySignalRollupScheduler = onSchedule(
   {
     schedule: "0 4 * * *", // 4 AM daily
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
   },
   async (event) => {

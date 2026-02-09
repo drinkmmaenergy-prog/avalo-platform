@@ -111,7 +111,7 @@ export interface ProfileRanking {
  */
 export const likeUserV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -431,7 +431,7 @@ export async function calculateProfileRanking(userId: string): Promise<ProfileRa
  */
 export const getDiscoveryFeedV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -593,7 +593,7 @@ export const getDiscoveryFeedV1 = onCall(
  */
 export const getMatchesV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {

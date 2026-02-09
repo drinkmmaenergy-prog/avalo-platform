@@ -43,7 +43,7 @@ const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
  */
 export const createTokenCheckout = onRequest(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
     maxInstances: 10,
   },
@@ -128,7 +128,7 @@ export const createTokenCheckout = onRequest(
  */
 export const stripeWebhook = onRequest(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: false,
     maxInstances: 10,
   },
@@ -363,7 +363,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
  */
 export const createSubscriptionCheckout = onRequest(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
     maxInstances: 10,
   },

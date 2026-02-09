@@ -76,7 +76,7 @@ async function checkAge(userId: string): Promise<boolean> {
  * Requires: Identity verification + 18+ age
  */
 export const pack330_setTaxProfile = https.onCall<SetTaxProfileRequest>(
-  { region: 'europe-west3', memory: '256MiB' },
+  { region: 'europe-west1', memory: '256MiB' },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -196,7 +196,7 @@ export const pack330_setTaxProfile = https.onCall<SetTaxProfileRequest>(
  * Get tax profile for current user
  */
 export const pack330_getTaxProfile = https.onCall(
-  { region: 'europe-west3', memory: '128MiB' },
+  { region: 'europe-west1', memory: '128MiB' },
   async (request) => {
     const auth = request.auth;
     if (!auth) {

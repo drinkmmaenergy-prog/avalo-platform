@@ -7,7 +7,7 @@
  * For emulator: exports to GCS JSON then loads to BigQuery
  * For production: uses BigQuery Streaming Inserts
  *
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
@@ -53,7 +53,7 @@ const MAX_RETRIES = 3;
 export const exportAnalyticsScheduler = onSchedule(
   {
     schedule: "every 5 minutes",
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
     memory: "512MiB",
   },
@@ -246,7 +246,7 @@ async function ensureBigQuerySetup(): Promise<void> {
 
     if (!datasetExists) {
       await bigquery.createDataset(DATASET_ID, {
-        location: "EU", // europe-west3 compatible
+        location: "EU", // europe-west1 compatible
       });
       logger.info(`Created BigQuery dataset: ${DATASET_ID}`);
     }
@@ -340,7 +340,7 @@ async function handleExportFailure(error: any): Promise<void> {
 export const cleanupAnalyticsEventsScheduler = onSchedule(
   {
     schedule: "0 2 * * *", // 2 AM daily
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
   },
   async (event) => {

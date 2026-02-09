@@ -606,7 +606,7 @@ export const pack304_cronDailyAggregation = onSchedule(
   {
     schedule: '0 2 * * *', // 2 AM UTC daily
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     try {

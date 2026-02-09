@@ -20,7 +20,7 @@ import { auth, functions, onSchedule } from './runtime';
  * Returns scorecard and actionable suggestions
  */
 export const getCreatorSuccessSignals = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetCreatorSuccessSignalsResponse> => {
     // Require authentication
     if (!request.auth) {

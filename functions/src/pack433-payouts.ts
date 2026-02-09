@@ -142,7 +142,7 @@ export interface PayoutCalculation {
  * Add payout account for creator
  */
 export const addPayoutAccount = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ accountId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -209,7 +209,7 @@ export const addPayoutAccount = onCall(
  * Get creator's payout accounts
  */
 export const getPayoutAccounts = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CreatorPayoutAccount[]> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -364,7 +364,7 @@ async function calculatePayoutInternal(creatorId: string): Promise<PayoutCalcula
  * Calculate creator's earnings and payout eligibility
  */
 export const calculatePayoutAmount = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<PayoutCalculation> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -407,7 +407,7 @@ export const calculatePayoutAmount = onCall(
  * Request a payout
  */
 export const requestPayout = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ payoutId: string; status: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -516,7 +516,7 @@ export const requestPayout = onCall(
  * Get creator's payout history
  */
 export const getPayoutHistory = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CreatorPayout[]> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -559,7 +559,7 @@ export const getPayoutHistory = onCall(
  * Process payout (admin only)
  */
 export const processPayout = onCall(
-  { region: 'europe-west3', timeoutSeconds: 300 },
+  { region: 'europe-west1', timeoutSeconds: 300 },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -628,7 +628,7 @@ export const processPayout = onCall(
  * Place payout on fraud hold (admin only)
  */
 export const holdPayoutForFraud = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

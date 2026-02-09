@@ -5,7 +5,7 @@
  * >95% fraud catch rate, <2% false positives
  *
  * Feature flag: security_ai_enabled
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 ;
@@ -256,7 +256,7 @@ async function handleHighRisk(
  * Get user risk assessment
  */
 export const getUserRiskAssessmentV1 = onCall(
-  { region: "europe-west3", memory: "512MiB" },
+  { region: "europe-west1", memory: "512MiB" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

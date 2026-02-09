@@ -494,7 +494,7 @@ async function permanentlyDeleteUserData(userId: string): Promise<void> {
  */
 export const requestDataExportV2 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
     timeoutSeconds: 300,
@@ -574,7 +574,7 @@ export const requestDataExportV2 = onCall(
 export const processDataExportScheduler = onSchedule(
   {
     schedule: "every 1 hours",
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
     memory: "2GiB",
   },
@@ -655,7 +655,7 @@ export const processDataExportScheduler = onSchedule(
  */
 export const requestAccountDeletionV2 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -751,7 +751,7 @@ export const requestAccountDeletionV2 = onCall(
  */
 export const cancelAccountDeletionV2 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -815,7 +815,7 @@ export const cancelAccountDeletionV2 = onCall(
 export const processScheduledDeletionsScheduler = onSchedule(
   {
     schedule: "0 2 * * *", // 2 AM daily
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
     memory: "2GiB",
   },
@@ -893,7 +893,7 @@ export const processScheduledDeletionsScheduler = onSchedule(
  */
 export const getPrivacyRequestStatusV2 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -927,7 +927,7 @@ export const getPrivacyRequestStatusV2 = onCall(
  */
 export const updateConsentV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },

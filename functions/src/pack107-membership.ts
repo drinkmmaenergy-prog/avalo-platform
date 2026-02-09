@@ -190,7 +190,7 @@ async function logMembershipAudit(
  * Creates Stripe Checkout session for subscription
  */
 export const subscribeToMembership = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ sessionUrl: string; sessionId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -550,7 +550,7 @@ async function renewMembership(
  * Cancel membership auto-renewal
  */
 export const cancelMembershipAutoRenew = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean; effectiveDate: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -661,7 +661,7 @@ export const cancelMembershipAutoRenew = onCall(
  * Get user's current membership status
  */
 export const getUserMembershipStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<UserMembership | null> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

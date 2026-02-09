@@ -140,7 +140,7 @@ async function hasUserPurchasedTemplate(userId: string, templateId: string): Pro
  * All templates start in moderation queue
  */
 export const pack331_createAiAvatarTemplate = https.onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request: CallableRequest): Promise<CreateAvatarTemplateResponse> => {
     try {
       if (!request.auth) {
@@ -250,7 +250,7 @@ export const pack331_createAiAvatarTemplate = https.onCall(
  * Handles revenue split: 65/35 (creator/Avalo) or 100% Avalo for official
  */
 export const pack331_purchaseAiAvatarTemplate = https.onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request: CallableRequest): Promise<PurchaseAvatarTemplateResponse> => {
     try {
       if (!request.auth) {
@@ -394,7 +394,7 @@ export const pack331_purchaseAiAvatarTemplate = https.onCall(
  * List avatar templates with filtering and sorting
  */
 export const pack331_listAvatarTemplates = https.onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request: CallableRequest): Promise<ListAvatarTemplatesResponse> => {
     try {
       if (!request.auth) {
@@ -493,7 +493,7 @@ export const pack331_listAvatarTemplates = https.onCall(
  * Get creator's avatar template statistics
  */
 export const pack331_getCreatorStats = https.onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request: CallableRequest): Promise<GetCreatorStatsResponse> => {
     try {
       if (!request.auth) {
@@ -554,7 +554,7 @@ export const pack331_getCreatorStats = https.onCall(
  * Track when a template is used in an AI session (analytics only)
  */
 export const pack331_trackTemplateUsage = https.onCall(
-  { region: 'europe-west3', memory: '256MiB' },
+  { region: 'europe-west1', memory: '256MiB' },
   async (request: CallableRequest): Promise<{ success: boolean; error?: string }> => {
     try {
       if (!request.auth) {

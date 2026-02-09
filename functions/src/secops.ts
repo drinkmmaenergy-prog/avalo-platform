@@ -7,7 +7,7 @@
  * - Incident logging and tracking
  * - Security metrics dashboards
  *
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 ;
@@ -129,7 +129,7 @@ const THRESHOLDS = {
 export const securityMonitoringScheduler = onSchedule(
   {
     schedule: "*/5 * * * *", // Every 5 minutes
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 300,
   },
   async (event) => {
@@ -537,7 +537,7 @@ async function createSecurityIncident(
  * Get security incidents (admin only)
  */
 export const getSecurityIncidentsV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const adminUid = request.auth?.uid;
     if (!adminUid) {
@@ -597,7 +597,7 @@ export const getSecurityIncidentsV1 = onCall(
  * Update incident status (admin only)
  */
 export const updateSecurityIncidentV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const adminUid = request.auth?.uid;
     if (!adminUid) {

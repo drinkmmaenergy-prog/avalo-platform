@@ -36,7 +36,7 @@ import { auth, functions } from './runtime';
  */
 export const verifyMobilePurchase = onRequest(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
     maxInstances: 10,
   },
@@ -136,7 +136,7 @@ export const verifyMobilePurchase = onRequest(
  */
 export const syncMobileSubscription = onRequest(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
     maxInstances: 10,
   },

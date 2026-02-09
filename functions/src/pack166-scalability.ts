@@ -110,7 +110,7 @@ function calculateRevenueSplit(priceTokens: number): { platformFee: number; crea
  * Create a new A/B pricing test
  */
 export const createPricingTest = onCall<CreatePricingTestRequest, Promise<CreatePricingTestResponse>>(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -202,7 +202,7 @@ export const createPricingTest = onCall<CreatePricingTestRequest, Promise<Create
  * Calculate pricing test results
  */
 export const calculatePricingTestResults = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -270,7 +270,7 @@ export const calculatePricingTestResults = onCall(
  * Create a product bundle
  */
 export const createBundleOffer = onCall<CreateBundleRequest, Promise<CreateBundleResponse>>(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -357,7 +357,7 @@ export const createBundleOffer = onCall<CreateBundleRequest, Promise<CreateBundl
  * Purchase a product bundle
  */
 export const purchaseBundle = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -463,7 +463,7 @@ export const purchaseBundle = onCall(
  * Create an upsell rule
  */
 export const createUpsellRule = onCall<CreateUpsellRuleRequest, Promise<CreateUpsellRuleResponse>>(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -535,7 +535,7 @@ export const createUpsellRule = onCall<CreateUpsellRuleRequest, Promise<CreateUp
  * Record upsell impression
  */
 export const recordUpsellImpression = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -577,7 +577,7 @@ export const recordUpsellImpression = onCall(
  * Schedule a product automation
  */
 export const scheduleProductAutomation = onCall<CreateAutomationRequest, Promise<CreateAutomationResponse>>(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -649,7 +649,7 @@ export const scheduleProductAutomation = onCall<CreateAutomationRequest, Promise
  * Apply a discount to products
  */
 export const applyDiscount = onCall<CreateDiscountRequest, Promise<CreateDiscountResponse>>(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -738,7 +738,7 @@ export const applyDiscount = onCall<CreateDiscountRequest, Promise<CreateDiscoun
  * Track product analytics
  */
 export const trackProductAnalytics = onCall<GetProductAnalyticsRequest, Promise<GetProductAnalyticsResponse>>(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -807,7 +807,7 @@ export const trackProductAnalytics = onCall<GetProductAnalyticsRequest, Promise<
  * Get creator scalability metrics
  */
 export const getCreatorScalabilityMetrics = onCall<GetCreatorMetricsRequest, Promise<GetCreatorMetricsResponse>>(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

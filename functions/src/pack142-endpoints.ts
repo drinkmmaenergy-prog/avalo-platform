@@ -38,7 +38,7 @@ const db = getFirestore();
  * Create liveness session
  */
 export const pack142_createLivenessSession = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -60,7 +60,7 @@ export const pack142_createLivenessSession = onCall(
  * Upload liveness video
  */
 export const pack142_uploadLivenessVideo = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -83,7 +83,7 @@ export const pack142_uploadLivenessVideo = onCall(
  * Get liveness session
  */
 export const pack142_getLivenessSession = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -115,7 +115,7 @@ export const pack142_getLivenessSession = onCall(
  * Check if user needs liveness verification
  */
 export const pack142_needsLivenessVerification = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -136,7 +136,7 @@ export const pack142_needsLivenessVerification = onCall(
  * Run photo consistency check
  */
 export const pack142_runPhotoConsistencyCheck = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -165,7 +165,7 @@ export const pack142_runPhotoConsistencyCheck = onCall(
  * Run recurrent authenticity check
  */
 export const pack142_runRecurrentAuthenticityCheck = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -198,7 +198,7 @@ export const pack142_runRecurrentAuthenticityCheck = onCall(
  * Create voice signature
  */
 export const pack142_createVoiceSignature = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -224,7 +224,7 @@ export const pack142_createVoiceSignature = onCall(
  * Verify voice
  */
 export const pack142_verifyVoice = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -253,7 +253,7 @@ export const pack142_verifyVoice = onCall(
  * Check if user has voice signature
  */
 export const pack142_hasVoiceSignature = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -274,7 +274,7 @@ export const pack142_hasVoiceSignature = onCall(
  * Run stolen photo check
  */
 export const pack142_runStolenPhotoCheck = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -308,7 +308,7 @@ export const pack142_runStolenPhotoCheck = onCall(
  * Run deepfake detection
  */
 export const pack142_runDeepfakeDetection = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -346,7 +346,7 @@ export const pack142_runDeepfakeDetection = onCall(
  * Analyze social graph fraud (Admin only)
  */
 export const pack142_analyzeSocialGraphFraud = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -387,7 +387,7 @@ export const pack142_analyzeSocialGraphFraud = onCall(
  * Get user identity check history
  */
 export const pack142_getIdentityCheckHistory = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

@@ -196,7 +196,7 @@ async function checkDailyMessageLimit(
  * List AI Companions (with tier filtering)
  */
 export const listAICompanionsCallable = onCall(
-    { region: "europe-west3", memory: "512MiB" },
+    { region: "europe-west1", memory: "512MiB" },
     async (
       request
     ): Promise<FunctionResponse> => {
@@ -341,7 +341,7 @@ async function checkRateLimit(
  * Anti-Abuse: Rate limited to 3 chats per minute
  */
 export const startAIChatCallable = onCall(
-    { region: "europe-west3", memory: "512MiB" },
+    { region: "europe-west1", memory: "512MiB" },
     async (request): Promise<FunctionResponse> => {
       try {
         if (!request.auth) {
@@ -474,7 +474,7 @@ export const startAIChatCallable = onCall(
  * Send AI Message (Subscription-based, no per-word charging)
  */
 export const sendAIMessageCallable = onCall(
-    { region: "europe-west3", memory: "512MiB" },
+    { region: "europe-west1", memory: "512MiB" },
     async (request): Promise<FunctionResponse> => {
       try {
         if (!request.auth) {
@@ -591,7 +591,7 @@ export const sendAIMessageCallable = onCall(
  * Unlock AI Gallery Photo (Token-based)
  */
 export const unlockAIGalleryCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (request): Promise<FunctionResponse> => {
       try {
         if (!request.auth) {
@@ -731,7 +731,7 @@ export const unlockAIGalleryCallable = onCall(
  * Close AI Chat (No refund needed for subscription model)
  */
 export const closeAIChatCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (request): Promise<FunctionResponse> => {
     try {
       if (!request.auth) {

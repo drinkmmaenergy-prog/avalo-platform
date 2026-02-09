@@ -21,7 +21,7 @@ import { admin, auth, functions } from './runtime';
  * Request a refund for a transaction
  */
 export const pack147_requestRefund = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -83,7 +83,7 @@ export const pack147_requestRefund = onCall(
  * Cancel a refund request
  */
 export const pack147_cancelRefund = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -115,7 +115,7 @@ export const pack147_cancelRefund = onCall(
  * Get user's refund requests
  */
 export const pack147_getMyRefunds = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -144,7 +144,7 @@ export const pack147_getMyRefunds = onCall(
  * Get refund request details
  */
 export const pack147_getRefundDetails = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -188,7 +188,7 @@ export const pack147_getRefundDetails = onCall(
  * Get user's escrow balance
  */
 export const pack147_getEscrowBalance = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -214,7 +214,7 @@ export const pack147_getEscrowBalance = onCall(
  * Get refund statistics for user
  */
 export const pack147_getRefundStats = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -265,7 +265,7 @@ export const pack147_getRefundStats = onCall(
  * Admin: Manually resolve refund request (Tier 3 Human Review)
  */
 export const pack147_admin_resolveRefund = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -318,7 +318,7 @@ export const pack147_admin_resolveRefund = onCall(
  * Admin: Get all pending refunds for review
  */
 export const pack147_admin_getPendingRefunds = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -365,7 +365,7 @@ export const pack147_admin_getPendingRefunds = onCall(
  * Admin: Get fraud detection records for user
  */
 export const pack147_admin_getUserFraudHistory = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -406,7 +406,7 @@ export const pack147_admin_getUserFraudHistory = onCall(
  * Admin: Get system-wide refund statistics
  */
 export const pack147_admin_getSystemStats = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

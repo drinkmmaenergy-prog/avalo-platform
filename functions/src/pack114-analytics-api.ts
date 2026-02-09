@@ -36,7 +36,7 @@ import { admin, auth, functions, onSchedule } from './runtime';
  * Returns aggregated metrics across all linked creators
  */
 export const getAgencyDashboard = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{
     linkedCreators: number;
     totalEarnings: number;
@@ -110,7 +110,7 @@ export const getAgencyDashboard = onCall(
  * Returns ONLY aggregated metrics, no personal data
  */
 export const getCreatorAnalyticsForAgency = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{
     creatorId: string;
     linkStatus: string;
@@ -266,7 +266,7 @@ export const getCreatorAnalyticsForAgency = onCall(
  * Get list of linked creators with basic info (no personal data)
  */
 export const getAgencyLinkedCreators = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{
     creators: Array<{
       creatorId: string;
@@ -347,7 +347,7 @@ export const getAgencyLinkedCreators = onCall(
  * Get agency earnings timeline
  */
 export const getAgencyEarningsTimeline = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{
     timeline: Array<{
       date: string;
@@ -430,7 +430,7 @@ export const getAgencyEarningsTimeline = onCall(
  * Get creator's view of agency relationship
  */
 export const getCreatorAgencyView = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{
     hasAgency: boolean;
     agencyName?: string;

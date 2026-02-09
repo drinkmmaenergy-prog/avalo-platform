@@ -611,7 +611,7 @@ async function banUserAccount(
  * Dispatches to specific action handlers based on action type
  */
 export const support_performAction = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean; message: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

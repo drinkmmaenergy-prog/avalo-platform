@@ -163,7 +163,7 @@ async function computeCreatorAnalytics(
  * Get agency dashboard for a creator
  */
 export const getAgencyDashboard = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ analytics: Record<string, AgencyDashboardAnalytics> }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -242,7 +242,7 @@ export const getAgencyDashboard = onCall(
  * Get aggregated analytics for all creators in agency
  */
 export const getAgencyOverview = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{
     totalCreators: number;
     totalEarnings: number;
@@ -336,7 +336,7 @@ export const dailyAnalyticsAggregation = onSchedule(
   {
     schedule: '0 5 * * *',
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     logger.info('Starting daily analytics aggregation for agencies');

@@ -317,7 +317,7 @@ async function getPopularityScore(profileId: string): Promise<number> {
  */
 export const explainProfileRankingV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -541,7 +541,7 @@ export const explainProfileRankingV1 = onCall(
  */
 export const getAIDecisionLogsV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -580,7 +580,7 @@ export const getAIDecisionLogsV1 = onCall(
  */
 export const appealAIDecisionV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -664,7 +664,7 @@ export const appealAIDecisionV1 = onCall(
  */
 export const updateAlgorithmPreferencesV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -736,7 +736,7 @@ const sum = numericValues.reduce((a, b) => a + b, 0);
  */
 export const getAlgorithmTransparencyV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
   },
   async (): Promise<{

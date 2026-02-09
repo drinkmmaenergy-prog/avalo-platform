@@ -104,7 +104,7 @@ function calculateRankingScore(
 export const discoverySearch = onRequest(
   { 
     cors: true,
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (req, res) => {
     try {

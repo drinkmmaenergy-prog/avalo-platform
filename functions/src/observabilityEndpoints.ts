@@ -40,7 +40,7 @@ function checkRateLimit(identifier: string, maxPerMinute: number = 10): boolean 
 
 export const mobileErrorReport = onRequest(
   { 
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
     maxInstances: 10,
   },
@@ -120,7 +120,7 @@ export const aggregateSystemHealth = onSchedule(
   {
     schedule: 'every 1 hours',
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     console.log('🔍 Aggregating system health snapshots...');
@@ -250,7 +250,7 @@ async function aggregateSnapshot(
  */
 export const adminHealthLogs = onRequest(
   { 
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
   },
   async (req, res) => {
@@ -346,7 +346,7 @@ export const adminHealthLogs = onRequest(
  */
 export const adminHealthSnapshots = onRequest(
   { 
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
   },
   async (req, res) => {
@@ -394,7 +394,7 @@ export const adminHealthSnapshots = onRequest(
  */
 export const adminHealthSummary = onRequest(
   { 
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
   },
   async (req, res) => {

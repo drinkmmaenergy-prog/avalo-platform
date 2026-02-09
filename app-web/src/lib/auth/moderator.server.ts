@@ -1,53 +1,29 @@
 /**
- * Moderator Role & Authentication Utilities (Server Components)
- * Server-side auth utilities for use in RSC and layouts
- * 
- * NOTE: This is a placeholder implementation that returns mock data
- * during static generation. For production, integrate with your auth provider.
+ * Moderator Server Auth — Server-side moderator access control.
+ *
+ * Used in server components (layout.tsx) to check if the
+ * current user has moderator/admin role before rendering
+ * the moderation dashboard.
  */
-
-export type ModeratorRole = 'admin' | 'moderator';
 
 export interface CurrentUser {
   uid: string;
-  email: string | null;
-  displayName: string | null;
-  role: ModeratorRole | 'user' | null;
+  email: string;
+  displayName: string;
+  role: 'moderator' | 'admin' | 'super_admin';
+  permissions: string[];
 }
 
 /**
- * Get current user with role information (Server-side)
- * 
- * For static generation / build time, returns a mock admin user
- * In production, this should integrate with Firebase Admin SDK or session cookies
+ * Get current user with role from server context.
+ *
+ * NOTE: In a real server component, this would use cookies/headers
+ * to identify the user and check their role in Firestore via admin SDK.
+ * For now, returns null (redirected to no-access by the layout).
  */
 export async function getCurrentUserWithRole(): Promise<CurrentUser | null> {
-  // During build time (static generation), return a mock user
-  // This allows the pages to be pre-rendered
-  // In production with actual auth, you'd check cookies or server-side session
-  
-  // Return a mock admin for static generation
-  // The actual auth check happens client-side in the components
-  return {
-    uid: 'static-build-user',
-    email: 'build@avalo.dev',
-    displayName: 'Build User',
-    role: 'admin',
-  };
-}
-
-/**
- * Check if current user has moderator or admin role
- */
-export async function isModeratorOrAdmin(): Promise<boolean> {
-  const user = await getCurrentUserWithRole();
-  return user?.role === 'admin' || user?.role === 'moderator';
-}
-
-/**
- * Check if current user is an admin
- */
-export async function isAdmin(): Promise<boolean> {
-  const user = await getCurrentUserWithRole();
-  return user?.role === 'admin';
+  // Server-side auth check would go here.
+  // This is called from the moderator layout.tsx server component.
+  // Returns null to trigger the no-access redirect.
+  return null;
 }

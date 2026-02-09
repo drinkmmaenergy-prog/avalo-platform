@@ -132,7 +132,7 @@ export interface FeedComment {
  * Create a feed post
  */
 export const pack323_createFeedPost = onCall(
-  { region: "europe-west3", maxInstances: 100 },
+  { region: "europe-west1", maxInstances: 100 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -227,7 +227,7 @@ export const pack323_createFeedPost = onCall(
  * Create a feed reel (short video)
  */
 export const pack323_createFeedReel = onCall(
-  { region: "europe-west3", maxInstances: 100 },
+  { region: "europe-west1", maxInstances: 100 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -317,7 +317,7 @@ export const pack323_createFeedReel = onCall(
  * Create a feed story (24h expiration)
  */
 export const pack323_createFeedStory = onCall(
-  { region: "europe-west3", maxInstances: 100 },
+  { region: "europe-west1", maxInstances: 100 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -391,7 +391,7 @@ export const pack323_createFeedStory = onCall(
  * Like/unlike content
  */
 export const pack323_likeContent = onCall(
-  { region: "europe-west3", maxInstances: 200 },
+  { region: "europe-west1", maxInstances: 200 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -480,7 +480,7 @@ export const pack323_likeContent = onCall(
  * Add comment to content
  */
 export const pack323_addComment = onCall(
-  { region: "europe-west3", maxInstances: 100 },
+  { region: "europe-west1", maxInstances: 100 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -570,7 +570,7 @@ export const pack323_addComment = onCall(
  * Report content
  */
 export const pack323_reportContent = onCall(
-  { region: "europe-west3", maxInstances: 50 },
+  { region: "europe-west1", maxInstances: 50 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -658,7 +658,7 @@ export const pack323_reportContent = onCall(
 export const pack323_storyExpiryJob = onSchedule(
   { 
     schedule: "0 * * * *", // Every hour
-    region: "europe-west3",
+    region: "europe-west1",
     timeZone: "UTC",
   },
   async () => {

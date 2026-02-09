@@ -11,7 +11,7 @@
  * - Statistical significance calculation
  * - Multi-variant support (A/B/C/D/...)
  *
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
@@ -108,7 +108,7 @@ interface VariantMetrics {
  * This ensures the same user always gets the same variant
  */
 export const assignVariantV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -240,7 +240,7 @@ function assignVariantDeterministic(
  * Includes idempotency check to prevent duplicate events
  */
 export const trackABEventV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -404,7 +404,7 @@ async function updateVariantMetrics(
  * Returns aggregated metrics, statistical analysis, and recommendations
  */
 export const getABResultsV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

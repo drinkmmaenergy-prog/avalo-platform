@@ -710,7 +710,7 @@ export async function getModerationStats(
  */
 export const moderateContentV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {

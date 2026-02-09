@@ -69,7 +69,7 @@ const MAX_COLLAB_PARTICIPANTS = 4;
  * Invite another creator to join stream
  */
 export const inviteToCollabStream = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -180,7 +180,7 @@ export const inviteToCollabStream = onCall(
  * Respond to a collab invite
  */
 export const respondToCollabInvite = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -312,7 +312,7 @@ export const respondToCollabInvite = onCall(
  * Leave a collab stream
  */
 export const leaveCollabStream = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -359,7 +359,7 @@ export const leaveCollabStream = onCall(
  * Get collab stream participants
  */
 export const getCollabParticipants = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

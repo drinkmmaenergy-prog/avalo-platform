@@ -498,7 +498,7 @@ export const dailyAchievementRecalculation = onSchedule(
  * Get user's achievements and progress
  */
 export const getUserAchievements = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetUserAchievementsResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -549,7 +549,7 @@ export const getUserAchievements = onCall(
  * Select badges to display on profile
  */
 export const selectProfileBadges = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -616,7 +616,7 @@ export const selectProfileBadges = onCall(
  * Initialize achievements catalog (admin only, run once)
  */
 export const initializeAchievementsCatalog = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean; count: number }> => {
     // TODO: Add admin authentication check
     

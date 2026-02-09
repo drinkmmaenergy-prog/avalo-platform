@@ -170,7 +170,7 @@ export async function notifyReviewUpdate(params: {
 export const onWithdrawalRequestStatusChange = onDocumentWritten(
   {
     document: 'withdrawalRequests/{requestId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const beforeData = event.data?.before?.data();
@@ -252,7 +252,7 @@ export const onWithdrawalRequestStatusChange = onDocumentWritten(
 export const onWithdrawalReviewStatusChange = onDocumentWritten(
   {
     document: 'withdrawalReviews/{reviewId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const beforeData = event.data?.before?.data();

@@ -49,7 +49,7 @@ const CURRENCY_CONFIG = {
  * const storefront = await getLocalStorefront({ currencyCode: 'USD' });
  */
 export const getLocalStorefront = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<LocalizedStorefront> => {
     try {
       const currencyCode = request.data.currencyCode as string;
@@ -110,7 +110,7 @@ export const getLocalStorefront = onCall(
  * await setUserCurrency({ currencyCode: 'EUR' });
  */
 export const setUserCurrency = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean; nextChangeAllowedAt?: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -228,7 +228,7 @@ export const setUserCurrency = onCall(
  * const preference = await getUserCurrencyPreference();
  */
 export const getUserCurrencyPreference = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<UserCurrencyPreference> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -304,7 +304,7 @@ export const getUserCurrencyPreference = onCall(
  * const currencies = await getSupportedCurrencies();
  */
 export const getSupportedCurrencies = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CurrencyProfile[]> => {
     try {
       const currencies = await getEnabledCurrencies();

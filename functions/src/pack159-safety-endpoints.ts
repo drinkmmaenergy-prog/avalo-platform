@@ -36,7 +36,7 @@ import { admin, auth, functions, increment, onSchedule } from './runtime';
  * Evaluate consent state for conversation
  */
 export const safety159_evaluateConsentState = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -78,7 +78,7 @@ export const safety159_evaluateConsentState = onCall(
  * Get user's own safety score (private, user-only)
  */
 export const safety159_getMyScore = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -131,7 +131,7 @@ export const safety159_getMyScore = onCall(
  * Check if message is safe to send (pre-send validation)
  */
 export const safety159_checkMessage = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -170,7 +170,7 @@ export const safety159_checkMessage = onCall(
  * Submit safety appeal
  */
 export const safety159_submitAppeal = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -225,7 +225,7 @@ export const safety159_submitAppeal = onCall(
  * Get user's appeal status
  */
 export const safety159_getAppealStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -286,7 +286,7 @@ export const safety159_getAppealStatus = onCall(
  * Resolve safety appeal (admin only)
  */
 export const safety159_resolveAppeal = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -382,7 +382,7 @@ export const safety159_resolveAppeal = onCall(
  * Get user's safety feedback cards
  */
 export const safety159_getFeedbackCards = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -421,7 +421,7 @@ export const safety159_getFeedbackCards = onCall(
  * Dismiss feedback card
  */
 export const safety159_dismissFeedbackCard = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -478,7 +478,7 @@ export const safety159_dailyScoreDecay = onSchedule(
   {
     schedule: '0 3 * * *',
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     try {
@@ -520,7 +520,7 @@ export const safety159_expireInterventions = onSchedule(
   {
     schedule: 'every 15 minutes',
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     try {
@@ -564,7 +564,7 @@ export const safety159_monitorRepeatOffenders = onSchedule(
   {
     schedule: '0 */6 * * *', // Every 6 hours
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     try {

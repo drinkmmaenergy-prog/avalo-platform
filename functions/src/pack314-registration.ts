@@ -3,7 +3,7 @@
  * 
  * Enhanced user registration with country rollout enforcement
  * 
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { onCall } from "firebase-functions/v2/https";

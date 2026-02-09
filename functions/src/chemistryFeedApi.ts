@@ -15,7 +15,7 @@ import { HttpsError, admin, auth, onCall, timestamp } from './runtime';
  * Returns personalized feed with chemistry-based ranking
  */
 export const getChemistryFeed = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {
@@ -93,7 +93,7 @@ export const getChemistryFeed = onCall(
  * Logs user interactions with feed profiles
  */
 export const trackFeedInteraction = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {
@@ -164,7 +164,7 @@ export const trackFeedInteraction = onCall(
  * Force refresh the feed cache for a user
  */
 export const refreshFeedCache = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     try {
       // Authentication check
@@ -209,7 +209,7 @@ export const refreshFeedCache = onCall(
  * Returns statistics about the user's feed
  */
 export const getFeedStats = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {

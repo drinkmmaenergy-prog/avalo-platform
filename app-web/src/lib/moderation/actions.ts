@@ -1,47 +1,72 @@
-export type UpdateAppealStatusInput = {
-  appealId: string;
-  status: string;
-  moderatorNote?: string;
-};
+/**
+ * Moderation Actions — Client-side helpers for moderation operations.
+ *
+ * All moderation actions are executed via Cloud Functions to ensure
+ * proper authorization, audit logging, and security rules enforcement.
+ */
+
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '@/lib/firebase';
 
 export type ModerationActionType =
   | 'WARN'
-  | 'RESTRICT'
+  | 'MUTE'
   | 'SUSPEND'
-  | 'SHADOWBAN'
-  | 'BAN_PERMANENT'
   | 'BAN'
-  | 'UNLOCK'
-  | 'REMOVE';
+  | 'UNBAN'
+  | 'DISMISS'
+  | 'ESCALATE'
+  | 'RESOLVE'
+  | 'APPROVE_APPEAL'
+  | 'DENY_APPEAL';
 
-export type ApplyModerationActionInput = {
-  targetId?: string;
-  targetType?: 'USER' | 'CONTENT' | 'INCIDENT';
-  userId?: string;
-  action: ModerationActionType;
-  duration?: number;
-  reason?: string;
-  moderatorNote?: string; // ✅ CANONICAL
-};
-
-
-export async function updateAppealStatus(
-  input: UpdateAppealStatusInput
-): Promise<{ success: true }> {
-  return { success: true };
+export interface ModerationActionResult {
+  success: boolean;
+  actionId?: string;
+  error?: string;
 }
 
-export type ApplyModerationActionResult = {
-  success: true;
-  message?: string;
-};
-
+/**
+ * Apply a moderation action to a user or incident.
+ */
 export async function applyModerationAction(
-  input: ApplyModerationActionInput
-): Promise<ApplyModerationActionResult> {
-  return {
-    success: true,
-    message: 'Moderation action applied successfully',
-  };
+  actionType: ModerationActionType,
+  targetUserId: string,
+  reason: string,
+  incidentId?: string,
+  duration?: number,
+): Promise<ModerationActionResult> {
+  const fn = httpsCallable<
+    {
+      actionType: ModerationActionType;
+      targetUserId: string;
+      reason: string;
+      incidentId?: string;
+      duration?: number;
+    },
+    ModerationActionResult
+  >(functions, 'applyModerationAction');
+
+  const result = await fn({
+    actionType,
+    targetUserId,
+    reason,
+    incidentId,
+    duration,
+  });
+
+  return result.data;
 }
 
+/**
+ * Update appeal status (convenience wrapper for moderation action on appeals).
+ */
+export async function updateAppealStatus(
+  appealId: string,
+  status: 'APPROVED' | 'DENIED',
+  reason: string,
+  targetUserId: string,
+): Promise<ModerationActionResult> {
+  const actionType: ModerationActionType = status === 'APPROVED' ? 'APPROVE_APPEAL' : 'DENY_APPEAL';
+  return applyModerationAction(actionType, targetUserId, reason, appealId);
+}

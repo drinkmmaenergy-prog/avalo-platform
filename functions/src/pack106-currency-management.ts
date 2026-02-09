@@ -58,7 +58,7 @@ export const refreshCurrencyProfilesFromPSP = onSchedule(
   {
     schedule: PACK106_CONFIG.FX_REFRESH_SCHEDULE,
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '256MiB' as const,
   },
   async (event) => {

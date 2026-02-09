@@ -64,7 +64,7 @@ async function verifyAdminOrModeratorRole(uid: string): Promise<void> {
  * List payouts with filters and pagination
  */
 export const admin_listPayouts = onCall(
-  { region: 'europe-west3', timeoutSeconds: 60 },
+  { region: 'europe-west1', timeoutSeconds: 60 },
   async (request): Promise<{ payouts: PayoutListItem[]; hasMore: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -153,7 +153,7 @@ export const admin_listPayouts = onCall(
  * Get detailed payout information
  */
 export const admin_getPayout = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<PayoutDetails> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -246,7 +246,7 @@ export const admin_getPayout = onCall(
  * List finance cases
  */
 export const admin_listFinanceCases = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -285,7 +285,7 @@ export const admin_listFinanceCases = onCall(
  * Get finance case details
  */
 export const admin_getFinanceCase = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -326,7 +326,7 @@ export const admin_getFinanceCase = onCall(
  * Resolve finance case
  */
 export const admin_resolveFinanceCase = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -373,7 +373,7 @@ export const admin_resolveFinanceCase = onCall(
  * Get finance dashboard metrics
  */
 export const admin_getFinanceDashboardMetrics = onCall(
-  { region: 'europe-west3', timeoutSeconds: 60 },
+  { region: 'europe-west1', timeoutSeconds: 60 },
   async (request): Promise<FinanceDashboardMetrics> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -482,7 +482,7 @@ export const admin_getFinanceDashboardMetrics = onCall(
  * List pending KYC reviews
  */
 export const admin_listPendingKycReviews = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -515,7 +515,7 @@ export const admin_listPendingKycReviews = onCall(
  * Get KYC compliance report
  */
 export const admin_getKycComplianceReport = onCall(
-  { region: 'europe-west3', timeoutSeconds: 120 },
+  { region: 'europe-west1', timeoutSeconds: 120 },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -564,7 +564,7 @@ export const admin_getKycComplianceReport = onCall(
  * Manually trigger payout reconciliation
  */
 export const admin_reconcilePayout = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

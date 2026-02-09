@@ -71,7 +71,7 @@ export interface ContentFlag {
 export const scanNewPostTrigger = onDocumentCreated(
   {
     document: "feedPosts/{postId}",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     const postData = event.data?.data();
@@ -118,7 +118,7 @@ export const scanNewPostTrigger = onDocumentCreated(
 export const scanNewPhotoTrigger = onDocumentCreated(
   {
     document: "users/{userId}/photos/{photoId}",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     const photoData = event.data?.data();
@@ -337,7 +337,7 @@ export async function markContentFlag(params: {
  * Review content flag (admin/moderator callable)
  */
 export const reviewContentFlagCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

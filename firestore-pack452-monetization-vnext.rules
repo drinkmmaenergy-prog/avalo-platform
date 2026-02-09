@@ -1,0 +1,97 @@
+rules_version = '2';
+
+// PACK 452 — Monetization Engine vNext Firestore Security Rules
+// Premium Offers, Exclusive Locks, Revenue Coach, KPI, Earnings Ledger
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ================================================================
+    // PREMIUM OFFERS
+    // ================================================================
+    match /premiumOffers/{offerId} {
+      // Payer can read their own offers
+      // Earner can read offers addressed to them
+      allow read: if request.auth != null && (
+        resource.data.payerId == request.auth.uid ||
+        resource.data.earnerId == request.auth.uid
+      );
+
+      // Only Cloud Functions can write (server-side only)
+      allow write: if false;
+    }
+
+    // ================================================================
+    // EXCLUSIVE LOCKS
+    // ================================================================
+    match /exclusiveLocks/{earnerId} {
+      // Earner can read their own lock
+      allow read: if request.auth != null && request.auth.uid == earnerId;
+
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // ================================================================
+    // EXCLUSIVE SESSION LOGS
+    // ================================================================
+    match /exclusiveSessionLogs/{logId} {
+      // Only admins can read logs
+      allow read: if false;
+
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // ================================================================
+    // REVENUE COACH SUGGESTIONS (subcollection of users)
+    // ================================================================
+    match /users/{userId}/revenueCoachSuggestions/{suggestionId} {
+      // User can read their own suggestions
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // User can update (dismiss) their own suggestions
+      allow update: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['dismissed', 'dismissedAt']);
+
+      // Only Cloud Functions can create/delete
+      allow create, delete: if false;
+    }
+
+    // ================================================================
+    // EARNINGS LEDGER
+    // ================================================================
+    match /earningsLedger/{entryId} {
+      // Payer and earner can read their own ledger entries
+      allow read: if request.auth != null && (
+        resource.data.payerId == request.auth.uid ||
+        resource.data.earnerId == request.auth.uid
+      );
+
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // ================================================================
+    // PREMIUM KPI SNAPSHOTS
+    // ================================================================
+    match /premiumKPISnapshots/{periodId} {
+      // Only admins can read KPI data
+      allow read: if false;
+
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+
+    // ================================================================
+    // PREMIUM KPI COUNTERS
+    // ================================================================
+    match /premiumKPICounters/{counterId} {
+      // Only admins can read
+      allow read: if false;
+
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+  }
+}

@@ -49,7 +49,7 @@ import { auth, functions, onSchedule } from './runtime';
  * Called when someone clicks a creator's public profile link
  */
 export const audienceGrowth_logVisit = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<LogExternalVisitResponse> => {
     const data = request.data as LogExternalVisitRequest;
     
@@ -81,7 +81,7 @@ export const audienceGrowth_logVisit = onCall(
  * Returns funnel data for specified date range
  */
 export const audienceGrowth_getMetrics = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetCreatorAudienceGrowthResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -137,7 +137,7 @@ export const audienceGrowth_getMetrics = onCall(
  * Stores platform handles/usernames for Smart Links
  */
 export const audienceGrowth_updateSocialLinks = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<UpdateSocialLinksResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -195,7 +195,7 @@ export const audienceGrowth_updateSocialLinks = onCall(
  * Returns platform-specific URLs with tracking
  */
 export const audienceGrowth_generateSmartLinks = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GenerateSmartLinksResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -264,7 +264,7 @@ export const audienceGrowth_generateSmartLinks = onCall(
  * Returns sanitized creator data for web landing page
  */
 export const audienceGrowth_getPublicCreatorPage = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetPublicCreatorPageResponse> => {
     const data = request.data as GetPublicCreatorPageRequest;
 
@@ -363,7 +363,7 @@ export const audienceGrowth_dailyAggregation = onSchedule(
     timeZone: 'UTC',
     memory: '512MiB' as const,
     timeoutSeconds: 540,
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     try {

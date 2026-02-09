@@ -361,7 +361,7 @@ async function moderateEpisodeContent(
 // ============================================================================
 
 export const createCourse = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -442,7 +442,7 @@ export const createCourse = onCall(
 );
 
 export const publishCourse = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -484,7 +484,7 @@ export const publishCourse = onCall(
 );
 
 export const publishEpisode = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -569,7 +569,7 @@ export const publishEpisode = onCall(
 // ============================================================================
 
 export const purchaseCourse = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -691,7 +691,7 @@ export const purchaseCourse = onCall(
 );
 
 export const purchaseEpisode = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -813,7 +813,7 @@ export const purchaseEpisode = onCall(
 // ============================================================================
 
 export const trackCourseProgress = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -888,7 +888,7 @@ export const trackCourseProgress = onCall(
 // ============================================================================
 
 export const reviewCourse = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -981,7 +981,7 @@ async function generateCertificate(
 }
 
 export const issueCertificate = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -1017,7 +1017,7 @@ export const issueCertificate = onCall(
 // ============================================================================
 
 export const createCourseBundle = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -1080,7 +1080,7 @@ export const createCourseBundle = onCall(
 export const onCourseProgressUpdate = onDocumentUpdated(
   {
     document: 'course_progress/{progressId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const progressData = event.data?.after.data() as CourseProgress;

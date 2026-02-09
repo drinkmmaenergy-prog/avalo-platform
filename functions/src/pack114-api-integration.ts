@@ -110,7 +110,7 @@ async function validateAgencyScope(
  * GET /api/v1/agency/:agencyId/dashboard
  */
 export const apiAgencyDashboard = onRequest(
-  { region: 'europe-west3', cors: true },
+  { region: 'europe-west1', cors: true },
   async (req, res) => {
     const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     const startTime = Date.now();
@@ -204,7 +204,7 @@ export const apiAgencyDashboard = onRequest(
  * GET /api/v1/agency/:agencyId/creators
  */
 export const apiAgencyCreators = onRequest(
-  { region: 'europe-west3', cors: true },
+  { region: 'europe-west1', cors: true },
   async (req, res) => {
     const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     const startTime = Date.now();
@@ -297,7 +297,7 @@ export const apiAgencyCreators = onRequest(
  * GET /api/v1/agency/:agencyId/creator/:creatorId/analytics
  */
 export const apiAgencyCreatorAnalytics = onRequest(
-  { region: 'europe-west3', cors: true },
+  { region: 'europe-west1', cors: true },
   async (req, res) => {
     const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     const startTime = Date.now();
@@ -391,7 +391,7 @@ export const apiAgencyCreatorAnalytics = onRequest(
  * GET /api/v1/agency/:agencyId/earnings/timeline
  */
 export const apiAgencyEarningsTimeline = onRequest(
-  { region: 'europe-west3', cors: true },
+  { region: 'europe-west1', cors: true },
   async (req, res) => {
     const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     const startTime = Date.now();

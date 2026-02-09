@@ -176,7 +176,7 @@ const STREAM_LIMITS = {
  * Create a new livestream
  */
 export const createLiveStream = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -284,7 +284,7 @@ export const createLiveStream = onCall(
  * Start a scheduled stream
  */
 export const startLiveStream = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -327,7 +327,7 @@ export const startLiveStream = onCall(
  * End a livestream
  */
 export const endLiveStream = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -417,7 +417,7 @@ export const endLiveStream = onCall(
  * Join a livestream as viewer
  */
 export const joinLiveStream = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -470,7 +470,7 @@ export const joinLiveStream = onCall(
  * Send a paid reaction during stream
  */
 export const sendStreamReaction = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -568,7 +568,7 @@ export const sendStreamReaction = onCall(
  * Create a poll during stream
  */
 export const createStreamPoll = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -629,7 +629,7 @@ export const createStreamPoll = onCall(
  * Vote on a poll
  */
 export const voteOnPoll = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -718,7 +718,7 @@ export const voteOnPoll = onCall(
  * Create a challenge during stream
  */
 export const createStreamChallenge = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -782,7 +782,7 @@ export const createStreamChallenge = onCall(
  * Submit to a challenge
  */
 export const submitToChallenge = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -869,7 +869,7 @@ export const submitToChallenge = onCall(
  * Report stream for safety violations
  */
 export const reportStream = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -940,7 +940,7 @@ export const reportStream = onCall(
 export const monitorStreamHealth = onSchedule(
   {
     schedule: 'every 5 minutes',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async () => {
     console.log('Monitoring stream health...');
@@ -1004,7 +1004,7 @@ export const monitorStreamHealth = onSchedule(
 export const createStreamReplay = onDocumentUpdated(
   {
     document: 'live_streams/{streamId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const beforeData = event.data?.before.data();
@@ -1045,7 +1045,7 @@ export const createStreamReplay = onDocumentUpdated(
 export const updateViewerActivity = onDocumentCreated(
   {
     document: 'stream_chat/{messageId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const data = event.data?.data();

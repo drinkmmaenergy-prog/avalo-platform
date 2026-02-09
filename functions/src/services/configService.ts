@@ -11,7 +11,7 @@
  * - Force upgrade checks
  * - In-memory caching (60s TTL)
  * 
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { getFirestore } from "firebase-admin/firestore";

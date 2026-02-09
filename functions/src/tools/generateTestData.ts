@@ -22,7 +22,7 @@ const db = getFirestore();
  * Admin only
  */
 export const generateTestDataCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

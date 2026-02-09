@@ -27,7 +27,7 @@ import { auth, functions, storage, z } from './runtime';
  */
 export const getCreatorRevenueExport = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     timeoutSeconds: 300,
     memory: '512MiB' as const,
   },

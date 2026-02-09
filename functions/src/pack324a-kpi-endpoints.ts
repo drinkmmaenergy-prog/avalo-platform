@@ -55,7 +55,7 @@ async function isAdmin(userId: string): Promise<boolean> {
  * Admin-only, read-only
  */
 export const pack324a_getPlatformKpiDaily = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -156,7 +156,7 @@ export const pack324a_getPlatformKpiDaily = onCall(
  * Admin-only, read-only
  */
 export const pack324a_getCreatorKpiDaily = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -252,7 +252,7 @@ export const pack324a_getCreatorKpiDaily = onCall(
  * Admin-only, read-only
  */
 export const pack324a_getSafetyKpiDaily = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -344,7 +344,7 @@ export const pack324a_aggregateDailyKpi = onSchedule(
     timeZone: 'UTC',
     memory: '2GiB' as const,
     timeoutSeconds: 540,
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     try {
@@ -379,7 +379,7 @@ export const pack324a_aggregateHourlyKpi = onSchedule(
     timeZone: 'UTC',
     memory: '1GiB' as const,
     timeoutSeconds: 300,
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     try {
@@ -410,7 +410,7 @@ export const pack324a_cleanupOldHourlyKpi = onSchedule(
     timeZone: 'UTC',
     memory: '512MiB' as const,
     timeoutSeconds: 300,
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     try {
@@ -435,7 +435,7 @@ export const pack324a_cleanupOldHourlyKpi = onSchedule(
  * Admin-only
  */
 export const pack324a_admin_triggerDailyAggregation = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -482,7 +482,7 @@ export const pack324a_admin_triggerDailyAggregation = onCall(
  * Admin-only
  */
 export const pack324a_admin_getKpiSummary = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -568,7 +568,7 @@ export const pack324a_admin_getKpiSummary = onCall(
  * Admin-only
  */
 export const pack324a_admin_getTopCreators = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

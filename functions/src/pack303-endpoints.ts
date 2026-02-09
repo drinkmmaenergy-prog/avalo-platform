@@ -61,7 +61,7 @@ function requireFinanceAdmin(request: CallableRequest<any>): void {
  * Get earnings dashboard for authenticated user
  */
 export const getEarningsDashboardCallable = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     const userId = requireAuth(request);
@@ -92,7 +92,7 @@ export const getEarningsDashboardCallable = onCall(
  * Get monthly statement for authenticated user
  */
 export const getMonthlyStatementCallable = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     const userId = requireAuth(request);
@@ -129,7 +129,7 @@ export const getMonthlyStatementCallable = onCall(
  * Export statement as PDF or CSV
  */
 export const exportStatementCallable = onCall(
-  { region: 'europe-west3', timeoutSeconds: 60, memory: '512MiB' },
+  { region: 'europe-west1', timeoutSeconds: 60, memory: '512MiB' },
   async (request) => {
   const data = request.data;
     const userId = requireAuth(request);
@@ -168,7 +168,7 @@ export const exportStatementCallable = onCall(
  * Check if user has earnings capability
  */
 export const checkEarningsCapabilityCallable = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = requireAuth(request);
     
@@ -193,7 +193,7 @@ export const checkEarningsCapabilityCallable = onCall(
  * Trigger aggregation for a specific user and month (admin only)
  */
 export const adminTriggerAggregation = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     requireFinanceAdmin(request);
@@ -223,7 +223,7 @@ export const adminTriggerAggregation = onCall(
  * Backfill aggregation for a user (admin only)
  */
 export const adminBackfillAggregation = onCall(
-  { region: 'europe-west3', timeoutSeconds: 540, memory: '512MiB' },
+  { region: 'europe-west1', timeoutSeconds: 540, memory: '512MiB' },
   async (request) => {
   const data = request.data;
     requireFinanceAdmin(request);
@@ -259,7 +259,7 @@ export const adminBackfillAggregation = onCall(
  * View earnings for any user (admin only, with audit)
  */
 export const adminViewUserEarnings = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     requireFinanceAdmin(request);
@@ -304,7 +304,7 @@ export const adminViewUserEarnings = onCall(
  * Daily aggregation cron job
  * Runs at 02:00 UTC daily to aggregate previous day's earnings
  */
-export const cronDailyEarningsAggregation = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC", region: "europe-west3" }, async (event) => {
+export const cronDailyEarningsAggregation = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC", region: "europe-west1" }, async (event) => {
     console.log('Starting daily earnings aggregation');
     
     // Aggregate current month
@@ -333,7 +333,7 @@ export const cronDailyEarningsAggregation = onSchedule({ schedule: "0 2 * * *", 
  * HTTP endpoint to manually trigger aggregation (for testing/admin)
  */
 export const httpTriggerAggregation = onRequest({
-  region: 'europe-west3',
+  region: 'europe-west1',
   timeoutSeconds: 540,
   memory: '1GiB',
 }, async (req, res) => {

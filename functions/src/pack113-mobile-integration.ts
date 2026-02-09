@@ -22,7 +22,7 @@ import { functions, timestamp } from './runtime';
  * Get list of connected apps for current user
  */
 export const getConnectedApps = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -85,7 +85,7 @@ export const getConnectedApps = onCall(
  * Revoke access for a specific app
  */
 export const revokeAppAccess = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -154,7 +154,7 @@ export const revokeAppAccess = onCall(
  * Get detailed information about a connected app
  */
 export const getAppDetails = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -241,7 +241,7 @@ export const getAppDetails = onCall(
  * Rotate API key for an app (app creator only)
  */
 export const rotateAPIKey = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

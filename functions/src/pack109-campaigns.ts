@@ -90,7 +90,7 @@ function parseDate(dateStr: string): Date {
  * This is a public endpoint accessible without authentication
  */
 export const handleCampaignSmartLink = onRequest(
-  { region: 'europe-west3', cors: true },
+  { region: 'europe-west1', cors: true },
   async (req, res) => {
     try {
       // Extract campaign slug from path
@@ -198,7 +198,7 @@ export const handleCampaignSmartLink = onRequest(
  * Callable function for in-app visit tracking
  */
 export const logCampaignVisit = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<LogCampaignVisitResponse> => {
     const data = request.data as LogCampaignVisitRequest;
     
@@ -439,7 +439,7 @@ export async function logCampaignFirstPaidInteraction(
  * Get campaign performance metrics (admin-only)
  */
 export const admin_getCampaignPerformance = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetCampaignPerformanceResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -671,7 +671,7 @@ export const admin_getCampaignPerformance = onCall(
  * Get campaigns for creator (if they are a talent)
  */
 export const getCreatorCampaigns = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetCreatorCampaignsResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

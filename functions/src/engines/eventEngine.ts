@@ -95,7 +95,7 @@ const EnqueueEventSchema = z.object({
  * Callable function
  */
 export const enqueueEventCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -163,7 +163,7 @@ export const enqueueEventCallable = onCall(
 export const processEventScheduler = onSchedule(
   {
     schedule: "every 1 minutes",
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540, // 9 minutes
   },
   async (event) => {
@@ -367,7 +367,7 @@ async function handleModerationFlag(payload: any): Promise<void> {
 export const retryFailedEventsScheduler = onSchedule(
   {
     schedule: "every 10 minutes",
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
   },
   async (event) => {
@@ -454,7 +454,7 @@ async function logEngineEvent(
 export const cleanupExpiredEventsScheduler = onSchedule(
   {
     schedule: "every 24 hours",
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
   },
   async (event) => {

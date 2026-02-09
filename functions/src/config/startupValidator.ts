@@ -80,15 +80,14 @@ function isDeployTimeAnalysis(): boolean {
  * Detect if this is a production environment
  */
 function detectProductionEnvironment(): boolean {
-  // Explicit production NODE_ENV
-  if (NODE_ENV === 'production') return true;
-  
-  // Cloud project indicates production
-  if (GCLOUD_PROJECT && !GCLOUD_PROJECT.includes('emulator')) return true;
-  
-  // Firebase config indicates cloud environment
-  if (FIREBASE_CONFIG && FIREBASE_CONFIG.includes('avalostaging')) return true;
-  
+  // Emulator = zawsze development runtime
+  if (IS_EMULATOR) return false;
+
+  // Production runtime tylko w Cloud Run (Gen2)
+  if (IS_CLOUD_RUN && NODE_ENV === 'production') return true;
+
+  if (GCLOUD_PROJECT && !GCLOUD_PROJECT.includes('emulator') && IS_CLOUD_RUN) return true;
+
   return false;
 }
 
@@ -331,3 +330,4 @@ export default {
   assertStartupValid,
   initStartupValidation,
 };
+

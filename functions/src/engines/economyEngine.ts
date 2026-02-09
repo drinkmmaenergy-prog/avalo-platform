@@ -86,7 +86,7 @@ export interface LedgerEntry {
 export const logTransactionTrigger = onDocumentCreated(
   {
     document: "transactions/{txId}",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     const txData = event.data?.data();
@@ -172,7 +172,7 @@ function calculatePlatformFee(txData: any): number {
 export const recalculateEconomyScheduler = onSchedule(
   {
     schedule: "0 * * * *", // Every hour at :00
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
   },
   async (event) => {
@@ -345,7 +345,7 @@ const AnalyzeFlowSchema = z.object({
 });
 
 export const analyzeFlowCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

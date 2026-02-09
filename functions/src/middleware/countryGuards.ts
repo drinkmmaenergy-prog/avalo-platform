@@ -3,7 +3,7 @@
  * 
  * Middleware for enforcing country rollout and feature access control
  * 
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { HttpsError } from "firebase-functions/v2/https";

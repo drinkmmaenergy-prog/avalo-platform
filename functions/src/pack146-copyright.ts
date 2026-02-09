@@ -30,7 +30,7 @@ import { auth } from './runtime';
  */
 export const fileCopyrightClaim = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -545,7 +545,7 @@ export async function logPiracyAttempt(
  */
 export const submitCopyrightReview = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {

@@ -148,7 +148,7 @@ function getSourceFieldName(sourceType: EarningSourceType): string {
 export const onLedgerEntryWrite = onDocumentWritten(
   {
     document: 'earnings_ledger/{entryId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const data = event.data?.after.data();
@@ -622,7 +622,7 @@ async function getTopGifts(
  * Returns pre-computed snapshot with all KPIs and breakdowns
  */
 export const getCreatorAnalyticsOverview = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -709,7 +709,7 @@ export const getCreatorAnalyticsOverview = onCall(
  * Returns daily data points for charts
  */
 export const getCreatorAnalyticsTimeseries = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

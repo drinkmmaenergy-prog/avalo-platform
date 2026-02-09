@@ -155,7 +155,7 @@ function calculateRiskLevel(aiFlags: AIFlags): ModerationRiskLevel {
 export const onImageUpload = onDocumentCreated(
   {
     document: 'userPhotos/{userId}/{photoId}',
-    region: 'europe-west3'
+    region: 'europe-west1'
   },
   async (event) => {
     const data = event.data?.data();
@@ -239,7 +239,7 @@ export const onImageUpload = onDocumentCreated(
 export const onChatMessage = onDocumentCreated(
   {
     document: 'chats/{chatId}/messages/{messageId}',
-    region: 'europe-west3'
+    region: 'europe-west1'
   },
   async (event) => {
     const data = event.data?.data();
@@ -311,7 +311,7 @@ export const onChatMessage = onDocumentCreated(
  */
 export const onMeetingMismatchReport = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true
   },
   async (request) => {
@@ -363,7 +363,7 @@ export const onMeetingMismatchReport = onCall(
 export const onPanicButton = onDocumentCreated(
   {
     document: 'panicEvents/{eventId}',
-    region: 'europe-west3'
+    region: 'europe-west1'
   },
   async (event) => {
     const data = event.data?.data();
@@ -406,7 +406,7 @@ export const onPanicButton = onDocumentCreated(
 export const onUserReport = onDocumentCreated(
   {
     document: 'userReports/{reportId}',
-    region: 'europe-west3'
+    region: 'europe-west1'
   },
   async (event) => {
     const data = event.data?.data();

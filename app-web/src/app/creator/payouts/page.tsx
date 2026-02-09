@@ -19,6 +19,7 @@ import {
   requestCreatorPayout,
 } from '@/lib/services/phase33';
 import type { CreatorEarningsSummary, PayoutHistoryEntry, PayoutStatus } from '@/types/phase33.types';
+import { TOKEN_PAYOUT_USD } from '@/lib/economyConfig';
 
 const MIN_PAYOUT_TOKENS = 1000; // Minimum for payout request
 
@@ -138,7 +139,7 @@ export default function CreatorPayoutsPage() {
     );
   }
   
-  const PAYOUT_RATE_PLN = 0.20;
+  const PAYOUT_RATE_PLN = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.03 USD)
   
   return (
     <div className="space-y-8">

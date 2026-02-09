@@ -3,7 +3,7 @@
  * 
  * Public and admin endpoints for configuration management
  * 
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { onRequest } from "firebase-functions/v2/https";

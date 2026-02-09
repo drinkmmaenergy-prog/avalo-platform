@@ -25,7 +25,7 @@ import { admin, auth, functions, timestamp, onSchedule } from './runtime';
 
 export const economyContractValidator = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '512MiB',
     timeoutSeconds: 60,
   },
@@ -97,7 +97,7 @@ export const economyContractValidator = onCall(
 
 export const getContractStats = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '256MiB',
   },
   async (request) => {
@@ -129,7 +129,7 @@ export const getContractStats = onCall(
 
 export const getAuditLogs = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '512MiB',
   },
   async (request) => {
@@ -179,7 +179,7 @@ export const getAuditLogs = onCall(
 
 export const getSuspiciousAnomalies = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '512MiB',
   },
   async (request) => {
@@ -219,7 +219,7 @@ export const getSuspiciousAnomalies = onCall(
 
 export const resolveAnomaly = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '256MiB',
   },
   async (request) => {
@@ -267,7 +267,7 @@ export const nightlyContractAuditor = onSchedule(
   {
     schedule: 'every day 02:00',
     timeZone: 'Europe/Warsaw',
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '1GiB',
     timeoutSeconds: 540,
   },
@@ -487,7 +487,7 @@ export const weeklyContractReport = onSchedule(
   {
     schedule: 'every monday 09:00',
     timeZone: 'Europe/Warsaw',
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '512MiB',
     timeoutSeconds: 300,
   },

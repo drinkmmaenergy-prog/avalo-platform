@@ -292,7 +292,7 @@ async function callLLM(
  * Create or return existing AI conversation
  */
 export const startConversation = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Not authenticated');
@@ -367,7 +367,7 @@ export const startConversation = onCall(
  * Send message to AI and get response (with token billing)
  */
 export const sendMessage = onCall(
-  { region: 'europe-west3', memory: '1GiB', timeoutSeconds: 60 },
+  { region: 'europe-west1', memory: '1GiB', timeoutSeconds: 60 },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Not authenticated');
@@ -515,7 +515,7 @@ export const sendMessage = onCall(
  * Get user's AI conversations
  */
 export const getConversations = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Not authenticated');
@@ -570,7 +570,7 @@ export const getConversations = onCall(
  * Get messages from a conversation (paginated)
  */
 export const getMessages = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Not authenticated');

@@ -16,7 +16,7 @@ import { functions, onSchedule } from './runtime';
 export const pack147_autoReleaseEscrows = onSchedule(
   {
     schedule: 'every 1 hours',
-    region: 'europe-west3',
+    region: 'europe-west1',
     timeZone: 'UTC'
   },
   async () => {

@@ -183,7 +183,7 @@ async function sendAdultModeNotification(
  * Requires mutual consent from both users
  */
 export const toggleAdultMode = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<AdultModeToggleResponse> => {
     // Authentication check
     if (!request.auth) {
@@ -335,7 +335,7 @@ export const toggleAdultMode = onCall(
  * Get Adult Mode status for a chat
  */
 export const getAdultModeStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<AdultModeStatus | null> => {
     // Authentication check
     if (!request.auth) {
@@ -378,7 +378,7 @@ export const getAdultModeStatus = onCall(
  * Report abuse in Adult Mode
  */
 export const reportAdultModeAbuse = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean; reportId: string }> => {
     // Authentication check
     if (!request.auth) {
@@ -441,7 +441,7 @@ export const reportAdultModeAbuse = onCall(
  * Firestore trigger: When adult mode is disabled by either user, disable for both
  */
 export const onAdultModeDisabled = onDocumentUpdated(
-  { document: 'adult_mode_settings/{chatId}', region: 'europe-west3' },
+  { document: 'adult_mode_settings/{chatId}', region: 'europe-west1' },
   async (event) => {
     const change = event.data;
     if (!change) return;
@@ -474,7 +474,7 @@ export const onAdultModeDisabled = onDocumentUpdated(
  * Get user's age verification status
  */
 export const getAgeVerificationStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<AgeVerificationStatus> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

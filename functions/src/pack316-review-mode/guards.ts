@@ -4,7 +4,7 @@
  * Payment and feature access guards for review mode
  * Intercepts real-money flows and restricts features
  * 
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { HttpsError } from "firebase-functions/v2/https";

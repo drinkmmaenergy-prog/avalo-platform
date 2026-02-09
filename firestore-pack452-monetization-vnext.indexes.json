@@ -1,0 +1,102 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "premiumOffers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "payerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "premiumOffers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "earnerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "premiumOffers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "chatId", "order": "ASCENDING" },
+        { "fieldPath": "payerId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "premiumOffers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "chatId", "order": "ASCENDING" },
+        { "fieldPath": "payerId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "premiumOffers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "premiumOffers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "chatId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "premiumOffers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "earnerId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "exclusiveLocks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lastActivityAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "exclusiveSessionLogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "activatedAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "earningsLedger",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "earningsLedger",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "chatId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "revenueCoachSuggestions",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "dismissed", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

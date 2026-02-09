@@ -102,7 +102,7 @@ export interface DealContract {
  * Create a new deal (admin or automated)
  */
 export const createDeal = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ dealId: string; contractId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -199,7 +199,7 @@ export const createDeal = onCall(
  * Accept a deal contract (creator)
  */
 export const acceptDealContract = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean; dealId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -288,7 +288,7 @@ export const acceptDealContract = onCall(
  * Get deals for a creator
  */
 export const getCreatorDeals = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<Deal[]> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -326,7 +326,7 @@ export const getCreatorDeals = onCall(
  * Pause or resume a deal
  */
 export const toggleDealStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean; newStatus: DealStatus }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

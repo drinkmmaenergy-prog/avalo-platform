@@ -14,7 +14,7 @@ import { functions } from './runtime';
 export const notifyCreatorOnPurchase = onDocumentCreated(
   {
     document: 'digital_product_purchases/{purchaseId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const purchase = event.data?.data();
@@ -60,7 +60,7 @@ export const notifyCreatorOnPurchase = onDocumentCreated(
 export const notifyBuyerOnPurchase = onDocumentCreated(
   {
     document: 'digital_product_purchases/{purchaseId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const purchase = event.data?.data();

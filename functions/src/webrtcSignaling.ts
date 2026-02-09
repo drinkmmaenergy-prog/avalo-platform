@@ -6,7 +6,7 @@
  * Target latency: <200ms
  *
  * Feature flag: voice_video_enabled
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
@@ -64,7 +64,7 @@ interface CallSession {
  * Start a call
  */
 export const startCallV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -136,7 +136,7 @@ export const startCallV1 = onCall(
  * Join a call
  */
 export const joinCallV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -214,7 +214,7 @@ export const joinCallV1 = onCall(
  * End a call
  */
 export const endCallV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -353,7 +353,7 @@ function getICEServers(): any[] {
  * WebRTC signaling (SDP exchange)
  */
 export const sendSignalingMessageV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

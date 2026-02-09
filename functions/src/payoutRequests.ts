@@ -42,7 +42,7 @@ import { admin, auth, functions } from './runtime';
  * Users can only manage their own payout methods
  */
 export const payout_createOrUpdateMethod = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ methodId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -192,7 +192,7 @@ export const payout_createOrUpdateMethod = onCall(
  * Get all payout methods for a user
  */
 export const payout_getMethods = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetPayoutMethodsResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -229,7 +229,7 @@ export const payout_getMethods = onCall(
  * Delete a payout method
  */
 export const payout_deleteMethod = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -293,7 +293,7 @@ export const payout_deleteMethod = onCall(
  * PACK 84: KYC verification required before payout requests
  */
 export const payout_createRequest = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ requestId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -430,7 +430,7 @@ export const payout_createRequest = onCall(
  * Handles refunds for rejected requests
  */
 export const payout_setStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -533,7 +533,7 @@ export const payout_setStatus = onCall(
  * Get payout requests for a user
  */
 export const payout_getRequests = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetPayoutRequestsResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -607,7 +607,7 @@ export const payout_getRequests = onCall(
  * Get payout configuration (read-only)
  */
 export const payout_getConfig = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<PayoutConfigResponse> => {
     // No authentication required - this is public config
     return {

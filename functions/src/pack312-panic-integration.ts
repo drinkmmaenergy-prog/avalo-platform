@@ -18,7 +18,7 @@ import { Timestamp, functions, timestamp } from './runtime';
 export const onPanicButtonTriggered = onDocumentCreated(
   {
     document: 'meetings/{meetingId}/panic_alerts/{alertId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const alertData = event.data?.data();
@@ -129,7 +129,7 @@ ${alertData.selfieUrl ? `Alert selfie available for review.` : ''}
 export const onIdentityMismatchRefund = onDocumentCreated(
   {
     document: 'meeting_refunds/{refundId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const refundData = event.data?.data();

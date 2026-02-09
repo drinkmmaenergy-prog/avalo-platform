@@ -93,3 +93,6 @@ app-web/_legacy_pages/
 shared/
 
 /shared/
+# === allow web lib (required for prod build) ===
+!app-web/src/lib/
+!app-web/src/lib/**

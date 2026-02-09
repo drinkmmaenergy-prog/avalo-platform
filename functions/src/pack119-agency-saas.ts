@@ -148,7 +148,7 @@ async function logAgencyAudit(params: {
  * Invite team member to agency
  */
 export const inviteTeamMember = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ memberId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -224,7 +224,7 @@ export const inviteTeamMember = onCall(
  * Update team member role
  */
 export const updateTeamMemberRole = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -289,7 +289,7 @@ export const updateTeamMemberRole = onCall(
  * Upload asset to library
  */
 export const uploadAsset = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ assetId: string; uploadUrl: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -398,7 +398,7 @@ export const uploadAsset = onCall(
  * Delete asset from library
  */
 export const deleteAsset = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -468,7 +468,7 @@ export const deleteAsset = onCall(
  * List assets for agency
  */
 export const listAssets = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ assets: AgencyAsset[]; hasMore: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -530,7 +530,7 @@ export const listAssets = onCall(
  * Schedule post for creator
  */
 export const schedulePost = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ taskId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -627,7 +627,7 @@ export const schedulePost = onCall(
  * Cancel scheduled task
  */
 export const cancelScheduledTask = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

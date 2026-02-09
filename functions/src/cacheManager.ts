@@ -5,7 +5,7 @@
  * Redis-backed with automatic invalidation
  *
  * Feature flag: intelligent_caching
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 ;
@@ -100,7 +100,7 @@ export async function invalidateCacheByTags(tags: string[]): Promise<void> {
  * Clear all cache
  */
 export const clearCacheV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -126,7 +126,7 @@ export const clearCacheV1 = onCall(
  * Get cache stats
  */
 export const getCacheStatsV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

@@ -153,7 +153,7 @@ const TOXIC_PATTERNS: ToxicPattern[] = [
 export const monitorStreamChat = onDocumentCreated(
   {
     document: 'stream_chat/{messageId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const data = event.data?.data();
@@ -310,7 +310,7 @@ async function takeAutomatedAction(
 export const detectHarassmentCampaigns = onSchedule(
   {
     schedule: 'every 2 minutes',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async () => {
     console.log('Scanning for harassment campaigns...');
@@ -419,7 +419,7 @@ function isNegativeSentiment(message: string): boolean {
 export const detectStalking = onDocumentCreated(
   {
     document: 'stream_chat/{messageId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const data = event.data?.data();
@@ -476,7 +476,7 @@ export const detectStalking = onDocumentCreated(
 export const monitorCreatorBurnout = onSchedule(
   {
     schedule: 'every 10 minutes',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async () => {
     console.log('Monitoring creator burnout...');
@@ -560,7 +560,7 @@ export const monitorCreatorBurnout = onSchedule(
 export const detectViewerExploitation = onDocumentCreated(
   {
     document: 'stream_reactions/{reactionId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const data = event.data?.data();
@@ -616,7 +616,7 @@ export const detectViewerExploitation = onDocumentCreated(
 export const cleanupModerationEvents = onSchedule(
   {
     schedule: 'every 24 hours',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async () => {
     console.log('Cleaning up old moderation events...');

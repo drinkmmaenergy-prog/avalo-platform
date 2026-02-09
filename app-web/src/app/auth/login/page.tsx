@@ -1,20 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import sdk from '@/lib/sdk';
 import { toast } from '@/components/ui/Toaster';
 import { GoogleIcon, AppleIcon } from '@/components/icons/SocialIcons';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { useI18n } from '@/components/providers/I18nProvider';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { firebaseUser, loading: authLoading, needsOnboarding } = useAuth();
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null);
+
+  // Redirect authenticated users away from auth pages
+  useEffect(() => {
+    if (!authLoading && firebaseUser) {
+      if (needsOnboarding) {
+        router.replace('/onboarding');
+      } else {
+        router.replace('/feed');
+      }
+    }
+  }, [authLoading, firebaseUser, needsOnboarding, router]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,15 +39,16 @@ export default function LoginPage() {
       await sdk.signInWithEmail(email, password);
       toast({
         type: 'success',
-        title: 'Welcome back!',
-        description: 'You have successfully signed in.',
+        title: t('auth.welcomeBack'),
+        description: t('auth.signInSuccess'),
       });
-      router.push('/feed');
-    } catch (error: any) {
+      // AuthProvider will detect auth state → redirect via useEffect
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : t('auth.invalidCredentials');
       toast({
         type: 'error',
-        title: 'Sign in failed',
-        description: error.message || 'Invalid email or password',
+        title: t('auth.signInFailed'),
+        description: message,
       });
     } finally {
       setLoading(false);
@@ -45,15 +61,16 @@ export default function LoginPage() {
       await sdk.signInWithGoogle();
       toast({
         type: 'success',
-        title: 'Welcome back!',
-        description: 'You have successfully signed in with Google.',
+        title: t('auth.welcomeBack'),
+        description: t('auth.signInWithGoogleSuccess'),
       });
-      router.push('/feed');
-    } catch (error: any) {
+      // AuthProvider will detect auth state → redirect via useEffect
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : t('auth.googleSignInFailed');
       toast({
         type: 'error',
-        title: 'Sign in failed',
-        description: error.message || 'Could not sign in with Google',
+        title: t('auth.signInFailed'),
+        description: message,
       });
     } finally {
       setSocialLoading(null);
@@ -66,30 +83,44 @@ export default function LoginPage() {
       await sdk.signInWithApple();
       toast({
         type: 'success',
-        title: 'Welcome back!',
-        description: 'You have successfully signed in with Apple.',
+        title: t('auth.welcomeBack'),
+        description: t('auth.signInWithAppleSuccess'),
       });
-      router.push('/feed');
-    } catch (error: any) {
+      // AuthProvider will detect auth state → redirect via useEffect
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : t('auth.appleSignInFailed');
       toast({
         type: 'error',
-        title: 'Sign in failed',
-        description: error.message || 'Could not sign in with Apple',
+        title: t('auth.signInFailed'),
+        description: message,
       });
     } finally {
       setSocialLoading(null);
     }
   };
 
+  // Don't render auth page if already authenticated
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+      </div>
+    );
+  }
+
+  if (firebaseUser) {
+    return null; // useEffect will redirect
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-black dark:to-gray-900 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-display font-bold gradient-text mb-2">
-            Avalo
+            {t('common.appName')}
           </h1>
           <p className="text-muted-foreground">
-            Welcome back! Sign in to continue.
+            {t('auth.welcomeBackDesc')}
           </p>
         </div>
 
@@ -106,7 +137,7 @@ export default function LoginPage() {
               ) : (
                 <>
                   <GoogleIcon className="w-5 h-5 mr-3" />
-                  Continue with Google
+                  {t('auth.continueWithGoogle')}
                 </>
               )}
             </button>
@@ -121,7 +152,7 @@ export default function LoginPage() {
               ) : (
                 <>
                   <AppleIcon className="w-5 h-5 mr-3" />
-                  Continue with Apple
+                  {t('auth.continueWithApple')}
                 </>
               )}
             </button>
@@ -134,7 +165,7 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-card px-2 text-muted-foreground">
-                Or continue with email
+                {t('auth.orContinueWithEmail')}
               </span>
             </div>
           </div>
@@ -143,7 +174,7 @@ export default function LoginPage() {
           <form onSubmit={handleEmailLogin} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium mb-2">
-                Email
+                {t('auth.email')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -152,7 +183,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
+                  placeholder={t('auth.emailPlaceholder')}
                   required
                   className="input pl-10 w-full"
                   disabled={loading}
@@ -162,7 +193,7 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium mb-2">
-                Password
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -171,7 +202,7 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder={t('auth.passwordPlaceholder')}
                   required
                   className="input pl-10 pr-10 w-full"
                   disabled={loading}
@@ -192,13 +223,13 @@ export default function LoginPage() {
                 href="/auth/phone"
                 className="text-primary-600 hover:text-primary-700 dark:text-primary-400"
               >
-                Sign in with phone
+                {t('auth.signInWithPhone')}
               </Link>
               <Link
                 href="/auth/forgot-password"
                 className="text-muted-foreground hover:text-foreground"
               >
-                Forgot password?
+                {t('auth.forgotPassword')}
               </Link>
             </div>
 
@@ -210,32 +241,32 @@ export default function LoginPage() {
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                'Sign In'
+                t('auth.signInButton')
               )}
             </button>
           </form>
 
           {/* Sign Up Link */}
           <div className="text-center text-sm text-muted-foreground">
-            Don't have an account?{' '}
+            {t('auth.noAccount')}{' '}
             <Link
               href="/auth/register"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
             >
-              Sign up
+              {t('auth.signUpLink')}
             </Link>
           </div>
         </div>
 
         {/* Terms */}
         <p className="text-center text-xs text-muted-foreground mt-6">
-          By continuing, you agree to Avalo's{' '}
+          {t('auth.termsAgreement')}{' '}
           <Link href="/legal/terms" className="underline hover:text-foreground">
-            Terms of Service
+            {t('auth.termsOfService')}
           </Link>{' '}
-          and{' '}
+          {t('auth.and')}{' '}
           <Link href="/legal/privacy" className="underline hover:text-foreground">
-            Privacy Policy
+            {t('auth.privacyPolicy')}
           </Link>
         </p>
       </div>

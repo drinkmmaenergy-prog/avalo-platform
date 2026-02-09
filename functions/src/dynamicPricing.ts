@@ -488,7 +488,7 @@ async function calculateDynamicPrice(
  * Calculate dynamic price for item
  */
 export const calculateDynamicPriceV1 = onCall(
-  { region: "europe-west3", cors: true },
+  { region: "europe-west1", cors: true },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -521,7 +521,7 @@ export const calculateDynamicPriceV1 = onCall(
  * Get creator's pricing profile
  */
 export const getCreatorPricingProfileV1 = onCall(
-  { region: "europe-west3", cors: true },
+  { region: "europe-west1", cors: true },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -549,7 +549,7 @@ export const getCreatorPricingProfileV1 = onCall(
  * Update creator pricing settings
  */
 export const updateCreatorPricingV1 = onCall(
-  { region: "europe-west3", cors: true },
+  { region: "europe-west1", cors: true },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -588,7 +588,7 @@ export const updateCreatorPricingV1 = onCall(
  * Validate promo code
  */
 export const validatePromoCodeV1 = onCall(
-  { region: "europe-west3", cors: true },
+  { region: "europe-west1", cors: true },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -661,7 +661,7 @@ export const validatePromoCodeV1 = onCall(
  * Get current market conditions
  */
 export const getMarketConditionsV1 = onCall(
-  { region: "europe-west3", cors: true },
+  { region: "europe-west1", cors: true },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -680,7 +680,7 @@ export const getMarketConditionsV1 = onCall(
 export const updateMarketConditionsScheduler = onSchedule(
   {
     schedule: "*/5 * * * *", // Every 5 minutes
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 60,
   },
   async () => {
@@ -704,7 +704,7 @@ export const updateMarketConditionsScheduler = onSchedule(
 export const recalculateCreatorPricingDaily = onSchedule(
   {
     schedule: "0 5 * * *", // 5 AM daily
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
     memory: "2GiB",
   },

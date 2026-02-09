@@ -332,7 +332,7 @@ const WCAG_CRITERIA: WCAGCriterion[] = [
  */
 export const generateISO27001ReportV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
     timeoutSeconds: 300,
@@ -446,7 +446,7 @@ export const generateISO27001ReportV1 = onCall(
  */
 export const generateSOC2ReportV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
     timeoutSeconds: 300,
@@ -524,7 +524,7 @@ export const generateSOC2ReportV1 = onCall(
  */
 export const runAccessibilityAuditV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -632,7 +632,7 @@ export const runAccessibilityAuditV1 = onCall(
  */
 export const getCertificationStatusV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -708,7 +708,7 @@ export const getCertificationStatusV1 = onCall(
 export const monthlyComplianceReviewScheduler = onSchedule(
   {
     schedule: "0 9 1 * *", // 9 AM on first of month
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
   },
   async () => {
@@ -771,7 +771,7 @@ export const monthlyComplianceReviewScheduler = onSchedule(
  */
 export const testComplianceControlV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },

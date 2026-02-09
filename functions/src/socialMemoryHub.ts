@@ -67,7 +67,7 @@ async function getOrCreateMemoryPermissions(
  * Share preference across AIs
  */
 export const sharePreferenceAcrossAis = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {
@@ -174,7 +174,7 @@ export const sharePreferenceAcrossAis = onCall(
  * Get shared preferences for an AI
  */
 export const getSharedPreferencesForAi = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
       try {
@@ -304,7 +304,7 @@ export const getSharedPreferencesForAi = onCall(
  * Store user story progress
  */
 export const storeUserStoryProgress = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
       try {
@@ -382,7 +382,7 @@ export const storeUserStoryProgress = onCall(
  * Update memory permissions
  */
 export const updateMemoryPermissions = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
       try {
@@ -443,7 +443,7 @@ export const updateMemoryPermissions = onCall(
  * Block preference sharing
  */
 export const blockPreferenceSharing = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
       try {
@@ -498,7 +498,7 @@ export const blockPreferenceSharing = onCall(
  * Resolve preference conflict (when AIs disagree)
  */
 export const resolvePreferenceConflict = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
       try {
@@ -549,7 +549,7 @@ export const resolvePreferenceConflict = onCall(
  * Get memory analytics for transparency
  */
 export const getMemoryAnalytics = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {
@@ -617,7 +617,7 @@ export const getMemoryAnalytics = onCall(
  * Wipe all shared memory for user
  */
 export const wipeUserMemory = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {

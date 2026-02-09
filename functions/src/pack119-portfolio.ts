@@ -23,7 +23,7 @@ import { admin, auth, functions } from './runtime';
  * Create or update creator portfolio
  */
 export const createOrUpdatePortfolio = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ portfolioId: string; handle: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -176,7 +176,7 @@ export const createOrUpdatePortfolio = onCall(
  * Get portfolio by handle (public endpoint)
  */
 export const getPortfolioByHandle = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ portfolio: CreatorPortfolio | null }> => {
     const { handle } = request.data;
 
@@ -249,7 +249,7 @@ export const getPortfolioByHandle = onCall(
  * Delete portfolio
  */
 export const deletePortfolio = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -292,7 +292,7 @@ export const deletePortfolio = onCall(
  * Get portfolio analytics
  */
 export const getPortfolioAnalytics = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{
     views: number;
     lastViewedAt?: string;

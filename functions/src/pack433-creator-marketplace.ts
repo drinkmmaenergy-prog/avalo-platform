@@ -104,7 +104,7 @@ export interface CreatorDiscoveryFilters {
  * Register as a creator in the marketplace
  */
 export const registerCreator = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ creatorId: string; status: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -209,7 +209,7 @@ export const registerCreator = onCall(
  * Get creator profile
  */
 export const getCreatorProfile = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CreatorProfile> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -248,7 +248,7 @@ export const getCreatorProfile = onCall(
  * Update creator profile
  */
 export const updateCreatorProfile = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -302,7 +302,7 @@ export const updateCreatorProfile = onCall(
  * Add platform connection to creator profile
  */
 export const addPlatformConnection = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -372,7 +372,7 @@ export const addPlatformConnection = onCall(
  * Used by admins or for marketplace browsing
  */
 export const discoverCreators = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CreatorProfile[]> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -448,7 +448,7 @@ export const discoverCreators = onCall(
  * Called when a user clicks a creator's link
  */
 export const registerTrafficSource = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ sourceId: string; fingerprint: string }> => {
     const { creatorId, source, medium, campaign, country, metadata } = request.data;
 
@@ -498,7 +498,7 @@ export const registerTrafficSource = onCall(
  * Approve creator application (admin only)
  */
 export const approveCreator = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -540,7 +540,7 @@ export const approveCreator = onCall(
  * Suspend or ban creator (admin only)
  */
 export const updateCreatorStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

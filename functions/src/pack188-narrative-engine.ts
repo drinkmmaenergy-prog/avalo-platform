@@ -208,7 +208,7 @@ async function checkEmotionalAttachmentRisk(
 // ==================== STORY ARC MANAGEMENT ====================
 
 export const listStoryArcs = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     try {
       if (!request.auth) {
@@ -258,7 +258,7 @@ export const listStoryArcs = onCall(
 );
 
 export const startStoryArc = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     try {
       if (!request.auth) {
@@ -375,7 +375,7 @@ export const startStoryArc = onCall(
 );
 
 export const progressStoryArc = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     try {
       if (!request.auth) {
@@ -434,7 +434,7 @@ export const progressStoryArc = onCall(
 // ==================== BRANCHING CHOICE SYSTEM ====================
 
 export const getStoryChoices = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     try {
       if (!request.auth) {
@@ -478,7 +478,7 @@ export const getStoryChoices = onCall(
 );
 
 export const makeStoryChoice = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     try {
       if (!request.auth) {
@@ -583,7 +583,7 @@ export const makeStoryChoice = onCall(
 // ==================== MULTI-AI SCENE ORCHESTRATION ====================
 
 export const startMultiAiScene = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     try {
       if (!request.auth) {
@@ -653,7 +653,7 @@ export const startMultiAiScene = onCall(
 // ==================== STORY OUTCOMES & REPLAY ====================
 
 export const completeStoryArc = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     try {
       if (!request.auth) {
@@ -717,7 +717,7 @@ export const completeStoryArc = onCall(
 );
 
 export const resetStoryArc = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     try {
       if (!request.auth) {
@@ -763,7 +763,7 @@ export const resetStoryArc = onCall(
 export const activateSeasonalEvents = onSchedule(
   {
     schedule: '0 0 * * *',
-    region: 'europe-west3',
+    region: 'europe-west1',
     timeZone: 'Europe/Warsaw'
   },
   async (event) => {
@@ -810,7 +810,7 @@ export const activateSeasonalEvents = onSchedule(
 // ==================== SAFETY MONITORING ====================
 
 export const reportStoryContent = onCall(
-  { region: 'europe-west3', memory: '512MiB' },
+  { region: 'europe-west1', memory: '512MiB' },
   async (request) => {
     try {
       if (!request.auth) {

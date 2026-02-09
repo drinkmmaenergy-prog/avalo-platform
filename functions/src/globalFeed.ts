@@ -11,7 +11,7 @@
  * - Automatic cache invalidation on new posts
  * - Scheduled background refresh
  *
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 ;
@@ -96,7 +96,7 @@ const MAX_FEED_PAGES = 10;
  * Results are cached per region+language combination
  */
 export const getGlobalFeedV1 = onCall(
-  { region: "europe-west3", memory: "512MiB" },
+  { region: "europe-west1", memory: "512MiB" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -452,7 +452,7 @@ async function logFeedView(
  * Called when a new post is created to ensure fresh content
  */
 export const invalidateFeedCacheV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -506,7 +506,7 @@ export const invalidateFeedCacheV1 = onCall(
 export const refreshGlobalFeedScheduled = onSchedule(
   {
     schedule: "*/15 * * * *", // Every 15 minutes
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
     memory: "1GiB",
   },

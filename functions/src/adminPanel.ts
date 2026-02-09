@@ -185,7 +185,7 @@ export interface FraudAlert {
  * Get admin dashboard
  */
 export const getAdminDashboard = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -278,7 +278,7 @@ export const getAdminDashboard = onCall(
  * Search users
  */
 export const adminSearchUsers = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -326,7 +326,7 @@ export const adminSearchUsers = onCall(
  * Perform moderation action
  */
 export const performModerationAction = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -413,7 +413,7 @@ export const performModerationAction = onCall(
  * Review KYC submission
  */
 export const reviewKYC = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -474,7 +474,7 @@ export const reviewKYC = onCall(
  * Review withdrawal
  */
 export const reviewWithdrawal = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -537,7 +537,7 @@ export const reviewWithdrawal = onCall(
  * Get pending reviews
  */
 export const getPendingReviews = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -607,7 +607,7 @@ export const getPendingReviews = onCall(
  * Get moderation queue
  */
 export const getModerationQueue = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -648,7 +648,7 @@ export const getModerationQueue = onCall(
  * Get system metrics
  */
 export const getSystemMetrics = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -683,7 +683,7 @@ export const getSystemMetrics = onCall(
  * Create fraud alert
  */
 export const createFraudAlert = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

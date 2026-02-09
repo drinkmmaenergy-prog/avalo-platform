@@ -19,7 +19,7 @@ export const expireStaleChats = onSchedule(
   {
     schedule: "0 * * * *",
     timeZone: "Europe/Warsaw",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     console.log("Starting chat expiry sweep...");
@@ -110,7 +110,7 @@ export const calendarSweep = onSchedule(
   {
     schedule: "*/30 * * * *",
     timeZone: "Europe/Warsaw",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     console.log("Starting calendar sweep...");
@@ -219,7 +219,7 @@ export const updateRoyalEligibility = onSchedule(
   {
     schedule: "0 3 * * *",
     timeZone: "Europe/Warsaw",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     console.log("Starting Royal Club eligibility update...");

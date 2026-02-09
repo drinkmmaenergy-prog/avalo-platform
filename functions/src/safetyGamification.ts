@@ -718,7 +718,7 @@ async function awardBadge(userId: string, badgeId: string): Promise<void> {
  */
 export const getAvailableQuestsV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -778,7 +778,7 @@ export const getAvailableQuestsV1 = onCall(
  */
 export const startQuestV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -850,7 +850,7 @@ export const startQuestV1 = onCall(
  */
 export const completeQuestStepV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -970,7 +970,7 @@ export const completeQuestStepV1 = onCall(
  */
 export const claimQuestRewardsV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -1024,7 +1024,7 @@ export const claimQuestRewardsV1 = onCall(
  */
 export const getSafetyProfileV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -1053,7 +1053,7 @@ export const getSafetyProfileV1 = onCall(
  */
 export const getSafetyLeaderboardV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -1099,7 +1099,7 @@ export const getSafetyLeaderboardV1 = onCall(
  */
 export const seedQuestDefinitions = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
   },
   async (request: CallableRequest): Promise<{ success: boolean; seeded: number }> => {

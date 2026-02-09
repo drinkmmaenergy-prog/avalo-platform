@@ -41,7 +41,7 @@ import { auth, functions, timestamp } from './runtime';
  * Create agency account
  */
 export const createAgencyAccount = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ agencyId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -106,7 +106,7 @@ export const createAgencyAccount = onCall(
  * Get agency account details
  */
 export const getAgencyAccount = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CreatorAgencyAccount> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -211,7 +211,7 @@ export async function updateAgencyStatus(
  * Request to link creator to agency
  */
 export const requestCreatorLink = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ requestId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -324,7 +324,7 @@ export const requestCreatorLink = onCall(
  * Accept agency link request
  */
 export const acceptAgencyLinkRequest = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ linkId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -439,7 +439,7 @@ export const acceptAgencyLinkRequest = onCall(
  * Reject agency link request
  */
 export const rejectAgencyLinkRequest = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -495,7 +495,7 @@ export const rejectAgencyLinkRequest = onCall(
  * Remove agency link (can be done by creator or agency)
  */
 export const removeAgencyLink = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

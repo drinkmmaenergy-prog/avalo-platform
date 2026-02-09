@@ -95,7 +95,7 @@ const GenerateAuditReportSchema = z.object({
 });
 
 export const generateAuditReportCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -210,7 +210,7 @@ export const generateAuditReportCallable = onCall(
 export const detectAMLPatternsScheduler = onSchedule(
   {
     schedule: "0 2 * * *", // Daily at 2 AM UTC
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
   },
   async (event) => {

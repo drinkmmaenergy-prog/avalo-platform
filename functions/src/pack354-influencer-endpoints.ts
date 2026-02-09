@@ -45,7 +45,7 @@ const db = getFirestore();
  * Submit influencer application
  */
 export const applyAsInfluencer = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -116,7 +116,7 @@ export const applyAsInfluencer = onCall(
  * Get influencer application status
  */
 export const getInfluencerApplicationStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -166,7 +166,7 @@ export const getInfluencerApplicationStatus = onCall(
  * Get creator dashboard data
  */
 export const getCreatorDashboard = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -219,7 +219,7 @@ export const getCreatorDashboard = onCall(
  * Get all influencer applications (admin only)
  */
 export const adminGetInfluencerApplications = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -286,7 +286,7 @@ export const adminGetInfluencerApplications = onCall(
  * Review influencer application (admin only)
  */
 export const adminReviewInfluencerApplication = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -345,7 +345,7 @@ export const adminReviewInfluencerApplication = onCall(
  * Update creator tier (admin only)
  */
 export const adminUpdateCreatorTier = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -393,7 +393,7 @@ export const adminUpdateCreatorTier = onCall(
  * Toggle creator capability (admin only)
  */
 export const adminToggleCreatorCapability = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -443,7 +443,7 @@ export const adminToggleCreatorCapability = onCall(
  * Force KYC for creator (admin only)
  */
 export const adminForceCreatorKYC = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -490,7 +490,7 @@ export const adminForceCreatorKYC = onCall(
  * Freeze/unfreeze creator wallet (admin only)
  */
 export const adminToggleWalletFreeze = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -536,7 +536,7 @@ export const adminToggleWalletFreeze = onCall(
  * Ban device & IP (admin only)
  */
 export const adminBanDeviceAndIP = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -612,7 +612,7 @@ export const adminBanDeviceAndIP = onCall(
  * Get creator analytics (admin only)
  */
 export const adminGetCreatorAnalytics = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -713,7 +713,7 @@ export const adminGetCreatorAnalytics = onCall(
  * Create regional program (admin only)
  */
 export const adminCreateRegionalProgram = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

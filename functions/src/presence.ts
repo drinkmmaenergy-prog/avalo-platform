@@ -5,7 +5,7 @@
  * Ultra-low latency presence broadcasting
  *
  * Feature flag: realtime_presence
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
@@ -48,7 +48,7 @@ interface UserPresence {
  * Update user presence status
  */
 export const updatePresenceV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -140,7 +140,7 @@ export const updatePresenceV1 = onCall(
  * Get presence for multiple users
  */
 export const getPresenceV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -209,7 +209,7 @@ export const getPresenceV1 = onCall(
  * Send typing indicator
  */
 export const sendTypingIndicatorV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -294,7 +294,7 @@ export const sendTypingIndicatorV1 = onCall(
  * Send read receipt
  */
 export const sendReadReceiptV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -391,7 +391,7 @@ export const sendReadReceiptV1 = onCall(
  * Batch read receipts (mark all messages as read in a chat)
  */
 export const markChatAsReadV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

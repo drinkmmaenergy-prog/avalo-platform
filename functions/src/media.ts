@@ -141,7 +141,7 @@ export interface MediaUnlock {
  */
 export const getUploadURLV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -270,7 +270,7 @@ function getStoragePath(
  */
 export const processMediaV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -361,7 +361,7 @@ export const processMediaV1 = onCall(
  */
 export const unlockMediaV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -511,7 +511,7 @@ export const unlockMediaV1 = onCall(
  */
 export const getMediaV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -646,7 +646,7 @@ async function checkIfFollowing(userId: string, creatorId: string): Promise<bool
  */
 export const uploadFeedImageV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -703,7 +703,7 @@ export const uploadFeedImageV1 = onCall(
  */
 export const uploadStoryV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -742,7 +742,7 @@ export const uploadStoryV1 = onCall(
  */
 export const uploadChatMediaV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -784,7 +784,7 @@ export const uploadChatMediaV1 = onCall(
  */
 export const getMediaAnalyticsV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {

@@ -116,7 +116,7 @@ async function sendMatchNotification(
 export const onMatchCreated = onDocumentCreated(
   {
     document: 'matches/{matchId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const matchData = event.data?.data();

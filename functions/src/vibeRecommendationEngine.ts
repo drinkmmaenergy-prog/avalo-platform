@@ -456,7 +456,7 @@ async function calculateVibeMatch(
  * Update user's vibe profile
  */
 export const updateVibeProfile = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -496,7 +496,7 @@ export const updateVibeProfile = onCall(
  * Update user's attraction preferences (NO SHAMING)
  */
 export const updateAttractionPreferences = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -536,7 +536,7 @@ export const updateAttractionPreferences = onCall(
  * Get vibe-based recommendations for user
  */
 export const getVibeRecommendations = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -597,7 +597,7 @@ export const getVibeRecommendations = onCall(
  * Record match feedback (for ML training)
  */
 export const recordMatchFeedback = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -801,7 +801,7 @@ async function updateSuccessPatterns(userId: string, targetUserId: string): Prom
 export const onVibeProfileUpdated = onDocumentCreated(
   {
     document: 'vibe_profiles/{userId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const userId = event.params.userId;

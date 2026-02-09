@@ -54,7 +54,7 @@ const SESSION_CONFIG = {
  * Called after successful login
  */
 export const registerDeviceAndSession = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -252,7 +252,7 @@ export const registerDeviceAndSession = onCall(
  * Logout a specific session
  */
 export const logoutSession = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -310,7 +310,7 @@ export const logoutSession = onCall(
  * Logout all sessions (except optionally the current one)
  */
 export const logoutAllSessions = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -389,7 +389,7 @@ export const logoutAllSessions = onCall(
  * Get all active sessions for the authenticated user
  */
 export const getActiveSessions = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

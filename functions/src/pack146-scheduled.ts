@@ -26,7 +26,7 @@ export const dailyDuplicateScan = onSchedule(
   {
     schedule: '0 2 * * *',
     timeZone: 'Europe/Warsaw',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async () => {
     logger.info('Starting daily duplicate content scan...');
@@ -130,7 +130,7 @@ export const weeklyPiracyNetworkScan = onSchedule(
   {
     schedule: '0 3 * * 1',
     timeZone: 'Europe/Warsaw',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async () => {
     logger.info('Starting weekly piracy network detection...');
@@ -193,7 +193,7 @@ export const hourlyWatermarkAudit = onSchedule(
   {
     schedule: '0 * * * *',
     timeZone: 'Europe/Warsaw',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async () => {
     logger.info('Starting hourly watermark audit...');
@@ -251,7 +251,7 @@ export const dailyAccessCleanup = onSchedule(
   {
     schedule: '0 4 * * *',
     timeZone: 'Europe/Warsaw',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async () => {
     logger.info('Starting daily access cleanup...');
@@ -316,7 +316,7 @@ export const dailyWatchlistUpdate = onSchedule(
   {
     schedule: '0 5 * * *',
     timeZone: 'Europe/Warsaw',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async () => {
     logger.info('Starting daily watchlist update...');

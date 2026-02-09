@@ -350,7 +350,7 @@ export const monthlyRankingReset = onSchedule(
   {
     schedule: '0 0 1 * *', // First day of each month at midnight
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async () => {
     logger.info('Starting monthly supporter ranking reset...');

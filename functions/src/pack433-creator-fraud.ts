@@ -438,7 +438,7 @@ async function updateCreatorRiskScore(creatorId: string): Promise<void> {
  * Review fraud signal (admin only)
  */
 export const reviewFraudSignal = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -497,7 +497,7 @@ export const reviewFraudSignal = onCall(
  * Get fraud signals for creator (admin/creator)
  */
 export const getCreatorFraudSignals = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<FraudSignal[]> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -536,7 +536,7 @@ export const getCreatorFraudSignals = onCall(
  * Get creator risk score
  */
 export const getCreatorRiskScore = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CreatorRiskScore | null> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
