@@ -251,7 +251,7 @@ const LEVEL_BENEFITS = {
  * Get live creator dashboard
  */
 export const getCreatorDashboard = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -297,7 +297,7 @@ export const getCreatorDashboard = onCall(
  * Get creator quests (daily/weekly/seasonal)
  */
 export const getCreatorQuests = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -337,7 +337,7 @@ export const getCreatorQuests = onCall(
  * Claim quest reward
  */
 export const claimQuestReward = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -405,7 +405,7 @@ export const claimQuestReward = onCall(
  * Request withdrawal
  */
 export const requestWithdrawal = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -503,7 +503,7 @@ export const requestWithdrawal = onCall(
  * Get fanbase/fans list
  */
 export const getCreatorFanbase = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -599,7 +599,7 @@ export const getCreatorFanbase = onCall(
  * Get message templates
  */
 export const getMessageTemplates = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -633,7 +633,7 @@ export const getMessageTemplates = onCall(
  * Save message template
  */
 export const saveMessageTemplate = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -674,7 +674,7 @@ export const saveMessageTemplate = onCall(
  * Get pricing recommendations (AI-powered)
  */
 export const getPricingRecommendations = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

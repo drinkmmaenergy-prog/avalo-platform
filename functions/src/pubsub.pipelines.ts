@@ -168,7 +168,7 @@ export async function publishBatch<T>(
 export const processMatchmakingQueue = onMessagePublished(
   {
     topic: TOPICS.MATCH_CREATED,
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '512MiB',
     maxInstances: 100,
   },
@@ -217,7 +217,7 @@ export const processMatchmakingQueue = onMessagePublished(
 export const processFeedFanout = onMessagePublished(
   {
     topic: TOPICS.FEED_FANOUT,
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '1GiB',
     maxInstances: 200,
   },
@@ -284,7 +284,7 @@ export const processFeedFanout = onMessagePublished(
 export const processAITasks = onMessagePublished(
   {
     topic: TOPICS.AI_GENERATION_REQUEST,
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '2GiB',
     maxInstances: 50,
     timeoutSeconds: 300,
@@ -353,7 +353,7 @@ export const processAITasks = onMessagePublished(
 export const processNotificationBatch = onMessagePublished(
   {
     topic: TOPICS.NOTIFICATION_BATCH,
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '512MiB',
     maxInstances: 100,
   },
@@ -412,7 +412,7 @@ export const processNotificationBatch = onMessagePublished(
 export const processAnalyticsAggregation = onMessagePublished(
   {
     topic: TOPICS.ANALYTICS_AGGREGATION,
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '2GiB',
     maxInstances: 20,
   },
@@ -469,7 +469,7 @@ export const processAnalyticsAggregation = onMessagePublished(
 export const processMediaTranscode = onMessagePublished(
   {
     topic: TOPICS.MEDIA_TRANSCODE,
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '4GiB',
     maxInstances: 30,
     timeoutSeconds: 540,
@@ -521,7 +521,7 @@ export const processMediaTranscode = onMessagePublished(
 export const processFraudCheck = onMessagePublished(
   {
     topic: TOPICS.FRAUD_CHECK,
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '1GiB',
     maxInstances: 50,
   },

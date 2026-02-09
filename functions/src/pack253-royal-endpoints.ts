@@ -26,7 +26,7 @@ import { auth, functions, onSchedule } from './runtime';
  * Get user's Royal status
  */
 export const getRoyalStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<RoyalStatus | null> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -53,7 +53,7 @@ export const getRoyalStatus = onCall(
  * Get user's Royal progress
  */
 export const getRoyalProgress = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<RoyalProgress | null> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -83,7 +83,7 @@ export const getRoyalProgress = onCall(
  * Get Royal analytics for a user
  */
 export const getRoyalAnalytics = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<RoyalAnalytics> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -110,7 +110,7 @@ export const getRoyalAnalytics = onCall(
  * Set custom chat pricing (Royal only)
  */
 export const setRoyalChatPricing = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -164,7 +164,7 @@ export const setRoyalChatPricing = onCall(
  * Create a Royal event
  */
 export const createRoyalEvent = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ eventId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -215,7 +215,7 @@ export const createRoyalEvent = onCall(
  * Join a Royal event
  */
 export const joinRoyalEvent = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -274,7 +274,7 @@ export const joinRoyalEvent = onCall(
  * Get Royal events
  */
 export const getRoyalEvents = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<RoyalEvent[]> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -314,7 +314,7 @@ export const getRoyalEvents = onCall(
  * Force refresh Royal status (checks metrics and updates status)
  */
 export const refreshRoyalStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<RoyalStatus> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

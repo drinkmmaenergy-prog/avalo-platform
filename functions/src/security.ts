@@ -127,7 +127,7 @@ async function getSecuritySettings(userId: string): Promise<SecuritySettings> {
  * Get complete security overview (settings, devices, sessions)
  */
 export const getSecurityOverview = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -206,7 +206,7 @@ export const getSecurityOverview = onCall(
  * Update security alerts and risk settings
  */
 export const updateSecuritySettings = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -256,7 +256,7 @@ export const updateSecuritySettings = onCall(
  * Initiate 2FA setup (send OTP to verify phone/email)
  */
 export const setup2FA = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -323,7 +323,7 @@ export const setup2FA = onCall(
  * Confirm 2FA setup with OTP code
  */
 export const confirm2FASetup = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -412,7 +412,7 @@ export const confirm2FASetup = onCall(
  * Disable 2FA (requires current code)
  */
 export const disable2FA = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -499,7 +499,7 @@ export const disable2FA = onCall(
  * Request a 2FA challenge for sensitive actions
  */
 export const request2FAChallenge = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -565,7 +565,7 @@ export const request2FAChallenge = onCall(
  * Verify a 2FA challenge
  */
 export const verify2FAChallenge = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -624,7 +624,7 @@ export const verify2FAChallenge = onCall(
  * Trust or untrust a device
  */
 export const trustDevice = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -662,7 +662,7 @@ export const trustDevice = onCall(
  * Revoke one or all sessions
  */
 export const revokeSession = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');

@@ -106,7 +106,7 @@ async function checkRateLimit(
  * Accessible by: Creator themselves
  */
 export const getCreatorAnalytics = onCall<GetCreatorAnalyticsRequest, Promise<GetCreatorAnalyticsResponse>>(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -231,7 +231,7 @@ export const getCreatorAnalytics = onCall<GetCreatorAnalyticsRequest, Promise<Ge
  * Accessible by: Brand account holders
  */
 export const getBrandAnalytics = onCall<GetBrandAnalyticsRequest, Promise<GetBrandAnalyticsResponse>>(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -421,7 +421,7 @@ export const getBrandAnalytics = onCall<GetBrandAnalyticsRequest, Promise<GetBra
  * Accessible by: Internal admin/operations team only
  */
 export const getPlatformAnalytics = onCall<GetPlatformAnalyticsRequest, Promise<GetPlatformAnalyticsResponse>>(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

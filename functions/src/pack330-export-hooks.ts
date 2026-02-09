@@ -38,7 +38,7 @@ import { admin, functions, onCall } from './runtime';
  * Recommended libraries: PDFKit, Puppeteer, or pdfmake
  */
 export const pack330_exportUserReportToPDF = https.onCall<ExportReportRequest>(
-  { region: 'europe-west3', memory: '512MiB', timeoutSeconds: 120 },
+  { region: 'europe-west1', memory: '512MiB', timeoutSeconds: 120 },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -116,7 +116,7 @@ export const pack330_exportUserReportToPDF = https.onCall<ExportReportRequest>(
  * Recommended libraries: csv-stringify, json2csv
  */
 export const pack330_exportUserReportToCSV = https.onCall<ExportReportRequest>(
-  { region: 'europe-west3', memory: '256MiB', timeoutSeconds: 60 },
+  { region: 'europe-west1', memory: '256MiB', timeoutSeconds: 60 },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -197,7 +197,7 @@ export const pack330_exportUserReportToCSV = https.onCall<ExportReportRequest>(
  * Recommended libraries: csv-stringify, json2csv
  */
 export const pack330_exportPlatformReportCSV = https.onCall(
-  { region: 'europe-west3', memory: '512MiB', timeoutSeconds: 120 },
+  { region: 'europe-west1', memory: '512MiB', timeoutSeconds: 120 },
   async (request) => {
     const auth = request.auth;
     if (!auth || !auth.token?.admin) {
@@ -265,7 +265,7 @@ export const pack330_exportPlatformReportCSV = https.onCall(
  * - Store send history
  */
 export const pack330_emailTaxReport = https.onCall(
-  { region: 'europe-west3', memory: '256MiB', timeoutSeconds: 60 },
+  { region: 'europe-west1', memory: '256MiB', timeoutSeconds: 60 },
   async (request) => {
     const auth = request.auth;
     if (!auth) {

@@ -12,6 +12,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface HeaderProps {
   showAuthButtons?: boolean;
@@ -51,9 +52,12 @@ export default function Header({ showAuthButtons = true }: HeaderProps) {
             </Link>
           </nav>
 
-          {/* Auth Actions */}
+          {/* Auth Actions + Language Switcher */}
           {showAuthButtons && (
             <div className="flex items-center space-x-4">
+              <div className="hidden sm:block">
+                <LanguageSwitcher />
+              </div>
               {loading ? (
                 <div className="h-8 w-8 animate-pulse bg-gray-200 rounded-full" />
               ) : user ? (

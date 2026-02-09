@@ -164,7 +164,7 @@ const LEVEL_REWARDS = {
 export const awardPointsOnTx = onDocumentCreated(
   {
     document: "transactions/{txId}",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     const tx = event.data?.data();
@@ -274,7 +274,7 @@ function calculateLevel(points: number): UserLevel {
  * Claim a loyalty reward (level-up bonus)
  */
 export const claimRewardCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -355,7 +355,7 @@ export const claimRewardCallable = onCall(
  * Get user loyalty stats
  */
 export const getUserLoyaltyCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -400,7 +400,7 @@ export const getUserLoyaltyCallable = onCall(
 export const rebuildRankingsScheduler = onSchedule(
   {
     schedule: "0 2 * * *", // Every day at 2 AM UTC
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540, // 9 minutes
   },
   async (event) => {
@@ -522,7 +522,7 @@ function getWeekNumber(date: Date): number {
  * Get rankings for a period
  */
 export const getRankingsCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const { period, periodKey } = request.data as {
       period: RankingPeriod;

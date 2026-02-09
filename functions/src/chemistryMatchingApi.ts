@@ -22,7 +22,7 @@ import { HttpsError, auth, increment, onCall } from './runtime';
  * Returns detailed chemistry score between viewer and target
  */
 export const calculateChemistryScoreCallable = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {
@@ -66,7 +66,7 @@ export const calculateChemistryScoreCallable = onCall(
  * Checks if users qualify for visibility boost
  */
 export const evaluateChemistryBoostCallable = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {
@@ -114,7 +114,7 @@ export const evaluateChemistryBoostCallable = onCall(
  * Updates interaction metrics for chemistry calculations
  */
 export const trackInteractionCallable = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {
@@ -224,7 +224,7 @@ export const trackInteractionCallable = onCall(
  * Checks if user's behavior is flagged as spam
  */
 export const checkSpamStatusCallable = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {
@@ -271,7 +271,7 @@ export const checkSpamStatusCallable = onCall(
  * Calculates chemistry scores for all candidates in feed
  */
 export const getChemistryFeedScoresCallable = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {

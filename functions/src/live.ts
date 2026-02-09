@@ -110,7 +110,7 @@ export interface LiveTip {
  * Create a live session
  */
 export const createLiveSessionCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -199,7 +199,7 @@ export const createLiveSessionCallable = onCall(
  * Join a live session
  */
 export const joinLiveSessionCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -294,7 +294,7 @@ export const joinLiveSessionCallable = onCall(
  * End a live session
  */
 export const endLiveSessionCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -363,7 +363,7 @@ export const endLiveSessionCallable = onCall(
  * Send a tip during live stream
  */
 export const sendLiveTipCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -503,7 +503,7 @@ export const sendLiveTipCallable = onCall(
 export const tickBillingScheduler = onSchedule(
   {
     schedule: "*/10 * * * * *", // Every 10 seconds
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 60,
   },
   async (event) => {

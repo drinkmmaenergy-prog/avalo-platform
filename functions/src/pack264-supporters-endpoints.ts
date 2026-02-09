@@ -26,7 +26,7 @@ import { admin, auth, functions, timestamp } from './runtime';
  * Get supporter ranking for a creator
  */
 export const getSupporterRanking = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ ranking: SupporterRanking | null }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -62,7 +62,7 @@ export const getSupporterRanking = onCall(
  * Get supporter leaderboard for a creator
  */
 export const getSupporterLeaderboard = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ leaderboard: LeaderboardEntry[] }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -140,7 +140,7 @@ export const getSupporterLeaderboard = onCall(
  * Update supporter profile settings
  */
 export const updateSupporterProfile = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -197,7 +197,7 @@ export const updateSupporterProfile = onCall(
  * Get supporter notifications
  */
 export const getSupporterNotifications = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ notifications: any[]; unreadCount: number }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -235,7 +235,7 @@ export const getSupporterNotifications = onCall(
  * Mark notification as read
  */
 export const markNotificationRead = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -269,7 +269,7 @@ export const markNotificationRead = onCall(
  * Get creator supporter analytics
  */
 export const getCreatorSupporterAnalytics = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ analytics: any }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -308,7 +308,7 @@ export const getCreatorSupporterAnalytics = onCall(
 export const onTokenSpending = onDocumentCreated(
   {
     document: 'transactions/{transactionId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const transaction = event.data?.data();
@@ -377,7 +377,7 @@ function determineSpendingType(type?: string): 'gift' | 'message' | 'call' | 'pp
  * Manual recalculation endpoint (admin only)
  */
 export const recalculateSupporterRankings = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

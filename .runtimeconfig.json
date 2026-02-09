@@ -1,0 +1,7 @@
+{
+  "stripe": {
+    "webhook": "whsec_emulator_dummy",
+    "webhook_secret": "whsec_mc0hTYXaZnZtxp8AE5sZ6nXE2PcuoXuy",
+    "secret": "sk_test_emulator_dummy"
+  }
+}

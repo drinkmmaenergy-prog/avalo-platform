@@ -253,7 +253,7 @@ export const dailyContentAnalyticsJob = onSchedule(
  * Returns high-level aggregates with current balance and breakdowns
  */
 export const getCreatorEarningsSummary = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CreatorEarningsSummary> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -365,7 +365,7 @@ export const getCreatorEarningsSummary = onCall(
  * Returns daily data points for charting
  */
 export const getCreatorEarningsTimeseries = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<EarningsTimeseries> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -425,7 +425,7 @@ export const getCreatorEarningsTimeseries = onCall(
  * Returns ranked content by earnings for the specified period
  */
 export const getTopPerformingContent = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<TopContentResult> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

@@ -30,7 +30,7 @@ import { auth } from './runtime';
  */
 export const reportScreenCapture = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -330,7 +330,7 @@ async function notifyContentOwner(
  */
 export const checkAccessFreeze = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -385,7 +385,7 @@ export const checkAccessFreeze = onCall(
  */
 export const getScreenCaptureStats = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {

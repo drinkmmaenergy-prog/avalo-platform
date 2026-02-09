@@ -231,7 +231,7 @@ async function generatePlatformReport(period: string): Promise<TaxReportPlatform
  * Callable: Get platform tax report (admin only)
  */
 export const pack330_getPlatformTaxReport = https.onCall<GetPlatformTaxReportRequest>(
-  { region: 'europe-west3', memory: '256MiB' },
+  { region: 'europe-west1', memory: '256MiB' },
   async (request) => {
     const auth = request.auth;
     if (!auth || !auth.token?.admin) {
@@ -288,7 +288,7 @@ export const pack330_getPlatformTaxReport = https.onCall<GetPlatformTaxReportReq
  * Callable: List platform tax reports (admin only)
  */
 export const pack330_listPlatformTaxReports = https.onCall(
-  { region: 'europe-west3', memory: '256MiB' },
+  { region: 'europe-west1', memory: '256MiB' },
   async (request) => {
     const auth = request.auth;
     if (!auth || !auth.token?.admin) {
@@ -327,7 +327,7 @@ export const pack330_listPlatformTaxReports = https.onCall(
  * Callable: Trigger platform report generation (admin only)
  */
 export const pack330_admin_generatePlatformReport = https.onCall(
-  { region: 'europe-west3', memory: '512MiB', timeoutSeconds: 120 },
+  { region: 'europe-west1', memory: '512MiB', timeoutSeconds: 120 },
   async (request) => {
     const auth = request.auth;
     if (!auth || !auth.token?.admin) {
@@ -375,7 +375,7 @@ export const pack330_generateMonthlyPlatformReport = scheduler.onSchedule(
   {
     schedule: '0 4 2 * *', // 04:00 UTC on 2nd of each month
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '1GiB',
     timeoutSeconds: 300,
   },
@@ -401,7 +401,7 @@ export const pack330_generateYearlyPlatformReport = scheduler.onSchedule(
   {
     schedule: '0 4 16 1 *', // 04:00 UTC on January 16th
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '2GiB',
     timeoutSeconds: 540,
   },

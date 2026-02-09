@@ -26,7 +26,7 @@ import { FieldValue, functions, increment, onSchedule } from '../runtime';
 export const processPendingPayouts = onSchedule(
   {
     schedule: "every 5 minutes",
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
     memory: "512MiB",
   },
@@ -335,7 +335,7 @@ async function updateAMLProfileForPayout(payout: PayoutRequest): Promise<void> {
 export const checkPayoutStatus = onSchedule(
   {
     schedule: "every 15 minutes",
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
     memory: "256MiB",
   },

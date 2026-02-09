@@ -239,7 +239,7 @@ async function validateControlProfileUpdate(
  * Get user control profile with defaults
  */
 export const getUserControlProfileEndpoint = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError(
@@ -277,7 +277,7 @@ export const getUserControlProfileEndpoint = onCall(
  * Update user control profile with validation
  */
 export const updateUserControlProfileEndpoint = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError(
@@ -419,7 +419,7 @@ export const updateUserControlProfileEndpoint = onCall(
  * Get support metadata (FAQ, email, etc.)
  */
 export const getSupportMetaEndpoint = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     // No auth required - public info
     return {

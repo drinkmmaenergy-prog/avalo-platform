@@ -16,7 +16,7 @@
  * - Comprehensive error handling
  *
  * @version 1.0.0
- * @region europe-west3
+ * @region europe-west1
  */
 
 ;
@@ -195,7 +195,7 @@ export interface Settlement {
  * Create Stripe checkout session with full idempotency
  */
 export const createStripeCheckoutSession = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -309,7 +309,7 @@ export const createStripeCheckoutSession = onCall(
  * Secure Stripe webhook processor with signature verification and idempotency
  */
 export const stripeWebhookV2 = onRequest(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (req, res) => {
     const sig = req.headers["stripe-signature"] as string;
 
@@ -503,7 +503,7 @@ async function handleStripeRefund(charge: Stripe.Charge) {
  * Validate Apple IAP receipt and credit tokens
  */
 export const validateAppleReceipt = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -653,7 +653,7 @@ function extractTokensFromProductId(productId: string): number {
  * Initiate chat with deposit and escrow
  */
 export const initiateChat = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -801,7 +801,7 @@ export const initiateChat = onCall(
  * Release escrow incrementally (chat messages)
  */
 export const releaseEscrowIncremental = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -888,7 +888,7 @@ export const releaseEscrowIncremental = onCall(
 export const autoRefundInactiveEscrows = onSchedule(
   {
     schedule: "every 1 hours",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async () => {
     const now = Timestamp.now();
@@ -991,7 +991,7 @@ export const generateMonthlySettlements = onSchedule(
   {
     schedule: "0 0 1 * *", // 1st of each month at midnight
     timeZone: "Europe/Warsaw",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async () => {
     const now = new Date();
@@ -1068,7 +1068,7 @@ export const generateMonthlySettlements = onSchedule(
  * Get user wallet balance
  */
 export const getWalletBalance = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -1111,7 +1111,7 @@ export const getWalletBalance = onCall(
  * Get transaction history
  */
 export const getTransactionHistory = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -1149,7 +1149,7 @@ logger.info("✅ Complete payment system loaded successfully");
  * Create calendar booking with escrow
  */
 export const createCalendarBooking = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -1301,7 +1301,7 @@ export const createCalendarBooking = onCall(
  * Complete calendar booking and release escrow
  */
 export const completeCalendarBooking = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -1400,7 +1400,7 @@ export const completeCalendarBooking = onCall(
  * Cancel calendar booking (with refund policy)
  */
 export const cancelCalendarBooking = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -1516,7 +1516,7 @@ export const cancelCalendarBooking = onCall(
  * Request payout for creator earnings
  */
 export const requestPayout = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -1667,7 +1667,7 @@ async function processCryptoPayout(
  * Get creator settlements
  */
 export const getCreatorSettlements = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -1700,7 +1700,7 @@ export const getCreatorSettlements = onCall(
  * Get pending settlements (admin only)
  */
 export const getPendingSettlements = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {

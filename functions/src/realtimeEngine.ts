@@ -9,7 +9,7 @@
  * - Redis for presence and connection state
  * - WebSocket connections via Cloud Run
  * - Feature flag: realtime_engine_v2
- * - Region: europe-west3
+ * - Region: europe-west1
  */
 
 ;
@@ -109,7 +109,7 @@ export async function publishRealtimeEvent(event: RealtimeEvent): Promise<void> 
  * Called by clients to establish event stream
  */
 export const subscribeToRealtimeEventsV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -175,7 +175,7 @@ export const subscribeToRealtimeEventsV1 = onCall(
  * Unsubscribe from realtime events
  */
 export const unsubscribeFromRealtimeEventsV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -222,7 +222,7 @@ export const unsubscribeFromRealtimeEventsV1 = onCall(
  * Heartbeat/ping to keep connection alive
  */
 export const realtimePingV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -291,7 +291,7 @@ export const realtimePingV1 = onCall(
  * Get active connections for a user
  */
 export const getActiveConnectionsV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -356,7 +356,7 @@ export async function cleanupStaleConnections(): Promise<void> {
  * Get realtime metrics (admin)
  */
 export const getRealtimeMetricsV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

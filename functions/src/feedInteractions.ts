@@ -2,7 +2,7 @@ import { HttpsError } from 'firebase-functions/v2/https';
 import { auth, db, functions, onCall, serverTimestamp } from './runtime';
 ;
 
-export const likePostV1 = onCall({ region: "europe-west3" }, async (req) => {
+export const likePostV1 = onCall({ region: "europe-west1" }, async (req) => {
   const { postId } = req.data;
   const userId = req.auth?.uid;
   if (!userId) throw new HttpsError("unauthenticated", "User must be logged in.");

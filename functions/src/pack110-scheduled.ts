@@ -220,7 +220,7 @@ export const aggregateUserFeedbackNightly = onSchedule(
   {
     schedule: '0 2 * * *', // 2 AM UTC daily
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
     timeoutSeconds: 540,
     memory: '512MiB',
   },
@@ -305,7 +305,7 @@ export const cleanupOldFeedback = onSchedule(
   {
     schedule: '0 3 * * 0', // 3 AM UTC on Sundays
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
     timeoutSeconds: 540,
     memory: '512MiB',
   },

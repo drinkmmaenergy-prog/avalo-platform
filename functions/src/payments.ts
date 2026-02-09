@@ -36,7 +36,7 @@ const getStripe = async (): Promise<Stripe> => {
  */
 export const stripeWebhook = onRequest(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     // PERFORMANCE: Keep 2 warm instances for critical payment processing
     // Target: <100ms p95 latency (from ~900ms with cold starts)
     minInstances: 2,
@@ -287,7 +287,7 @@ async function creditTokensWithTx(
  * Manually credit tokens (admin only)
  */
 export const creditTokensCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (request): Promise<FunctionResponse<{ newBalance: number }>> => {
       if (!request.auth) {
         throw new HttpsError("unauthenticated", "Must be authenticated");
@@ -344,7 +344,7 @@ export const creditTokensCallable = onCall(
  * Request payout (creator withdrawal)
  */
 export const requestPayoutCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (
       request
     ): Promise<FunctionResponse<{ payoutId: string }>> => {

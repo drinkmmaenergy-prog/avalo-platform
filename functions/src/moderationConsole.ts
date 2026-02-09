@@ -45,7 +45,7 @@ import { admin, auth, functions } from './runtime';
  * List cases with filtering and pagination
  */
 export const admin_listCases = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<ListCasesResponse> => {
     // Verify admin auth
     if (!request.auth) {
@@ -143,7 +143,7 @@ export const admin_listCases = onCall(
  * Get detailed case information including underlying data
  */
 export const admin_getCaseDetails = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CaseDetailsResponse> => {
     // Verify admin auth
     if (!request.auth) {
@@ -291,7 +291,7 @@ export const admin_getCaseDetails = onCall(
  * Update case status
  */
 export const admin_updateCaseStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     // Verify admin auth
     if (!request.auth) {
@@ -363,7 +363,7 @@ export const admin_updateCaseStatus = onCall(
  * Assign case to admin
  */
 export const admin_assignCase = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     // Verify admin auth
     if (!request.auth) {
@@ -436,7 +436,7 @@ export const admin_assignCase = onCall(
  * Add note to case
  */
 export const admin_addCaseNote = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ noteId: string }> => {
     // Verify admin auth
     if (!request.auth) {
@@ -513,7 +513,7 @@ export const admin_addCaseNote = onCall(
  * Approve KYC from case
  */
 export const admin_approveKycFromCase = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     // Verify admin auth
     if (!request.auth) {
@@ -617,7 +617,7 @@ export const admin_approveKycFromCase = onCall(
  * Reject KYC from case
  */
 export const admin_rejectKycFromCase = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     // Verify admin auth
     if (!request.auth) {
@@ -728,7 +728,7 @@ export const admin_rejectKycFromCase = onCall(
  * Set payout status from case
  */
 export const admin_setPayoutStatusFromCase = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     // Verify admin auth
     if (!request.auth) {
@@ -856,7 +856,7 @@ export const admin_setPayoutStatusFromCase = onCall(
  * Update dispute status from case
  */
 export const admin_updateDisputeFromCase = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     // Verify admin auth
     if (!request.auth) {
@@ -936,7 +936,7 @@ export const admin_updateDisputeFromCase = onCall(
  * Set enforcement state from case
  */
 export const admin_setEnforcementFromCase = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     // Verify admin auth
     if (!request.auth) {

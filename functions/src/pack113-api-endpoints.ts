@@ -139,7 +139,7 @@ async function apiGatewayMiddleware(params: {
  * Read creator's public profile
  */
 export const getMyProfile = onRequest(
-  { region: 'europe-west3', cors: true },
+  { region: 'europe-west1', cors: true },
   async (req, res) => {
     const startTime = Date.now();
 
@@ -214,7 +214,7 @@ export const getMyProfile = onRequest(
  * Update creator's profile basics
  */
 export const updateMyProfile = onRequest(
-  { region: 'europe-west3', cors: true },
+  { region: 'europe-west1', cors: true },
   async (req, res) => {
     const startTime = Date.now();
 
@@ -312,7 +312,7 @@ export const updateMyProfile = onRequest(
  * Publish a story on behalf of creator
  */
 export const postStory = onRequest(
-  { region: 'europe-west3', cors: true },
+  { region: 'europe-west1', cors: true },
   async (req, res) => {
     const startTime = Date.now();
 
@@ -387,7 +387,7 @@ export const postStory = onRequest(
  * Publish a feed post
  */
 export const postFeedContent = onRequest(
-  { region: 'europe-west3', cors: true },
+  { region: 'europe-west1', cors: true },
   async (req, res) => {
     const startTime = Date.now();
 
@@ -458,7 +458,7 @@ export const postFeedContent = onRequest(
  * Delete own post
  */
 export const deletePost = onRequest(
-  { region: 'europe-west3', cors: true },
+  { region: 'europe-west1', cors: true },
   async (req, res) => {
     const startTime = Date.now();
 
@@ -532,7 +532,7 @@ export const deletePost = onRequest(
  * Get creator's aggregated analytics
  */
 export const getAnalyticsOverview = onRequest(
-  { region: 'europe-west3', cors: true },
+  { region: 'europe-west1', cors: true },
   async (req, res) => {
     const startTime = Date.now();
 
@@ -614,7 +614,7 @@ export const getAnalyticsOverview = onRequest(
  * Get high-level audience demographics (aggregated only)
  */
 export const getAudienceDemographics = onRequest(
-  { region: 'europe-west3', cors: true },
+  { region: 'europe-west1', cors: true },
   async (req, res) => {
     const startTime = Date.now();
 

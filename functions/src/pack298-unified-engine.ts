@@ -50,7 +50,7 @@ const RANKING_WEIGHTS = {
  * Cloud Function: Calculate and update feed rankings for a user
  */
 export const calculateFeedRankings = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     // Authenticate
@@ -274,7 +274,7 @@ function calculateDistance(
  * Cloud Function: Generate swipe pool for a user
  */
 export const generateSwipePool = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     if (!request.auth) {
@@ -397,7 +397,7 @@ export const generateSwipePool = onCall(
  * Scheduled Function: Check and update low-popularity status for all users
  * Runs every 6 hours
  */
-export const updateLowPopularityStatus = onSchedule({ schedule: "every 6 hours", region: "europe-west3" }, async (event) => {
+export const updateLowPopularityStatus = onSchedule({ schedule: "every 6 hours", region: "europe-west1" }, async (event) => {
     console.log('Starting low-popularity status update...');
 
     try {
@@ -581,7 +581,7 @@ function calculateProfileCompleteness(userData: any): number {
  * Cloud Function: Validate content safety
  */
 export const validateContentSafety = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     if (!request.auth) {

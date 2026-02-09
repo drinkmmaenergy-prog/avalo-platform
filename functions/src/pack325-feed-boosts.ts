@@ -80,7 +80,7 @@ const BOOST_PRICING = {
  * Users pay tokens to promote their posts/reels
  */
 export const pack325_createFeedBoost = onCall(
-  { region: 'europe-west3', maxInstances: 50 },
+  { region: 'europe-west1', maxInstances: 50 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -233,7 +233,7 @@ export const pack325_createFeedBoost = onCall(
  * No refund - tokens already spent
  */
 export const pack325_cancelFeedBoost = onCall(
-  { region: 'europe-west3', maxInstances: 20 },
+  { region: 'europe-west1', maxInstances: 20 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -294,7 +294,7 @@ export const pack325_cancelFeedBoost = onCall(
  * Get user's boosts history
  */
 export const pack325_getUserBoosts = onCall(
-  { region: 'europe-west3', maxInstances: 50 },
+  { region: 'europe-west1', maxInstances: 50 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -333,7 +333,7 @@ export const pack325_getUserBoosts = onCall(
  * Track boost impression
  */
 export const pack325_trackBoostImpression = onCall(
-  { region: 'europe-west3', maxInstances: 200 },
+  { region: 'europe-west1', maxInstances: 200 },
   async (request) => {
     const { boostId } = request.data;
 
@@ -365,7 +365,7 @@ export const pack325_trackBoostImpression = onCall(
  * Track boost click
  */
 export const pack325_trackBoostClick = onCall(
-  { region: 'europe-west3', maxInstances: 200 },
+  { region: 'europe-west1', maxInstances: 200 },
   async (request) => {
     const { boostId } = request.data;
 
@@ -397,7 +397,7 @@ export const pack325_trackBoostClick = onCall(
  * Track boost profile visit
  */
 export const pack325_trackBoostProfileVisit = onCall(
-  { region: 'europe-west3', maxInstances: 200 },
+  { region: 'europe-west1', maxInstances: 200 },
   async (request) => {
     const { boostId } = request.data;
 
@@ -436,7 +436,7 @@ export const pack325_trackBoostProfileVisit = onCall(
 export const pack325_expireFeedBoosts = onSchedule(
   {
     schedule: 'every 15 minutes',
-    region: 'europe-west3',
+    region: 'europe-west1',
     timeZone: 'UTC',
   },
   async () => {

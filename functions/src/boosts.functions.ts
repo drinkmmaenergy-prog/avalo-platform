@@ -18,7 +18,7 @@ import { auth, functions } from './runtime';
  * Purchase a boost
  */
 export const purchaseBoostV1 = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -55,7 +55,7 @@ export const purchaseBoostV1 = onCall(
  * Get user's active boosts
  */
 export const getActiveBoostsV1 = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -75,7 +75,7 @@ export const getActiveBoostsV1 = onCall(
  * Get available boosts for user
  */
 export const getAvailableBoostsV1 = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -92,7 +92,7 @@ export const getAvailableBoostsV1 = onCall(
  * Check boost eligibility
  */
 export const checkBoostEligibilityV1 = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -109,7 +109,7 @@ export const checkBoostEligibilityV1 = onCall(
  * Get boost stats
  */
 export const getBoostStatsV1 = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {

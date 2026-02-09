@@ -15,7 +15,7 @@ const db = getFirestore();
  * Log discovery profile view event
  */
 export const logDiscoveryProfileView = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const { profileId } = request.data;
     const userId = request.auth?.uid;
@@ -44,7 +44,7 @@ export const logDiscoveryProfileView = onCall(
  * Log discovery profile like event
  */
 export const logDiscoveryProfileLike = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const { profileId } = request.data;
     const userId = request.auth?.uid;
@@ -73,7 +73,7 @@ export const logDiscoveryProfileLike = onCall(
  * Log opening chat from discovery
  */
 export const logDiscoveryOpenChat = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const { profileId } = request.data;
     const userId = request.auth?.uid;
@@ -102,7 +102,7 @@ export const logDiscoveryOpenChat = onCall(
  * Log opening calendar from discovery
  */
 export const logDiscoveryOpenCalendar = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const { profileId } = request.data;
     const userId = request.auth?.uid;
@@ -132,7 +132,7 @@ export const logDiscoveryOpenCalendar = onCall(
  * Runs daily to create insights for creators
  */
 export const aggregateDiscoveryAnalytics = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     try {
       const yesterday = new Date();

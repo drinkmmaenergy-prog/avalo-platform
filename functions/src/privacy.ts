@@ -5,7 +5,7 @@
  * - Data export (Article 15)
  * - Account deletion (Article 17 - Right to erasure)
  *
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 ;
@@ -45,7 +45,7 @@ enum PrivacyRequestStatus {
  * Creates a signed URL valid for 7 days
  */
 export const requestDataExportV1 = onCall(
-  { region: "europe-west3", timeoutSeconds: 540 },
+  { region: "europe-west1", timeoutSeconds: 540 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -263,7 +263,7 @@ async function collectUserData(uid: string): Promise<Record<string, any>> {
  * Account can be restored within grace period
  */
 export const requestAccountDeletionV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -365,7 +365,7 @@ export const requestAccountDeletionV1 = onCall(
  * Cancel account deletion (restore account)
  */
 export const cancelAccountDeletionV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -441,7 +441,7 @@ export const cancelAccountDeletionV1 = onCall(
 export const processScheduledDeletionsScheduler = onSchedule(
   {
     schedule: "0 3 * * *", // 3 AM daily
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
   },
   async (event) => {
@@ -589,7 +589,7 @@ async function logComplianceAction(
  * Get privacy request status
  */
 export const getPrivacyRequestStatusV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

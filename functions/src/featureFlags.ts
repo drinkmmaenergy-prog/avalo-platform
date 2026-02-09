@@ -7,7 +7,7 @@ import { admin, getFirestore, logger } from './runtime';
  * Allows gradual rollout and A/B testing of new features
  * Supports user-specific, percentage-based, and environment overrides
  *
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 ;

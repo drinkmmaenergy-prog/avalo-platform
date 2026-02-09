@@ -36,7 +36,7 @@ const fetch = require('node-fetch');
  * Create webhook subscription
  */
 export const subscribeWebhook = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -127,7 +127,7 @@ export const subscribeWebhook = onCall(
  * List webhook subscriptions
  */
 export const listWebhookSubscriptions = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -178,7 +178,7 @@ export const listWebhookSubscriptions = onCall(
  * Delete webhook subscription
  */
 export const unsubscribeWebhook = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -450,7 +450,7 @@ export const retryFailedWebhooks = onSchedule(
 export const onContentPublished = onDocumentCreated(
   {
     document: 'posts/{postId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const post = event.data?.data();
@@ -493,7 +493,7 @@ export const onContentPublished = onDocumentCreated(
 export const onContentDeleted = onDocumentDeleted(
   {
     document: 'posts/{postId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const post = event.data?.data();
@@ -535,7 +535,7 @@ export const onContentDeleted = onDocumentDeleted(
 export const onNewFollower = onDocumentCreated(
   {
     document: 'followers/{followId}',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (event) => {
     const follow = event.data?.data();

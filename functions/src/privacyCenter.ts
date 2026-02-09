@@ -91,7 +91,7 @@ export interface DeletionJob {
  * Create a new export job for a user
  */
 export const requestExport = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const { userId } = request.data;
 
@@ -173,7 +173,7 @@ export const requestExport = onCall(
  * Get export job status for user
  */
 export const getExportStatus = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const { userId } = request.data;
 
@@ -221,7 +221,7 @@ export const getExportStatus = onCall(
  * Get signed download URL for completed export
  */
 export const downloadExport = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const { userId, jobId, token } = request.data;
 
@@ -283,7 +283,7 @@ export const downloadExport = onCall(
  * Create deletion request with safety checks
  */
 export const requestDeletion = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const { userId, userReason } = request.data;
 
@@ -375,7 +375,7 @@ export const requestDeletion = onCall(
  * Get deletion job status for user
  */
 export const getDeletionStatus = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const { userId } = request.data;
 
@@ -421,7 +421,7 @@ export const getDeletionStatus = onCall(
  * Admin review of deletion request
  */
 export const reviewDeletion = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const { adminId, jobId, action, internalNote, rejectionReason } = request.data;
 
@@ -496,7 +496,7 @@ export const reviewDeletion = onCall(
 export const processExportJobs = onSchedule(
   {
     schedule: "every 5 minutes",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     console.log("Processing export jobs...");
@@ -535,7 +535,7 @@ export const processExportJobs = onSchedule(
 export const processDeletionJobs = onSchedule(
   {
     schedule: "every 10 minutes",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     console.log("Processing deletion jobs...");

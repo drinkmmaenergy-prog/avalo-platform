@@ -508,7 +508,7 @@ async function updateWalletBalance(
  */
 export const purchaseTokensV2 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
     // PERFORMANCE: Keep 1 warm instance for high traffic token purchases
@@ -663,7 +663,7 @@ export const purchaseTokensV2 = onCall(
  */
 export const getTransactionHistoryV2 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -703,7 +703,7 @@ export const getTransactionHistoryV2 = onCall(
  */
 export const getUserWalletsV2 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -729,7 +729,7 @@ export const getUserWalletsV2 = onCall(
  */
 export const getExchangeRatesV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
   },
   async (): Promise<{ rates: Record<string, number>; updatedAt: string }> => {
@@ -763,7 +763,7 @@ export const getExchangeRatesV1 = onCall(
 export const syncExchangeRatesScheduler = onSchedule(
   {
     schedule: "every 5 minutes",
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 60,
   },
   async () => {
@@ -792,7 +792,7 @@ export const syncExchangeRatesScheduler = onSchedule(
 export const generateComplianceReportsScheduler = onSchedule(
   {
     schedule: "0 2 * * *", // 2 AM daily
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 300,
   },
   async () => {

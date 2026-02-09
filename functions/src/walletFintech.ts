@@ -58,7 +58,9 @@ const db = getFirestore();
  * - NOT in emulator (FUNCTIONS_EMULATOR not set)
  * → Must be deploy-time analysis
  */
-const IS_DEPLOY_TIME_ANALYSIS = !process.env.K_SERVICE && process.env.FUNCTIONS_EMULATOR !== 'true';
+const IS_EMULATOR = process.env.FUNCTIONS_EMULATOR === "true";
+const IS_CLOUD_RUN = !!process.env.K_SERVICE;
+const IS_DEPLOY_TIME_ANALYSIS = !IS_CLOUD_RUN && !IS_EMULATOR;
 
 // Load stripe secret from:
 // 1) .env (emulator)
@@ -70,19 +72,16 @@ const STRIPE_SECRET =
   "";
 
 if (!STRIPE_SECRET) {
-  if (IS_DEPLOY_TIME_ANALYSIS) {
-    // During deploy analysis, warn but allow to continue
-    // Functions will fail at runtime if actually called without the key
-    console.warn(
-      "[walletFintech] ⚠️ Deploy-time analysis: Stripe secret key missing. Using placeholder to allow deploy."
-    );
+  const isEmulator = process.env.FUNCTIONS_EMULATOR === "true";
+  const isCloudRun = !!process.env.K_SERVICE;
+
+  if (isCloudRun && !isEmulator) {
+    throw new Error("❌ Stripe secret key missing in production runtime.");
   } else {
-    // In Cloud Run (runtime) or Emulator, fail hard
-    throw new Error(
-      "❌ Stripe secret key missing. Add STRIPE_SECRET_KEY to functions/.env or run: firebase functions:config:set stripe.secret=\"sk_test_XXX\""
-    );
+    console.warn("[walletFintech] Stripe disabled (emulator or deploy analysis).");
   }
 }
+
 
 // Create Stripe client (or placeholder during deploy analysis)
 const stripe = STRIPE_SECRET 
@@ -346,7 +345,7 @@ const AUTOLOAD_CONFIG = {
  * Get token packs
  */
 export const getTokenPacks = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -387,7 +386,7 @@ export const getTokenPacks = onCall(
  * Purchase tokens
  */
 export const purchaseTokens = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -486,7 +485,7 @@ export const purchaseTokens = onCall(
  * Configure auto-load
  */
 export const configureAutoLoad = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -529,7 +528,7 @@ export const configureAutoLoad = onCall(
  * Apply promo code
  */
 export const applyPromoCode = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -620,7 +619,7 @@ export const applyPromoCode = onCall(
  * Get earnings dashboard
  */
 export const getEarningsDashboard = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -722,7 +721,7 @@ export const getEarningsDashboard = onCall(
  * Generate settlement report
  */
 export const generateSettlementReport = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -817,7 +816,7 @@ export const generateSettlementReport = onCall(
  * Generate invoice
  */
 export const generateInvoice = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -869,7 +868,7 @@ export const generateInvoice = onCall(
  * Get cashback status
  */
 export const getCashbackStatus = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -905,4 +904,5 @@ export const getCashbackStatus = onCall(
 );
 
 logger.info("✅ Wallet 2.0 + Fintech module loaded successfully");
+
 

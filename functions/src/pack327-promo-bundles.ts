@@ -42,7 +42,7 @@ const db = getFirestore();
  * Get all available promo bundles
  */
 export const pack327_getBundles = onCall(
-  { region: 'europe-west3', maxInstances: 50 },
+  { region: 'europe-west1', maxInstances: 50 },
   async (request): Promise<GetBundlesResponse> => {
     try {
       const bundlesSnapshot = await db
@@ -71,7 +71,7 @@ export const pack327_getBundles = onCall(
  * Purchase a promo bundle
  */
 export const pack327_purchaseBundle = onCall(
-  { region: 'europe-west3', maxInstances: 50, timeoutSeconds: 60 },
+  { region: 'europe-west1', maxInstances: 50, timeoutSeconds: 60 },
   async (request): Promise<PurchaseBundleResponse> => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -256,7 +256,7 @@ export const pack327_purchaseBundle = onCall(
  * Get user's bundle purchases
  */
 export const pack327_getUserPurchases = onCall(
-  { region: 'europe-west3', maxInstances: 50 },
+  { region: 'europe-west1', maxInstances: 50 },
   async (request): Promise<GetUserPurchasesResponse> => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -295,7 +295,7 @@ export const pack327_getUserPurchases = onCall(
  * Create a new promo bundle (admin only)
  */
 export const pack327_admin_createBundle = onCall(
-  { region: 'europe-west3', maxInstances: 10 },
+  { region: 'europe-west1', maxInstances: 10 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -357,7 +357,7 @@ export const pack327_admin_createBundle = onCall(
  * Update a promo bundle (admin only)
  */
 export const pack327_admin_updateBundle = onCall(
-  { region: 'europe-west3', maxInstances: 10 },
+  { region: 'europe-west1', maxInstances: 10 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -429,7 +429,7 @@ export const pack327_admin_updateBundle = onCall(
  * Initialize default bundles (admin only, run once)
  */
 export const pack327_admin_initDefaultBundles = onCall(
-  { region: 'europe-west3', maxInstances: 1 },
+  { region: 'europe-west1', maxInstances: 1 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -476,7 +476,7 @@ export const pack327_admin_initDefaultBundles = onCall(
  * Get bundle analytics (admin only)
  */
 export const pack327_admin_getBundleAnalytics = onCall(
-  { region: 'europe-west3', maxInstances: 10 },
+  { region: 'europe-west1', maxInstances: 10 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -545,7 +545,7 @@ export const pack327_admin_getBundleAnalytics = onCall(
  * Get bundle sales summary (admin only)
  */
 export const pack327_admin_getSalesSummary = onCall(
-  { region: 'europe-west3', maxInstances: 10 },
+  { region: 'europe-west1', maxInstances: 10 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

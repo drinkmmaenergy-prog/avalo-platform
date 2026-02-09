@@ -16,8 +16,11 @@ import './init';
 
 console.log('🚀 Avalo Cloud Functions loaded (full export - 571 files, 2934 functions)');
 
-// Re-export init utilities for other modules
-export { db, auth, storage, admin, generateId, serverTimestamp } from './init';
+// NOTE: db, auth, storage, admin, generateId, serverTimestamp are available
+// via direct import from './init'. They are NOT re-exported here because
+// firebase-functions loader.extractStack() recurses into these complex objects
+// (which have circular references) causing Maximum call stack size exceeded.
+// Internal modules must import from './init' directly.
 
 // ============================================
 // DOMAIN A (27 files)

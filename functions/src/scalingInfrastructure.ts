@@ -147,7 +147,7 @@ const CACHE_STRATEGIES: CacheStrategy[] = [
 
 const REGIONS: RegionalConfig[] = [
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enabled: true,
     endpoints: {
       api: "https://api.avalo.app",
@@ -258,7 +258,7 @@ export async function bulkWrite(
  * Get system load metrics
  */
 export const getLoadMetrics = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
 
@@ -302,7 +302,7 @@ export const getLoadMetrics = onCall(
  * Configure sharding
  */
 export const configureSharding = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
 
@@ -346,7 +346,7 @@ export const configureSharding = onCall(
  * Health check endpoint
  */
 export const healthCheck = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const checks = {
       database: false,

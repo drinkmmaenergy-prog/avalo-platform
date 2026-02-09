@@ -341,7 +341,7 @@ async function buildProfileCard(userId: string, viewerId: string): Promise<Profi
  * Get feed based on mode
  */
 export const getFeed = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -416,7 +416,7 @@ export const getFeed = onCall(
  * Perform swipe action
  */
 export const performSwipe = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -488,7 +488,7 @@ export const performSwipe = onCall(
  * Get discovery recommendations
  */
 export const getDiscoveryRecommendations = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -533,7 +533,7 @@ export const getDiscoveryRecommendations = onCall(
  * Update online status
  */
 export const updateOnlineStatus = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

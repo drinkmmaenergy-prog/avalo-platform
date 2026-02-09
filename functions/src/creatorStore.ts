@@ -8,7 +8,7 @@
  * - Stripe Connect for fiat payouts
  *
  * Feature flag: creator_store
- * Region: europe-west3
+ * Region: europe-west1
  * No changes to existing chat/calendar pricing
  */
 
@@ -119,7 +119,7 @@ interface ProductPurchase {
  * Create creator product
  */
 export const createCreatorProductV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -248,7 +248,7 @@ export const createCreatorProductV1 = onCall(
  * Publish product (make it visible in store)
  */
 export const publishCreatorProductV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -296,7 +296,7 @@ export const publishCreatorProductV1 = onCall(
 /**
  * Get creator products (public listing)
  */
-export const getCreatorProductsV1 = onCall({ region: "europe-west3" }, async (request) => {
+export const getCreatorProductsV1 = onCall({ region: "europe-west1" }, async (request) => {
   const { creatorId, limit = 20, offset = 0 } = request.data;
 
   if (!creatorId) {
@@ -338,7 +338,7 @@ export const getCreatorProductsV1 = onCall({ region: "europe-west3" }, async (re
  * Purchase creator product
  */
 export const purchaseCreatorProductV1 = onCall(
-  { region: "europe-west3", timeoutSeconds: 60 },
+  { region: "europe-west1", timeoutSeconds: 60 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -472,7 +472,7 @@ export const purchaseCreatorProductV1 = onCall(
 /**
  * Get user purchases
  */
-export const getMyPurchasesV1 = onCall({ region: "europe-west3" }, async (request) => {
+export const getMyPurchasesV1 = onCall({ region: "europe-west1" }, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -553,7 +553,7 @@ async function generateContentUrls(
  * Deactivate product (admin or creator)
  */
 export const deactivateProductV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -598,7 +598,7 @@ export const deactivateProductV1 = onCall(
  * Creator analytics
  */
 export const getCreatorAnalyticsV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

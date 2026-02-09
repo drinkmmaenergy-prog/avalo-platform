@@ -11,7 +11,7 @@
  * - Segment-based analysis
  * - Export to BigQuery/Data Studio
  *
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 ;
@@ -78,7 +78,7 @@ interface PredictionWindow {
  * Runs as a scheduled job to update predictions
  */
 export const generatePredictionsV1 = onCall(
-  { region: "europe-west3", memory: "2GiB", timeoutSeconds: 540 },
+  { region: "europe-west1", memory: "2GiB", timeoutSeconds: 540 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -578,7 +578,7 @@ function getWindowMs(window: string): number {
  * Generates aggregated JSON files for business intelligence tools
  */
 export const exportMetricsV1 = onCall(
-  { region: "europe-west3", memory: "1GiB", timeoutSeconds: 540 },
+  { region: "europe-west1", memory: "1GiB", timeoutSeconds: 540 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

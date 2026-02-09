@@ -157,7 +157,7 @@ export interface Referral {
  */
 export const enableCreatorModeV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -267,7 +267,7 @@ export const enableCreatorModeV1 = onCall(
  */
 export const getCreatorDashboardV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -344,7 +344,7 @@ export const getCreatorDashboardV1 = onCall(
  */
 export const createGatedPostV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -421,7 +421,7 @@ export const createGatedPostV1 = onCall(
  */
 export const unlockGatedPostV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -558,7 +558,7 @@ export const unlockGatedPostV1 = onCall(
  */
 export const setMessagePricingV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -615,7 +615,7 @@ export const setMessagePricingV1 = onCall(
  */
 export const generateReferralCodeV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -671,7 +671,7 @@ export const generateReferralCodeV1 = onCall(
  */
 export const applyReferralCodeV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -813,7 +813,7 @@ export async function processReferralReward(
  */
 export const requestWithdrawalV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -900,7 +900,7 @@ export const requestWithdrawalV1 = onCall(
  */
 export const getWithdrawalHistoryV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {
@@ -942,7 +942,7 @@ export const getWithdrawalHistoryV1 = onCall(
  */
 export const getTopFansV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     enforceAppCheck: true,
   },
   async (request) => {

@@ -26,7 +26,7 @@ const db = getFirestore();
 export const profileSearch = onRequest(
   {
     cors: true,
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (req, res) => {
     try {
@@ -142,7 +142,7 @@ export const profileSearch = onRequest(
 export const usernameSearch = onRequest(
   {
     cors: true,
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (req, res) => {
     try {

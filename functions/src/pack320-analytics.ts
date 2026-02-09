@@ -31,7 +31,7 @@ export const dailyModerationAnalyticsRollup = onSchedule(
   {
     schedule: '0 1 * * *', // 1 AM UTC every day
     timeZone: 'UTC',
-    region: 'europe-west3'
+    region: 'europe-west1'
   },
   async (event) => {
     try {
@@ -227,7 +227,7 @@ export const dailyModerationAnalyticsRollup = onSchedule(
  */
 export const getModerationStats = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: false
   },
   async (request) => {
@@ -346,7 +346,7 @@ export const getModerationStats = onCall(
  */
 export const getModerationAnalytics = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: false
   },
   async (request) => {

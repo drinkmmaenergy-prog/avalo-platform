@@ -209,7 +209,7 @@ function validateCanonicalPricing(
  */
 export const stripeWebhookV1 = onRequest(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     minInstances: 1,  // Keep warm for latency
     maxInstances: 10,
     concurrency: 80,

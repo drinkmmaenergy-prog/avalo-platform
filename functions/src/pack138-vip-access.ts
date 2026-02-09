@@ -143,7 +143,7 @@ async function logVIPActivity(
  * Returns current status and available features
  */
 export const getVIPSubscriptionStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetVIPStatusResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -190,7 +190,7 @@ export const getVIPSubscriptionStatus = onCall(
  * Returns themes based on user's VIP tier
  */
 export const getAvailableThemes = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetAvailableThemesResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -243,7 +243,7 @@ export const getAvailableThemes = onCall(
  * Assign theme to user's profile or chat
  */
 export const assignTheme = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<AssignThemeResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -333,7 +333,7 @@ export const assignTheme = onCall(
  * Get vault items for user
  */
 export const getVaultItems = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetVaultItemsResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -408,7 +408,7 @@ export const getVaultItems = onCall(
  * Add item to vault
  */
 export const addVaultItem = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<AddVaultItemResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -504,7 +504,7 @@ export const addVaultItem = onCall(
  * Remove item from vault
  */
 export const removeVaultItem = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -584,7 +584,7 @@ export const removeVaultItem = onCall(
  * Get VIP settings for user
  */
 export const getVIPSettings = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<VIPSettings> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -636,7 +636,7 @@ export const getVIPSettings = onCall(
  * Update VIP settings
  */
 export const updateVIPSettings = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<UpdateVIPSettingsResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -694,7 +694,7 @@ export const updateVIPSettings = onCall(
  * Get chat enhancements settings
  */
 export const getChatEnhancements = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<VIPChatEnhancements> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -739,7 +739,7 @@ export const getChatEnhancements = onCall(
  * Update chat enhancements
  */
 export const updateChatEnhancements = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

@@ -94,7 +94,7 @@ interface ReputationProfile {
  * Submit review after interaction
  */
 export const submitReviewV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -184,7 +184,7 @@ export const submitReviewV1 = onCall(
  * Get user reputation profile
  */
 export const getReputationProfileV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -225,7 +225,7 @@ export const getReputationProfileV1 = onCall(
  * Get user reviews (paginated)
  */
 export const getUserReviewsV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -275,7 +275,7 @@ export const getUserReviewsV1 = onCall(
  * Report review for moderation
  */
 export const reportReviewV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -509,7 +509,7 @@ async function updateReputationProfile(userId: string): Promise<void> {
 export const recalculateReputationScoresDaily = onSchedule(
   {
     schedule: "0 2 * * *", // 2 AM daily
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
     memory: "512MiB",
   },

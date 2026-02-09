@@ -352,7 +352,7 @@ function calculateSpamScore(
  * Perform security check on message
  */
 export const performMessageSecurityCheck = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -463,7 +463,7 @@ export const performMessageSecurityCheck = onCall(
  * Report user for abuse
  */
 export const reportUserAbuse = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -536,7 +536,7 @@ export const reportUserAbuse = onCall(
  * Block user
  */
 export const blockUser = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -574,7 +574,7 @@ export const blockUser = onCall(
  * Unblock user
  */
 export const unblockUser = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -604,7 +604,7 @@ export const unblockUser = onCall(
  * Get blocked users list
  */
 export const getBlockedUsers = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -634,7 +634,7 @@ export const getBlockedUsers = onCall(
  * Track chat session
  */
 export const trackChatSession = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

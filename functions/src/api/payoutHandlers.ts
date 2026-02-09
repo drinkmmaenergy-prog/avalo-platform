@@ -20,7 +20,7 @@ import { enforceCreatorAgreement } from '../pack451-creator-agreement';
  * GET /payouts/state
  */
 export const getPayoutStateCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be authenticated");
@@ -47,7 +47,7 @@ export const getPayoutStateCallable = onCall(
  * POST /payouts/account/setup
  */
 export const setupPayoutAccountCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be authenticated");
@@ -90,7 +90,7 @@ export const setupPayoutAccountCallable = onCall(
  * POST /payouts/request
  */
 export const requestPayoutCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be authenticated");
@@ -138,7 +138,7 @@ export const requestPayoutCallable = onCall(
  * GET /payouts/requests
  */
 export const getPayoutRequestsCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be authenticated");

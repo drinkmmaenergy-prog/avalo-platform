@@ -85,7 +85,7 @@ export interface UserAttributionLock {
  * This is the entry point for all creator tracking
  */
 export const createAttribution = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ attributionId: string; locked: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -274,7 +274,7 @@ export const createAttribution = onCall(
  * Automatically called when user sends first message
  */
 export const trackFirstChat = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -333,7 +333,7 @@ export const trackFirstChat = onCall(
  * Automatically called when user makes first token purchase
  */
 export const trackFirstPurchase = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -429,7 +429,7 @@ export const trackFirstPurchase = onCall(
  * Get user's attribution (if any)
  */
 export const getUserAttribution = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CreatorAttribution | null> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -469,7 +469,7 @@ export const getUserAttribution = onCall(
  * Get attributions for a deal
  */
 export const getDealAttributions = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CreatorAttribution[]> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -540,7 +540,7 @@ async function recordAttributionEvent(params: {
  * Check if user has attribution lock
  */
 export const checkAttributionLock = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ locked: boolean; creatorId?: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

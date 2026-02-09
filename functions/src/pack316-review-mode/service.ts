@@ -4,7 +4,7 @@
  * Core service for handling App Store / Play Store review mode
  * NO TOKENOMICS CHANGES - only safe review experience
  * 
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { getFirestore, FieldValue } from "firebase-admin/firestore";

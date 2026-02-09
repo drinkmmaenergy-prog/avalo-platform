@@ -1,27 +1,53 @@
-interface TranslationSet {
-  common: {
-    loading: string;
-    error: string;
-    save: string;
-    cancel: string;
-    delete: string;
-    confirm: string;
-  };
-}
+/**
+ * Moderation i18n — Translation hook for moderation-specific strings.
+ *
+ * Uses the main I18nProvider context with moderation-specific key prefixes.
+ * Falls back to English hardcoded strings for moderation UI.
+ */
 
-const translations: Record<string, TranslationSet> = {
+'use client';
+
+import { useCallback } from 'react';
+
+const MODERATION_TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
-    common: {
-      loading: 'Loading...',
-      error: 'An error occurred',
-      save: 'Save',
-      cancel: 'Cancel',
-      delete: 'Delete',
-      confirm: 'Confirm',
-    },
+    'queue.title': 'Moderation Queue',
+    'queue.empty': 'No pending items in queue',
+    'incidents.title': 'Incidents',
+    'incidents.open': 'Open',
+    'incidents.resolved': 'Resolved',
+    'incidents.dismissed': 'Dismissed',
+    'appeals.title': 'Appeals',
+    'appeals.pending': 'Pending Review',
+    'appeals.approved': 'Approved',
+    'appeals.denied': 'Denied',
+    'actions.warn': 'Warn User',
+    'actions.mute': 'Mute User',
+    'actions.suspend': 'Suspend Account',
+    'actions.ban': 'Ban Account',
+    'actions.resolve': 'Resolve Incident',
+    'actions.dismiss': 'Dismiss Incident',
+    'actions.escalate': 'Escalate',
+    'severity.critical': 'Critical',
+    'severity.high': 'High',
+    'severity.medium': 'Medium',
+    'severity.low': 'Low',
   },
 };
 
-export function useTranslations(locale?: string): TranslationSet {
-  return translations[locale ?? 'en'] ?? translations.en;
+/**
+ * Hook for moderation-specific translations.
+ * Returns a `t()` function scoped to moderation keys.
+ */
+export function useTranslations(namespace = 'moderation') {
+  const t = useCallback(
+    (key: string): string => {
+      const lang = 'en'; // Could be wired to I18nProvider locale in future
+      const fullKey = key;
+      return MODERATION_TRANSLATIONS[lang]?.[fullKey] ?? key;
+    },
+    [],
+  );
+
+  return t;
 }

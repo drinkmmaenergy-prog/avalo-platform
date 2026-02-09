@@ -19,10 +19,11 @@ import {
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '@/lib/firebase';
+import { TOKEN_PAYOUT_USD, CREATOR_REVENUE_SHARE } from '@/lib/economyConfig';
 
-const TOKEN_TO_PLN = 0.20; // 1 Token = 0.20 PLN
-const CREATOR_SHARE = 0.65; // 65% to creator
-const AVALO_SHARE = 0.35; // 35% to Avalo
+const TOKEN_TO_USD = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.03 USD)
+const CREATOR_SHARE = 0.65; // 65% to creator (UNCHANGED)
+const AVALO_SHARE = 0.35; // 35% to Avalo (UNCHANGED)
 
 interface EarningTransaction {
   id: string;
@@ -137,20 +138,20 @@ export default function AIEarningsWebPage() {
             aiName: earning.aiName || 'AI Companion',
             type: type,
             tokensEarned: earnedTokens,
-            plnValue: earnedTokens * TOKEN_TO_PLN,
+            plnValue: earnedTokens * TOKEN_TO_USD,
           });
         }
       });
 
       setEarnings({
         totalTokens,
-        totalPLN: totalTokens * TOKEN_TO_PLN,
+        totalPLN: totalTokens * TOKEN_TO_USD,
         todayTokens,
-        todayPLN: todayTokens * TOKEN_TO_PLN,
+        todayPLN: todayTokens * TOKEN_TO_USD,
         last7DaysTokens,
-        last7DaysPLN: last7DaysTokens * TOKEN_TO_PLN,
+        last7DaysPLN: last7DaysTokens * TOKEN_TO_USD,
         last30DaysTokens,
-        last30DaysPLN: last30DaysTokens * TOKEN_TO_PLN,
+        last30DaysPLN: last30DaysTokens * TOKEN_TO_USD,
         chatEarnings,
         voiceEarnings,
         videoEarnings,
@@ -410,9 +411,9 @@ export default function AIEarningsWebPage() {
         {/* Footer Info */}
         <div className="mt-8 p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
           <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-            <p>💰 <strong>Payout Rate:</strong> 1 Token = {TOKEN_TO_PLN.toFixed(2)} PLN</p>
+            <p>💰 <strong>Payout Rate:</strong> 1 Token = ${TOKEN_PAYOUT_USD.toFixed(2)} USD (≈ {TOKEN_TO_USD.toFixed(2)} PLN)</p>
             <p>📊 <strong>Revenue Share:</strong> {CREATOR_SHARE * 100}% creator, {AVALO_SHARE * 100}% platform fee</p>
-            <p>🔒 <strong>Minimum Payout:</strong> 1000 tokens = 200 PLN</p>
+            <p>🔒 <strong>Minimum Payout:</strong> 1000 tokens</p>
           </div>
         </div>
       </div>

@@ -167,7 +167,7 @@ export async function enforceCreatorAgreement(userId: string): Promise<void> {
  */
 export const acceptCreatorAgreementV1 = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '256MiB',
     timeoutSeconds: 30,
   },
@@ -243,7 +243,7 @@ export const acceptCreatorAgreementV1 = onCall(
  */
 export const getCreatorAgreementStatusV1 = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '128MiB',
     timeoutSeconds: 10,
   },

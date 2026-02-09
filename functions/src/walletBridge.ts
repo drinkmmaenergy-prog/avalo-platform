@@ -6,7 +6,7 @@
  * Testnet escrow contracts
  *
  * Feature flag: crypto_wallet_enabled
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
@@ -40,7 +40,7 @@ const CONVERSION_RATE = 100;
  * Connect wallet
  */
 export const connectWalletV1 = onCall(
-  { region: "europe-west3", enforceAppCheck: true },
+  { region: "europe-west1", enforceAppCheck: true },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -117,7 +117,7 @@ export const connectWalletV1 = onCall(
  * Initiate crypto deposit (convert crypto to in-app tokens)
  */
 export const initiateDepositV1 = onCall(
-  { region: "europe-west3", enforceAppCheck: true },
+  { region: "europe-west1", enforceAppCheck: true },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -176,7 +176,7 @@ export const initiateDepositV1 = onCall(
  * Confirm crypto deposit (called after on-chain transaction)
  */
 export const confirmDepositV1 = onCall(
-  { region: "europe-west3", enforceAppCheck: true },
+  { region: "europe-west1", enforceAppCheck: true },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -320,7 +320,7 @@ export const confirmDepositV1 = onCall(
  * Initiate withdrawal (convert in-app tokens to crypto)
  */
 export const initiateWithdrawalV1 = onCall(
-  { region: "europe-west3", enforceAppCheck: true },
+  { region: "europe-west1", enforceAppCheck: true },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -427,7 +427,7 @@ function getEscrowAddress(blockchain: Blockchain): string {
  * Get wallet connection status
  */
 export const getWalletStatusV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

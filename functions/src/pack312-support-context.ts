@@ -59,7 +59,7 @@ async function isAdminWithRole(
  * Get privacy-aware user context summary
  */
 export const support_getUserContext = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<UserContextSummary> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -163,7 +163,7 @@ export const support_getUserContext = onCall(
  * Get privacy-aware meeting context summary
  */
 export const support_getMeetingContext = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<MeetingContextSummary> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -294,7 +294,7 @@ export const support_getMeetingContext = onCall(
  * Get privacy-aware transaction context summary
  */
 export const support_getTransactionContext = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<TransactionContextSummary> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -399,7 +399,7 @@ export const support_getTransactionContext = onCall(
  * Get privacy-aware safety context summary (aggregated only)
  */
 export const support_getSafetyContext = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<SafetyContextSummary> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

@@ -301,7 +301,7 @@ async function enforceReverification(userId: string): Promise<void> {
  */
 export const processModerationAction = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: false // Allow admin tools
   },
   async (request): Promise<ProcessModerationActionResponse> => {

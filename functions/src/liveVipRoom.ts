@@ -260,7 +260,7 @@ const VIP_ROOM_DEFAULTS = {
  * Start live session
  */
 export const startLiveSession = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -347,7 +347,7 @@ export const startLiveSession = onCall(
  * Send tip during live session
  */
 export const sendLiveTip = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -485,7 +485,7 @@ export const sendLiveTip = onCall(
  * End live session
  */
 export const endLiveSession = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -550,7 +550,7 @@ export const endLiveSession = onCall(
  * Create live poll
  */
 export const createLivePoll = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -609,7 +609,7 @@ export const createLivePoll = onCall(
  * Vote in live poll
  */
 export const voteInLivePoll = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -711,7 +711,7 @@ export const voteInLivePoll = onCall(
  * Create VIP Room
  */
 export const createVIPRoom = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -768,7 +768,7 @@ export const createVIPRoom = onCall(
  * Enter VIP Room
  */
 export const enterVIPRoom = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -872,7 +872,7 @@ export const enterVIPRoom = onCall(
  * Exit VIP Room
  */
 export const exitVIPRoom = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -964,7 +964,7 @@ export const exitVIPRoom = onCall(
  * Get active live sessions
  */
 export const getActiveLiveSessions = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

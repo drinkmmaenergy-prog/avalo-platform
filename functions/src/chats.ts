@@ -91,7 +91,7 @@ function calculateTokens(
  * POST /v1/chat/start
  */
 export const startChatCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (
       request
     ): Promise<FunctionResponse<{ chatId: string; deposit: any }>> => {
@@ -224,7 +224,7 @@ export const startChatCallable = onCall(
  * POST /v1/chat/message
  */
 export const sendMessageCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (
       request
     ): Promise<FunctionResponse<{ messageId: string; tokensCharged: number }>> => {
@@ -412,7 +412,7 @@ export const sendMessageCallable = onCall(
  * POST /v1/chat/close
  */
 export const closeChatCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (
       request
     ): Promise<FunctionResponse<{ refundedTokens: number }>> => {
@@ -499,7 +499,7 @@ export const closeChatCallable = onCall(
  * POST /v1/chat/refund
  */
 export const refundByEarnerCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (
       request
     ): Promise<FunctionResponse<{ refundedTokens: number }>> => {

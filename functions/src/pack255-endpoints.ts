@@ -53,7 +53,7 @@ const logger = {
  */
 export const getAIDiscoveryFeed = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -107,7 +107,7 @@ export const getAIDiscoveryFeed = onCall(
  */
 export const trackProfileViewEvent = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -147,7 +147,7 @@ export const trackProfileViewEvent = onCall(
  */
 export const trackSwipeEvent = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -188,7 +188,7 @@ export const trackSwipeEvent = onCall(
  */
 export const trackMessageEvent = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -229,7 +229,7 @@ export const trackMessageEvent = onCall(
  */
 export const trackPaidInteractionEvent = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -284,7 +284,7 @@ export const trackPaidInteractionEvent = onCall(
  */
 export const getUserBehaviorProfile = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -321,7 +321,7 @@ export const getUserBehaviorProfile = onCall(
  */
 export const getUserHeatingStats = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -363,7 +363,7 @@ export const getUserHeatingStats = onCall(
  */
 export const previewCandidateRanking = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -411,7 +411,7 @@ export const previewCandidateRanking = onCall(
  */
 export const adminUpdateBehaviorProfile = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -464,7 +464,7 @@ export const adminUpdateBehaviorProfile = onCall(
 export const cleanupExpiredHeatingScheduled = onSchedule(
   {
     schedule: 'every 1 hours',
-    region: 'europe-west3',
+    region: 'europe-west1',
     timeZone: 'UTC',
   },
   async (event) => {
@@ -487,7 +487,7 @@ export const cleanupExpiredHeatingScheduled = onSchedule(
 export const updateBehaviorProfilesScheduled = onSchedule(
   {
     schedule: 'every day 03:00',
-    region: 'europe-west3',
+    region: 'europe-west1',
     timeZone: 'UTC',
   },
   async (event) => {

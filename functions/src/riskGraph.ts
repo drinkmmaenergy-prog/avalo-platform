@@ -899,7 +899,7 @@ function calculateClusterConfidence(
  */
 export const analyzeUserRiskGraphV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
     memory: "512MiB",
@@ -980,7 +980,7 @@ export const analyzeUserRiskGraphV1 = onCall(
  */
 export const detectClustersV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -1017,7 +1017,7 @@ export const detectClustersV1 = onCall(
  */
 export const getClusterMembersV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -1076,7 +1076,7 @@ export const getClusterMembersV1 = onCall(
  */
 export const blockClusterV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -1159,7 +1159,7 @@ export const blockClusterV1 = onCall(
 export const detectFraudClustersDaily = onSchedule(
   {
     schedule: "0 4 * * *", // 4 AM daily
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 540,
     memory: "1GiB",
   },

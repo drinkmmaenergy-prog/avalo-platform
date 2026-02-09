@@ -189,7 +189,7 @@ async function updateCreatorBalance(
  * Returns current balance, lifetime earnings, and breakdown by source
  */
 export const getCreatorWalletSummary = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<WalletSummary> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -313,7 +313,7 @@ async function calculateEarningsBreakdown(
  * Get earnings ledger with pagination and filters
  */
 export const getEarningsLedger = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<LedgerPage> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -429,7 +429,7 @@ async function fetchLedgerPage(
  * Generates CSV file in Storage and returns signed download URL
  */
 export const exportEarningsCSV = onCall(
-  { region: 'europe-west3', timeoutSeconds: 300 },
+  { region: 'europe-west1', timeoutSeconds: 300 },
   async (request): Promise<{ downloadUrl: string; expiresAt: Date }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

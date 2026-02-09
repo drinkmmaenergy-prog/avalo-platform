@@ -52,6 +52,22 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  href="/legal/refund"
+                  className="text-gray-400 hover:text-white transition text-sm"
+                >
+                  Refund Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/legal/cookies"
+                  className="text-gray-400 hover:text-white transition text-sm"
+                >
+                  Cookie Policy
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/legal/safety"
                   className="text-gray-400 hover:text-white transition text-sm"
                 >

@@ -209,7 +209,7 @@ async function generateUserTaxReport(
  * Callable: Generate user tax report on-demand
  */
 export const pack330_generateUserTaxReportOnDemand = https.onCall<GenerateUserTaxReportRequest>(
-  { region: 'europe-west3', memory: '512MiB', timeoutSeconds: 120 },
+  { region: 'europe-west1', memory: '512MiB', timeoutSeconds: 120 },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -256,7 +256,7 @@ export const pack330_generateUserTaxReportOnDemand = https.onCall<GenerateUserTa
  * Callable: Get user tax report
  */
 export const pack330_getUserTaxReport = https.onCall(
-  { region: 'europe-west3', memory: '256MiB' },
+  { region: 'europe-west1', memory: '256MiB' },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -312,7 +312,7 @@ export const pack330_getUserTaxReport = https.onCall(
  * Callable: List user tax reports
  */
 export const pack330_listUserTaxReports = https.onCall(
-  { region: 'europe-west3', memory: '256MiB' },
+  { region: 'europe-west1', memory: '256MiB' },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -369,7 +369,7 @@ export const pack330_generateMonthlyUserReports = scheduler.onSchedule(
   {
     schedule: '0 2 1 * *', // 02:00 UTC on 1st of each month
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '1GiB',
     timeoutSeconds: 540,
   },
@@ -431,7 +431,7 @@ export const pack330_generateYearlyUserReports = scheduler.onSchedule(
   {
     schedule: '0 3 15 1 *', // 03:00 UTC on January 15th
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '2GiB',
     timeoutSeconds: 540,
   },

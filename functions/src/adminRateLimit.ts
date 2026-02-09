@@ -27,7 +27,7 @@ async function checkAdmin(userId: string): Promise<boolean> {
  * Get rate limit statistics (violations, top offenders)
  */
 export const admin_getRateLimitStats = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -71,7 +71,7 @@ export const admin_getRateLimitStats = onCall(
  * Get merged rate limit configuration (read-only)
  */
 export const admin_getRateLimitConfig = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
@@ -108,7 +108,7 @@ export const admin_getRateLimitConfig = onCall(
  * Get detailed violations for a specific user
  */
 export const admin_getUserRateLimitViolations = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');

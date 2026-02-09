@@ -80,7 +80,7 @@ function parseDate(dateStr: string): Date {
  * Get aggregated feedback insights
  */
 export const admin_getFeedbackInsights = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetFeedbackInsightsResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -136,7 +136,7 @@ export const admin_getFeedbackInsights = onCall(
  * Get recent feedback events
  */
 export const admin_getRecentFeedback = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<GetRecentFeedbackResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -187,7 +187,7 @@ export const admin_getRecentFeedback = onCall(
  * Export feedback data as CSV
  */
 export const admin_exportFeedback = onCall(
-  { region: 'europe-west3', timeoutSeconds: 540 },
+  { region: 'europe-west1', timeoutSeconds: 540 },
   async (request): Promise<ExportFeedbackResponse> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -307,7 +307,7 @@ export const admin_exportFeedback = onCall(
  * Get feedback statistics summary
  */
 export const admin_getFeedbackStats = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<any> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

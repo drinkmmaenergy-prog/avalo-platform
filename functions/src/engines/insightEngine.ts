@@ -67,7 +67,7 @@ export interface UserInsight {
 export const updateUserInsightOnMessageTrigger = onDocumentCreated(
   {
     document: "chats/{chatId}/messages/{messageId}",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     const messageData = event.data?.data();
@@ -90,7 +90,7 @@ export const updateUserInsightOnMessageTrigger = onDocumentCreated(
 export const updateUserInsightOnVisitTrigger = onDocumentCreated(
   {
     document: "users/{userId}/visitors/{visitorId}",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     const visitorId = event.params.visitorId;
@@ -110,7 +110,7 @@ export const updateUserInsightOnVisitTrigger = onDocumentCreated(
 export const updateUserInsightOnSwipeTrigger = onDocumentCreated(
   {
     document: "users/{userId}/swipes/{swipeId}",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     const swipeData = event.data?.data();
@@ -201,7 +201,7 @@ const RecommendProfilesSchema = z.object({
 });
 
 export const recommendProfilesCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -353,7 +353,7 @@ const RecommendAISchema = z.object({
 });
 
 export const recommendAICompanionsCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

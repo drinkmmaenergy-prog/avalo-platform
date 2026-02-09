@@ -22,7 +22,7 @@ import { admin, auth, functions } from './runtime';
  * POST /v1/calendar/book
  */
 export const bookSlotCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (
       request
     ): Promise<
@@ -198,7 +198,7 @@ export const bookSlotCallable = onCall(
  * POST /v1/calendar/confirm
  */
 export const confirmBookingCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (
       request
     ): Promise<FunctionResponse<{ bookingId: string }>> => {
@@ -256,7 +256,7 @@ export const confirmBookingCallable = onCall(
  * - Payer cancels <24h before: 0% refunded, earner keeps 100%
  */
 export const cancelBookingCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (
       request
     ): Promise<FunctionResponse<{ refundTokens: number; policy: string }>> => {
@@ -426,7 +426,7 @@ export const cancelBookingCallable = onCall(
  * POST /v1/calendar/verify
  */
 export const verifyMeetingCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (
       request
     ): Promise<FunctionResponse<{ verified: boolean }>> => {
@@ -536,7 +536,7 @@ export const verifyMeetingCallable = onCall(
  * POST /v1/calendar/complaint
  */
 export const fileAppearanceComplaintCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (
       request
     ): Promise<FunctionResponse<{ complaintId: string; refundAmount: number; decision: string }>> => {
@@ -596,7 +596,7 @@ export const fileAppearanceComplaintCallable = onCall(
  * POST /v1/calendar/voluntary-refund
  */
 export const issueVoluntaryRefundCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (
       request
     ): Promise<FunctionResponse<{ refundId: string; refundAmount: number }>> => {
@@ -638,7 +638,7 @@ export const issueVoluntaryRefundCallable = onCall(
  * POST /v1/calendar/refund-history
  */
 export const getRefundHistoryCallable = onCall(
-    { region: "europe-west3" },
+    { region: "europe-west1" },
     async (
       request
     ): Promise<FunctionResponse<{ refunds: any[]; voluntaryRefunds: any[]; complaints: any[] }>> => {

@@ -292,7 +292,7 @@ async function generateSignedUrls(storagePaths: string[], expirySeconds: number 
  * Create new creator product
  */
 export const createCreatorProduct = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -386,7 +386,7 @@ export const createCreatorProduct = onCall(
  * Upload media files to product
  */
 export const uploadProductMedia = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -467,7 +467,7 @@ export const uploadProductMedia = onCall(
  * Publish product (make it active)
  */
 export const publishCreatorProduct = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -526,7 +526,7 @@ export const publishCreatorProduct = onCall(
  * Purchase product
  */
 export const purchaseCreatorProduct = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -693,7 +693,7 @@ export const purchaseCreatorProduct = onCall(
  * Get purchase access URLs
  */
 export const getProductAccessUrls = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -766,7 +766,7 @@ export const getProductAccessUrls = onCall(
  * Get creator products
  */
 export const getCreatorProducts = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -822,7 +822,7 @@ export const getCreatorProducts = onCall(
  * Get my purchases
  */
 export const getMyPurchases = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -855,7 +855,7 @@ export const getMyPurchases = onCall(
  * Get creator statistics
  */
 export const getCreatorStats = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -896,7 +896,7 @@ export const getCreatorStats = onCall(
  * Update product (edit)
  */
 export const updateCreatorProduct = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -951,7 +951,7 @@ export const updateCreatorProduct = onCall(
  * Pause/Resume product
  */
 export const toggleProductStatus = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -997,7 +997,7 @@ export const toggleProductStatus = onCall(
  * Archive product
  */
 export const archiveCreatorProduct = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

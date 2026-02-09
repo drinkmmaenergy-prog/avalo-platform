@@ -31,7 +31,7 @@ export const reconcilePayoutsScheduled = onSchedule(
   {
     schedule: '0 3 * * *',
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '1GiB' as const,
     timeoutSeconds: 540,
   },

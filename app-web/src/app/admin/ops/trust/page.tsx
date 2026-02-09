@@ -9,6 +9,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { getTrustSignals, getTrustSignalCounts } from '@/lib/services/phase33';
+import type { TrustSignalCounts } from '@/lib/services/phase33';
 import type { TrustSignal } from '@/types/phase33.types';
 
 type Severity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | 'ALL';
@@ -30,7 +31,7 @@ function SeverityBadge({ severity }: { severity: TrustSignal['severity'] }) {
 
 export default function AdminTrustPage() {
   const [signals, setSignals] = useState<TrustSignal[]>([]);
-  const [counts, setCounts] = useState<{ low: number; medium: number; high: number; critical: number; total: number } | null>(null);
+  const [counts, setCounts] = useState<TrustSignalCounts | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Severity>('ALL');
   
@@ -38,7 +39,7 @@ export default function AdminTrustPage() {
     async function fetchData() {
       try {
         const [signalsData, countsData] = await Promise.all([
-          getTrustSignals({ unresolvedOnly: true }),
+          getTrustSignals(100),
           getTrustSignalCounts(),
         ]);
         setSignals(signalsData);
@@ -172,3 +173,4 @@ export default function AdminTrustPage() {
     </div>
   );
 }
+

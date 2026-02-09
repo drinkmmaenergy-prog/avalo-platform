@@ -77,7 +77,7 @@ export const CALENDAR_VERIFICATION_GPS_RADIUS_METERS = 30;
 export const CALENDAR_VERIFICATION_TIMEOUT_MINUTES = 30;
 
 // Region
-export const FUNCTIONS_REGION = "europe-west3";
+export const FUNCTIONS_REGION = "europe-west1";
 
 // Stripe Configuration (from environment)
 export const getStripeConfig = () => ({

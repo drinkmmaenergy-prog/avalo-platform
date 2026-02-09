@@ -129,7 +129,7 @@ async function validateCampaignSlug(slug: string, excludeCampaignId?: string): P
  * Create a new partner organization
  */
 export const admin_createPartner = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -191,7 +191,7 @@ export const admin_createPartner = onCall(
  * Update an existing partner organization
  */
 export const admin_updatePartner = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -260,7 +260,7 @@ export const admin_updatePartner = onCall(
  * Get partner organization details
  */
 export const admin_getPartner = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -303,7 +303,7 @@ export const admin_getPartner = onCall(
  * Create a new talent profile
  */
 export const admin_createTalentProfile = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -370,7 +370,7 @@ export const admin_createTalentProfile = onCall(
  * Update an existing talent profile
  */
 export const admin_updateTalentProfile = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -440,7 +440,7 @@ export const admin_updateTalentProfile = onCall(
  * Get talent profile details
  */
 export const admin_getTalentProfile = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -483,7 +483,7 @@ export const admin_getTalentProfile = onCall(
  * Create a new partnership campaign
  */
 export const admin_createPartnershipCampaign = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -564,7 +564,7 @@ export const admin_createPartnershipCampaign = onCall(
  * Update an existing partnership campaign
  */
 export const admin_updatePartnershipCampaign = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -655,7 +655,7 @@ export const admin_updatePartnershipCampaign = onCall(
  * Get campaign details
  */
 export const admin_getCampaign = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

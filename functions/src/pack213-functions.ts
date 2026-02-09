@@ -55,7 +55,7 @@ const logger = {
  */
 export const getDiscoveryFeedV2 = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -121,7 +121,7 @@ export const getDiscoveryFeedV2 = onCall(
  */
 export const getHighPriorityMatchesV1 = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -165,7 +165,7 @@ export const getHighPriorityMatchesV1 = onCall(
  */
 export const getSuggestedProfilesV1 = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -214,7 +214,7 @@ export const getSuggestedProfilesV1 = onCall(
  */
 export const trackProfileLikeV1 = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -260,7 +260,7 @@ export const trackProfileLikeV1 = onCall(
  */
 export const trackProfileViewV1 = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -309,7 +309,7 @@ export const trackProfileViewV1 = onCall(
  */
 export const trackMediaExpansionV1 = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -357,7 +357,7 @@ export const trackMediaExpansionV1 = onCall(
  */
 export const trackProfileWishlistV1 = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -404,7 +404,7 @@ export const trackProfileWishlistV1 = onCall(
  */
 export const applyTokenPurchaseBoostV1 = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -453,7 +453,7 @@ export const applyTokenPurchaseBoostV1 = onCall(
  */
 export const calculateMatchPriorityV1 = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -500,7 +500,7 @@ export const calculateMatchPriorityV1 = onCall(
 export const expireOldBoostsScheduled = onSchedule(
   {
     schedule: 'every 1 hours',
-    region: 'europe-west3',
+    region: 'europe-west1',
     timeZone: 'UTC',
   },
   async (event) => {
@@ -526,7 +526,7 @@ export const expireOldBoostsScheduled = onSchedule(
  */
 export const onChatCompletedWebhook = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (request) => {
     // Verify webhook signature (implement your signature verification)
@@ -569,7 +569,7 @@ export const onChatCompletedWebhook = onCall(
  */
 export const onMeetingCompletedWebhook = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (request) => {
     if (!request.auth) {
@@ -610,7 +610,7 @@ export const onMeetingCompletedWebhook = onCall(
  */
 export const onEventHostedWebhook = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (request) => {
     if (!request.auth) {
@@ -651,7 +651,7 @@ export const onEventHostedWebhook = onCall(
  */
 export const onGoodVibeReceivedWebhook = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (request) => {
     if (!request.auth) {

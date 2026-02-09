@@ -128,7 +128,7 @@ async function createSupportAuditLog(
  * Create a new support ticket
  */
 export const support_createTicket = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ ticketId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -182,7 +182,7 @@ export const support_createTicket = onCall(
  * List support tickets with filtering (admin only)
  */
 export const support_listTickets = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ tickets: SupportTicket[]; total: number; hasMore: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -268,7 +268,7 @@ export const support_listTickets = onCall(
  * Get ticket details (user can see own, admin can see all)
  */
 export const support_getTicketDetails = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ ticket: SupportTicket; messages: TicketMessage[] }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -334,7 +334,7 @@ export const support_getTicketDetails = onCall(
  * Update ticket status (admin only)
  */
 export const support_updateTicketStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -417,7 +417,7 @@ export const support_updateTicketStatus = onCall(
  * Assign ticket to admin (admin only)
  */
 export const support_assignTicket = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -500,7 +500,7 @@ export const support_assignTicket = onCall(
  * Add message to ticket
  */
 export const support_addMessage = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ messageId: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -577,7 +577,7 @@ export const support_addMessage = onCall(
  * Resolve ticket (admin only)
  */
 export const support_resolveTicket = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -654,7 +654,7 @@ export const support_resolveTicket = onCall(
  * Get user tickets (for user-facing interface)
  */
 export const support_getUserTickets = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ tickets: SupportTicket[] }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

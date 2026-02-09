@@ -1,18 +1,18 @@
 /**
  * Avalo Cloud Functions - Shared Runtime Module
  * Centralized exports for firebase-admin, firebase-functions, and common utilities
- *
- * This module provides a single source of truth for:
- * - Firebase Admin SDK (admin, getFirestore, db, auth, storage) - via init.ts
- * - Firebase Functions v2 (onCall, onRequest, onSchedule, HttpsError, logger)
- * - Zod validation
- * - Ethers (blockchain)
- *
- * Import from this module to ensure consistent setup across all functions.
  */
 
+import { setGlobalOptions } from "firebase-functions/v2";
+
+// 🔴 KLUCZOWE — WYMUSZENIE REGIONU
+setGlobalOptions({
+  region: "europe-west1",
+  maxInstances: 3,
+});
+
 // ====================================
-// Firebase Admin SDK - Re-export from init.ts (already initializes Firestore)
+// Firebase Admin SDK
 // ====================================
 export {
   admin,
@@ -28,13 +28,11 @@ export {
   generateId,
 } from "./init";
 
-// Re-export getFirestore and Timestamp from firebase-admin/firestore
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 export { getFirestore, Timestamp };
 
-// Additional FieldValue helper not in init.ts
-import { FieldValue } from "firebase-admin/firestore";
-export const deleteField = FieldValue.delete;
+import { FieldValue as FirestoreFieldValue } from "firebase-admin/firestore";
+export const deleteField = FirestoreFieldValue.delete;
 
 // ====================================
 // Firebase Functions v2
@@ -55,7 +53,6 @@ export type { ScheduleOptions } from "firebase-functions/v2/scheduler";
 
 export { logger } from "firebase-functions/v2";
 
-// Firestore triggers
 export {
   onDocumentCreated,
   onDocumentUpdated,
@@ -63,32 +60,30 @@ export {
   onDocumentWritten,
 } from "firebase-functions/v2/firestore";
 
-// PubSub triggers (for schedule)
 export { onMessagePublished } from "firebase-functions/v2/pubsub";
 
-// Storage triggers
-export { onObjectFinalized, onObjectDeleted } from "firebase-functions/v2/storage";
+export {
+  onObjectFinalized,
+  onObjectDeleted,
+} from "firebase-functions/v2/storage";
 
 // ====================================
-// Firebase Functions v1 (for backward compatibility)
+// Firebase Functions v1 (legacy)
 // ====================================
 import * as functions from "firebase-functions";
 export { functions };
 export const functionsConfig = functions.config;
 
 // ====================================
-// Zod validation
+// Zod
 // ====================================
 import { z } from "zod";
 export { z };
 
 // ====================================
-// Ethers (Blockchain)
+// Ethers
 // ====================================
 import { ethers } from "ethers";
 export { ethers };
 
-// ====================================
-// Diagnostics
-// ====================================
-console.log("🔧 Avalo runtime module loaded: functions v2, zod, ethers ready");
+console.log("🔧 Avalo runtime module loaded (REGION europe-west1 enforced)");

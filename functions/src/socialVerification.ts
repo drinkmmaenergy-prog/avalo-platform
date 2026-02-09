@@ -160,7 +160,7 @@ const FOLLOWER_COUNT_WEIGHT = 0.4;
  * Initiate Instagram OAuth flow
  */
 export const initiateInstagramAuth = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -193,7 +193,7 @@ export const initiateInstagramAuth = onCall(
  * Complete Instagram OAuth and fetch data
  */
 export const completeInstagramAuth = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -316,7 +316,7 @@ export const completeInstagramAuth = onCall(
  * Initiate TikTok OAuth flow
  */
 export const initiateTikTokAuth = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -348,7 +348,7 @@ export const initiateTikTokAuth = onCall(
  * Complete TikTok OAuth
  */
 export const completeTikTokAuth = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -491,7 +491,7 @@ export const completeTikTokAuth = onCall(
  * Sync social media data
  */
 export const syncSocialData = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -550,7 +550,7 @@ export const syncSocialData = onCall(
  * Get creator score
  */
 export const getCreatorScore = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -581,7 +581,7 @@ export const getCreatorScore = onCall(
  * Disconnect social account
  */
 export const disconnectSocialAccount = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

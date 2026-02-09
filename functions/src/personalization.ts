@@ -52,7 +52,7 @@ interface UserTasteProfile {
  * Log a personalization event
  */
 export const recordPersonalizationEvent = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {
@@ -136,7 +136,7 @@ export const recordPersonalizationEvent = onCall(
  * Get user's taste profile summary
  */
 export const getPersonalizationProfile = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
   const data = request.data;
     try {
@@ -288,7 +288,7 @@ async function updateUserTasteProfile(userId: string): Promise<void> {
  * Scheduled function: Update taste profiles for active users
  * Runs every 6 hours to refresh profiles
  */
-export const scheduledProfileUpdate = onSchedule({ schedule: "every 6 hours", region: "europe-west3" }, async (event) => {
+export const scheduledProfileUpdate = onSchedule({ schedule: "every 6 hours", region: "europe-west1" }, async (event) => {
     try {
       console.log('[Personalization] Starting scheduled profile update');
 

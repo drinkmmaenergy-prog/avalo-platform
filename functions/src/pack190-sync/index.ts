@@ -17,7 +17,7 @@ import { onSchedule } from '../runtime';
  */
 export const performSync = onRequest(
   { 
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
     maxInstances: 100
   },
@@ -79,7 +79,7 @@ export const performSync = onRequest(
  */
 export const processOfflineQueue = onRequest(
   { 
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
     maxInstances: 50
   },
@@ -124,7 +124,7 @@ export const processOfflineQueue = onRequest(
  */
 export const enqueueOfflineAction = onRequest(
   { 
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
     maxInstances: 100
   },
@@ -185,7 +185,7 @@ export const enqueueOfflineAction = onRequest(
  */
 export const getSyncState = onRequest(
   { 
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
     maxInstances: 100
   },
@@ -257,7 +257,7 @@ export const getSyncState = onRequest(
  */
 export const registerDeviceSession = onRequest(
   { 
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
     maxInstances: 100
   },
@@ -322,7 +322,7 @@ export const registerDeviceSession = onRequest(
  */
 export const terminateDeviceSession = onRequest(
   { 
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
     maxInstances: 50
   },
@@ -373,7 +373,7 @@ export const terminateDeviceSession = onRequest(
  */
 export const getActiveSessions = onRequest(
   { 
-    region: 'europe-west3',
+    region: 'europe-west1',
     cors: true,
     maxInstances: 50
   },
@@ -423,7 +423,7 @@ export const getActiveSessions = onRequest(
 export const cleanupSyncData = onSchedule(
   {
     schedule: 'every 6 hours',
-    region: 'europe-west3',
+    region: 'europe-west1',
     timeoutSeconds: 540
   },
   async () => {

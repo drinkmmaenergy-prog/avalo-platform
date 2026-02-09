@@ -33,7 +33,7 @@ import { admin, auth, functions, onSchedule } from './runtime';
  * Generate daily earning suggestions for a creator
  */
 export const generateDailySuggestions = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -241,7 +241,7 @@ export const generateDailySuggestions = onCall(
  * Get current suggestions for creator
  */
 export const getCreatorSuggestions = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -281,7 +281,7 @@ export const getCreatorSuggestions = onCall(
  * Dismiss a suggestion
  */
 export const dismissSuggestion = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -317,7 +317,7 @@ export const dismissSuggestion = onCall(
  * Act on a suggestion
  */
 export const actOnSuggestion = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -357,7 +357,7 @@ export const actOnSuggestion = onCall(
  * Calculate DM priorities for creator's chats
  */
 export const calculateDMPriorities = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -451,7 +451,7 @@ export const calculateDMPriorities = onCall(
  * Get DM priority for specific chat
  */
 export const getDMPriority = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -499,7 +499,7 @@ export const dailySuggestionGeneration = onSchedule(
   {
     schedule: '0 9 * * *',
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async () => {
     logger.info('Starting daily suggestion generation...');

@@ -116,7 +116,7 @@ export interface ExportedUserData {
  * Creates export job and returns request ID
  */
 export const requestDataExport = onCall(
-  { region: 'europe-west3', timeoutSeconds: 60 },
+  { region: 'europe-west1', timeoutSeconds: 60 },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -197,7 +197,7 @@ export const requestDataExport = onCall(
 export const processPendingDataExports = onSchedule(
   {
     schedule: 'every 5 minutes',
-    region: 'europe-west3',
+    region: 'europe-west1',
     timeoutSeconds: 540,
     memory: '1GiB',
   },
@@ -548,7 +548,7 @@ function countTotalRecords(data: any): number {
  * Get all data export requests for authenticated user
  */
 export const getMyDataExports = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -602,7 +602,7 @@ export const getMyDataExports = onCall(
  * Requires explicit confirmation and shows final warning
  */
 export const requestAccountDeletion = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -746,7 +746,7 @@ async function checkFinancialHolds(userId: string): Promise<boolean> {
 export const processPendingDeletionRequests = onSchedule(
   {
     schedule: '0 3 * * *', // 3 AM daily
-    region: 'europe-west3',
+    region: 'europe-west1',
     timeoutSeconds: 540,
     memory: '1GiB',
   },
@@ -1046,7 +1046,7 @@ async function deleteAndPseudonymizeUserData(userId: string): Promise<void> {
  * Get deletion request status for authenticated user
  */
 export const getMyDeletionStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {

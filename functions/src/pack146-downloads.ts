@@ -83,7 +83,7 @@ export async function createDownloadControl(
  */
 export const requestDownload = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -336,7 +336,7 @@ export async function applyPDFSecurity(
  */
 export const getDownloadAnalytics = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -463,7 +463,7 @@ export async function flagSuspiciousDownload(
  */
 export const revokeDownloadAccess = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {

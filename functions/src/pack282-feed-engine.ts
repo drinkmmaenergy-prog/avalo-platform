@@ -349,7 +349,7 @@ async function enrichPostsWithAuthors(
  */
 export const createPost = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -439,7 +439,7 @@ export const createPost = onCall(
  */
 export const updatePost = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -490,7 +490,7 @@ export const updatePost = onCall(
  */
 export const deletePost = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -535,7 +535,7 @@ export const deletePost = onCall(
  */
 export const getFeed = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (request) => {
     const uid = request.auth?.uid;
@@ -646,7 +646,7 @@ export const getFeed = onCall(
  */
 export const getPost = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (request) => {
     const uid = request.auth?.uid;

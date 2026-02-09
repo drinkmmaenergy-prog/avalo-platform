@@ -369,7 +369,7 @@ async function consumeSwipe(userId: string): Promise<void> {
  * Get swipe queue for user
  */
 export const getSwipeQueue = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<any> => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -500,7 +500,7 @@ export const getSwipeQueue = onCall(
  * Process swipe (like or dislike)
  */
 export const processSwipe = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<any> => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -723,7 +723,7 @@ async function emitMatchEvent(
  * Get user's matches
  */
 export const getMatches = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<any> => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -801,7 +801,7 @@ export const getMatches = onCall(
  * Get swipe statistics for user
  */
 export const getSwipeStats = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<any> => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -891,7 +891,7 @@ async function detectAbusePatterns(userId: string): Promise<void> {
 export const syncSwipeProfiles = onDocumentWritten(
   {
     document: 'discoveryPresence/{userId}',
-    region: 'europe-west3'
+    region: 'europe-west1'
   },
   async (event) => {
     const userId = event.params.userId;

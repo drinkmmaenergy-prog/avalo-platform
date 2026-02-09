@@ -431,7 +431,7 @@ function determineModerationAction(
  */
 export const analyzeContentV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
     timeoutSeconds: 30,
@@ -619,7 +619,7 @@ async function executeModerationAction(
  */
 export const getModerationQueueV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -666,7 +666,7 @@ export const getModerationQueueV1 = onCall(
  */
 export const resolveModerationItemV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -731,7 +731,7 @@ export const resolveModerationItemV1 = onCall(
  */
 export const getAIOversightStatsV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },

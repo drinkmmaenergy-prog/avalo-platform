@@ -8,7 +8,7 @@
  * - IP reputation scoring
  *
  * Feature flag: device_trust_scoring
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
@@ -84,7 +84,7 @@ interface DeviceTrust {
  * Called on every significant action (login, transaction, etc.)
  */
 export const registerDeviceTrustV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -223,7 +223,7 @@ export const registerDeviceTrustV1 = onCall(
  * Get device trust status
  */
 export const getDeviceTrustStatusV1 = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -386,7 +386,7 @@ async function flagDeviceForReview(
 /**
  * Block device
  */
-export const blockDeviceV1 = onCall({ region: "europe-west3" }, async (request) => {
+export const blockDeviceV1 = onCall({ region: "europe-west1" }, async (request) => {
   const adminUid = request.auth?.uid;
   if (!adminUid) {
     throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -422,7 +422,7 @@ export const blockDeviceV1 = onCall({ region: "europe-west3" }, async (request) 
 /**
  * Get devices for user (admin only)
  */
-export const getUserDevicesV1 = onCall({ region: "europe-west3" }, async (request) => {
+export const getUserDevicesV1 = onCall({ region: "europe-west1" }, async (request) => {
   const adminUid = request.auth?.uid;
   if (!adminUid) {
     throw new HttpsError("unauthenticated", "User must be authenticated");

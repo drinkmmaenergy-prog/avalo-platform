@@ -179,7 +179,7 @@ export async function extendPlatformKpiWithBundles(
  * Get bundle performance metrics (admin only)
  */
 export const pack327_getBundlePerformance = onCall(
-  { region: 'europe-west3', maxInstances: 10 },
+  { region: 'europe-west1', maxInstances: 10 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -240,7 +240,7 @@ export const pack327_getBundlePerformance = onCall(
  * Track bundle view (for conversion rate tracking)
  */
 export const pack327_trackBundleView = onCall(
-  { region: 'europe-west3', maxInstances: 100 },
+  { region: 'europe-west1', maxInstances: 100 },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

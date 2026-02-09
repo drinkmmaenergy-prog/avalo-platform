@@ -223,7 +223,7 @@ async function detectNsfwContent(fileRef: string): Promise<boolean> {
  * Create a new digital product (SAFE content only)
  */
 export const createDigitalProduct = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -322,7 +322,7 @@ export const createDigitalProduct = onCall(
  * Update digital product
  */
 export const updateDigitalProduct = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -383,7 +383,7 @@ export const updateDigitalProduct = onCall(
  * Delete digital product
  */
 export const deleteDigitalProduct = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -424,7 +424,7 @@ export const deleteDigitalProduct = onCall(
  * List creator's digital products
  */
 export const listCreatorDigitalProducts = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const { creatorUserId, includeInactive = false } = request.data;
     
@@ -455,7 +455,7 @@ export const listCreatorDigitalProducts = onCall(
  * Get digital product details
  */
 export const getDigitalProductDetails = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const { productId } = request.data;
     
@@ -485,7 +485,7 @@ export const getDigitalProductDetails = onCall(
  * Purchase digital product
  */
 export const purchaseDigitalProduct = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -635,7 +635,7 @@ export const purchaseDigitalProduct = onCall(
  * Get buyer's purchased products
  */
 export const getBuyerDigitalProducts = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -663,7 +663,7 @@ export const getBuyerDigitalProducts = onCall(
  * Get download URL for purchased product
  */
 export const getProductDownloadUrl = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

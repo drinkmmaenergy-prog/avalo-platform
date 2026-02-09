@@ -478,7 +478,7 @@ export const pack324c_generateDailyRanking = onSchedule(
   {
     schedule: '30 0 * * *', // 00:30 UTC daily
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async () => {
     logger.info('[PACK 324C] Starting daily ranking generation');

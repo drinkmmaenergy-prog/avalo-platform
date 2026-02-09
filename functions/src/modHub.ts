@@ -352,7 +352,7 @@ async function autoAssignToModeratorV1(queueId: string): Promise<string | null> 
  */
 export const getModerationQueueV2 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -439,7 +439,7 @@ export const getModerationQueueV2 = onCall(
  */
 export const getQueueItemDetailsV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -497,7 +497,7 @@ export const getQueueItemDetailsV1 = onCall(
  */
 export const claimQueueItemV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -557,7 +557,7 @@ export const claimQueueItemV1 = onCall(
  */
 export const resolveQueueItemV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -738,7 +738,7 @@ async function updateModeratorStatsV1(moderatorId: string, item: QueueItem): Pro
  */
 export const getModeratorStatsV1 = onCall(
   {
-    region: "europe-west3",
+    region: "europe-west1",
     cors: true,
     enforceAppCheck: true,
   },
@@ -791,7 +791,7 @@ export const getModeratorStatsV1 = onCall(
 export const autoAssignQueueItemsScheduler = onSchedule(
   {
     schedule: "every 5 minutes",
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 120,
   },
   async () => {
@@ -827,7 +827,7 @@ export const autoAssignQueueItemsScheduler = onSchedule(
 export const checkSLABreachesScheduler = onSchedule(
   {
     schedule: "every 30 minutes",
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 60,
   },
   async () => {

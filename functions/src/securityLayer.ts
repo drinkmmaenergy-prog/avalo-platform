@@ -171,7 +171,7 @@ const TRUST_SCORE_WEIGHTS = {
  * Perform comprehensive security check
  */
 export const performSecurityCheck = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
 
@@ -300,7 +300,7 @@ export const performSecurityCheck = onCall(
  * Watermark media file
  */
 export const watermarkMedia = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -351,7 +351,7 @@ export const watermarkMedia = onCall(
  * Report leaked media
  */
 export const reportLeakedMedia = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -422,7 +422,7 @@ export const reportLeakedMedia = onCall(
  * Detect screenshot attempt
  */
 export const detectScreenshot = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -458,7 +458,7 @@ export const detectScreenshot = onCall(
  * Block device
  */
 export const blockDevice = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
 
@@ -738,7 +738,7 @@ async function checkRateLimit(
  * Export rate limit check for use in other modules
  */
 export const checkGlobalRateLimit = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const { identifier, action } = request.data;
 

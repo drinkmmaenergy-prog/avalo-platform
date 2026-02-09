@@ -397,7 +397,7 @@ async function polishMessageWithAI(message: string): Promise<AIPolishedReply> {
  * Send chat message with full pricing and moderation
  */
 export const sendChatMessage = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -563,7 +563,7 @@ export const sendChatMessage = onCall(
  * Get AI message suggestions
  */
 export const getAISuggestions = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -603,7 +603,7 @@ export const getAISuggestions = onCall(
  * Polish message with AI SuperReply
  */
 export const polishMessageWithAISuperReply = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -639,7 +639,7 @@ export const polishMessageWithAISuperReply = onCall(
  * Get quick message templates
  */
 export const getQuickTemplates = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -677,7 +677,7 @@ export const getQuickTemplates = onCall(
  * Send gift in chat
  */
 export const sendChatGift = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -712,7 +712,7 @@ export const sendChatGift = onCall(
  * Enable/disable AI features for chat
  */
 export const updateChatAISettings = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

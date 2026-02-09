@@ -130,7 +130,7 @@ const getProviderConfig = (provider: PaymentProvider) => {
  * Create payment session with specified provider
  */
 export const createPaymentSessionCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -415,7 +415,7 @@ async function createCoinbaseSession(
  * Unified webhook handler for all providers
  */
 export const handleProviderWebhook = onRequest(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (req, res) => {
     const provider = req.path.split("/").pop() as PaymentProvider;
 

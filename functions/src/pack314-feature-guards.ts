@@ -3,7 +3,7 @@
  * 
  * Wrappers and decorators for enforcing feature flags on service endpoints
  * 
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { CallableRequest, HttpsError } from "firebase-functions/v2/https";

@@ -26,7 +26,7 @@ const db = getFirestore();
  * Register device for push notifications
  */
 export const registerPushToken = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -66,7 +66,7 @@ export const registerPushToken = onCall(
  * Unregister device from push notifications
  */
 export const unregisterPushToken = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -97,7 +97,7 @@ export const unregisterPushToken = onCall(
  * Get user notification settings
  */
 export const getNotificationSettings = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -139,7 +139,7 @@ export const getNotificationSettings = onCall(
  * Update user notification settings
  */
 export const updateNotificationSettings = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -170,7 +170,7 @@ export const updateNotificationSettings = onCall(
  * Get notifications for user (paginated)
  */
 export const getNotifications = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -239,7 +239,7 @@ export const getNotifications = onCall(
  * Mark notification as read
  */
 export const markNotificationAsRead = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -285,7 +285,7 @@ export const markNotificationAsRead = onCall(
  * Mark all notifications as read
  */
 export const markAllNotificationsAsRead = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
@@ -307,7 +307,7 @@ export const markAllNotificationsAsRead = onCall(
  * Get unread notification count
  */
 export const getUnreadCount = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

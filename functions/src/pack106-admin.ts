@@ -57,7 +57,7 @@ async function verifyAdminRole(uid: string): Promise<void> {
  * Admin only - for currency management dashboard
  */
 export const admin_listCurrencyProfiles = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CurrencyProfile[]> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -95,7 +95,7 @@ export const admin_listCurrencyProfiles = onCall(
  * Cannot update FX rate (only via scheduled refresh)
  */
 export const admin_updateCurrencyProfile = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -181,7 +181,7 @@ export const admin_updateCurrencyProfile = onCall(
  * This is a CRITICAL operation that affects global pricing
  */
 export const admin_setBaseTokenPrice = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{ success: boolean; requiresSecondApproval?: boolean }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -286,7 +286,7 @@ export const admin_setBaseTokenPrice = onCall(
  * Shows health and usage of currency system
  */
 export const admin_getCurrencyDashboardStats = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<CurrencyDashboardStats> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -364,7 +364,7 @@ export const admin_getCurrencyDashboardStats = onCall(
  * Useful if rates need immediate update
  */
 export const admin_triggerFXRefresh = onCall(
-  { region: 'europe-west3', timeoutSeconds: 60 },
+  { region: 'europe-west1', timeoutSeconds: 60 },
   async (request): Promise<{ success: boolean; updatedCount: number }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -405,7 +405,7 @@ export const admin_triggerFXRefresh = onCall(
  * Get current base token price configuration
  */
 export const admin_getBaseTokenPriceConfig = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<BaseTokenPriceConfig & { pendingApproval?: any }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');

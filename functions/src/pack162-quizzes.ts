@@ -57,7 +57,7 @@ interface QuizAttempt {
 }
 
 export const createQuiz = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -134,7 +134,7 @@ export const createQuiz = onCall(
 );
 
 export const takeQuiz = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -225,7 +225,7 @@ export const takeQuiz = onCall(
 );
 
 export const getQuizResults = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

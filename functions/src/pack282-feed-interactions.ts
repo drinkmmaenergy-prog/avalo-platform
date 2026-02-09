@@ -50,7 +50,7 @@ const CreateReportSchema = z.object({
  */
 export const likePost = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -109,7 +109,7 @@ export const likePost = onCall(
  */
 export const unlikePost = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -152,7 +152,7 @@ export const unlikePost = onCall(
  */
 export const getPostLikes = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (request) => {
     const { postId, limit = 50, cursor } = request.data;
@@ -209,7 +209,7 @@ export const getPostLikes = onCall(
  */
 export const createComment = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -280,7 +280,7 @@ export const createComment = onCall(
  */
 export const updateComment = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -333,7 +333,7 @@ export const updateComment = onCall(
  */
 export const deleteComment = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -384,7 +384,7 @@ export const deleteComment = onCall(
  */
 export const getPostComments = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
   },
   async (request) => {
     const { postId, limit = 50, cursor, sortOrder = 'desc' } = request.data;
@@ -442,7 +442,7 @@ export const getPostComments = onCall(
  */
 export const savePost = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -495,7 +495,7 @@ export const savePost = onCall(
  */
 export const unsavePost = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -538,7 +538,7 @@ export const unsavePost = onCall(
  */
 export const getSavedPosts = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -596,7 +596,7 @@ export const getSavedPosts = onCall(
  */
 export const trackPostView = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {
@@ -638,7 +638,7 @@ export const trackPostView = onCall(
  */
 export const reportContent = onCall(
   {
-    region: 'europe-west3',
+    region: 'europe-west1',
     enforceAppCheck: true,
   },
   async (request) => {

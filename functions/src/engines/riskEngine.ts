@@ -81,7 +81,7 @@ const BanUserSchema = z.object({
 export const updateRiskProfileTrigger = onDocumentCreated(
   {
     document: "transactions/{txId}",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     const tx = event.data?.data();
@@ -105,7 +105,7 @@ export const updateRiskProfileTrigger = onDocumentCreated(
 export const updateRiskProfileOnReportTrigger = onDocumentCreated(
   {
     document: "moderationFlags/{flagId}",
-    region: "europe-west3",
+    region: "europe-west1",
   },
   async (event) => {
     const flag = event.data?.data();
@@ -312,7 +312,7 @@ function calculateQualityScore(userData: any): number {
  * Callable function
  */
 export const calculateTrustScoreCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -410,7 +410,7 @@ export async function calculateTrustScore(userId: string): Promise<number> {
  * Ban user callable (admin only)
  */
 export const banUserCallable = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     const uid = request.auth?.uid;
     if (!uid) {

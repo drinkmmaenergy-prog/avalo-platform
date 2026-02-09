@@ -628,7 +628,7 @@ function formatDate(date: Date, language: LanguageCode): string {
  * Get all supported languages
  */
 export const getSupportedLanguagesV1 = onCall(
-  { region: "europe-west3", cors: true },
+  { region: "europe-west1", cors: true },
   async () => {
     const languages = Object.values(LANGUAGE_CONFIGS)
       .filter(config => config.isActive)
@@ -656,7 +656,7 @@ export const getSupportedLanguagesV1 = onCall(
  * Get user's language profile
  */
 export const getUserLanguageProfileV1 = onCall(
-  { region: "europe-west3", cors: true },
+  { region: "europe-west1", cors: true },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -696,7 +696,7 @@ export const getUserLanguageProfileV1 = onCall(
  * Update user's language preferences
  */
 export const updateLanguagePreferencesV1 = onCall(
-  { region: "europe-west3", cors: true },
+  { region: "europe-west1", cors: true },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -742,7 +742,7 @@ export const updateLanguagePreferencesV1 = onCall(
  * Get translations for a namespace
  */
 export const getTranslationsV1 = onCall(
-  { region: "europe-west3", cors: true },
+  { region: "europe-west1", cors: true },
   async (request) => {
     const userId = request.auth?.uid;
 
@@ -798,7 +798,7 @@ export const getTranslationsV1 = onCall(
  * Translate text dynamically
  */
 export const translateTextV1 = onCall(
-  { region: "europe-west3", cors: true },
+  { region: "europe-west1", cors: true },
   async (request) => {
     const userId = request.auth?.uid;
     if (!userId) {
@@ -854,7 +854,7 @@ export const translateTextV1 = onCall(
  * Format localized content (numbers, dates, currency)
  */
 export const formatLocalizedContentV1 = onCall(
-  { region: "europe-west3", cors: true },
+  { region: "europe-west1", cors: true },
   async (request) => {
     const schema = z.object({
       language: z.nativeEnum(LanguageCode),
@@ -903,7 +903,7 @@ export const formatLocalizedContentV1 = onCall(
 export const syncTranslationMemoryScheduler = onSchedule(
   {
     schedule: "0 */6 * * *", // Every 6 hours
-    region: "europe-west3",
+    region: "europe-west1",
     timeoutSeconds: 300,
   },
   async () => {

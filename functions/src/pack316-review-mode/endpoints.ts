@@ -3,7 +3,7 @@
  * 
  * API endpoints for review mode configuration and session management
  * 
- * Region: europe-west3
+ * Region: europe-west1
  */
 
 import { onRequest } from "firebase-functions/v2/https";
@@ -36,7 +36,7 @@ const db = getFirestore();
  * - env (optional, defaults to "prod")
  */
 export const getSessionConfig = onRequest(
-  { region: "europe-west3", cors: true },
+  { region: "europe-west1", cors: true },
   async (req, res) => {
     try {
       const { userId, deviceId, country, env = "prod" } = req.query;
@@ -80,7 +80,7 @@ export const getSessionConfig = onRequest(
  * Callable function
  */
 export const getDemoWalletBalance = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -122,7 +122,7 @@ export const getDemoWalletBalance = onCall(
  * Callable function
  */
 export const purchaseDemoTokens = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -183,7 +183,7 @@ export const purchaseDemoTokens = onCall(
  * Callable function
  */
 export const checkFeatureAccessReviewMode = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -220,7 +220,7 @@ export const checkFeatureAccessReviewMode = onCall(
  * Callable function (admin only)
  */
 export const updateReviewModeConfig = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -273,7 +273,7 @@ export const updateReviewModeConfig = onCall(
  * Callable function
  */
 export const getReviewModeConfig = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -307,7 +307,7 @@ export const getReviewModeConfig = onCall(
  * Callable function
  */
 export const markAsDemoProfile = onCall(
-  { region: "europe-west3" },
+  { region: "europe-west1" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "User must be authenticated");

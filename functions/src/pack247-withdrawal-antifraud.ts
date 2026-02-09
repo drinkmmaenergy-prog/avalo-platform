@@ -793,7 +793,7 @@ async function validateEventEarnings(userId: string): Promise<{ valid: boolean }
  * Request withdrawal with anti-fraud validation
  */
 export const requestWithdrawal = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<{
     success: boolean;
     requestId?: string;
@@ -895,7 +895,7 @@ export const requestWithdrawal = onCall(
  * Get user's risk score and unlock status
  */
 export const getUserRiskStatus = onCall(
-  { region: 'europe-west3' },
+  { region: 'europe-west1' },
   async (request): Promise<WithdrawalRiskScore> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');

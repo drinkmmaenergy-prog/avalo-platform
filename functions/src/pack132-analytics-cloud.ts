@@ -798,7 +798,7 @@ export const computeDailyMetrics = onSchedule(
   {
     schedule: `0 ${ANALYTICS_CONFIG.DAILY_COMPUTE_HOUR} * * *`,
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '2GiB' as const,
     timeoutSeconds: 540,
   },
@@ -884,7 +884,7 @@ export const computeWeeklyMetrics = onSchedule(
   {
     schedule: `0 ${ANALYTICS_CONFIG.DAILY_COMPUTE_HOUR} * * ${ANALYTICS_CONFIG.WEEKLY_COMPUTE_DAY}`,
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '2GiB' as const,
     timeoutSeconds: 540,
   },
@@ -965,7 +965,7 @@ export const computeMonthlyMetrics = onSchedule(
   {
     schedule: `0 ${ANALYTICS_CONFIG.DAILY_COMPUTE_HOUR} ${ANALYTICS_CONFIG.MONTHLY_COMPUTE_DAY} * *`,
     timeZone: 'UTC',
-    region: 'europe-west3',
+    region: 'europe-west1',
     memory: '4GiB' as const,
     timeoutSeconds: 540,
   },
