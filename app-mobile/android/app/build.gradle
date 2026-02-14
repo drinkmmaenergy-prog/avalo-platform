@@ -2,6 +2,17 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+// --- PATCH: disable outdated worklets version assertion (Expo + RN >=0.75 + Reanimated 4.x) ---
+// Replaces patch-package react-native-reanimated+4.1.0.patch for pnpm hoisted layout
+gradle.taskGraph.whenReady { graph ->
+    graph.allTasks.each { task ->
+        if (task.name == "assertWorkletsVersionTask") {
+            task.enabled = false
+        }
+    }
+}
+// --- END PATCH ---
+
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
 /**
