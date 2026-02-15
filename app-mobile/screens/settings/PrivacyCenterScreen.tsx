@@ -19,7 +19,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { auth } from "../../lib/firebase";
+import { auth } from "@/lib/firebase";
 import {
   ExportJob,
   DeletionJob,

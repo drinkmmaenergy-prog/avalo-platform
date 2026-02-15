@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { functions } from '../../../lib/firebase';
+import { functions } from '@/lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 
 interface HelpArticle {

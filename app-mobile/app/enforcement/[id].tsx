@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { doc, getDoc, collection, addDoc, updateDoc, query, where, getDocs } from 'firebase/firestore';
-import { db, auth } from '../../lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import {
   EnforcementDecision,
   EnforcementAppeal,

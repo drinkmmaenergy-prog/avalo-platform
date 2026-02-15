@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { db } from '@/lib/firebase';
 import { getAuth } from 'firebase/auth';
 import type { SponsorshipOffer } from '../../lib/sponsorships/types';
 import {

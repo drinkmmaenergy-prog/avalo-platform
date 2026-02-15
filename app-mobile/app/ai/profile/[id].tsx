@@ -22,9 +22,9 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { doc, getDoc, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import { db } from '@/lib/firebase';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../../../lib/firebase';
+import { functions } from '@/lib/firebase';
 
 // ============================================================================
 // TYPES

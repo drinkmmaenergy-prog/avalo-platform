@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { httpsCallable } from 'firebase/functions';
-import { functions, auth } from '../../lib/firebase';
+import { functions, auth } from '@/lib/firebase';
 import type { AIAvatar, AIChatMessage } from '../../types/aiCompanion';
 
 export default function AIAvatarProfile() {

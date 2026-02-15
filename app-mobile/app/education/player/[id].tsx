@@ -12,10 +12,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { doc, getDoc, collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { db, auth } from '../../../lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { Course, CourseModule, CourseProgress } from '../../../../functions/src/types/education.types';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../../../lib/firebase';
+import { functions } from '@/lib/firebase';
 // import { Video, ResizeMode } from 'expo-av';
 
 export default function CoursePlayer() {

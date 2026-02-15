@@ -19,7 +19,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import { auth } from '../../lib/firebase';
+import { auth } from '@/lib/firebase';
 import {
   fetchCreatorProfile,
   CreatorProfileSummary,

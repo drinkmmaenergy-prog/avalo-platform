@@ -5,7 +5,7 @@ import { AvaloSDK } from "@/lib/sdk";
 AvaloSDK.init({
   apiUrl: "https://us-central1-avalo-c8c46.cloudfunctions.net",
   projectId: "avalo-c8c46",
-  apiKey: "REPLACE_WITH_FIREBASE_API_KEY", // do podmiany po konfiguracji .env
+  apiKey: process.env.FIREBASE_API_KEY || "AIzaSyBpOGHxWKxd7Y8zXnLxJ7bZTdEwNRuCqLw",
   deviceId: "DEVICE_PLACEHOLDER",
 });
 

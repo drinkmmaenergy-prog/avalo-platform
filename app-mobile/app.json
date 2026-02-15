@@ -24,7 +24,8 @@
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
         }
-      ]
+      ],
+      "react-native-iap"
     ],
     "android": {
       "package": "com.avalo.app",

@@ -18,7 +18,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { auth } from '../../lib/firebase';
+import { auth } from '@/lib/firebase';
 import {
   fetchUserSpendingAnalytics,
   clearUserSpendingAnalyticsCache,

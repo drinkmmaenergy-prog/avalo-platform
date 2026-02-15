@@ -24,7 +24,7 @@ import {
   addDoc,
   Timestamp,
 } from 'firebase/firestore';
-import { db, auth } from '../../../lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { Ionicons } from '@expo/vector-icons';
 
 interface ChatMessage {

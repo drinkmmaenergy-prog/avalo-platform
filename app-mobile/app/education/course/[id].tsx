@@ -13,11 +13,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { doc, getDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
-import { auth } from '../../../lib/firebase';
+import { db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { Course, CourseModule, CourseReview } from '../../../../functions/src/types/education.types';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../../../lib/firebase';
+import { functions } from '@/lib/firebase';
 
 export default function CourseDetail() {
   const { id } = useLocalSearchParams();

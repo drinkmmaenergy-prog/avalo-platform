@@ -16,9 +16,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
-import { LEGAL_DOCS, getAllLegalDocKeys, getCombinedLegalVersion } from '../../../shared/legal/legalRegistry';
+import { LEGAL_DOCS, getAllLegalDocKeys } from '../../../shared/legal/legalRegistry';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { db } from '@/lib/firebase';
 
 interface LegalAcceptance {
   termsVersion: string;

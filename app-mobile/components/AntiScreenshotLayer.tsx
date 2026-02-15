@@ -8,7 +8,7 @@ import React, { useEffect } from 'react';
 import { Alert, Platform } from 'react-native';
 import { addScreenshotListener, removeScreenshotListener } from 'expo-screen-capture';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db } from '@/lib/firebase';
 
 interface AntiScreenshotLayerProps {
   storyId: string;
