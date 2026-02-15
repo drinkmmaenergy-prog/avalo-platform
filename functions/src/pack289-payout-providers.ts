@@ -42,10 +42,11 @@ interface BankTransferConfig {
 }
 
 const WISE_CONFIG: WiseConfig = {
-  apiKey: functions.config().wise?.api_key,
-  apiUrl: 'https://api.transferwise.com',
-  profileId: functions.config().wise?.profile_id,
+  apiKey: process.env.WISE_API_KEY || "",
+  apiUrl: "https://api.transferwise.com",
+  profileId: process.env.WISE_PROFILE_ID || ""
 };
+
 
 const BANK_TRANSFER_CONFIG: BankTransferConfig = {
   enabled: true,

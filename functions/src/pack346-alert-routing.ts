@@ -99,7 +99,7 @@ async function routeToChannels(alert: Alert): Promise<void> {
  */
 async function sendToSlack(alert: Alert): Promise<void> {
   try {
-    const webhookUrl = functions.config().slack?.webhook_url;
+    const webhookUrl = process.env.SLACK_WEBHOOK_URL || '';
     
     if (!webhookUrl) {
       console.warn("Slack webhook URL not configured");
@@ -163,8 +163,8 @@ async function sendToSlack(alert: Alert): Promise<void> {
  */
 async function sendToEmail(alert: Alert): Promise<void> {
   try {
-    // Get admin emails from config
-    const adminEmails = functions.config().admin?.emails || [];
+    // Get admin emails from env (Gen2: no runtime config)
+    const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').filter(Boolean);
     
     if (adminEmails.length === 0) {
       console.warn("No admin emails configured");

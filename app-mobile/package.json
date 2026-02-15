@@ -5,7 +5,6 @@
   "main": "expo-router/entry",
   "scripts": {
     "ios": "expo run:ios",
-    "postinstall": "patch-package || true",
     "android": "expo run:android",
     "start": "expo start --dev-client",
     "web": "expo start --web"

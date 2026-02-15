@@ -1,14 +1,16 @@
-/**
- * Avalo Cloud Functions - Shared Runtime Module
- * Centralized exports for firebase-admin, firebase-functions, and common utilities
- */
-
 import { setGlobalOptions } from "firebase-functions/v2";
+import { defineSecret } from "firebase-functions/params";
 
-// 🔴 KLUCZOWE — WYMUSZENIE REGIONU
+// Define secrets for Firebase Gen2 (Cloud Run injection)
+export const stripeSecretKey = defineSecret("STRIPE_SECRET_KEY");
+export const stripeWebhookSecret = defineSecret("STRIPE_WEBHOOK_SECRET");
+
+// 🔴 KLUCZOWE — WYMUSZENIE REGIONU + SECRETS
+// Secrets declared here are injected by Cloud Run into process.env
+// at container boot time. Without this, startupValidator fails in production.
 setGlobalOptions({
   region: "europe-west1",
-  maxInstances: 3,
+  secrets: [stripeSecretKey, stripeWebhookSecret],
 });
 
 // ====================================
@@ -72,7 +74,14 @@ export {
 // ====================================
 import * as functions from "firebase-functions";
 export { functions };
-export const functionsConfig = functions.config;
+// Gen2 shim: functions.config() is unavailable in v2, return empty object
+export const functionsConfig = (): Record<string, any> => {
+  try {
+    return functions.config();
+  } catch {
+    return {};
+  }
+};
 
 // ====================================
 // Zod

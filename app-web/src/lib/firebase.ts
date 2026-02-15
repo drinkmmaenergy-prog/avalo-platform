@@ -33,8 +33,8 @@ export const auth: Auth = getAuth(app);
 /** Firestore */
 export const db: Firestore = getFirestore(app);
 
-/** Cloud Functions — defaults to us-central1 */
-export const functions: Functions = getFunctions(app, 'us-central1');
+/** Cloud Functions — europe-west1 matches production deployment region */
+export const functions: Functions = getFunctions(app, 'europe-west1');
 
 /** Firebase Storage */
 export const storage: FirebaseStorage = getStorage(app);

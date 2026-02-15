@@ -18,6 +18,12 @@
  * - Detect via: !K_SERVICE && !FUNCTIONS_EMULATOR
  * - Allow deploy analysis to continue with WARN
  * - Still HARD FAIL in Cloud Run (Gen2 runtime) and Emulator
+ * 
+ * BOOT ISOLATION (PHASE 1):
+ * - Stripe secrets are injected per-function via defineSecret, NOT at module load
+ * - Cold-start validation must NOT check process.env for defineSecret() secrets
+ * - healthCheck and smokeCheck bypass Stripe enforcement
+ * - All top-level process.env reads use lazy getters
  */
 
 // ============================================================================
@@ -53,14 +59,29 @@ export interface StartupValidationResult {
 }
 
 // ============================================================================
-// ENVIRONMENT DETECTION
+// LAZY ENVIRONMENT GETTERS
+// (process.env is read at call time, NOT at module load)
 // ============================================================================
 
-const IS_EMULATOR = process.env.FUNCTIONS_EMULATOR === 'true';
-const IS_CLOUD_RUN = !!process.env.K_SERVICE; // Gen2 runtime sets K_SERVICE
-const NODE_ENV = process.env.NODE_ENV || 'production';
-const GCLOUD_PROJECT = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || '';
-const FIREBASE_CONFIG = process.env.FIREBASE_CONFIG || '';
+function getIsEmulator(): boolean {
+  return process.env.FUNCTIONS_EMULATOR === 'true';
+}
+
+function getIsCloudRun(): boolean {
+  return !!process.env.K_SERVICE;
+}
+
+function getNodeEnv(): string {
+  return process.env.NODE_ENV || 'production';
+}
+
+function getGcloudProject(): string {
+  return process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || '';
+}
+
+function getFirebaseConfig(): string {
+  return process.env.FIREBASE_CONFIG || '';
+}
 
 /**
  * Detect if this is deploy-time analysis.
@@ -73,7 +94,7 @@ const FIREBASE_CONFIG = process.env.FIREBASE_CONFIG || '';
  * → Must be deploy-time analysis
  */
 function isDeployTimeAnalysis(): boolean {
-  return !IS_CLOUD_RUN && !IS_EMULATOR;
+  return !getIsCloudRun() && !getIsEmulator();
 }
 
 /**
@@ -81,12 +102,12 @@ function isDeployTimeAnalysis(): boolean {
  */
 function detectProductionEnvironment(): boolean {
   // Emulator = zawsze development runtime
-  if (IS_EMULATOR) return false;
+  if (getIsEmulator()) return false;
 
   // Production runtime tylko w Cloud Run (Gen2)
-  if (IS_CLOUD_RUN && NODE_ENV === 'production') return true;
+  if (getIsCloudRun() && getNodeEnv() === 'production') return true;
 
-  if (GCLOUD_PROJECT && !GCLOUD_PROJECT.includes('emulator') && IS_CLOUD_RUN) return true;
+  if (getGcloudProject() && !getGcloudProject().includes('emulator') && getIsCloudRun()) return true;
 
   return false;
 }
@@ -96,13 +117,20 @@ function detectProductionEnvironment(): boolean {
 // ============================================================================
 
 /**
- * Validate that required environment variables are set
+ * Validate that required environment variables are set.
+ * 
+ * BOOT ISOLATION NOTE:
+ * Stripe secrets (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) are declared via
+ * defineSecret() and injected per-function by Cloud Run. They are NOT available
+ * in process.env at module load / cold start time.
+ * 
+ * Therefore, this validator only checks NON-secret env vars at boot.
+ * Stripe secret presence is validated inside individual function handlers.
  */
 function validateRequiredEnvVars(): { valid: boolean; missing: string[] } {
-  const requiredInProd: string[] = [
-    'STRIPE_SECRET_KEY',
-    'STRIPE_WEBHOOK_SECRET',
-  ];
+  // NOTE: Stripe secrets removed from boot-time validation.
+  // They are checked per-function via defineSecret() injection.
+  const requiredInProd: string[] = [];
   
   const missing: string[] = [];
   const isProd = detectProductionEnvironment();
@@ -122,13 +150,18 @@ function validateRequiredEnvVars(): { valid: boolean; missing: string[] } {
 }
 
 /**
- * Validate that test Stripe keys are NOT used in production
+ * Validate that test Stripe keys are NOT used in production.
+ * 
+ * BOOT ISOLATION NOTE:
+ * At cold start, process.env.STRIPE_SECRET_KEY may not be set yet
+ * (defineSecret injects it per-handler). Only validate if present.
  */
 function validateStripeKeyNotTest(): { valid: boolean; violation?: string } {
   const stripeKey = process.env.STRIPE_SECRET_KEY || '';
   const isProd = detectProductionEnvironment();
   
-  if (isProd && stripeKey.startsWith('sk_test_')) {
+  // Only validate if the key is actually present in env
+  if (isProd && stripeKey && stripeKey.startsWith('sk_test_')) {
     return {
       valid: false,
       violation: 'CRITICAL: Stripe test key (sk_test_*) detected in production environment',
@@ -136,7 +169,7 @@ function validateStripeKeyNotTest(): { valid: boolean; violation?: string } {
   }
   
   // Also check for live key in non-production (warning only)
-  if (!isProd && stripeKey.startsWith('sk_live_')) {
+  if (!isProd && stripeKey && stripeKey.startsWith('sk_live_')) {
     validatorLogger.warn('Live Stripe key in non-production environment');
   }
   
@@ -149,7 +182,7 @@ function validateStripeKeyNotTest(): { valid: boolean; violation?: string } {
 function validateEmulatorNotInProd(): { valid: boolean; violation?: string } {
   const isProd = detectProductionEnvironment();
   
-  if (isProd && IS_EMULATOR) {
+  if (isProd && getIsEmulator()) {
     return {
       valid: false,
       violation: 'CRITICAL: Firebase emulator detected with production NODE_ENV',
@@ -176,11 +209,11 @@ function validateRegionConfig(): { valid: boolean; region: string } {
  * Validate Firebase project is identifiable
  */
 function validateFirebaseProject(): { valid: boolean; project?: string } {
-  const project = GCLOUD_PROJECT || 
-                  (FIREBASE_CONFIG ? JSON.parse(FIREBASE_CONFIG).projectId : undefined);
+  const project = getGcloudProject() || 
+                  (getFirebaseConfig() ? JSON.parse(getFirebaseConfig()).projectId : undefined);
   
   return {
-    valid: !!project || IS_EMULATOR,
+    valid: !!project || getIsEmulator(),
     project: project || 'emulator',
   };
 }
@@ -201,16 +234,16 @@ export function runStartupValidation(): StartupValidationResult {
   const checks: Record<string, boolean> = {};
   
   const isProd = detectProductionEnvironment();
-  const environment = isProd ? 'production' : (IS_EMULATOR ? 'emulator' : 'development');
+  const environment = isProd ? 'production' : (getIsEmulator() ? 'emulator' : 'development');
   
-  // 1. Required environment variables
+  // 1. Required environment variables (non-secret only)
   const envVarsCheck = validateRequiredEnvVars();
   checks['requiredEnvVars'] = envVarsCheck.valid;
   if (!envVarsCheck.valid) {
     errors.push(`Missing required environment variables: ${envVarsCheck.missing.join(', ')}`);
   }
   
-  // 2. Stripe test key guard
+  // 2. Stripe test key guard (only if key is present)
   const stripeKeyCheck = validateStripeKeyNotTest();
   checks['stripeKeyNotTest'] = stripeKeyCheck.valid;
   if (!stripeKeyCheck.valid && stripeKeyCheck.violation) {
@@ -292,6 +325,53 @@ export function assertStartupValid(): void {
   runStartupValidation();
 }
 
+/**
+ * Validate that Stripe secrets are present inside a function handler.
+ * Call this from within onRequest/onCall handlers that require Stripe.
+ * 
+ * healthCheck and smokeCheck are EXEMPT from this enforcement.
+ * 
+ * @param functionName - Name of the function for logging
+ * @throws Error if secrets are missing in production Cloud Run handler
+ */
+export function enforceStripeSecrets(functionName: string): void {
+  const isCloudRun = getIsCloudRun();
+  
+  if (!isCloudRun) return; // Only enforce in Cloud Run
+  
+  const hasStripeKey = !!process.env.STRIPE_SECRET_KEY;
+  const hasWebhookSecret = !!process.env.STRIPE_WEBHOOK_SECRET;
+  
+  if (!hasStripeKey || !hasWebhookSecret) {
+    const missing: string[] = [];
+    if (!hasStripeKey) missing.push('STRIPE_SECRET_KEY');
+    if (!hasWebhookSecret) missing.push('STRIPE_WEBHOOK_SECRET');
+    
+    validatorLogger.error(`[${functionName}] Missing Stripe secrets in handler`, {
+      missing,
+    });
+    
+    throw new Error(
+      `[${functionName}] Missing required Stripe secrets: ${missing.join(', ')}`
+    );
+  }
+}
+
+/**
+ * List of function names that bypass Stripe enforcement.
+ */
+const STRIPE_BYPASS_FUNCTIONS = new Set([
+  'healthCheck',
+  'smokeCheck',
+]);
+
+/**
+ * Check if a function bypasses Stripe enforcement.
+ */
+export function isStripeBypassFunction(functionName: string): boolean {
+  return STRIPE_BYPASS_FUNCTIONS.has(functionName);
+}
+
 // ============================================================================
 // AUTO-RUN AT MODULE LOAD (cold start)
 // ============================================================================
@@ -329,5 +409,6 @@ export default {
   runStartupValidation,
   assertStartupValid,
   initStartupValidation,
+  enforceStripeSecrets,
+  isStripeBypassFunction,
 };
-

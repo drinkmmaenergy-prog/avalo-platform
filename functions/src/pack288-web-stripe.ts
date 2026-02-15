@@ -242,43 +242,22 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   }
 
   try {
-    // Check if already processed
-    const existingPurchase = await db
-      .collection('tokenPurchases')
-      .where('providerOrderId', '==', session.id)
-      .where('status', '==', 'COMPLETED')
-      .limit(1)
-      .get();
-
-    if (!existingPurchase.empty) {
-      logger.warn('Purchase already processed', { sessionId: session.id });
-      return;
-    }
-
-    // Create purchase record
-    const purchaseId = generateId();
-    const purchase: TokenPurchase = {
-      purchaseId,
-      userId,
-      packageId: packageId as any,
-      tokens,
-      basePricePLN,
-      paidCurrency: session.currency?.toUpperCase() || 'USD',
-      paidAmount: (session.amount_total || 0) / 100, // Convert from cents
-      platform: 'web',
-      provider: 'stripe',
-      providerOrderId: session.id,
-      status: 'COMPLETED',
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
-    };
-
-    await db.collection('tokenPurchases').doc(purchaseId).set(purchase);
-
-    // Credit tokens to wallet
+    // Atomic transaction: duplicate check + purchase record + wallet credit
+    // All inside a single Firestore transaction to prevent race conditions
     const walletRef = db.collection('wallets').doc(userId);
+    const purchaseId = generateId();
 
     await db.runTransaction(async (transaction) => {
+      // Idempotency check: read the idempotency sentinel doc inside the transaction
+      const idempotencyRef = db.collection('processedStripeEvents').doc(`pack288_${session.id}`);
+      const idempotencyDoc = await transaction.get(idempotencyRef);
+
+      if (idempotencyDoc.exists) {
+        logger.warn('Purchase already processed (idempotent skip)', { sessionId: session.id });
+        return;
+      }
+
+      // Read wallet inside transaction for consistency
       const walletDoc = await transaction.get(walletRef);
 
       const currentBalance = walletDoc.exists
@@ -286,6 +265,33 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
         : 0;
       const newBalance = currentBalance + tokens;
 
+      // 1. Write idempotency sentinel (prevents duplicate processing)
+      transaction.set(idempotencyRef, {
+        sessionId: session.id,
+        userId,
+        tokens,
+        processedAt: serverTimestamp(),
+      });
+
+      // 2. Create purchase record inside transaction
+      const purchase: TokenPurchase = {
+        purchaseId,
+        userId,
+        packageId: packageId as any,
+        tokens,
+        basePricePLN,
+        paidCurrency: session.currency?.toUpperCase() || 'USD',
+        paidAmount: (session.amount_total || 0) / 100, // Convert from cents
+        platform: 'web',
+        provider: 'stripe',
+        providerOrderId: session.id,
+        status: 'COMPLETED',
+        createdAt: serverTimestamp() as any,
+        updatedAt: serverTimestamp() as any,
+      };
+      transaction.set(db.collection('tokenPurchases').doc(purchaseId), purchase);
+
+      // 3. Credit tokens to wallet
       if (walletDoc.exists) {
         transaction.update(walletRef, {
           tokensBalance: newBalance,
@@ -304,7 +310,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
         });
       }
 
-      // Create wallet transaction
+      // 4. Create wallet transaction record
       const txId = generateId();
       transaction.set(db.collection('walletTransactions').doc(txId), {
         txId,

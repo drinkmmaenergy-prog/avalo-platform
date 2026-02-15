@@ -2,6 +2,7 @@
   "compilerOptions": {
     "strict": false,
     "skipLibCheck": true,
+    "types": [],
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": { "@/*": ["*"] }

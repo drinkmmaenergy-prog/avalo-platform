@@ -8,6 +8,7 @@
     "lib",
     "src/__tests__",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "src/index.full.ts"
   ]
 }

@@ -1,689 +1,1123 @@
 /**
- * Avalo Cloud Functions - Main Entry Point
- * Firebase Functions exports - Full Export Patch
- * 
- * Generated: 2026-01-25T21:15:07.311Z
- * Commit: 91c9eb03829c0caf34296b1bacae6643903f8a40
- * Total files: 571
- * Total functions: 2934
- * 
- * This file exports ALL Cloud Functions from the repository.
- * Functions are grouped by domain (A-Z) for organization.
+ * ============================================================================
+ * AVALO FIREBASE FUNCTIONS ENTRYPOINT
+ * ============================================================================
+ *
+ * Master index file for Firebase Cloud Functions deployment.
+ * Restored in controlled batches to avoid Cloud Run boot crashes.
+ *
+ * Architecture: PACK-based modular organization
+ * Target: Firebase Functions Node >=20 + TypeScript
+ * Region: europe-west1 (default)
+ *
+ * @version 3.0.0 — Incremental restore
  */
 
-// Initialize Firebase Admin first
+// ============================================================================
+// INITIALIZATION (Must be first — side-effect imports only)
+// ============================================================================
+import './runtime';
 import './init';
 
-console.log('🚀 Avalo Cloud Functions loaded (full export - 571 files, 2934 functions)');
+// ============================================================================
+// HEALTH & SMOKE (always present)
+// ============================================================================
+export { smokeCheck } from './api/smokeCheck';
+export { healthCheck } from './healthCheck';
 
-// NOTE: db, auth, storage, admin, generateId, serverTimestamp are available
-// via direct import from './init'. They are NOT re-exported here because
-// firebase-functions loader.extractStack() recurses into these complex objects
-// (which have circular references) causing Maximum call stack size exceeded.
-// Internal modules must import from './init' directly.
+// ============================================================================
+// BATCH A: AUTH, WALLET, STRIPE, ECONOMY CONFIG
+// ============================================================================
 
-// ============================================
-// DOMAIN A (27 files)
-// ============================================
-export * from './abTesting';
-export * from './accelerator';
+// --- AUTH & ACCOUNT LIFECYCLE ---
+export * from './adminAuth';
+export * from './adminCalls';
 export * from './adminConsole';
 export * from './adminPanel';
-export * from './adminRateLimit';
 export * from './adminSupport';
-export * from './affiliate/index';
-export * from './aiCharacters';
-export * from './aiCompanionFunctions';
-export * from './aiCompanions';
-export * from './aiCompanionsPack48';
-export * from './aiExplainability';
-export * from './aiMarketplaceFunctions';
-export * from './aiMemory';
-export * from './aiModeration';
-export { ContentType, RiskCategory, RiskLevel, analyzeContentV1, getModerationQueueV1, resolveModerationItemV1, getAIOversightStatsV1 } from './aiOversight';
-export * from './ambassador/ambassador.functions';
+export * from './accountLifecycle';
+export {
+  applySanctions,
+  getAccountStatus as getAccountStatus_engine,
+  getAccountStatusRecord,
+  account_getStatus,
+  onContentViolation,
+  onCsamDetection,
+  onSafeMeetSOS,
+  onTrustCriticalEvent,
+  canPerformAction,
+} from './accountStatusEngine';
+export * from './deviceTrust';
+export * from './compliance';
+export * from './compliancePack55';
 export * from './amlMonitoring';
-export * from './analytics';
-export * from './analytics/api';
-export * from './analyticsExport';
+
+// PACK 306: VERIFICATION SYSTEM
+export {
+  onUserCreate,
+  startVerification,
+  verifySelfie,
+  verifyProfilePhotos,
+  verifyMeetingSelfie,
+  adminVerificationOverride,
+  cleanupOldVerificationData,
+} from './pack306-verification';
+
+// PACK 314: REGISTRATION
+export {
+  validateRegistration,
+  completeUserProfile,
+  getUserFeatures,
+} from './pack314-registration';
+
+// PACK 317: RATE LIMITING & SECURITY
+export {
+  pack317_checkRateLimit,
+  pack317_checkRegistration,
+  pack317_checkMessageSpam,
+  pack317_getLaunchConfig,
+  pack317_updateLaunchConfig,
+  pack317_getLaunchConfigHistory,
+  pack317_querySecurityEvents,
+  pack317_getSecurityStats,
+  pack317_testSanitization,
+} from './pack317-endpoints';
+
+// --- STRIPE & PAYMENTS ---
+
+// CORE PAYMENT SYSTEM
+export {
+  stripeWebhook,
+  creditTokensCallable,
+  requestPayoutCallable,
+} from './payments';
+
+export {
+  createStripeCheckoutSession,
+  stripeWebhookV2,
+  validateAppleReceipt,
+  initiateChat,
+  releaseEscrowIncremental,
+  autoRefundInactiveEscrows,
+  generateMonthlySettlements,
+  getWalletBalance,
+  getTransactionHistory,
+  createCalendarBooking,
+  completeCalendarBooking,
+  cancelCalendarBooking,
+  requestPayout,
+  getCreatorSettlements,
+  getPendingSettlements,
+} from './paymentsComplete';
+
+// PACK 278: SUBSCRIPTION ENGINE
+export {
+  pack278_stripeWebhook,
+} from './pack278-subscription-endpoints';
+
+// PACK 288: WEB STRIPE TOKENS
+export {
+  tokens_stripeWebhook,
+} from './pack288-web-stripe';
+
+// PACK 289: KYC SYSTEM
+export {
+  kyc_submit,
+  kyc_getStatus,
+  kyc_admin_review,
+  kyc_admin_listPending,
+} from './pack289-kyc';
+
+// PACK 350: SUBSCRIPTION ENDPOINTS
+export {
+  pack350_getMySubscription,
+  pack350_getSubscriptionProducts,
+  pack350_syncStripeSubscription,
+  pack350_syncAppleSubscription,
+  pack350_syncGoogleSubscription,
+  pack350_cancelSubscription,
+  pack350_stripeWebhook,
+  pack350_appleWebhook,
+  pack350_googleWebhook,
+} from './pack350-endpoints';
+
+// PACK 383: CHARGEBACK & PAYOUT ROUTER
+export {
+  pack383_detectChargebackRisk,
+  pack383_applyPayoutFreeze,
+  pack383_createReserveHold,
+  pack383_releaseExpiredHolds,
+  pack383_handleChargebackNotification,
+} from './pack383-chargeback-firewall';
+
+export {
+  pack383_resolveOptimalPayoutRoute,
+  pack383_initiatePayout,
+  pack383_processPayoutQueue,
+} from './pack383-payout-router';
+
+// PACK 390: AML & PAYOUTS
+export {
+  pack390_runAMLScan,
+  pack390_autoAMLScanOnPayout,
+  pack390_escalateFinancialRisk,
+} from './pack390-aml';
+
+export {
+  pack390_requestBankPayout,
+  pack390_executeBankPayout,
+  pack390_reverseFailedTransfer,
+  pack390_getPayoutHistory,
+} from './pack390-payouts';
+
+// PACK 395: INVOICING & TAX ENGINE
+export {
+  generatePurchaseInvoice,
+  generateCreatorPayoutStatement,
+  emailInvoiceToUser,
+  getUserInvoices,
+  getCreatorPayoutStatements,
+  generateMonthlyStatementsForAllCreators,
+} from './pack395-invoicing';
+
+export {
+  calculatePurchaseTax,
+  updateVATRates,
+  validateVATNumber,
+} from './pack395-tax-engine';
+
+// PACK 92: PUSH NOTIFICATIONS (auth-adjacent)
+export {
+  registerPushToken,
+  unregisterPushToken,
+  getNotificationSettings,
+  updateNotificationSettings,
+  getNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  getUnreadCount,
+} from './pack92-endpoints';
+
+// --- WALLET & ECONOMY ---
+export * from './currency';
+export * from './earningsIntegration';
+export * from './dynamicPricing';
+
+// PACK 246: ECONOMY CONTRACT VALIDATION
+export {
+  economyContractValidator,
+  getContractStats,
+  getAuditLogs,
+  getSuspiciousAnomalies,
+  resolveAnomaly,
+  nightlyContractAuditor,
+  weeklyContractReport,
+} from './pack246-cloud-functions';
+
+// --- API ENDPOINTS (core infra) ---
+export * from './api/health';
 export * from './api/configApi';
 export * from './api/featureFlags';
-export * from './api/health';
-export * from './api/offline-presence';
 export * from './api/payoutHandlers';
-export * from './auditFramework';
+export * from './api/search.api';
 
-// ============================================
-// DOMAIN B (6 files)
-// ============================================
-export * from './boosts.functions';
-export * from './brandStrategy/index';
-export * from './brands/brandCollaborations';
-export * from './brands/brandModeration';
-export * from './brands/brandProducts';
-export * from './brands/brandProfiles';
+// --- ENGINES (core infra) ---
+export * from './engines/economyEngine';
+export * from './engines/complianceEngine';
+export {
+  updateRiskProfileTrigger,
+  updateRiskProfileOnReportTrigger,
+  calculateTrustScoreCallable,
+  calculateTrustScore,
+  banUserCallable,
+  isUserRestricted,
+} from './engines/riskEngine';
 
-// ============================================
-// DOMAIN C (39 files)
-// ============================================
-export * from './cacheManager';
-export * from './calendar';
-export * from './calendarFunctions';
-export * from './callable/team/acceptTeamInvite';
-export * from './callable/team/getTeamActivity';
-export * from './callable/team/getTeamMembers';
-export * from './callable/team/grantDmAccess';
-export * from './callable/team/inviteTeamMember';
-export * from './callable/team/removeTeamMember';
-export * from './callable/team/revokeDmAccess';
-export * from './callable/team/updateTeamMemberRole';
-export * from './challenges';
-export * from './chatMediaFunctions';
-export * from './chatSecurity';
-export * from './chatSync';
-export * from './chatSystemNextGen';
+// ============================================================================
+// BATCH B: CHAT, DISCOVERY, FEED
+// ============================================================================
+
+// --- CHAT & MESSAGING ---
 export * from './chats';
-export * from './chemistryFeedApi';
+export * from './chatSync';
+export * from './chatSecurity';
+export * from './chatMonetization';
+export * from './chatMediaFunctions';
+export * from './chatMediaMonetization';
+export * from './chatSystemNextGen';
+export * from './dynamicChatPricing';
+
+// --- DISCOVERY & MATCHING ---
+export * from './discoveryEndpoints';
+export * from './discoveryFeed';
+export {
+  filterShadowbannedUsers,
+  filterIncognitoUsers,
+  applyDiscoveryFilters,
+  isUserVisibleInDiscovery as isUserVisibleInDiscovery_filters,
+  getDiscoveryQueryFilters,
+  calculateVisibilityMultiplier,
+  enrichUsersWithTrustData,
+  applyVisibilityWeighting,
+} from './discoveryFilters';
+export {
+  getDiscoveryFeed as getDiscoveryFeed_v2,
+  searchProfiles,
+} from './discoveryEngineV2';
+export * from './discoveryProfileBuilder';
+
+// PACK 294: DISCOVERY ANALYTICS
+export {
+  logDiscoveryProfileView,
+  logDiscoveryProfileLike,
+  logDiscoveryOpenChat,
+  logDiscoveryOpenCalendar,
+  aggregateDiscoveryAnalytics,
+} from './pack294-discovery-analytics';
+
+// CHEMISTRY MATCHING
 export * from './chemistryMatchingApi';
-export * from './climate/index';
-export { recordContribution, getContributionScores, assignClubRole, createClubChallenge, detectCliqueFormation, resolveToxicityEvent, getClubHealth } from './clubIntelligence';
+export * from './chemistryMatchingEngine';
+export * from './chemistryFeedApi';
+export * from './engines/chemistryLockIn';
+export * from './triggers/chemistryLockInTriggers';
+
+// --- FEED ---
+
+// PACK 282: FEED ENGINE
+export {
+  createPost,
+  updatePost,
+  deletePost,
+  getFeed,
+  getPost,
+} from './pack282-feed-engine';
+
+// PACK 298: UNIFIED ENGINE
+export {
+  calculateFeedRankings,
+  generateSwipePool,
+  updateLowPopularityStatus,
+  validateContentSafety,
+} from './pack298-unified-engine';
+
+// --- CALLS & CALENDAR ---
+export * from './calls';
+export * from './callBilling';
+export {
+  determineCallPayerAndEarner,
+  getCallMinuteCost,
+  startCall as startCallMonetized,
+  updateCallActivity,
+  endCall as endCallMonetized,
+  autoDisconnectIdleCalls,
+  getActiveCallForUser,
+  checkCallBalance as checkCallBalance_monetization,
+} from './callMonetization';
+export * from './callPricing';
+export * from './calendar';
+export * from './calendarEngine';
+export * from './calendarFunctions';
+
+// --- DATING FUNNEL ---
+export * from './datingFunnel';
+export {
+  initializeConnectionSession,
+  updateConnectionAfterCall,
+  scheduleDatingEvent,
+  createMeetingVerification,
+  verifyMeetingCheckIn,
+  createPanicAlert,
+  completeMeeting as completeMeeting_funnel,
+  createPaidTimeBooking,
+  completePaidTimeBooking,
+  getUserFunnelProgress,
+  getFunnelAnalytics,
+  calculateRetentionMetrics,
+} from './datingFunnelPhases';
+
+// --- CLUBS & SOCIAL ---
 export * from './clubs';
-export * from './compliance';
-export { AgeVerificationLevel, AgeVerification, MediaScanStatus, MediaSource, MediaSafetyScan, KYCLevel, AMLProfile, GDPRRequestStatus, GDPRErasureRequest, GDPRExportRequest, PolicyType, PolicyDocument, PolicyAcceptance, getAgeState, ageSoftVerify, triggerMediaSafetyScan, getMediaScanStatus, getAMLState, updateAMLProfile, amlDailyMonitor, requestDataErasure, requestDataExport, getLatestPolicies, getUserPolicyAcceptances, acceptPolicy } from './compliancePack55';
-export * from './content/contentUploadProcessor';
-export * from './content/engagementEngine';
-export * from './content/rankingEngine';
-export { ReportReason, reportContent } from './content/safetyReporting';
-export * from './content/storiesReelsEngine';
-export * from './creator/earnings';
-export * from './creator/marketplace';
+export * from './clubIntelligence';
+export * from './challenges';
+
+// --- NOTIFICATIONS (v2) ---
+export {
+  sendNotification,
+  getUserNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  archiveNotification,
+  getNotificationSettings as getNotificationSettings_v2,
+  updateNotificationSettings as updateNotificationSettings_v2,
+  toggleCategoryNotifications,
+  setSnoozeMode,
+  createReminder,
+  getUserReminders,
+  updateReminder,
+  deleteReminder,
+  getUserDigests,
+  processReminders,
+  generateDailyDigests,
+  generateWeeklyDigests,
+  resetPausedReminders,
+  cleanupOldDigests,
+  cleanupOldNotifications,
+} from './notifications/functions';
+
+// ============================================================================
+// BATCH C: CREATOR TOOLS, ANALYTICS
+// ============================================================================
+
+// --- CREATOR ECONOMY ---
 export * from './creatorAnalytics';
 export * from './creatorEarnings';
-export { CreatorLevel, QuestType, QuestStatus, CreatorDashboard, Quest, PricingRecommendation, CreatorWithdrawal, FanProfile, getCreatorDashboard, getCreatorQuests, claimQuestReward, requestWithdrawal, getCreatorFanbase, getMessageTemplates, saveMessageTemplate, getPricingRecommendations } from './creatorHub';
-// PACK 451 - B2B Creator Agreement
-export { acceptCreatorAgreementV1, getCreatorAgreementStatusV1, CREATOR_AGREEMENT_CURRENT_VERSION, enforceCreatorAgreement, checkCreatorAgreementStatus } from './pack451-creator-agreement';
-export { CreatorStats, GatedPost, Referral, enableCreatorModeV1, getCreatorDashboardV1, createGatedPostV1, unlockGatedPostV1, setMessagePricingV1, generateReferralCodeV1, applyReferralCodeV1, processReferralReward, requestWithdrawalV1, getWithdrawalHistoryV1, getTopFansV1 } from './creatorMode';
-export { ProductType, ProductStatus, ContentRating, CreatorProduct, MediaFile, ProductPurchase, createCreatorProduct, uploadProductMedia, publishCreatorProduct, purchaseCreatorProduct, getProductAccessUrls, getCreatorProducts, getMyPurchases, getCreatorStats, updateCreatorProduct, toggleProductStatus, archiveCreatorProduct } from './creatorShop';
-export { createCreatorProductV1, publishCreatorProductV1, getCreatorProductsV1, purchaseCreatorProductV1, getMyPurchasesV1, deactivateProductV1, getCreatorAnalyticsV1 } from './creatorStore';
+export {
+  getCreatorDashboard,
+  getCreatorQuests,
+  claimQuestReward,
+  requestWithdrawal,
+  getCreatorFanbase,
+  getMessageTemplates,
+  saveMessageTemplate,
+  getPricingRecommendations,
+} from './creatorHub';
+
+export {
+  enableCreatorModeV1,
+  getCreatorDashboardV1,
+  createGatedPostV1,
+  unlockGatedPostV1,
+  setMessagePricingV1,
+  generateReferralCodeV1,
+  applyReferralCodeV1,
+  processReferralReward,
+  requestWithdrawalV1,
+  getWithdrawalHistoryV1,
+  getTopFansV1,
+} from './creatorMode';
+
+export {
+  createCreatorProduct,
+  uploadProductMedia,
+  publishCreatorProduct,
+  purchaseCreatorProduct,
+  getProductAccessUrls,
+  getCreatorProducts,
+  getMyPurchases,
+  getCreatorStats,
+  updateCreatorProduct,
+  toggleProductStatus,
+  archiveCreatorProduct,
+} from './creatorShop';
+
+export {
+  createCreatorProductV1,
+  publishCreatorProductV1,
+  getCreatorProductsV1,
+  purchaseCreatorProductV1,
+  getMyPurchasesV1,
+  deactivateProductV1,
+  getCreatorAnalyticsV1,
+} from './creatorStore';
+export * from './digitalProducts';
+export * from './digitalProductNotifications';
+export * from './dropsEngine';
+
+// --- ANALYTICS & ACTIVITY ---
+
+// PACK 301: ACTIVITY & RETENTION HOOKS
+export {
+  trackActivity,
+  onSwipeCreated,
+  onChatMessageCreated,
+  onTokenPurchaseCreated,
+  onCalendarBookingCreated,
+  onEventTicketCreated,
+  trackCallActivity as trackCallActivity_pack301,
+  batchUpdateActivities,
+  getActivitySummary,
+} from './pack301-activity-hook';
+
+export {
+  dailyWinBackSequence,
+  markWinBackReturn,
+  getWinBackStatistics,
+  triggerWinBackMessage,
+} from './pack301-winback';
+
+// PACK 303: EARNINGS DASHBOARD
+export {
+  getEarningsDashboardCallable,
+  getMonthlyStatementCallable,
+  exportStatementCallable,
+  checkEarningsCapabilityCallable,
+  adminTriggerAggregation,
+  adminBackfillAggregation,
+  adminViewUserEarnings,
+  cronDailyEarningsAggregation,
+  httpTriggerAggregation,
+} from './pack303-endpoints';
+
+// PACK 336: AGGREGATION & EXPERIMENTS
+export {
+  pack336_generateDailyKPIs,
+  pack336_manualAggregation,
+} from './pack336-aggregation-cron';
+
+export {
+  pack336_createExperiment,
+  pack336_updateExperimentResults,
+  pack336_getExperiments,
+  pack336_getExperiment,
+  pack336_deleteExperiment,
+  pack336_getExperimentStatistics,
+} from './pack336-experiments';
+
+// PACK 346: ALERT ROUTING & KPI AGGREGATION
+export {
+  acknowledgeAlert,
+  resolveAlert,
+  checkKPIThresholds,
+} from './pack346-alert-routing';
+
+export {
+  aggregateDailyKPIs,
+  aggregateHourlyKPIs,
+  triggerKPIAggregation,
+} from './pack346-kpi-aggregation';
+
+// PACK 349: ADS SYSTEM
+export {
+  createAd,
+  updateAd,
+  deleteAd,
+  activateAd,
+  pauseAd,
+  reportAd,
+  createBrandCampaign,
+  addAdToCampaign,
+  activateCampaign,
+  pauseCampaign,
+  endCampaign,
+  getCampaignAnalytics,
+  getAdForFeed,
+  getAdsForDiscovery,
+  recordAdPlacement,
+  recordAdClick,
+  recordAdView,
+  recordAdConversion,
+  createAdvertiserAccount,
+  addAdvertiserTokens,
+  createCreatorSponsorship,
+  endCreatorSponsorship,
+  getCreatorAnalytics as getCreatorAnalytics_ads,
+  requestCreatorPayout,
+  processScheduledCampaigns,
+  processMinimumGuarantees,
+} from './pack349-endpoints';
+
+// PACK 356: AD TRACKING & ROAS
+export {
+  trackAdEvent,
+  createAdCampaign,
+  updateCampaignStatus,
+  updateCampaignBudget,
+  adPlatformWebhook,
+} from './pack356-ad-tracking';
+
+export {
+  dailyROASOptimization,
+  getROASHistory,
+  runManualROASOptimization,
+  getROASDashboard,
+  calculateCountryROAS,
+} from './pack356-roas-engine';
+
+// PACK 358: BURN RATE & STRESS SCENARIOS
+export {
+  calculateMonthlyBurnRate,
+  calculateBurnRateOnDemand,
+  getFinancialRunway,
+  getBurnRateHistory,
+} from './pack358-burnrate-engine';
+
+export {
+  runMonthlyStressScenarios,
+  runStressScenario,
+  getAvailableScenarios,
+  getScenarioResults,
+} from './pack358-stress-scenarios';
+
+// PACK 402: KPI FUNCTIONS
+export {
+  pack402_buildHourlyKpis,
+  pack402_buildDailyKpis,
+  pack402_getKpis,
+  pack402_backfillDailyKpis,
+  pack402_getKpisHttp,
+} from './pack402-kpi-functions';
+
+// PACK 411: RATING TRIGGER & STORE REVIEW INGESTION
+export {
+  pack411_ratingPromptDecision,
+  pack411_logRatingPrompt,
+  pack411_createFeedbackTicket,
+} from './pack411-rating-trigger';
+
+export {
+  pack411_importStoreReviewsGoogle,
+  pack411_importStoreReviewsApple,
+} from './pack411-store-reviews-ingestion';
+
+// --- MODERATION & SAFETY ---
+export * from './csamShield';
+export * from './cyberstalkingDetection';
 export * from './cyberstalkingEndpoints';
 export * from './cyberstalkingReporting';
 
-// ============================================
-// DOMAIN D (6 files)
-// ============================================
-export * from './dating-intentions/index';
-export * from './deviceTrust';
-export * from './digitalProducts';
-export * from './discoveryEndpoints';
-export * from './discoveryFeed';
-export * from './dynamicPricing';
-
-// ============================================
-// DOMAIN E (11 files)
-// ============================================
-export * from './education/education.functions';
-export * from './emotionalIntelligence';
+// --- DISPUTES & ENFORCEMENT ---
+export * from './disputes';
+export * from './disputeCenter';
+export * from './disputeEndpoints';
+export * from './disputeEngine';
 export * from './enforcementEndpoints';
-export * from './engines/complianceEngine';
-export * from './engines/contentEngine';
-export * from './engines/economyEngine';
-export * from './engines/eventEngine';
-export * from './engines/insightEngine';
-export { UserRiskProfile, updateRiskProfileTrigger, updateRiskProfileOnReportTrigger, calculateTrustScoreCallable, calculateTrustScore, banUserCallable, isUserRestricted } from './engines/riskEngine';
-export * from './events';
-export { submitExpertApplication, approveExpertApplication, rejectExpertApplication, createMentorshipOffer, updateMentorshipOffer, listExpertOffers, createCurriculum, enrollInCurriculum, scheduleMentorshipSession, cancelMentorshipSession, leaveExpertReview, getExpertAnalytics, notifyExpertOfBooking, notifyUserOnExpertApproval } from './expertMarketplace';
+export * from './enforcementEngine';
+export * from './enforcementHelpers';
+export * from './enforcementIntegrations';
 
-// ============================================
-// DOMAIN F (5 files)
-// ============================================
-export * from './fanClubs';
-export * from './feed';
-export * from './feedDiscovery';
-export * from './feedInteractions';
-export * from './fraudScheduled';
+// --- OPERATIONS PACKS ---
 
-// ============================================
-// DOMAIN G (4 files)
-// ============================================
-export * from './geoshare';
-export * from './gifts/sendGift';
-export { invalidateFeedCacheV1, refreshGlobalFeedScheduled, FeedPost, FeedParams } from './globalFeed';
-export * from './guardian.functions';
+// PACK 320: AUTO-FLAGGING
+export {
+  onMeetingMismatchReport,
+} from './pack320-auto-flagging';
 
-// ============================================
-// DOMAIN I (4 files)
-// ============================================
-export * from './i18nExtended';
-export * from './integrations/dataAccess';
-export * from './integrations/integrationOperations';
-export * from './integrations/partnerManagement';
+// PACK 324B: FRAUD DETECTION
+export {
+  pack324b_getFraudSignals,
+  pack324b_getHighRiskUsers,
+  pack324b_getUserRiskScore,
+  pack324b_getUserFraudSignals,
+  pack324b_getFraudDashboardStats,
+  pack324b_recalculateUserRiskScore,
+  pack324b_getSignalContext,
+} from './pack324b-fraud-endpoints';
 
-// ============================================
-// DOMAIN J (1 files)
-// ============================================
+// PACK 326: CAMPAIGN MANAGEMENT
+export {
+  pack326_createAdsCampaign,
+  pack326_createAdCreative,
+  pack326_activateCampaign,
+  pack326_pauseCampaign,
+  pack326_resumeCampaign,
+  pack326_getCampaignDetails,
+  pack326_listMyCampaigns,
+} from './pack326-campaign-management';
+
+// PACK 329: POLICY ENFORCEMENT
+export {
+  pack329_validateContent,
+  pack329_getPolicy,
+  pack329_reportViolation,
+  pack329_getViolations,
+  pack329_admin_updatePolicy,
+  pack329_admin_seedPolicy,
+} from './pack329-policy-endpoints';
+
+// PACK 330: EXPORT HOOKS
+export {
+  pack330_exportUserReportToPDF,
+  pack330_exportUserReportToCSV,
+  pack330_exportPlatformReportCSV,
+  pack330_emailTaxReport,
+} from './pack330-export-hooks';
+
+// PACK 335: SUPPORT ENGINE
+export {
+  pack335_createSupportTicket,
+  pack335_addTicketMessage,
+  pack335_updateTicketStatus,
+  pack335_handleRefundDispute,
+  pack335_closeTicket,
+} from './pack335-support-engine';
+
+// PACK 359: GDPR RETENTION
+export {
+  enforceRetentionPolicies,
+  requestErasure,
+  requestExport,
+  checkDataRequestStatus,
+} from './pack359-gdpr-retention';
+
+// PACK 360: CULTURAL SAFETY & LEGAL TEXT
+export {
+  getCulturalSafetyProfile,
+  moderateContent,
+  checkFeatureAvailability,
+  adminUpdateCulturalSafetyProfile,
+  adminGetAllSafetyProfiles,
+  onContentCreated,
+} from './pack360-cultural-safety';
+
+export {
+  getUserLegalDocuments,
+  acceptLegalDocument,
+  checkUserLegalCompliance,
+  adminCreateLegalDocument,
+  adminGetAllLegalDocuments,
+  adminGetLegalAcceptanceStats,
+  onUserLogin,
+  onUserCountryChangeLegal,
+} from './pack360-legal-text-engine';
+
+// PACK 361: CDN CONTROL & LOAD BALANCER
+export {
+  uploadImage,
+  uploadVideo,
+  getProgressiveImage,
+  optimizeVoice,
+  cacheAiAvatar,
+  getCdnStats,
+  updateCdnMetrics,
+  purgeCache,
+  purgeAllCache,
+  monitorBandwidth,
+} from './pack361-cdn-control';
+
+export {
+  runHealthChecks,
+  getRouting,
+  forceFailover,
+  getRegionStatuses,
+  initializeRegions,
+} from './pack361-load-balancer';
+
+// PACK 368: REFERRAL SYSTEM
+export {
+  generateInviteCodeCallable,
+  processReferralCallable,
+  getReferralStatsCallable,
+  revokeReferralPrivilegesCallable,
+  cleanupExpiredRewards,
+} from './pack368-referral-functions';
+
+// PACK 373: MARKETING AUTOMATION
+export {
+  pack373_rotateASOVariants,
+  pack373_trackStoreConversion,
+  pack373_finalizeASOExperiments,
+  pack373_trackPartnerInstall,
+  pack373_calculatePartnerCommission,
+  pack373_autoPauseCampaign,
+  pack373_updateCampaignMetrics,
+  pack373_validateInstall,
+  pack373_checkRegionalLimits,
+  pack373_budgetFirewall,
+} from './pack373-marketing-automation';
+
+// PACK 379: ASO REPUTATION
+export {
+  pack379_reviewAttackDetector,
+  pack379_fakeReviewClassifier,
+  pack379_reviewVelocityGuard,
+  pack379_storeDisputeGenerator,
+  pack379_storeAppealAutoSubmit,
+  pack379_asoBoostOptimizer,
+  pack379_keywordClusteringEngine,
+  pack379_storeAlgorithmResponse,
+  pack379_trustScoreEngine,
+  pack379_storePolicyWatcher,
+  pack379_preemptiveRiskAlert,
+  pack379_crisisReputationShield,
+  pack379_storeSafeReviewTrigger,
+  pack379_recordReviewCompletion,
+  pack379_execReputationDashboard,
+  pack379_dailyExecutiveReport,
+} from './pack379-aso-reputation';
+
+// PACK 381: REGION CONFIG
+export {
+  pack381_updateRegionConfig,
+  pack381_getRegionConfig,
+  pack381_listAvailableRegions,
+  pack381_adminGetRegionConfig,
+  pack381_detectUserRegion,
+  pack381_validateFeatureAvailability,
+} from './pack381-region-config';
+
+// PACK 382: BURNOUT PREVENTION & PRICING
+export {
+  pack382_detectCreatorBurnout,
+  pack382_resolveBurnout,
+  pack382_dailyBurnoutMonitoring,
+} from './pack382-burnout-prevention';
+
+export {
+  pack382_recommendOptimalPricing,
+  pack382_applyPricingRecommendation,
+  pack382_weeklyPricingReview,
+} from './pack382-pricing-recommender';
+
+// PACK 384: REVIEW DEFENSE
+export {
+  detectReviewBombing,
+  recordStoreReviewSignal,
+  requestStoreReview,
+  detectCopyPasteReviews,
+} from './pack384-review-defense';
+
+// PACK 385: AMBASSADORS, LAUNCH PHASE, TRAFFIC GUARD
+export {
+  pack385_assignLaunchAmbassador,
+  pack385_getAmbassadorData,
+  pack385_applyAmbassadorMultiplier,
+  pack385_activateAmbassadorBoost,
+  pack385_trackAmbassadorPerformance,
+  pack385_getAmbassadorLeaderboard,
+  pack385_removeAmbassador,
+  pack385_calculateAmbassadorScores,
+} from './pack385-ambassadors';
+
+export {
+  pack385_setLaunchPhase,
+  pack385_getLaunchPhase,
+  pack385_checkFeatureEnabled,
+  pack385_getUserLimits,
+  pack385_enforcePhaseLimits,
+} from './pack385-launch-phase';
+
+export {
+  pack385_setTrafficLevel,
+  pack385_getTrafficGuard,
+  pack385_checkTrafficLimit,
+  pack385_dynamicTrafficProtection,
+  pack385_throttleUser,
+  pack385_monitorTrafficLoad,
+  pack385_cleanupThrottles,
+} from './pack385-traffic-guard';
+
+// PACK 386: INFLUENCERS
+export {
+  pack386_registerInfluencer,
+  pack386_assignInfluencerCampaign,
+  pack386_setInfluencerPayoutModel,
+  pack386_trackInfluencerAttribution,
+  pack386_updateInfluencerConversion,
+  pack386_calculateInfluencerROI,
+  pack386_getInfluencerAnalytics,
+} from './pack386-influencers';
+
+// PACK 387: PR INCIDENTS & PUBLIC STATEMENTS
+export {
+  pack387_createIncident,
+  pack387_updateIncidentStatus,
+  pack387_closeIncidentWithReport,
+  pack387_addLegalReview,
+  pack387_linkSupportTickets,
+  pack387_linkFraudCases,
+  pack387_getIncidentDetails,
+} from './pack387-incidents';
+
+export {
+  pack387_preparePublicStatement,
+  pack387_updateStatement,
+  pack387_submitForLegalReview,
+  pack387_legalApproveStatement,
+  pack387_executiveApproveStatement,
+  pack387_releasePublicStatement,
+  pack387_getIncidentStatements,
+  pack387_getPendingStatements,
+} from './pack387-public-statements';
+
+export {
+  pack387_ingestReputationSignal,
+  pack387_analyzeReputationTrends,
+} from './pack387-reputation-ingest';
+
+// PACK 388: GDPR
+export {
+  pack388_requestDataExport,
+  pack388_processDataExport,
+  pack388_executeRightToBeForgotten,
+  pack388_executeDataDeletion,
+  pack388_restrictProcessing,
+  pack388_cancelDeletionRequest,
+} from './pack388-gdpr';
+
+// PACK 392: ASO, REVIEW INTEL, STORE DEFENSE, TRUST SCORE
+export {
+  pack392_asoOptimizationEngine,
+  pack392_runASOAnalysis,
+  pack392_getASODashboard,
+  pack392_addKeyword,
+  pack392_removeKeyword,
+} from './pack392-aso-engine';
+
+export {
+  pack392_reviewIntelligenceEngine,
+  pack392_analyzeReviewManual,
+  pack392_getReviewThreats,
+  pack392_escalateReviews,
+} from './pack392-review-intel';
+
+export {
+  pack392_storeDefenseEngine,
+  pack392_analyzeStoreThreat,
+  pack392_getStoreDefenseStatus,
+} from './pack392-store-defense';
+
+export {
+  pack392_calculateTrustScore,
+  pack392_trackUserTrustImpact,
+  pack392_calculateStoreSafetyRating,
+  pack392_getTrustScore,
+  pack392_getStoreSafetyRating,
+  pack392_recalculateTrustScore,
+} from './pack392-trust-score';
+
+// PACK 398: LAUNCH ORCHESTRATOR
+export {
+  initializeLaunchControl,
+  configureCountryRollout,
+  updateCountryState,
+  emergencyStopLaunch,
+  resumeLaunch,
+  monitorLaunchHealth,
+  resetDailyBudgets,
+  getLaunchStatus,
+} from './pack398-launch-orchestrator';
+
+// PACK 399: INFLUENCER ENGINE
+export {
+  createInfluencerProfile,
+  verifyInfluencer,
+  trackInfluencerInstall,
+  trackInfluencerCommission,
+  detectInfluencerFraud,
+  createInfluencerPayout,
+  getRegionalPlaybook,
+  getInfluencerAnalytics,
+} from './pack399-influencer-engine';
+
+// PACK 412: LAUNCH ORCHESTRATOR V2
+export {
+  pack412_createOrUpdateRegionConfig,
+  pack412_setRegionStage,
+  pack412_updateRegionTrafficCap,
+  pack412_updateGuardrailThresholds,
+  pack412_monitorLaunchGuardrails,
+  pack412_proposeNextLaunchRegions,
+} from './pack412-launch-orchestrator';
+
+// PACK 414: INTEGRATION AUDIT
+export {
+  pack414_runFullAudit,
+  pack414_runPackAudit,
+  pack414_getGreenlightMatrix,
+  pack414_scheduledDailyAudit,
+  pack414_scheduledHealthCheck,
+} from './pack414-integration-audit';
+
+// PACK 421: HEALTH CONTROLLER
+export {
+  pack421_health_public,
+  pack421_health_internal,
+  pack421_health_featureMatrix,
+  pack421_health_featureMatrix_http,
+} from './pack421-health.controller';
+
+// PACK 422: REPUTATION POLICY
+export {
+  onReputationChange,
+  checkUserPolicy,
+} from './pack422-reputation.policy';
+
+// PACK 423: RATINGS HTTP
+export {
+  pack423_createInteractionRating,
+  pack423_getMyInteractionRatings,
+  pack423_getUserRatingSummary,
+  pack423_getCompanionRatingSummary,
+  pack423_checkRatingEligibility,
+  pack423_createNpsResponse,
+  pack423_checkNpsEligibility,
+  pack423_getUserNpsHistory,
+  pack423_getNpsAnalytics,
+  pack423_flagRatingAsAbuse,
+  pack423_isRecentDetractor,
+} from './pack423-ratings.http';
+
+// PACK 424: REVIEW RETENTION & TRUST SCORE
+export {
+  processNewReviewForRetention,
+  triggerRetentionForReview,
+} from './pack424-review-retention';
+
+export {
+  scheduledTrustScoreCalculation,
+  getTrustScore as getTrustScore_pack424,
+} from './pack424-trust-score.service';
+
+// PACK 425: COUNTRY EXPANSION
+export {
+  getCountryProfile,
+  listCountries,
+  getCountriesByStrategy,
+  updateCountryReadiness,
+  getCountryFeatureFlags,
+  updateCountryFeatureFlags,
+  getCountryPricing,
+  getExpansionDashboard,
+  initializeCountry,
+  launchCountry,
+  getBootstrapStatus,
+  getLocalizationReport,
+  validateCountryLaunch,
+  recomputeAllReadiness,
+} from './pack425-functions';
+
+// PACK 432: AD PLATFORM CONNECTORS
+export {
+  syncGoogleCampaign,
+  updateGoogleCampaignBudget,
+  uploadGoogleAssets,
+  syncGoogleStats,
+  trackGoogleConversion,
+} from './pack432-google-connector';
+
+export {
+  syncTikTokCampaign,
+  updateTikTokCampaignBudget,
+  rotateTikTokCreatives,
+  syncTikTokReports,
+  trackTikTokEvent,
+} from './pack432-tiktok-connector';
+
+export {
+  submitUGCCreative,
+  reviewUGCSubmission,
+  startCreativeTesting,
+  rotateTopCreatives,
+  updateCreativePerformance,
+  generateAICreative,
+  importFromUGCPlatform,
+  getCreativeAnalytics,
+} from './pack432-ugc-engine';
+
+// PACK 433: DEAL ENGINE
+export {
+  createDeal,
+  acceptDealContract,
+  getCreatorDeals,
+  toggleDealStatus,
+  expireDealsDaily,
+  updateDealStatsDaily,
+} from './pack433-deal-engine';
+
+// PACK 436: REPUTATION ENGINE
+export {
+  calculateGARS,
+  calculateCountryScores,
+  calculateVisibilityScores,
+  monitorReputationAnomalies,
+  generateWeeklyReport,
+} from './pack436-reputation-engine';
+
+// --- A/B TESTING & ACCELERATOR ---
+export * from './abTesting';
+export * from './accelerator';
+
+// --- ADS ENGINE ---
+export * from './adsEngine';
+export * from './adRewardsEngine';
+
+// --- SCHEDULED JOBS ---
+export * from './scheduled/aggregateInvestorMetrics';
+export * from './scheduled/secondChanceScan';
+
+// --- DATA RETENTION ---
 export * from './jobs/data-retention.jobs';
 
-// ============================================
-// DOMAIN K (1 files)
-// ============================================
-export * from './kyc';
-
-// ============================================
-// DOMAIN L (11 files)
-// ============================================
-export * from './leaderboardApi';
-export * from './leaderboardScheduled';
-export * from './legal/pack338a-acceptLegal';
-export * from './legalAcceptance';
-export * from './lib/alerting';
-export { HealthStatus, HealthResponse, ComponentHealth, DeepHealthResponse, healthDeep, healthCheckEndpoints } from './lib/healthChecks';
-export * from './lib/metricsAggregation';
-export * from './live';
-export * from './liveBroadcasts';
-export { TipType, SpecialEffect, LivePoll, VIPRoom, VIPRoomSession, startLiveSession, sendLiveTip, endLiveSession, createLivePoll, voteInLivePoll, createVIPRoom, enterVIPRoom, exitVIPRoom, getActiveLiveSessions } from './liveVipRoom';
-export * from './loyalty';
-
-// ============================================
-// DOMAIN M (7 files)
-// ============================================
-export * from './matchingEngine';
-export * from './media';
-export * from './mobile';
-export * from './modHub';
-export { moderateContentFunction, getModerationStatusFunction, adminModerationDecision, cleanupOldModerationRecords, generateModerationStats } from './moderation';
-export * from './moderationConsole';
-export { moderation_updateCase, moderation_enforce, moderation_getCase, moderation_getCaseActions, enforcement_getRestrictions } from './moderationEndpoints';
-
-// ============================================
-// DOMAIN N (3 files)
-// ============================================
-export * from './notificationApi';
-export * from './notificationScheduled';
-export { sendNotification, getUserNotifications, markAllNotificationsRead, archiveNotification, toggleCategoryNotifications, setSnoozeMode, createReminder, getUserReminders, updateReminder, deleteReminder, getUserDigests, processReminders, generateDailyDigests, generateWeeklyDigests, resetPausedReminders, cleanupOldDigests, cleanupOldNotifications } from './notifications/functions';
-
-// ============================================
-// DOMAIN O (1 files)
-// ============================================
-export * from './observabilityEndpoints';
-
-// ============================================
-// DOMAIN P (398 files)
-// ============================================
-export { publishEvent, purchaseEventTicket, submitQuestion, createPoll, sendEventMessage, uploadEventMaterial, generateEventCertificate, moderateEventContent, completeEventTicketPayment } from './pack-198-webinars/functions';
-export * from './pack-227-desire-loop-triggers';
-export * from './pack-230-endpoints';
-export * from './pack100-disaster-recovery';
-export { SystemHealthStatus, ComponentStatus, RateLimiterStatus, BackgroundJobStatus, DiscoveryIndexStatus, getSystemHealthSummary, admin_getSystemDiagnostics } from './pack100-health-monitoring';
-export * from './pack100-launch-mode';
-export * from './pack100-launch-readiness';
-export * from './pack101-success-endpoints';
-export * from './pack102-audience-endpoints';
-export * from './pack104-scheduled';
-export * from './pack105-admin';
-export * from './pack105-reconciliation';
-export * from './pack105-revenue-export';
-export * from './pack106-admin';
-export * from './pack106-client-endpoints';
-export * from './pack106-currency-management';
-export * from './pack107-membership';
-export * from './pack109-admin';
-export * from './pack109-campaigns';
-export * from './pack110-admin';
-export * from './pack110-feedback';
-export * from './pack110-scheduled';
-export * from './pack112-achievements';
-export * from './pack113-abuse-detection';
-export * from './pack113-api-endpoints';
-export * from './pack113-mobile-integration';
-export * from './pack113-webhooks';
-export * from './pack114-agency-engine';
-export * from './pack114-analytics-api';
-export * from './pack114-api-integration';
-export * from './pack114-safety-enforcement';
-export * from './pack115-reputation-endpoints';
-export { uploadAsset, deleteAsset, listAssets, schedulePost, cancelScheduledTask } from './pack119-agency-saas';
-export { getAgencyOverview, dailyAnalyticsAggregation } from './pack119-analytics';
-export * from './pack119-portfolio';
-export * from './pack120-brand-campaigns';
-export * from './pack126-endpoints';
-export * from './pack127-endpoints';
-export * from './pack130-endpoints';
-export * from './pack132-analytics-cloud';
-export * from './pack133-endpoints';
-export * from './pack134-api-endpoints';
-export * from './pack138-vip-access';
-export * from './pack141-api-endpoints';
-export * from './pack142-endpoints';
-export * from './pack143-endpoints';
-export * from './pack145-endpoints';
-export * from './pack146-anti-recording';
-export * from './pack146-copyright';
-export * from './pack146-downloads';
-export * from './pack146-scheduled';
-export * from './pack147-endpoints';
-export * from './pack147-scheduled';
-export * from './pack148-endpoints';
-export { approveAmbassador, scheduleAmbassadorEvent, registerAttendance, evaluateAmbassadorPerformance, revokeAmbassadorAccess, reportComplianceIncident } from './pack152-ambassadors/functions';
-export * from './pack153-endpoints';
-export * from './pack154-endpoints';
-export * from './pack157-business-partners';
-export * from './pack157-venue-events';
-export * from './pack158-endpoints';
-export * from './pack159-safety-endpoints';
-export { CourseFormat, CourseCategory, CourseStatus, CourseVisibility, PurchaseType, createCourse, publishCourse, publishEpisode, purchaseEpisode, trackCourseProgress, reviewCourse, createCourseBundle, onCourseProgressUpdate, pack162_createCourse, pack162_publishCourse, pack162_publishEpisode, pack162_purchaseCourse, pack162_purchaseEpisode, pack162_trackCourseProgress, pack162_reviewCourse, pack162_issueCertificate, pack162_createCourseBundle, pack162_onCourseProgressUpdate } from './pack162-courses';
-export * from './pack162-quizzes';
-export { assignAcceleratorTrack, completeMilestone, issueAcceleratorGrant, issueAcceleratorCertificate, checkMilestoneDeadlines, calculateAcceleratorAnalytics } from './pack164-accelerator';
-export * from './pack166-scalability';
-export * from './pack167-affiliates';
-export * from './pack168-schedulers';
-export { updateSettings, updateConsent, getConsentHistory, terminateSession, exportUserData, requestAccountDeletion, getSessionDevices, updatePaymentSettings } from './pack171-settings-functions';
-export * from './pack174-fraud-shield/crypto-scam-detection';
-export * from './pack174-fraud-shield/dispute-resolution';
-export * from './pack174-fraud-shield/emotional-manipulation-detection';
-export * from './pack174-fraud-shield/fraud-detection';
-export * from './pack174-fraud-shield/fraud-mitigation';
-export * from './pack174-fraud-shield/impersonation-detection';
-export * from './pack174-fraud-shield/message-filtering';
-export * from './pack174-fraud-shield/payment-fraud-detection';
-export * from './pack174-fraud-shield/schedulers';
-export * from './pack179-reputation';
-export * from './pack183-endpoints';
-export * from './pack186-ai-evolution-endpoints';
-export * from './pack187-multilingual';
-export * from './pack188-narrative-engine';
-export * from './pack190-sync/index';
-export * from './pack191-collab-streams';
-export { StreamStatus, StreamCategory, LiveStream, StreamReaction, StreamPoll, PollOption, StreamChallenge, ModerationEvent, joinLiveStream, sendStreamReaction, createStreamPoll, voteOnPoll, createStreamChallenge, submitToChallenge, reportStream, monitorStreamHealth, createStreamReplay, updateViewerActivity } from './pack191-live-arena';
-export * from './pack191-safety-monitor';
-export * from './pack193-sexuality-consent-functions';
-export * from './pack195-legal-tax/index';
-export * from './pack196-endpoints';
-export * from './pack200-auto-heal-runtime';
-export * from './pack200-auto-scale-traffic';
-export * from './pack200-firestore-rules-validator';
-export * from './pack200-resolve-stability-conflict';
-export * from './pack200-stress-test-suite';
-export * from './pack200-track-metrics';
-export * from './pack206c-adult-mode';
-export * from './pack209-admin-endpoints';
-export * from './pack209-events-refund';
-export * from './pack210-safety-tracking-functions';
-export * from './pack211-adaptive-safety-functions';
-export * from './pack212-reputation-functions';
-export * from './pack213-functions';
-export * from './pack214-functions';
-export { generateReferralLink, onSelfieVerified, onMeetingBooked, processAudienceImport, processPayerViralMoment, claimViralReward, aggregateViralMetrics } from './pack215-viral-loop';
-export { getMySchedule, aggregateMeetingToSchedule, aggregateEventToSchedule, getMyReminders, dismissReminder, getCancellationDeadlines, generateAttendeeQR, scanAttendeeQR, getEventAttendees, issueVoluntaryEventRefund, getMeetingSummary, logSafetyPanelAccess, getScheduleItemSafetyInfo, discoverEvents, saveEventFilter, getMySavedFilters, sendPendingReminders, updateScheduleStatuses } from './pack218-calendar-events';
-export * from './pack228-sleep-mode';
-export * from './pack233-royal-challenges';
-export * from './pack234-anniversary';
-export * from './pack242Functions';
-export * from './pack243-creator-dashboard';
-export * from './pack244-creator-league';
-export * from './pack245-audience-segments-engine';
-export * from './pack246-cloud-functions';
-export { UnlockStatus, WithdrawalStatus, EarningsUnlockCriteria, WithdrawalRiskScore, RiskScoreEvent, WithdrawalValidation, EconomicLog, checkEarningsUnlock, calculateRiskScore, validateWithdrawal, getUserRiskStatus, resetMonthlyRiskScores, processPendingReviews } from './pack247-withdrawal-antifraud';
-export * from './pack253-royal-endpoints';
-export * from './pack255-endpoints';
-export * from './pack256Callable';
-export { getEarningsOverview, getEngagementMetrics, getConversationAnalytics, getMediaSalesAnalytics, getPerformanceLevel, getOptimizationSuggestions, getRoyalAdvancedAnalytics, actOnSuggestion } from './pack257-creatorDashboard';
-export { onTokenSpending, onCreatorViewsProfile, onCreatorOnlineStatus, onNewStory, onNewPaidMedia, processRetentionTriggersScheduled, resetMonthlySpendingScheduled, getSupporterAnalytics, getFanLevel } from './pack258-supporterAnalytics';
-export { requestPayout, computeAnalytics, getEarningsDashboard, notifyTopSupporterActive } from './pack261-earnings';
-export { EarningsNotification, notifyLargeGift, notifyRecordBreaking, notifyPayoutStatus, notifyVIPActive, sendWeeklySummary, notifyMilestoneApproaching, batchNotifyCreators, getUnreadCount } from './pack261-notifications';
-export * from './pack261-payout-service';
-export { LevelConfig, LevelBenefits, LEVEL_CONFIGS, LP_RATES, CreatorLevelProfile, LPActivity, CreatorRewards, BoostInstance, initializeCreatorLevel, recordLPActivity, activateBoost, resetWeeklyBoosts, expireInactiveBoosts, checkAndSendMilestoneNotifications, notifyTopSupporterOnline, getCreatorLevel, getLPActivityHistory } from './pack262-creator-levels';
-export { MissionType, MissionStatus, MissionTemplate, ActiveMission, CreatorMissionProfile, MissionProgress, initializeCreatorMissions, getCreatorMissions, recordMissionProgress, claimMissionReward, updateMissionSlotsOnLevelChange, resetDailyMissions, resetWeeklyMissions, assignDailyMissions, assignWeeklyMissions, completeMission, validateActivity, awardMissionLP, sendMissionNotification } from './pack263-creator-missions';
-export { getSupporterRanking, getSupporterLeaderboard, updateSupporterProfile, getSupporterNotifications, getCreatorSupporterAnalytics, recalculateSupporterRankings } from './pack264-supporters-endpoints';
-export * from './pack264-supporters-engine';
-export { generateDailySuggestions, getCreatorSuggestions, calculateDMPriorities, getDMPriority, dailySuggestionGeneration } from './pack265-ai-earn-assist-endpoints';
-export * from './pack266-supporter-crm-endpoints';
-export * from './pack277-wallet-endpoints';
-export * from './pack278-perks-endpoints';
-export * from './pack278-subscription-endpoints';
-export * from './pack279-ai-chat-runtime';
-export * from './pack279-ai-voice-runtime';
-export { getLegalDocuments, checkLegalCompliance, getUserLegalAcceptances, adminCreateLegalDocument } from './pack281-legal-system';
-export { createPost, updatePost, getPost, onLikeCreated, onLikeDeleted } from './pack282-feed-engine';
-export { likePost, unlikePost, getPostLikes, updateComment, getPostComments, savePost, unsavePost, getSavedPosts, trackPostView } from './pack282-feed-interactions';
-export * from './pack283-discovery';
-export * from './pack284-swipe-engine';
-export * from './pack288-mobile-purchases';
-export * from './pack288-web-stripe';
-export * from './pack289-kyc';
-export * from './pack289-payout-providers';
-export * from './pack289-withdrawals-admin';
-export * from './pack289-withdrawals';
-export * from './pack290-creator-analytics';
-export * from './pack290-daily-aggregation';
-export * from './pack291-ai-assist';
-export { getNotifications, dismissNotificationFunc, registerDeviceForPush, unregisterDeviceFromPush, updateDeviceActivity, processNotification, processBatchedNotifications, sendNotificationToUser, getNotificationAnalytics } from './pack293-notification-functions';
-export * from './pack294-discovery-analytics';
-export * from './pack294-discovery-search';
-export * from './pack294-profile-search';
-export * from './pack296-admin-management';
-export * from './pack296-audit-api';
-export * from './pack296-data-retention';
-export { HealthCheckResponse, healthCheckDetailed } from './pack297-health-check';
-export * from './pack298-unified-engine';
-export * from './pack300-support-functions';
-export * from './pack301-activity-hook';
-export * from './pack301-analytics';
-export * from './pack301-daily-churn';
-export * from './pack301-nudges';
-export * from './pack301-onboarding';
-export * from './pack301-retention-functions';
-export * from './pack301-winback';
-export * from './pack302-mobile-billing';
-export * from './pack302-web-billing';
-export * from './pack303-endpoints';
-export * from './pack304-endpoints';
-export * from './pack305-legal-snapshots/api';
-export * from './pack306-verification';
-export { CatfishRiskProfile, RiskComputationInput, ImageAnalysisResult, recomputeUserCatfishRisk, recomputeCatfishRisk, cronRecomputeCatfishRiskDaily, onProfilePhotoUpdate, onVerificationComplete, onCatfishReport, adminOverrideCatfishRisk, getCatfishRiskDashboard } from './pack307-catfish-risk';
-export * from './pack312-support-actions';
-export * from './pack312-support-console';
-export * from './pack312-support-context';
-export * from './pack314-registration';
-export * from './pack315-notifications/growth-funnels';
-export * from './pack315-notifications/sender';
-export * from './pack316-review-mode/endpoints';
-export * from './pack317-endpoints';
-export * from './pack317-launch-check';
-export { dailyModerationAnalyticsRollup, getModerationAnalytics } from './pack320-analytics';
-export * from './pack320-auto-flagging';
-export * from './pack320-moderation-actions';
-export * from './pack322-ai-video-runtime';
-export { ContentVisibility, FeedReel, FeedStory, FeedLike, FeedView, FeedComment, pack323_createFeedPost, pack323_createFeedReel, pack323_createFeedStory, pack323_likeContent, pack323_addComment, pack323_reportContent, pack323_storyExpiryJob } from './pack323-feed-engine';
-export * from './pack324a-kpi-endpoints';
-export * from './pack324b-fraud-endpoints';
-export * from './pack324c-trust-endpoints';
-export { BoostSize, BoostStatus, Gender, FeedBoost, pack325_createFeedBoost, pack325_cancelFeedBoost, pack325_getUserBoosts, pack325_trackBoostImpression, pack325_trackBoostClick, pack325_trackBoostProfileVisit, pack325_expireFeedBoosts, getActiveBoostForContent } from './pack325-feed-boosts';
-export * from './pack326-ad-delivery';
-export * from './pack326-admin-controls';
-export * from './pack326-campaign-management';
-export * from './pack326-tracking-billing';
-export * from './pack327-analytics';
-export * from './pack327-promo-bundles';
-export * from './pack328a-identity-verification';
-export * from './pack328c-selfie-verification-functions';
-export * from './pack329-policy-endpoints';
-export * from './pack330-export-hooks';
-export * from './pack330-platform-reports';
-export * from './pack330-tax-profile';
-export * from './pack330-tax-reports';
-export * from './pack331-ai-avatar-marketplace';
-export * from './pack335-support-ai';
-export * from './pack335-support-engine';
-export * from './pack336-aggregation-cron';
-export { createAlert, resolveAlert, pack336_getRecentAlerts, pack336_acknowledgeAlert, pack336_resolveAlert, pack336_getAlertThresholds, pack336_updateAlertThresholds } from './pack336-alerting';
-export * from './pack336-dashboard';
-export * from './pack336-experiments';
-export * from './pack336-investor-export';
-export * from './pack337a-exports';
-export * from './pack339-disaster-recovery';
-export * from './pack344-ai-helpers';
-export * from './pack345-compliance-middleware';
-export * from './pack345-country-config';
-export * from './pack345-launch-audit';
-export * from './pack346-abuse-detection';
-export { checkKPIThresholds } from './pack346-alert-routing';
-export * from './pack346-churn-engine';
-export * from './pack346-creator-kpi';
-export * from './pack346-kpi-aggregation';
-export * from './pack348-ranking-engine/index';
-export { createAd, updateAd, deleteAd, activateAd, pauseAd, addAdToCampaign, activateCampaign, pauseCampaign, endCampaign, getAdForFeed, getAdsForDiscovery, recordAdPlacement, createAdvertiserAccount, addAdvertiserTokens, createCreatorSponsorship, endCreatorSponsorship, requestCreatorPayout, processScheduledCampaigns, processMinimumGuarantees } from './pack349-endpoints';
-export * from './pack350-endpoints';
-export * from './pack352-creator-metrics-sync';
-export * from './pack352-daily-aggregator';
-export { pack352_logKpiEvent, logKpiEvent, logKpiEventsBatch, logSignupEvent, logChatPaidStarted, logCallEvent, logCalendarBooking, logPanicEvent, logSupportTicket, logFraudFlag } from './pack352-kpi-events';
-export { applyAsInfluencer, getInfluencerApplicationStatus, adminGetInfluencerApplications, adminReviewInfluencerApplication, adminUpdateCreatorTier, adminToggleCreatorCapability, adminForceCreatorKYC, adminToggleWalletFreeze, adminBanDeviceAndIP, adminGetCreatorAnalytics, adminCreateRegionalProgram, dailyCreatorRiskAssessment, dailyRegionalProgramUpdate } from './pack354-influencer-endpoints';
-export * from './pack355-referral-endpoints';
-export * from './pack356-ad-attribution';
-export { CampaignType, CampaignObjective, CampaignStatus, AdEventType, AdCampaign, AdEvent, DeviceFraudCheck, trackAdEvent, updateCampaignBudget, adPlatformWebhook } from './pack356-ad-tracking';
-export * from './pack356-kpi-extensions';
-export * from './pack356-retargeting';
-export * from './pack356-roas-engine';
-export * from './pack358-burnrate-engine';
-export * from './pack358-financial-forecast';
-export * from './pack358-ltv-model';
-export * from './pack358-stress-scenarios';
-export * from './pack359-creator-tax-statements';
-export * from './pack359-dsa-reports';
-export { DataRetentionPolicy, DataErasureRequest, DataExportRequest, UserDataPackage, enforceRetentionPolicies, requestErasure, requestExport, checkDataRequestStatus } from './pack359-gdpr-retention';
-export * from './pack359-jurisdiction-engine';
-export * from './pack359-tax-calculator';
-export { CulturalSafetyProfile, ContentModerationResult, getCulturalSafetyProfile, moderateContent, checkFeatureAvailability, adminUpdateCulturalSafetyProfile, adminGetAllSafetyProfiles } from './pack360-cultural-safety';
-export { CurrencyProfile, TokenPriceConfig, CurrencyConversion, updateExchangeRates, getUserCurrency, convertTokenPriceToLocal, convertPayoutToLocal, adminSetRegionalPricing, adminToggleCurrency, formatCurrency, initializeCurrencyRates } from './pack360-currency-engine';
-export { LanguageProfile, TranslationPhrase, UserLanguagePreference, getSupportedLanguages, setUserLanguage, getTranslationPhrases, adminUpdateTranslationPhrase, adminToggleLanguage, onUserCountryChange, cacheTranslations } from './pack360-language-engine';
-export { LegalDocument, UserLegalAcceptance, LegalUpdateNotification, getUserLegalDocuments, acceptLegalDocument, checkMandatoryAcceptances, checkUserLegalCompliance, adminGetAllLegalDocuments, adminGetLegalAcceptanceStats, onUserLogin, onUserCountryChangeLegal } from './pack360-legal-text-engine';
-export * from './pack360-regional-ux';
-export { ScalingMetrics, ScalingRule, BurstProtection, collectServiceMetrics, updateMetrics, evaluateScaling, enableBurstProtection, disableBurstProtection, evaluateAllServices, detectViralTraffic, getScalingStatus, getScalingHistory, manualScale } from './pack361-autoscaling';
-export * from './pack361-cdn-control';
-export * from './pack361-cost-control';
-export { RecoveryPoint, RecoveryOperation, FailoverStatus, createHourlyBackup, createDailyBackup, createColdStorageBackup, recoverWallet, recoverChat, recoverSupportTicket, recoverAiSession, initiateRegionFailover, monitorBackupHealth } from './pack361-failover';
-export { Region, RegionNode, UserRegionMapping, HealthCheckResult, FailoverEvent, getOptimalRegion, getRegionHealth, runHealthChecks, performFailover, getRouting, forceFailover, getRegionStatuses, initializeRegions } from './pack361-load-balancer';
-export { SystemMetrics, PerformanceAlert, trackChatDelivery, trackWalletTransaction, trackEventCheckout, trackAiResponse, trackVideoCallQuality, trackPanicButton, runHealthCheck, getSystemHealth, getMetricsHistory, getActiveAlerts, getDashboardData, cleanupOldMetrics } from './pack361-monitoring';
-export { trackLatency, aggregateMetricsHourly, generateDashboardData } from './pack363-realtime-metrics';
-export * from './pack367-store-defense/index';
-export * from './pack368-referral-functions';
-export * from './pack370-ltv-engine';
-export * from './pack372-global-launch';
-export * from './pack373-marketing-automation';
-export * from './pack374-viral-growth';
-export * from './pack376-app-store-defense';
-export * from './pack377-launch-orchestration';
-export * from './pack379-aso-reputation';
-export * from './pack380-brand-engine';
-export * from './pack380-influencer-engine';
-export * from './pack380-localization-engine';
-export * from './pack380-pr-engine';
-export * from './pack381-expansion-engine';
-export * from './pack381-moderation';
-export * from './pack381-region-config';
-export * from './pack381-regional-pricing';
-export * from './pack381-regional-risk';
-export * from './pack382-burnout-prevention';
-export * from './pack382-creator-academy';
-export * from './pack382-earnings-optimizer';
-export * from './pack382-pricing-recommender';
-export * from './pack382-skill-scoring';
-export * from './pack383-chargeback-firewall';
-export * from './pack383-fx-engine';
-export * from './pack383-kyc-aml';
-export * from './pack383-payout-limits';
-export * from './pack383-payout-router';
-export * from './pack383-tax-engine';
-export * from './pack384-aso-monitor';
-export * from './pack384-paid-review-detection';
-export * from './pack384-review-defense';
-export * from './pack384-store-policy-monitor';
-export * from './pack384-trust-score';
-export * from './pack385-ambassadors';
-export * from './pack385-launch-payout-safety';
-export * from './pack385-launch-phase';
-export { MarketStatus, pack385_activateMarket, pack385_getMarketConfig, pack385_checkMarketFeature, pack385_suspendMarket, pack385_getActiveMarkets, pack385_monitorMarketHealth } from './pack385-market-activation';
-export * from './pack385-referrals';
-export * from './pack385-traffic-guard';
-export * from './pack386-attribution';
-export * from './pack386-budget-guardian';
-export * from './pack386-campaigns';
-export * from './pack386-influencers';
-export * from './pack386-marketing-fraud';
-export * from './pack386-review-trigger';
-export * from './pack387-crisis-orchestration';
-export * from './pack387-incidents';
-export * from './pack387-influencer-risk';
-export * from './pack387-public-statements';
-export * from './pack387-reputation-ingest';
-export * from './pack387-store-shield';
-export * from './pack388-age-verification';
-export * from './pack388-gdpr';
-export { KYCStatus, AMLRiskLevel, pack388_runKYCCheck, pack388_monitorAMLPatterns, pack388_blacklistWallet, pack388_getKYCStatus } from './pack388-kyc-aml';
-export * from './pack388-regulatory-response';
-export * from './pack388-retention';
-export * from './pack390-aml';
-export * from './pack390-bank';
-export * from './pack390-fx';
-export * from './pack390-payouts';
-export * from './pack390-tax';
-export * from './pack393-influencer-engine';
-export * from './pack393-marketing-orchestrator';
-export * from './pack395-invoicing';
-export { submitKYCLevel1, submitKYCLevel2, submitKYB, validatePaymentMethod, getVerificationStatus } from './pack395-kyc-compliance';
-export { VAT_RATES, calculatePurchaseTax, updateVATRates, validateVATNumber, calculateTransactionTax } from './pack395-tax-engine';
-export * from './pack397-review-intelligence';
-export * from './pack398-aso-engine';
-export * from './pack398-launch-orchestrator';
-export { Campaign, InfluencerCohort, LTVPrediction, CACTracking, CampaignROI, createCampaign, trackCampaignPerformance, createInfluencerCohort, predictUserLTV, monitorCampaigns, calculateCampaignROI, getCampaignDashboard } from './pack398-traffic-sync';
-export { ReferralStatus, ReferralRewardType, ViralInvite, InviteReward, ViralLeaderboardEntry, generateReferralCode, createReferral, completeReferral, sendViralInvite, getReferralStats, getViralLeaderboard, calculateLeaderboardRanks } from './pack398-viral-engine';
-export * from './pack399-influencer-engine';
-export * from './pack401-fraud-correlation-functions';
-export * from './pack402-kpi-functions';
-export * from './pack411-rating-trigger';
-export * from './pack411-reputation-defense';
-export * from './pack411-store-reviews-ingestion';
-export * from './pack412-launch-orchestrator';
-export * from './pack413-kpi-command-center';
-export * from './pack413-panic-modes';
-export * from './pack414-health';
-export * from './pack414-integration-audit';
-export * from './pack415-rate-limiter';
-export * from './pack416-audit-integration';
-export * from './pack417-incident.triggers';
-export * from './pack421-health.controller';
-export * from './pack422-reputation.policy';
-export { onBillingEvent, onMeetingStatusChange, onQRVerification, onTransactionComplete, onDisputeCreated, onFraudAlert, onPanicEvent, onUserRestrictionChange, onSupportTicketCreated, onSupportTicketUpdated, onAIViolation, onAIUserBlocked, onUserChurn, forceReputationRecalc } from './pack422-reputation.triggers';
-export * from './pack423-ratings.http';
-export * from './pack424-aso.service';
-export * from './pack424-review-ai.service';
-export * from './pack424-review-retention';
-export * from './pack424-store-reviews.scheduler';
-export * from './pack424-trust-score.service';
-export * from './pack425-functions';
-export * from './pack426-ai-regional-engine';
-export { FraudRiskProfile, FraudFactor, ThrottleConfig, ThrottleResult, calculateFraudRisk, checkFraudThrottle, getRegionalFraudStats, updateRegionalRiskFactor, autoEscalateHighRisk, cacheFraudProfile, getCachedFraudProfile, checkFraudThrottleHTTP, getFraudRiskHTTP } from './pack426-fraud-throttle';
-export { UserRegionAssignment, REGION_CONFIGS, routeRegion, getOptimalRegionConfig, routeFeature, getFailoverOrder, checkRegionHealth, updateRegionHealth, assignUserRegion, setUserRegionOverride, getRegionConfig, regionHealthCheck } from './pack426-global-router';
-export { RateLimitResult, RateLimitAction, BASE_RATE_LIMITS, checkBurstProtection, checkRegionalRateLimit, checkIPRateLimit, hasRateLimitBypass, grantRateLimitBypass, getUserRateLimitStats, checkRateLimitHTTP } from './pack426-rate-limit';
-export * from './pack427-realtime-signals';
-export * from './pack427-sync-endpoints';
-export { UserJourney, JourneyEvent, CohortAnalysis, trackInstall, trackJourneyEvent, calculateUserLTV, generateCohortAnalysis, updateCampaignLTVOptimization, getLTVReport, attributionEngine } from './pack432-attribution';
-export * from './pack432-google-connector';
-export * from './pack432-meta-connector';
-export * from './pack432-tiktok-connector';
-export { FraudSignal, FraudBlock, captureDeviceFingerprint, detectDeviceFarms, detectCPIManipulation, detectRefundAbuse, reviewFraudSignal, getFraudDashboard, checkFraudBlock, uaFraud } from './pack432-ua-fraud';
-export { CampaignConfig, CampaignPerformance, BudgetAllocation, monitorCampaignHealth, calculateBudgetAllocation, autoExpandTopCampaigns, uaOrchestrator } from './pack432-ua-orchestrator';
-export * from './pack432-ugc-engine';
-export { CreatorAttribution, AttributionEvent, UserAttributionLock, createAttribution, trackFirstChat, trackFirstPurchase, getDealAttributions, checkAttributionLock, onWalletTransactionCreated } from './pack433-attribution';
-export { FraudSignalType, FraudSeverity, FraudStatus, CreatorRiskScore, onAttributionCreated, getCreatorFraudSignals, getCreatorRiskScore, dailyFraudScan, cleanupOldFraudSignals } from './pack433-creator-fraud';
-export { CreatorPlatform, CreatorCategory, CreatorStatus, PlatformConnection, TrafficSource, CreatorDiscoveryFilters, registerCreator, updateCreatorProfile, addPlatformConnection, discoverCreators, registerTrafficSource, approveCreator, updateCreatorStatus } from './pack433-creator-marketplace';
-export * from './pack433-deal-engine';
-export { PayoutStatus, PayoutMethod, CreatorPayoutAccount, CreatorPayout, PayoutCalculation, addPayoutAccount, getPayoutAccounts, calculatePayoutAmount, getPayoutHistory, processPayout, holdPayoutForFraud, processWeeklyPayouts } from './pack433-payouts';
-export * from './pack436-metadata-safeguard';
-export * from './pack436-review-boost';
-export * from './pack440/functions';
-export * from './pack448-incident-functions';
-export { getLegalRequirementsForUser, admin_uploadLegalDocument, getAllLegalDocuments, getUserLegalStatus, validateLegalAcceptance, checkLegalRequirements } from './pack89-legal-center';
-export * from './pack90-admin';
-export * from './pack91-admin';
-export { unregisterPushToken, markNotificationAsRead, markAllNotificationsAsRead } from './pack92-endpoints';
-export { DataExportStatus, DeletionRequestStatus, UserDataExport, UserDeletionRequest, ExportedUserData, processPendingDataExports, getMyDataExports, processPendingDeletionRequests, getMyDeletionStatus } from './pack93-data-rights';
-export { registerDeviceAndSession, logoutSession, logoutAllSessions } from './pack95-session-security';
-export * from './pack96-twoFactorEndpoints';
-export { ContentAnalyticsDaily, EarningsTimeseriesPoint, EarningsTimeseries, TopContentItem, TopContentResult, rebuildContentAnalyticsForDay, dailyContentAnalyticsJob, getCreatorEarningsTimeseries, getTopPerformingContent } from './pack97-creatorAnalytics';
-export * from './pack98-helpCenter';
-export * from './pack98-seedHelpContent';
-export * from './pack99-admin';
-export * from './pack99-client';
-export * from './paidMedia';
-export * from './payments.providers';
-export { creditTokensCallable } from './payments';
-export { TokenPack, TOKEN_PACKS, Transaction, UserWallet, EscrowRecord, Settlement, createStripeCheckoutSession, stripeWebhookV2, validateAppleReceipt, initiateChat, releaseEscrowIncremental, autoRefundInactiveEscrows, generateMonthlySettlements, getWalletBalance, getTransactionHistory, completeCalendarBooking, getCreatorSettlements, getPendingSettlements } from './paymentsComplete';
-export { TransactionType, TransactionStatus, purchaseTokensV2, getTransactionHistoryV2, getUserWalletsV2, getExchangeRatesV1, syncExchangeRatesScheduler, generateComplianceReportsScheduler } from './paymentsV2';
-// PHASE 3.1: Stripe webhook with treasury invariants (NO_DISCOUNTS, NO_FREE_TOKENS, idempotency)
-export { stripeWebhookV1, CANONICAL_TOKEN_PACKS } from './payments/stripe';
-export * from './payoutRequests';
-export * from './personalization';
-export * from './predictiveAnalytics';
-export * from './premiumStories';
-export * from './presence';
-export { requestDataExportV1, requestAccountDeletionV1, cancelAccountDeletionV1, getPrivacyRequestStatusV1 } from './privacy';
-export { ExportJobStatus, ExportJob, DeletionJobStatus, DeletionJob, getExportStatus, downloadExport, requestDeletion, getDeletionStatus, reviewDeletion, processExportJobs, processDeletionJobs } from './privacyCenter';
-export { updateCampaign, addBudget, fetchPromotionsForPlacement, logPromotionImpression, logPromotionClick } from './promotions';
-
-// ============================================
-// DOMAIN R (9 files)
-// ============================================
-export * from './realtimeEngine';
-export * from './recommender';
-export { ReferralProfile, ReferralEvent, UserAttribution, createOrGetReferralCode, attributionOnSignup, trackMilestone, getReferralProfile, aggregateReferralProfiles, admin_getReferralProfile } from './referrals';
-export * from './remoteConfig';
-export * from './reputation-endpoints';
-export * from './reputationEngine';
-export { MeetingMode, ReservationStatus, EscrowStatus, WeeklyBlock, WeeklySlot, DateOverride, CreatorAvailability, Reservation, ReservationEscrow, getAvailability, setAvailability, createReservation, cancelReservation, confirmReservation, listReservations, cleanupPendingReservations, autoTimeoutReservations } from './reservations';
-export { ConnectionType, FraudPattern, analyzeUserRiskGraphV1, detectClustersV1, getClusterMembersV1, blockClusterV1, detectFraudClustersDaily } from './riskGraph';
-export * from './royalEndpoints';
-
-// ============================================
-// DOMAIN S (18 files)
-// ============================================
-export { QuestDifficulty, QuestCategory, BadgeRarity, getAvailableQuestsV1, startQuestV1, completeQuestStepV1, claimQuestRewardsV1, getSafetyProfileV1, getSafetyLeaderboardV1, seedQuestDefinitions } from './safetyGamification';
-export * from './safetyRelationship';
-export { createSafetyTimer, checkInSafetyTimer, cancelSafetyTimer, triggerPanic, getUserSafetyTimers, checkExpiredSafetyTimers, cleanupOldSafetyRecords } from './safetyTimers';
-export { ShardConfig, LoadMetrics, CacheStrategy, RegionalConfig, getShardId, writeToShardedCollection, readFromShardedCollection, bulkWrite, getLoadMetrics, configureSharding } from './scalingInfrastructure';
-export * from './scheduled';
-export { securityMonitoringScheduler, getSecurityIncidentsV1, updateSecurityIncidentV1 } from './secops';
-export * from './security';
-export { getUserRiskAssessmentV1, trainFraudDetectionModel } from './securityAI';
-export { SecurityCheckResult, SecurityThreat, MediaWatermark, LeakAlert, RateLimitBucket, performSecurityCheck, watermarkMedia, reportLeakedMedia, detectScreenshot, blockDevice, generateMediaFingerprint, checkGlobalRateLimit } from './securityLayer';
-export * from './smartSocialGraph/index';
-export { sharePreferenceAcrossAis, getSharedPreferencesForAi, storeUserStoryProgress, blockPreferenceSharing, resolvePreferenceConflict, getMemoryAnalytics, wipeUserMemory } from './socialMemoryHub';
-export * from './socialVerification';
-export * from './sponsorships/index';
-// SKIP: all exports duplicate - export * from './support/addMessage';
-// SKIP: all exports duplicate - export * from './support/createTicket';
-// SKIP: all exports duplicate - export * from './support/searchHelpArticles';
-// SKIP: all exports duplicate - export * from './support/updateTicket';
-export { SupportCategory, SupportSeverity, TicketStatus, AssignedTeam, listMyTickets, replyToTicket, getHelpArticles } from './supportCenter';
-
-// ============================================
-// DOMAIN T (12 files)
-// ============================================
-export * from './tax-calculation';
-export { tax_issueInvoice, tax_generateReport, tax_getDocuments } from './tax-documents';
-export * from './tax-engine-functions';
-export * from './tax-profile';
-export * from './tools/generateTestData';
-export * from './treasury-audit';
-export * from './treasury-payout-safety';
-export * from './treasury-wallet';
-export * from './treasury';
-export { onMessageCreated, dailyLockInMaintenance, sendDailyChemistryReminders, triggerChemistryDetection, disableChemistryNotifications } from './triggers/chemistryLockInTriggers';
+// --- TRIGGERS ---
 export * from './triggers/teamSecurityMonitoring';
-export * from './trustRiskEndpoints';
 
-// ============================================
-// DOMAIN U (1 files)
-// ============================================
-export * from './userControlCenter';
+// --- ENGINES (remaining) ---
+export * from './engines/contentEngine';
+export * from './engines/eventEngine';
+export * from './engines/insightEngine';
 
-// ============================================
-// DOMAIN V (2 files)
-// ============================================
-export * from './vibeRecommendationEngine';
-export * from './vipPayerProgram';
+// ============================================================================
+// BATCH D: AI MODULES
+// ============================================================================
 
-// ============================================
-// DOMAIN W (5 files)
-// ============================================
-export * from './walletBridge';
-export { TokenPackTier, AutoLoad, Cashback, SeasonalEvent, EarningsDashboard, SettlementReport, Invoice, getTokenPacks, purchaseTokens, configureAutoLoad, applyPromoCode, generateSettlementReport, generateInvoice, getCashbackStatus } from './walletFintech';
-export * from './webOperations';
-export * from './webrtcSignaling';
-export { checkPayoutStatus } from './workers/payoutProcessor';
+// --- AI COMPANIONS & CHARACTERS ---
+export * from './aiCompanions';
+export * from './aiCompanionsPack48';
+export * from './aiCompanionFunctions';
+export * from './aiCharacters';
+export * from './aiBotEngine';
+export * from './aiChatEngine';
+export * from './aiGenerationService';
+export * from './aiMarketplaceFunctions';
+export * from './aiMarketplaceRanking';
+export {
+  storeMemory,
+  getRelevantMemories,
+  extractMemoriesFromConversation,
+  summarizeConversation,
+  buildAIContext,
+  pruneOldMemories,
+  getUserContext as getUserContext_aiMemory,
+  rebuildAiUserMemory,
+  getAiUserMemory,
+  rebuildAiUserMemoryEndpoint,
+  scheduledMemoryRebuild,
+} from './aiMemory';
+export {
+  extractTextFromImage,
+  detectNSFW,
+  detectToxicity as detectToxicity_ai,
+  scoreSexualContent,
+  containsBannedTerms,
+  moderateText as moderateText_ai,
+  moderateImage,
+  moderateVideo,
+  logModerationResult,
+  getModerationStats,
+  moderateContentV1,
+} from './aiModeration';
+export * from './aiRouter';
+export {
+  analyzeContentV1,
+  getModerationQueueV1,
+  resolveModerationItemV1,
+  getAIOversightStatsV1,
+} from './aiOversight';
+export * from './aiExplainability';
 
-// ============================================
-// PACK 452 — Monetization Engine vNext (8 files)
-// ============================================
-export * from './pack452-endpoints';
-export * from './pack452-scheduled';
+// --- MODERATION ENGINES ---
+export * from './aiModerationEngine';
+export {
+  moderateText as moderateText_content,
+  logModerationIncident,
+  getUserModerationStats,
+} from './contentModerationEngine';
 
+// --- EMOTIONAL INTELLIGENCE ---
+export * from './emotionalIntelligence';
+
+// PACK 426: AI REGIONAL ENGINE & RATE LIMIT
+export {
+  getAIConfig,
+} from './pack426-ai-regional-engine';
+
+export {
+  checkRateLimitHTTP,
+} from './pack426-rate-limit';
+
+// ============================================================================
+// DIAGNOSTICS LOG
+// ============================================================================
+console.log('✅ AVALO Firebase Functions entrypoint loaded successfully');
+console.log('📦 All PACK modules exported and ready for deployment');

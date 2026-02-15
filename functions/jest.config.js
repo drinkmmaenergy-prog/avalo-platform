@@ -1,26 +1,30 @@
+/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/tests'],
   testMatch: ['**/*.test.ts'],
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.d.ts',
-    '!src/index.ts',
-  ],
-  coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-  },
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-  testTimeout: 30000,
-  globals: {
-    'ts-jest': {
+  transform: {
+    '^.+\\.ts$': ['ts-jest', {
       tsconfig: {
+        rootDir: '.',
+        module: 'commonjs',
+        target: 'ES2020',
+        lib: ['ES2020'],
+        types: ['node', 'jest'],
         esModuleInterop: true,
         allowSyntheticDefaultImports: true,
+        strict: false,
+        noImplicitAny: false,
+        strictNullChecks: false,
+        skipLibCheck: true,
       },
-    },
+    }],
   },
+  // uuid v13 ships ESM — must be transformed by jest
+  transformIgnorePatterns: [
+    'node_modules/(?!uuid)',
+    '\\.pnpm/(?!uuid)',
+  ],
+  setupFiles: ['<rootDir>/tests/setup.ts'],
 };

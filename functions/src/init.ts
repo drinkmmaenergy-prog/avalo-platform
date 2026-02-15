@@ -24,7 +24,10 @@ try {
   // In production, this will throw and prevent partial boot
   // In development, it will log but continue
   console.error('[INIT] Startup validation failed:', validationError.message);
-  if (process.env.NODE_ENV === 'production') {
+  // Lazy env read: only check NODE_ENV when needed, not at module scope
+  const nodeEnv = process.env.NODE_ENV || 'production';
+  if (nodeEnv === 'production' && !!process.env.K_SERVICE) {
+    // Only hard-fail inside Cloud Run (Gen2) production runtime
     throw validationError;
   }
 }

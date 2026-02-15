@@ -3,28 +3,30 @@
  * Automatically polls store reviews every 30 minutes
  */
 
-import * as functions from 'firebase-functions';
 import { storeReviewService } from './pack424-store-reviews.service';
 import { reputationDefenseService } from './pack424-reputation-defense';
 import { HttpsError, admin, auth, logger, onCall, onRequest, timestamp, onSchedule } from './runtime';
 
-// Configuration
-const APP_CONFIG = {
-  android: {
-    packageName: functions.config().avalo?.android_package || 'com.avalo.app',
-  },
-  ios: {
-    appId: functions.config().avalo?.ios_app_id || '123456789',
-    countries: ['us', 'gb', 'ca', 'au', 'de', 'fr', 'es', 'it'],
-  },
-};
+// Configuration — lazy-accessed to avoid crash at module load
+function getAppConfig() {
+  return {
+    android: {
+      packageName: process.env.AVALO_ANDROID_PACKAGE || 'com.avalo.app',
+    },
+    ios: {
+      appId: process.env.AVALO_IOS_APP_ID || '123456789',
+      countries: ['us', 'gb', 'ca', 'au', 'de', 'fr', 'es', 'it'],
+    },
+  };
+}
 
 /**
  * Scheduled function: Run every 30 minutes
  * Fetches latest reviews from both stores
  */
 export const scheduledReviewSync = onSchedule({ schedule: "every 30 minutes", timeZone: "UTC" }, async (event) => {
-    functions.logger.info('Starting scheduled review sync');
+    const APP_CONFIG = getAppConfig();
+    logger.info('Starting scheduled review sync');
 
     try {
       // Fetch Android reviews
@@ -33,7 +35,7 @@ export const scheduledReviewSync = onSchedule({ schedule: "every 30 minutes", ti
         100
       );
 
-      functions.logger.info(`Fetched ${androidReviews.length} Android reviews`);
+      logger.info(`Fetched ${androidReviews.length} Android reviews`);
 
       // Fetch iOS reviews from multiple regions
       const iosReviews = [];
@@ -49,7 +51,7 @@ export const scheduledReviewSync = onSchedule({ schedule: "every 30 minutes", ti
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      functions.logger.info(`Fetched ${iosReviews.length} iOS reviews`);
+      logger.info(`Fetched ${iosReviews.length} iOS reviews`);
 
       // Combine and store
       const allReviews = [...androidReviews, ...iosReviews];
@@ -65,9 +67,9 @@ export const scheduledReviewSync = onSchedule({ schedule: "every 30 minutes", ti
         // Run defense check on new reviews
         await reputationDefenseService.detectAttacks();
 
-        functions.logger.info(`Processed ${allReviews.length} total reviews`);
+        logger.info(`Processed ${allReviews.length} total reviews`);
       } else {
-        functions.logger.info('No new reviews found');
+        logger.info('No new reviews found');
       }
 
       console.log('Scheduled job result:', { success: true, reviewsProcessed: allReviews.length });
@@ -75,7 +77,7 @@ export const scheduledReviewSync = onSchedule({ schedule: "every 30 minutes", ti
 
       return;
     } catch (error) {
-      functions.logger.error('Error in scheduled review sync:', error);
+      logger.error('Error in scheduled review sync:', error);
       throw error;
     }
   });
@@ -83,17 +85,18 @@ export const scheduledReviewSync = onSchedule({ schedule: "every 30 minutes", ti
 /**
  * Manual trigger for immediate review sync
  */
-export const triggerReviewSync = functions.https.onCall(async (request) => {
+export const triggerReviewSync = onCall({}, async (request) => {
+  const APP_CONFIG = getAppConfig();
   const data = request.data;
   // Verify admin access
   if (!request.auth?.token?.admin) {
-    throw new functions.https.HttpsError(
+    throw new HttpsError(
       'permission-denied',
       'Only admins can trigger manual review sync'
     );
   }
 
-  functions.logger.info('Manual review sync triggered', {
+  logger.info('Manual review sync triggered', {
     userId: request.auth.uid,
   });
 
@@ -144,8 +147,8 @@ export const triggerReviewSync = functions.https.onCall(async (request) => {
 
     return;
   } catch (error) {
-    functions.logger.error('Error in manual review sync:', error);
-    throw new functions.https.HttpsError('internal', 'Failed to sync reviews');
+    logger.error('Error in manual review sync:', error);
+    throw new HttpsError('internal', 'Failed to sync reviews');
   }
 });
 
@@ -154,6 +157,7 @@ export const triggerReviewSync = functions.https.onCall(async (request) => {
  * Some stores support webhooks for new reviews
  */
 export const storeReviewWebhook = onRequest({}, async (req, res) => {
+  const APP_CONFIG = getAppConfig();
   // Verify webhook signature
   const signature = req.headers['x-store-signature'] as string;
   
@@ -164,7 +168,7 @@ export const storeReviewWebhook = onRequest({}, async (req, res) => {
   try {
     const notification = req.body;
     
-    functions.logger.info('Received store webhook', {
+    logger.info('Received store webhook', {
       type: notification.type,
       platform: notification.platform,
     });
@@ -192,7 +196,7 @@ export const storeReviewWebhook = onRequest({}, async (req, res) => {
 
     res.status(200).json({ received: true });
   } catch (error) {
-    functions.logger.error('Error processing webhook:', error);
+    logger.error('Error processing webhook:', error);
     res.status(500).json({ error: 'Processing failed' });
   }
 });
@@ -202,7 +206,7 @@ export const storeReviewWebhook = onRequest({}, async (req, res) => {
  * Runs at 3 AM UTC
  */
 export const dailyReviewMetrics = onSchedule({ schedule: "0 3 * * *", timeZone: "UTC" }, async (event) => {
-    functions.logger.info('Starting daily review metrics calculation');
+    logger.info('Starting daily review metrics calculation');
 
     try {
       const now = Date.now();
@@ -224,7 +228,7 @@ export const dailyReviewMetrics = onSchedule({ schedule: "0 3 * * *", timeZone: 
         calculatedAt: now,
       });
 
-      functions.logger.info('Daily review metrics calculated', {
+      logger.info('Daily review metrics calculated', {
         reviews24h: stats24h.totalReviews,
         reviews7d: stats7d.totalReviews,
         reviews30d: stats30d.totalReviews,
@@ -235,7 +239,7 @@ export const dailyReviewMetrics = onSchedule({ schedule: "0 3 * * *", timeZone: 
 
       return;
     } catch (error) {
-      functions.logger.error('Error calculating daily metrics:', error);
+      logger.error('Error calculating daily metrics:', error);
       throw error;
     }
   });

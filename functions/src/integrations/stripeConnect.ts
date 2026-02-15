@@ -5,10 +5,9 @@
  */
 
 import Stripe from "stripe";
-import * as functions from "firebase-functions";
 
 // Get Stripe key from config or environment - safe for emulator
-const stripeApiKey = functions.config().stripe?.secret_key || process.env.STRIPE_SECRET_KEY || "";
+const stripeApiKey = process.env.STRIPE_SECRET_KEY || "";
 
 // Lazy initialization flag to avoid crashes on module load
 let stripeInstance: Stripe | null = null;

@@ -164,8 +164,8 @@ async function checkAuthHealth(): Promise<ComponentStatus> {
  */
 async function checkStripeHealth(): Promise<ComponentStatus> {
   try {
-    // Check if Stripe config exists
-    const stripeKey = process.env.STRIPE_SECRET_KEY || functions.config().stripe?.secret_key;
+    // Check if Stripe config exists (Gen2: env-only)
+    const stripeKey = process.env.STRIPE_SECRET_KEY || '';
     
     if (!stripeKey) {
       return {

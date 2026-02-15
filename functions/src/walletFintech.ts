@@ -62,13 +62,9 @@ const IS_EMULATOR = process.env.FUNCTIONS_EMULATOR === "true";
 const IS_CLOUD_RUN = !!process.env.K_SERVICE;
 const IS_DEPLOY_TIME_ANALYSIS = !IS_CLOUD_RUN && !IS_EMULATOR;
 
-// Load stripe secret from:
-// 1) .env (emulator)
-// 2) firebase functions:config:set stripe.secret="xxx"
-// 3) crash early if missing (except during deploy analysis)
+// Load stripe secret from env (Gen2: no runtime config)
 const STRIPE_SECRET =
   process.env.STRIPE_SECRET_KEY ||
-  functionsConfig().stripe?.secret ||
   "";
 
 if (!STRIPE_SECRET) {

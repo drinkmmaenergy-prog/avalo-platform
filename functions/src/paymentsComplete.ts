@@ -286,14 +286,11 @@ export const createStripeCheckoutSession = onCall(
         sessionId: session.id,
       });
 
-      console.log('Scheduled job result:', {
+      return {
         success: true,
         sessionId: session.id,
         url: session.url,
-      });
-
-
-      return;
+      };
     } catch (error: any) {
       logger.error("Error creating Stripe checkout session:", error);
       throw new HttpsError("internal", `Failed to create checkout session: ${error.message}`);
@@ -374,25 +371,26 @@ export const stripeWebhookV2 = onRequest(
 async function handleStripeCheckoutCompleted(session: Stripe.Checkout.Session) {
   const sessionId = session.id;
 
-  // Find payment session
-  const sessionDoc = await db.collection("paymentSessions").doc(sessionId).get();
-
-  if (!sessionDoc.exists) {
-    logger.error(`Payment session not found: ${sessionId}`);
-    return;
-  }
-
-  const paymentSession = sessionDoc.data() as PaymentSession;
-
-  // Idempotency check
-  if (paymentSession.status === "completed") {
-    logger.info(`Already processed: ${sessionId}`);
-    return;
-  }
-
   try {
-    // Credit tokens atomically
+    // Credit tokens atomically — idempotency check is INSIDE the transaction
+    // to prevent TOCTOU race conditions on concurrent webhook deliveries
     await db.runTransaction(async (tx) => {
+      // Re-read payment session inside transaction for atomic idempotency
+      const sessionDoc = await tx.get(db.collection("paymentSessions").doc(sessionId));
+
+      if (!sessionDoc.exists) {
+        logger.error(`Payment session not found: ${sessionId}`);
+        return;
+      }
+
+      const paymentSession = sessionDoc.data() as PaymentSession;
+
+      // Idempotency check — inside transaction to prevent duplicate credit
+      if (paymentSession.status === "completed") {
+        logger.info(`Already processed (idempotent skip): ${sessionId}`);
+        return;
+      }
+
       const userId = paymentSession.userId;
       const tokens = paymentSession.tokens!;
 
@@ -462,16 +460,17 @@ async function handleStripeCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     logger.info(`Tokens credited successfully: ${sessionId}`);
 
-    await logServerEvent("tokens_credited", paymentSession.userId, {
-      tokens: paymentSession.tokens,
+    // Post-transaction logging (session metadata retrieved from Stripe session object)
+    await logServerEvent("tokens_credited", session.metadata?.userId || sessionId, {
+      tokens: parseInt(session.metadata?.tokens || "0", 10),
       provider: "stripe",
       sessionId,
     });
   } catch (error: any) {
     logger.error(`Transaction failed for ${sessionId}:`, error);
 
-    // Update attempt count
-    await sessionDoc.ref.update({
+    // Update attempt count — direct doc reference (outside failed transaction)
+    await db.collection("paymentSessions").doc(sessionId).update({
       webhookAttempts: FieldValue.increment(1),
       status: "failed",
     });
@@ -634,10 +633,7 @@ async function verifyAppleReceiptWithServer(receiptData: string): Promise<{ vali
     return verifyAppleReceiptWithServer(receiptData);
   }
 
-  console.log('Scheduled job result:', { valid: result.status === 0 });
-
-
-  return;
+  return { valid: result.status === 0 };
 }
 
 function extractTokensFromProductId(productId: string): number {

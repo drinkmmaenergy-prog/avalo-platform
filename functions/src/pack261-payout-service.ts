@@ -122,7 +122,17 @@ async function processPayoutRequest(payout: PayoutRequest): Promise<void> {
 
 // Wise payout processing
 async function processWisePayout(payout: PayoutRequest): Promise<string> {
-  const config = functions.config().payout as PayoutConfig;
+  const config: PayoutConfig = {
+    wise: {
+      apiKey: process.env.PAYOUT_WISE_API_KEY || '',
+      profileId: process.env.PAYOUT_WISE_PROFILE_ID || '',
+    },
+    paypal: {
+      clientId: process.env.PAYOUT_PAYPAL_CLIENT_ID || '',
+      clientSecret: process.env.PAYOUT_PAYPAL_CLIENT_SECRET || '',
+      mode: (process.env.PAYOUT_PAYPAL_MODE as 'sandbox' | 'live') || 'sandbox',
+    },
+  };
   
   if (!config?.wise?.apiKey) {
     throw new Error('Wise API key not configured');
@@ -214,7 +224,17 @@ async function processWisePayout(payout: PayoutRequest): Promise<string> {
 
 // PayPal payout processing
 async function processPayPalPayout(payout: PayoutRequest): Promise<string> {
-  const config = functions.config().payout as PayoutConfig;
+  const config: PayoutConfig = {
+    wise: {
+      apiKey: process.env.PAYOUT_WISE_API_KEY || '',
+      profileId: process.env.PAYOUT_WISE_PROFILE_ID || '',
+    },
+    paypal: {
+      clientId: process.env.PAYOUT_PAYPAL_CLIENT_ID || '',
+      clientSecret: process.env.PAYOUT_PAYPAL_CLIENT_SECRET || '',
+      mode: (process.env.PAYOUT_PAYPAL_MODE as 'sandbox' | 'live') || 'sandbox',
+    },
+  };
   
   if (!config?.paypal?.clientId || !config?.paypal?.clientSecret) {
     throw new Error('PayPal credentials not configured');

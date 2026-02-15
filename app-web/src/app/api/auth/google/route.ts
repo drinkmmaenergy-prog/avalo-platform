@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       postBody: idToken
         ? `id_token=${idToken}&providerId=google.com`
         : `access_token=${accessToken}&providerId=google.com`,
-      requestUri: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+      requestUri: process.env.NEXT_PUBLIC_APP_URL || 'https://www.avaloapp.com',
       returnSecureToken: true,
       returnIdpCredential: true,
     };
