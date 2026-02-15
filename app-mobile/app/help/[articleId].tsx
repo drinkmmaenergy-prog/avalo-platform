@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { doc, getDoc, collection, addDoc } from 'firebase/firestore';
-import { db, auth } from '../../lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { HelpArticle } from '../../../shared/types/support';
 import { Ionicons } from '@expo/vector-icons';
 import Markdown from 'react-native-markdown-display';

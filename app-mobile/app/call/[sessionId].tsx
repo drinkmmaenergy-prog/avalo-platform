@@ -22,7 +22,7 @@ import {
   calculateEstimatedCost,
 } from '../../services/callService';
 import { getTokenBalance } from '../../services/tokenService';
-import { db } from '../../lib/firebase';
+import { db } from '@/lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 
 type CallState = 'CONNECTING' | 'CONNECTED' | 'ENDED';

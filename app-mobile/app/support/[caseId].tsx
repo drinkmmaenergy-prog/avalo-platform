@@ -17,7 +17,7 @@ import {
   Alert
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { auth, db } from '../../lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { doc, onSnapshot, collection, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
 

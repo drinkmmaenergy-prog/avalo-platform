@@ -13,7 +13,7 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { functions, auth } from '../../../lib/firebase';
+import { functions, auth } from '@/lib/firebase';
 import { httpsCallable } from 'firebase/functions';
 
 export default function EventCheckInScreen() {

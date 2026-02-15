@@ -17,7 +17,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import { auth, db as firestore } from '../../../lib/firebase';
+import { auth, db as firestore } from '@/lib/firebase';
 
 interface Product {
   productId: string;
