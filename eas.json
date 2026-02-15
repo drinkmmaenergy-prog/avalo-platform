@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 12.0.0"
+    "version": ">= 12.0.0",
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -18,23 +19,31 @@
       "ios": {
         "simulator": false
       },
-      "cache": {
-  "disabled": true
-},
-
       "android": {
         "buildType": "apk"
+      },
+      "cache": {
+        "disabled": true
       }
     },
     "production": {
-      "developmentClient": false,
       "distribution": "store",
-      "autoIncrement": true,
-      "ios": {
-        "simulator": false
-      },
       "android": {
-        "buildType": "aab"
+        "buildType": "app-bundle",
+        "autoIncrement": true
+      },
+      "ios": {
+        "autoIncrement": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://europe-west1-avalostaging.cloudfunctions.net",
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyANQ6LpHgcbynuL8lKlK8GJduuxiri1V0s",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "avalostaging.firebaseapp.com",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "avalostaging",
+        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "avalostaging.firebasestorage.app",
+        "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "1097334032970",
+        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:1097334032970:web:f637e2ed4aa40435fc34b3",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_51SEaEURotO6GNAiD2rAhctO0kP8o7I1bgApQCy5VkrZSy0mc6F4yD53DQM6wr8NPlpV5guPVhbHeP7A2yj8pPu1T00aZkeaSZe"
       }
     }
   },
