@@ -1,31 +1,14 @@
 {
   "cli": {
-    "version": ">= 12.0.0"
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
-      "ios": {
-        "simulator": true
-      }
-    },
-    "preview": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
-      "ios": {
-        "simulator": false
-      }
-    },
     "production": {
       "developmentClient": false,
       "distribution": "store",
       "autoIncrement": true,
+      "node": "18.18.0",
       "android": {
         "buildType": "app-bundle"
       },
@@ -33,7 +16,7 @@
         "autoIncrement": true
       },
       "env": {
-        "EAS_BUILD_WORKINGDIR": "."
+        "EAS_BUILD_WORKINGDIR": "app-mobile"
       }
     }
   },
