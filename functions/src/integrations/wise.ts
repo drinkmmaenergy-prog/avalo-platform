@@ -14,7 +14,7 @@ import axios, { AxiosInstance } from "axios";
 
 // Initialize Wise API client
 const WISE_API_URL = "https://api.transferwise.com";
-const WISE_API_KEY = functions.config().wise?.api_key || process.env.WISE_API_KEY || "";
+const WISE_API_KEY = process.env.WISE_API_KEY || "";
 
 const wiseClient: AxiosInstance = axios.create({
   baseURL: WISE_API_URL,
@@ -280,5 +280,5 @@ export async function getWiseTransferStatus(
  * This should be configured in Firebase Functions config.
  */
 export function getWiseProfileId(): string {
-  return functions.config().wise?.profile_id || process.env.WISE_PROFILE_ID || "";
+return process.env.WISE_PROFILE_ID || "";
 }

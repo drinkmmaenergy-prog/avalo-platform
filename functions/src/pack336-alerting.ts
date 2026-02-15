@@ -204,9 +204,8 @@ async function sendPushNotifications(alert: KpiAlert): Promise<void> {
  */
 async function sendEmailNotifications(alert: KpiAlert): Promise<void> {
   try {
-    // Get admin email addresses from config
-    const config = functions.config();
-    const adminEmails = config.pack336?.admin_emails?.split(',') || [];
+    // Get admin email addresses from env (Gen2: no runtime config)
+    const adminEmails = (process.env.PACK336_ADMIN_EMAILS || '').split(',').filter(Boolean);
     
     if (adminEmails.length === 0) {
       console.log('[PACK 336] No admin email addresses configured');
@@ -240,8 +239,7 @@ async function sendEmailNotifications(alert: KpiAlert): Promise<void> {
  */
 async function sendSlackNotification(alert: KpiAlert): Promise<void> {
   try {
-    const config = functions.config();
-    const slackWebhookUrl = config.pack336?.slack_webhook_url;
+    const slackWebhookUrl = process.env.PACK336_SLACK_WEBHOOK_URL || '';
     
     if (!slackWebhookUrl) {
       console.log('[PACK 336] Slack webhook URL not configured');

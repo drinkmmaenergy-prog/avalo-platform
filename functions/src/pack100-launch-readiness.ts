@@ -89,8 +89,7 @@ async function checkPerformance(): Promise<ReadinessCheck[]> {
     message: 'List endpoints use pagination (assumed from code structure)',
   });
   
-  // Check Cloud Functions memory tuning
-  const functionConfig = functions.config();
+  // Check Cloud Functions configuration (Gen2: no runtime config object)
   checks.push({
     category: 'Performance',
     check: 'Cloud Functions Configuration',

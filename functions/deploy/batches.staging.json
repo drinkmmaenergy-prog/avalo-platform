@@ -1,0 +1,1040 @@
+{
+  "region": "europe-west1",
+  "project": "avalostaging",
+  "maxConcurrentDeploys": 1,
+  "batchDelaySeconds": 10,
+  "description": "Deterministic batch deploy for avalostaging to avoid Cloud Run CPU quota stalls. Functions grouped by domain from src/index.ts BATCH organization.",
+  "batches": [
+    {
+      "name": "00_health",
+      "description": "Health & smoke checks — always first",
+      "functions": [
+        "smokeCheck",
+        "healthCheck"
+      ]
+    },
+    {
+      "name": "01_auth_core",
+      "description": "Auth, account lifecycle, verification (PACK 306, 314)",
+      "functions": [
+        "onUserCreate",
+        "startVerification",
+        "verifySelfie",
+        "verifyProfilePhotos",
+        "verifyMeetingSelfie",
+        "adminVerificationOverride",
+        "cleanupOldVerificationData",
+        "validateRegistration",
+        "completeUserProfile",
+        "getUserFeatures"
+      ]
+    },
+    {
+      "name": "02_auth_admin",
+      "description": "Admin auth, admin calls, admin console, admin panel, admin support",
+      "functions": [
+        "adminSearchUsers",
+        "adminUsersDetail",
+        "adminUsersSearch",
+        "adminAuditSearch",
+        "adminPayoutsDecision",
+        "adminDisputesResolve",
+        "adminEnforcementUpdate",
+        "adminPromotionsSetStatus",
+        "adminDeletionReview",
+        "adminAmlSetStatus"
+      ]
+    },
+    {
+      "name": "03_account_status",
+      "description": "Account status engine, device trust, compliance",
+      "functions": [
+        "applySanctions",
+        "getAccountStatus_engine",
+        "getAccountStatusRecord",
+        "account_getStatus",
+        "onContentViolation",
+        "onCsamDetection",
+        "onSafeMeetSOS",
+        "onTrustCriticalEvent",
+        "canPerformAction",
+        "aggregateAmlProfiles",
+        "amlDailyMonitor"
+      ]
+    },
+    {
+      "name": "04_pack317_security",
+      "description": "PACK 317: Rate limiting & security",
+      "functions": [
+        "pack317_checkRateLimit",
+        "pack317_checkRegistration",
+        "pack317_checkMessageSpam",
+        "pack317_getLaunchConfig",
+        "pack317_updateLaunchConfig",
+        "pack317_getLaunchConfigHistory",
+        "pack317_querySecurityEvents",
+        "pack317_getSecurityStats",
+        "pack317_testSanitization"
+      ]
+    },
+    {
+      "name": "05_stripe_payments",
+      "description": "Core Stripe payments, checkout, webhooks",
+      "functions": [
+        "stripeWebhook",
+        "creditTokensCallable",
+        "requestPayoutCallable",
+        "createStripeCheckoutSession",
+        "stripeWebhookV2",
+        "validateAppleReceipt",
+        "getWalletBalance",
+        "getTransactionHistory",
+        "requestPayout",
+        "getCreatorSettlements",
+        "getPendingSettlements"
+      ]
+    },
+    {
+      "name": "06_payments_extended",
+      "description": "Chat initiation, escrow, settlements, calendar booking payments",
+      "functions": [
+        "initiateChat",
+        "releaseEscrowIncremental",
+        "autoRefundInactiveEscrows",
+        "generateMonthlySettlements",
+        "createCalendarBooking",
+        "completeCalendarBooking",
+        "cancelCalendarBooking",
+        "pack278_stripeWebhook",
+        "tokens_stripeWebhook"
+      ]
+    },
+    {
+      "name": "07_kyc_subscriptions",
+      "description": "PACK 289 KYC, PACK 350 subscriptions",
+      "functions": [
+        "kyc_submit",
+        "kyc_getStatus",
+        "kyc_admin_review",
+        "kyc_admin_listPending",
+        "pack350_getMySubscription",
+        "pack350_getSubscriptionProducts",
+        "pack350_syncStripeSubscription",
+        "pack350_syncAppleSubscription",
+        "pack350_syncGoogleSubscription",
+        "pack350_cancelSubscription",
+        "pack350_stripeWebhook",
+        "pack350_appleWebhook",
+        "pack350_googleWebhook"
+      ]
+    },
+    {
+      "name": "08_chargeback_payout",
+      "description": "PACK 383 chargeback firewall & payout router",
+      "functions": [
+        "pack383_detectChargebackRisk",
+        "pack383_applyPayoutFreeze",
+        "pack383_createReserveHold",
+        "pack383_releaseExpiredHolds",
+        "pack383_handleChargebackNotification",
+        "pack383_resolveOptimalPayoutRoute",
+        "pack383_initiatePayout",
+        "pack383_processPayoutQueue"
+      ]
+    },
+    {
+      "name": "09_aml_payouts",
+      "description": "PACK 390 AML & bank payouts",
+      "functions": [
+        "pack390_runAMLScan",
+        "pack390_autoAMLScanOnPayout",
+        "pack390_escalateFinancialRisk",
+        "pack390_requestBankPayout",
+        "pack390_executeBankPayout",
+        "pack390_reverseFailedTransfer",
+        "pack390_getPayoutHistory"
+      ]
+    },
+    {
+      "name": "10_invoicing_tax",
+      "description": "PACK 395 invoicing & tax engine",
+      "functions": [
+        "generatePurchaseInvoice",
+        "generateCreatorPayoutStatement",
+        "emailInvoiceToUser",
+        "getUserInvoices",
+        "getCreatorPayoutStatements",
+        "generateMonthlyStatementsForAllCreators",
+        "calculatePurchaseTax",
+        "updateVATRates",
+        "validateVATNumber"
+      ]
+    },
+    {
+      "name": "11_push_notifications",
+      "description": "PACK 92 push notifications",
+      "functions": [
+        "registerPushToken",
+        "unregisterPushToken",
+        "getNotificationSettings",
+        "updateNotificationSettings",
+        "getNotifications",
+        "markNotificationAsRead",
+        "markAllNotificationsAsRead",
+        "getUnreadCount"
+      ]
+    },
+    {
+      "name": "12_economy_config",
+      "description": "Economy contract, currency, earnings, dynamic pricing, API endpoints",
+      "functions": [
+        "economyContractValidator",
+        "getContractStats",
+        "getAuditLogs",
+        "getSuspiciousAnomalies",
+        "resolveAnomaly",
+        "nightlyContractAuditor",
+        "weeklyContractReport"
+      ]
+    },
+    {
+      "name": "13_risk_engine",
+      "description": "Risk engine, compliance engine, economy engine",
+      "functions": [
+        "updateRiskProfileTrigger",
+        "updateRiskProfileOnReportTrigger",
+        "calculateTrustScoreCallable",
+        "calculateTrustScore",
+        "banUserCallable",
+        "isUserRestricted"
+      ]
+    },
+    {
+      "name": "14_chat_core",
+      "description": "Chat, chat sync, chat security, chat monetization",
+      "functions": [
+        "sendMessage",
+        "getMessages",
+        "markAsRead",
+        "syncMessage",
+        "updateMessageStatus",
+        "getConversations",
+        "replyAndUpdate"
+      ]
+    },
+    {
+      "name": "15_chat_extended",
+      "description": "Chat media, chat system next gen, dynamic chat pricing",
+      "functions": [
+        "sendMediaMessage",
+        "unlockPaidMedia",
+        "getMediaGallery",
+        "checkChatBalance",
+        "getChatPricing"
+      ]
+    },
+    {
+      "name": "16_discovery",
+      "description": "Discovery endpoints, discovery feed, discovery filters",
+      "functions": [
+        "getDiscoveryFeed",
+        "searchProfiles",
+        "getDiscoveryFeed_v2",
+        "filterShadowbannedUsers",
+        "filterIncognitoUsers",
+        "applyDiscoveryFilters",
+        "isUserVisibleInDiscovery_filters",
+        "getDiscoveryQueryFilters",
+        "calculateVisibilityMultiplier",
+        "enrichUsersWithTrustData",
+        "applyVisibilityWeighting"
+      ]
+    },
+    {
+      "name": "17_discovery_analytics",
+      "description": "PACK 294 discovery analytics, chemistry matching",
+      "functions": [
+        "logDiscoveryProfileView",
+        "logDiscoveryProfileLike",
+        "logDiscoveryOpenChat",
+        "logDiscoveryOpenCalendar",
+        "aggregateDiscoveryAnalytics",
+        "triggerChemistryDetection"
+      ]
+    },
+    {
+      "name": "18_feed_unified",
+      "description": "PACK 282 feed, PACK 298 unified engine",
+      "functions": [
+        "createPost",
+        "updatePost",
+        "deletePost",
+        "getFeed",
+        "getPost",
+        "calculateFeedRankings",
+        "generateSwipePool",
+        "updateLowPopularityStatus",
+        "validateContentSafety"
+      ]
+    },
+    {
+      "name": "19_calls_calendar",
+      "description": "Calls, call billing, call monetization, calendar",
+      "functions": [
+        "startCallMonetized",
+        "updateCallActivity",
+        "endCallMonetized",
+        "autoDisconnectIdleCalls",
+        "getActiveCallForUser",
+        "checkCallBalance_monetization",
+        "determineCallPayerAndEarner",
+        "getCallMinuteCost"
+      ]
+    },
+    {
+      "name": "20_dating_funnel",
+      "description": "Dating funnel phases",
+      "functions": [
+        "initializeConnectionSession",
+        "updateConnectionAfterCall",
+        "scheduleDatingEvent",
+        "createMeetingVerification",
+        "verifyMeetingCheckIn",
+        "createPanicAlert",
+        "completeMeeting_funnel",
+        "createPaidTimeBooking",
+        "completePaidTimeBooking",
+        "getUserFunnelProgress",
+        "getFunnelAnalytics",
+        "calculateRetentionMetrics"
+      ]
+    },
+    {
+      "name": "21_clubs_social",
+      "description": "Clubs, club intelligence, challenges",
+      "functions": [
+        "createClub",
+        "joinClub",
+        "leaveClub",
+        "updateClubDetails",
+        "postToClub",
+        "submitChallengeTask",
+        "recordContribution"
+      ]
+    },
+    {
+      "name": "22_notifications_v2",
+      "description": "Notifications v2, reminders, digests",
+      "functions": [
+        "sendNotification",
+        "getUserNotifications",
+        "markNotificationRead",
+        "markAllNotificationsRead",
+        "archiveNotification",
+        "getNotificationSettings_v2",
+        "updateNotificationSettings_v2",
+        "toggleCategoryNotifications",
+        "setSnoozeMode",
+        "createReminder",
+        "getUserReminders",
+        "updateReminder",
+        "deleteReminder",
+        "getUserDigests"
+      ]
+    },
+    {
+      "name": "23_notifications_scheduled",
+      "description": "Notifications scheduled jobs",
+      "functions": [
+        "processReminders",
+        "generateDailyDigests",
+        "generateWeeklyDigests",
+        "resetPausedReminders",
+        "cleanupOldDigests",
+        "cleanupOldNotifications"
+      ]
+    },
+    {
+      "name": "24_creator_hub",
+      "description": "Creator hub, creator mode, creator earnings",
+      "functions": [
+        "getCreatorDashboard",
+        "getCreatorQuests",
+        "claimQuestReward",
+        "requestWithdrawal",
+        "getCreatorFanbase",
+        "getMessageTemplates",
+        "saveMessageTemplate",
+        "getPricingRecommendations",
+        "enableCreatorModeV1",
+        "getCreatorDashboardV1",
+        "aggregateCreatorEarningsDaily"
+      ]
+    },
+    {
+      "name": "25_creator_mode",
+      "description": "Creator mode V1 endpoints",
+      "functions": [
+        "createGatedPostV1",
+        "unlockGatedPostV1",
+        "setMessagePricingV1",
+        "generateReferralCodeV1",
+        "applyReferralCodeV1",
+        "processReferralReward",
+        "requestWithdrawalV1",
+        "getWithdrawalHistoryV1",
+        "getTopFansV1"
+      ]
+    },
+    {
+      "name": "26_creator_shop",
+      "description": "Creator shop & digital products",
+      "functions": [
+        "createCreatorProduct",
+        "uploadProductMedia",
+        "publishCreatorProduct",
+        "purchaseCreatorProduct",
+        "getProductAccessUrls",
+        "getCreatorProducts",
+        "getMyPurchases",
+        "getCreatorStats",
+        "updateCreatorProduct",
+        "toggleProductStatus",
+        "archiveCreatorProduct"
+      ]
+    },
+    {
+      "name": "27_creator_store",
+      "description": "Creator store V1",
+      "functions": [
+        "createCreatorProductV1",
+        "publishCreatorProductV1",
+        "getCreatorProductsV1",
+        "purchaseCreatorProductV1",
+        "getMyPurchasesV1",
+        "deactivateProductV1",
+        "getCreatorAnalyticsV1"
+      ]
+    },
+    {
+      "name": "28_activity_retention",
+      "description": "PACK 301 activity hooks & winback",
+      "functions": [
+        "trackActivity",
+        "onSwipeCreated",
+        "onChatMessageCreated",
+        "onTokenPurchaseCreated",
+        "onCalendarBookingCreated",
+        "onEventTicketCreated",
+        "trackCallActivity_pack301",
+        "batchUpdateActivities",
+        "getActivitySummary",
+        "dailyWinBackSequence",
+        "markWinBackReturn",
+        "getWinBackStatistics",
+        "triggerWinBackMessage"
+      ]
+    },
+    {
+      "name": "29_earnings_dashboard",
+      "description": "PACK 303 earnings dashboard",
+      "functions": [
+        "getEarningsDashboardCallable",
+        "getMonthlyStatementCallable",
+        "exportStatementCallable",
+        "checkEarningsCapabilityCallable",
+        "adminTriggerAggregation",
+        "adminBackfillAggregation",
+        "adminViewUserEarnings",
+        "cronDailyEarningsAggregation",
+        "httpTriggerAggregation"
+      ]
+    },
+    {
+      "name": "30_aggregation_experiments",
+      "description": "PACK 336 aggregation & experiments",
+      "functions": [
+        "pack336_generateDailyKPIs",
+        "pack336_manualAggregation",
+        "pack336_createExperiment",
+        "pack336_updateExperimentResults",
+        "pack336_getExperiments",
+        "pack336_getExperiment",
+        "pack336_deleteExperiment",
+        "pack336_getExperimentStatistics"
+      ]
+    },
+    {
+      "name": "31_alerts_kpi",
+      "description": "PACK 346 alert routing & KPI aggregation",
+      "functions": [
+        "acknowledgeAlert",
+        "resolveAlert",
+        "checkKPIThresholds",
+        "aggregateDailyKPIs",
+        "aggregateHourlyKPIs",
+        "triggerKPIAggregation"
+      ]
+    },
+    {
+      "name": "32_ads_system",
+      "description": "PACK 349 ads system",
+      "functions": [
+        "createAd",
+        "updateAd",
+        "deleteAd",
+        "activateAd",
+        "pauseAd",
+        "reportAd",
+        "createBrandCampaign",
+        "addAdToCampaign",
+        "activateCampaign",
+        "pauseCampaign",
+        "endCampaign",
+        "getCampaignAnalytics"
+      ]
+    },
+    {
+      "name": "33_ads_feed_tracking",
+      "description": "PACK 349 ad feed + PACK 356 ad tracking",
+      "functions": [
+        "getAdForFeed",
+        "getAdsForDiscovery",
+        "recordAdPlacement",
+        "recordAdClick",
+        "recordAdView",
+        "recordAdConversion",
+        "createAdvertiserAccount",
+        "addAdvertiserTokens",
+        "trackAdEvent",
+        "createAdCampaign",
+        "updateCampaignStatus",
+        "updateCampaignBudget",
+        "adPlatformWebhook"
+      ]
+    },
+    {
+      "name": "34_ads_sponsorship_roas",
+      "description": "PACK 349 sponsorships + PACK 356 ROAS",
+      "functions": [
+        "createCreatorSponsorship",
+        "endCreatorSponsorship",
+        "getCreatorAnalytics_ads",
+        "requestCreatorPayout",
+        "processScheduledCampaigns",
+        "processMinimumGuarantees",
+        "dailyROASOptimization",
+        "getROASHistory",
+        "runManualROASOptimization",
+        "getROASDashboard",
+        "calculateCountryROAS"
+      ]
+    },
+    {
+      "name": "35_burnrate_stress",
+      "description": "PACK 358 burn rate & stress scenarios",
+      "functions": [
+        "calculateMonthlyBurnRate",
+        "calculateBurnRateOnDemand",
+        "getFinancialRunway",
+        "getBurnRateHistory",
+        "runMonthlyStressScenarios",
+        "runStressScenario",
+        "getAvailableScenarios",
+        "getScenarioResults"
+      ]
+    },
+    {
+      "name": "36_kpi_rating",
+      "description": "PACK 402 KPI + PACK 411 rating trigger",
+      "functions": [
+        "pack402_buildHourlyKpis",
+        "pack402_buildDailyKpis",
+        "pack402_getKpis",
+        "pack402_backfillDailyKpis",
+        "pack402_getKpisHttp",
+        "pack411_ratingPromptDecision",
+        "pack411_logRatingPrompt",
+        "pack411_createFeedbackTicket",
+        "pack411_importStoreReviewsGoogle",
+        "pack411_importStoreReviewsApple"
+      ]
+    },
+    {
+      "name": "37_moderation_safety",
+      "description": "CSAM shield, cyberstalking, disputes",
+      "functions": [
+        "reportStalking",
+        "resolveStalkingCase",
+        "reportObsession",
+        "requestImmediateProtection",
+        "resolveToxicityEvent"
+      ]
+    },
+    {
+      "name": "38_fraud_policy",
+      "description": "PACK 324b fraud + PACK 329 policy",
+      "functions": [
+        "pack324b_getFraudSignals",
+        "pack324b_getHighRiskUsers",
+        "pack324b_getUserRiskScore",
+        "pack324b_getUserFraudSignals",
+        "pack324b_getFraudDashboardStats",
+        "pack324b_recalculateUserRiskScore",
+        "pack324b_getSignalContext",
+        "pack329_validateContent",
+        "pack329_getPolicy",
+        "pack329_reportViolation",
+        "pack329_getViolations",
+        "pack329_admin_updatePolicy",
+        "pack329_admin_seedPolicy"
+      ]
+    },
+    {
+      "name": "39_operations_packs",
+      "description": "PACK 320, 326, 330, 335 operations",
+      "functions": [
+        "onMeetingMismatchReport",
+        "pack326_createAdsCampaign",
+        "pack326_createAdCreative",
+        "pack326_activateCampaign",
+        "pack326_pauseCampaign",
+        "pack326_resumeCampaign",
+        "pack326_getCampaignDetails",
+        "pack326_listMyCampaigns",
+        "pack330_exportUserReportToPDF",
+        "pack330_exportUserReportToCSV",
+        "pack330_exportPlatformReportCSV",
+        "pack330_emailTaxReport"
+      ]
+    },
+    {
+      "name": "40_support_gdpr",
+      "description": "PACK 335 support + PACK 359 GDPR retention",
+      "functions": [
+        "pack335_createSupportTicket",
+        "pack335_addTicketMessage",
+        "pack335_updateTicketStatus",
+        "pack335_handleRefundDispute",
+        "pack335_closeTicket",
+        "enforceRetentionPolicies",
+        "requestErasure",
+        "requestExport",
+        "checkDataRequestStatus",
+        "searchTickets"
+      ]
+    },
+    {
+      "name": "41_cultural_legal",
+      "description": "PACK 360 cultural safety & legal text",
+      "functions": [
+        "getCulturalSafetyProfile",
+        "moderateContent",
+        "checkFeatureAvailability",
+        "adminUpdateCulturalSafetyProfile",
+        "adminGetAllSafetyProfiles",
+        "onContentCreated",
+        "getUserLegalDocuments",
+        "acceptLegalDocument",
+        "checkUserLegalCompliance",
+        "adminCreateLegalDocument",
+        "adminGetAllLegalDocuments",
+        "adminGetLegalAcceptanceStats",
+        "onUserLogin",
+        "onUserCountryChangeLegal"
+      ]
+    },
+    {
+      "name": "42_cdn_loadbalancer",
+      "description": "PACK 361 CDN control & load balancer",
+      "functions": [
+        "uploadImage",
+        "uploadVideo",
+        "getProgressiveImage",
+        "optimizeVoice",
+        "cacheAiAvatar",
+        "getCdnStats",
+        "updateCdnMetrics",
+        "purgeCache",
+        "purgeAllCache",
+        "monitorBandwidth",
+        "runHealthChecks",
+        "getRouting",
+        "forceFailover",
+        "getRegionStatuses",
+        "initializeRegions"
+      ]
+    },
+    {
+      "name": "43_referral_marketing",
+      "description": "PACK 368 referrals + PACK 373 marketing automation",
+      "functions": [
+        "generateInviteCodeCallable",
+        "processReferralCallable",
+        "getReferralStatsCallable",
+        "revokeReferralPrivilegesCallable",
+        "cleanupExpiredRewards",
+        "pack373_rotateASOVariants",
+        "pack373_trackStoreConversion",
+        "pack373_finalizeASOExperiments",
+        "pack373_trackPartnerInstall",
+        "pack373_calculatePartnerCommission",
+        "pack373_autoPauseCampaign",
+        "pack373_updateCampaignMetrics",
+        "pack373_validateInstall",
+        "pack373_checkRegionalLimits",
+        "pack373_budgetFirewall"
+      ]
+    },
+    {
+      "name": "44_aso_reputation",
+      "description": "PACK 379 ASO reputation",
+      "functions": [
+        "pack379_reviewAttackDetector",
+        "pack379_fakeReviewClassifier",
+        "pack379_reviewVelocityGuard",
+        "pack379_storeDisputeGenerator",
+        "pack379_storeAppealAutoSubmit",
+        "pack379_asoBoostOptimizer",
+        "pack379_keywordClusteringEngine",
+        "pack379_storeAlgorithmResponse",
+        "pack379_trustScoreEngine",
+        "pack379_storePolicyWatcher",
+        "pack379_preemptiveRiskAlert",
+        "pack379_crisisReputationShield",
+        "pack379_storeSafeReviewTrigger",
+        "pack379_recordReviewCompletion",
+        "pack379_execReputationDashboard",
+        "pack379_dailyExecutiveReport"
+      ]
+    },
+    {
+      "name": "45_region_burnout_pricing",
+      "description": "PACK 381 region config + PACK 382 burnout & pricing",
+      "functions": [
+        "pack381_updateRegionConfig",
+        "pack381_getRegionConfig",
+        "pack381_listAvailableRegions",
+        "pack381_adminGetRegionConfig",
+        "pack381_detectUserRegion",
+        "pack381_validateFeatureAvailability",
+        "pack382_detectCreatorBurnout",
+        "pack382_resolveBurnout",
+        "pack382_dailyBurnoutMonitoring",
+        "pack382_recommendOptimalPricing",
+        "pack382_applyPricingRecommendation",
+        "pack382_weeklyPricingReview"
+      ]
+    },
+    {
+      "name": "46_review_defense",
+      "description": "PACK 384 review defense + PACK 385 ambassadors",
+      "functions": [
+        "detectReviewBombing",
+        "recordStoreReviewSignal",
+        "requestStoreReview",
+        "detectCopyPasteReviews",
+        "pack385_assignLaunchAmbassador",
+        "pack385_getAmbassadorData",
+        "pack385_applyAmbassadorMultiplier",
+        "pack385_activateAmbassadorBoost",
+        "pack385_trackAmbassadorPerformance",
+        "pack385_getAmbassadorLeaderboard",
+        "pack385_removeAmbassador",
+        "pack385_calculateAmbassadorScores"
+      ]
+    },
+    {
+      "name": "47_launch_traffic",
+      "description": "PACK 385 launch phase & traffic guard",
+      "functions": [
+        "pack385_setLaunchPhase",
+        "pack385_getLaunchPhase",
+        "pack385_checkFeatureEnabled",
+        "pack385_getUserLimits",
+        "pack385_enforcePhaseLimits",
+        "pack385_setTrafficLevel",
+        "pack385_getTrafficGuard",
+        "pack385_checkTrafficLimit",
+        "pack385_dynamicTrafficProtection",
+        "pack385_throttleUser",
+        "pack385_monitorTrafficLoad",
+        "pack385_cleanupThrottles"
+      ]
+    },
+    {
+      "name": "48_influencers_incidents",
+      "description": "PACK 386 influencers + PACK 387 incidents",
+      "functions": [
+        "pack386_registerInfluencer",
+        "pack386_assignInfluencerCampaign",
+        "pack386_setInfluencerPayoutModel",
+        "pack386_trackInfluencerAttribution",
+        "pack386_updateInfluencerConversion",
+        "pack386_calculateInfluencerROI",
+        "pack386_getInfluencerAnalytics",
+        "pack387_createIncident",
+        "pack387_updateIncidentStatus",
+        "pack387_closeIncidentWithReport",
+        "pack387_addLegalReview",
+        "pack387_linkSupportTickets",
+        "pack387_linkFraudCases",
+        "pack387_getIncidentDetails"
+      ]
+    },
+    {
+      "name": "49_statements_reputation",
+      "description": "PACK 387 public statements & reputation",
+      "functions": [
+        "pack387_preparePublicStatement",
+        "pack387_updateStatement",
+        "pack387_submitForLegalReview",
+        "pack387_legalApproveStatement",
+        "pack387_executiveApproveStatement",
+        "pack387_releasePublicStatement",
+        "pack387_getIncidentStatements",
+        "pack387_getPendingStatements",
+        "pack387_ingestReputationSignal",
+        "pack387_analyzeReputationTrends"
+      ]
+    },
+    {
+      "name": "50_gdpr_388",
+      "description": "PACK 388 GDPR data export & deletion",
+      "functions": [
+        "pack388_requestDataExport",
+        "pack388_processDataExport",
+        "pack388_executeRightToBeForgotten",
+        "pack388_executeDataDeletion",
+        "pack388_restrictProcessing",
+        "pack388_cancelDeletionRequest",
+        "requestDataErasure",
+        "requestDataExport"
+      ]
+    },
+    {
+      "name": "51_aso_store_trust",
+      "description": "PACK 392 ASO, review intel, store defense, trust score",
+      "functions": [
+        "pack392_asoOptimizationEngine",
+        "pack392_runASOAnalysis",
+        "pack392_getASODashboard",
+        "pack392_addKeyword",
+        "pack392_removeKeyword",
+        "pack392_reviewIntelligenceEngine",
+        "pack392_analyzeReviewManual",
+        "pack392_getReviewThreats",
+        "pack392_escalateReviews",
+        "pack392_storeDefenseEngine",
+        "pack392_analyzeStoreThreat",
+        "pack392_getStoreDefenseStatus"
+      ]
+    },
+    {
+      "name": "52_trust_launch",
+      "description": "PACK 392 trust score + PACK 398 launch orchestrator",
+      "functions": [
+        "pack392_calculateTrustScore",
+        "pack392_trackUserTrustImpact",
+        "pack392_calculateStoreSafetyRating",
+        "pack392_getTrustScore",
+        "pack392_getStoreSafetyRating",
+        "pack392_recalculateTrustScore",
+        "initializeLaunchControl",
+        "configureCountryRollout",
+        "updateCountryState",
+        "emergencyStopLaunch",
+        "resumeLaunch",
+        "monitorLaunchHealth",
+        "resetDailyBudgets",
+        "getLaunchStatus"
+      ]
+    },
+    {
+      "name": "53_influencer_launch_v2",
+      "description": "PACK 399 influencer engine + PACK 412 launch orchestrator v2",
+      "functions": [
+        "createInfluencerProfile",
+        "verifyInfluencer",
+        "trackInfluencerInstall",
+        "trackInfluencerCommission",
+        "detectInfluencerFraud",
+        "createInfluencerPayout",
+        "getRegionalPlaybook",
+        "getInfluencerAnalytics",
+        "pack412_createOrUpdateRegionConfig",
+        "pack412_setRegionStage",
+        "pack412_updateRegionTrafficCap",
+        "pack412_updateGuardrailThresholds",
+        "pack412_monitorLaunchGuardrails",
+        "pack412_proposeNextLaunchRegions"
+      ]
+    },
+    {
+      "name": "54_audit_health_reputation",
+      "description": "PACK 414, 421, 422 audit, health, reputation",
+      "functions": [
+        "pack414_runFullAudit",
+        "pack414_runPackAudit",
+        "pack414_getGreenlightMatrix",
+        "pack414_scheduledDailyAudit",
+        "pack414_scheduledHealthCheck",
+        "pack421_health_public",
+        "pack421_health_internal",
+        "pack421_health_featureMatrix",
+        "pack421_health_featureMatrix_http",
+        "onReputationChange",
+        "checkUserPolicy"
+      ]
+    },
+    {
+      "name": "55_ratings_review_trust",
+      "description": "PACK 423 ratings + PACK 424 review retention & trust score",
+      "functions": [
+        "pack423_createInteractionRating",
+        "pack423_getMyInteractionRatings",
+        "pack423_getUserRatingSummary",
+        "pack423_getCompanionRatingSummary",
+        "pack423_checkRatingEligibility",
+        "pack423_createNpsResponse",
+        "pack423_checkNpsEligibility",
+        "pack423_getUserNpsHistory",
+        "pack423_getNpsAnalytics",
+        "pack423_flagRatingAsAbuse",
+        "pack423_isRecentDetractor",
+        "processNewReviewForRetention",
+        "triggerRetentionForReview",
+        "scheduledTrustScoreCalculation",
+        "getTrustScore_pack424"
+      ]
+    },
+    {
+      "name": "56_country_expansion",
+      "description": "PACK 425 country expansion",
+      "functions": [
+        "getCountryProfile",
+        "listCountries",
+        "getCountriesByStrategy",
+        "updateCountryReadiness",
+        "getCountryFeatureFlags",
+        "updateCountryFeatureFlags",
+        "getCountryPricing",
+        "getExpansionDashboard",
+        "initializeCountry",
+        "launchCountry",
+        "getBootstrapStatus",
+        "getLocalizationReport",
+        "validateCountryLaunch",
+        "recomputeAllReadiness"
+      ]
+    },
+    {
+      "name": "57_ad_connectors",
+      "description": "PACK 432 Google, TikTok, UGC connectors",
+      "functions": [
+        "syncGoogleCampaign",
+        "updateGoogleCampaignBudget",
+        "uploadGoogleAssets",
+        "syncGoogleStats",
+        "trackGoogleConversion",
+        "syncTikTokCampaign",
+        "updateTikTokCampaignBudget",
+        "rotateTikTokCreatives",
+        "syncTikTokReports",
+        "trackTikTokEvent"
+      ]
+    },
+    {
+      "name": "58_ugc_deals_reputation",
+      "description": "PACK 432 UGC + PACK 433 deals + PACK 436 reputation",
+      "functions": [
+        "submitUGCCreative",
+        "reviewUGCSubmission",
+        "startCreativeTesting",
+        "rotateTopCreatives",
+        "updateCreativePerformance",
+        "generateAICreative",
+        "importFromUGCPlatform",
+        "getCreativeAnalytics",
+        "createDeal",
+        "acceptDealContract",
+        "getCreatorDeals",
+        "toggleDealStatus",
+        "expireDealsDaily",
+        "updateDealStatsDaily"
+      ]
+    },
+    {
+      "name": "59_reputation_engine",
+      "description": "PACK 436 reputation engine + scheduled jobs",
+      "functions": [
+        "calculateGARS",
+        "calculateCountryScores",
+        "calculateVisibilityScores",
+        "monitorReputationAnomalies",
+        "generateWeeklyReport",
+        "aggregateInvestorMetrics"
+      ]
+    },
+    {
+      "name": "60_ai_companions",
+      "description": "AI companions, characters, bot engine",
+      "functions": [
+        "createAICharacter",
+        "updateAIIdentity",
+        "getAICompanionList",
+        "interactWithAICompanion",
+        "getAICompanionConfig"
+      ]
+    },
+    {
+      "name": "61_ai_memory_moderation",
+      "description": "AI memory, moderation, oversight",
+      "functions": [
+        "storeMemory",
+        "getRelevantMemories",
+        "extractMemoriesFromConversation",
+        "summarizeConversation",
+        "buildAIContext",
+        "pruneOldMemories",
+        "getUserContext_aiMemory",
+        "rebuildAiUserMemory",
+        "getAiUserMemory",
+        "rebuildAiUserMemoryEndpoint",
+        "scheduledMemoryRebuild"
+      ]
+    },
+    {
+      "name": "62_ai_moderation_content",
+      "description": "AI moderation, content moderation",
+      "functions": [
+        "extractTextFromImage",
+        "detectNSFW",
+        "detectToxicity_ai",
+        "scoreSexualContent",
+        "containsBannedTerms",
+        "moderateText_ai",
+        "moderateImage",
+        "moderateVideo",
+        "logModerationResult",
+        "getModerationStats",
+        "moderateContentV1"
+      ]
+    },
+    {
+      "name": "63_ai_oversight_regional",
+      "description": "AI oversight, explainability + PACK 426 AI regional",
+      "functions": [
+        "analyzeContentV1",
+        "getModerationQueueV1",
+        "resolveModerationItemV1",
+        "getAIOversightStatsV1",
+        "moderateText_content",
+        "logModerationIncident",
+        "getUserModerationStats",
+        "getAIConfig",
+        "checkRateLimitHTTP"
+      ]
+    }
+  ]
+}

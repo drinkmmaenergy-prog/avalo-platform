@@ -34,7 +34,14 @@ export { onRequest } from 'firebase-functions/v2/https';
 // Re-export legacy functions for compatibility
 import * as functionsV1 from 'firebase-functions';
 export const logger = functionsV1.logger;
-export const functionsConfig = functionsV1.config;
+// Gen2 shim: functions.config() is unavailable in v2, return empty object
+export const functionsConfig = (): Record<string, any> => {
+  try {
+    return functionsV1.config();
+  } catch {
+    return {};
+  }
+};
 
 // ============================================================================
 // VALIDATION (Zod)
@@ -271,7 +278,7 @@ export const ethers = ethersLib;
 // HMAC SECRET HELPER
 // ============================================================================
 export function getHmacSecret(): string {
-  return functionsConfig().hmac?.secret || process.env.HMAC_SECRET || 'default-dev-secret';
+  return process.env.HMAC_SECRET || 'default-dev-secret';
 }
 
 // ============================================================================

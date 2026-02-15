@@ -513,7 +513,7 @@ export const purchaseTokensV2 = onCall(
     enforceAppCheck: true,
     // PERFORMANCE: Keep 1 warm instance for high traffic token purchases
     // Target: <200ms p95 latency (from ~1200ms with cold starts)
-    minInstances: 1,
+    minInstances: 0,
     maxInstances: 20,
     concurrency: 50,
     memory: "512MiB",

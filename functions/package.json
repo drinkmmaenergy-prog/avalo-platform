@@ -14,7 +14,8 @@
     "test:unit": "jest --testPathPattern=tests/unit",
     "test:integration": "jest --testPathPattern=tests/integration --runInBand",
     "test:watch": "jest --watch",
-    "test:smoke": "jest --testPathPattern=tests/smoke --runInBand"
+    "test:smoke": "jest --testPathPattern=tests/smoke --runInBand",
+    "smoke:functions": "npm run build && jest --testPathPattern=tests/smoke --runInBand --verbose"
   },
   "engines": {
     "node": "20"

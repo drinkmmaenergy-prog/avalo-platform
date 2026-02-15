@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "6fbfda1d-aabe-4a6a-ac84-5faf0edd1487"
+      }
+    },
+    "android": {
+      "package": "com.avalo.app",
+      "versionCode": 2
+    }
+  }
+}

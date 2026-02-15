@@ -10,6 +10,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { getStorage } from 'firebase-admin/storage';
 import { admin, auth, db, onRequest, storage, timestamp } from '../runtime';
+import { stripeSecretKey, stripeWebhookSecret } from '../runtime';
 
 // Initialize Firebase Admin if not already initialized
 if (getApps().length === 0) {
@@ -34,7 +35,7 @@ interface HealthCheckResult {
  * Main health check endpoint
  * GET /health
  */
-export const health = onRequest({}, async (req, res) => {
+export const health = onRequest({ secrets: [stripeSecretKey, stripeWebhookSecret] }, async (req, res) => {
   // CORS headers
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');

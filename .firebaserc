@@ -1,6 +1,7 @@
 {
   "projects": {
-    "default": "avalostaging"
+    "default": "avalostaging",
+    "prod": "avalo-c8c46"
   },
   "targets": {
     "avalo-c8c46": {
@@ -27,10 +28,10 @@
       }
     }
   },
+  "etags": {},
   "experimental": {
     "functions": {
       "skipEnvValidation": true
     }
-  },
-  "etags": {}
+  }
 }
