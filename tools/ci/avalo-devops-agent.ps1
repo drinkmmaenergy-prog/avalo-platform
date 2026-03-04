@@ -2,10 +2,11 @@ Write-Host "STEP 2 — DETECT CHANGED FUNCTIONS"
 
 cd $repo
 
-$changed = git diff --name-only HEAD | Select-String "functions/src"
-
+$changed = git diff --name-only HEAD~1 HEAD 2>$null | Select-String "functions/src"
 if ($changed) {
-
+if (-not $changed) {
+$changed = git ls-files "functions/src/*.ts"
+}
 Write-Host "Changed files detected"
 
 $functionsList=@()
