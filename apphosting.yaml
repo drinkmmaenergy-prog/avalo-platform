@@ -1,0 +1,23 @@
+runtime: nodejs20
+
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyANQ6LpHgcbynuL8lKIK8GJduuxiri1V0s"
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "avalostaging.firebaseapp.com"
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "avalostaging"
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "avalostaging.firebasestorage.app"
+
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "445933516064"
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:1097334032970:web:f637e2ed4aa40435fc34b3"
+
+  - variable: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    value: "pk_live_..."

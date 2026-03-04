@@ -244,3 +244,12 @@ export const GOAL_CATEGORY_METADATA: Record<GoalCategory, { displayName: string;
   content: { displayName: 'Tworzenie treści', icon: '🎬' },
   other: { displayName: 'Inne', icon: '🎯' },
 };
+
+
+
+
+
+
+
+
+

@@ -18,7 +18,7 @@ export default async function ModerationLayout({
   // Check if user is authenticated and has moderator access
   const moderatorInfo = await checkModeratorAccess();
 
-  if (!moderatorInfo.hasAccess) {
+  if (!moderatorInfo) {
     // User doesn't have moderator access - redirect to no-access page
     redirect('/admin/no-access');
   }
@@ -32,7 +32,7 @@ export default async function ModerationLayout({
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Topbar */}
-          <ModerationTopbar user={moderatorInfo.user} />
+          <ModerationTopbar user={moderatorInfo} />
           
           {/* Page Content with Live Moderators Panel */}
           <div className="relative flex-1 overflow-hidden">

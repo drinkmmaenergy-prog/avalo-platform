@@ -636,3 +636,12 @@ export const validateContentSafety = onCall(
       throw new HttpsError('internal', 'Safety validation failed');
     }
   });
+
+
+
+
+
+
+
+
+

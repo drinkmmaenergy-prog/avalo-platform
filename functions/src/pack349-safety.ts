@@ -83,7 +83,7 @@ export class AdSafetyGate {
     }
 
     // URL safety check
-    if (ad.targetUrl && !this.isSafeUrl(ad.targetUrl)) {
+    if (ad.targetUrl && !this.isSafUSDl(ad.targetUrl)) {
       result.violations.push('Target URL appears unsafe or suspicious');
       result.requiresManualReview = true;
     }
@@ -243,7 +243,7 @@ export class AdSafetyGate {
   /**
    * URL Safety Check
    */
-  private static isSafeUrl(url: string): boolean {
+  private static isSafUSDl(url: string): boolean {
     try {
       const parsed = new URL(url);
 
@@ -306,3 +306,12 @@ export class AdSafetyGate {
     return result.violations.join('; ');
   }
 }
+
+
+
+
+
+
+
+
+

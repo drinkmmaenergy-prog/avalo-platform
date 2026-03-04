@@ -139,3 +139,12 @@ export function getSeverityFromReason(reason: string): CaseSeverity {
   
   return 'LOW';
 }
+
+
+
+
+
+
+
+
+

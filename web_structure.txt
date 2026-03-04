@@ -1,0 +1,43 @@
+
+C:\a\avalo\app-web
+ÔöťÔöÇÔöÇ apphosting.yaml
+ÔöťÔöÇÔöÇ components
+ÔöťÔöÇÔöÇ docs
+ÔöťÔöÇÔöÇ hooks
+ÔöťÔöÇÔöÇ lib
+ÔöťÔöÇÔöÇ MODERATOR_DASHBOARD_IMPLEMENTATION.md
+ÔöťÔöÇÔöÇ MODERATOR_DASHBOARD_PACK_1_IMPLEMENTATION.md
+ÔöťÔöÇÔöÇ MODERATOR_DASHBOARD_PACK_2_IMPLEMENTATION.md
+ÔöťÔöÇÔöÇ MODERATOR_DASHBOARD_PACK_3_IMPLEMENTATION.md
+ÔöťÔöÇÔöÇ MODERATOR_DASHBOARD_PACK_4_IMPLEMENTATION.md
+ÔöťÔöÇÔöÇ MODERATOR_DASHBOARD_PACK_5_IMPLEMENTATION.md
+ÔöťÔöÇÔöÇ next-env.d.ts
+ÔöťÔöÇÔöÇ next.config.js
+ÔöťÔöÇÔöÇ next.config.js.bak
+ÔöťÔöÇÔöÇ node_modules
+ÔöťÔöÇÔöÇ package.json
+ÔöťÔöÇÔöÇ PACK_124.3_IMPLEMENTATION_COMPLETE.md
+ÔöťÔöÇÔöÇ PACK_124.4_IMPLEMENTATION_COMPLETE.md
+ÔöťÔöÇÔöÇ performance-budget.json
+ÔöťÔöÇÔöÇ PHASE_3.3_WEB_CORE_INTEGRATION.md
+ÔöťÔöÇÔöÇ playwright.config.ts
+ÔöťÔöÇÔöÇ pnpm-workspace.yaml
+ÔöťÔöÇÔöÇ postcss.config.js
+ÔöťÔöÇÔöÇ public
+ÔöťÔöÇÔöÇ README.md
+ÔöťÔöÇÔöÇ README_WEB.md
+ÔöťÔöÇÔöÇ scripts
+ÔöťÔöÇÔöÇ src
+ÔöťÔöÇÔöÇ tailwind.config.ts
+ÔöťÔöÇÔöÇ tests
+ÔöťÔöÇÔöÇ tsconfig.json
+ÔöťÔöÇÔöÇ tsconfig.tsbuildinfo
+ÔöťÔöÇÔöÇ vitest.config.ts
+ÔöťÔöÇÔöÇ WALLET_MONETIZATION_IMPLEMENTATION.md
+ÔööÔöÇÔöÇ WEB_BROWSER_SUPPORT.md
+
+directory: 9 file: 26
+
+
+
+[2K[1G

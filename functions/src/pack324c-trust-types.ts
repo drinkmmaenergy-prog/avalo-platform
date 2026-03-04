@@ -341,3 +341,12 @@ export const TRUST_LEVEL_BADGES: Record<TrustLevel, string> = {
   HIGH: '⭐',
   ELITE: '👑',
 };
+
+
+
+
+
+
+
+
+

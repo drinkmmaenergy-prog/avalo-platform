@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { AuthProvider } from './AuthProvider';
 import { I18nProvider } from './I18nProvider';
 import { NotificationProvider } from './NotificationProvider';
+import { AuthModalProvider } from '@/components/AuthModal';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -31,9 +32,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         <I18nProvider>
           <AuthProvider>
-            <NotificationProvider>
-              {children}
-            </NotificationProvider>
+            <AuthModalProvider>
+              <NotificationProvider>
+                {children}
+              </NotificationProvider>
+            </AuthModalProvider>
           </AuthProvider>
         </I18nProvider>
       </ThemeProvider>

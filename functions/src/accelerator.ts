@@ -684,3 +684,12 @@ function calculateSeverity(reportType: string, description: string): 'low' | 'me
   
   return 'low';
 }
+
+
+
+
+
+
+
+
+

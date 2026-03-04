@@ -751,3 +751,12 @@ export const calculateIncidentMetrics = onSchedule("every 1 hours", async (event
 
     await db.collection('incident_metrics').doc(period).set(metrics);
   });
+
+
+
+
+
+
+
+
+

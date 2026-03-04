@@ -481,7 +481,7 @@ function bucketRegion(location: string): string {
   
   const regions: Record<string, string[]> = {
     'North America': ['US', 'CA', 'MX'],
-    'Europe': ['UK', 'FR', 'DE', 'ES', 'IT', 'PL'],
+    'USDope': ['UK', 'FR', 'DE', 'ES', 'IT', 'PL'],
     'Asia Pacific': ['JP', 'CN', 'IN', 'AU', 'SG'],
     'Latin America': ['BR', 'AR', 'CL', 'CO'],
     'Middle East': ['AE', 'SA', 'IL'],
@@ -646,3 +646,12 @@ export const getAccessLogs = https.onCall(async (request) => {
     throw error;
   }
 });
+
+
+
+
+
+
+
+
+

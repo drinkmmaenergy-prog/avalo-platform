@@ -263,3 +263,12 @@ export async function getAuditLogsByUser(
 
   return snapshot.docs.map((doc) => doc.data() as AuditLog);
 }
+
+
+
+
+
+
+
+
+

@@ -290,7 +290,7 @@ export const createProEvent = onCall<{
     eventId,
     hostUserId: userId,
     hostName: userData?.displayName || 'Unknown Host',
-    hostAvatar: userData?.profilePictureUrl,
+    hostAvatar: userData?.profilePicturUSDl,
     coHosts: [],
     
     title: data.title,
@@ -395,7 +395,7 @@ export const addEventCoHost = onCall<{
   const coHost: EventCoHost = {
     userId: coHostUserId,
     userName: coHostData?.displayName || 'Unknown User',
-    userAvatar: coHostData?.profilePictureUrl,
+    userAvatar: coHostData?.profilePicturUSDl,
     role,
     permissions,
     addedAt: serverTimestamp() as Timestamp,
@@ -421,7 +421,7 @@ export const addEventMaterial = onCall<{
   title: string;
   description?: string;
   type: 'PDF' | 'VIDEO' | 'AUDIO' | 'LINK' | 'FILE';
-  fileUrl: string;
+  filUSDl: string;
   fileSize?: number;
   availableAt: 'BEFORE' | 'DURING' | 'AFTER';
 }>({ region: 'us-central1' }, async (request) => {
@@ -457,7 +457,7 @@ export const addEventMaterial = onCall<{
     title: data.title,
     description: data.description,
     type: data.type,
-    fileUrl: data.fileUrl,
+    filUSDl: data.filUSDl,
     fileSize: data.fileSize,
     isPreviewable: data.type === 'PDF',
     availableAt: data.availableAt,
@@ -947,7 +947,7 @@ export const issueEventCertificate = onCall<{
     userId,
     userName: userData?.displayName || 'Unknown User',
     completionDate: event.endTime,
-    certificateUrl: `https://avalo.app/certificates/${certificateId}`, // Placeholder
+    certificatUSDl: `https://avalo.app/certificates/${certificateId}`, // Placeholder
     verificationCode,
     issuedAt: serverTimestamp() as Timestamp,
   };
@@ -958,9 +958,18 @@ export const issueEventCertificate = onCall<{
     success: true,
     certificateId,
     verificationCode,
-    certificateUrl: certificate.certificateUrl,
+    certificatUSDl: certificate.certificatUSDl,
     message: 'Certificate issued successfully',
   };
 });
 
 console.log('✅ PACK 182 - Professional Event Host Suite Functions Loaded');
+
+
+
+
+
+
+
+
+

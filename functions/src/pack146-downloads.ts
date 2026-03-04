@@ -260,7 +260,7 @@ async function generateSecureDownloadURL(
   // 4. Generate signed URL
   
   // For now, return a mock URL with params
-  const baseUrl = `https://storage.avalo.app/downloads/${productId}`;
+  const baseURL = `https://storage.avalo.app/downloads/${productId}`;
   const queryParams = new URLSearchParams({
     buyer: params.buyerId,
     download: params.downloadId,
@@ -268,7 +268,7 @@ async function generateSecureDownloadURL(
     expires: params.expiresAt.getTime().toString(),
   });
   
-  return `${baseUrl}?${queryParams.toString()}`;
+  return `${baseURL}?${queryParams.toString()}`;
 }
 
 // ============================================================================
@@ -280,7 +280,7 @@ async function generateSecureDownloadURL(
  * This would be handled by a PDF processing service
  */
 export async function applyPDFSecurity(
-  fileUrl: string,
+  filUSDl: string,
   security: {
     preventCopy: boolean;
     preventPrint: boolean;
@@ -322,7 +322,7 @@ export async function applyPDFSecurity(
   logger.info(`PDF security applied: ${securityApplied.join(', ')}`);
   
   return {
-    securedUrl: fileUrl,
+    securedUrl: filUSDl,
     securityApplied,
   };
 }
@@ -535,3 +535,12 @@ export default {
   revokeDownloadAccess,
   flagSuspiciousDownload,
 };
+
+
+
+
+
+
+
+
+

@@ -57,3 +57,4 @@ export function detectLocale(acceptLanguageHeader: string | null, cookieLocale?:
   // 3. Default
   return DEFAULT_LOCALE;
 }
+

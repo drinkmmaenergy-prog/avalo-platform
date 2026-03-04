@@ -31,7 +31,7 @@ export enum ClubCategory {
   PHOTOGRAPHY_FILMMAKING = 'PHOTOGRAPHY_FILMMAKING',
   MOTORSPORTS_AUTOMOTIVE = 'MOTORSPORTS_AUTOMOTIVE',
   GAMING = 'GAMING',
-  ENTREPRENEURSHIP_BUSINESS = 'ENTREPRENEURSHIP_BUSINESS',
+  ENTREPRENUSDSHIP_BUSINESS = 'ENTREPRENUSDSHIP_BUSINESS',
   COSMETICS_BEAUTY = 'COSMETICS_BEAUTY',
   FASHION = 'FASHION',
 }
@@ -167,7 +167,7 @@ export interface ClubPost {
   type: ClubPostType;
   content?: string;              // Text content
   mediaUrl?: string;             // Image/video URL
-  resourceUrl?: string;          // Shared resource link
+  resourcUSDl?: string;          // Shared resource link
   
   // Poll data (if type === POLL)
   pollQuestion?: string;
@@ -296,7 +296,7 @@ export interface CreateClubPostRequest {
   type: ClubPostType;
   content?: string;
   mediaUrl?: string;
-  resourceUrl?: string;
+  resourcUSDl?: string;
   pollQuestion?: string;
   pollOptions?: string[];
 }
@@ -542,10 +542,19 @@ export function formatClubCategory(category: ClubCategory): string {
     [ClubCategory.PHOTOGRAPHY_FILMMAKING]: 'Photography & Filmmaking',
     [ClubCategory.MOTORSPORTS_AUTOMOTIVE]: 'Motorsports & Automotive',
     [ClubCategory.GAMING]: 'Gaming',
-    [ClubCategory.ENTREPRENEURSHIP_BUSINESS]: 'Entrepreneurship & Business',
+    [ClubCategory.ENTREPRENUSDSHIP_BUSINESS]: 'EntreprenUSDship & Business',
     [ClubCategory.COSMETICS_BEAUTY]: 'Cosmetics & Premium Beauty',
     [ClubCategory.FASHION]: 'Fashion',
   };
   
   return categoryNames[category] || 'Unknown';
 }
+
+
+
+
+
+
+
+
+

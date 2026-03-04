@@ -551,3 +551,12 @@ export const listCreatorStatements = functions.https.onCall(async (request) => {
   
   return statements.docs.map(doc => doc.data());
 });
+
+
+
+
+
+
+
+
+

@@ -1,3 +1,11 @@
+import { setGlobalOptions } from "firebase-functions/v2";
+
+setGlobalOptions({
+  region: "europe-west1",
+  memory: "512MiB",
+  timeoutSeconds: 60,
+  maxInstances: 10
+});
 /**
  * ============================================================================
  * AVALO FIREBASE FUNCTIONS ENTRYPOINT
@@ -202,6 +210,31 @@ export {
 export * from './currency';
 export * from './earningsIntegration';
 export * from './dynamicPricing';
+
+// --- UNIFIED WALLET + LEDGER + PAYOUT (canonical path: wallets/{userId}) ---
+export {
+  transactTokens,
+  creditTokens,
+  debitForPayout,
+  getBalance,
+  getWallet,
+  getPlatformBalance,
+  replayLedger,
+  verifyLedgerConsistency,
+  verifyPlatformWalletSum,
+  requestUnifiedPayout,
+  approvePayout,
+  rejectPayout,
+  processPayout,
+  retryPayout,
+  getPayoutRequest,
+  getUserPayoutRequests,
+  getUnifiedPendingPayouts,
+  calculatePayoutBreakdown,
+  PLATFORM_WALLET_ID,
+  WALLETS_COLLECTION,
+  LEDGER_COLLECTION,
+} from './wallet';
 
 // PACK 246: ECONOMY CONTRACT VALIDATION
 export {
@@ -1024,6 +1057,20 @@ export {
   generateWeeklyReport,
 } from './pack436-reputation-engine';
 
+// PACK 460: PAID VISIBILITY ENGINE (Boost Campaigns)
+export {
+  createBoostCampaignV1,
+  pauseBoostCampaignV1,
+  resumeBoostCampaignV1,
+  getMyBoostCampaignsV1,
+  getBoostCampaignV1,
+  confirmBoostImpressionV1,
+  getBoostCampaignImpressionsV1,
+  validateBoostLedgerV1,
+  boostCampaignExpiryJob,
+  boostBudgetRefundJob,
+} from './pack460-boost-visibility-endpoints';
+
 // --- A/B TESTING & ACCELERATOR ---
 export * from './abTesting';
 export * from './accelerator';
@@ -1121,3 +1168,20 @@ export {
 // ============================================================================
 console.log('✅ AVALO Firebase Functions entrypoint loaded successfully');
 console.log('📦 All PACK modules exported and ready for deployment');
+
+export { ciHealth } from './ciHealth';
+import * as functions from 'firebase-functions';
+
+export const ping = functions.https.onRequest((req, res) => {
+  res.send("OK");
+});
+
+
+
+
+
+
+
+
+
+

@@ -15,3 +15,12 @@ export interface EnforcementPolicy  {
   [key: string]: any;
 }
 export type EnforcementSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+
+
+
+
+
+
+
+

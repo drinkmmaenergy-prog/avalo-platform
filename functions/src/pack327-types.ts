@@ -29,7 +29,7 @@ export interface PromoBundle {
     boostMultiplier?: number;
     bonusTokens?: number;
   };
-  pricePLN: number;
+  priceUSD: number;
   priceTokensEquivalent: number;
   available: boolean;
   createdAt: string;
@@ -100,7 +100,7 @@ export interface CreateBundleRequest {
   title: string;
   description: string;
   includes: PromoBundle['includes'];
-  pricePLN: number;
+  priceUSD: number;
 }
 
 export interface UpdateBundleRequest {
@@ -108,7 +108,7 @@ export interface UpdateBundleRequest {
   title?: string;
   description?: string;
   includes?: Partial<PromoBundle['includes']>;
-  pricePLN?: number;
+  priceUSD?: number;
   available?: boolean;
 }
 
@@ -116,7 +116,7 @@ export interface BundleAnalytics {
   bundleId: string;
   date: string;
   totalPurchases: number;
-  totalRevenuePLN: number;
+  totalRevenueUSD: number;
   platformBreakdown: {
     web: number;
     ios: number;
@@ -138,7 +138,7 @@ export const DEFAULT_BUNDLES: Omit<PromoBundle, 'id' | 'createdAt'>[] = [
       boostMultiplier: 1.5,
       bonusTokens: 100,
     },
-    pricePLN: 49.99,
+    priceUSD: 49.99,
     priceTokensEquivalent: 250,
     available: true,
   },
@@ -152,7 +152,7 @@ export const DEFAULT_BUNDLES: Omit<PromoBundle, 'id' | 'createdAt'>[] = [
       boostMultiplier: 2.0,
       bonusTokens: 300,
     },
-    pricePLN: 129.99,
+    priceUSD: 129.99,
     priceTokensEquivalent: 650,
     available: true,
   },
@@ -166,7 +166,7 @@ export const DEFAULT_BUNDLES: Omit<PromoBundle, 'id' | 'createdAt'>[] = [
       boostMultiplier: 3.0,
       bonusTokens: 1000,
     },
-    pricePLN: 299.99,
+    priceUSD: 299.99,
     priceTokensEquivalent: 1500,
     available: true,
   },
@@ -177,8 +177,17 @@ export const DEFAULT_BUNDLES: Omit<PromoBundle, 'id' | 'createdAt'>[] = [
 // ============================================================================
 
 export const PACK327_CONFIG = {
-  MIN_BUNDLE_PRICE_PLN: 10.0,
-  MAX_BUNDLE_PRICE_PLN: 999.99,
-  TOKEN_CONVERSION_RATE: 0.20, // 1 token = 0.20 PLN for calculation
+  MIN_BUNDLE_PRICE_USD: 10.0,
+  MAX_BUNDLE_PRICE_USD: 999.99,
+  TOKEN_CONVERSION_RATE: 0.20, // 1 token = 0.20 USD for calculation
   AVALO_REVENUE_SPLIT: 1.0, // 100% Avalo revenue, no creator split
 } as const;
+
+
+
+
+
+
+
+
+

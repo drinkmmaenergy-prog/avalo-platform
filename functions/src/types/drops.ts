@@ -38,7 +38,7 @@ export interface Drop {
   type: DropType;
   title: string;
   description: string;
-  coverImageUrl: string;
+  coverimageUrl: string;
   tags: string[];
   priceTokens: number;
   maxQuantity: number | null; // null = unlimited
@@ -107,7 +107,7 @@ export interface CreateDropInput {
   type: DropType;
   title: string;
   description: string;
-  coverImageUrl: string;
+  coverimageUrl: string;
   tags: string[];
   priceTokens: number;
   maxQuantity?: number | null;
@@ -126,7 +126,7 @@ export interface CreateDropInput {
 export interface UpdateDropInput {
   title?: string;
   description?: string;
-  coverImageUrl?: string;
+  coverimageUrl?: string;
   tags?: string[];
   priceTokens?: number; // Only if drop hasn't started
   startAt?: Date | null;
@@ -154,7 +154,7 @@ export interface DropPublicInfo {
   type: DropType;
   title: string;
   description: string;
-  coverImageUrl: string;
+  coverimageUrl: string;
   tags: string[];
   priceTokens: number;
   soldCount: number;
@@ -167,3 +167,12 @@ export interface DropPublicInfo {
   contentPreview?: ContentItem[]; // For transparent drops
   lootboxCategories?: string[]; // For lootbox, show categories/rarities
 }
+
+
+
+
+
+
+
+
+

@@ -1,12 +1,11 @@
 /**
- * Avalo SDK — Client-side wrapper for Firebase Auth & Firestore operations.
+ * Avalo Web SDK — Client-side auth & profile helpers.
  *
- * Provides typed, safe wrappers for:
- * - Authentication (email/password, Google, Apple)
- * - User profile loading
- * - Sign-out
- *
- * All auth state changes propagate through onAuthStateChanged in AuthProvider.
+ * Uses Firebase client SDK (signInWithPopup for Google).
+ * INVARIANTS:
+ *   - Google login MUST use signInWithPopup (NOT redirect).
+ *   - signOut clears Firebase auth state.
+ *   - getUserProfile reads from Firestore users/{uid}.
  */
 
 import {
@@ -15,71 +14,39 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   OAuthProvider,
+  sendPasswordResetEmail,
   signOut as firebaseSignOut,
   updateProfile,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, requireDb } from '@/lib/firebase';
 import type { User } from '@/types';
 
 const googleProvider = new GoogleAuthProvider();
 const appleProvider = new OAuthProvider('apple.com');
-appleProvider.addScope('email');
-appleProvider.addScope('name');
-
-/**
- * Convert Firestore document data to User type.
- * Handles Timestamp → Date conversion safely.
- */
-function toUser(data: Record<string, unknown>): User {
-  return {
-    uid: (data.uid as string) ?? '',
-    email: (data.email as string) ?? null,
-    phoneNumber: (data.phoneNumber as string) ?? null,
-    displayName: (data.displayName as string) ?? null,
-    photoURL: (data.photoURL as string) ?? null,
-    handle: data.handle as string | undefined,
-    bio: data.bio as string | undefined,
-    isCreator: (data.isCreator as boolean) ?? false,
-    isVerified: (data.isVerified as boolean) ?? false,
-    tokenBalance: (data.tokenBalance as number) ?? 0,
-    createdAt: data.createdAt && typeof (data.createdAt as { toDate?: () => Date }).toDate === 'function'
-      ? (data.createdAt as { toDate: () => Date }).toDate()
-      : new Date(),
-    lastActiveAt: data.lastActiveAt && typeof (data.lastActiveAt as { toDate?: () => Date }).toDate === 'function'
-      ? (data.lastActiveAt as { toDate: () => Date }).toDate()
-      : new Date(),
-    region: data.region as string | undefined,
-    locale: data.locale as string | undefined,
-    nsfwPref: data.nsfwPref as 'SAFE' | 'NSFW' | 'BOTH' | undefined,
-    accountStatus: (data.accountStatus as 'ACTIVE' | 'SUSPENDED' | 'BANNED' | 'DELETED') ?? 'ACTIVE',
-    twoFactorEnabled: data.twoFactorEnabled as boolean | undefined,
-  };
-}
 
 const sdk = {
   /**
-   * Sign in with email and password.
+   * Sign in with email + password.
    */
   async signInWithEmail(email: string, password: string) {
     return signInWithEmailAndPassword(auth, email, password);
   },
 
   /**
-   * Sign up with email, password, and optional display name.
-   * Creates Firebase Auth user only — user doc is created in onboarding.
+   * Register with email + password + optional display name.
    */
-  async signUpWithEmail(email: string, password: string, displayName?: string) {
-    const credential = await createUserWithEmailAndPassword(auth, email, password);
-    if (displayName && credential.user) {
-      await updateProfile(credential.user, { displayName });
+  async registerWithEmail(email: string, password: string, displayName?: string) {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    if (displayName && cred.user) {
+      await updateProfile(cred.user, { displayName });
     }
-    return credential;
+    return cred;
   },
 
   /**
    * Sign in with Google popup.
-   * Works for both login and registration — AuthProvider detects new vs existing.
+   * MUST use signInWithPopup — NOT redirect.
    */
   async signInWithGoogle() {
     return signInWithPopup(auth, googleProvider);
@@ -93,31 +60,66 @@ const sdk = {
   },
 
   /**
-   * Sign out the current user.
+   * Send password reset email.
+   */
+  async sendPasswordReset(email: string) {
+    return sendPasswordResetEmail(auth, email);
+  },
+
+  /**
+   * Sign out current user.
    */
   async signOut() {
     return firebaseSignOut(auth);
   },
 
   /**
-   * Load user profile from Firestore users/{uid}.
-   * Returns null if the document doesn't exist.
+   * Get user profile from Firestore users/{uid}.
+   * Returns null-safe User object.
    */
-  async getUserProfile(uid: string): Promise<User | null> {
-    if (!db) return null;
-    const ref = doc(db, 'users', uid);
+  async getUserProfile(uid: string): Promise<User> {
+    const ref = doc(requireDb(), 'users', uid);
     const snap = await getDoc(ref);
-    if (!snap.exists()) return null;
-    return toUser(snap.data());
-  },
 
-  /**
-   * Update user profile fields in Firestore.
-   */
-  async updateUserProfile(uid: string, updates: Partial<Record<string, unknown>>) {
-    if (!db) throw new Error('Firestore not initialized');
-    const ref = doc(db, 'users', uid);
-    await setDoc(ref, { ...updates, lastActiveAt: serverTimestamp() }, { merge: true });
+    if (!snap.exists()) {
+      // Return minimal user object if document doesn't exist yet
+      return {
+        uid,
+        email: null,
+        phoneNumber: null,
+        displayName: null,
+        photoURL: null,
+        isCreator: false,
+        isVerified: false,
+        tokenBalance: 0,
+        createdAt: new Date(),
+        lastActiveAt: new Date(),
+        accountStatus: 'ACTIVE',
+      };
+    }
+
+    const data = snap.data();
+    return {
+      uid: data.uid ?? uid,
+      email: data.email ?? null,
+      phoneNumber: data.phoneNumber ?? null,
+      displayName: data.displayName ?? null,
+      photoURL: data.photoURL ?? null,
+      handle: data.handle,
+      bio: data.bio,
+      isCreator: data.isCreator ?? false,
+      isVerified: data.isVerified ?? false,
+      tokenBalance: data.tokenBalance ?? 0,
+      createdAt: data.createdAt?.toDate?.() ?? new Date(),
+      lastActiveAt: data.lastActiveAt?.toDate?.() ?? new Date(),
+      region: data.region,
+      locale: data.locale,
+      nsfwPref: data.nsfwPref,
+      accountStatus: data.accountStatus ?? 'ACTIVE',
+      twoFactorEnabled: data.twoFactorEnabled,
+      role: data.role,
+      profileComplete: data.profileComplete,
+    } as User & { profileComplete?: boolean };
   },
 };
 

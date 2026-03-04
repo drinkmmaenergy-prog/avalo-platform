@@ -130,7 +130,7 @@ declare module './pack418.types' {
     type?: string;
     creatorShare?: number;
     avaloShare?: number;
-    payoutRatePlnPerToken?: number;
+    payoutRateUSDPerToken?: number;
     transactionId?: string;
     [key: string]: any;
   }
@@ -176,3 +176,12 @@ declare global {
 }
 
 export {};
+
+
+
+
+
+
+
+
+

@@ -550,3 +550,12 @@ export const syncUserToDiscoveryPresence = onDocumentWritten('users/{userId}', a
   });
 
 console.log('✅ PACK 283 — Discovery & People Browser initialized');
+
+
+
+
+
+
+
+
+

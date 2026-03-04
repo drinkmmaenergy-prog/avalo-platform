@@ -20,3 +20,12 @@ export interface KPIEvent  {
   [key: string]: any;
 }
 export type KPIPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY';
+
+
+
+
+
+
+
+
+

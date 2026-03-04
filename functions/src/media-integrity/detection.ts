@@ -80,14 +80,14 @@ export class MediaIntegrityDetection {
 
     const faceSwapScore = await this.detectFaceSwap(mediaUrl);
     const compressionScore = await this.analyzeCompressionSignature(mediaUrl);
-    const neuralTextureScore = await this.analyzeNeuralTexture(mediaUrl);
+    const nUSDalTextureScore = await this.analyzeNUSDalTexture(mediaUrl);
     const metadataScore = await this.analyzeMetadataConsistency(mediaUrl);
 
-    confidence = (faceSwapScore + compressionScore + neuralTextureScore + metadataScore) / 4;
+    confidence = (faceSwapScore + compressionScore + nUSDalTextureScore + metadataScore) / 4;
 
     if (faceSwapScore > 0.7) artifacts.push('Face boundary inconsistencies detected');
     if (compressionScore > 0.7) artifacts.push('Compression signature mismatch');
-    if (neuralTextureScore > 0.7) artifacts.push('AI-generated texture patterns');
+    if (nUSDalTextureScore > 0.7) artifacts.push('AI-generated texture patterns');
     if (metadataScore > 0.7) artifacts.push('Metadata inconsistencies');
 
     return {
@@ -183,8 +183,8 @@ export class MediaIntegrityDetection {
       const metadataScore = await this.analyzeMetadataConsistency(mediaUrl);
       results[DetectionMethod.METADATA_INCONSISTENCY] = metadataScore;
 
-      const neuralTextureScore = await this.analyzeNeuralTexture(mediaUrl);
-      results[DetectionMethod.NEURAL_TEXTURE_ANALYSIS] = neuralTextureScore;
+      const nUSDalTextureScore = await this.analyzeNUSDalTexture(mediaUrl);
+      results[DetectionMethod.NUSDAL_TEXTURE_ANALYSIS] = nUSDalTextureScore;
     }
 
     if (mediaType === 'audio') {
@@ -373,7 +373,7 @@ export class MediaIntegrityDetection {
     return Math.random() * 0.3;
   }
 
-  private async analyzeNeuralTexture(mediaUrl: string): Promise<number> {
+  private async analyzeNUSDalTexture(mediaUrl: string): Promise<number> {
     return Math.random() * 0.3;
   }
 
@@ -472,8 +472,8 @@ export class MediaIntegrityDetection {
   ): string[] {
     const artifacts: string[] = [];
 
-    if (detectionResults[DetectionMethod.NEURAL_TEXTURE_ANALYSIS] > 0.7) {
-      artifacts.push('Neural network generation artifacts detected');
+    if (detectionResults[DetectionMethod.NUSDAL_TEXTURE_ANALYSIS] > 0.7) {
+      artifacts.push('NUSDal network generation artifacts detected');
     }
 
     if (detectionResults[DetectionMethod.DEEPFAKE_DETECTION] > 0.7) {
@@ -499,3 +499,12 @@ export class MediaIntegrityDetection {
 }
 
 export const mediaIntegrityDetection = new MediaIntegrityDetection();
+
+
+
+
+
+
+
+
+

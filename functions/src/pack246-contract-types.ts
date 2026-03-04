@@ -278,3 +278,12 @@ export interface ContractEnforcementStats {
   averageResponseTimeMs: number;
   lastUpdated: Timestamp;
 }
+
+
+
+
+
+
+
+
+

@@ -123,7 +123,7 @@ export interface ModerationResult {
 export interface NFCCardData {
   userId: string;
   cardId: string;
-  profileUrl: string;
+  profilUSDl: string;
   activatedAt: Date;
   lastUsed?: Date;
   isActive: boolean;
@@ -142,3 +142,12 @@ export interface EventPosterBundle {
   posters: OfflineAsset[];
   createdAt: Date;
 }
+
+
+
+
+
+
+
+
+

@@ -11,7 +11,7 @@ export interface CountryRolloutProfile {
   region: string;            // EU, LATAM, MENA, APAC...
   
   languageCodes: string[];   // ["pl"], ["es"], ["pt-BR"], etc.
-  currency: string;          // PLN, EUR, USD, MXN, BRL...
+  currency: string;          // USD, USD, USD, MXN, BRL...
   
   asoScore: number;          // 0–100
   trustScore: number;        // from PACK 424
@@ -286,3 +286,12 @@ export async function recomputeAllReadinessScores(): Promise<{
   
   return { updated, errors };
 }
+
+
+
+
+
+
+
+
+

@@ -254,3 +254,12 @@ export async function markAllNotificationsRead(userId: string): Promise<void> {
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+

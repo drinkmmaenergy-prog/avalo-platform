@@ -16,7 +16,7 @@
 
 import * as admin from 'firebase-admin';
 import {
-  TOKEN_PAYOUT_RATE_PLN,
+  TOKEN_TOKEN_PAYOUT_USD,
   AGE_MINIMUM_YEARS,
   REQUIRE_SELFIE_VERIFICATION_FOR_EARNING,
   REQUIRE_SELFIE_FOR_MEETINGS_AND_EVENTS,
@@ -144,7 +144,7 @@ export async function assertTokenomicsInvariant(
     expectedSplit
   );
   
-  const isValidPayoutRate = Math.abs(ctx.payoutRatePlnPerToken - TOKEN_PAYOUT_RATE_PLN) < 0.001;
+  const isValidPayoutRate = Math.abs(ctx.payoutRateUSDPerToken - TOKEN_TOKEN_PAYOUT_USD) < 0.001;
   
   if (!isValidSplit || !isValidPayoutRate) {
     const violation = {
@@ -155,12 +155,12 @@ export async function assertTokenomicsInvariant(
       expected: {
         creatorShare: expectedSplit.creator,
         avaloShare: expectedSplit.avalo,
-        payoutRate: TOKEN_PAYOUT_RATE_PLN,
+        payoutRate: TOKEN_TOKEN_PAYOUT_USD,
       },
       actual: {
         creatorShare: ctx.creatorShare,
         avaloShare: ctx.avaloShare,
-        payoutRate: ctx.payoutRatePlnPerToken,
+        payoutRate: ctx.payoutRateUSDPerToken,
       },
     };
     
@@ -474,3 +474,12 @@ export async function guardPayoutRequest(
   // Validate user verification (earners must be verified)
   await assertAgeAndVerification(userCtx);
 }
+
+
+
+
+
+
+
+
+

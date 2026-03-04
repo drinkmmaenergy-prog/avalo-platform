@@ -55,7 +55,7 @@ export async function verifyEventCheckIn(
   userId: string,
   verificationData: {
     qrCode?: string;
-    selfieUrl?: string;
+    selfiUSDl?: string;
     gpsLocation?: { lat: number; lng: number };
   }
 ): Promise<VerificationResult> {
@@ -102,10 +102,10 @@ export async function verifyEventCheckIn(
     
     // Verify selfie
     if (event.requireSelfie) {
-      if (!verificationData.selfieUrl) {
+      if (!verificationData.selfiUSDl) {
         errors.push('Selfie verification required');
       } else {
-        selfieValid = await verifySelfie(userId, verificationData.selfieUrl);
+        selfieValid = await verifySelfie(userId, verificationData.selfiUSDl);
         if (!selfieValid) {
           errors.push('Selfie verification failed');
         }
@@ -339,7 +339,7 @@ async function verifyQrCode(eventId: string, qrCode: string): Promise<boolean> {
 /**
  * Verify selfie against user profile
  */
-async function verifySelfie(userId: string, selfieUrl: string): Promise<boolean> {
+async function verifySelfie(userId: string, selfiUSDl: string): Promise<boolean> {
   // Note: This would integrate with face recognition service
   // Placeholder implementation
   
@@ -349,7 +349,7 @@ async function verifySelfie(userId: string, selfieUrl: string): Promise<boolean>
     // 2. Compare selfie with profile photos using face recognition
     // 3. Return match confidence > threshold
     
-    console.log('Selfie verification for user:', userId, 'URL:', selfieUrl);
+    console.log('Selfie verification for user:', userId, 'URL:', selfiUSDl);
     
     // Placeholder: assume verification succeeded
     return true;
@@ -515,3 +515,12 @@ export async function autoCancelFailedEvents(): Promise<void> {
   
   console.log(`Auto-cancelled ${failedEvents.size} failed events`);
 }
+
+
+
+
+
+
+
+
+

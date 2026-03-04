@@ -14,3 +14,12 @@ export { calculateChemistryScore } from './rankingModel';
 export { calculatePhotoAttractivenessScore } from './signalsAesthetic';
 
 console.log('✅ PACK 208: Chemistry Feed AI loaded');
+
+
+
+
+
+
+
+
+

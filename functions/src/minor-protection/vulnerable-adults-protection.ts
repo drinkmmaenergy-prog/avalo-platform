@@ -534,3 +534,12 @@ export async function checkSpendingLimit(
     return { allowed: false, reason: 'Error checking spending limit' };
   }
 }
+
+
+
+
+
+
+
+
+

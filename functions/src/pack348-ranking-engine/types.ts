@@ -108,7 +108,7 @@ export interface ABTestConfig {
   testConfig: Partial<RankingEngineConfig>;
   
   // Which segments to apply test to
-  targetSegments?: string[];          // e.g., ["new_users", "eastern_europe"]
+  targetSegments?: string[];          // e.g., ["new_users", "eastern_USDope"]
   
   // Exclusions - never test these
   excludedFromTest: {
@@ -274,3 +274,12 @@ export const DEFAULT_TIER_ROUTING: TierRoutingConfig = {
     noArtificialBoost: true,           // ✅ Pure meritocracy
   },
 };
+
+
+
+
+
+
+
+
+

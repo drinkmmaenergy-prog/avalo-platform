@@ -69,12 +69,10 @@ export default function CreatorStripePage() {
     
     try {
       const result = await initiateStripeOnboarding(
-        user.uid,
-        `${window.location.origin}/creator/stripe?onboarding=complete`,
-        `${window.location.origin}/creator/stripe?onboarding=refresh`
+        user.uid
       );
       
-      if (result?.url) {
+      if ('url' in result && result.url) {
         window.location.href = result.url;
       } else {
         setError('Failed to start onboarding. Please try again.');
@@ -226,3 +224,4 @@ export default function CreatorStripePage() {
     </div>
   );
 }
+

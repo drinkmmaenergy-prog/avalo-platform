@@ -651,7 +651,7 @@ export const uploadEventMaterial = https.onCall(async (request) => {
       uploaderId: userId,
       type: data.type,
       fileName: data.fileName,
-      fileUrl: 'placeholder-url',
+      filUSDl: 'placeholder-url',
       fileSize: data.fileSize,
       mimeType: data.mimeType,
       availableAt: data.availableAt
@@ -724,7 +724,7 @@ export const generateEventCertificate = https.onCall(async (request) => {
       id: certificateRef.id,
       eventId: data.eventId,
       userId: data.userId,
-      certificateUrl: 'placeholder-certificate-url',
+      certificatUSDl: 'placeholder-certificate-url',
       certificateCode,
       verified: true,
       verificationUrl: `https://avalo.app/verify/${certificateCode}`,
@@ -737,7 +737,7 @@ export const generateEventCertificate = https.onCall(async (request) => {
 
     await certificateRef.set(certificate);
 
-    return { certificateId: certificate.id, certificateCode, certificateUrl: certificate.certificateUrl };
+    return { certificateId: certificate.id, certificateCode, certificatUSDl: certificate.certificatUSDl };
   }
 );
 
@@ -866,3 +866,12 @@ export const completeEventTicketPayment = https.onCall(async (request) => {
     return { success: true, accessGranted: true };
   }
 );
+
+
+
+
+
+
+
+
+

@@ -209,7 +209,7 @@ export interface EventMaterial {
   title: string;
   description?: string;
   type: 'PDF' | 'VIDEO' | 'AUDIO' | 'LINK' | 'FILE';
-  fileUrl: string;
+  filUSDl: string;
   fileSize?: number;
   isPreviewable: boolean;
   availableAt: 'BEFORE' | 'DURING' | 'AFTER'; // When attendees can access
@@ -329,7 +329,7 @@ export interface EventCertificate {
   
   // Certificate details
   completionDate: Timestamp;
-  certificateUrl: string; // PDF URL
+  certificatUSDl: string; // PDF URL
   verificationCode: string; // For authenticity check
   
   issuedAt: Timestamp;
@@ -639,3 +639,12 @@ export function calculateRevenueSplit(priceTokens: number): {
 }
 
 console.log('✅ PACK 182 Event Types loaded - Professional Event Hosting System');
+
+
+
+
+
+
+
+
+

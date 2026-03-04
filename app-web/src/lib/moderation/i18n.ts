@@ -1,53 +1,35 @@
 /**
- * Moderation i18n — Translation hook for moderation-specific strings.
- *
- * Uses the main I18nProvider context with moderation-specific key prefixes.
- * Falls back to English hardcoded strings for moderation UI.
+ * Moderation i18n — Translation helper for moderation UI.
  */
 
-'use client';
-
-import { useCallback } from 'react';
-
-const MODERATION_TRANSLATIONS: Record<string, Record<string, string>> = {
+const translations: Record<string, Record<string, string>> = {
   en: {
-    'queue.title': 'Moderation Queue',
-    'queue.empty': 'No pending items in queue',
-    'incidents.title': 'Incidents',
-    'incidents.open': 'Open',
-    'incidents.resolved': 'Resolved',
-    'incidents.dismissed': 'Dismissed',
-    'appeals.title': 'Appeals',
-    'appeals.pending': 'Pending Review',
-    'appeals.approved': 'Approved',
-    'appeals.denied': 'Denied',
-    'actions.warn': 'Warn User',
-    'actions.mute': 'Mute User',
-    'actions.suspend': 'Suspend Account',
-    'actions.ban': 'Ban Account',
-    'actions.resolve': 'Resolve Incident',
-    'actions.dismiss': 'Dismiss Incident',
-    'actions.escalate': 'Escalate',
-    'severity.critical': 'Critical',
-    'severity.high': 'High',
-    'severity.medium': 'Medium',
-    'severity.low': 'Low',
+    'mod.title': 'Moderation Dashboard',
+    'mod.incidents': 'Incidents',
+    'mod.appeals': 'Appeals',
+    'mod.queue': 'Queue',
+    'mod.analytics': 'Analytics',
+    'mod.users': 'Users',
+    'mod.severity.critical': 'Critical',
+    'mod.severity.high': 'High',
+    'mod.severity.medium': 'Medium',
+    'mod.severity.low': 'Low',
+    'mod.status.open': 'Open',
+    'mod.status.resolved': 'Resolved',
+    'mod.status.dismissed': 'Dismissed',
+    'mod.action.warn': 'Warn',
+    'mod.action.mute': 'Mute',
+    'mod.action.suspend': 'Suspend',
+    'mod.action.ban': 'Ban',
+    'mod.action.resolve': 'Resolve',
+    'mod.action.dismiss': 'Dismiss',
   },
 };
 
-/**
- * Hook for moderation-specific translations.
- * Returns a `t()` function scoped to moderation keys.
- */
-export function useTranslations(namespace = 'moderation') {
-  const t = useCallback(
-    (key: string): string => {
-      const lang = 'en'; // Could be wired to I18nProvider locale in future
-      const fullKey = key;
-      return MODERATION_TRANSLATIONS[lang]?.[fullKey] ?? key;
-    },
-    [],
-  );
+export function useTranslations(locale: string = 'en') {
+  const t = (key: string): string => {
+    return translations[locale]?.[key] ?? translations['en']?.[key] ?? key;
+  };
 
-  return t;
+  return { t };
 }

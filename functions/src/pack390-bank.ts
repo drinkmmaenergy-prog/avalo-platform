@@ -247,7 +247,7 @@ async function calculatePayoutLiabilities() {
     const data = doc.data();
     totalLiability += data.fiatAmount || 0;
     
-    const currency = data.currency || 'PLN';
+    const currency = data.currency || 'USD';
     liabilitiesByCurrency[currency] = (liabilitiesByCurrency[currency] || 0) + data.fiatAmount;
   });
   
@@ -551,3 +551,12 @@ export const pack390_recordChargeback = functions.https.onCall(async (request) =
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+

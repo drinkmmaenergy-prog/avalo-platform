@@ -290,3 +290,12 @@ export async function isRecentDetractor(userId: string): Promise<boolean> {
   const response = recentResponseSnap.docs[0].data() as NpsSurveyResponse;
   return response.score <= 6; // Detractor
 }
+
+
+
+
+
+
+
+
+

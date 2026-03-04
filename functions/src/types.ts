@@ -70,7 +70,7 @@ export interface UserWallet {
   balance: number;
   pending: number;
   earned: number;
-  settlementRate: number; // 0.20 PLN per token
+  settlementRate: number; // 0.20 USD per token
 }
 
 // =======================================================
@@ -258,7 +258,7 @@ export interface AICompanion {
   updatedAt?: Timestamp | FieldValue;
   // PACK 331: AI Avatar Template support
   avatarTemplateId?: string; // Reference to purchased template
-  avatarImageUrl?: string; // URL from template or custom
+  avatarimageUrl?: string; // URL from template or custom
 }
 
 // =======================================================
@@ -311,5 +311,14 @@ export interface ChatRoles {
   initiator: string;
   receiver: string;
 }
+
+
+
+
+
+
+
+
+
 
 

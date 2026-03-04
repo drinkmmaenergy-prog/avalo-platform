@@ -13,7 +13,7 @@ import { FieldValue, HttpsError, auth, increment, onCall, storage, timestamp, on
 
 export interface CostControlRule {
   service: string;
-  monthlyBudgetPLN: number;
+  monthlyBudgetUSD: number;
   autoThrottle: boolean;
   currentSpend: number;
   throttleThreshold: number; // 0-1 (e.g., 0.8 = 80% of budget)
@@ -22,21 +22,21 @@ export interface CostControlRule {
 
 export interface ServiceCost {
   service: string;
-  costPLN: number;
+  costUSD: number;
   units: number; // Requests, tokens, minutes, etc.
   costPerUnit: number;
   timestamp: number;
 }
 
 export interface CostMetrics {
-  totalSpendPLN: number;
+  totalSpendUSD: number;
   periodStart: number;
   periodEnd: number;
   byService: Record<string, number>;
   costPerUser: number;
   costPerChat: number;
   costPerCall: number;
-  costPerRevenuePLN: number; // Cost per 1 PLN of revenue
+  costPerRevenueUSD: number; // Cost per 1 USD of revenue
 }
 
 export interface ThrottleRule {
@@ -64,7 +64,7 @@ export interface CostAlert {
 const COST_CONTROL_RULES: Record<string, CostControlRule> = {
   aiUsage: {
     service: "aiUsage",
-    monthlyBudgetPLN: 50000,
+    monthlyBudgetUSD: 50000,
     autoThrottle: true,
     currentSpend: 0,
     throttleThreshold: 0.8,
@@ -72,7 +72,7 @@ const COST_CONTROL_RULES: Record<string, CostControlRule> = {
   },
   videoBandwidth: {
     service: "videoBandwidth",
-    monthlyBudgetPLN: 30000,
+    monthlyBudgetUSD: 30000,
     autoThrottle: true,
     currentSpend: 0,
     throttleThreshold: 0.8,
@@ -80,7 +80,7 @@ const COST_CONTROL_RULES: Record<string, CostControlRule> = {
   },
   webrtcBandwidth: {
     service: "webrtcBandwidth",
-    monthlyBudgetPLN: 20000,
+    monthlyBudgetUSD: 20000,
     autoThrottle: true,
     currentSpend: 0,
     throttleThreshold: 0.8,
@@ -88,7 +88,7 @@ const COST_CONTROL_RULES: Record<string, CostControlRule> = {
   },
   pushNotifications: {
     service: "pushNotifications",
-    monthlyBudgetPLN: 5000,
+    monthlyBudgetUSD: 5000,
     autoThrottle: true,
     currentSpend: 0,
     throttleThreshold: 0.8,
@@ -96,7 +96,7 @@ const COST_CONTROL_RULES: Record<string, CostControlRule> = {
   },
   cloudFunctions: {
     service: "cloudFunctions",
-    monthlyBudgetPLN: 15000,
+    monthlyBudgetUSD: 15000,
     autoThrottle: false, // Critical service
     currentSpend: 0,
     throttleThreshold: 0.9,
@@ -104,7 +104,7 @@ const COST_CONTROL_RULES: Record<string, CostControlRule> = {
   },
   firestore: {
     service: "firestore",
-    monthlyBudgetPLN: 10000,
+    monthlyBudgetUSD: 10000,
     autoThrottle: false,
     currentSpend: 0,
     throttleThreshold: 0.9,
@@ -112,7 +112,7 @@ const COST_CONTROL_RULES: Record<string, CostControlRule> = {
   },
   storage: {
     service: "storage",
-    monthlyBudgetPLN: 8000,
+    monthlyBudgetUSD: 8000,
     autoThrottle: false,
     currentSpend: 0,
     throttleThreshold: 0.9,
@@ -120,7 +120,7 @@ const COST_CONTROL_RULES: Record<string, CostControlRule> = {
   },
 };
 
-// Cost per unit (in PLN)
+// Cost per unit (in USD)
 const UNIT_COSTS = {
   aiTokens: 0.00001, // Per token
   videoBandwidthGB: 0.5, // Per GB
@@ -146,11 +146,11 @@ export async function trackCost(
 ): Promise<void> {
   const db = admin.firestore();
   
-  const costPLN = units * costPerUnit;
+  const costUSD = units * costPerUnit;
   
   const serviceCost: ServiceCost = {
     service,
-    costPLN,
+    costUSD,
     units,
     costPerUnit,
     timestamp: Date.now(),
@@ -166,7 +166,7 @@ export async function trackCost(
     await totalDoc.set(
       {
         service,
-        currentSpend: admin.firestore.FieldValue.increment(costPLN),
+        currentSpend: admin.firestore.FieldValue.increment(costUSD),
         lastUpdated: Date.now(),
       },
       { merge: true }
@@ -240,7 +240,7 @@ async function checkThrottling(service: string): Promise<void> {
   }
   
   const currentSpend = totalDoc.data()?.currentSpend || 0;
-  const budgetUsed = currentSpend / rule.monthlyBudgetPLN;
+  const budgetUsed = currentSpend / rule.monthlyBudgetUSD;
   
   // Alert threshold
   if (budgetUsed >= rule.alertThreshold) {
@@ -511,13 +511,13 @@ export const getCostMetrics = functions.https.onCall(async (request) => {
       .where("timestamp", "<=", endDate)
       .get();
     
-    let totalSpendPLN = 0;
+    let totalSpendUSD = 0;
     const byService: Record<string, number> = {};
     
     costsSnapshot.forEach((doc) => {
       const cost = doc.data() as ServiceCost;
-      totalSpendPLN += cost.costPLN;
-      byService[cost.service] = (byService[cost.service] || 0) + cost.costPLN;
+      totalSpendUSD += cost.costUSD;
+      byService[cost.service] = (byService[cost.service] || 0) + cost.costUSD;
     });
     
     // Get user count
@@ -548,21 +548,21 @@ export const getCostMetrics = functions.https.onCall(async (request) => {
       .where("status", "==", "completed")
       .get();
     
-    let totalRevenuePLN = 0;
+    let totalRevenueUSD = 0;
     revenueSnapshot.forEach((doc) => {
       const payment = doc.data();
-      totalRevenuePLN += payment.amountPLN || 0;
+      totalRevenueUSD += payment.amountUSD || 0;
     });
     
     const metrics: CostMetrics = {
-      totalSpendPLN,
+      totalSpendUSD,
       periodStart: startDate,
       periodEnd: endDate,
       byService,
-      costPerUser: totalSpendPLN / userCount,
-      costPerChat: totalSpendPLN / chatCount,
-      costPerCall: totalSpendPLN / callCount,
-      costPerRevenuePLN: totalRevenuePLN > 0 ? totalSpendPLN / totalRevenuePLN : 0,
+      costPerUser: totalSpendUSD / userCount,
+      costPerChat: totalSpendUSD / chatCount,
+      costPerCall: totalSpendUSD / callCount,
+      costPerRevenueUSD: totalRevenueUSD > 0 ? totalSpendUSD / totalRevenueUSD : 0,
     };
     
     return metrics;
@@ -593,13 +593,13 @@ export const generateMonthlyReport = onSchedule("0 0 1 * *", async (event) => {
       .where("timestamp", "<=", endDate)
       .get();
     
-    let totalSpendPLN = 0;
+    let totalSpendUSD = 0;
     const byService: Record<string, number> = {};
     
     costsSnapshot.forEach((doc) => {
       const cost = doc.data() as ServiceCost;
-      totalSpendPLN += cost.costPLN;
-      byService[cost.service] = (byService[cost.service] || 0) + cost.costPLN;
+      totalSpendUSD += cost.costUSD;
+      byService[cost.service] = (byService[cost.service] || 0) + cost.costUSD;
     });
     
     // Save report
@@ -607,7 +607,7 @@ export const generateMonthlyReport = onSchedule("0 0 1 * *", async (event) => {
       period: "monthly",
       startDate,
       endDate,
-      totalSpendPLN,
+      totalSpendUSD,
       byService,
       generatedAt: Date.now(),
     });
@@ -627,7 +627,7 @@ export const generateMonthlyReport = onSchedule("0 0 1 * *", async (event) => {
     
     await batch.commit();
     
-    console.log(`✅ Monthly report generated: ${totalSpendPLN.toFixed(2)} PLN`);
+    console.log(`✅ Monthly report generated: ${totalSpendUSD.toFixed(2)} USD`);
   });
 
 /**
@@ -647,12 +647,12 @@ export const getBudgetStatus = functions.https.onCall(async (request) => {
           ? totalDoc.data()?.currentSpend || 0
           : 0;
         
-        const budgetUsed = currentSpend / rule.monthlyBudgetPLN;
-        const remaining = rule.monthlyBudgetPLN - currentSpend;
+        const budgetUsed = currentSpend / rule.monthlyBudgetUSD;
+        const remaining = rule.monthlyBudgetUSD - currentSpend;
         
         return {
           service,
-          budgetPLN: rule.monthlyBudgetPLN,
+          budgetUSD: rule.monthlyBudgetUSD,
           currentSpend,
           budgetUsed,
           remaining,
@@ -750,3 +750,12 @@ export const detectFraudAbuse = functions.https.onCall(async (request) => {
     };
   }
 );
+
+
+
+
+
+
+
+
+

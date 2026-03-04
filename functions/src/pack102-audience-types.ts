@@ -205,7 +205,7 @@ export interface UpdateSocialLinksResponse {
 export interface GenerateSmartLinksResponse {
   success: boolean;
   smartLinks: Partial<Record<SocialPlatform, string>>;
-  qrCodeUrl: string;
+  qrCodUSDl: string;
   shareText: string;
 }
 
@@ -233,3 +233,12 @@ export class AudienceGrowthError extends Error {
     this.name = 'AudienceGrowthError';
   }
 }
+
+
+
+
+
+
+
+
+

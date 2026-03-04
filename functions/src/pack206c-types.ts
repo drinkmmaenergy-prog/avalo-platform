@@ -202,3 +202,12 @@ export type AdultModeSettingsCreate = Omit<AdultModeSettings, 'id' | 'createdAt'
 export type AdultModeSettingsUpdate = Partial<Omit<AdultModeSettings, 'id' | 'chatId' | 'user1Id' | 'user2Id'>> & {
   updatedAt?: FieldValue;
 };
+
+
+
+
+
+
+
+
+

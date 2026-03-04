@@ -1,9 +1,11 @@
+"use client";
+
 /**
  * Token Purchase Service with Stripe Integration
  * Handles token purchases, fraud detection, and payment processing
  */
 
-import { functions } from '../firebase';
+import { requireFunctions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
 import { TOKEN_PACKS, TokenPack } from '../monetization';
 
@@ -29,7 +31,7 @@ export async function createTokenPaymentIntent(params: {
     const create = httpsCallable<typeof params, {
       success: boolean;
       clientSecret: string;
-    }>(functions, 'createTokenPaymentIntent');
+    }>(requireFunctions(), 'createTokenPaymentIntent');
     
     const result = await create(params);
     return result.data;
@@ -56,7 +58,7 @@ export async function confirmTokenPurchase(params: {
     const confirm = httpsCallable<typeof params, {
       success: boolean;
       tokens: number;
-    }>(functions, 'confirmTokenPurchase');
+    }>(requireFunctions(), 'confirmTokenPurchase');
     
     const result = await confirm(params);
     return result.data;
@@ -99,7 +101,7 @@ export async function getLocalizedPrice(params: {
       price: number;
       currency: string;
       displayPrice: string;
-    }>(functions, 'getLocalizedTokenPrice');
+    }>(requireFunctions(), 'getLocalizedTokenPrice');
     
     const result = await getPrice(params);
     return result.data;
@@ -164,8 +166,7 @@ export async function getPurchaseHistory(params: {
   limit?: number;
 }): Promise<any[]> {
   try {
-    const getHistory = httpsCallable<typeof params, { purchases: any[] }>(
-      functions,
+    const getHistory = httpsCallable<typeof params, { purchases: any[] }>(requireFunctions(),
       'getTokenPurchaseHistory'
     );
     
@@ -186,8 +187,7 @@ export async function getPurchaseHistory(params: {
  */
 export async function getTokenBalance(userId: string): Promise<number> {
   try {
-    const getBalance = httpsCallable<{ userId: string }, { balance: number }>(
-      functions,
+    const getBalance = httpsCallable<{ userId: string }, { balance: number }>(requireFunctions(),
       'getTokenBalance'
     );
     

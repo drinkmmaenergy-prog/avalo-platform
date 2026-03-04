@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * PACK 423 — NPS Survey Modal (Web)
  * "How likely are you to recommend Avalo?" (0-10 scale)

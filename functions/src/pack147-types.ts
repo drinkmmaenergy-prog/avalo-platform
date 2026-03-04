@@ -165,7 +165,7 @@ export interface RefundRequest {
   // Request details
   reason: RefundReason;
   description: string;
-  evidenceUrls: string[];
+  evidencUSDls: string[];
   
   // Status
   status: RefundStatus;
@@ -238,7 +238,7 @@ export interface DisputeEvidence {
   submittedBy: string;
   evidenceType: 'TEXT' | 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'TRANSACTION_LOG';
   content?: string;
-  fileUrl?: string;
+  filUSDl?: string;
   timestamp: Timestamp;
   verified: boolean;
 }
@@ -434,3 +434,12 @@ export function calculateRefundAmount(
       return 0;
   }
 }
+
+
+
+
+
+
+
+
+

@@ -368,3 +368,12 @@ export async function rebuildAllAvatarIndexes(): Promise<{
 
   return { processed, skipped, errors };
 }
+
+
+
+
+
+
+
+
+

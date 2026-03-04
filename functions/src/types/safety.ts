@@ -106,14 +106,14 @@ export interface TrustedContactNotification {
 
 export interface PanicNotificationPayload {
   userName: string;
-  userProfileUrl: string;
+  userProfilUSDl: string;
   lastLocation: LocationData | null;
   mapUrl: string | null;
   timestamp: string;
   context: PanicContext;
   meetingPartner?: {
     name: string;
-    profileUrl: string;
+    profilUSDl: string;
   };
 }
 
@@ -179,3 +179,12 @@ export interface EndLiveSessionRequest {
   sessionId: string;
   reason?: string;
 }
+
+
+
+
+
+
+
+
+

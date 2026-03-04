@@ -79,7 +79,7 @@ export interface DailySummaryInsight {
   highlights: DailyHighlight[];
   topPerformingFeature: string;
   earningsToday: number;
-  earningsTodayPLN: number;
+  earningsTodayUSD: number;
   profileViews: number;
   newPayers: number;
   summary: string;  // AI-generated text
@@ -473,3 +473,12 @@ export function formatTimeRange(hour: number): string {
   const end = (hour + 1) % 24;
   return `${hour.toString().padStart(2, '0')}:00–${end.toString().padStart(2, '0')}:00`;
 }
+
+
+
+
+
+
+
+
+

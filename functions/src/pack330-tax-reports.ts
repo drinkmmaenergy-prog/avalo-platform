@@ -146,8 +146,8 @@ async function generateUserTaxReport(
     }
   });
 
-  // Convert tokens to PLN
-  const totalEarnedPLN = totalEarnedTokens * TAX_CONFIG.TOKEN_TO_PLN_RATE;
+  // Convert tokens to USD
+  const totalEarnedUSD = totalEarnedTokens * TAX_CONFIG.TOKEN_PAYOUT_USD;
 
   // Query payouts for the period
   const payoutsQuery = await db
@@ -158,23 +158,23 @@ async function generateUserTaxReport(
     .get();
 
   const payoutDetails: PayoutDetail[] = [];
-  let totalPaidOutPLN = 0;
-  let totalPendingPLN = 0;
+  let totalPaidOutUSD = 0;
+  let totalPendingUSD = 0;
 
   payoutsQuery.docs.forEach((doc) => {
     const payout = doc.data();
-    const amountPLN = payout.amountPLN || 0;
+    const amountUSD = payout.amountUSD || 0;
 
     if (payout.status === 'COMPLETED') {
-      totalPaidOutPLN += amountPLN;
+      totalPaidOutUSD += amountUSD;
     } else if (payout.status === 'PENDING' || payout.status === 'PROCESSING') {
-      totalPendingPLN += amountPLN;
+      totalPendingUSD += amountUSD;
     }
 
     payoutDetails.push({
       payoutId: doc.id,
       date: payout.requestedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-      amountPLN,
+      amountUSD,
       bankOrWallet: payout.payoutMethod || 'unknown',
     });
   });
@@ -184,11 +184,11 @@ async function generateUserTaxReport(
     userId,
     period,
     totalEarnedTokens,
-    totalEarnedPLN,
+    totalEarnedUSD,
     breakdown,
     numberOfPayouts: payoutDetails.length,
-    totalPaidOutPLN,
-    totalPendingPLN,
+    totalPaidOutUSD,
+    totalPendingUSD,
     payoutDetails,
     generatedAt: serverTimestamp() as any,
   };
@@ -200,7 +200,7 @@ async function generateUserTaxReport(
     .doc(reportId)
     .set(report);
 
-  logger.info('User tax report generated', { userId, period, totalEarnedPLN });
+  logger.info('User tax report generated', { userId, period, totalEarnedUSD });
 
   return report;
 }
@@ -481,3 +481,12 @@ export const pack330_generateYearlyUserReports = scheduler.onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+

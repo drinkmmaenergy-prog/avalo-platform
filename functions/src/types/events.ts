@@ -20,7 +20,7 @@ export interface EventLocation {
   address?: string;
   lat?: number;
   lng?: number;
-  onlineUrl?: string;
+  onlinUSDl?: string;
 }
 
 export interface EventSafety {
@@ -143,3 +143,12 @@ export interface SafetyEventHook {
   additionalData: Record<string, any>;
   timestamp: string;
 }
+
+
+
+
+
+
+
+
+

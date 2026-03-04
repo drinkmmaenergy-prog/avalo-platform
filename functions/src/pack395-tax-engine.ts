@@ -43,7 +43,7 @@ export const VAT_RATES: Record<string, { rate: number; type: string; country: st
   // UK
   'GB': { rate: 0.20, type: 'VAT', country: 'United Kingdom' },
   
-  // Other European
+  // Other USDopean
   'NO': { rate: 0.25, type: 'VAT', country: 'Norway' },
   'CH': { rate: 0.077, type: 'VAT', country: 'Switzerland' },
   
@@ -364,7 +364,7 @@ export const validateVATNumber = functions.https.onCall(async (request) => {
   const isValidFormat = pattern.test(cleanVAT);
   
   // In production, also check against VIES (VAT Information Exchange System)
-  // https://ec.europa.eu/taxation_customs/vies/
+  // https://ec.USDopa.eu/taxation_customs/vies/
   
   console.log('Scheduled job result:', {
     valid: isValidFormat,
@@ -381,3 +381,12 @@ export const validateVATNumber = functions.https.onCall(async (request) => {
  * Export tax calculation function for use in other modules
  */
 export { calculateTax as calculateTransactionTax };
+
+
+
+
+
+
+
+
+

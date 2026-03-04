@@ -22,14 +22,14 @@ export interface DailyKPI {
   };
 
   revenue: {
-    tokenSalesPLN: number;
-    chatRevenuePLN: number;
-    voiceRevenuePLN: number;
-    videoRevenuePLN: number;
-    calendarRevenuePLN: number;
-    eventsRevenuePLN: number;
-    tipsRevenuePLN: number;
-    totalRevenuePLN: number;
+    tokenSalesUSD: number;
+    chatRevenueUSD: number;
+    voiceRevenueUSD: number;
+    videoRevenueUSD: number;
+    calendarRevenueUSD: number;
+    eventsRevenueUSD: number;
+    tipsRevenueUSD: number;
+    totalRevenueUSD: number;
   };
 
   platformEarnings: {
@@ -37,7 +37,7 @@ export interface DailyKPI {
     calendar20: number; // 20% of calendar revenue
     events20: number; // 20% of events revenue
     tips10: number; // 10% of tips revenue
-    totalAvaloPLN: number;
+    totalAvaloUSD: number;
   };
 
   refunds: {
@@ -57,7 +57,7 @@ export interface DailyKPI {
   ai: {
     aiChats: number;
     aiCalls: number;
-    aiRevenuePLN: number;
+    aiRevenueUSD: number;
     aiAbuseFlags: number;
   };
 
@@ -106,7 +106,7 @@ export interface AbuseSignal {
     count?: number; // How many times detected
     timeframeHours?: number;
     affectedUsers?: string[];
-    estimatedLoss?: number; // PLN
+    estimatedLoss?: number; // USD
     pattern?: string;
   };
 }
@@ -125,8 +125,8 @@ export interface CreatorKPI {
   totalEvents: number;
 
   // Financial metrics
-  earningsPLN: number;
-  tipsReceivedPLN: number;
+  earningsUSD: number;
+  tipsReceivedUSD: number;
   tokensEarned: number;
 
   // Quality metrics
@@ -191,7 +191,7 @@ export interface ChurnRecord {
   // User behavior patterns
   totalSessions: number;
   avgSessionDuration: number; // seconds
-  totalSpent: number; // PLN
+  totalSpent: number; // USD
   totalRefunds: number;
   engagementScore: number; // 0-100
 
@@ -272,7 +272,7 @@ export interface KPIThreshold {
   minCreatorCompletionRate: number; // Percentage
   
   // Revenue
-  minDailyRevenuePLN: number; // Alert if below
+  minDailyRevenueUSD: number; // Alert if below
   maxRevenueDropPercent: number; // Day over day
   
   updatedAt: Timestamp | FieldValue;
@@ -291,8 +291,8 @@ export interface HourlyMetrics {
   newCalls: number;
   newCalendarBookings: number;
   
-  revenuePLN: number;
-  refundsPLN: number;
+  revenueUSD: number;
+  refundsUSD: number;
   
   panicTriggers: number;
   moderationFlags: number;
@@ -341,3 +341,12 @@ export interface BigQueryExport {
   status: "pending" | "completed" | "failed";
   error?: string;
 }
+
+
+
+
+
+
+
+
+

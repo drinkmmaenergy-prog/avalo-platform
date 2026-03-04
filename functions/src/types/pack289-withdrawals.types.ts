@@ -4,7 +4,7 @@
  * 
  * IMPORTANT RULES:
  * - Only earned tokens can be withdrawn (NOT purchased tokens)
- * - Fixed rate: 1 token = 0.20 PLN (or local equivalent)
+ * - Fixed rate: 1 token = 0.20 USD (or local equivalent)
  * - KYC + AML required for all withdrawals
  * - Limits enforced: min/max per withdrawal, monthly caps
  * 
@@ -86,7 +86,7 @@ export type PayoutMethodType =
 
 export interface PayoutMethod {
   type: PayoutMethodType;
-  currency: string;  // PLN, EUR, USD, etc.
+  currency: string;  // USD, USD, USD, etc.
   iban?: string;
   wiseRecipientId?: string;
 }
@@ -154,8 +154,8 @@ export interface WithdrawalRequest {
   payoutAmount: number;  // Amount in payoutCurrency
   
   // Exchange rates (for audit)
-  ratePerTokenPLN: number;  // Snapshot, should be 0.20
-  fxRateToPayoutCurrency: number;  // FX rate if not PLN
+  ratePerTokenUSD: number;  // Snapshot, should be 0.20
+  fxRateToPayoutCurrency: number;  // FX rate if not USD
   
   // Status tracking
   status: WithdrawalStatus;
@@ -182,16 +182,16 @@ export interface WithdrawalRequest {
 // ============================================================================
 
 export interface WithdrawalLimitsConfig {
-  minTokensPerWithdrawal: number;    // e.g., 500 tokens = 100 PLN
+  minTokensPerWithdrawal: number;    // e.g., 500 tokens = 100 USD
   maxTokensPerWithdrawal: number;    // Safety cap
-  maxPLNPerMonth: number;            // Soft AML limit
+  maxUSDPerMonth: number;            // Soft AML limit
   maxWithdrawalsPerMonth: number;    // Anti-abuse
 }
 
 export const DEFAULT_WITHDRAWAL_LIMITS: WithdrawalLimitsConfig = {
-  minTokensPerWithdrawal: 500,      // 100 PLN minimum
-  maxTokensPerWithdrawal: 50000,    // 10,000 PLN maximum per withdrawal
-  maxPLNPerMonth: 20000,            // 20,000 PLN monthly limit
+  minTokensPerWithdrawal: 500,      // 100 USD minimum
+  maxTokensPerWithdrawal: 50000,    // 10,000 USD maximum per withdrawal
+  maxUSDPerMonth: 20000,            // 20,000 USD monthly limit
   maxWithdrawalsPerMonth: 10,       // Max 10 withdrawals per month
 };
 
@@ -203,7 +203,7 @@ export interface MonthlyWithdrawalStats {
   userId: string;
   month: string;  // YYYY-MM
   totalTokensWithdrawn: number;
-  totalPLNWithdrawn: number;
+  totalUSDWithdrawn: number;
   withdrawalCount: number;
   lastWithdrawalAt?: Timestamp;
   createdAt: Timestamp;
@@ -289,7 +289,7 @@ export interface GetMonthlyLimitsResponse {
   success: boolean;
   stats?: MonthlyWithdrawalStats;
   limits?: WithdrawalLimitsConfig;
-  remainingPLN?: number;
+  remainingUSD?: number;
   remainingWithdrawals?: number;
   canWithdraw?: boolean;
   error?: string;
@@ -440,7 +440,7 @@ export interface WithdrawalTransaction {
     payoutCurrency: string;
     provider: WithdrawalProvider;
     providerPayoutId?: string;
-    ratePerTokenPLN: number;
+    ratePerTokenUSD: number;
   };
   timestamp: Timestamp;
 }
@@ -498,3 +498,12 @@ export function isWithdrawalEditable(status: WithdrawalStatus): boolean {
 export function isWithdrawalFinal(status: WithdrawalStatus): boolean {
   return ['PAID', 'REJECTED', 'CANCELLED'].includes(status);
 }
+
+
+
+
+
+
+
+
+

@@ -462,3 +462,12 @@ export async function checkAgeGateAdultContent(userId: string): Promise<boolean>
 // ─────────────────────────────────────────────────────────────────
 
 export default AgeGateEnforcer;
+
+
+
+
+
+
+
+
+

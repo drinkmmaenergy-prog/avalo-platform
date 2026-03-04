@@ -451,3 +451,12 @@ export const detectCopyPasteReviews = onSchedule("every 6 hours", async (event) 
     console.error('Error detecting copy-paste reviews:', error);
   }
 });
+
+
+
+
+
+
+
+
+

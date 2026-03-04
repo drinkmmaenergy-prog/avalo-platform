@@ -107,7 +107,7 @@ const COUNTRY_SAFETY_PROFILES: Record<string, Partial<CulturalSafetyProfile>> = 
     legalCompliance: ['COPPA', 'CCPA', 'Section_230']
   },
   
-  // European Union - Moderate with GDPR
+  // USDopean Union - Moderate with GDPR
   DE: {
     countryName: 'Germany',
     tier: 'allowed',
@@ -693,3 +693,12 @@ export const onContentCreated = onDocumentCreated('user-content/{contentId}', as
       console.error('Error auto-moderating content:', error);
     }
   });
+
+
+
+
+
+
+
+
+

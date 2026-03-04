@@ -533,3 +533,12 @@ export async function getOptimizationHistory(
   
   return snapshot.docs.map(doc => doc.data() as ASOOptimizationAction);
 }
+
+
+
+
+
+
+
+
+

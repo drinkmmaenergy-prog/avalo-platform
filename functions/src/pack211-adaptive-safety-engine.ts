@@ -746,3 +746,12 @@ export async function getSafetyAdjustmentsForUser(userId: string) {
 
   return getSafetyAdjustmentsForCategory(profile.safetyCategory);
 }
+
+
+
+
+
+
+
+
+

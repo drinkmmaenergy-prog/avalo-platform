@@ -46,7 +46,7 @@ export interface SafetyTicketMetadata  {
   reportedUserId?: string;
   reportType?: string;
   severity?: string;
-  evidenceUrls?: string[];
+  evidencUSDls?: string[];
   autoDetected?: boolean;
   aiAnalysis?: Record<string, any>;
   safetyType?: string;
@@ -300,3 +300,12 @@ export interface RiskIntegrationPayload  {
   metadata?: Record<string, any>;
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+

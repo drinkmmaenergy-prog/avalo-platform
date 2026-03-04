@@ -561,3 +561,12 @@ export function calculateReviewImpact(rating: number, weight: number = 1): numbe
   const normalized = (rating - 3) * 5; // -10 to +10
   return normalized * weight;
 }
+
+
+
+
+
+
+
+
+

@@ -72,7 +72,7 @@ export async function aggregatePlatformKpiDaily(
     activeUsers: 0,
     payingUsers: 0,
     totalTokensSpent: 0,
-    totalTokenRevenuePLN: 0,
+    totalTokenRevenueUSD: 0,
     totalChats: 0,
     totalVoiceMinutes: 0,
     totalVideoMinutes: 0,
@@ -145,7 +145,7 @@ export async function aggregatePlatformKpiDaily(
     });
     
     kpi.payingUsers = payingUserIds.size;
-    kpi.totalTokenRevenuePLN = kpi.totalTokensSpent * KPI_CONFIG.TOKEN_TO_PLN_RATE;
+    kpi.totalTokenRevenueUSD = kpi.totalTokensSpent * KPI_CONFIG.TOKEN_PAYOUT_USD;
   } catch (error) {
     logger.error('Error aggregating token transactions:', error);
   }
@@ -247,7 +247,7 @@ export async function aggregatePlatformKpiHourly(
     hour,
     activeUsers: 0,
     tokensSpent: 0,
-    tokenRevenuePLN: 0,
+    tokenRevenueUSD: 0,
     chatsStarted: 0,
     voiceMinutes: 0,
     videoMinutes: 0,
@@ -281,7 +281,7 @@ export async function aggregatePlatformKpiHourly(
       kpi.tokensSpent += Math.abs(tx.amount || 0);
     });
     
-    kpi.tokenRevenuePLN = kpi.tokensSpent * KPI_CONFIG.TOKEN_TO_PLN_RATE;
+    kpi.tokenRevenueUSD = kpi.tokensSpent * KPI_CONFIG.TOKEN_PAYOUT_USD;
   } catch (error) {
     logger.error('Error aggregating tokens:', error);
   }
@@ -358,7 +358,7 @@ export async function aggregateCreatorKpiDaily(
     earnedTokensEvents: 0,
     earnedTokensOther: 0,
     totalEarnedTokens: 0,
-    totalEarnedPLN: 0,
+    totalEarnedUSD: 0,
     sessionsCount: 0,
     createdAt: Timestamp.now(),
   };
@@ -453,7 +453,7 @@ export async function aggregateCreatorKpiDaily(
     kpi.earnedTokensEvents +
     kpi.earnedTokensOther;
   
-  kpi.totalEarnedPLN = kpi.totalEarnedTokens * KPI_CONFIG.TOKEN_TO_PLN_RATE;
+  kpi.totalEarnedUSD = kpi.totalEarnedTokens * KPI_CONFIG.TOKEN_PAYOUT_USD;
   
   logger.info(`Creator KPI aggregated for ${userId} on ${dateStr}: ${kpi.totalEarnedTokens} tokens`);
   
@@ -708,3 +708,12 @@ export async function cleanupOldHourlyKpi(): Promise<number> {
   logger.info(`Deleted ${oldRecords.size} old hourly KPI records`);
   return oldRecords.size;
 }
+
+
+
+
+
+
+
+
+

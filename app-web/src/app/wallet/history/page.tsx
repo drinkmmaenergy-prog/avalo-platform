@@ -1,12 +1,16 @@
+"use client";
+
 /**
  * /wallet/history — Purchase History Page
  *
- * Auth-protected (via wallet layout.tsx).
+ * Auth-protected (via wallet layout.tsx / AppShell).
  * Shows all purchase transactions from Firestore purchases collection.
  *
  * INVARIANTS:
  * - Data is READ-ONLY from Firestore.
  * - No balance modification from this page.
+ *
+ * @version v1.1 — removed redundant Header/Footer since AppShell provides navigation
  */
 
 'use client';
@@ -15,9 +19,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { collection, query, where, orderBy, getDocs, limit } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { requireDb } from '@/lib/firebase';
 
 interface PurchaseRecord {
   sessionId: string;
@@ -38,14 +40,14 @@ export default function WalletHistoryPage() {
 
   useEffect(() => {
     async function loadHistory() {
-      if (!firebaseUser?.uid || !db) {
+      if (!firebaseUser?.uid) {
         setLoading(false);
         return;
       }
 
       try {
         const q = query(
-          collection(db, 'purchases'),
+          collection(requireDb(), 'purchases'),
           where('userId', '==', firebaseUser.uid),
           orderBy('createdAt', 'desc'),
           limit(100),
@@ -113,122 +115,118 @@ export default function WalletHistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+    <div className="py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Breadcrumb */}
+        <nav className="mb-6 text-sm">
+          <Link href="/wallet" className="text-pink-600 hover:text-pink-700">
+            Wallet
+          </Link>
+          <span className="mx-2 text-gray-400">/</span>
+          <span className="text-gray-600">Purchase History</span>
+        </nav>
 
-      <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Breadcrumb */}
-          <nav className="mb-6 text-sm">
-            <Link href="/wallet" className="text-pink-600 hover:text-pink-700">
-              Wallet
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Purchase History</h1>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-pink-600" />
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+            <p className="text-red-700">{error}</p>
+          </div>
+        ) : purchases.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+            <div className="text-5xl mb-4" aria-hidden="true">🛒</div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">No purchases yet</h2>
+            <p className="text-gray-500 mb-6">
+              You haven&apos;t purchased any token packs yet.
+            </p>
+            <Link
+              href="/wallet/buy"
+              className="inline-block bg-pink-600 hover:bg-pink-700 text-white font-medium py-3 px-8 rounded-lg transition"
+            >
+              Buy Tokens
             </Link>
-            <span className="mx-2 text-gray-400">/</span>
-            <span className="text-gray-600">Purchase History</span>
-          </nav>
-
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Purchase History</h1>
-
-          {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-pink-600" />
-            </div>
-          ) : error ? (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-              <p className="text-red-700">{error}</p>
-            </div>
-          ) : purchases.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-              <div className="text-5xl mb-4" aria-hidden="true">🛒</div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">No purchases yet</h2>
-              <p className="text-gray-500 mb-6">
-                You haven&apos;t purchased any token packs yet.
-              </p>
-              <Link
-                href="/wallet/buy"
-                className="inline-block bg-pink-600 hover:bg-pink-700 text-white font-medium py-3 px-8 rounded-lg transition"
-              >
-                Buy Tokens
-              </Link>
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              {/* Desktop Table */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Pack
-                      </th>
-                      <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Tokens
-                      </th>
-                      <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Amount
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Source
-                      </th>
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Pack
+                    </th>
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Tokens
+                    </th>
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Source
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {purchases.map((p) => (
+                    <tr key={p.sessionId} className="hover:bg-gray-50 transition">
+                      <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
+                        {formatDate(p.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                        {p.packId}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-right font-semibold text-pink-600">
+                        +{p.tokens.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-right text-gray-700">
+                        {formatCurrency(p.amountTotal, p.currency)}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {statusBadge(p.status)}
+                      </td>
+                      <td className="px-6 py-4 text-center text-xs text-gray-400 uppercase">
+                        {p.source}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {purchases.map((p) => (
-                      <tr key={p.sessionId} className="hover:bg-gray-50 transition">
-                        <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
-                          {formatDate(p.createdAt)}
-                        </td>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                          {p.packId}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-right font-semibold text-pink-600">
-                          +{p.tokens.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-right text-gray-700">
-                          {formatCurrency(p.amountTotal, p.currency)}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          {statusBadge(p.status)}
-                        </td>
-                        <td className="px-6 py-4 text-center text-xs text-gray-400 uppercase">
-                          {p.source}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile Card View */}
-              <div className="md:hidden divide-y divide-gray-100">
-                {purchases.map((p) => (
-                  <div key={p.sessionId} className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-gray-900">{p.packId}</span>
-                      {statusBadge(p.status)}
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">{formatDate(p.createdAt)}</span>
-                      <span className="font-semibold text-pink-600">+{p.tokens.toLocaleString()}</span>
-                    </div>
-                    <div className="text-sm text-gray-500 mt-1">
-                      {formatCurrency(p.amountTotal, p.currency)}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
-        </div>
-      </main>
 
-      <Footer />
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {purchases.map((p) => (
+                <div key={p.sessionId} className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-gray-900">{p.packId}</span>
+                    {statusBadge(p.status)}
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">{formatDate(p.createdAt)}</span>
+                    <span className="font-semibold text-pink-600">+{p.tokens.toLocaleString()}</span>
+                  </div>
+                  <div className="text-sm text-gray-500 mt-1">
+                    {formatCurrency(p.amountTotal, p.currency)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+

@@ -44,7 +44,7 @@ export const fileCopyrightClaim = onCall(
       infringingContentId,
       claimType,
       description,
-      evidenceUrls,
+      evidencUSDls,
     } = request.data;
     
     if (!originalContentId || !infringingContentId) {
@@ -84,7 +84,7 @@ export const fileCopyrightClaim = onCall(
         infringingContentId,
         claimType: claimType || 'UNAUTHORIZED_UPLOAD',
         claimDescription: description || '',
-        evidenceUrls: evidenceUrls || [],
+        evidencUSDls: evidencUSDls || [],
         detectedBy: 'CREATOR_REPORT',
       });
       
@@ -116,7 +116,7 @@ async function createCopyrightCase(input: {
   infringingContentId: string;
   claimType: string;
   claimDescription: string;
-  evidenceUrls: string[];
+  evidencUSDls: string[];
   detectedBy: 'CREATOR_REPORT' | 'AUTO_SCAN' | 'COMMUNITY_FLAG';
   detectionConfidence?: number;
 }): Promise<CopyrightCase> {
@@ -142,7 +142,7 @@ async function createCopyrightCase(input: {
     infringingContentHash: infringingHash,
     claimType: input.claimType,
     claimDescription: input.claimDescription,
-    evidenceUrls: input.evidenceUrls,
+    evidencUSDls: input.evidencUSDls,
     detectedBy: input.detectedBy,
     detectionConfidence: input.detectionConfidence || 0,
     status: 'SUBMITTED' as CopyrightClaimStatus,
@@ -643,3 +643,12 @@ export default {
   applyAntiPiracyPenalty,
   logPiracyAttempt,
 };
+
+
+
+
+
+
+
+
+

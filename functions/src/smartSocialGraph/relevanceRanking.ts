@@ -464,3 +464,12 @@ export function validateNoForbiddenContent(content: string): boolean {
 }
 
 logger.info('✅ Relevance Ranking Service initialized');
+
+
+
+
+
+
+
+
+

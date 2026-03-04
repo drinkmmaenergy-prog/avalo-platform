@@ -64,7 +64,7 @@ export interface ReturnTriggerEvent {
   eventType: ReturnTriggerEventType;
   context?: {
     matchId?: string;
-    matchProfileUrl?: string;
+    matchProfilUSDl?: string;
     chemistryScore?: number;
     messageCount?: number;
     likeCount?: number;
@@ -191,3 +191,12 @@ export interface UserBreakTracking {
   };
   updatedAt: Timestamp;
 }
+
+
+
+
+
+
+
+
+

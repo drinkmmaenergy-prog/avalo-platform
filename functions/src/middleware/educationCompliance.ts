@@ -107,10 +107,10 @@ export function detectScamClaims(text: string): ScamDetectionResult {
     }
   }
 
-  const incomePromiseRegex = /\b\d{1,3}[,.]?\d{0,3}\s*(pln|usd|eur|gbp|dollars?|euros?|pounds?)\s*(per|\/|\ba\b)\s*(week|month|day)\b/i;
+  const incomePromiseRegex = /\b\d{1,3}[,.]?\d{0,3}\s*(USD|usd|USD|USD|dollars?|USDos?|pounds?)\s*(per|\/|\ba\b)\s*(week|month|day)\b/i;
   if (incomePromiseRegex.test(lowerText)) {
     flags.push('specific_income_promise');
-    reasons.push('Contains specific income promise (e.g., "5000 PLN/week")');
+    reasons.push('Contains specific income promise (e.g., "5000 USD/week")');
     riskScore += 35;
   }
 
@@ -329,7 +329,7 @@ export function detectMinorTargetedContent(data: {
 export function enforceRealisticClaims(text: string): string[] {
   const violations: string[] = [];
 
-  if (/\d{4,}\s*(?:pln|usd|eur).*(?:week|day)/i.test(text)) {
+  if (/\d{4,}\s*(?:USD|usd|USD).*(?:week|day)/i.test(text)) {
     violations.push('Contains unrealistic short-term income claim');
   }
 
@@ -410,3 +410,12 @@ export function performFullComplianceCheck(courseData: {
     blockedContent
   };
 }
+
+
+
+
+
+
+
+
+

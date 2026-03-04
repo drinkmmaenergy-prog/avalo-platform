@@ -345,3 +345,12 @@ export interface StalkingAnalytics {
   
   generatedAt: Timestamp;
 }
+
+
+
+
+
+
+
+
+

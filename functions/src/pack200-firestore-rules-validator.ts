@@ -384,3 +384,12 @@ export async function validateStorageAccess(): Promise<void> {
     console.error('[Storage] Validation failed:', error);
   }
 }
+
+
+
+
+
+
+
+
+

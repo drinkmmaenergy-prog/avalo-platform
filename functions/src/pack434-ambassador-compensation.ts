@@ -722,10 +722,10 @@ export class AmbassadorCompensationService {
   private getCurrency(countryCode: string): string {
     const currencyMap: Record<string, string> = {
       US: 'USD',
-      UK: 'GBP',
-      DE: 'EUR',
-      FR: 'EUR',
-      PL: 'PLN',
+      UK: 'USD',
+      DE: 'USD',
+      FR: 'USD',
+      PL: 'USD',
       BR: 'BRL',
       IN: 'INR',
     };
@@ -785,3 +785,12 @@ export function createAmbassadorCompensationService(
 ): AmbassadorCompensationService {
   return new AmbassadorCompensationService(db);
 }
+
+
+
+
+
+
+
+
+

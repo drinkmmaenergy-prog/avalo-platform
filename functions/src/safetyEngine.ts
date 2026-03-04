@@ -429,12 +429,12 @@ async function sendPanicNotifications(params: {
   const userData = userDoc.data();
 
   const userName = userData?.displayName || userData?.nickname || 'User';
-  const userProfileUrl = `https://avalo.app/profile/${userId}`;
+  const userProfilUSDl = `https://avalo.app/profile/${userId}`;
 
   // Build notification payload
   const payload: PanicNotificationPayload = {
     userName,
-    userProfileUrl,
+    userProfilUSDl,
     lastLocation: profile.settings.panicSendLocation ? location : null,
     mapUrl:
       location && profile.settings.panicSendLocation
@@ -459,7 +459,7 @@ async function sendPanicNotifications(params: {
       const partnerData = partnerDoc.data();
       payload.meetingPartner = {
         name: partnerData?.displayName || partnerData?.nickname || 'Unknown',
-        profileUrl: `https://avalo.app/profile/${partnerId}`,
+        profilUSDl: `https://avalo.app/profile/${partnerId}`,
       };
     }
   }
@@ -489,7 +489,7 @@ async function sendPanicNotifications(params: {
  * Build panic alert message
  */
 function buildPanicMessage(payload: PanicNotificationPayload): string {
-  const { userName, userProfileUrl, mapUrl, meetingPartner, context } = payload;
+  const { userName, userProfilUSDl, mapUrl, meetingPartner, context } = payload;
 
   let message = `🚨 SAFETY ALERT from Avalo\n\n`;
   message += `${userName} has pressed the Panic Button`;
@@ -502,14 +502,14 @@ function buildPanicMessage(payload: PanicNotificationPayload): string {
 
   if (meetingPartner) {
     message += `Meeting with: ${meetingPartner.name}\n`;
-    message += `Profile: ${meetingPartner.profileUrl}\n\n`;
+    message += `Profile: ${meetingPartner.profilUSDl}\n\n`;
   }
 
   if (mapUrl) {
     message += `Last location: ${mapUrl}\n\n`;
   }
 
-  message += `User profile: ${userProfileUrl}\n\n`;
+  message += `User profile: ${userProfilUSDl}\n\n`;
   message += `⚠️ If this is an emergency, contact local emergency services immediately (911/112).`;
 
   return message;
@@ -650,3 +650,12 @@ export async function getRecentPanicEvents(limit: number = 50): Promise<PanicEve
 
   return snapshot.docs.map((doc) => doc.data() as PanicEvent);
 }
+
+
+
+
+
+
+
+
+

@@ -221,7 +221,7 @@ interface CourseCertificate {
   completionDate: Timestamp;
   issuedAt: Timestamp;
   
-  certificateUrl: string;
+  certificatUSDl: string;
   verificationCode: string;
 }
 
@@ -971,7 +971,7 @@ async function generateCertificate(
     courseName: course.title,
     completionDate: Timestamp.now(),
     issuedAt: Timestamp.now(),
-    certificateUrl: `https://avalo.app/certificates/${certificateId}`,
+    certificatUSDl: `https://avalo.app/certificates/${certificateId}`,
     verificationCode,
   };
 
@@ -1128,3 +1128,12 @@ export const pack162_reviewCourse = reviewCourse;
 export const pack162_issueCertificate = issueCertificate;
 export const pack162_createCourseBundle = createCourseBundle;
 export const pack162_onCourseProgressUpdate = onCourseProgressUpdate;
+
+
+
+
+
+
+
+
+

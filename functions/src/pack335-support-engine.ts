@@ -573,3 +573,12 @@ export const pack335_closeTicket = functions.https.onCall(async (request) => {
   
   return { success: true };
 });
+
+
+
+
+
+
+
+
+

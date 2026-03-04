@@ -388,3 +388,12 @@ export async function getShadowDensityStats(): Promise<{
 }
 
 logger.info('✅ Shadow Density Control initialized');
+
+
+
+
+
+
+
+
+

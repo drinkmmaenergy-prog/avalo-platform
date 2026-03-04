@@ -3,13 +3,13 @@ export const metadata = {
   description: 'View incident details',
 };
 
-interface PageProps {
-  params: {
-    incidentId: string;
-  };
-}
+export default async function ModeratorIncidentDetailPage({
+  params,
+}: {
+  params: Promise<{ incidentId: string }>;
+}) {
+  const { incidentId } = await params;
 
-export default function ModeratorIncidentDetailPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -17,7 +17,7 @@ export default function ModeratorIncidentDetailPage({ params }: PageProps) {
           Incident Details
         </h1>
         <p className="mt-2 text-slate-600 dark:text-slate-400">
-          Incident ID: {params.incidentId}
+          Incident ID: {incidentId}
         </p>
       </div>
 

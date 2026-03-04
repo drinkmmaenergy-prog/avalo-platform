@@ -719,3 +719,12 @@ export const cleanupOldMetrics = onSchedule("0 3 * * *", async (event) => {
     
     console.log(`✅ Cleaned up ${oldMetrics.size} old metrics`);
   });
+
+
+
+
+
+
+
+
+

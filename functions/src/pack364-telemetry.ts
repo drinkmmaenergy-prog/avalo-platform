@@ -108,7 +108,7 @@ function sanitizeMetadata(metadata?: Record<string, any>): Record<string, any> |
     "photoUrl",
     "photoURL",
     "imageUrl",
-    "imageURL"
+    "imageUrl"
   ];
 
   for (const [key, value] of Object.entries(metadata)) {
@@ -424,3 +424,12 @@ export async function calculateP95Latency(
  * Export telemetry operations and error codes for convenience
  */
 export { TELEMETRY_OPERATIONS, TELEMETRY_ERROR_CODES };
+
+
+
+
+
+
+
+
+

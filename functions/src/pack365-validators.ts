@@ -552,3 +552,12 @@ export async function generateValidationReport(
 ): Promise<string> {
   return ValidatorService.generateReport(environment);
 }
+
+
+
+
+
+
+
+
+

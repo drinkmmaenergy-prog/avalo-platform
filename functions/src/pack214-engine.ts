@@ -448,3 +448,12 @@ export async function setPanicMode(
     .doc(userId)
     .update(updates);
 }
+
+
+
+
+
+
+
+
+

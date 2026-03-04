@@ -320,3 +320,12 @@ export interface BoosterSelectionResult {
   confidence: number;               // 0-1
   alternativeOptions?: Booster[];
 }
+
+
+
+
+
+
+
+
+

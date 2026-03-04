@@ -521,3 +521,12 @@ export function calculateSplit(
 
   return { earnerAmount, platformAmount };
 }
+
+
+
+
+
+
+
+
+

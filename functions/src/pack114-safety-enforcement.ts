@@ -537,3 +537,12 @@ export async function getAgencyViolationHistory(
 
   return violationsSnapshot.docs.map((doc) => doc.data() as AgencyViolation);
 }
+
+
+
+
+
+
+
+
+

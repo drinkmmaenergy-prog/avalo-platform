@@ -11,7 +11,7 @@
  * - profileTraffic
  * - unansweredChatCount
  *
- * Heuristics:
+ * HUSDistics:
  * 1. High traffic + earn_on=false → "Enable earning to monetize your traffic."
  * 2. High conversion + high demand → "You may increase entry threshold."
  * 3. Low conversion + high entry → "Consider lowering entry to increase conversion."
@@ -34,7 +34,7 @@ import {
 } from './types/pack452-monetization-vnext.types';
 
 // ============================================================================
-// HEURISTIC THRESHOLDS
+// HUSDISTIC THRESHOLDS
 // ============================================================================
 
 const THRESHOLDS = {
@@ -174,7 +174,7 @@ export async function collectRevenueCoachMetrics(
 }
 
 // ============================================================================
-// HEURISTIC ENGINE
+// HUSDISTIC ENGINE
 // ============================================================================
 
 /**
@@ -185,7 +185,7 @@ export async function collectRevenueCoachMetrics(
  * @param metrics - Collected metrics
  * @returns Array of suggestions to create
  */
-export function evaluateHeuristics(
+export function evaluateHUSDistics(
   userId: string,
   metrics: RevenueCoachMetrics
 ): Array<{
@@ -199,7 +199,7 @@ export function evaluateHeuristics(
     priority: 'low' | 'medium' | 'high';
   }> = [];
 
-  // ---- Heuristic 1: High traffic + earn_on=false ----
+  // ---- HUSDistic 1: High traffic + earn_on=false ----
   if (metrics.profileTraffic >= THRESHOLDS.HIGH_TRAFFIC && !metrics.earnOnEnabled) {
     suggestions.push({
       type: 'ENABLE_EARNING',
@@ -208,7 +208,7 @@ export function evaluateHeuristics(
     });
   }
 
-  // ---- Heuristic 2: High conversion + high demand ----
+  // ---- HUSDistic 2: High conversion + high demand ----
   if (
     metrics.paidChatConversionRate >= THRESHOLDS.HIGH_CONVERSION &&
     metrics.totalChatsLast30d >= THRESHOLDS.MANY_CHATS &&
@@ -221,7 +221,7 @@ export function evaluateHeuristics(
     });
   }
 
-  // ---- Heuristic 3: Low conversion + high entry ----
+  // ---- HUSDistic 3: Low conversion + high entry ----
   if (
     metrics.paidChatConversionRate < THRESHOLDS.LOW_CONVERSION &&
     metrics.currentEntryThreshold > ENTRY_THRESHOLD_LIMITS.DEFAULT * THRESHOLDS.HIGH_ENTRY_MULTIPLIER &&
@@ -235,7 +235,7 @@ export function evaluateHeuristics(
     });
   }
 
-  // ---- Heuristic 4: High multiplier + low acceptance ----
+  // ---- HUSDistic 4: High multiplier + low acceptance ----
   if (
     metrics.avgMultiplier >= THRESHOLDS.HIGH_MULTIPLIER_WARNING &&
     metrics.premiumAcceptanceRate < THRESHOLDS.LOW_PREMIUM_ACCEPTANCE &&
@@ -248,7 +248,7 @@ export function evaluateHeuristics(
     });
   }
 
-  // ---- Heuristic 5: Many chats but low revenue ----
+  // ---- HUSDistic 5: Many chats but low revenue ----
   if (
     metrics.totalChatsLast30d >= THRESHOLDS.MANY_CHATS &&
     metrics.totalRevenueLast30d / Math.max(metrics.totalChatsLast30d, 1) < THRESHOLDS.LOW_REVENUE_PER_CHAT &&
@@ -279,8 +279,8 @@ export async function generateSuggestionsForUser(userId: string): Promise<number
   // Collect metrics
   const metrics = await collectRevenueCoachMetrics(userId);
 
-  // Evaluate heuristics
-  const newSuggestions = evaluateHeuristics(userId, metrics);
+  // Evaluate hUSDistics
+  const newSuggestions = evaluateHUSDistics(userId, metrics);
 
   if (newSuggestions.length === 0) {
     return 0;
@@ -437,3 +437,12 @@ export async function runRevenueCoachBatch(): Promise<{
 
   return { usersProcessed, suggestionsCreated, errors };
 }
+
+
+
+
+
+
+
+
+

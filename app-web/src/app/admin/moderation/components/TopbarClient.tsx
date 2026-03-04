@@ -12,15 +12,15 @@ interface ModerationTopbarClientProps {
 export function ModerationTopbarClient({ user }: ModerationTopbarClientProps) {
   const alertCounts = useAlertCounts();
   
-  const totalAlerts = alertCounts.newIncidentsCount + alertCounts.newAppealsCount;
-  const hasCritical = alertCounts.criticalCount > 0;
-  const hasHigh = alertCounts.highCount > 0;
+  const totalAlerts = alertCounts.totalAlerts;
+  const hasCritical = alertCounts.criticalIncidents > 0;
+  const hasHigh = alertCounts.openIncidents > 0;
 
   // Determine badge color based on priority
   const getBadgeColor = () => {
     if (hasCritical) return 'bg-red-500'; // Critical = Red
     if (hasHigh) return 'bg-amber-500'; // High = Amber
-    if (alertCounts.newAppealsCount > 0) return 'bg-blue-500'; // Appeals = Blue
+    if (alertCounts.pendingAppeals > 0) return 'bg-blue-500'; // Appeals = Blue
     return 'bg-[#D4AF37]'; // Default = Gold
   };
 
@@ -63,22 +63,22 @@ export function ModerationTopbarClient({ user }: ModerationTopbarClientProps) {
         {totalAlerts > 0 && (
           <div className="hidden group-hover:block absolute top-full right-0 mt-2 bg-[#1A1A1A] border border-[#40E0D0]/30 rounded-lg p-4 shadow-xl z-50 min-w-[200px]">
             <div className="space-y-2">
-              {alertCounts.criticalCount > 0 && (
+              {alertCounts.criticalIncidents > 0 && (
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-red-400">Critical</span>
-                  <span className="text-white font-bold">{alertCounts.criticalCount}</span>
+                  <span className="text-white font-bold">{alertCounts.criticalIncidents}</span>
                 </div>
               )}
-              {alertCounts.highCount > 0 && (
+              {alertCounts.openIncidents > 0 && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-amber-400">High</span>
-                  <span className="text-white font-bold">{alertCounts.highCount}</span>
+                  <span className="text-amber-400">Open</span>
+                  <span className="text-white font-bold">{alertCounts.openIncidents}</span>
                 </div>
               )}
-              {alertCounts.newAppealsCount > 0 && (
+              {alertCounts.pendingAppeals > 0 && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-blue-400">New Appeals</span>
-                  <span className="text-white font-bold">{alertCounts.newAppealsCount}</span>
+                  <span className="text-blue-400">Pending Appeals</span>
+                  <span className="text-white font-bold">{alertCounts.pendingAppeals}</span>
                 </div>
               )}
             </div>

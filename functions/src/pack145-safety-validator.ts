@@ -243,3 +243,12 @@ export class AdSafetyValidator {
     return (nsfwScore * 0.4) + (romanceScore * 0.4) + (exploitativeScore * 0.2);
   }
 }
+
+
+
+
+
+
+
+
+

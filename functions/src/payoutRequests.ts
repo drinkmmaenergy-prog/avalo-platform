@@ -347,7 +347,7 @@ export const payout_createRequest = onCall(
       }
 
       // Calculate fiat amount
-      const requestedFiat = params.requestedTokens * PAYOUT_CONFIG.PAYOUT_TOKEN_TO_EUR_RATE;
+      const requestedFiat = params.requestedTokens * PAYOUT_CONFIG.PAYOUT_TOKEN_TO_USD_RATE;
 
       // Create request and lock tokens in a transaction
       const requestId = generateId();
@@ -379,7 +379,7 @@ export const payout_createRequest = onCall(
           requestedTokens: params.requestedTokens,
           requestedFiat,
           currency: method.currency,
-          tokenToFiatRate: PAYOUT_CONFIG.PAYOUT_TOKEN_TO_EUR_RATE,
+          tokenToFiatRate: PAYOUT_CONFIG.PAYOUT_TOKEN_TO_USD_RATE,
           createdAt: serverTimestamp() as Timestamp,
           updatedAt: serverTimestamp() as Timestamp,
           metadata: {
@@ -612,9 +612,18 @@ export const payout_getConfig = onCall(
     // No authentication required - this is public config
     return {
       minPayoutTokens: PAYOUT_CONFIG.MIN_PAYOUT_TOKENS,
-      tokenToEurRate: PAYOUT_CONFIG.PAYOUT_TOKEN_TO_EUR_RATE,
+      tokenToUSDRate: PAYOUT_CONFIG.PAYOUT_TOKEN_TO_USD_RATE,
       supportedMethods: [...PAYOUT_CONFIG.SUPPORTED_PAYOUT_METHODS],
       supportedCurrencies: [...PAYOUT_CONFIG.SUPPORTED_CURRENCIES],
     };
   }
 );
+
+
+
+
+
+
+
+
+

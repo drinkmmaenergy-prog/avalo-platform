@@ -160,3 +160,12 @@ export async function getRegionFlags(): Promise<Record<string, boolean>> {
 
   return regionFlags;
 }
+
+
+
+
+
+
+
+
+

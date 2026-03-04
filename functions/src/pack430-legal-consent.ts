@@ -552,3 +552,12 @@ export async function checkConsentsForEventCreation(userId: string): Promise<boo
 // ─────────────────────────────────────────────────────────────────
 
 export default LegalConsentEngine;
+
+
+
+
+
+
+
+
+

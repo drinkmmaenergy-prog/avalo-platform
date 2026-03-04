@@ -563,7 +563,7 @@ async function isVPN(ipAddress: string): Promise<boolean> {
   // - IPHub
   // - VPN Blocker API
   
-  // For now, simple heuristic
+  // For now, simple hUSDistic
   const vpnPatterns = [
     /^10\./,
     /^172\.(1[6-9]|2[0-9]|3[0-1])\./,
@@ -728,3 +728,12 @@ export const uaFraud = {
   getFraudDashboard,
   checkFraudBlock
 };
+
+
+
+
+
+
+
+
+

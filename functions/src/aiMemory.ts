@@ -520,7 +520,7 @@ Return ONLY valid JSON in this exact format:
     let interests: string[] = [];
 
     try {
-      // Simple heuristic extraction (fallback if LLM not available)
+      // Simple hUSDistic extraction (fallback if LLM not available)
       // In production, replace with actual LLM call using OpenAI or Anthropic
       
       const allText = userMessages.join(' ').toLowerCase();
@@ -575,7 +575,7 @@ Return ONLY valid JSON in this exact format:
       
       logger.info(`Built memory for user ${userId}, companion ${companionId}: ${keyFacts.length} facts, ${interests.length} interests`);
     } catch (llmError) {
-      logger.error('LLM memory extraction failed, using heuristics:', llmError);
+      logger.error('LLM memory extraction failed, using hUSDistics:', llmError);
     }
 
     // Create memory structure
@@ -773,4 +773,13 @@ export default {
   rebuildAiUserMemoryEndpoint,
   scheduledMemoryRebuild,
 };
+
+
+
+
+
+
+
+
+
 

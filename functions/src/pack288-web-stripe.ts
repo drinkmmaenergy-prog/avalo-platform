@@ -30,18 +30,18 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 });
 
 // Token packages configuration
-const TOKEN_PACKAGES = [
-  { id: 'mini', tokens: 100, basePricePLN: 31.99, priceUSD: 8.00, priceEUR: 7.50 },
-  { id: 'basic', tokens: 300, basePricePLN: 85.99, priceUSD: 21.50, priceEUR: 20.00 },
-  { id: 'standard', tokens: 500, basePricePLN: 134.99, priceUSD: 34.00, priceEUR: 31.50 },
-  { id: 'premium', tokens: 1000, basePricePLN: 244.99, priceUSD: 61.50, priceEUR: 57.50 },
-  { id: 'pro', tokens: 2000, basePricePLN: 469.99, priceUSD: 118.00, priceEUR: 110.00 },
-  { id: 'elite', tokens: 5000, basePricePLN: 1125.99, priceUSD: 282.50, priceEUR: 264.00 },
-  { id: 'royal', tokens: 10000, basePricePLN: 2149.99, priceUSD: 539.00, priceEUR: 504.00 },
-] as const;
+export const TOKEN_PACKS = [
+  { id: "mini", tokens: 100, priceUSD: 9.99 },
+  { id: "basic", tokens: 300, priceUSD: 26.99 },
+  { id: "standard", tokens: 500, priceUSD: 42.99 },
+  { id: "premium", tokens: 1000, priceUSD: 76.99 },
+  { id: "pro", tokens: 2000, priceUSD: 147.99 },
+  { id: "elite", tokens: 5000, priceUSD: 353.99 },
+  { id: "royal", tokens: 10000, priceUSD: 674.99 }
+]
 
 const getPackageById = (id: string) => {
-  return TOKEN_PACKAGES.find(p => p.id === id) || null;
+  return TOKEN_PACKS.find(p => p.id === id) || null;
 };
 
 // ============================================================================
@@ -94,11 +94,11 @@ export const tokens_createCheckoutSession = https.onCall(
         .doc(`${auth.uid}_${currentMonth}`)
         .get();
 
-      const monthlyTotal = monthlyLimitDoc.data()?.totalPLN || 0;
-      if (monthlyTotal + pack.basePricePLN > 10000) {
+      const monthlyTotal = monthlyLimitDoc.data()?.totalUSD || 0;
+      if (monthlyTotal + pack.priceUSD > 10000) {
         throw new HttpsError(
           'failed-precondition',
-          'Monthly purchase limit exceeded (10000 PLN)'
+          'Monthly purchase limit exceeded (10000 USD)'
         );
       }
 
@@ -132,7 +132,7 @@ export const tokens_createCheckoutSession = https.onCall(
           userId: auth.uid,
           packageId: pack.id,
           tokens: pack.tokens.toString(),
-          basePricePLN: pack.basePricePLN.toString(),
+          priceUSD: pack.priceUSD.toString(),
         },
         expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour
       });
@@ -234,7 +234,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   const userId = session.metadata?.userId;
   const packageId = session.metadata?.packageId;
   const tokens = parseInt(session.metadata?.tokens || '0');
-  const basePricePLN = parseFloat(session.metadata?.basePricePLN || '0');
+  const priceUSD = parseFloat(session.metadata?.priceUSD || '0');
 
   if (!userId || !packageId || !tokens) {
     logger.error('Invalid session metadata', { sessionId: session.id });
@@ -279,7 +279,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
         userId,
         packageId: packageId as any,
         tokens,
-        basePricePLN,
+        priceUSD,
         paidCurrency: session.currency?.toUpperCase() || 'USD',
         paidAmount: (session.amount_total || 0) / 100, // Convert from cents
         platform: 'web',
@@ -338,7 +338,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
         {
           userId,
           month: currentMonth,
-          totalPLN: FieldValue.increment(basePricePLN),
+          totalUSD: FieldValue.increment(priceUSD),
           purchaseCount: FieldValue.increment(1),
           lastPurchaseAt: serverTimestamp(),
         },
@@ -477,3 +477,12 @@ export const tokens_getPurchaseBySession = https.onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+

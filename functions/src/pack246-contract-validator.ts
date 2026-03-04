@@ -821,3 +821,12 @@ async function executeAutoAction(userId: string, action: string): Promise<void> 
     logger.error(`Failed to execute auto-action ${action}:`, error);
   }
 }
+
+
+
+
+
+
+
+
+

@@ -34,7 +34,7 @@ export class QRGenerator {
     }
 
     const qrId = generateId();
-    const staticQrUrl = this.generateQRImageUrl(dynamicLink, {
+    const staticQrUrl = this.generateQRimageUrl(dynamicLink, {
       size: 300,
       format: 'png',
     });
@@ -61,7 +61,7 @@ export class QRGenerator {
   /**
    * Generate QR code image URL
    */
-  static generateQRImageUrl(data: string, options: {
+  static generateQRimageUrl(data: string, options: {
     size?: number;
     format?: 'png' | 'svg';
     errorCorrection?: 'L' | 'M' | 'Q' | 'H';
@@ -96,14 +96,14 @@ export class QRGenerator {
     const { dynamicLink } = qrData;
 
     return {
-      small: this.generateQRImageUrl(dynamicLink, { size: 150 }),
-      medium: this.generateQRImageUrl(dynamicLink, { size: 300 }),
-      large: this.generateQRImageUrl(dynamicLink, { size: 500 }),
-      printReady: this.generateQRImageUrl(dynamicLink, { 
+      small: this.generateQRimageUrl(dynamicLink, { size: 150 }),
+      medium: this.generateQRimageUrl(dynamicLink, { size: 300 }),
+      large: this.generateQRimageUrl(dynamicLink, { size: 500 }),
+      printReady: this.generateQRimageUrl(dynamicLink, { 
         size: 1000, 
         errorCorrection: 'H' 
       }),
-      svg: this.generateQRImageUrl(dynamicLink, { 
+      svg: this.generateQRimageUrl(dynamicLink, { 
         size: 300, 
         format: 'svg' 
       }),
@@ -165,4 +165,13 @@ export const generateQRProfile = QRGenerator.generateQRProfile.bind(QRGenerator)
 export const generateQRVariations = QRGenerator.generateQRVariations.bind(QRGenerator);
 export const getOrCreateQRProfile = QRGenerator.getOrCreateQRProfile.bind(QRGenerator);
 export const regenerateQRProfile = QRGenerator.regenerateQRProfile.bind(QRGenerator);
-export const generateQRImageUrl = QRGenerator.generateQRImageUrl.bind(QRGenerator);
+export const generateQRimageUrl = QRGenerator.generateQRimageUrl.bind(QRGenerator);
+
+
+
+
+
+
+
+
+

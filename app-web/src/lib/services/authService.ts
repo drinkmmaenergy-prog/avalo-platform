@@ -1,3 +1,5 @@
+"use client";
+
 // src/lib/services/authService.ts
 //
 // Shared auth logic for Avalo Web — mirrors mobile auth flow.
@@ -14,7 +16,7 @@ import {
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { auth, requireDb } from '@/lib/firebase';
 
 /**
  * Register a new user with email + password.
@@ -28,7 +30,7 @@ export async function registerWithEmail(
   if (!auth) {
     throw new Error('Firebase Auth is not initialized. Check your environment variables.');
   }
-  if (!db) {
+  if (false /* requireDb handles null */) {
     throw new Error('Firestore is not initialized. Check your environment variables.');
   }
 
@@ -37,7 +39,7 @@ export async function registerWithEmail(
 
   await updateProfile(user, { displayName });
 
-  await setDoc(doc(db, 'users', user.uid), {
+  await setDoc(doc(requireDb(), 'users', user.uid), {
     uid: user.uid,
     email: user.email,
     displayName,
@@ -86,8 +88,8 @@ export async function loginWithGoogle(): Promise<FirebaseUser> {
   const credential = await signInWithPopup(auth, provider);
   const user = credential.user;
 
-  if (db) {
-    const userDocRef = doc(db, 'users', user.uid);
+  {
+    const userDocRef = doc(requireDb(), 'users', user.uid);
     const userDoc = await getDoc(userDocRef);
 
     if (!userDoc.exists()) {
@@ -128,3 +130,5 @@ export async function logout(): Promise<void> {
 export function getCurrentUser(): FirebaseUser | null {
   return auth?.currentUser ?? null;
 }
+
+

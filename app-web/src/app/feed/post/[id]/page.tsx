@@ -18,7 +18,7 @@ import {
   getDocs 
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 import Image from 'next/image';
 
 interface Post {
@@ -38,7 +38,7 @@ interface Comment {
 }
 
 export default function PostViewerPage() {
-  const params = useParams();
+  const params = useParams()!;
   const router = useRouter();
   const postId = params.id as string;
 
@@ -58,13 +58,13 @@ export default function PostViewerPage() {
   const loadPost = async () => {
     try {
       setLoading(true);
-      const postDoc = await getDoc(doc(db, 'feedPosts', postId));
+      const postDoc = await getDoc(doc(requireDb(), 'feedPosts', postId));
       
       if (postDoc.exists()) {
         setPost({ id: postDoc.id, ...postDoc.data() } as Post);
         
         // Load aggregate data
-        const aggDoc = await getDoc(doc(db, 'feedAggregates', postId));
+        const aggDoc = await getDoc(doc(requireDb(), 'feedAggregates', postId));
         if (aggDoc.exists()) {
           setLikeCount(aggDoc.data()?.likes || 0);
         }
@@ -79,7 +79,7 @@ export default function PostViewerPage() {
   const loadComments = async () => {
     try {
       const commentsQuery = query(
-        collection(db, 'feedComments'),
+        collection(requireDb(), 'feedComments'),
         where('contentId', '==', postId),
         where('isDeleted', '==', false),
         orderBy('createdAt', 'asc'),

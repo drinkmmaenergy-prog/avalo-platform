@@ -418,7 +418,7 @@ export const requestWithdrawal = onCall(
       throw new HttpsError("invalid-argument", "Missing required fields");
     }
 
-    // Minimum withdrawal: 100 tokens (20 PLN at settlement rate)
+    // Minimum withdrawal: 100 tokens (20 USD at settlement rate)
     if (amount < 100) {
       throw new HttpsError("invalid-argument", "Minimum withdrawal is 100 tokens");
     }
@@ -983,4 +983,13 @@ async function createDefaultTemplates(creatorId: string): Promise<MessageTemplat
 }
 
 logger.info("✅ Creator Hub module loaded successfully");
+
+
+
+
+
+
+
+
+
 

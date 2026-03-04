@@ -175,3 +175,12 @@ export const royal_recordSpend = functions.https.onCall(async (request) => {
 });
 
 console.log('✅ Royal Club Endpoints initialized - PACK 50');
+
+
+
+
+
+
+
+
+

@@ -413,3 +413,12 @@ export async function resetUserDestinyState(userId: string): Promise<void> {
     updatedAt: serverTimestamp()
   });
 }
+
+
+
+
+
+
+
+
+

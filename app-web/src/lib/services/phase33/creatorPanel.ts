@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * PHASE 3.3 — Creator Panel Service
  * 
@@ -11,7 +13,7 @@
  * - setupPayoutAccount (from payouts.ts)
  */
 
-import { db, functions } from '../../firebase';
+import { requireDb, requireFunctions } from '../../firebase';
 import { httpsCallable } from 'firebase/functions';
 import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import type {
@@ -30,10 +32,9 @@ import type {
  * Calls backend function — NO local calculation.
  */
 export async function getCreatorEarningsSummary(userId: string): Promise<CreatorEarningsSummary | null> {
-  if (!functions) throw new Error('Functions not initialized');
-  
+    
   try {
-    const getPayoutState = httpsCallable<{ userId: string }, any>(functions, 'getPayoutState');
+    const getPayoutState = httpsCallable<{ userId: string }, any>(requireFunctions(), 'getPayoutState');
     const result = await getPayoutState({ userId });
     
     if (!result.data || !result.data.earnings) {
@@ -70,13 +71,12 @@ export async function getPayoutHistory(
   limitCount: number = 20,
   cursor?: string
 ): Promise<PayoutHistoryEntry[]> {
-  if (!functions) throw new Error('Functions not initialized');
-  
+    
   try {
     const getPayoutRequests = httpsCallable<
       { userId: string; limit: number; cursor?: string },
       { requests: any[] }
-    >(functions, 'getPayoutRequests');
+    >(requireFunctions(), 'getPayoutRequests');
     
     const result = await getPayoutRequests({ userId, limit: limitCount, cursor });
     
@@ -111,10 +111,9 @@ export async function getPayoutHistory(
  * Calls backend function — NO local Stripe API calls.
  */
 export async function getStripeConnectStatus(userId: string): Promise<CreatorStripeConnectInfo> {
-  if (!functions) throw new Error('Functions not initialized');
-  
+    
   try {
-    const getPayoutState = httpsCallable<{ userId: string }, any>(functions, 'getPayoutState');
+    const getPayoutState = httpsCallable<{ userId: string }, any>(requireFunctions(), 'getPayoutState');
     const result = await getPayoutState({ userId });
     
     if (!result.data) {
@@ -174,13 +173,12 @@ export async function initiateStripeOnboarding(
   returnUrl: string,
   refreshUrl: string
 ): Promise<{ url: string } | null> {
-  if (!functions) throw new Error('Functions not initialized');
-  
+    
   try {
     const setupPayoutAccount = httpsCallable<
       { userId: string; rail: string; returnUrl: string; refreshUrl: string },
       { onboardingUrl?: string }
-    >(functions, 'setupPayoutAccount');
+    >(requireFunctions(), 'setupPayoutAccount');
     
     const result = await setupPayoutAccount({
       userId,
@@ -212,11 +210,11 @@ export async function getCreatorAnalytics(
   userId: string,
   period: 'day' | 'week' | 'month' = 'week'
 ): Promise<CreatorAnalyticsDashboard | null> {
-  if (!db) throw new Error('Firestore not initialized');
+  if (false /* requireDb handles null */) throw new Error('Firestore not initialized');
   
   try {
     // Read pre-computed analytics from Firestore (backend PACK 290)
-    const analyticsRef = doc(db, 'creator_analytics', `${userId}_${period}`);
+    const analyticsRef = doc(requireDb(), 'creator_analytics', `${userId}_${period}`);
     const analyticsSnap = await getDoc(analyticsRef);
     
     if (!analyticsSnap.exists()) {
@@ -262,15 +260,14 @@ export async function getCreatorAnalytics(
 export async function requestCreatorPayout(
   userId: string,
   tokensRequested: number,
-  methodId: string
+  methodId: string = 'default'
 ): Promise<{ success: boolean; payoutRequestId?: string; error?: string }> {
-  if (!functions) throw new Error('Functions not initialized');
-  
+    
   try {
     const requestPayout = httpsCallable<
       { userId: string; tokensRequested: number; methodId: string },
       { success: boolean; requestId?: string; message?: string }
-    >(functions, 'requestPayout');
+    >(requireFunctions(), 'requestPayout');
     
     const result = await requestPayout({ userId, tokensRequested, methodId });
     
@@ -287,3 +284,4 @@ export async function requestCreatorPayout(
     };
   }
 }
+

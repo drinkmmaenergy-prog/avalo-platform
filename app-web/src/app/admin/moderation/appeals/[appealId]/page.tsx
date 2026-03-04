@@ -62,7 +62,7 @@ type ToastState = {
 ======================= */
 
 export default function AppealReviewPage() {
-  const params = useParams();
+  const params = useParams()!;
   const router = useRouter();
   const appealId = params.appealId as string;
 

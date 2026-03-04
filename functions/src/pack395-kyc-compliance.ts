@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
-import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 
 const db = admin.firestore();
 
@@ -18,7 +18,7 @@ interface KYCSubmission {
   level: KYCLevel;
   governmentIdUrl: string;
   governmentIdType: 'passport' | 'drivers_license' | 'national_id';
-  selfieUrl?: string;
+  selfiUSDl?: string;
   addressProofUrl?: string;
   addressDetails?: {
     line1: string;
@@ -74,7 +74,7 @@ const PAYOUT_LIMITS: Record<string, PayoutLimits> = {
   },
   'level1': {
     level: 'level1',
-    dailyLimit: 5000, // PLN
+    dailyLimit: 5000, // USD
     monthlyLimit: 20000,
     minimumPayout: 200 // 1000 tokens
   },
@@ -408,7 +408,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
   
   // Check minimum
   if (amount < limits.minimumPayout) {
-    throw new functions.https.HttpsError('invalid-argument', `Minimum payout is ${limits.minimumPayout} PLN`);
+    throw new functions.https.HttpsError('invalid-argument', `Minimum payout is ${limits.minimumPayout} USD`);
   }
   
   // Check daily limit
@@ -426,7 +426,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
   });
   
   if (todayTotal + amount > limits.dailyLimit) {
-    throw new functions.https.HttpsError('resource-exhausted', `Daily limit exceeded (${limits.dailyLimit} PLN)`);
+    throw new functions.https.HttpsError('resource-exhausted', `Daily limit exceeded (${limits.dailyLimit} USD)`);
   }
   
   // Check monthly limit
@@ -443,15 +443,15 @@ export const requestPayout = functions.https.onCall(async (request) => {
   });
   
   if (monthTotal + amount > limits.monthlyLimit) {
-    throw new functions.https.HttpsError('resource-exhausted', `Monthly limit exceeded (${limits.monthlyLimit} PLN)`);
+    throw new functions.https.HttpsError('resource-exhausted', `Monthly limit exceeded (${limits.monthlyLimit} USD)`);
   }
   
-  // Check available balance (tokens * TOKEN_PAYOUT_PLN)
+  // Check available balance (tokens * TOKEN_PAYOUT_USD)
   const tokenBalance = user.tokenBalance || 0;
-  const availableBalance = tokenBalance * TOKEN_PAYOUT_PLN;
+  const availableBalance = tokenBalance * TOKEN_PAYOUT_USD;
   
   if (amount > availableBalance) {
-    throw new functions.https.HttpsError('failed-precondition', `Insufficient balance. Available: ${availableBalance} PLN`);
+    throw new functions.https.HttpsError('failed-precondition', `Insufficient balance. Available: ${availableBalance} USD`);
   }
   
   // Velocity check (PACK 302 integration)
@@ -476,7 +476,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
   const payoutRef = await db.collection('payoutRequests').add({
     creatorId,
     amount,
-    currency: 'PLN',
+    currency: 'USD',
     paymentMethod,
     status: 'pending',
     verificationLevel,
@@ -485,7 +485,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
   });
   
   // Update user token balance (deduct equivalent tokens)
-  const tokensToDeduct = amount / TOKEN_PAYOUT_PLN;
+  const tokensToDeduct = amount / TOKEN_PAYOUT_USD;
   await db.collection('users').doc(creatorId).update({
     tokenBalance: admin.firestore.FieldValue.increment(-tokensToDeduct),
     pendingPayouts: admin.firestore.FieldValue.increment(amount)
@@ -497,7 +497,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
     userId: creatorId,
     payoutId: payoutRef.id,
     amount,
-    currency: 'PLN',
+    currency: 'USD',
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
   
@@ -600,3 +600,12 @@ export const getVerificationStatus = functions.https.onCall(async (request) => {
     updatedAt: verification.updatedAt
   };
 });
+
+
+
+
+
+
+
+
+

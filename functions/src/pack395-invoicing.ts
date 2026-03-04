@@ -333,7 +333,7 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (requ
     payoutsIssued,
     withholdingTax,
     withholdingTaxRate,
-    currency: 'PLN',
+    currency: 'USD',
     breakdown,
     generatedAt: new Date()
   };
@@ -354,7 +354,7 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (requ
     totalEarnings,
     netTaxableIncome,
     withholdingTax,
-    currency: 'PLN',
+    currency: 'USD',
     createdAt: admin.firestore.FieldValue.serverTimestamp()
   });
   
@@ -368,7 +368,7 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (requ
     netTaxableIncome,
     withholdingTax,
     taxResidency: taxStatus?.taxResidency || 'PL',
-    currency: 'PLN',
+    currency: 'USD',
     createdAt: admin.firestore.FieldValue.serverTimestamp()
   });
   
@@ -477,7 +477,7 @@ export const getCreatorPayoutStatements = functions.https.onCall(async (request)
 /**
  * Generate monthly statements for all creators (scheduled)
  */
-export const generateMonthlyStatementsForAllCreators = onSchedule({ schedule: "0 0 1 * *", timeZone: "Europe/Warsaw" }, async (event) => {
+export const generateMonthlyStatementsForAllCreators = onSchedule({ schedule: "0 0 1 * *", timeZone: "USDope/Warsaw" }, async (event) => {
     console.log('Starting monthly statement generation...');
     
     // Get all verified creators
@@ -520,3 +520,12 @@ export const generateMonthlyStatementsForAllCreators = onSchedule({ schedule: "0
     
     console.log(`Generated ${count} statement tasks`);
   });
+
+
+
+
+
+
+
+
+

@@ -180,8 +180,8 @@ export interface CreatorPortfolio {
   handle: string; // URL: portfolio.avalo.app/{handle}
   displayName: string;
   bio?: string;
-  profileImageUrl?: string;
-  coverImageUrl?: string;
+  profileimageUrl?: string;
+  coverimageUrl?: string;
   socialLinks: {
     instagram?: string;
     tiktok?: string;
@@ -393,3 +393,12 @@ export function getPlatformDisplayName(platform: SchedulePlatform): string {
   };
   return names[platform];
 }
+
+
+
+
+
+
+
+
+

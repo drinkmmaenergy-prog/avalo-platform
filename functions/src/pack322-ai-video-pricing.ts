@@ -36,3 +36,12 @@ export function calculateVideoTokens(minutes: number, tier: AiVideoTier): number
   const pricePerMinute = getAiVideoPricePerMinuteTokens(tier);
   return Math.floor(minutes * pricePerMinute);
 }
+
+
+
+
+
+
+
+
+

@@ -149,7 +149,7 @@ async function reconcileSinglePayout(
 ): Promise<PayoutReconciliationResult> {
   const internal = {
     amountTokens: payoutData.amountTokens || 0,
-    amountPLN: payoutData.amountPLN || 0,
+    amountUSD: payoutData.amountUSD || 0,
     status: payoutData.status || 'unknown',
   };
 
@@ -235,16 +235,16 @@ async function reconcileSinglePayout(
  * Compare internal and external payout data
  */
 function comparePayoutData(
-  internal: { amountTokens: number; amountPLN: number; status: string },
+  internal: { amountTokens: number; amountUSD: number; status: string },
   external: { amount: number; currency: string; status: string; provider: string }
 ): Array<{ field: string; internalValue: any; externalValue: any }> {
   const mismatches: Array<{ field: string; internalValue: any; externalValue: any }> = [];
 
   const tolerance = 0.01;
-  if (Math.abs(internal.amountPLN - external.amount) > tolerance) {
+  if (Math.abs(internal.amountUSD - external.amount) > tolerance) {
     mismatches.push({
       field: 'amount',
-      internalValue: internal.amountPLN,
+      internalValue: internal.amountUSD,
       externalValue: external.amount,
     });
   }
@@ -308,9 +308,9 @@ async function handleReconciliationMismatch(
     }
 
     const discrepancy = result.external ? {
-      internal: result.internal.amountPLN,
+      internal: result.internal.amountUSD,
       external: result.external.amount,
-      difference: Math.abs(result.internal.amountPLN - result.external.amount),
+      difference: Math.abs(result.internal.amountUSD - result.external.amount),
       currency: result.external.currency,
     } : undefined;
 
@@ -426,3 +426,12 @@ export async function reconcilePayoutManual(payoutId: string): Promise<PayoutRec
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+

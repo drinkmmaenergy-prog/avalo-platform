@@ -121,8 +121,8 @@ export interface MeetingVerification {
   user2Verified: boolean;
   user1VerifiedAt?: Timestamp;
   user2VerifiedAt?: Timestamp;
-  user1SelfieUrl?: string;
-  user2SelfieUrl?: string;
+  user1SelfiUSDl?: string;
+  user2SelfiUSDl?: string;
   location?: {
     lat: number;
     lng: number;
@@ -767,3 +767,12 @@ export const DATING_FUNNEL = {
   updateSexyModeConsent,
   checkFlirtCompletion,
 };
+
+
+
+
+
+
+
+
+

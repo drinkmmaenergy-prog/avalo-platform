@@ -19,7 +19,7 @@ export interface UserDevice {
   pushToken: string | null;        // FCM/APNs/web push token
   language: string;                // Device/app language (e.g., 'pl', 'en')
   country: string;                 // User's country (e.g., 'PL')
-  timeZone: string;                // IANA timezone (e.g., 'Europe/Warsaw')
+  timeZone: string;                // IANA timezone (e.g., 'USDope/Warsaw')
   
   appVersion: string;              // App version (e.g., '1.0.0')
   osVersion: string;               // OS version (e.g., 'Android 14')
@@ -351,3 +351,12 @@ export interface ProcessNotificationResult {
   errors: string[];
   skippedReason?: 'USER_PREFERENCE' | 'QUIET_HOURS' | 'RATE_LIMIT' | 'NO_DEVICES' | 'LEGAL_RESTRICTION';
 }
+
+
+
+
+
+
+
+
+

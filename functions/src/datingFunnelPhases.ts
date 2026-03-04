@@ -304,7 +304,7 @@ export async function verifyMeetingCheckIn(
   verificationId: string,
   qrCode: string,
   location?: { lat: number; lng: number; accuracy: number },
-  selfieUrl?: string
+  selfiUSDl?: string
 ): Promise<{ success: boolean; bothVerified?: boolean; error?: string }> {
   const db = getFirestore();
 
@@ -340,11 +340,11 @@ export async function verifyMeetingCheckIn(
       if (isUser1) {
         updates.user1Verified = true;
         updates.user1VerifiedAt = Timestamp.now();
-        if (selfieUrl) updates.user1SelfieUrl = selfieUrl;
+        if (selfiUSDl) updates.user1SelfiUSDl = selfiUSDl;
       } else {
         updates.user2Verified = true;
         updates.user2VerifiedAt = Timestamp.now();
-        if (selfieUrl) updates.user2SelfieUrl = selfieUrl;
+        if (selfiUSDl) updates.user2SelfiUSDl = selfiUSDl;
       }
 
       if (location) {
@@ -868,3 +868,12 @@ export async function calculateRetentionMetrics(
     return null;
   }
 }
+
+
+
+
+
+
+
+
+

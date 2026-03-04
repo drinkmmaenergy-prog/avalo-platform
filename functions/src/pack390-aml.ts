@@ -523,3 +523,12 @@ async function notifyComplianceTeam(alert: any) {
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 }
+
+
+
+
+
+
+
+
+

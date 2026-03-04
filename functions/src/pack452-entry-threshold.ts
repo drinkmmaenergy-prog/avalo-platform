@@ -139,3 +139,12 @@ export async function updateChatEntryTokens(
 export async function getEffectiveChatEntryTokens(earnerId: string): Promise<number> {
   return getChatEntryTokens(earnerId);
 }
+
+
+
+
+
+
+
+
+

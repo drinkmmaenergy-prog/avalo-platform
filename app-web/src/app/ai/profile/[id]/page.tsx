@@ -8,9 +8,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { doc, getDoc, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '@/lib/firebase';
+import { requireDb, requireFunctions } from '@/lib/firebase';
 
 // ============================================================================
 // TYPES
@@ -51,7 +50,7 @@ interface Review {
 
 export default function AIProfilePage() {
   const router = useRouter();
-  const params = useParams();
+  const params = useParams()!;
   const companionId = params.id as string;
 
   const [companion, setCompanion] = useState<AICompanionProfile | null>(null);
@@ -70,7 +69,7 @@ export default function AIProfilePage() {
       setLoading(true);
 
       // Load companion data
-      const companionRef = doc(db, 'aiCompanions', companionId);
+      const companionRef = doc(requireDb(), 'aiCompanions', companionId);
       const companionSnap = await getDoc(companionRef);
 
       if (!companionSnap.exists()) {
@@ -103,7 +102,7 @@ export default function AIProfilePage() {
       setCompanion(profile);
 
       // Load reviews
-      const reviewsRef = collection(db, 'aiCompanionReviews');
+      const reviewsRef = collection(requireDb(), 'aiCompanionReviews');
       const reviewsQuery = query(
         reviewsRef,
         where('companionId', '==', companionId),
@@ -135,7 +134,7 @@ export default function AIProfilePage() {
 
     try {
       setStartingSession('chat');
-      const startChatFn = httpsCallable(functions, 'pack279_aiChatStart');
+      const startChatFn = httpsCallable(requireFunctions(), 'pack279_aiChatStart');
       const result = await startChatFn({ companionId: companion.id });
 
       const data = result.data as any;
@@ -157,7 +156,7 @@ export default function AIProfilePage() {
 
     try {
       setStartingSession('voice');
-      const startVoiceFn = httpsCallable(functions, 'pack279_aiVoiceStart');
+      const startVoiceFn = httpsCallable(requireFunctions(), 'pack279_aiVoiceStart');
       const result = await startVoiceFn({ companionId: companion.id });
 
       const data = result.data as any;
@@ -179,7 +178,7 @@ export default function AIProfilePage() {
 
     try {
       setStartingSession('video');
-      const startVideoFn = httpsCallable(functions, 'pack322_aiVideoStartSession');
+      const startVideoFn = httpsCallable(requireFunctions(), 'pack322_aiVideoStartSession');
       const result = await startVideoFn({
         userId: 'current_user_id', // TODO: Get from auth context
         companionId: companion.id,

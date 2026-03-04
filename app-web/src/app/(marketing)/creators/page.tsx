@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import CreatorCTA from '@/components/CreatorCTA';
 import { 
   Sparkles, 
   MessageCircle, 
@@ -96,18 +97,12 @@ export default function CreatorsPage() {
             </Link>
           </nav>
           <div className="flex items-center space-x-4">
-            <Link 
-              href="/auth/login" 
-              className="px-4 py-2 hover:text-purple-400 transition-colors"
-            >
+            <CreatorCTA className="px-4 py-2 hover:text-purple-400 transition-colors">
               Log In
-            </Link>
-            <Link 
-              href="/start" 
-              className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-semibold hover:from-purple-500 hover:to-pink-500 transition-all"
-            >
+            </CreatorCTA>
+            <CreatorCTA className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-semibold hover:from-purple-500 hover:to-pink-500 transition-all">
               Get Started
-            </Link>
+            </CreatorCTA>
           </div>
         </div>
       </header>
@@ -131,12 +126,11 @@ export default function CreatorsPage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Link 
-                  href="/start"
+                <CreatorCTA
                   className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-semibold text-lg hover:from-purple-500 hover:to-pink-500 transition-all text-center"
                 >
                   Start Creating
-                </Link>
+                </CreatorCTA>
                 <Link 
                   href="/download"
                   className="px-8 py-4 bg-white/10 backdrop-blur-sm rounded-full font-semibold text-lg hover:bg-white/20 transition-all border border-white/20 text-center"
@@ -294,12 +288,11 @@ export default function CreatorsPage() {
           <p className="text-xl text-gray-300 mb-8">
             Join thousands of creators building sustainable income on Avalo
           </p>
-          <Link 
-            href="/start"
+          <CreatorCTA
             className="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-semibold text-lg hover:from-purple-500 hover:to-pink-500 transition-all"
           >
             Start Your Creator Journey
-          </Link>
+          </CreatorCTA>
         </div>
       </section>
 

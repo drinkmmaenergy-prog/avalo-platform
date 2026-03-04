@@ -346,10 +346,10 @@ async function generateMetricsReport(
       activeUsers: 0, // Would need to calculate from user activity
       payingUsers: purchases.docs.length,
       totalTokenPurchases: totalTokens,
-      totalTokenPurchasesPLN: totalFiat,
-      totalPayoutsPLN: totalPayouts,
+      totalTokenPurchasesUSD: totalFiat,
+      totalPayoutsUSD: totalPayouts,
       gmvTokens: totalTokens,
-      netRevenuePLN: totalFiat - totalPayouts,
+      netRevenueUSD: totalFiat - totalPayouts,
       totalMeetingsBooked: 0, // Would aggregate from booking logs
       totalEventsTickets: 0, // Would aggregate from event logs
       safetyReports: safetyReports.data().count,
@@ -545,3 +545,12 @@ export const admin_exportCase = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+

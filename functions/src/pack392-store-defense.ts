@@ -547,3 +547,12 @@ export const pack392_getStoreDefenseStatus = functions
       recentIncidents: incidentsSnap.docs.map(d => ({ id: d.id, ...d.data() }))
     };
   });
+
+
+
+
+
+
+
+
+

@@ -347,3 +347,12 @@ async function logDashboardAccess(userId: string): Promise<void> {
   
   await db.collection(SAFETY_AUDIT_COLLECTION).add(log);
 }
+
+
+
+
+
+
+
+
+

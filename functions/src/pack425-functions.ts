@@ -387,3 +387,12 @@ export const recomputeAllReadiness = functions.https.onCall(async (request) => {
   const result = await Readiness.recomputeAllReadinessScores();
   return result;
 });
+
+
+
+
+
+
+
+
+

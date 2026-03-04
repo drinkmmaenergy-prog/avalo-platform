@@ -114,3 +114,12 @@ export interface NotificationTemplate {
   deepLink?: (params: Record<string, any>) => string;
   category: NotificationCategory;
 }
+
+
+
+
+
+
+
+
+

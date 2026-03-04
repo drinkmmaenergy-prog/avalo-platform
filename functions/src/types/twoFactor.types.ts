@@ -218,3 +218,12 @@ export interface StrongAuthContext {
   lastStrongAuthAt: Timestamp;
   verifiedActions: SensitiveAction[];
 }
+
+
+
+
+
+
+
+
+

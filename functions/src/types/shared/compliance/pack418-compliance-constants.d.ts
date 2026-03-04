@@ -13,3 +13,12 @@ export interface ComplianceStatus {
 }
 export declare const GDPR_REQUIREMENTS: ComplianceRule[];
 export declare const CCPA_REQUIREMENTS: ComplianceRule[];
+
+
+
+
+
+
+
+
+

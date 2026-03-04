@@ -333,3 +333,12 @@ export function isApproachingPeak(minutesAhead: number = 30): boolean {
   
   return getPeakHours().includes(futureHour);
 }
+
+
+
+
+
+
+
+
+

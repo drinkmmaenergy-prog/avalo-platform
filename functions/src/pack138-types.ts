@@ -123,7 +123,7 @@ export interface VIPProfileTheme {
   };
   
   /** Preview image */
-  previewImageUrl: string;
+  previewimageUrl: string;
   
   /** Is enabled */
   enabled: boolean;
@@ -200,7 +200,7 @@ export interface VIPChatTheme {
   };
   
   /** Preview image */
-  previewImageUrl: string;
+  previewimageUrl: string;
   
   /** Is enabled */
   enabled: boolean;
@@ -619,3 +619,12 @@ export type VIPErrorCode =
   | 'INVALID_THEME_TYPE'
   | 'FEATURE_NOT_ENABLED'
   | 'TIER_INSUFFICIENT';
+
+
+
+
+
+
+
+
+

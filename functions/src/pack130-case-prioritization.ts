@@ -35,7 +35,7 @@ export async function createPatrolCase(input: CreatePatrolCaseInput): Promise<st
   
   // Calculate harm potential and urgency
   const harmPotential = calculateHarmPotential(category, detectionSignals);
-  const urgencyScore = calculateUrgencyScore(category, harmPotential, detectionSignals);
+  const urgencyScore = calculatUSDgencyScore(category, harmPotential, detectionSignals);
   
   // Get risk score from detection signals
   const riskScore = calculateRiskScoreFromSignals(detectionSignals);
@@ -162,7 +162,7 @@ function calculateHarmPotential(
 /**
  * Calculate urgency score (0-100)
  */
-function calculateUrgencyScore(
+function calculatUSDgencyScore(
   category: PatrolCase['category'],
   harmPotential: number,
   detectionSignals: PatrolEventType[]
@@ -585,3 +585,12 @@ export async function getCaseStatistics(daysBack: number = 30): Promise<{
     pendingCases,
   };
 }
+
+
+
+
+
+
+
+
+

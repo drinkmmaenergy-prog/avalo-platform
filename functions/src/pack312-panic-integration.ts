@@ -106,7 +106,7 @@ Immediate Actions Required:
 6. Document incident resolution
 
 Meeting has been automatically cancelled.
-${alertData.selfieUrl ? `Alert selfie available for review.` : ''}
+${alertData.selfiUSDl ? `Alert selfie available for review.` : ''}
         `.trim(),
         internalNote: true,
       });
@@ -199,3 +199,12 @@ Automatic refund has been processed per policy.
     }
   }
 );
+
+
+
+
+
+
+
+
+

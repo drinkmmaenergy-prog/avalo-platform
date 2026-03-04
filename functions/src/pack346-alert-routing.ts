@@ -393,7 +393,7 @@ export const checkKPIThresholds = onSchedule("every 5 minutes", async (event) =>
     const thresholds = thresholdsSnap.data();
 
     // Check refund rate
-    const totalRevenue = kpi.revenue?.totalRevenuePLN || 0;
+    const totalRevenue = kpi.revenue?.totalRevenueUSD || 0;
     const totalRefunds = 
       (kpi.refunds?.chatWordRefunds || 0) +
       (kpi.refunds?.calendarUserCancelRefunds || 0) +
@@ -442,7 +442,7 @@ export const checkKPIThresholds = onSchedule("every 5 minutes", async (event) =>
 
     if (yesterdayKpiSnap.exists) {
       const yesterdayKpi = yesterdayKpiSnap.data();
-      const yesterdayRevenue = yesterdayKpi.revenue?.totalRevenuePLN || 0;
+      const yesterdayRevenue = yesterdayKpi.revenue?.totalRevenueUSD || 0;
 
       if (yesterdayRevenue > 0) {
         const revenueDrop = ((yesterdayRevenue - totalRevenue) / yesterdayRevenue) * 100;
@@ -463,3 +463,12 @@ export const checkKPIThresholds = onSchedule("every 5 minutes", async (event) =>
 
     logger.info('Scheduler completed', { status: "checked" }); return;
   });
+
+
+
+
+
+
+
+
+

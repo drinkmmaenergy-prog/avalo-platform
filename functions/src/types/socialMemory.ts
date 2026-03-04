@@ -141,3 +141,12 @@ export interface MemoryAnalytics {
   aiAccessLog: AiMemoryAccess[];
   lastUpdated: Timestamp;
 }
+
+
+
+
+
+
+
+
+

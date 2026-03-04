@@ -494,7 +494,7 @@ export async function testQuietHoursEnforcement(): Promise<void> {
 
   try {
     // Test various timezones during quiet hours
-    const timezones = ['America/New_York', 'Europe/Warsaw', 'Asia/Tokyo', 'UTC'];
+    const timezones = ['America/New_York', 'USDope/Warsaw', 'Asia/Tokyo', 'UTC'];
 
     // This is a structural test - actual sending would require live timing
     console.log('[Test] ✅ Quiet hours logic validated (22:00 - 08:00 local)');
@@ -589,3 +589,12 @@ async function cleanupTestUser(userId: string): Promise<void> {
 }
 
 console.log('✅ PACK 301B - Test Suite initialized');
+
+
+
+
+
+
+
+
+

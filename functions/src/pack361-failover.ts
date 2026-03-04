@@ -19,7 +19,7 @@ export interface BackupMetadata {
   status: "in_progress" | "completed" | "failed";
   startedAt: number;
   completedAt?: number;
-  storageUrl: string;
+  storagUSDl: string;
   region: string;
 }
 
@@ -153,7 +153,7 @@ async function createBackup(
     size: 0,
     status: "in_progress",
     startedAt: Date.now(),
-    storageUrl: "",
+    storagUSDl: "",
     region: "EU", // Primary region
   };
   
@@ -192,7 +192,7 @@ async function createBackup(
       },
     });
     
-    const [storageUrl] = await file.getSignedUrl({
+    const [storagUSDl] = await file.getSignedUrl({
       action: "read",
       expires: "03-01-2500",
     });
@@ -205,7 +205,7 @@ async function createBackup(
         status: "completed",
         completedAt: Date.now(),
         size: totalSize,
-        storageUrl,
+        storagUSDl,
       });
     
     console.log(`✅ Backup ${backupId} completed (${(totalSize / 1024 / 1024).toFixed(2)} MB)`);
@@ -659,3 +659,12 @@ export const monitorBackupHealth = onSchedule("every 6 hours", async (event) => 
     
     console.log("✅ Backup health check complete");
   });
+
+
+
+
+
+
+
+
+

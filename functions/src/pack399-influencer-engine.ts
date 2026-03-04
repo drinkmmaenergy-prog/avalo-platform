@@ -44,7 +44,7 @@ export interface InfluencerProfile {
   handle: string;
   email: string;
   phoneNumber?: string;
-  profileImageUrl?: string;
+  profileimageUrl?: string;
   bio?: string;
   
   // Social Stats
@@ -219,7 +219,7 @@ export interface CreatorFunnel {
 
 export interface RegionalPlaybook {
   playbookId: string;
-  region: string; // e.g., "north_america", "europe", "asia_pacific"
+  region: string; // e.g., "north_america", "USDope", "asia_pacific"
   countries: string[]; // ISO country codes
   
   // Marketing Config
@@ -1032,3 +1032,12 @@ export {
   getInfluencerPayout,
   getInfluencerCommission,
 };
+
+
+
+
+
+
+
+
+

@@ -262,3 +262,12 @@ export async function hasRiskFlag(userId: string, flag: string): Promise<boolean
   const profile = await getTrustProfile(userId);
   return profile.flags.includes(flag as any);
 }
+
+
+
+
+
+
+
+
+

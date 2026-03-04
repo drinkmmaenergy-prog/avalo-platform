@@ -301,3 +301,12 @@ export const onUserMetricsUpdate = onDocumentUpdated('users/{userId}', async (ev
       }
     }
   });
+
+
+
+
+
+
+
+
+

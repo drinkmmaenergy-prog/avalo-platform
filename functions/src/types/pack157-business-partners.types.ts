@@ -347,7 +347,7 @@ export interface VenueSafetyCase {
   reportedByType: 'USER' | 'SYSTEM' | 'MODERATOR' | 'AMBASSADOR';
   
   // Evidence
-  evidenceUrls: string[];
+  evidencUSDls: string[];
   witnessStatements: string[];
   
   // Status
@@ -604,3 +604,12 @@ export class VenueError extends Error {
     this.name = 'VenueError';
   }
 }
+
+
+
+
+
+
+
+
+

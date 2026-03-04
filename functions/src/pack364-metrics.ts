@@ -387,3 +387,12 @@ export function stopMetrics(): void {
 
 // Initialize with default config
 configureMetrics({});
+
+
+
+
+
+
+
+
+

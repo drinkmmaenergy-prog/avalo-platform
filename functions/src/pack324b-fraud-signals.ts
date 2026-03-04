@@ -154,7 +154,7 @@ export async function checkMultiSessionSpam(
     const fiveMinutesAgo = new Date();
     fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - DETECTION_THRESHOLDS.PARALLEL_TIME_WINDOW_MIN);
     
-    // This is a heuristic check - we look for recent signals of same type
+    // This is a hUSDistic check - we look for recent signals of same type
     const recentSignalsRef = await db
       .collection(FRAUD_CONFIG.COLLECTIONS.FRAUD_SIGNALS)
       .where('userId', '==', userId)
@@ -599,3 +599,12 @@ export async function cleanupOldFraudSignals(): Promise<number> {
     return 0;
   }
 }
+
+
+
+
+
+
+
+
+

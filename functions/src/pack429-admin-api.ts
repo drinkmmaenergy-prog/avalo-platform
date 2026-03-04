@@ -519,3 +519,12 @@ export async function evaluateCrisisEndpoint(req: Request, res: Response): Promi
     return { success: true, message: 'Crisis evaluation completed' };
   });
 }
+
+
+
+
+
+
+
+
+

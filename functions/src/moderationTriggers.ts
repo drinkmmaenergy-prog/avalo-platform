@@ -46,3 +46,12 @@ export const onReportCreated = onDocumentCreated('reports/{reportId}', async (ev
       // Don't throw - let the report exist even if case creation fails
     }
   });
+
+
+
+
+
+
+
+
+

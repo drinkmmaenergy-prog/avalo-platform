@@ -96,3 +96,12 @@ import { ethers } from "ethers";
 export { ethers };
 
 console.log("🔧 Avalo runtime module loaded (REGION europe-west1 enforced)");
+
+
+
+
+
+
+
+
+

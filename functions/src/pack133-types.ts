@@ -517,3 +517,12 @@ export interface AIStudioAuditLog {
   metadata: Record<string, any>;
   timestamp: Timestamp;
 }
+
+
+
+
+
+
+
+
+

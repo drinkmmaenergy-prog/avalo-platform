@@ -604,3 +604,12 @@ async function logAvatarEvent(event: AIAvatarEvent): Promise<void> {
     createdAt: serverTimestamp()
   });
 }
+
+
+
+
+
+
+
+
+

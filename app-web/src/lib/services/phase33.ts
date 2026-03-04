@@ -1,128 +1,119 @@
 /**
- * Phase 3.3 — Service Layer
+ * PHASE 3.3 — Web Service Layer
  *
- * Client-side service functions for Creator Panel, Admin Ops, and Token Commerce.
- * All functions use Cloud Functions (httpsCallable) or direct Firestore reads.
+ * Client-side service functions for creator earnings, analytics, admin ops, etc.
+ * All data comes from Firestore or Cloud Functions — NO local calculations.
  *
- * NO direct Firestore writes for financial data — always goes through Cloud Functions.
+ * INVARIANTS:
+ *   - No pricing overrides.
+ *   - Creator earnings are READ-ONLY on client.
  */
 
 import { httpsCallable } from 'firebase/functions';
 import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db, functions } from '@/lib/firebase';
-import { auth } from '@/lib/firebase';
-import type {
-  CanonicalTokenPack,
+import { requireDb, requireFunctions } from '@/lib/firebase';
+import {
   CANONICAL_TOKEN_PACKS,
-  CreatorEarningsSummary,
-  CreatorAnalyticsDashboard,
-  CreatorStripeConnectInfo,
-  PayoutHistoryEntry,
-  FeatureFlagSummary,
-  TrustSignal,
-  SystemHealthMetric,
-  AdminOpsView,
+  type CanonicalTokenPack,
+  type CreatorEarningsSummary,
+  type CreatorAnalyticsDashboard,
+  type CreatorStripeConnectInfo,
+  type PayoutHistoryEntry,
+  type AdminOpsView,
+  type FeatureFlagSummary,
+  type TrustSignal,
+  type SystemHealthMetric,
 } from '@/types/phase33.types';
 
-// Re-import the actual constant for runtime use
-import { CANONICAL_TOKEN_PACKS as TOKEN_PACKS } from '@/types/phase33.types';
+// ── Token Packs ──────────────────────────────────────────────────
 
-// ============================================================================
-// TOKEN COMMERCE
-// ============================================================================
-
-/**
- * Get available token packs for purchase.
- */
 export function getAvailableTokenPacks(): CanonicalTokenPack[] {
-  return Object.values(TOKEN_PACKS);
+  return Object.values(CANONICAL_TOKEN_PACKS);
 }
 
-/**
- * Format token pack price for display.
- */
-export function formatPackPrice(pack: CanonicalTokenPack, currency: string): string {
-  const currencyMap: Record<string, { price: number; symbol: string; locale: string }> = {
-    USD: { price: pack.priceUSD, symbol: '$', locale: 'en-US' },
-    EUR: { price: pack.priceEUR, symbol: '€', locale: 'de-DE' },
-    PLN: { price: pack.pricePLN, symbol: 'zł', locale: 'pl-PL' },
-    GBP: { price: pack.priceGBP, symbol: '£', locale: 'en-GB' },
-  };
-
-  const info = currencyMap[currency] ?? currencyMap.USD;
-  const amount = info.price / 100; // Convert from cents to units
-
-  return new Intl.NumberFormat(info.locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-  }).format(amount);
+export function formatPackPrice(pack: CanonicalTokenPack, currency: string = 'USD'): string {
+  const key = `price${currency}` as keyof CanonicalTokenPack;
+  const cents = (pack[key] as number) ?? pack.priceUSD;
+  return `${(cents / 100).toFixed(2)}`;
 }
 
-// ============================================================================
-// CREATOR PANEL
-// ============================================================================
+// ── Creator Earnings ─────────────────────────────────────────────
 
-/**
- * Load creator earnings summary from Firestore.
- */
-export async function getCreatorEarningsSummary(userId: string): Promise<CreatorEarningsSummary | null> {
-  const ref = doc(db, 'creator_earnings', userId);
+export async function getCreatorEarningsSummary(userId: string): Promise<CreatorEarningsSummary> {
+  const ref = doc(requireDb(), 'creator_earnings', userId);
   const snap = await getDoc(ref);
-  if (!snap.exists()) return null;
 
-  const d = snap.data();
+  if (!snap.exists()) {
+    return {
+      userId,
+      totalTokensEarnedAllTime: 0,
+      totalTokensEarnedThisMonth: 0,
+      withdrawableTokens: 0,
+      pendingTokens: 0,
+      availableForPayout: 0,
+      lastUpdated: new Date(),
+    };
+  }
+
+  const data = snap.data();
   return {
-    userId,
-    totalTokensEarnedAllTime: d.totalTokensEarnedAllTime ?? 0,
-    totalTokensEarnedThisMonth: d.totalTokensEarnedThisMonth ?? 0,
-    withdrawableTokens: d.withdrawableTokens ?? 0,
-    pendingTokens: d.pendingTokens ?? 0,
-    availableForPayout: d.availableForPayout ?? 0,
-    lastUpdated: d.lastUpdated?.toDate() ?? new Date(),
+    userId: data.userId ?? userId,
+    totalTokensEarnedAllTime: data.totalTokensEarnedAllTime ?? 0,
+    totalTokensEarnedThisMonth: data.totalTokensEarnedThisMonth ?? 0,
+    withdrawableTokens: data.withdrawableTokens ?? 0,
+    pendingTokens: data.pendingTokens ?? 0,
+    availableForPayout: data.availableForPayout ?? 0,
+    lastUpdated: data.lastUpdated?.toDate?.() ?? new Date(),
   };
 }
 
-/**
- * Load creator analytics dashboard data.
- */
+// ── Creator Analytics ────────────────────────────────────────────
+
 export async function getCreatorAnalytics(
   userId: string,
-  period: 'day' | 'week' | 'month' = 'month'
-): Promise<CreatorAnalyticsDashboard | null> {
-  const ref = doc(db, 'creator_analytics', userId);
+  period: 'day' | 'week' | 'month' = 'week',
+): Promise<CreatorAnalyticsDashboard> {
+  const ref = doc(requireDb(), 'creator_analytics', `${userId}_${period}`);
   const snap = await getDoc(ref);
-  if (!snap.exists()) return null;
 
-  const d = snap.data();
+  if (!snap.exists()) {
+    return {
+      userId,
+      period,
+      earningsBySource: { chat: 0, calls: 0, contentUnlocks: 0, events: 0, subscriptions: 0, tips: 0 },
+      totalViews: 0,
+      profileViews: 0,
+      totalInteractions: 0,
+      uniqueFans: 0,
+      freeToPaidRate: 0,
+      repeatFanRate: 0,
+      avgSpendPerFan: 0,
+      dailyEarnings: [],
+      lastUpdated: new Date(),
+    };
+  }
+
+  const data = snap.data();
   return {
-    userId,
-    period,
-    earningsBySource: d.earningsBySource ?? {
-      chat: 0,
-      calls: 0,
-      contentUnlocks: 0,
-      events: 0,
-      subscriptions: 0,
-      tips: 0,
-    },
-    totalViews: d.totalViews ?? 0,
-    profileViews: d.profileViews ?? 0,
-    totalInteractions: d.totalInteractions ?? 0,
-    uniqueFans: d.uniqueFans ?? 0,
-    freeToPaidRate: d.freeToPaidRate ?? 0,
-    repeatFanRate: d.repeatFanRate ?? 0,
-    avgSpendPerFan: d.avgSpendPerFan ?? 0,
-    dailyEarnings: d.dailyEarnings ?? [],
-    lastUpdated: d.lastUpdated?.toDate() ?? new Date(),
+    userId: data.userId ?? userId,
+    period: data.period ?? period,
+    earningsBySource: data.earningsBySource ?? { chat: 0, calls: 0, contentUnlocks: 0, events: 0, subscriptions: 0, tips: 0 },
+    totalViews: data.totalViews ?? 0,
+    profileViews: data.profileViews ?? 0,
+    totalInteractions: data.totalInteractions ?? 0,
+    uniqueFans: data.uniqueFans ?? 0,
+    freeToPaidRate: data.freeToPaidRate ?? 0,
+    repeatFanRate: data.repeatFanRate ?? 0,
+    avgSpendPerFan: data.avgSpendPerFan ?? 0,
+    dailyEarnings: data.dailyEarnings ?? [],
+    lastUpdated: data.lastUpdated?.toDate?.() ?? new Date(),
   };
 }
 
-/**
- * Get Stripe Connect status for a creator.
- */
+// ── Stripe Connect ───────────────────────────────────────────────
+
 export async function getStripeConnectStatus(userId: string): Promise<CreatorStripeConnectInfo> {
-  const ref = doc(db, 'creator_stripe_connect', userId);
+  const ref = doc(requireDb(), 'stripe_connect', userId);
   const snap = await getDoc(ref);
 
   if (!snap.exists()) {
@@ -135,39 +126,37 @@ export async function getStripeConnectStatus(userId: string): Promise<CreatorStr
     };
   }
 
-  const d = snap.data();
+  const data = snap.data();
   return {
-    status: d.status ?? 'NOT_CONNECTED',
-    stripeAccountId: d.stripeAccountId,
-    payoutsEnabled: d.payoutsEnabled ?? false,
-    chargesEnabled: d.chargesEnabled ?? false,
-    detailsSubmitted: d.detailsSubmitted ?? false,
-    currentlyDue: d.currentlyDue,
-    eventuallyDue: d.eventuallyDue,
-    lastChecked: d.lastChecked?.toDate() ?? new Date(),
+    status: data.status ?? 'NOT_CONNECTED',
+    stripeAccountId: data.stripeAccountId,
+    payoutsEnabled: data.payoutsEnabled ?? false,
+    chargesEnabled: data.chargesEnabled ?? false,
+    detailsSubmitted: data.detailsSubmitted ?? false,
+    currentlyDue: data.currentlyDue,
+    eventuallyDue: data.eventuallyDue,
+    lastChecked: data.lastChecked?.toDate?.() ?? new Date(),
   };
 }
 
-/**
- * Initiate Stripe Connect onboarding for a creator.
- */
-export async function initiateStripeOnboarding(userId: string): Promise<string> {
-  const fn = httpsCallable<{ userId: string }, { url: string }>(functions, 'createStripeConnectOnboardingLink');
+export async function initiateStripeOnboarding(userId: string): Promise<{ url: string }> {
+  const fn = httpsCallable<{ userId: string }, { url: string }>(
+    requireFunctions(),
+    'creator_initiateStripeOnboarding',
+  );
   const result = await fn({ userId });
-  return result.data.url;
+  return result.data;
 }
 
-/**
- * Get payout history for a creator.
- */
+// ── Creator Payouts ──────────────────────────────────────────────
+
 export async function getPayoutHistory(userId: string): Promise<PayoutHistoryEntry[]> {
   const q = query(
-    collection(db, 'payout_requests'),
+    collection(requireDb(), 'payoutRequests'),
     where('userId', '==', userId),
     orderBy('createdAt', 'desc'),
-    limit(50)
+    limit(50),
   );
-
   const snap = await getDocs(q);
   return snap.docs.map((d) => {
     const data = d.data();
@@ -179,129 +168,92 @@ export async function getPayoutHistory(userId: string): Promise<PayoutHistoryEnt
       currency: data.currency ?? 'USD',
       rail: data.rail ?? 'STRIPE',
       status: data.status ?? 'PENDING',
-      createdAt: data.createdAt?.toDate() ?? new Date(),
-      processedAt: data.processedAt?.toDate(),
+      createdAt: data.createdAt?.toDate?.() ?? new Date(),
+      processedAt: data.processedAt?.toDate?.(),
       failureReason: data.failureReason,
-    };
+    } as PayoutHistoryEntry;
   });
 }
 
-/**
- * Request a creator payout via Cloud Function.
- */
 export async function requestCreatorPayout(
   userId: string,
   tokens: number,
-  payoutMethod?: string,
-): Promise<{ success: boolean; payoutRequestId?: string; error?: string }> {
+  currency: string = 'USD',
+): Promise<{ success: boolean; payoutId?: string; error?: string }> {
   const fn = httpsCallable<
-    { userId: string; tokens: number; payoutMethod?: string },
-    { success: boolean; payoutRequestId?: string; error?: string }
-  >(functions, 'requestCreatorPayout');
-  const result = await fn({ userId, tokens, payoutMethod });
+    { userId: string; tokens: number; currency: string },
+    { success: boolean; payoutId?: string; error?: string }
+  >(requireFunctions(), 'creator_requestPayout');
+  const result = await fn({ userId, tokens, currency });
   return result.data;
 }
 
-// ============================================================================
-// ADMIN / OPS
-// ============================================================================
+// ── Admin Ops ────────────────────────────────────────────────────
 
-/**
- * Get full admin ops view.
- */
 export async function getAdminOpsView(): Promise<AdminOpsView> {
-  const [featureFlags, trustSignals, systemHealth] = await Promise.all([
-    getFeatureFlags(),
-    getTrustSignals(),
-    getSystemHealth(),
-  ]);
-
-  return {
-    featureFlags,
-    trustSignals,
-    systemHealth,
-    snapshotTime: new Date(),
-  };
+  const fn = httpsCallable<void, AdminOpsView>(requireFunctions(), 'admin_getOpsView');
+  const result = await fn();
+  return result.data;
 }
 
-/**
- * Get feature flags.
- */
 export async function getFeatureFlags(): Promise<FeatureFlagSummary[]> {
-  const q = query(collection(db, 'feature_flags'), orderBy('lastUpdated', 'desc'), limit(100));
+  const q = query(collection(requireDb(), 'featureFlags'), orderBy('flagName'));
   const snap = await getDocs(q);
   return snap.docs.map((d) => {
     const data = d.data();
     return {
-      flagName: d.id,
+      flagName: data.flagName ?? d.id,
       enabled: data.enabled ?? false,
       rolloutPercentage: data.rolloutPercentage,
       allowedRoles: data.allowedRoles,
-      expiresAt: data.expiresAt?.toDate(),
-      lastUpdated: data.lastUpdated?.toDate() ?? new Date(),
-    };
+      expiresAt: data.expiresAt?.toDate?.(),
+      lastUpdated: data.lastUpdated?.toDate?.() ?? new Date(),
+    } as FeatureFlagSummary;
   });
 }
 
-/**
- * Get trust signals.
- */
+export type TrustSignalCounts = Record<string, number>;
+
 export async function getTrustSignals(): Promise<TrustSignal[]> {
   const q = query(
-    collection(db, 'trust_signals'),
+    collection(requireDb(), 'trustSignals'),
     orderBy('createdAt', 'desc'),
-    limit(100)
+    limit(100),
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => {
     const data = d.data();
     return {
-      signalType: data.signalType ?? 'FRAUD_RISK',
-      severity: data.severity ?? 'LOW',
-      userId: data.userId ?? '',
-      description: data.description ?? '',
-      createdAt: data.createdAt?.toDate() ?? new Date(),
-      resolvedAt: data.resolvedAt?.toDate(),
-    };
+      signalType: data.signalType,
+      severity: data.severity,
+      userId: data.userId,
+      description: data.description,
+      createdAt: data.createdAt?.toDate?.() ?? new Date(),
+      resolvedAt: data.resolvedAt?.toDate?.(),
+    } as TrustSignal;
   });
 }
 
-export interface TrustSignalCounts {
-  total: number;
-  critical: number;
-  high: number;
-  medium: number;
-  low: number;
-}
-
-/**
- * Get trust signal counts by severity.
- */
 export async function getTrustSignalCounts(): Promise<TrustSignalCounts> {
   const signals = await getTrustSignals();
-  return {
-    total: signals.length,
-    critical: signals.filter((s) => s.severity === 'CRITICAL').length,
-    high: signals.filter((s) => s.severity === 'HIGH').length,
-    medium: signals.filter((s) => s.severity === 'MEDIUM').length,
-    low: signals.filter((s) => s.severity === 'LOW').length,
-  };
+  const counts: TrustSignalCounts = {};
+  for (const s of signals) {
+    counts[s.signalType] = (counts[s.signalType] ?? 0) + 1;
+  }
+  return counts;
 }
 
-/**
- * Get system health metrics.
- */
 export async function getSystemHealth(): Promise<SystemHealthMetric[]> {
-  const q = query(collection(db, 'system_health'), orderBy('lastChecked', 'desc'), limit(20));
+  const q = query(collection(requireDb(), 'systemHealth'), orderBy('service'));
   const snap = await getDocs(q);
   return snap.docs.map((d) => {
     const data = d.data();
     return {
-      service: d.id,
+      service: data.service ?? d.id,
       status: data.status ?? 'HEALTHY',
       latencyMs: data.latencyMs ?? 0,
       errorRate: data.errorRate ?? 0,
-      lastChecked: data.lastChecked?.toDate() ?? new Date(),
-    };
+      lastChecked: data.lastChecked?.toDate?.() ?? new Date(),
+    } as SystemHealthMetric;
   });
 }

@@ -472,3 +472,12 @@ export const updateCampaignBudgets = onSchedule(
     await batch.commit();
   }
 );
+
+
+
+
+
+
+
+
+

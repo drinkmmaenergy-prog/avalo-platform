@@ -39,7 +39,7 @@ export default function AdminTrustPage() {
     async function fetchData() {
       try {
         const [signalsData, countsData] = await Promise.all([
-          getTrustSignals(100),
+          getTrustSignals(),
           getTrustSignalCounts(),
         ]);
         setSignals(signalsData);
@@ -173,4 +173,5 @@ export default function AdminTrustPage() {
     </div>
   );
 }
+
 

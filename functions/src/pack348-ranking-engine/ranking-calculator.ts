@@ -327,3 +327,12 @@ export class RankingCalculator {
     return score * decayFactor;
   }
 }
+
+
+
+
+
+
+
+
+

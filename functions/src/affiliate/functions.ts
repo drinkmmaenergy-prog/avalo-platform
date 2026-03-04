@@ -618,3 +618,12 @@ export async function getAffiliateComplianceStatus(
     canReceivePayouts: profile.status === 'active' && profile.agreementSigned && profile.identityVerified && taxInfoComplete && payoutMethodConfigured,
   };
 }
+
+
+
+
+
+
+
+
+

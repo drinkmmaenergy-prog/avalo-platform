@@ -13,7 +13,7 @@ import { admin } from '../runtime';
 // TAX PROFILE TYPES
 // ============================================================================
 
-export type TaxCurrency = 'PLN' | 'EUR' | 'USD' | 'GBP';
+export type TaxCurrency = 'USD' | 'USD' | 'USD' | 'USD';
 
 export interface TaxProfile {
   userId: string;
@@ -56,7 +56,7 @@ export interface EarningsBreakdown {
 export interface PayoutDetail {
   payoutId: string;
   date: string;
-  amountPLN: number;
+  amountUSD: number;
   bankOrWallet: string;
 }
 
@@ -66,15 +66,15 @@ export interface TaxReportUser {
   
   // Earnings
   totalEarnedTokens: number;
-  totalEarnedPLN: number;
+  totalEarnedUSD: number;
   
   // Breakdown by source
   breakdown: EarningsBreakdown;
   
   // Payout information
   numberOfPayouts: number;
-  totalPaidOutPLN: number;
-  totalPendingPLN: number;
+  totalPaidOutUSD: number;
+  totalPendingUSD: number;
   
   payoutDetails: PayoutDetail[];
   
@@ -89,7 +89,7 @@ export interface TaxReportUser {
 export interface RegionBreakdown {
   creators: number;
   tokens: number;
-  payoutPLN: number;
+  payoutUSD: number;
 }
 
 export interface TaxReportPlatform {
@@ -97,14 +97,14 @@ export interface TaxReportPlatform {
   
   // Gross revenue
   totalGrossTokensSold: number;
-  totalGrossRevenuePLN: number;
+  totalGrossRevenueUSD: number;
   
   // Creator payouts
   totalTokensPaidOutToCreators: number;
-  totalPayoutsPLN: number;
+  totalPayoutsUSD: number;
   
   // Platform revenue (including fees and commission)
-  totalAvaloRevenuePLN: number;
+  totalAvaloRevenueUSD: number;
   
   // Regional breakdown
   regionBreakdown: {
@@ -196,7 +196,7 @@ export interface EarningsAggregation {
   digitalProductsTokens: number;
   
   totalTokens: number;
-  totalPLN: number;
+  totalUSD: number;
 }
 
 export interface PayoutAggregation {
@@ -205,8 +205,8 @@ export interface PayoutAggregation {
   endDate: Date;
   
   payouts: PayoutDetail[];
-  totalPaidOutPLN: number;
-  totalPendingPLN: number;
+  totalPaidOutUSD: number;
+  totalPendingUSD: number;
   numberOfPayouts: number;
 }
 
@@ -235,11 +235,11 @@ export interface PayoutComplianceCheck {
 // CONSTANTS
 // ============================================================================
 
-import { TOKEN_PAYOUT_PLN } from '../config/economyConfig';
+import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 
 export const TAX_CONFIG = {
   // Conversion rate — derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
-  TOKEN_TO_PLN_RATE: TOKEN_PAYOUT_PLN,
+  TOKEN_PAYOUT_USD: TOKEN_PAYOUT_USD,
   
   // Report periods
   PERIODS: {
@@ -261,7 +261,7 @@ export const TAX_CONFIG = {
   },
   
   // Supported currencies
-  SUPPORTED_CURRENCIES: ['PLN', 'EUR', 'USD', 'GBP'] as TaxCurrency[],
+  SUPPORTED_CURRENCIES: ['USD', 'USD', 'USD', 'USD'] as TaxCurrency[],
   
   // Regional groupings
   EU_COUNTRIES: [
@@ -294,3 +294,12 @@ export type TaxSourceField =
   | 'tipsTokens'
   | 'aiCompanionsTokens'
   | 'digitalProductsTokens';
+
+
+
+
+
+
+
+
+

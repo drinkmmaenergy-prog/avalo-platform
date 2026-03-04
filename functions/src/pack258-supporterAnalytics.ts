@@ -392,3 +392,12 @@ export const markNotificationRead = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', 'Failed to mark notification as read');
   }
 });
+
+
+
+
+
+
+
+
+

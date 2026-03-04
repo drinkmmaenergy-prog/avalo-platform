@@ -112,3 +112,12 @@ export function getAutoPriority(type: TicketType): TicketPriority {
       return 'LOW';
   }
 }
+
+
+
+
+
+
+
+
+

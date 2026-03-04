@@ -970,3 +970,12 @@ export const manualAwardTrophy = onCall<{
 );
 
 console.log('✅ PACK 235: Trophy Cabinet functions initialized');
+
+
+
+
+
+
+
+
+

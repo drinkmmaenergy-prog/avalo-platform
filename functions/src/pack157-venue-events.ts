@@ -466,7 +466,7 @@ export const scheduleVenueEvent = onCall<{
     if (hostDoc.exists) {
       const hostData = hostDoc.data();
       hostName = hostData?.displayName || hostName;
-      hostAvatar = hostData?.profilePictureUrl;
+      hostAvatar = hostData?.profilePicturUSDl;
     }
   }
   
@@ -725,7 +725,7 @@ export const registerForVenueEvent = onCall<{
     
     userId,
     userName: userData?.displayName || 'Unknown User',
-    userAvatar: userData?.profilePictureUrl,
+    userAvatar: userData?.profilePicturUSDl,
     
     registeredAt: now,
     registrationStatus: 'CONFIRMED',
@@ -872,3 +872,12 @@ export const getMyVenueEvents = onCall({ region: 'us-central1' }, async (request
     })),
   };
 });
+
+
+
+
+
+
+
+
+

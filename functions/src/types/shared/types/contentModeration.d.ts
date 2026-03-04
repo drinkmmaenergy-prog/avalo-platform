@@ -35,3 +35,12 @@ export interface ContentModerationRecord  {
   [key: string]: any;
 }
 export type ModerationAction = 'ALLOW' | 'FLAG' | 'BLOCK' | 'REVIEW';
+
+
+
+
+
+
+
+
+

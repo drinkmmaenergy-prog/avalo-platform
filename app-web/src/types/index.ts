@@ -16,6 +16,8 @@ export interface User {
   nsfwPref?: 'SAFE' | 'NSFW' | 'BOTH';
   accountStatus: 'ACTIVE' | 'SUSPENDED' | 'BANNED' | 'DELETED';
   twoFactorEnabled?: boolean;
+  /** Firestore role field — 'user' | 'creator' | 'moderator' | 'admin' */
+  role?: string;
 }
 
 export interface Profile extends User {

@@ -18,7 +18,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 
 interface InvestorMetrics {
   date: string;
@@ -75,7 +75,7 @@ export default function InvestorDashboard() {
     try {
       // Check if user has investor role
       const userDoc = await getDocs(
-        query(collection(db, 'users'), where('__name__', '==', user.uid), limit(1))
+        query(collection(requireDb(), 'users'), where('__name__', '==', user.uid), limit(1))
       );
 
       if (!userDoc.empty) {
@@ -129,7 +129,7 @@ export default function InvestorDashboard() {
     try {
       // Fetch latest metrics
       const metricsQuery = query(
-        collection(db, 'investorMetricsDaily'),
+        collection(requireDb(), 'investorMetricsDaily'),
         orderBy('date', 'desc'),
         limit(30)
       );

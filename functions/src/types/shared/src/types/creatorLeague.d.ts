@@ -11,3 +11,12 @@ export interface LeagueTier {
     benefits: string[];
 }
 export type LeagueTierName = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND';
+
+
+
+
+
+
+
+
+

@@ -217,3 +217,12 @@ export const RETENTION_POLICIES: Record<DataCategory, RetentionPolicy> = {
 export const EXPORT_DOWNLOAD_EXPIRY_HOURS = 48;
 export const MAX_EXPORT_FILE_SIZE_MB = 500;
 export const DELETION_FREEZE_PERIOD_DAYS = 30;
+
+
+
+
+
+
+
+
+

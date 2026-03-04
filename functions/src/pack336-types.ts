@@ -48,12 +48,12 @@ export interface KpiDailyGlobal {
   
   // Revenue Metrics
   totalTokenSpent: number;
-  totalRevenuePLN: number;
+  totalRevenueUSD: number;
   
   // Refund Metrics
   refundsCount: number;
-  refundVolumePLN: number;
-  refundRate: number; // refundVolumePLN / totalRevenuePLN
+  refundVolumeUSD: number;
+  refundRate: number; // refundVolumeUSD / totalRevenueUSD
   
   // Calculated at
   calculatedAt: Timestamp;
@@ -73,10 +73,10 @@ export interface KpiDailyByCountry {
   
   // Revenue Metrics
   payingUsers: number;
-  revenuePLN: number;
+  revenueUSD: number;
   
   // Performance Metrics
-  avgSpendPerUserPLN: number;
+  avgSpendPerUserUSD: number;
   
   // Calculated at
   calculatedAt: Timestamp;
@@ -96,12 +96,12 @@ export interface KpiCohort {
   day90Retention: number; // Percentage
   
   // Revenue Metrics
-  revenueDay7PLN: number;
-  revenueDay30PLN: number;
-  revenueDay90PLN: number;
+  revenueDay7USD: number;
+  revenueDay30USD: number;
+  revenueDay90USD: number;
   
   // Lifetime Value
-  avgLTVPLN: number;
+  avgLTVUSD: number;
   
   // Created at
   createdAt: Timestamp;
@@ -122,7 +122,7 @@ export interface KpiUserLifecycle {
   
   // Spending Metrics
   lifetimeTokenSpent: number;
-  lifetimeRevenuePLN: number;
+  lifetimeRevenueUSD: number;
   
   // Activity Metrics
   totalChatsPaid: number;
@@ -149,7 +149,7 @@ export interface KpiVirality {
   kFactor: number;
   
   // Viral Revenue
-  viralRevenuePLN: number;
+  viralRevenueUSD: number;
   
   // Calculated at
   calculatedAt: Timestamp;
@@ -163,23 +163,23 @@ export interface KpiRevenueStreams {
   date: string; // YYYY-MM-DD
   
   // Chat Revenue
-  chatRevenuePLN: number;
+  chatRevenueUSD: number;
   
   // Voice & Video Revenue
-  voiceRevenuePLN: number;
-  videoRevenuePLN: number;
+  voiceRevenueUSD: number;
+  videoRevenueUSD: number;
   
   // Calendar & Events Revenue
-  calendarRevenuePLN: number;
-  eventsRevenuePLN: number;
+  calendarRevenueUSD: number;
+  eventsRevenueUSD: number;
   
   // AI & Other Revenue
-  aiRevenuePLN: number;
-  subscriptionsPLN: number;
-  tipsRevenuePLN: number;
+  aiRevenueUSD: number;
+  subscriptionsUSD: number;
+  tipsRevenueUSD: number;
   
   // Total
-  totalRevenuePLN: number;
+  totalRevenueUSD: number;
   
   // Calculated at
   calculatedAt: Timestamp;
@@ -258,7 +258,7 @@ export interface InvestorReportData {
     totalUsers: number;
     activeUsers: number;
     payingUsers: number;
-    totalRevenuePLN: number;
+    totalRevenueUSD: number;
     avgRevenuePerUser: number;
   };
   
@@ -333,3 +333,12 @@ export interface ExportOptions {
   includeCountryBreakdown?: boolean;
   includeCohortAnalysis?: boolean;
 }
+
+
+
+
+
+
+
+
+

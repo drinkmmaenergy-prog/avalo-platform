@@ -3,13 +3,13 @@ export const metadata = {
   description: 'View user moderation profile',
 };
 
-interface PageProps {
-  params: {
-    userId: string;
-  };
-}
+export default async function ModeratorUserDetailPage({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}) {
+  const { userId } = await params;
 
-export default function ModeratorUserDetailPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -17,7 +17,7 @@ export default function ModeratorUserDetailPage({ params }: PageProps) {
           User Profile
         </h1>
         <p className="mt-2 text-slate-600 dark:text-slate-400">
-          User ID: {params.userId}
+          User ID: {userId}
         </p>
       </div>
 

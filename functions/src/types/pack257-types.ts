@@ -46,7 +46,7 @@ export interface TopViewer {
   lastViewedAt: Date;
   hasPaidInteraction: boolean;
   displayName?: string;
-  profilePictureUrl?: string;
+  profilePicturUSDl?: string;
   paidIntentScore: number;
 }
 
@@ -154,7 +154,7 @@ export interface RoyalAdvancedAnalytics {
 export interface TopSpender {
   userId: string;
   displayName: string;
-  profilePictureUrl?: string;
+  profilePicturUSDl?: string;
   lifetimeSpent: number;
   last30DaysSpent: number;
   lastInteractionAt: Date;
@@ -216,3 +216,12 @@ export interface DashboardFilters {
   timeframe: '7d' | '30d' | '90d' | 'all';
   includeRoyalFeatures: boolean;
 }
+
+
+
+
+
+
+
+
+

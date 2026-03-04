@@ -457,7 +457,7 @@ export async function checkNSFWMonetization(
  */
 function getRegionGroup(countryCode: string): string | null {
   const regionMap: Record<string, string> = {
-    // European Union
+    // USDopean Union
     'AT': 'EU', 'BE': 'EU', 'BG': 'EU', 'HR': 'EU', 'CY': 'EU', 'CZ': 'EU',
     'DK': 'EU', 'EE': 'EU', 'FI': 'EU', 'FR': 'EU', 'DE': 'EU', 'GR': 'EU',
     'HU': 'EU', 'IE': 'EU', 'IT': 'EU', 'LV': 'EU', 'LT': 'EU', 'LU': 'EU',
@@ -503,3 +503,12 @@ export function getComplianceMessage(check: NSFWComplianceCheck): string {
 
   return check.blockReason || 'This content is not available';
 }
+
+
+
+
+
+
+
+
+

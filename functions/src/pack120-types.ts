@@ -327,3 +327,12 @@ export interface CampaignModerationLog {
   timestamp: Timestamp;
   metadata?: Record<string, any>;
 }
+
+
+
+
+
+
+
+
+

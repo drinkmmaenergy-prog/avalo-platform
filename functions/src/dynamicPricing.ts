@@ -466,7 +466,7 @@ async function calculateDynamicPrice(
     adjustmentFactors: factors,
     currency: "USD", // Default
     fxRate: 1.0,
-    localPrice: finalPrice * 0.20, // Token to PLN conversion
+    localPrice: finalPrice * 0.20, // Token to USD conversion
     validUntil: Timestamp.fromMillis(Date.now() + PRICE_CACHE_TTL_SECONDS * 1000),
     tier: PricingTier.DYNAMIC,
     breakdown: {
@@ -771,4 +771,13 @@ export type {
   MarketConditions,
   PriceAdjustmentFactors,
 };
+
+
+
+
+
+
+
+
+
 

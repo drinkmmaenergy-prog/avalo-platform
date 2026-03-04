@@ -357,3 +357,12 @@ export const triggerFraudRecalculation = functions.https.onCall(async (request) 
     );
   }
 });
+
+
+
+
+
+
+
+
+

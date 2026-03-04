@@ -37,3 +37,12 @@ export const healthCheck = onRequest({}, (req, res) => {
     region: process.env.FUNCTION_REGION || 'europe-west1',
   });
 });
+
+
+
+
+
+
+
+
+

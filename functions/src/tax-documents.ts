@@ -143,7 +143,7 @@ async function generateInvoiceData(
     totalAmount: summary.netEarnings,
     paymentMethod: 'Platform Tokens',
     country: profile.country,
-    currency: 'EUR', // Display currency
+    currency: 'USD', // Display currency
     notes: summary.withheldTax > 0 
       ? `Tax withheld: ${summary.withheldTax} tokens`
       : undefined,
@@ -268,7 +268,7 @@ export const tax_issueInvoice = https.onCall<IssueInvoiceRequest>(
 
       // Create document record
       const documentId = db.collection('tax_documents').doc().id;
-      const formats: Array<{ format: DocumentFormat; storageUrl: string; generatedAt: Timestamp }> = [];
+      const formats: Array<{ format: DocumentFormat; storagUSDl: string; generatedAt: Timestamp }> = [];
 
       // Generate requested format (default PDF)
       const requestedFormat = format || 'PDF';
@@ -278,7 +278,7 @@ export const tax_issueInvoice = https.onCall<IssueInvoiceRequest>(
         const pdfUrl = await uploadDocument(userId, documentId, 'PDF', pdfBuffer);
         formats.push({
           format: 'PDF',
-          storageUrl: pdfUrl,
+          storagUSDl: pdfUrl,
           generatedAt: Timestamp.now(),
         });
       }
@@ -288,7 +288,7 @@ export const tax_issueInvoice = https.onCall<IssueInvoiceRequest>(
         const csvUrl = await uploadDocument(userId, documentId, 'CSV', csvBuffer);
         formats.push({
           format: 'CSV',
-          storageUrl: csvUrl,
+          storagUSDl: csvUrl,
           generatedAt: Timestamp.now(),
         });
       }
@@ -331,7 +331,7 @@ export const tax_issueInvoice = https.onCall<IssueInvoiceRequest>(
       // Prepare download URLs
       const downloadUrls: Record<DocumentFormat, string> = {} as any;
       formats.forEach(f => {
-        downloadUrls[f.format] = f.storageUrl;
+        downloadUrls[f.format] = f.storagUSDl;
       });
 
       const response: IssueInvoiceResponse = {
@@ -446,7 +446,7 @@ WITHHOLDING RECORDS: ${summary.withholdingRecords.length}
         withholdingRecords: summary.withholdingRecords.map(r => r.id),
         formats: [{
           format: format || 'PDF',
-          storageUrl: downloadUrl,
+          storagUSDl: downloadUrl,
           generatedAt: Timestamp.now(),
         }],
         status: 'FINALIZED',
@@ -608,7 +608,7 @@ ${Object.entries(summary.earningsByCategory)
       earningsBreakdown: summary.earningsByCategory,
       formats: [{
         format: 'PDF',
-        storageUrl: downloadUrl,
+        storagUSDl: downloadUrl,
         generatedAt: Timestamp.now(),
       }],
       status: 'FINALIZED',
@@ -636,3 +636,12 @@ ${Object.entries(summary.earningsByCategory)
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+

@@ -457,3 +457,12 @@ export async function getUserFinancialSummary(userId: string): Promise<UserFinan
   const result = await checkUserBalanceConsistency(userId);
   return result.summary;
 }
+
+
+
+
+
+
+
+
+

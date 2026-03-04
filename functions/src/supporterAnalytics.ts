@@ -622,3 +622,12 @@ export function maskSupporterIdentity(supporterId: string): string {
   const hash = supporterId.substring(0, 8);
   return `Supporter_${hash}`;
 }
+
+
+
+
+
+
+
+
+

@@ -6,7 +6,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
-import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 
 const db = admin.firestore();
 
@@ -383,21 +383,21 @@ export const pack390_reverseFailedTransfer = functions.https.onCall(async (reque
 // ============================================================================
 
 async function convertTokensToFiat(tokens: number, currency: string) {
-  const BASE_TOKEN_VALUE_PLN = TOKEN_PAYOUT_PLN; // derived from TOKEN_PAYOUT_USD (0.03 USD)
-  const plnValue = tokens * BASE_TOKEN_VALUE_PLN;
+  const BASE_TOKEN_VALUE_USD = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.03 USD)
+  const USDValue = tokens * BASE_TOKEN_VALUE_USD;
   
-  if (currency === 'PLN') {
-    return { amount: plnValue, fxRate: 1 };
+  if (currency === 'USD') {
+    return { amount: USDValue, fxRate: 1 };
   }
   
-  const rateDoc = await db.collection('fxRates').doc(`PLN_${currency}`).get();
+  const rateDoc = await db.collection('fxRates').doc(`USD_${currency}`).get();
   if (!rateDoc.exists) {
     throw new functions.https.HttpsError('not-found', `Exchange rate for ${currency} not found`);
   }
   
   const fxRate = rateDoc.data()!.rate;
   return {
-    amount: Math.round(plnValue * fxRate * 100) / 100,
+    amount: Math.round(USDValue * fxRate * 100) / 100,
     fxRate
   };
 }
@@ -511,3 +511,12 @@ export const pack390_getPayoutHistory = functions.https.onCall(async (request) =
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+

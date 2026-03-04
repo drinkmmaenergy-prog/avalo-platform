@@ -367,3 +367,12 @@ export const httpTriggerAggregation = onRequest({
       res.status(500).json({ error: error.message });
     }
   });
+
+
+
+
+
+
+
+
+

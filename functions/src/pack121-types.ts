@@ -203,7 +203,7 @@ export interface Advertiser {
   
   // Brand safety
   brandCategory: string;      // e.g., 'RETAIL', 'TECH', 'ENTERTAINMENT'
-  websiteUrl: string;
+  websitUSDl: string;
   
   // Token wallet
   tokenBalance: number;       // Prepaid tokens for ads
@@ -446,3 +446,12 @@ export interface AdSafetyScanResult {
   }[];
   scanTimestamp: Timestamp;
 }
+
+
+
+
+
+
+
+
+

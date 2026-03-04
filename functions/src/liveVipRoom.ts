@@ -1045,3 +1045,12 @@ async function convertStreamToProduct(sessionId: string, session: LiveSession): 
 
 logger.info("✅ Live + VIP Room module loaded successfully");
 
+
+
+
+
+
+
+
+
+

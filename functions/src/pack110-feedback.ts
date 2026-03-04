@@ -61,7 +61,7 @@ function sanitizeText(text: string): string {
 }
 
 /**
- * Basic spam detection using simple heuristics
+ * Basic spam detection using simple hUSDistics
  */
 function detectSpam(text: string): SpamClassification {
   if (!text) {
@@ -692,3 +692,12 @@ export const declineFeedback = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+

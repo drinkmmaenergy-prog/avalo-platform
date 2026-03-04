@@ -474,3 +474,12 @@ export async function analyzeMarketOpportunity(
   
   return { score: Math.round(score * 100) / 100, factors, recommendation };
 }
+
+
+
+
+
+
+
+
+

@@ -26,10 +26,10 @@ import { admin } from '../runtime';
 // CONSTANTS
 // ============================================================================
 
-import { TOKEN_PAYOUT_PLN } from '../config/economyConfig';
+import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 
 export const CREATOR_ANALYTICS_CONSTANTS = {
-  TOKEN_TO_PLN_RATE: TOKEN_PAYOUT_PLN,  // derived from TOKEN_PAYOUT_USD (0.03 USD)
+  TOKEN_PAYOUT_USD: TOKEN_PAYOUT_USD,  // derived from TOKEN_PAYOUT_USD (0.03 USD)
   DEFAULT_TIME_RANGE_DAYS: 30,
   MAX_TIME_RANGE_DAYS: 365,
   TOP_PAYERS_LIMIT: 10,
@@ -83,7 +83,7 @@ export interface WalletTransactionEnhanced {
   
   relatedId?: string;  // chatId | bookingId | eventId | purchaseId | withdrawalId
   tokens: number;
-  currency?: string;  // 'PLN' | 'USD' | 'EUR', etc.
+  currency?: string;  // 'USD' | 'USD' | 'USD', etc.
   amountFiat?: number;  // Optional snapshot for purchases/withdrawals
   
   createdAt: Timestamp;
@@ -116,10 +116,10 @@ export interface EarningsOverview {
   };
   
   fiat: {
-    ratePerTokenPLN: number;  // Always 0.20
-    totalEarnedPLN: number;
-    currentBalancePLN: number;
-    availableToWithdrawPLN: number;
+    ratePerTokenUSD: number;  // Always 0.20
+    totalEarnedUSD: number;
+    currentBalanceUSD: number;
+    availableToWithdrawUSD: number;
   };
   
   byFeature: {
@@ -372,3 +372,12 @@ export function isSpendingTransaction(type: string): boolean {
   ];
   return spendingTypes.includes(type);
 }
+
+
+
+
+
+
+
+
+

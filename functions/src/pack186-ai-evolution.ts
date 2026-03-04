@@ -633,3 +633,12 @@ export async function getCharacterGrowthMetrics(
   
   return snapshot.docs.map(doc => doc.data());
 }
+
+
+
+
+
+
+
+
+

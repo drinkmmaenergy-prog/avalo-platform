@@ -121,16 +121,16 @@ export async function aggregateMonthlyFinance(
       year,
       month,
       gmvTokens: 0,
-      gmvFiatPLN: 0,
+      gmvFiatUSD: 0,
       totalCreatorShareTokens: 0,
       totalAvaloShareTokens: 0,
       totalTokenPurchasesTokens: 0,
-      totalTokenPurchasesFiatPLN: 0,
+      totalTokenPurchasesFiatUSD: 0,
       totalPayoutTokens: 0,
-      totalPayoutFiatPLN: 0,
+      totalPayoutFiatUSD: 0,
       totalPayoutTransactions: 0,
       outstandingCreatorLiabilityTokens: 0,
-      outstandingCreatorLiabilityFiatPLN: 0,
+      outstandingCreatorLiabilityFiatUSD: 0,
       feesFromChatTokens: 0,
       feesFromCallsTokens: 0,
       feesFromCalendarTokens: 0,
@@ -167,8 +167,8 @@ export async function aggregateMonthlyFinance(
           aggregation.totalTokenPurchasesTokens += amountTokens;
           
           // Try to get fiat amount from metadata
-          const fiatAmount = tx.meta?.fiatAmount || (amountTokens * FINANCE_CONSTANTS.PAYOUT_RATE_PLN_PER_TOKEN);
-          aggregation.totalTokenPurchasesFiatPLN += fiatAmount;
+          const fiatAmount = tx.meta?.fiatAmount || (amountTokens * FINANCE_CONSTANTS.TOKEN_PAYOUT_USD_PER_TOKEN);
+          aggregation.totalTokenPurchasesFiatUSD += fiatAmount;
           break;
         }
 
@@ -254,7 +254,7 @@ export async function aggregateMonthlyFinance(
     }
 
     // Calculate GMV in fiat
-    aggregation.gmvFiatPLN = aggregation.gmvTokens * FINANCE_CONSTANTS.PAYOUT_RATE_PLN_PER_TOKEN;
+    aggregation.gmvFiatUSD = aggregation.gmvTokens * FINANCE_CONSTANTS.TOKEN_PAYOUT_USD_PER_TOKEN;
 
     // ========================================================================
     // STEP 2: Process Payouts
@@ -275,10 +275,10 @@ export async function aggregateMonthlyFinance(
       const payout = payoutDoc.data();
       
       const tokensApproved = payout.approvedTokens || 0;
-      const payoutAmountPLN = tokensApproved * FINANCE_CONSTANTS.PAYOUT_RATE_PLN_PER_TOKEN;
+      const payoutAmountUSD = tokensApproved * FINANCE_CONSTANTS.TOKEN_PAYOUT_USD_PER_TOKEN;
       
       aggregation.totalPayoutTokens += tokensApproved;
-      aggregation.totalPayoutFiatPLN += payoutAmountPLN;
+      aggregation.totalPayoutFiatUSD += payoutAmountUSD;
       aggregation.totalPayoutTransactions++;
     }
 
@@ -330,8 +330,8 @@ export async function aggregateMonthlyFinance(
       0,
       lifetimeCreatorTokens - totalHistoricalPayouts
     );
-    aggregation.outstandingCreatorLiabilityFiatPLN =
-      aggregation.outstandingCreatorLiabilityTokens * FINANCE_CONSTANTS.PAYOUT_RATE_PLN_PER_TOKEN;
+    aggregation.outstandingCreatorLiabilityFiatUSD =
+      aggregation.outstandingCreatorLiabilityTokens * FINANCE_CONSTANTS.TOKEN_PAYOUT_USD_PER_TOKEN;
 
     // ========================================================================
     // STEP 4: Calculate Net Revenue
@@ -429,3 +429,12 @@ export async function getMonthlyAggregationRange(
     return [];
   }
 }
+
+
+
+
+
+
+
+
+

@@ -483,7 +483,7 @@ export const processMediaTranscode = onMessagePublished(
     });
 
     try {
-      const { mediaId, sourceUrl, formats } = messageData;
+      const { mediaId, sourcUSDl, formats } = messageData;
 
       // Transcode to multiple formats (placeholder)
       // In production, this would call Cloud Run service
@@ -491,7 +491,7 @@ export const processMediaTranscode = onMessagePublished(
 
       for (const format of formats) {
         // Simulate transcoding
-        transcodedUrls[format] = `${sourceUrl}_${format}`;
+        transcodedUrls[format] = `${sourcUSDl}_${format}`;
       }
 
       // Update media document
@@ -620,4 +620,13 @@ export const PubSubPipelines = {
 };
 
 logger.info('✅ Pub/Sub pipelines loaded - Async processing ready for 20M scale');
+
+
+
+
+
+
+
+
+
 

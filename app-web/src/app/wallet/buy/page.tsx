@@ -18,7 +18,7 @@
  *    - backend re-verifies auth
  *    - web just passes it through
  * 
- * @version v2.0 (PHASE 5.1)
+ * @version v2.1 (PHASE 5.1 — removed redundant Header/Footer since AppShell provides navigation)
  */
 
 'use client';
@@ -27,8 +27,6 @@ import React, { Suspense, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRoleGate } from '@/hooks/useRoleGate';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import TokenPackCard from '@/components/TokenPackCard';
 import { getAvailableTokenPacks, formatPackPrice } from '@/lib/services/phase33';
 import { createCheckoutSession, redirectToCheckout } from '@/lib/api/tokens';
@@ -106,12 +104,8 @@ function WalletBuyContent() {
   // Loading state
   if (authLoading || roleLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600" />
-        </main>
-        <Footer />
+      <div className="flex-1 flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600" />
       </div>
     );
   }
@@ -122,128 +116,122 @@ function WalletBuyContent() {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
-      
-      <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Page Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Buy Tokens</h1>
-            <p className="text-gray-600">
-              Purchase tokens to unlock premium features and support creators
+    <div className="py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Page Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">💎 Buy Tokens</h1>
+          <p className="text-gray-600">
+            Purchase tokens to unlock premium features and support creators
+          </p>
+          {sourceApp && (
+            <p className="mt-2 text-sm text-pink-600">
+              Redirected from Avalo App
             </p>
-            {sourceApp && (
-              <p className="mt-2 text-sm text-pink-600">
-                Redirected from Avalo App
-              </p>
-            )}
-          </div>
-          
-          {/* Error Message */}
-          {error && (
-            <div className="mb-8 bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-              <p className="text-red-700">{error}</p>
-            </div>
           )}
-          
-          {/* Currency Selector */}
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Select Currency</h2>
-              <div className="flex bg-gray-100 rounded-lg p-1">
-                {(['USD', 'EUR', 'PLN', 'GBP'] as Currency[]).map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setCurrency(c)}
-                    className={`px-4 py-2 text-sm font-medium rounded-md transition ${
-                      currency === c
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Token Pack Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {tokenPacks.map((pack) => (
-                <TokenPackCard
-                  key={pack.packId}
-                  pack={pack}
-                  currency={currency}
-                  isSelected={selectedPack === pack.packId}
-                  isPopular={pack.packId === 'STANDARD'}
-                  isLoading={purchasing && selectedPack === pack.packId}
-                  onSelect={handlePurchase}
-                  disabled={purchasing}
-                />
+        </div>
+        
+        {/* Error Message */}
+        {error && (
+          <div className="mb-8 bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
+        
+        {/* Currency Selector */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-gray-900">Select Currency</h2>
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              {(['USD', 'EUR', 'PLN', 'GBP'] as Currency[]).map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCurrency(c)}
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition ${
+                    currency === c
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  {c}
+                </button>
               ))}
             </div>
           </div>
           
-          {/* Information Cards */}
-          <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <span className="text-xl" aria-hidden="true">🔒</span>
-                <div>
-                  <h3 className="font-medium text-blue-900">Secure Payment</h3>
-                  <p className="text-sm text-blue-700 mt-1">
-                    All payments are processed securely via Stripe. 
-                    Your payment details are never stored on our servers.
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <span className="text-xl" aria-hidden="true">⚠️</span>
-                <div>
-                  <h3 className="font-medium text-yellow-900">Age Restriction</h3>
-                  <p className="text-sm text-yellow-700 mt-1">
-                    You must be 18 years or older to purchase tokens. 
-                    Age verification may be required.
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <span className="text-xl" aria-hidden="true">ℹ️</span>
-                <div>
-                  <h3 className="font-medium text-gray-900">No Refunds</h3>
-                  <p className="text-sm text-gray-700 mt-1">
-                    Token purchases are final and non-refundable. 
-                    Please review your selection before completing the purchase.
-                  </p>
-                </div>
+          {/* Token Pack Grid */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tokenPacks.map((pack) => (
+              <TokenPackCard
+                key={pack.packId}
+                pack={pack}
+                currency={currency}
+                isSelected={selectedPack === pack.packId}
+                isPopular={pack.packId === 'STANDARD'}
+                isLoading={purchasing && selectedPack === pack.packId}
+                onSelect={handlePurchase}
+                disabled={purchasing}
+              />
+            ))}
+          </div>
+        </div>
+        
+        {/* Information Cards */}
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-xl" aria-hidden="true">🔒</span>
+              <div>
+                <h3 className="font-medium text-blue-900">Secure Payment</h3>
+                <p className="text-sm text-blue-700 mt-1">
+                  All payments are processed securely via Stripe. 
+                  Your payment details are never stored on our servers.
+                </p>
               </div>
             </div>
           </div>
           
-          {/* Legal Links */}
-          <div className="mt-8 text-center text-sm text-gray-500">
-            <p>
-              By purchasing tokens, you agree to our{' '}
-              <a href="/legal/terms" className="text-pink-600 hover:underline">
-                Terms of Service
-              </a>{' '}
-              and{' '}
-              <a href="/legal/privacy" className="text-pink-600 hover:underline">
-                Privacy Policy
-              </a>
-            </p>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-xl" aria-hidden="true">⚠️</span>
+              <div>
+                <h3 className="font-medium text-yellow-900">Age Restriction</h3>
+                <p className="text-sm text-yellow-700 mt-1">
+                  You must be 18 years or older to purchase tokens. 
+                  Age verification may be required.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-xl" aria-hidden="true">ℹ️</span>
+              <div>
+                <h3 className="font-medium text-gray-900">No Refunds</h3>
+                <p className="text-sm text-gray-700 mt-1">
+                  Token purchases are final and non-refundable. 
+                  Please review your selection before completing the purchase.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-      </main>
-      
-      <Footer />
+        
+        {/* Legal Links */}
+        <div className="mt-8 text-center text-sm text-gray-500">
+          <p>
+            By purchasing tokens, you agree to our{' '}
+            <a href="/legal/terms" className="text-pink-600 hover:underline">
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a href="/legal/privacy" className="text-pink-600 hover:underline">
+              Privacy Policy
+            </a>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -252,12 +240,8 @@ export default function WalletBuyPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-          <Header />
-          <main className="flex-1 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600" />
-          </main>
-          <Footer />
+        <div className="flex-1 flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600" />
         </div>
       }
     >
@@ -265,3 +249,4 @@ export default function WalletBuyPage() {
     </Suspense>
   );
 }
+

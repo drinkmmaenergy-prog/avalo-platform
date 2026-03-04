@@ -504,3 +504,12 @@ export async function closeLegalHoldCase(params: {
   
   console.log(`[Legal Vault] Closed legal hold case ${params.caseId}`);
 }
+
+
+
+
+
+
+
+
+

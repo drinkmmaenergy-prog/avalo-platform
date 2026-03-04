@@ -1,7 +1,7 @@
 /**
  * PACK 317 — Anti-Bot & Spam Protection
  * 
- * Server-side heuristics and spam detection to prevent abuse:
+ * Server-side hUSDistics and spam detection to prevent abuse:
  * - Disposable email blocking
  * - Same IP/device registration detection
  * - Spam message detection (same text to many users)
@@ -321,3 +321,12 @@ export async function flagSpamSuspect(
     console.error('[Pack317] Failed to flag spam suspect:', error);
   }
 }
+
+
+
+
+
+
+
+
+

@@ -1,5 +1,20 @@
 /**
- * Chat System Callable Functions
+ * @deprecated LEGACY — SUPERSEDED by canonical-chat-engine.ts (v2_canonical)
+ *
+ * This module is retained for backward compatibility only.
+ * ALL new code MUST use canonical-chat-engine.ts instead.
+ *
+ * Legacy billing in this file bills on SENDER messages (incorrect).
+ * The canonical engine bills ONLY on earner messages.
+ *
+ * Legacy paths:
+ * - determineChatRoles → use determineRoles from canonical-chat-engine.ts
+ * - calculateTokens → use calculateBilling from canonical-chat-engine.ts
+ * - sendMessage billing → use processMessage from canonical-chat-engine.ts
+ *
+ * See: canonical-chat-legacy-shim.ts for redirect wrappers.
+ *
+ * ORIGINAL: Chat System Callable Functions
  * Handles chat creation, messaging, billing, and refunds
  */
 
@@ -579,5 +594,14 @@ export const refundByEarnerCallable = onCall(
       }
     }
   );
+
+
+
+
+
+
+
+
+
 
 

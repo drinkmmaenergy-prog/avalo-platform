@@ -460,3 +460,12 @@ export default {
   checkAccessFreeze,
   getScreenCaptureStats,
 };
+
+
+
+
+
+
+
+
+

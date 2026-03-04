@@ -372,3 +372,12 @@ export async function grantTrialSubscription(
     timestamp: new Date().toISOString(),
   });
 }
+
+
+
+
+
+
+
+
+

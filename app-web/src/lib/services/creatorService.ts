@@ -1,9 +1,11 @@
+"use client";
+
 /**
  * Creator Dashboard Service
  * Handles earnings, analytics, and fan conversion metrics
  */
 
-import { db, functions } from '../firebase';
+import { requireDb, requireFunctions } from '../firebase';
 import {
   collection,
   query,
@@ -26,7 +28,7 @@ import { CreatorEarnings, CreatorAnalytics } from '../types';
  */
 export async function getCreatorEarnings(userId: string): Promise<CreatorEarnings | null> {
   try {
-    const earningsRef = doc(db, 'creator_earnings', userId);
+    const earningsRef = doc(requireDb(), 'creator_earnings', userId);
     const earningsSnap = await getDoc(earningsRef);
 
     if (!earningsSnap.exists()) {
@@ -49,7 +51,7 @@ export async function getCreatorEarnings(userId: string): Promise<CreatorEarning
 export async function getEarningsHistory(userId: string, limitCount: number = 50) {
   try {
     const q = query(
-      collection(db, 'transactions'),
+      collection(requireDb(), 'transactions'),
       where('userId', '==', userId),
       where('type', 'in', ['call_earning', 'chat_earning', 'content_unlock', 'event_earning']),
       orderBy('createdAt', 'desc'),
@@ -79,7 +81,7 @@ export async function getCreatorAnalytics(
   period: 'day' | 'week' | 'month' = 'week'
 ): Promise<CreatorAnalytics | null> {
   try {
-    const analyticsRef = doc(db, 'creator_analytics', `${userId}_${period}`);
+    const analyticsRef = doc(requireDb(), 'creator_analytics', `${userId}_${period}`);
     const analyticsSnap = await getDoc(analyticsRef);
 
     if (!analyticsSnap.exists()) {
@@ -103,7 +105,7 @@ export async function getCreatorAnalytics(
 export async function getPopularContent(userId: string, limitCount: number = 10) {
   try {
     const q = query(
-      collection(db, 'posts'),
+      collection(requireDb(), 'posts'),
       where('userId', '==', userId),
       orderBy('views', 'desc'),
       limit(limitCount)
@@ -137,7 +139,7 @@ export async function requestPayout(params: {
     const request = httpsCallable<typeof params, {
       success: boolean;
       payoutId: string;
-    }>(functions, 'requestPayout');
+    }>(requireFunctions(), 'requestPayout');
     
     const result = await request(params);
     return result.data;
@@ -156,7 +158,7 @@ export async function requestPayout(params: {
 export async function getPayoutHistory(userId: string, limitCount: number = 20) {
   try {
     const q = query(
-      collection(db, 'payouts'),
+      collection(requireDb(), 'payouts'),
       where('userId', '==', userId),
       orderBy('createdAt', 'desc'),
       limit(limitCount)
@@ -187,8 +189,7 @@ export async function getFanConversionMetrics(userId: string): Promise<{
   topSpenders: any[];
 }> {
   try {
-    const metrics = httpsCallable<{ userId: string }, any>(
-      functions,
+    const metrics = httpsCallable<{ userId: string }, any>(requireFunctions(),
       'getFanConversionMetrics'
     );
     

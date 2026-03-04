@@ -881,7 +881,7 @@ export const pack412_proposeNextLaunchRegions = functions.https.onCall(async (re
     };
   }
   
-  // Get ready regions from Eastern Europe
+  // Get ready regions from Eastern USDope
   const readyRegions = await db.collection('launchRegions')
     .where('stage', '==', 'READY_FOR_SOFT')
     .where('cluster', 'in', ['EE_CENTRAL', 'EE_NORTH', 'EE_SOUTH'])
@@ -892,7 +892,7 @@ export const pack412_proposeNextLaunchRegions = functions.https.onCall(async (re
   const proposals: MarketExpansionProposal = {
     id: `proposal_${Date.now()}`,
     proposedRegions: readyRegions.docs.map((doc) => doc.id),
-    rationale: 'Eastern Europe focus strategy - prioritize ready regions from EE clusters',
+    rationale: 'Eastern USDope focus strategy - prioritize ready regions from EE clusters',
     priority: 1,
     estimatedReadiness: new Date().toISOString(),
     dependencies: [],
@@ -935,3 +935,12 @@ export async function getRegionLaunchStageForUser(userId: string): Promise<Launc
     return 'FULL_LIVE'; // Fail open
   }
 }
+
+
+
+
+
+
+
+
+

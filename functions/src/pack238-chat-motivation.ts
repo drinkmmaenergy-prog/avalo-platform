@@ -920,3 +920,12 @@ export const cleanupExpiredBoosters = onSchedule("every 15 minutes", async (even
     await batch.commit();
     console.log(`Cleaned up ${expiredBoostersSnapshot.size} expired boosters`);
   });
+
+
+
+
+
+
+
+
+

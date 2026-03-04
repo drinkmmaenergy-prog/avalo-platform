@@ -270,3 +270,12 @@ export const taxProfileVerify = functions.https.onCall(async (request) => {
 
   return result;
 });
+
+
+
+
+
+
+
+
+

@@ -1035,3 +1035,12 @@ function generateCurrentLifeSituation(character: AICharacterProfile): string {
   ];
   return templates[Math.floor(Math.random() * templates.length)];
 }
+
+
+
+
+
+
+
+
+

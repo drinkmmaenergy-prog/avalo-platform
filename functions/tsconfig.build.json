@@ -10,5 +10,13 @@
     "**/*.test.ts",
     "**/*.spec.ts",
     "src/index.full.ts"
+  ,
+    "**/*.legacy.ts"
+  ,
+    "**/*.legacy.tsx"
+  ,
+    "**/*.legacy.d.ts"
+  ,
+    "**/*.legacy.js"
   ]
 }

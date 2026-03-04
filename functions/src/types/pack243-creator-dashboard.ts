@@ -272,3 +272,12 @@ export const SUGGESTION_TEMPLATES = {
     expectedImpact: 'Monetize local popularity with events',
   }),
 } as const;
+
+
+
+
+
+
+
+
+

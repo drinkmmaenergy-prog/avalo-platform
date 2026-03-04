@@ -594,3 +594,12 @@ export const cacheTranslations = onSchedule("every 24 hours", async (event) => {
       console.error('Error caching translations:', error);
     }
   });
+
+
+
+
+
+
+
+
+

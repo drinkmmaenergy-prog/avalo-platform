@@ -813,3 +813,12 @@ async function updateUserAnalytics(
     console.error('Error updating user analytics:', error);
   }
 }
+
+
+
+
+
+
+
+
+

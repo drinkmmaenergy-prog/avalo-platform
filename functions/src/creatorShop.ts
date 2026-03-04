@@ -1150,3 +1150,12 @@ async function updateCreatorProductStats(
 
 logger.info("✅ Creator Shop module loaded successfully");
 
+
+
+
+
+
+
+
+
+

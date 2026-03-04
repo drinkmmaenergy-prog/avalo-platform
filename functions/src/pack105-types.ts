@@ -157,7 +157,7 @@ export interface PayoutReconciliationResult {
   status: 'MATCHED' | 'MISMATCH' | 'MISSING_EXTERNAL' | 'MISSING_INTERNAL';
   internal: {
     amountTokens: number;
-    amountPLN: number;
+    amountUSD: number;
     status: string;
   };
   external?: {
@@ -186,7 +186,7 @@ export interface CreatorRevenueExport {
   };
   summary: {
     totalEarningsTokens: number;
-    totalEarningsPLN: number;
+    totalEarningsUSD: number;
     paidInteractions: number;
     payoutsTotal: number;
     payoutsCount: number;
@@ -208,12 +208,12 @@ export interface CreatorRevenueExport {
   payouts: Array<{
     payoutId: string;
     date: string;
-    amountPLN: number;
+    amountUSD: number;
     method: string;
     status: string;
   }>;
   generatedAt: Timestamp;
-  fileUrl?: string;
+  filUSDl?: string;
 }
 
 export interface VATInvoiceData {
@@ -263,7 +263,7 @@ export interface PayoutListItem {
   userName: string;
   method: string;
   amountTokens: number;
-  amountPLN: number;
+  amountUSD: number;
   status: string;
   kycStatus: string;
   requestedAt: string;
@@ -291,7 +291,7 @@ export interface FinanceDashboardMetrics {
     processing: number;
     completed: number;
     failed: number;
-    totalAmountPLN: number;
+    totalAmountUSD: number;
   };
   kyc: {
     pending: number;
@@ -310,3 +310,12 @@ export interface FinanceDashboardMetrics {
     platformRevenue: number;
   };
 }
+
+
+
+
+
+
+
+
+

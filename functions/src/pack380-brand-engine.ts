@@ -23,7 +23,7 @@ interface BrandAsset {
   name: string;
   type: 'logo' | 'video' | 'template' | 'typography' | 'color' | 'legal_disclaimer' | 'other';
   category: string;
-  fileUrl: string;
+  filUSDl: string;
   thumbnail?: string;
   fileSize: number;
   mimeType: string;
@@ -143,7 +143,7 @@ export const uploadBrandAsset = functions.https.onCall(async (request) => {
     name,
     type,
     category,
-    fileUrl,
+    filUSDl,
     fileSize,
     mimeType,
     usage,
@@ -153,7 +153,7 @@ export const uploadBrandAsset = functions.https.onCall(async (request) => {
     version
   } = data;
 
-  if (!name || !type || !fileUrl) {
+  if (!name || !type || !filUSDl) {
     throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
   }
 
@@ -164,7 +164,7 @@ export const uploadBrandAsset = functions.https.onCall(async (request) => {
       name,
       type,
       category: category || 'general',
-      fileUrl,
+      filUSDl,
       thumbnail: data.thumbnail,
       fileSize: fileSize || 0,
       mimeType: mimeType || 'application/octet-stream',
@@ -702,3 +702,12 @@ export const getBrandAuditHistory = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+

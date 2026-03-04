@@ -474,3 +474,12 @@ export async function getAttackPatternReviews(
   
   return reviews;
 }
+
+
+
+
+
+
+
+
+

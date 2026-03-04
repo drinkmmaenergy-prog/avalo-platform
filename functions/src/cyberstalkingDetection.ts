@@ -673,3 +673,12 @@ export async function checkStalkingRestrictions(userId: string): Promise<{
     return { isRestricted: false, restrictions: [] };
   }
 }
+
+
+
+
+
+
+
+
+

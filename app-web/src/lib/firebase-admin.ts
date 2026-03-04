@@ -1,48 +1,48 @@
 /**
- * Firebase Admin SDK — Server-side only.
+ * Firebase Admin SDK — Server-side only (API routes).
  *
- * Used in API routes (app/api/) for server-side Firestore and Auth operations.
- * Initializes from FIREBASE_SERVICE_ACCOUNT_KEY env var or falls back to
- * GOOGLE_APPLICATION_CREDENTIALS for GCP environments.
+ * Exports:
+ *   - adminApp   Firebase Admin App instance
+ *   - adminAuth  Firebase Admin Auth
+ *   - adminDb    Firebase Admin Firestore
  *
- * IMPORTANT: This file must NEVER be imported from client components.
+ * INVARIANTS:
+ *   - NEVER import this from client components.
+ *   - Service account key comes from FIREBASE_SERVICE_ACCOUNT_KEY env var.
  */
 
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth, type Auth } from 'firebase-admin/auth';
+import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 
 function getAdminApp(): App {
   if (getApps().length > 0) {
-    return getApps()[0];
+    return getApps()[0]!;
   }
 
   const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
   if (serviceAccountKey) {
     try {
-      const serviceAccount = JSON.parse(serviceAccountKey);
+      const parsed = JSON.parse(serviceAccountKey);
       return initializeApp({
-        credential: cert(serviceAccount),
-        projectId: serviceAccount.project_id,
+        credential: cert(parsed),
+        projectId: parsed.project_id,
       });
     } catch {
-      console.warn('[firebase-admin] Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY, falling back to default credentials');
+      console.error('[firebase-admin] Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY');
     }
   }
 
-  // Fallback: use default credentials (works in GCP environments)
+  // Fallback: use Application Default Credentials (GCP environments, emulators)
   return initializeApp({
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? 'avalo-c8c46',
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   });
 }
 
-const adminApp = getAdminApp();
+const adminApp: App = getAdminApp();
 
-/** Firebase Admin Auth */
-export const adminAuth = getAuth(adminApp);
-
-/** Firebase Admin Firestore */
-export const adminDb = getFirestore(adminApp);
+export const adminAuth: Auth = getAuth(adminApp);
+export const adminDb: Firestore = getFirestore(adminApp);
 
 export default adminApp;

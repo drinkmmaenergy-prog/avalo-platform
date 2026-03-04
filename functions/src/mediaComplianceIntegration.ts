@@ -48,3 +48,12 @@ export function generateMediaId(source: MediaSource, identifier: string): string
  * const mediaId = generateMediaId('MARKETPLACE', contentId);
  * await onMediaUploaded(mediaId, userId, 'MARKETPLACE', storagePath);
  */
+
+
+
+
+
+
+
+
+

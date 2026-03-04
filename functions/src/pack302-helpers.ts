@@ -287,19 +287,19 @@ export function resolveCurrency(locale: string, currencyOverride?: string | null
     return currencyOverride;
   }
   
-  return REGION_DEFAULT_CURRENCY[locale] || 'PLN';
+  return REGION_DEFAULT_CURRENCY[locale] || 'USD';
 }
 
 /**
- * Convert PLN price to target currency
+ * Convert USD price to target currency
  */
-export function convertPrice(pricePLN: number, targetCurrency: string): number {
+export function convertPrice(priceUSD: number, targetCurrency: string): number {
   const config = CURRENCY_CONFIGS[targetCurrency];
   if (!config) {
-    return pricePLN; // Fallback to PLN
+    return priceUSD; // Fallback to USD
   }
   
-  return Math.round(pricePLN * config.conversionRate * 100) / 100;
+  return Math.round(priceUSD * config.conversionRate * 100) / 100;
 }
 
 /**
@@ -319,7 +319,7 @@ export function formatPrice(amount: number, currency: string): string {
 /**
  * Validate and get token package
  */
-export function getTokenPackage(packageId: string): { tokens: number; pricePLN: number } {
+export function getTokenPackage(packageId: string): { tokens: number; priceUSD: number } {
   const pkg = TOKEN_PACKAGES[packageId as TokenPackageId];
   
   if (!pkg) {
@@ -328,7 +328,7 @@ export function getTokenPackage(packageId: string): { tokens: number; pricePLN: 
   
   return {
     tokens: pkg.tokens,
-    pricePLN: pkg.pricePLN,
+    priceUSD: pkg.priceUSD,
   };
 }
 
@@ -382,3 +382,12 @@ export async function isSubscriptionSyncProcessed(
   
   return !existingLog.empty;
 }
+
+
+
+
+
+
+
+
+

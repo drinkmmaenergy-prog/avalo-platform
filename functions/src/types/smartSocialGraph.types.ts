@@ -24,7 +24,7 @@ import { admin, timestamp } from '../runtime';
 export type DiscoveryCategory = 
   | 'SKILLS'           // cooking, coding, fitness, photography
   | 'LIFESTYLE'        // travel, wellness, diet, fashion
-  | 'BUSINESS'         // marketing, entrepreneurship, organization
+  | 'BUSINESS'         // marketing, entreprenUSDship, organization
   | 'CREATIVE'         // art, dance, music, crafts
   | 'ENTERTAINMENT'    // gaming, humor, daily vlogs
   | 'LOCAL_EVENTS'     // workshops near user's city
@@ -406,3 +406,12 @@ export const DEFAULT_RANKING_WEIGHTS = {
 export const SHADOW_DENSITY_THRESHOLD = 2_000_000; // 2M impressions/week
 
 export const GUARANTEED_NEW_CREATOR_SLOTS = 3; // Per feed page
+
+
+
+
+
+
+
+
+

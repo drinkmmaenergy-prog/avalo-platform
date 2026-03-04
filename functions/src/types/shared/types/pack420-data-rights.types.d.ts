@@ -13,3 +13,12 @@ export interface AccountLifecycleEvent  {
   [key: string]: any;
 }
 export type DataRightsType = 'ACCESS' | 'DELETE' | 'EXPORT' | 'RECTIFY';
+
+
+
+
+
+
+
+
+

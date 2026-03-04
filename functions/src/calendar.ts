@@ -548,7 +548,7 @@ export const fileAppearanceComplaintCallable = onCall(
       const {
         bookingId,
         reportedUserId,
-        liveSelfieUrl,
+        liveSelfiUSDl,
         decision,
         notes,
         mismatchScore,
@@ -570,7 +570,7 @@ export const fileAppearanceComplaintCallable = onCall(
           bookingId,
           complainantId,
           reportedUserId,
-          liveSelfieUrl,
+          liveSelfiUSDl,
           decision: decision === 'ISSUE_REFUND' ? ComplaintDecision.ISSUE_REFUND : ComplaintDecision.KEEP_COMPLETED,
           notes,
           mismatchScore,
@@ -668,5 +668,14 @@ export const getRefundHistoryCallable = onCall(
       });
     }
   );
+
+
+
+
+
+
+
+
+
 
 

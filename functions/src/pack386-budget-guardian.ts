@@ -519,3 +519,12 @@ function getDailyMaxForGeo(geo?: string): number {
 
   return geoLimits[geo || 'global'] || 5000;
 }
+
+
+
+
+
+
+
+
+

@@ -124,7 +124,7 @@ export async function extractTextFromImage(imageUrl: string): Promise<string> {
         requests: [
           {
             image: {
-              source: { imageUri: imageUrl },
+              source: { imagUSDi: imageUrl },
             },
             features: [
               { type: "TEXT_DETECTION", maxResults: 10 },
@@ -182,7 +182,7 @@ export async function detectNSFW(imageUrl: string): Promise<NSFWAnalysis> {
         requests: [
           {
             image: {
-              source: { imageUri: imageUrl },
+              source: { imagUSDi: imageUrl },
             },
             features: [
               { type: "SAFE_SEARCH_DETECTION" },
@@ -766,4 +766,13 @@ export default {
   logModerationResult,
   getModerationStats,
 };
+
+
+
+
+
+
+
+
+
 

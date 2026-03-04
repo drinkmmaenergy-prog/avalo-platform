@@ -146,3 +146,12 @@ export const onMonetizationEvent = onDocumentCreated('transactions/{txId}', asyn
   });
 
 console.log('✅ Discovery Endpoints initialized');
+
+
+
+
+
+
+
+
+

@@ -1,9 +1,11 @@
+"use client";
+
 /**
  * AI Companions Service
  * Handles AI chat interfaces, history sync, and payments per media unlock
  */
 
-import { db, functions } from '../firebase';
+import { requireDb, requireFunctions } from '../firebase';
 import {
   collection,
   query,
@@ -30,7 +32,7 @@ import { AI_CHAT_CONFIG } from '../monetization';
 export async function getAvailableCompanions(): Promise<AICompanion[]> {
   try {
     const q = query(
-      collection(db, 'ai_companions'),
+      collection(requireDb(), 'ai_companions'),
       orderBy('tier'),
       limit(50)
     );
@@ -51,7 +53,7 @@ export async function getAvailableCompanions(): Promise<AICompanion[]> {
  */
 export async function getCompanion(companionId: string): Promise<AICompanion | null> {
   try {
-    const companionRef = doc(db, 'ai_companions', companionId);
+    const companionRef = doc(requireDb(), 'ai_companions', companionId);
     const companionSnap = await getDoc(companionRef);
 
     if (!companionSnap.exists()) {
@@ -83,7 +85,7 @@ export async function getOrCreateConversation(params: {
     const getOrCreate = httpsCallable<typeof params, {
       conversationId: string;
       conversation: AIConversation;
-    }>(functions, 'getOrCreateAIConversation');
+    }>(requireFunctions(), 'getOrCreateAIConversation');
     
     const result = await getOrCreate(params);
     return result.data;
@@ -99,7 +101,7 @@ export async function getOrCreateConversation(params: {
 export async function getUserConversations(userId: string): Promise<AIConversation[]> {
   try {
     const q = query(
-      collection(db, 'ai_conversations'),
+      collection(requireDb(), 'ai_conversations'),
       where('userId', '==', userId),
       orderBy('updatedAt', 'desc'),
       limit(50)
@@ -123,7 +125,7 @@ export function subscribeToConversation(
   conversationId: string,
   callback: (conversation: AIConversation | null) => void
 ): Unsubscribe {
-  const convRef = doc(db, 'ai_conversations', conversationId);
+  const convRef = doc(requireDb(), 'ai_conversations', conversationId);
   
   return onSnapshot(convRef, (snapshot) => {
     if (!snapshot.exists()) {
@@ -166,7 +168,7 @@ export async function sendAIMessage(params: {
       messageId: string;
       response: string;
       tokenCost: number;
-    }>(functions, 'sendAIMessage');
+    }>(requireFunctions(), 'sendAIMessage');
     
     const result = await send(params);
     return result.data;
@@ -217,7 +219,7 @@ export async function unlockAIMedia(params: {
       success: boolean;
       mediaUrl: string;
       tokenCost: number;
-    }>(functions, 'unlockAIMedia');
+    }>(requireFunctions(), 'unlockAIMedia');
     
     const result = await unlock(params);
     return result.data;

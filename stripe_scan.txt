@@ -1,0 +1,1493 @@
+functions\src\abTesting.ts:9: * - Event tracking with idempotency
+functions\src\abTesting.ts:240: * Includes idempotency check to prevent duplicate events
+functions\src\abTesting.ts:255:      idempotencyKey: z.string().optional(), // For duplicate prevention
+functions\src\abTesting.ts:263:    const { testKey, metric, value, metadata, idempotencyKey } = validationResult.data;
+functions\src\abTesting.ts:281:      // Check idempotency (if key provided)
+functions\src\abTesting.ts:282:      if (idempotencyKey) {
+functions\src\abTesting.ts:283:        const eventId = `${testKey}_${uid}_${idempotencyKey}`;
+functions\src\abTesting.ts:297:      const eventId = idempotencyKey
+functions\src\abTesting.ts:298:        ? `${testKey}_${uid}_${idempotencyKey}`
+functions\src\affiliate\types.ts:29:  payoutMethod: 'bank_transfer' | 'paypal' | 'stripe';
+functions\src\affiliate\types.ts:214:  payoutMethod: 'bank_transfer' | 'paypal' | 'stripe';
+functions\src\amlMonitoring.ts:842: * Should be integrated into token purchase flows (Store, Stripe, etc.)
+functions\src\api\health.ts:13:import { stripeSecretKey, stripeWebhookSecret } from '../runtime';
+functions\src\api\health.ts:38:export const health = onRequest({ secrets: [stripeSecretKey, stripeWebhookSecret] }, async (req, res) => {
+functions\src\api\smokeCheck.ts:13:import { stripeSecretKey, stripeWebhookSecret } from '../runtime';
+functions\src\api\smokeCheck.ts:22:  { secrets: [stripeSecretKey, stripeWebhookSecret] },
+functions\src\api\smokeCheck.ts:36:    const hasStripeSecretKey = !!process.env.STRIPE_SECRET_KEY;
+functions\src\api\smokeCheck.ts:37:    const hasStripeWebhookSecret = !!process.env.STRIPE_WEBHOOK_SECRET;
+functions\src\api\smokeCheck.ts:39:    const allSecretsPresent = hasStripeSecretKey && hasStripeWebhookSecret;
+functions\src\api\smokeCheck.ts:55:      hasStripeSecretKey,
+functions\src\api\smokeCheck.ts:56:      hasStripeWebhookSecret,
+functions\src\api\smokeCheck.ts:58:        STRIPE_SECRET_KEY: hasStripeSecretKey,
+functions\src\api\smokeCheck.ts:59:        STRIPE_WEBHOOK_SECRET: hasStripeWebhookSecret,
+functions\src\chatSync.ts:58:// SYNC MESSAGE (IDEMPOTENT)
+functions\src\chatSync.ts:63: * Idempotent message write - uses messageId as document ID
+functions\src\chatSync.ts:102:    // Reference to message document (using messageId as document ID for idempotency)
+functions\src\chatSync.ts:138:        // Message already exists - update only missing fields (idempotent)
+functions\src\chatSync.ts:299:    // Update status (idempotent)
+functions\src\config\payouts.config.ts:23:  SUPPORTED_PAYOUT_METHODS: ['BANK_TRANSFER', 'WISE', 'STRIPE_CONNECT'] as const,
+functions\src\config\productionGuards.ts:147:  if (!process.env.STRIPE_SECRET_KEY && isProduction()) {
+functions\src\config\productionGuards.ts:148:    errors.push('STRIPE_SECRET_KEY is not configured');
+functions\src\config\productionGuards.ts:150:  if (!process.env.STRIPE_WEBHOOK_SECRET && isProduction()) {
+functions\src\config\productionGuards.ts:151:    errors.push('STRIPE_WEBHOOK_SECRET is not configured');
+functions\src\config\productionGuards.ts:199:  webhookSignatureVerification: boolean;
+functions\src\config\productionGuards.ts:217:    webhookSignatureVerification: !!(process.env.STRIPE_WEBHOOK_SECRET),
+functions\src\config\productionGuards.ts:237:  if (!status.webhookSignatureVerification && isProduction()) {
+functions\src\config\productionGuards.ts:238:    failures.push('Webhook signature verification not configured');
+functions\src\config\productionGuards.ts:319:  webhooksExempt: boolean;
+functions\src\config\productionGuards.ts:338:  // Webhooks MUST be exempt from App Check (external services can\'t generate tokens)
+functions\src\config\productionGuards.ts:339:  notes.push('Webhooks: Exempt (signature verification used instead)');
+functions\src\config\productionGuards.ts:344:    webhooksExempt: true,
+functions\src\config\productionGuards.ts:350:// PACK 4.1: STRIPE PRODUCTION SAFETY UTILITIES
+functions\src\config\productionGuards.ts:354: * Stripe production safety check result
+functions\src\config\productionGuards.ts:356:export interface StripeProductionSafety {
+functions\src\config\productionGuards.ts:364: * Get Stripe production safety status.
+functions\src\config\productionGuards.ts:367:export function getStripeProductionSafety(): StripeProductionSafety {
+functions\src\config\productionGuards.ts:369:    signatureVerificationEnabled: !!process.env.STRIPE_WEBHOOK_SECRET,
+functions\src\config\productionGuards.ts:371:    discountValidationEnabled: true, // assertNoDiscounts in webhook.ts
+functions\src\config\productionGuards.ts:372:    amountValidationEnabled: true, // validateCanonicalPricing in webhook.ts
+functions\src\config\productionGuards.ts:397:  getStripeProductionSafety,
+functions\src\config\startupValidator.ts:8: * - Validates Stripe test keys not used in production
+functions\src\config\startupValidator.ts:23: * - Stripe secrets are injected per-function via defineSecret, NOT at module load
+functions\src\config\startupValidator.ts:25: * - healthCheck and smokeCheck bypass Stripe enforcement
+functions\src\config\startupValidator.ts:123: * Stripe secrets (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) are declared via
+functions\src\config\startupValidator.ts:128: * Stripe secret presence is validated inside individual function handlers.
+functions\src\config\startupValidator.ts:131:  // NOTE: Stripe secrets removed from boot-time validation.
+functions\src\config\startupValidator.ts:153: * Validate that test Stripe keys are NOT used in production.
+functions\src\config\startupValidator.ts:156: * At cold start, process.env.STRIPE_SECRET_KEY may not be set yet
+functions\src\config\startupValidator.ts:159:function validateStripeKeyNotTest(): { valid: boolean; violation?: string } {
+functions\src\config\startupValidator.ts:160:  const stripeKey = process.env.STRIPE_SECRET_KEY || '';
+functions\src\config\startupValidator.ts:164:  if (isProd && stripeKey && stripeKey.startsWith('sk_test_')) {
+functions\src\config\startupValidator.ts:167:      violation: 'CRITICAL: Stripe test key (sk_test_*) detected in production environment',
+functions\src\config\startupValidator.ts:172:  if (!isProd && stripeKey && stripeKey.startsWith('sk_live_')) {
+functions\src\config\startupValidator.ts:173:    validatorLogger.warn('Live Stripe key in non-production environment');
+functions\src\config\startupValidator.ts:246:  // 2. Stripe test key guard (only if key is present)
+functions\src\config\startupValidator.ts:247:  const stripeKeyCheck = validateStripeKeyNotTest();
+functions\src\config\startupValidator.ts:248:  checks['stripeKeyNotTest'] = stripeKeyCheck.valid;
+functions\src\config\startupValidator.ts:249:  if (!stripeKeyCheck.valid && stripeKeyCheck.violation) {
+functions\src\config\startupValidator.ts:250:    errors.push(stripeKeyCheck.violation);
+functions\src\config\startupValidator.ts:329: * Validate that Stripe secrets are present inside a function handler.
+functions\src\config\startupValidator.ts:330: * Call this from within onRequest/onCall handlers that require Stripe.
+functions\src\config\startupValidator.ts:337:export function enforceStripeSecrets(functionName: string): void {
+functions\src\config\startupValidator.ts:342:  const hasStripeKey = !!process.env.STRIPE_SECRET_KEY;
+functions\src\config\startupValidator.ts:343:  const hasWebhookSecret = !!process.env.STRIPE_WEBHOOK_SECRET;
+functions\src\config\startupValidator.ts:345:  if (!hasStripeKey || !hasWebhookSecret) {
+functions\src\config\startupValidator.ts:347:    if (!hasStripeKey) missing.push('STRIPE_SECRET_KEY');
+functions\src\config\startupValidator.ts:348:    if (!hasWebhookSecret) missing.push('STRIPE_WEBHOOK_SECRET');
+functions\src\config\startupValidator.ts:350:    validatorLogger.error(`[${functionName}] Missing Stripe secrets in handler`, {
+functions\src\config\startupValidator.ts:355:      `[${functionName}] Missing required Stripe secrets: ${missing.join(', ')}`
+functions\src\config\startupValidator.ts:361: * List of function names that bypass Stripe enforcement.
+functions\src\config\startupValidator.ts:363:const STRIPE_BYPASS_FUNCTIONS = new Set([
+functions\src\config\startupValidator.ts:369: * Check if a function bypasses Stripe enforcement.
+functions\src\config\startupValidator.ts:371:export function isStripeBypassFunction(functionName: string): boolean {
+functions\src\config\startupValidator.ts:372:  return STRIPE_BYPASS_FUNCTIONS.has(functionName);
+functions\src\config\startupValidator.ts:402:  validateStripeKeyNotTest,
+functions\src\config\startupValidator.ts:412:  enforceStripeSecrets,
+functions\src\config\startupValidator.ts:413:  isStripeBypassFunction,
+functions\src\config.ts:82:// Stripe Configuration (from environment)
+functions\src\config.ts:83:export const getStripeConfig = () => ({
+functions\src\config.ts:84:  secretKey: process.env.STRIPE_SECRET_KEY || "",
+functions\src\config.ts:85:  webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || "",
+functions\src\config.ts:86:  publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || "",
+functions\src\creatorStore.ts:8: * - Stripe Connect for fiat payouts
+functions\src\engines\eventEngine.ts:6: * - Idempotent processing
+functions\src\engines\eventEngine.ts:75:  processedBy?: string; // For idempotency tracking
+functions\src\engines\eventEngine.ts:220: * Process a single event (idempotent)
+functions\src\engines\eventEngine.ts:226:    // Use transaction for idempotency
+functions\src\engines\eventEngine.ts:231:      // Idempotency check: if already processed, skip
+functions\src\featureFlags.ts:33:  CREATOR_STRIPE_CONNECT: "creator_stripe_connect",
+functions\src\geoshare.ts:17:import Stripe from 'stripe';
+functions\src\healthCheck.ts:4: * This function does NOT require Stripe secrets.
+functions\src\healthCheck.ts:7: * PACK 4.1 BOOT ISOLATION: This endpoint bypasses Stripe enforcement.
+functions\src\index.ts:29:// BATCH A: AUTH, WALLET, STRIPE, ECONOMY CONFIG
+functions\src\index.ts:86:// --- STRIPE & PAYMENTS ---
+functions\src\index.ts:90:  stripeWebhook,
+functions\src\index.ts:96:  createStripeCheckoutSession,
+functions\src\index.ts:97:  stripeWebhookV2,
+functions\src\index.ts:115:  pack278_stripeWebhook,
+functions\src\index.ts:118:// PACK 288: WEB STRIPE TOKENS
+functions\src\index.ts:120:  tokens_stripeWebhook,
+functions\src\index.ts:121:} from './pack288-web-stripe';
+functions\src\index.ts:135:  pack350_syncStripeSubscription,
+functions\src\index.ts:139:  pack350_stripeWebhook,
+functions\src\index.ts:140:  pack350_appleWebhook,
+functions\src\index.ts:141:  pack350_googleWebhook,
+functions\src\index.ts:551:  adPlatformWebhook,
+functions\src\integrations\securityMiddleware.ts:196:  webhookUrl?: string,
+functions\src\integrations\securityMiddleware.ts:199:  if (!webhookUrl && !description) {
+functions\src\integrations\securityMiddleware.ts:208:    /stripe/i,
+functions\src\integrations\securityMiddleware.ts:218:  const textToCheck = `${webhookUrl || ''} ${description || ''}`;
+functions\src\integrations\securityMiddleware.ts:234:        [webhookUrl || '', description || '']
+functions\src\integrations\securityMiddleware.ts:603:  webhookUrl?: string
+functions\src\integrations\securityMiddleware.ts:605:  if (!webhookUrl) {
+functions\src\integrations\securityMiddleware.ts:621:    if (pattern.test(webhookUrl)) {
+functions\src\integrations\securityMiddleware.ts:625:        webhookUrl
+functions\src\integrations\securityMiddleware.ts:634:        [webhookUrl]
+functions\src\integrations\stripeConnect.ts:2: * PACK 56 — Stripe Connect Integration
+functions\src\integrations\stripeConnect.ts:4: * Handles Stripe Connect account creation, onboarding, and payouts.
+functions\src\integrations\stripeConnect.ts:7:import Stripe from "stripe";
+functions\src\integrations\stripeConnect.ts:9:// Get Stripe key from config or environment - safe for emulator
+functions\src\integrations\stripeConnect.ts:10:const stripeApiKey = process.env.STRIPE_SECRET_KEY || "";
+functions\src\integrations\stripeConnect.ts:13:let stripeInstance: Stripe | null = null;
+functions\src\integrations\stripeConnect.ts:16: * Safe Stripe getter - returns null and logs warning when no API key available
+functions\src\integrations\stripeConnect.ts:17: * This allows the emulator to boot without crashing on missing Stripe key
+functions\src\integrations\stripeConnect.ts:19:function getStripe(): Stripe | null {
+functions\src\integrations\stripeConnect.ts:20:  if (stripeInstance) {
+functions\src\integrations\stripeConnect.ts:21:    return stripeInstance;
+functions\src\integrations\stripeConnect.ts:24:  if (!stripeApiKey) {
+functions\src\integrations\stripeConnect.ts:25:    console.warn("[stripeConnect] STRIPE_SECRET_KEY not configured - Stripe operations disabled");
+functions\src\integrations\stripeConnect.ts:29:  stripeInstance = new Stripe(stripeApiKey, {
+functions\src\integrations\stripeConnect.ts:33:  return stripeInstance;
+functions\src\integrations\stripeConnect.ts:37: * Guard function that throws if Stripe is not configured
+functions\src\integrations\stripeConnect.ts:39:function requireStripe(): Stripe {
+functions\src\integrations\stripeConnect.ts:40:  const stripe = getStripe();
+functions\src\integrations\stripeConnect.ts:41:  if (!stripe) {
+functions\src\integrations\stripeConnect.ts:42:    throw new Error("Stripe is not configured - STRIPE_SECRET_KEY is missing");
+functions\src\integrations\stripeConnect.ts:44:  return stripe;
+functions\src\integrations\stripeConnect.ts:98: * Create or retrieve a Stripe Connect Express account for a user.
+functions\src\integrations\stripeConnect.ts:100:export async function createOrUpdateStripeAccount(
+functions\src\integrations\stripeConnect.ts:103:  const stripe = requireStripe();
+functions\src\integrations\stripeConnect.ts:107:    const account = await stripe.accounts.create({
+functions\src\integrations\stripeConnect.ts:132:    console.error("Error creating Stripe Connect account:", error);
+functions\src\integrations\stripeConnect.ts:133:    throw new Error(`Failed to create Stripe Connect account: ${error instanceof Error ? error.message : String(error)}`);
+functions\src\integrations\stripeConnect.ts:140:export async function createStripeOnboardingLink(
+functions\src\integrations\stripeConnect.ts:143:  const stripe = requireStripe();
+functions\src\integrations\stripeConnect.ts:146:    const accountLink = await stripe.accountLinks.create({
+functions\src\integrations\stripeConnect.ts:158:    console.error("Error creating Stripe onboarding link:", error);
+functions\src\integrations\stripeConnect.ts:166:export async function getStripeAccountStatus(
+functions\src\integrations\stripeConnect.ts:169:  const stripe = requireStripe();
+functions\src\integrations\stripeConnect.ts:172:    const account = await stripe.accounts.retrieve(accountId);
+functions\src\integrations\stripeConnect.ts:193:    console.error("Error getting Stripe account status:", error);
+functions\src\integrations\stripeConnect.ts:204:export async function createStripeTransfer(
+functions\src\integrations\stripeConnect.ts:207:  const stripe = requireStripe();
+functions\src\integrations\stripeConnect.ts:210:    const transfer = await stripe.transfers.create({
+functions\src\integrations\stripeConnect.ts:226:    console.error("Error creating Stripe transfer:", error);
+functions\src\integrations\stripeConnect.ts:234:export async function getStripeTransfer(
+functions\src\integrations\stripeConnect.ts:237:  const stripe = requireStripe();
+functions\src\integrations\stripeConnect.ts:240:    const transfer = await stripe.transfers.retrieve(transferId);
+functions\src\integrations\stripeConnect.ts:250:    console.error("Error getting Stripe transfer:", error);
+functions\src\lib\alerting.ts:55:  type: 'EMAIL' | 'SLACK' | 'WEBHOOK' | 'SMS';
+functions\src\lib\alerting.ts:90:  if (process.env.ALERT_SLACK_WEBHOOK) {
+functions\src\lib\alerting.ts:95:        webhookUrl: process.env.ALERT_SLACK_WEBHOOK } });
+functions\src\lib\alerting.ts:98:  // Generic webhook
+functions\src\lib\alerting.ts:99:  if (process.env.ALERT_WEBHOOK_URL) {
+functions\src\lib\alerting.ts:101:      type: 'WEBHOOK',
+functions\src\lib\alerting.ts:104:        url: process.env.ALERT_WEBHOOK_URL,
+functions\src\lib\alerting.ts:105:        method: process.env.ALERT_WEBHOOK_METHOD || 'POST',
+functions\src\lib\alerting.ts:106:        headers: process.env.ALERT_WEBHOOK_HEADERS 
+functions\src\lib\alerting.ts:107:          ? JSON.parse(process.env.ALERT_WEBHOOK_HEADERS)
+functions\src\lib\alerting.ts:391:      case 'WEBHOOK':
+functions\src\lib\alerting.ts:392:        return sendWebhookAlert(alert, channel.config);
+functions\src\lib\alerting.ts:440: * Send alert via Slack webhook
+functions\src\lib\alerting.ts:464:    // Send to Slack webhook
+functions\src\lib\alerting.ts:465:    const response = await fetch(config.webhookUrl, {
+functions\src\lib\alerting.ts:471:      throw new Error(`Slack webhook returned ${response.status}`);
+functions\src\lib\alerting.ts:485: * Send alert via generic webhook
+functions\src\lib\alerting.ts:487:async function sendWebhookAlert(alert: Alert, config: any): Promise<void> {
+functions\src\lib\alerting.ts:506:      throw new Error(`Webhook returned ${response.status}`);
+functions\src\lib\alerting.ts:510:      'sendWebhookAlert',
+functions\src\lib\alerting.ts:511:      `Webhook alert sent: ${alert.title}`,
+functions\src\lib\alerting.ts:515:    await logError('sendWebhookAlert', 'Failed to send webhook alert', error);
+functions\src\lib\healthChecks.ts:38:    stripe?: ComponentHealth;
+functions\src\lib\healthChecks.ts:132:        stripeHealth,
+functions\src\lib\healthChecks.ts:138:        checkStripe(),
+functions\src\lib\healthChecks.ts:147:        ...(stripeHealth && { stripe: stripeHealth }),
+functions\src\lib\healthChecks.ts:284: * Check Stripe connectivity
+functions\src\lib\healthChecks.ts:286:async function checkStripe(): Promise<ComponentHealth | null> {
+functions\src\lib\healthChecks.ts:287:  const stripeKey = process.env.STRIPE_SECRET_KEY;
+functions\src\lib\healthChecks.ts:289:  // Skip if Stripe is not configured
+functions\src\lib\healthChecks.ts:290:  if (!stripeKey) {
+functions\src\lib\healthChecks.ts:297:    // Attempt to import and initialize Stripe
+functions\src\lib\healthChecks.ts:298:    const stripe = (await import('stripe')).default;
+functions\src\lib\healthChecks.ts:300:    const stripeClient = new stripe(stripeKey, { apiVersion: '2023-10-16' });
+functions\src\lib\healthChecks.ts:304:      stripeClient.balance.retrieve(),
+functions\src\lib\healthChecks.ts:319:      error: error.message || 'Stripe connection failed' };
+functions\src\lib\stubs.ts:70:// Stripe key stubs - these should be loaded from environment/secrets
+functions\src\lib\stubs.ts:71:export function getStripeSecretKey(): string {
+functions\src\lib\stubs.ts:72:  return process.env.STRIPE_SECRET_KEY || '';
+functions\src\lib\stubs.ts:75:export function getStripeWebhookSecret(): string {
+functions\src\lib\stubs.ts:76:  return process.env.STRIPE_WEBHOOK_SECRET || '';
+functions\src\migrations\migrate-chats-to-v2-canonical.ts:17: * - Idempotent: skips already-migrated documents (logicVersion === 'v2_canonical')
+functions\src\mobile.ts:169: * Purchase tokens (placeholder for Stripe integration)
+functions\src\mobile.ts:185:    // Placeholder - in production, create Stripe payment intent
+functions\src\monetization\monetizationV2.service.ts:11: *   4. Idempotency is enforced by WalletService.
+functions\src\monetization\monetizationV2.service.ts:61:  idempotencyKey: string,
+functions\src\monetization\monetizationV2.service.ts:84:    idempotencyKey,
+functions\src\monetization\monetizationV2.service.ts:124:    request.idempotencyKey,
+functions\src\monetization\monetizationV2.service.ts:153:    request.idempotencyKey,
+functions\src\monetization\monetizationV2.service.ts:181:    request.idempotencyKey,
+functions\src\monetization\monetizationV2.service.ts:216:    request.idempotencyKey,
+functions\src\monetization\monetizationV2.service.ts:252:    idempotencyKey: request.idempotencyKey,
+functions\src\monetization\monetizationV2.service.ts:302:    request.idempotencyKey,
+functions\src\monetization\monetizationV2.service.ts:339:    request.idempotencyKey,
+functions\src\monetization\monetizationV2.service.ts:377:    request.idempotencyKey,
+functions\src\monetization\monetizationV2.service.ts:412:    request.idempotencyKey,
+functions\src\monetization\monetizationV2.service.ts:477:    request.idempotencyKey,
+functions\src\monetization\monetizationV2.service.ts:508:    request.idempotencyKey,
+functions\src\monetization\monetizationV2.types.ts:27:  /** Idempotency key to prevent duplicate processing. */
+functions\src\monetization\monetizationV2.types.ts:28:  idempotencyKey: string;
+functions\src\monetization\monetizationV2.types.ts:105:  /** Idempotency key. */
+functions\src\monetization\monetizationV2.types.ts:106:  idempotencyKey: string;
+functions\src\monetization\monetizationV2.types.ts:131:  /** Idempotency key. */
+functions\src\monetization\monetizationV2.types.ts:132:  idempotencyKey: string;
+functions\src\monetization\monetizationV2.types.ts:179:  /** Idempotency key. */
+functions\src\monetization\monetizationV2.types.ts:180:  idempotencyKey: string;
+functions\src\monetization\monetizationV2.types.ts:208:  /** Original booking idempotency key (for reference). */
+functions\src\monetization\monetizationV2.types.ts:209:  originalIdempotencyKey: string;
+functions\src\monetization\monetizationV2.types.ts:210:  /** Refund idempotency key. */
+functions\src\monetization\monetizationV2.types.ts:211:  refundIdempotencyKey: string;
+functions\src\monetization\monetizationV2.types.ts:228:  /** Idempotency key for the refund. */
+functions\src\monetization\monetizationV2.types.ts:229:  refundIdempotencyKey: string;
+functions\src\monetization\refundV2.service.ts:101:    idempotencyKey: request.refundIdempotencyKey,
+functions\src\monetization\refundV2.service.ts:103:      originalIdempotencyKey: request.originalIdempotencyKey,
+functions\src\monetization\refundV2.service.ts:157:    idempotencyKey: request.refundIdempotencyKey,
+functions\src\pack-198-webinars\functions.ts:150:  return { eventId: event.id, event };
+functions\src\pack-198-webinars\functions.ts:294:    const accessCode = `${event.id.substring(0, 4)}-${Date.now().toString(36).toUpperCase()}`;
+functions\src\pack-198-webinars\functions.ts:721:    const certificateCode = `CERT-${event.id.substring(0, 4)}-${Date.now().toString(36).toUpperCase()}`;
+functions\src\pack100-health-monitoring.ts:163: * Check Stripe integration health
+functions\src\pack100-health-monitoring.ts:165:async function checkStripeHealth(): Promise<ComponentStatus> {
+functions\src\pack100-health-monitoring.ts:167:    // Check if Stripe config exists (Gen2: env-only)
+functions\src\pack100-health-monitoring.ts:168:    const stripeKey = process.env.STRIPE_SECRET_KEY || '';
+functions\src\pack100-health-monitoring.ts:170:    if (!stripeKey) {
+functions\src\pack100-health-monitoring.ts:172:        component: 'Stripe',
+functions\src\pack100-health-monitoring.ts:174:        message: 'Stripe not configured',
+functions\src\pack100-health-monitoring.ts:179:      component: 'Stripe',
+functions\src\pack100-health-monitoring.ts:181:      message: 'Stripe configured',
+functions\src\pack100-health-monitoring.ts:185:      component: 'Stripe',
+functions\src\pack100-health-monitoring.ts:187:      message: 'Stripe configuration unclear',
+functions\src\pack100-health-monitoring.ts:339:      stripeHealth,
+functions\src\pack100-health-monitoring.ts:348:      checkStripeHealth(),
+functions\src\pack100-health-monitoring.ts:359:      stripeHealth,
+functions\src\pack100-launch-readiness.ts:248:  // Check idempotency for critical operations
+functions\src\pack100-launch-readiness.ts:251:    check: 'Idempotent Operations',
+functions\src\pack100-launch-readiness.ts:253:    message: 'Critical monetization operations are idempotent',
+functions\src\pack105-alerts.ts:30:  | 'PSP_WEBHOOK_FAILURE';
+functions\src\pack105-alerts.ts:288: * Alert: PSP webhook failure
+functions\src\pack105-alerts.ts:290:export async function alertPspWebhookFailure(params: {
+functions\src\pack105-alerts.ts:297:    type: 'PSP_WEBHOOK_FAILURE',
+functions\src\pack105-alerts.ts:299:    title: 'PSP Webhook Failure',
+functions\src\pack105-alerts.ts:300:    message: `${params.provider} webhook failed for ${params.eventType}: ${params.error}`,
+functions\src\pack105-reconciliation.ts:178:    if (method === 'stripe') {
+functions\src\pack105-reconciliation.ts:179:      const externalData = await checkStripePayoutStatus(externalReference);
+functions\src\pack105-reconciliation.ts:185:          field: 'stripe_payout',
+functions\src\pack105-reconciliation.ts:296:    let caseType: 'PAYOUT_RECONCILIATION' | 'STRIPE_MISMATCH' | 'WISE_MISMATCH' = 'PAYOUT_RECONCILIATION';
+functions\src\pack105-reconciliation.ts:298:    if (result.external?.provider === 'STRIPE') {
+functions\src\pack105-reconciliation.ts:299:      caseType = 'STRIPE_MISMATCH';
+functions\src\pack105-reconciliation.ts:354: * Check Stripe payout status
+functions\src\pack105-reconciliation.ts:355: * NOTE: This is a stub. In production, implement actual Stripe API integration
+functions\src\pack105-reconciliation.ts:357:async function checkStripePayoutStatus(
+functions\src\pack105-reconciliation.ts:359:): Promise<{ amount: number; currency: string; status: string; provider: 'STRIPE' } | null> {
+functions\src\pack105-reconciliation.ts:361:    logger.info('[Reconciliation] Checking Stripe payout', { payoutId });
+functions\src\pack105-reconciliation.ts:365:    logger.error('[Reconciliation] Failed to check Stripe payout', {
+functions\src\pack105-types.ts:107:  | 'STRIPE_MISMATCH'
+functions\src\pack105-types.ts:109:  | 'PSP_WEBHOOK_FAILURE'
+functions\src\pack105-types.ts:167:    provider: 'STRIPE' | 'WISE' | 'OTHER';
+functions\src\pack106-currency-management.ts:6: * - FX rate refresh from PSP APIs (Stripe/ECB)
+functions\src\pack106-currency-management.ts:44:  STRIPE_FX_API_TIMEOUT: 5000,
+functions\src\pack106-currency-management.ts:68:      // Fetch rates from Stripe
+functions\src\pack106-currency-management.ts:69:      const stripeRates = await fetchStripeExchangeRates();
+functions\src\pack106-currency-management.ts:87:        const fxRate = stripeRates[currencyCode] || ecbRates[currencyCode];
+functions\src\pack106-currency-management.ts:124:          fxSource: stripeRates[currencyCode] ? 'stripe' : 'ecb',
+functions\src\pack106-currency-management.ts:165: * Fetch exchange rates from Stripe API
+functions\src\pack106-currency-management.ts:168:async function fetchStripeExchangeRates(): Promise<Record<string, number>> {
+functions\src\pack106-currency-management.ts:170:    // Note: This is a stub. In production, use Stripe SDK:
+functions\src\pack106-currency-management.ts:171:    // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+functions\src\pack106-currency-management.ts:172:    // const rates = await stripe.exchangeRates.retrieve('eur');
+functions\src\pack106-currency-management.ts:174:    logger.info('[PACK106] Fetching Stripe exchange rates (stub)');
+functions\src\pack106-currency-management.ts:176:    // Stub: Return empty for now - implement with actual Stripe SDK
+functions\src\pack106-currency-management.ts:177:    // In production, Stripe provides real-time rates via their API
+functions\src\pack106-currency-management.ts:180:    logger.error('[PACK106] Error fetching Stripe rates', error);
+functions\src\pack106-currency-management.ts:242:function determinePSPSupport(currencyCode: string): Array<'STRIPE' | 'WISE'> {
+functions\src\pack106-currency-management.ts:243:  // Most major currencies supported by Stripe
+functions\src\pack106-currency-management.ts:244:  const stripeCurrencies = [
+functions\src\pack106-currency-management.ts:257:  const result: Array<'STRIPE' | 'WISE'> = [];
+functions\src\pack106-currency-management.ts:259:  if (stripeCurrencies.includes(currencyCode)) {
+functions\src\pack106-currency-management.ts:260:    result.push('STRIPE');
+functions\src\pack106-currency-management.ts:372:    const preferredPSP = profile.supportedPSPs[0] || 'STRIPE';
+functions\src\pack106-currency-management.ts:428:    if (profile.supportedPSPs.includes('STRIPE')) {
+functions\src\pack106-currency-management.ts:430:        psp: 'STRIPE',
+functions\src\pack106-currency-management.ts:433:        reason: 'Stripe supports native currency',
+functions\src\pack106-currency-management.ts:451:      psp: 'STRIPE',
+functions\src\pack106-currency-management.ts:498:  pspUsed: 'STRIPE' | 'WISE';
+functions\src\pack106-types.ts:55:  supportedPSPs: Array<'STRIPE' | 'WISE'>;
+functions\src\pack106-types.ts:60:  /** Source of FX rate (stripe, ecb, manual) */
+functions\src\pack106-types.ts:163:  preferredPSP: 'STRIPE' | 'WISE';
+functions\src\pack106-types.ts:231:  pspUsed: 'STRIPE' | 'WISE';
+functions\src\pack106-types.ts:255:  psp: 'STRIPE' | 'WISE' | 'FALLBACK';
+functions\src\pack106-types.ts:292:  supportedPSPs?: Array<'STRIPE' | 'WISE'>;
+functions\src\pack107-membership.ts:7: * - Stripe integration for recurring billing
+functions\src\pack107-membership.ts:25:import Stripe from 'stripe';
+functions\src\pack107-membership.ts:48:const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
+functions\src\pack107-membership.ts:49:const stripe = new Stripe(STRIPE_SECRET_KEY, {
+functions\src\pack107-membership.ts:55:  SESSION_EXPIRY_MINUTES: 30, // Stripe checkout session expiry
+functions\src\pack107-membership.ts:151:  source: 'USER_ACTION' | 'STRIPE_WEBHOOK' | 'SCHEDULED_JOB' | 'ADMIN_ACTION' = 'USER_ACTION'
+functions\src\pack107-membership.ts:164:      stripeSubscriptionId: context.stripeSubscriptionId,
+functions\src\pack107-membership.ts:171:      relatedId: context.stripeSubscriptionId || userId,
+functions\src\pack107-membership.ts:190: * Creates Stripe Checkout session for subscription
+functions\src\pack107-membership.ts:246:      // Get or create Stripe customer
+functions\src\pack107-membership.ts:250:      let stripeCustomerId = existingMembership?.stripeCustomerId;
+functions\src\pack107-membership.ts:252:      if (!stripeCustomerId) {
+functions\src\pack107-membership.ts:253:        const customer = await stripe.customers.create({
+functions\src\pack107-membership.ts:260:        stripeCustomerId = customer.id;
+functions\src\pack107-membership.ts:263:      // Get Stripe Price ID or create inline price
+functions\src\pack107-membership.ts:264:      const stripePriceId = await getOrCreateStripePrice(
+functions\src\pack107-membership.ts:271:      // Create Stripe Checkout Session
+functions\src\pack107-membership.ts:272:      const session = await stripe.checkout.sessions.create({
+functions\src\pack107-membership.ts:273:        customer: stripeCustomerId,
+functions\src\pack107-membership.ts:278:            price: stripePriceId,
+functions\src\pack107-membership.ts:303:        stripeSessionId: session.id,
+functions\src\pack107-membership.ts:352: * Get or create Stripe Price for membership tier
+functions\src\pack107-membership.ts:354:async function getOrCreateStripePrice(
+functions\src\pack107-membership.ts:362:    .collection('membership_stripe_prices')
+functions\src\pack107-membership.ts:367:    const priceId = priceConfigDoc.data()?.stripePriceId;
+functions\src\pack107-membership.ts:373:  // Create new Stripe Price
+functions\src\pack107-membership.ts:374:  const price = await stripe.prices.create({
+functions\src\pack107-membership.ts:395:    .collection('membership_stripe_prices')
+functions\src\pack107-membership.ts:398:      stripePriceId: price.id,
+functions\src\pack107-membership.ts:411: * Called by Stripe webhook
+functions\src\pack107-membership.ts:417:  stripeSubscriptionId: string,
+functions\src\pack107-membership.ts:418:  stripeCustomerId: string,
+functions\src\pack107-membership.ts:439:    stripeSubscriptionId,
+functions\src\pack107-membership.ts:440:    stripeCustomerId,
+functions\src\pack107-membership.ts:472:      stripeSubscriptionId,
+functions\src\pack107-membership.ts:475:    'STRIPE_WEBHOOK'
+functions\src\pack107-membership.ts:490:  stripeSubscriptionId: string,
+functions\src\pack107-membership.ts:533:      stripeSubscriptionId,
+functions\src\pack107-membership.ts:536:    'STRIPE_WEBHOOK'
+functions\src\pack107-membership.ts:577:      // Cancel Stripe subscription
+functions\src\pack107-membership.ts:578:      if (membership.stripeSubscriptionId) {
+functions\src\pack107-membership.ts:579:        await stripe.subscriptions.update(membership.stripeSubscriptionId, {
+functions\src\pack107-membership.ts:625:          stripeSubscriptionId: membership.stripeSubscriptionId,
+functions\src\pack107-membership.ts:797:// STRIPE WEBHOOK HANDLERS
+functions\src\pack107-membership.ts:802: * Called from Stripe webhook handler
+functions\src\pack107-membership.ts:805:  subscription: Stripe.Subscription
+functions\src\pack107-membership.ts:837:  invoice: Stripe.Invoice
+functions\src\pack107-membership.ts:846:  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+functions\src\pack107-membership.ts:864:  invoice: Stripe.Invoice
+functions\src\pack107-membership.ts:872:  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+functions\src\pack107-membership.ts:902:        stripeSubscriptionId: subscriptionId,
+functions\src\pack107-membership.ts:905:      'STRIPE_WEBHOOK'
+functions\src\pack107-membership.ts:919:  subscription: Stripe.Subscription
+functions\src\pack107-types.ts:79:  /** Stripe subscription ID */
+functions\src\pack107-types.ts:80:  stripeSubscriptionId?: string;
+functions\src\pack107-types.ts:82:  /** Stripe customer ID */
+functions\src\pack107-types.ts:83:  stripeCustomerId?: string;
+functions\src\pack107-types.ts:141:  /** Stripe price ID for monthly */
+functions\src\pack107-types.ts:142:  stripePriceIdMonthly?: string;
+functions\src\pack107-types.ts:144:  /** Stripe price ID for annual */
+functions\src\pack107-types.ts:145:  stripePriceIdAnnual?: string;
+functions\src\pack107-types.ts:157:export const MEMBERSHIP_PRICING: Record<Exclude<MembershipTier, 'NONE'>, Omit<MembershipPricing, 'tier' | 'stripePriceIdMonthly' | 'stripePriceIdAnnual' | 'enabled'>> = {
+functions\src\pack107-types.ts:310: * Membership subscription session (Stripe Checkout)
+functions\src\pack107-types.ts:316:  /** Stripe checkout session ID */
+functions\src\pack107-types.ts:317:  stripeSessionId: string;
+functions\src\pack107-types.ts:469:  /** Stripe subscription ID */
+functions\src\pack107-types.ts:470:  stripeSubscriptionId?: string;
+functions\src\pack107-types.ts:479:  source: 'USER_ACTION' | 'STRIPE_WEBHOOK' | 'SCHEDULED_JOB' | 'ADMIN_ACTION';
+functions\src\pack108-compliance.ts:191:    const pspName = userData?.paymentProvider || 'STRIPE'; // Default to Stripe
+functions\src\pack108-types.ts:165:  pspName?: string;  // Stripe, Wise, etc.
+functions\src\pack108-types.ts:507:  'STRIPE': {
+functions\src\pack110-admin.ts:254:          event.id,
+functions\src\pack113-types.ts:82:  // Webhook subscriptions
+functions\src\pack113-types.ts:83:  | 'WEBHOOK_CONTENT'        // Subscribe to content events
+functions\src\pack113-types.ts:84:  | 'WEBHOOK_FOLLOWERS';     // Subscribe to follower events
+functions\src\pack113-types.ts:102:  category: 'PROFILE' | 'CONTENT' | 'ANALYTICS' | 'WEBHOOKS';
+functions\src\pack113-types.ts:156:  'WEBHOOK_CONTENT': {
+functions\src\pack113-types.ts:157:    scope: 'WEBHOOK_CONTENT',
+functions\src\pack113-types.ts:158:    name: 'Content Webhooks',
+functions\src\pack113-types.ts:160:    category: 'WEBHOOKS',
+functions\src\pack113-types.ts:163:  'WEBHOOK_FOLLOWERS': {
+functions\src\pack113-types.ts:164:    scope: 'WEBHOOK_FOLLOWERS',
+functions\src\pack113-types.ts:165:    name: 'Follower Webhooks',
+functions\src\pack113-types.ts:167:    category: 'WEBHOOKS',
+functions\src\pack113-types.ts:352:// WEBHOOKS
+functions\src\pack113-types.ts:355:export type WebhookEventType =
+functions\src\pack113-types.ts:361:export interface WebhookSubscription {
+functions\src\pack113-types.ts:366:  eventType: WebhookEventType;
+functions\src\pack113-types.ts:385:export interface WebhookDelivery {
+functions\src\pack113-types.ts:390:  eventType: WebhookEventType;
+functions\src\pack113-webhooks.ts:3: * Webhook System
+functions\src\pack113-webhooks.ts:20:  WebhookSubscription,
+functions\src\pack113-webhooks.ts:21:  WebhookDelivery,
+functions\src\pack113-webhooks.ts:22:  WebhookEventType,
+functions\src\pack113-webhooks.ts:32:// WEBHOOK SUBSCRIPTION MANAGEMENT
+functions\src\pack113-webhooks.ts:36: * Create webhook subscription
+functions\src\pack113-webhooks.ts:38:export const subscribeWebhook = onCall(
+functions\src\pack113-webhooks.ts:61:      ? 'WEBHOOK_CONTENT' 
+functions\src\pack113-webhooks.ts:62:      : 'WEBHOOK_FOLLOWERS';
+functions\src\pack113-webhooks.ts:75:      .collection('webhook_subscriptions')
+functions\src\pack113-webhooks.ts:83:      const existing = existingSnapshot.docs[0].data() as WebhookSubscription;
+functions\src\pack113-webhooks.ts:89:    const secret = generateWebhookSecret();
+functions\src\pack113-webhooks.ts:91:    const subscription: WebhookSubscription = {
+functions\src\pack113-webhooks.ts:95:      eventType: eventType as WebhookEventType,
+functions\src\pack113-webhooks.ts:106:    await db.collection('webhook_subscriptions').doc(subscriptionId).set(subscription);
+functions\src\pack113-webhooks.ts:108:    logger.info('Webhook subscription created', {
+functions\src\pack113-webhooks.ts:127: * List webhook subscriptions
+functions\src\pack113-webhooks.ts:129:export const listWebhookSubscriptions = onCall(
+functions\src\pack113-webhooks.ts:152:      .collection('webhook_subscriptions')
+functions\src\pack113-webhooks.ts:158:      const sub = doc.data() as WebhookSubscription;
+functions\src\pack113-webhooks.ts:178: * Delete webhook subscription
+functions\src\pack113-webhooks.ts:180:export const unsubscribeWebhook = onCall(
+functions\src\pack113-webhooks.ts:202:    const subDoc = await db.collection('webhook_subscriptions').doc(subscriptionId).get();
+functions\src\pack113-webhooks.ts:207:    const sub = subDoc.data() as WebhookSubscription;
+functions\src\pack113-webhooks.ts:212:    await db.collection('webhook_subscriptions').doc(subscriptionId).delete();
+functions\src\pack113-webhooks.ts:214:    logger.info('Webhook subscription deleted', {
+functions\src\pack113-webhooks.ts:228:// WEBHOOK DELIVERY
+functions\src\pack113-webhooks.ts:232: * Generate webhook secret for signature verification
+functions\src\pack113-webhooks.ts:234:function generateWebhookSecret(): string {
+functions\src\pack113-webhooks.ts:239: * Generate webhook signature
+functions\src\pack113-webhooks.ts:241:function generateWebhookSignature(payload: string, secret: string): string {
+functions\src\pack113-webhooks.ts:249: * Deliver webhook to callback URL
+functions\src\pack113-webhooks.ts:251:async function deliverWebhook(
+functions\src\pack113-webhooks.ts:252:  subscription: WebhookSubscription,
+functions\src\pack113-webhooks.ts:256:  const signature = generateWebhookSignature(payloadString, subscription.secret);
+functions\src\pack113-webhooks.ts:265:        'User-Agent': 'Avalo-Webhook/1.0',
+functions\src\pack113-webhooks.ts:293: * Create and process webhook delivery
+functions\src\pack113-webhooks.ts:295:async function createWebhookDelivery(
+functions\src\pack113-webhooks.ts:296:  subscription: WebhookSubscription,
+functions\src\pack113-webhooks.ts:297:  eventType: WebhookEventType,
+functions\src\pack113-webhooks.ts:302:  const delivery: WebhookDelivery = {
+functions\src\pack113-webhooks.ts:314:  await db.collection('webhook_deliveries').doc(deliveryId).set(delivery);
+functions\src\pack113-webhooks.ts:317:  await attemptWebhookDelivery(deliveryId);
+functions\src\pack113-webhooks.ts:321: * Attempt webhook delivery
+functions\src\pack113-webhooks.ts:323:async function attemptWebhookDelivery(deliveryId: string): Promise<void> {
+functions\src\pack113-webhooks.ts:324:  const deliveryDoc = await db.collection('webhook_deliveries').doc(deliveryId).get();
+functions\src\pack113-webhooks.ts:329:  const delivery = deliveryDoc.data() as WebhookDelivery;
+functions\src\pack113-webhooks.ts:332:  const subDoc = await db.collection('webhook_subscriptions').doc(delivery.subscriptionId).get();
+functions\src\pack113-webhooks.ts:337:  const subscription = subDoc.data() as WebhookSubscription;
+functions\src\pack113-webhooks.ts:340:  const result = await deliverWebhook(subscription, delivery.payload);
+functions\src\pack113-webhooks.ts:359:    logger.info('Webhook delivered successfully', {
+functions\src\pack113-webhooks.ts:402:    logger.warn('Webhook delivery failed', {
+functions\src\pack113-webhooks.ts:412: * Retry failed webhook deliveries
+functions\src\pack113-webhooks.ts:414:export const retryFailedWebhooks = onSchedule(
+functions\src\pack113-webhooks.ts:424:        .collection('webhook_deliveries')
+functions\src\pack113-webhooks.ts:431:        await attemptWebhookDelivery(doc.id);
+functions\src\pack113-webhooks.ts:434:      logger.info(`Retried ${pendingDeliveries.size} webhook deliveries`);
+functions\src\pack113-webhooks.ts:437:      logger.error('Error retrying webhooks', error);
+functions\src\pack113-webhooks.ts:444:// WEBHOOK TRIGGERS
+functions\src\pack113-webhooks.ts:448: * Trigger webhooks for content published
+functions\src\pack113-webhooks.ts:466:      .collection('webhook_subscriptions')
+functions\src\pack113-webhooks.ts:482:      const subscription = doc.data() as WebhookSubscription;
+functions\src\pack113-webhooks.ts:483:      await createWebhookDelivery(subscription, 'CONTENT_PUBLISHED', payload);
+functions\src\pack113-webhooks.ts:491: * Trigger webhooks for content deleted
+functions\src\pack113-webhooks.ts:508:      .collection('webhook_subscriptions')
+functions\src\pack113-webhooks.ts:524:      const subscription = doc.data() as WebhookSubscription;
+functions\src\pack113-webhooks.ts:525:      await createWebhookDelivery(subscription, 'CONTENT_DELETED', payload);
+functions\src\pack113-webhooks.ts:533: * Trigger webhooks for new follower
+functions\src\pack113-webhooks.ts:550:      .collection('webhook_subscriptions')
+functions\src\pack113-webhooks.ts:564:      const subscription = doc.data() as WebhookSubscription;
+functions\src\pack113-webhooks.ts:565:      await createWebhookDelivery(subscription, 'NEW_FOLLOWER', payload);
+functions\src\pack113-webhooks.ts:573: * Cleanup old webhook deliveries
+functions\src\pack113-webhooks.ts:575:export const cleanupOldWebhookDeliveries = onSchedule(
+functions\src\pack113-webhooks.ts:585:        .collection('webhook_deliveries')
+functions\src\pack113-webhooks.ts:596:      logger.info(`Cleaned up ${oldDeliveries.size} old webhook deliveries`);
+functions\src\pack113-webhooks.ts:599:      logger.error('Error cleaning up webhook deliveries', error);
+functions\src\pack114-api-integration.ts:484:// WEBHOOK SUPPORT FOR AGENCIES
+functions\src\pack114-api-integration.ts:488: * Register webhook for agency events
+functions\src\pack114-api-integration.ts:494:export async function registerAgencyWebhook(params: {
+functions\src\pack114-api-integration.ts:499:}): Promise<{ webhookId: string }> {
+functions\src\pack114-api-integration.ts:502:  const webhookId = db.collection('agency_webhooks').doc().id;
+functions\src\pack114-api-integration.ts:504:  await db.collection('agency_webhooks').doc(webhookId).set({
+functions\src\pack114-api-integration.ts:505:    webhookId,
+functions\src\pack114-api-integration.ts:514:  logger.info('Agency webhook registered', { webhookId, agencyId, eventType });
+functions\src\pack114-api-integration.ts:516:  return { webhookId };
+functions\src\pack114-api-integration.ts:520: * Trigger agency webhook
+functions\src\pack114-api-integration.ts:522:export async function triggerAgencyWebhook(params: {
+functions\src\pack114-api-integration.ts:529:  // Get all active webhooks for this agency and event type
+functions\src\pack114-api-integration.ts:530:  const webhooksSnapshot = await db
+functions\src\pack114-api-integration.ts:531:    .collection('agency_webhooks')
+functions\src\pack114-api-integration.ts:537:  if (webhooksSnapshot.empty) {
+functions\src\pack114-api-integration.ts:541:  // Trigger all webhooks (in parallel)
+functions\src\pack114-api-integration.ts:543:    webhooksSnapshot.docs.map(async (doc) => {
+functions\src\pack114-api-integration.ts:544:      const webhook = doc.data();
+functions\src\pack114-api-integration.ts:547:        // TODO: Implement actual webhook HTTP POST
+functions\src\pack114-api-integration.ts:548:        logger.info('Would trigger webhook', {
+functions\src\pack114-api-integration.ts:549:          webhookId: webhook.webhookId,
+functions\src\pack114-api-integration.ts:550:          callbackUrl: webhook.callbackUrl,
+functions\src\pack114-api-integration.ts:554:        logger.error('Error triggering webhook', { webhookId: webhook.webhookId, error });
+functions\src\pack114-earnings-integration.ts:192:  method: 'BANK_TRANSFER' | 'WISE' | 'STRIPE';
+functions\src\pack114-types.ts:51:  payoutMethod?: 'BANK_TRANSFER' | 'WISE' | 'STRIPE';
+functions\src\pack114-types.ts:188:  method: 'BANK_TRANSFER' | 'WISE' | 'STRIPE';
+functions\src\pack122-types.ts:51:  payoutPSPs: Array<'STRIPE' | 'WISE' | 'PAYPAL'>;
+functions\src\pack143-safety-validator.ts:150:      'stripe.com',
+functions\src\pack143-types.ts:191:  /paypal|venmo|cashapp|stripe|onlyfans|telegram|whatsapp/i,
+functions\src\pack171-settings-types.ts:121:    type: 'bank' | 'paypal' | 'stripe';
+functions\src\pack189-ai-federation.functions.ts:430:    stripePaymentIntentId: paymentIntentId,
+functions\src\pack195-legal-tax\types.ts:180:    method: 'stripe' | 'wise' | 'bank';
+functions\src\pack200-stress-test-suite.ts:32:  | 'STRIPE_CONCURRENCY'
+functions\src\pack200-track-metrics.ts:24:  | 'STRIPE' 
+functions\src\pack200-track-metrics.ts:358:      const layers: MetricLayer[] = ['MOBILE', 'API', 'FUNCTIONS', 'FIRESTORE', 'STORAGE', 'STRIPE', 'AI_ENGINES'];
+functions\src\pack213-functions.ts:8: * - Webhook integrations for boost triggers
+functions\src\pack213-functions.ts:520:// WEBHOOK INTEGRATIONS
+functions\src\pack213-functions.ts:524: * Webhook handler for chat completion
+functions\src\pack213-functions.ts:527:export const onChatCompletedWebhook = onCall(
+functions\src\pack213-functions.ts:532:    // Verify webhook signature (implement your signature verification)
+functions\src\pack213-functions.ts:535:      throw new HttpsError('unauthenticated', 'Invalid webhook signature');
+functions\src\pack213-functions.ts:568: * Webhook handler for meeting completion
+functions\src\pack213-functions.ts:570:export const onMeetingCompletedWebhook = onCall(
+functions\src\pack213-functions.ts:576:      throw new HttpsError('unauthenticated', 'Invalid webhook signature');
+functions\src\pack213-functions.ts:609: * Webhook handler for event hosting
+functions\src\pack213-functions.ts:611:export const onEventHostedWebhook = onCall(
+functions\src\pack213-functions.ts:617:      throw new HttpsError('unauthenticated', 'Invalid webhook signature');
+functions\src\pack213-functions.ts:650: * Webhook handler for good vibe feedback
+functions\src\pack213-functions.ts:652:export const onGoodVibeReceivedWebhook = onCall(
+functions\src\pack213-functions.ts:658:      throw new HttpsError('unauthenticated', 'Invalid webhook signature');
+functions\src\pack261-payout-service.ts:306:  // - Stripe Connect
+functions\src\pack277-wallet-endpoints.ts:77: * Purchase token pack (web - Stripe)
+functions\src\pack277-wallet-endpoints.ts:106:      // Verify Stripe payment (you would check Stripe API here)
+functions\src\pack278-purchase-validation.ts:5: * - Web (Stripe)
+functions\src\pack278-purchase-validation.ts:22: * Validate Stripe subscription purchase (Web)
+functions\src\pack278-purchase-validation.ts:24:export async function validateStripePurchase(
+functions\src\pack278-purchase-validation.ts:49:    // TODO: In production, verify with Stripe API
+functions\src\pack278-purchase-validation.ts:50:    // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+functions\src\pack278-purchase-validation.ts:51:    // const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+functions\src\pack278-purchase-validation.ts:72:      `stripe_${tier}_monthly`
+functions\src\pack278-purchase-validation.ts:83:    console.error('Stripe validation error:', error);
+functions\src\pack278-purchase-validation.ts:278: * Handle Stripe webhook for subscription events
+functions\src\pack278-purchase-validation.ts:280:export async function handleStripeWebhook(
+functions\src\pack278-purchase-validation.ts:290:    // Find user by Stripe customer ID
+functions\src\pack278-purchase-validation.ts:292:      .where('stripeCustomerId', '==', customerId)
+functions\src\pack278-purchase-validation.ts:297:      console.error('User not found for Stripe customer:', customerId);
+functions\src\pack278-purchase-validation.ts:337:        console.log('Unhandled webhook event:', eventType);
+functions\src\pack278-purchase-validation.ts:340:    console.error('Stripe webhook error:', error);
+functions\src\pack278-purchase-validation.ts:362:        // TODO: Check Stripe subscription status
+functions\src\pack278-purchase-validation.ts:363:        // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+functions\src\pack278-purchase-validation.ts:364:        // const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+functions\src\pack278-subscription-endpoints.ts:20:  validateStripePurchase,
+functions\src\pack278-subscription-endpoints.ts:23:  handleStripeWebhook,
+functions\src\pack278-subscription-endpoints.ts:51: * Purchase subscription via Stripe (Web)
+functions\src\pack278-subscription-endpoints.ts:79:  const result = await validateStripePurchase(userId, subscriptionId, tier);
+functions\src\pack278-subscription-endpoints.ts:336: * Stripe webhook handler
+functions\src\pack278-subscription-endpoints.ts:337: * Handles subscription lifecycle events from Stripe
+functions\src\pack278-subscription-endpoints.ts:339:export const pack278_stripeWebhook = onCall<{
+functions\src\pack278-subscription-endpoints.ts:343:  // Webhook security: Verify signature in production
+functions\src\pack278-subscription-endpoints.ts:344:  // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+functions\src\pack278-subscription-endpoints.ts:345:  // const signature = request.headers['stripe-signature'];
+functions\src\pack278-subscription-endpoints.ts:348:  //   const event = stripe.webhooks.constructEvent(
+functions\src\pack278-subscription-endpoints.ts:351:  //     process.env.STRIPE_WEBHOOK_SECRET
+functions\src\pack278-subscription-endpoints.ts:364:    await handleStripeWebhook(eventType, subscriptionData);
+functions\src\pack278-subscription-endpoints.ts:368:      message: 'Webhook processed',
+functions\src\pack278-subscription-endpoints.ts:374:    logger.error('Webhook processing error:', error);
+functions\src\pack278-subscription-endpoints.ts:375:    throw new HttpsError('internal', 'Webhook processing failed');
+functions\src\pack288-web-stripe.ts:2: * PACK 288 — Web Stripe Checkout & Webhook Handler
+functions\src\pack288-web-stripe.ts:4: * Handles Stripe payment integration for web token purchases.
+functions\src\pack288-web-stripe.ts:8: * 2. Backend creates Stripe checkout session
+functions\src\pack288-web-stripe.ts:9: * 3. Client redirects to Stripe
+functions\src\pack288-web-stripe.ts:11: * 5. Stripe webhook notifies backend
+functions\src\pack288-web-stripe.ts:19:import Stripe from 'stripe';
+functions\src\pack288-web-stripe.ts:27:// Initialize Stripe
+functions\src\pack288-web-stripe.ts:28:const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+functions\src\pack288-web-stripe.ts:48:// STRIPE CHECKOUT SESSION CREATION
+functions\src\pack288-web-stripe.ts:52: * Create Stripe checkout session for token purchase
+functions\src\pack288-web-stripe.ts:108:      const amount = Math.round(pack.priceUSD * 100); // Stripe uses cents
+functions\src\pack288-web-stripe.ts:111:      const session = await stripe.checkout.sessions.create({
+functions\src\pack288-web-stripe.ts:140:      logger.info('Stripe checkout session created', {
+functions\src\pack288-web-stripe.ts:171:// STRIPE WEBHOOK HANDLER
+functions\src\pack288-web-stripe.ts:175: * Handle Stripe webhooks
+functions\src\pack288-web-stripe.ts:176: * Must be called from Stripe webhook endpoint
+functions\src\pack288-web-stripe.ts:178:export const tokens_stripeWebhook = https.onRequest(
+functions\src\pack288-web-stripe.ts:181:    const sig = req.headers['stripe-signature'];
+functions\src\pack288-web-stripe.ts:184:      logger.warn('Missing Stripe signature');
+functions\src\pack288-web-stripe.ts:189:    let event: Stripe.Event;
+functions\src\pack288-web-stripe.ts:192:      event = stripe.webhooks.constructEvent(
+functions\src\pack288-web-stripe.ts:195:        process.env.STRIPE_WEBHOOK_SECRET || ''
+functions\src\pack288-web-stripe.ts:198:      logger.error('Webhook signature verification failed:', err);
+functions\src\pack288-web-stripe.ts:199:      res.status(400).send(`Webhook Error: ${err.message}`);
+functions\src\pack288-web-stripe.ts:207:          await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+functions\src\pack288-web-stripe.ts:211:          await handleChargeRefunded(event.data.object as Stripe.Charge);
+functions\src\pack288-web-stripe.ts:215:          await handlePaymentFailed(event.data.object as Stripe.PaymentIntent);
+functions\src\pack288-web-stripe.ts:219:          logger.info('Unhandled Stripe event type:', event.type);
+functions\src\pack288-web-stripe.ts:224:      logger.error('Webhook handler error:', error);
+functions\src\pack288-web-stripe.ts:225:      res.status(500).send(`Webhook handler error: ${error.message}`);
+functions\src\pack288-web-stripe.ts:233:async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+functions\src\pack288-web-stripe.ts:251:      // Idempotency check: read the idempotency sentinel doc inside the transaction
+functions\src\pack288-web-stripe.ts:252:      const idempotencyRef = db.collection('processedStripeEvents').doc(`pack288_${session.id}`);
+functions\src\pack288-web-stripe.ts:253:      const idempotencyDoc = await transaction.get(idempotencyRef);
+functions\src\pack288-web-stripe.ts:255:      if (idempotencyDoc.exists) {
+functions\src\pack288-web-stripe.ts:256:        logger.warn('Purchase already processed (idempotent skip)', { sessionId: session.id });
+functions\src\pack288-web-stripe.ts:268:      // 1. Write idempotency sentinel (prevents duplicate processing)
+functions\src\pack288-web-stripe.ts:269:      transaction.set(idempotencyRef, {
+functions\src\pack288-web-stripe.ts:286:        provider: 'stripe',
+functions\src\pack288-web-stripe.ts:326:          stripeSessionId: session.id,
+functions\src\pack288-web-stripe.ts:363:async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
+functions\src\pack288-web-stripe.ts:413:async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+functions\src\pack289-payout-providers.ts:21:  PayoutWebhookData,
+functions\src\pack289-payout-providers.ts:176:    // This would depend on your banking provider (e.g., Stripe Treasury, Banking-as-a-Service provider)
+functions\src\pack289-payout-providers.ts:271:// WEBHOOK HANDLERS
+functions\src\pack289-payout-providers.ts:275: * Wise webhook handler
+functions\src\pack289-payout-providers.ts:278: * @see https://api-docs.wise.com/webhooks
+functions\src\pack289-payout-providers.ts:280:export const payouts_wiseWebhook = onRequest({}, async (req, res) => {
+functions\src\pack289-payout-providers.ts:282:    console.log('[Wise Webhook] Received event:', req.body);
+functions\src\pack289-payout-providers.ts:284:    // TODO: Verify webhook signature
+functions\src\pack289-payout-providers.ts:328:    console.error('[Wise Webhook] Error:', error);
+functions\src\pack289-payout-providers.ts:334: * Generic payout webhook handler
+functions\src\pack289-payout-providers.ts:337:export const payouts_genericWebhook = onRequest({}, async (req, res) => {
+functions\src\pack289-payout-providers.ts:339:    console.log('[Generic Webhook] Received event:', req.body);
+functions\src\pack289-payout-providers.ts:341:    const { providerPayoutId, status, completedAt } = req.body as PayoutWebhookData;
+functions\src\pack289-payout-providers.ts:382:    console.error('[Generic Webhook] Error:', error);
+functions\src\pack289-withdrawals-admin.ts:502: * Mark withdrawal as paid (ADMIN or WEBHOOK)
+functions\src\pack296-integrations.ts:76: * Add to your Stripe/payment webhook handler
+functions\src\pack296-integrations.ts:91:    provider: 'STRIPE',
+functions\src\pack297-health-check.ts:9:import Stripe from 'stripe';
+functions\src\pack297-health-check.ts:17:    stripe: 'ok' | 'degraded' | 'down';
+functions\src\pack297-health-check.ts:38: * Check Stripe connectivity
+functions\src\pack297-health-check.ts:40:async function checkStripe(): Promise<'ok' | 'degraded' | 'down'> {
+functions\src\pack297-health-check.ts:42:    const stripeKey = process.env.STRIPE_SECRET_KEY;
+functions\src\pack297-health-check.ts:43:    if (!stripeKey) {
+functions\src\pack297-health-check.ts:47:    const stripe = new Stripe(stripeKey, {
+functions\src\pack297-health-check.ts:52:    await stripe.balance.retrieve();
+functions\src\pack297-health-check.ts:55:    console.error('Stripe health check failed:', error);
+functions\src\pack297-health-check.ts:77:      const [firebaseStatus, stripeStatus] = await Promise.all([
+functions\src\pack297-health-check.ts:79:        checkStripe()
+functions\src\pack297-health-check.ts:87:      } else if (stripeStatus === 'down' || firebaseStatus === 'degraded' || stripeStatus === 'degraded') {
+functions\src\pack297-health-check.ts:96:          stripe: stripeStatus
+functions\src\pack297-health-check.ts:139:      const stripeStartTime = Date.now();
+functions\src\pack297-health-check.ts:140:      const stripeStatus = await checkStripe();
+functions\src\pack297-health-check.ts:141:      const stripeTime = Date.now() - stripeStartTime;
+functions\src\pack297-health-check.ts:154:      } else if (stripeStatus === 'down' || firebaseStatus === 'degraded' || stripeStatus === 'degraded') {
+functions\src\pack297-health-check.ts:166:          stripe: {
+functions\src\pack297-health-check.ts:167:            status: stripeStatus,
+functions\src\pack297-health-check.ts:168:            responseTime: `${stripeTime}ms`
+functions\src\pack302-billing.ts:9:  stripeWebhook,
+functions\src\pack302-helpers.ts:135:  // Check idempotency
+functions\src\pack302-helpers.ts:216:  provider: 'STRIPE' | 'GOOGLE' | 'APPLE',
+functions\src\pack302-helpers.ts:346:// IDEMPOTENCY HELPERS
+functions\src\pack302-mobile-billing.ts:75:      // Check idempotency
+functions\src\pack302-mobile-billing.ts:169:      // Check idempotency
+functions\src\pack302-types.ts:73:  | 'STRIPE' 
+functions\src\pack302-types.ts:85:  externalId: string | null; // Stripe or Store transaction id
+functions\src\pack302-types.ts:104:  | 'STRIPE' 
+functions\src\pack302-web-billing.ts:2: * PACK 302 — Web Token & Subscription Checkout (Stripe)
+functions\src\pack302-web-billing.ts:3: * Endpoints for web-based purchases via Stripe
+functions\src\pack302-web-billing.ts:8:import Stripe from 'stripe';
+functions\src\pack302-web-billing.ts:29:// Initialize Stripe
+functions\src\pack302-web-billing.ts:30:const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+functions\src\pack302-web-billing.ts:34:const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
+functions\src\pack302-web-billing.ts:42: * Create Stripe Checkout Session for token purchase
+functions\src\pack302-web-billing.ts:76:      // Create Stripe Checkout Session
+functions\src\pack302-web-billing.ts:77:      const session = await stripe.checkout.sessions.create({
+functions\src\pack302-web-billing.ts:122:// STRIPE WEBHOOK HANDLER
+functions\src\pack302-web-billing.ts:126: * POST /billing/web/stripe-webhook
+functions\src\pack302-web-billing.ts:127: * Handle Stripe webhooks for payments and subscriptions
+functions\src\pack302-web-billing.ts:129:export const stripeWebhook = onRequest(
+functions\src\pack302-web-billing.ts:143:      const sig = req.headers['stripe-signature'];
+functions\src\pack302-web-billing.ts:145:        logger.error('No Stripe signature found');
+functions\src\pack302-web-billing.ts:150:      // Verify webhook signature
+functions\src\pack302-web-billing.ts:151:      let event: Stripe.Event;
+functions\src\pack302-web-billing.ts:153:        event = stripe.webhooks.constructEvent(
+functions\src\pack302-web-billing.ts:156:          STRIPE_WEBHOOK_SECRET
+functions\src\pack302-web-billing.ts:159:        logger.error('Webhook signature verification failed:', err.message);
+functions\src\pack302-web-billing.ts:160:        res.status(400).send(`Webhook Error: ${err.message}`);
+functions\src\pack302-web-billing.ts:164:      logger.info(`Received Stripe webhook: ${event.type}`);
+functions\src\pack302-web-billing.ts:169:          await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+functions\src\pack302-web-billing.ts:174:          await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+functions\src\pack302-web-billing.ts:178:          await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+functions\src\pack302-web-billing.ts:187:      logger.error('Error processing webhook:', error);
+functions\src\pack302-web-billing.ts:188:      res.status(500).json({ error: 'Webhook processing failed' });
+functions\src\pack302-web-billing.ts:194:// WEBHOOK EVENT HANDLERS
+functions\src\pack302-web-billing.ts:201:async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+functions\src\pack302-web-billing.ts:220:async function handleTokenPurchase(session: Stripe.Checkout.Session): Promise<void> {
+functions\src\pack302-web-billing.ts:226:  // Check idempotency
+functions\src\pack302-web-billing.ts:238:      'STRIPE',
+functions\src\pack302-web-billing.ts:246:      'STRIPE',
+functions\src\pack302-web-billing.ts:266:async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
+functions\src\pack302-web-billing.ts:291:      'STRIPE',
+functions\src\pack302-web-billing.ts:298:      'STRIPE',
+functions\src\pack302-web-billing.ts:315:async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
+functions\src\pack302-web-billing.ts:335:      'STRIPE',
+functions\src\pack302-web-billing.ts:342:      'STRIPE',
+functions\src\pack302-web-billing.ts:362: * Create Stripe Checkout Session for subscription
+functions\src\pack302-web-billing.ts:391:        ? process.env.STRIPE_VIP_PRICE_ID 
+functions\src\pack302-web-billing.ts:392:        : process.env.STRIPE_ROYAL_PRICE_ID;
+functions\src\pack302-web-billing.ts:398:      // Create Stripe Checkout Session
+functions\src\pack302-web-billing.ts:399:      const session = await stripe.checkout.sessions.create({
+functions\src\pack312-support-context.ts:379:        paymentProcessor: tx?.paymentProcessor === 'stripe' ? 'STRIPE' : 'OTHER',
+functions\src\pack312-support-context.ts:380:        externalReferenceId: tx?.externalReference || tx?.stripePaymentIntentId,
+functions\src\pack312-support-types.ts:253:  paymentProcessor?: 'STRIPE' | 'OTHER';
+functions\src\pack316-review-mode\integrations.ts:29: * Wrap existing Stripe/Wise payment flow with review mode guard
+functions\src\pack316-review-mode\integrations.ts:84:    // (Your existing Stripe/Wise integration here)
+functions\src\pack316-review-mode\integrations.ts:85:    const stripeResult = await processStripePayment(userId, amount, packageId, paymentMethod);
+functions\src\pack316-review-mode\integrations.ts:88:      success: stripeResult.success,
+functions\src\pack316-review-mode\integrations.ts:89:      transactionId: stripeResult.id,
+functions\src\pack316-review-mode\integrations.ts:91:      balance: stripeResult.newBalance,
+functions\src\pack316-review-mode\integrations.ts:496:async function processStripePayment(
+functions\src\pack316-review-mode\integrations.ts:502:  // Your existing Stripe integration
+functions\src\pack316-review-mode\integrations.ts:503:  return { success: true, id: "stripe_" + Date.now(), newBalance: 1000 };
+functions\src\pack327-promo-bundles.ts:122:      // For now, we assume payment is completed (integrate with Stripe/IAP)
+functions\src\pack327-types.ts:59:  paymentMethod?: 'stripe' | 'iap';
+functions\src\pack328a-identity-verification-types.ts:142:  webhookUrl?: string;
+functions\src\pack336-aggregation-cron.ts:32:      // Check if already aggregated (idempotency)
+functions\src\pack336-aggregation-cron.ts:206:    // TODO: Send notifications via push, email, Slack webhook
+functions\src\pack336-alerting.ts:5: * Sends notifications via Push, Email, and Slack webhook.
+functions\src\pack336-alerting.ts:134:    // Send Slack webhook
+functions\src\pack336-alerting.ts:238: * Send Slack webhook notification
+functions\src\pack336-alerting.ts:242:    const slackWebhookUrl = process.env.PACK336_SLACK_WEBHOOK_URL || '';
+functions\src\pack336-alerting.ts:244:    if (!slackWebhookUrl) {
+functions\src\pack336-alerting.ts:245:      console.log('[PACK 336] Slack webhook URL not configured');
+functions\src\pack336-alerting.ts:291:    const response = await fetch(slackWebhookUrl, {
+functions\src\pack336-alerting.ts:298:      throw new Error(`Slack webhook returned ${response.status}`);
+functions\src\pack345-launch-audit.ts:423:  // Stripe
+functions\src\pack345-launch-audit.ts:425:    checkName: 'stripeLive',
+functions\src\pack345-launch-audit.ts:427:    passed: await checkStripeIntegration(),
+functions\src\pack345-launch-audit.ts:429:    message: 'Stripe integration operational',
+functions\src\pack345-launch-audit.ts:815:async function checkStripeIntegration(): Promise<boolean> {
+functions\src\pack345-launch-audit.ts:817:    // Check if Stripe keys are configured
+functions\src\pack345-launch-audit.ts:818:    const stripeKey = process.env.STRIPE_SECRET_KEY;
+functions\src\pack345-launch-audit.ts:819:    return !!stripeKey && stripeKey.includes('sk_');
+functions\src\pack345-launch-audit.ts:821:    console.error('[Pack345] Stripe check failed:', error);
+functions\src\pack345-launch-audit.ts:929:    stripeLive: integrationChecks.find(c => c.checkName === 'stripeLive')?.passed || false,
+functions\src\pack345-types.ts:71:    stripeLive: boolean;
+functions\src\pack346-alert-routing.ts:98: * Send alert to Slack webhook
+functions\src\pack346-alert-routing.ts:102:    const webhookUrl = process.env.SLACK_WEBHOOK_URL || '';
+functions\src\pack346-alert-routing.ts:104:    if (!webhookUrl) {
+functions\src\pack346-alert-routing.ts:105:      console.warn("Slack webhook URL not configured");
+functions\src\pack346-alert-routing.ts:149:    await fetch(webhookUrl, {
+functions\src\pack346-types.ts:216:  | "payment_failure" // Stripe/IAP failure
+functions\src\pack350-endpoints.ts:9:  pack350_syncWebStripeSubscription as syncStripe,
+functions\src\pack350-endpoints.ts:80: * Sync Stripe subscription (called after Stripe checkout success)
+functions\src\pack350-endpoints.ts:82:export const pack350_syncStripeSubscription = functions.https.onCall(async (request) => {
+functions\src\pack350-endpoints.ts:89:  const { stripeCustomerId, stripePriceId, isActive, currentPeriodEnd } = data as {
+functions\src\pack350-endpoints.ts:90:    stripeCustomerId: string;
+functions\src\pack350-endpoints.ts:91:    stripePriceId: string;
+functions\src\pack350-endpoints.ts:96:  if (!stripeCustomerId || !stripePriceId || typeof isActive !== 'boolean') {
+functions\src\pack350-endpoints.ts:101:    const result = await syncStripe({
+functions\src\pack350-endpoints.ts:103:      stripeCustomerId,
+functions\src\pack350-endpoints.ts:104:      stripePriceId,
+functions\src\pack350-endpoints.ts:114:    console.error('[PACK350] Stripe sync error:', error);
+functions\src\pack350-endpoints.ts:224:// WEBHOOK HANDLERS (for payment provider notifications)
+functions\src\pack350-endpoints.ts:228: * Stripe webhook handler
+functions\src\pack350-endpoints.ts:231:export const pack350_stripeWebhook = onRequest({}, async (req, res) => {
+functions\src\pack350-endpoints.ts:232:  // TODO: Implement Stripe webhook signature verification
+functions\src\pack350-endpoints.ts:233:  // TODO: Handle Stripe subscription events
+functions\src\pack350-endpoints.ts:238:    console.log('[PACK350] Stripe webhook received:', event.type);
+functions\src\pack350-endpoints.ts:252:        console.log('[PACK350] Unhandled Stripe event:', event.type);
+functions\src\pack350-endpoints.ts:257:    console.error('[PACK350] Stripe webhook error:', error);
+functions\src\pack350-endpoints.ts:265:export const pack350_appleWebhook = onRequest({}, async (req, res) => {
+functions\src\pack350-endpoints.ts:266:  // TODO: Implement Apple webhook signature verification
+functions\src\pack350-endpoints.ts:272:    console.log('[PACK350] Apple webhook received:', notification.notificationType);
+functions\src\pack350-endpoints.ts:276:    console.error('[PACK350] Apple webhook error:', error);
+functions\src\pack350-endpoints.ts:284:export const pack350_googleWebhook = onRequest({}, async (req, res) => {
+functions\src\pack350-endpoints.ts:285:  // TODO: Implement Google webhook verification
+functions\src\pack350-endpoints.ts:291:    console.log('[PACK350] Google webhook received:', notification);
+functions\src\pack350-endpoints.ts:295:    console.error('[PACK350] Google webhook error:', error);
+functions\src\pack350-subscriptions.ts:9: * - Store compliance (Apple / Google / Stripe)
+functions\src\pack350-subscriptions.ts:29:  | 'WEB_STRIPE'
+functions\src\pack350-subscriptions.ts:40:  productId: string;  // Stripe / App Store / Play product id
+functions\src\pack350-subscriptions.ts:54:  stripePriceId?: string;
+functions\src\pack350-subscriptions.ts:233: * Sync Web Stripe subscription
+functions\src\pack350-subscriptions.ts:234: * Called after successful Stripe checkout or webhook
+functions\src\pack350-subscriptions.ts:236:export async function pack350_syncWebStripeSubscription(params: {
+functions\src\pack350-subscriptions.ts:238:  stripeCustomerId: string;
+functions\src\pack350-subscriptions.ts:239:  stripePriceId: string;
+functions\src\pack350-subscriptions.ts:243:  const { userId, stripeCustomerId, stripePriceId, isActive, currentPeriodEnd } = params;
+functions\src\pack350-subscriptions.ts:246:    // Map Stripe price ID to subscription tier
+functions\src\pack350-subscriptions.ts:247:    const tier = await mapProductIdToTier(stripePriceId, 'WEB_STRIPE');
+functions\src\pack350-subscriptions.ts:250:      throw new Error(`Unknown Stripe price ID: ${stripePriceId}`);
+functions\src\pack350-subscriptions.ts:259:      source: 'WEB_STRIPE',
+functions\src\pack350-subscriptions.ts:260:      productId: stripePriceId,
+functions\src\pack350-subscriptions.ts:269:    console.log(`[PACK350] Synced Stripe subscription: ${userId} -> ${tier}`);
+functions\src\pack350-subscriptions.ts:273:    console.error('[PACK350] Failed to sync Stripe subscription:', error);
+functions\src\pack350-subscriptions.ts:423:      if (source === 'WEB_STRIPE' && product.stripePriceId === productId) {
+functions\src\pack353-payment-failsafe.ts:20:  provider: 'stripe' | 'apple' | 'google';
+functions\src\pack353-payment-failsafe.ts:53:  provider: 'stripe' | 'apple' | 'google',
+functions\src\pack353-payment-failsafe.ts:248:  provider: 'stripe' | 'apple' | 'google',
+functions\src\pack353-payment-failsafe.ts:257:      case 'stripe':
+functions\src\pack353-payment-failsafe.ts:258:        return await verifyStripeTransaction(transactionId);
+functions\src\pack353-payment-failsafe.ts:278: * Verify Stripe transaction
+functions\src\pack353-payment-failsafe.ts:280:async function verifyStripeTransaction(
+functions\src\pack353-payment-failsafe.ts:283:  // Note: Requires Stripe SDK
+functions\src\pack353-payment-failsafe.ts:288:    // const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+functions\src\pack353-payment-failsafe.ts:289:    // const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+functions\src\pack353-watchdog.ts:277:  // Note: Requires Slack webhook configuration
+functions\src\pack353-watchdog.ts:281:    const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+functions\src\pack353-watchdog.ts:283:    if (!webhookUrl) {
+functions\src\pack353-watchdog.ts:290:    // await fetch(webhookUrl, {
+functions\src\pack356-ad-tracking.ts:356: * Webhook: Receive external ad platform events
+functions\src\pack356-ad-tracking.ts:358:export const adPlatformWebhook = onRequest({}, async (req, res) => {
+functions\src\pack356-ad-tracking.ts:359:  // Verify webhook signature (implement per platform)
+functions\src\pack356-ad-tracking.ts:365:        await handleMetaWebhook(req.body);
+functions\src\pack356-ad-tracking.ts:368:        await handleTikTokWebhook(req.body);
+functions\src\pack356-ad-tracking.ts:371:        await handleGoogleWebhook(req.body);
+functions\src\pack356-ad-tracking.ts:380:    console.error("Error processing webhook:", error);
+functions\src\pack356-ad-tracking.ts:385:async function handleMetaWebhook(data: any): Promise<void> {
+functions\src\pack356-ad-tracking.ts:397:async function handleTikTokWebhook(data: any): Promise<void> {
+functions\src\pack356-ad-tracking.ts:409:async function handleGoogleWebhook(data: any): Promise<void> {
+functions\src\pack358-burnrate-engine.ts:240:   * Calculate payment processing costs (Stripe fees)
+functions\src\pack358-burnrate-engine.ts:245:    // Stripe fees: 2.9% + 0.30 PLN per transaction
+functions\src\pack358-burnrate-engine.ts:246:    const stripePercentageFee = 0.029;
+functions\src\pack358-burnrate-engine.ts:248:    const stripeFixedFee = 0.30;
+functions\src\pack358-burnrate-engine.ts:250:    return revenue * stripePercentageFee + transactions * stripeFixedFee;
+functions\src\pack359-tax-calculator.ts:419: * Handle Stripe payment with tax
+functions\src\pack359-tax-calculator.ts:421:export async function processStripePaymentWithTax(
+functions\src\pack359-tax-calculator.ts:427:  stripeAmount: number; // Amount to charge in Stripe (in cents)
+functions\src\pack359-tax-calculator.ts:431:  // Stripe expects amount in cents
+functions\src\pack359-tax-calculator.ts:432:  const stripeAmount = Math.round(taxBreakdown.grossAmount * 100);
+functions\src\pack359-tax-calculator.ts:436:    stripeAmount,
+functions\src\pack359-tax-calculator.ts:539:      'stripe'
+functions\src\pack364-alerting-config.ts:298:  await db.collection("alert_events").doc(alertEvent.id).set({
+functions\src\pack364-alerting-config.ts:313:      alertId: alertEvent.id,
+functions\src\pack364-telemetry.ts:199:      await db.collection("telemetry_events").doc(completeEvent.id).set({
+functions\src\pack366-country-launch.service.ts:147:      .doc(event.id)
+functions\src\pack380-pr-engine.ts:518: * Add press mention manually or via webhook
+functions\src\pack383-chargeback-firewall.ts:374: * Webhook: Handle chargeback notification
+functions\src\pack383-chargeback-firewall.ts:379:    // Verify webhook signature (implement based on payment processor)
+functions\src\pack383-chargeback-firewall.ts:380:    // if (!verifyWebhookSignature(req)) {
+functions\src\pack383-kyc-aml.ts:478:  // In production, this would be handled by webhooks from KYC provider
+functions\src\pack383-payout-router.ts:49:  type: 'stripe' | 'wise' | 'sepa' | 'ach' | 'local' | 'crypto';
+functions\src\pack386-campaigns.ts:300:// UPDATE CAMPAIGN METRICS (WEBHOOK)
+functions\src\pack386-campaigns.ts:305:    // Verify webhook signature (implementation depends on ad platform)
+functions\src\pack386-campaigns.ts:306:    const signature = req.headers['x-webhook-signature'];
+functions\src\pack390-aml.ts:516:  // Could integrate with SendGrid, AWS SES, or Slack webhook
+functions\src\pack390-payouts.ts:3: * Handles bank transfers, SEPA, SWIFT, Wise, and Stripe Connect payouts
+functions\src\pack390-payouts.ts:24:  STRIPE_CONNECT = 'stripe_connect',
+functions\src\pack390-payouts.ts:222:      case PayoutMethod.STRIPE_CONNECT:
+functions\src\pack390-payouts.ts:223:        transferResult = await executeStripeConnectTransfer(payoutData);
+functions\src\pack390-payouts.ts:471:async function executeStripeConnectTransfer(payoutData: any) {
+functions\src\pack390-payouts.ts:472:  // TODO: Integrate with Stripe Connect
+functions\src\pack390-payouts.ts:473:  console.log('Executing Stripe Connect transfer:', payoutData);
+functions\src\pack390-payouts.ts:476:    transferId: `STRIPE_${Date.now()}`,
+functions\src\pack390-payouts.ts:477:    details: { method: 'stripe_connect' }
+functions\src\pack392-incident-response.ts:42:  channel: 'SLACK' | 'EMAIL' | 'SMS' | 'PUSH' | 'WEBHOOK';
+functions\src\pack393-influencer-engine.ts:275:      // TODO: Integrate with payment processor (Stripe, PayPal, etc.)
+functions\src\pack399-influencer-engine.ts:947:    paymentMethodPriorities: ['stripe', 'paypal'],
+functions\src\pack411-store-reviews-ingestion.ts:203: * Scheduled function or webhook-driven
+functions\src\pack411-store-reviews-ingestion.ts:273: * Scheduled function or webhook-driven
+functions\src\pack412-launch-orchestrator.ts:122:    // Check if Stripe is enabled for these countries
+functions\src\pack412-launch-orchestrator.ts:123:    const paymentsDoc = await db.collection('paymentsConfig').doc('stripe').get();
+functions\src\pack413-kpi-command-center.ts:279:      await db.collection('kpiAlertEvents').doc(alertEvent.id).set(alertEvent);
+functions\src\pack416-feature-guard.ts:262: * export const webhookHandler = onRequest({},
+functions\src\pack416-feature-guard.ts:263: *   featureMiddleware(FeatureFlagKey.webhooks, async (req, res) => {
+functions\src\pack420-data-deletion.adapter.ts:142:   *     - Cancel Stripe/payment subscriptions
+functions\src\pack421-alerting.config.ts:191:    target: process.env.SLACK_ONCALL_WEBHOOK || '',
+functions\src\pack421-alerting.config.ts:192:    enabled: !!process.env.SLACK_ONCALL_WEBHOOK,
+functions\src\pack421-alerting.config.ts:206:    target: process.env.SLACK_SAFETY_WEBHOOK || '',
+functions\src\pack421-alerting.config.ts:207:    enabled: !!process.env.SLACK_SAFETY_WEBHOOK,
+functions\src\pack421-alerting.config.ts:214:  webhook: {
+functions\src\pack421-alerting.config.ts:215:    type: 'webhook',
+functions\src\pack421-alerting.config.ts:216:    target: process.env.ALERT_WEBHOOK_URL || '',
+functions\src\pack421-alerting.config.ts:217:    enabled: !!process.env.ALERT_WEBHOOK_URL,
+functions\src\pack424-store-reviews.scheduler.ts:156: * Webhook endpoint for store notifications
+functions\src\pack424-store-reviews.scheduler.ts:157: * Some stores support webhooks for new reviews
+functions\src\pack424-store-reviews.scheduler.ts:159:export const storeReviewWebhook = onRequest({}, async (req, res) => {
+functions\src\pack424-store-reviews.scheduler.ts:161:  // Verify webhook signature
+functions\src\pack424-store-reviews.scheduler.ts:171:    logger.info('Received store webhook', {
+functions\src\pack424-store-reviews.scheduler.ts:199:    logger.error('Error processing webhook:', error);
+functions\src\pack425-country-readiness.ts:20:  paymentProviderReady: boolean; // Stripe, Android Billing, Apple IAP
+functions\src\pack425-pricing-matrix.ts:28:  provider: 'stripe' | 'android-billing' | 'apple-iap' | 'local';
+functions\src\pack425-pricing-matrix.ts:53:  payoutProviders: string[];       // 'stripe', 'paypal', 'wire', 'local'
+functions\src\pack425-pricing-matrix.ts:192:      provider: 'stripe',
+functions\src\pack425-pricing-matrix.ts:226:    payoutProviders: ['stripe'],
+functions\src\pack427-message-queue-service.ts:106: * Idempotent - safe to call multiple times
+functions\src\pack427-message-queue-service.ts:123:    // Already processed or doesn't exist - idempotent
+functions\src\pack427-realtime-signals.ts:116: * Idempotent - safe to call multiple times
+functions\src\pack427-realtime-signals.ts:169:    // Update read receipt (idempotent)
+functions\src\pack427-sync-endpoints.ts:5: * Ensures idempotent sync without double-billing
+functions\src\pack427-sync-endpoints.ts:225: * Idempotent - safe to call multiple times
+functions\src\pack427-sync-endpoints.ts:255:    // Mark messages as delivered (idempotent)
+functions\src\pack429-review-defense-engine.ts:54:  console.log(`Created defense event: ${event.id} (${event.type} - ${event.severity})`);
+functions\src\pack429-review-defense-engine.ts:348:        eventId: event.id,
+functions\src\pack429-review-ingestion.ts:410:// WEBHOOK HANDLER (FUTURE)
+functions\src\pack429-review-ingestion.ts:414: * Placeholder for future App Store/Google Play webhook integration
+functions\src\pack429-review-ingestion.ts:415: * When stores provide webhook APIs, implement here
+functions\src\pack429-review-ingestion.ts:417:export async function handleStoreWebhook(
+functions\src\pack429-review-ingestion.ts:419:  webhookData: any
+functions\src\pack429-review-ingestion.ts:421:  console.log('Store webhook handler (not yet implemented)', platform, webhookData);
+functions\src\pack429-review-ingestion.ts:424:  // provides webhook support, implement real-time review syncing here
+functions\src\pack430-age-gate.ts:240:   * Complete age verification (called by KYC provider webhook)
+functions\src\pack433-payouts.ts:8: * - Stripe/Wise integration
+functions\src\pack433-payouts.ts:43:export type PayoutMethod = 'STRIPE' | 'WISE' | 'CRYPTO' | 'BANK_TRANSFER';
+functions\src\pack433-payouts.ts:50:  // Stripe
+functions\src\pack433-payouts.ts:51:  stripeAccountId?: string;
+functions\src\pack433-payouts.ts:52:  stripeCustomerId?: string;
+functions\src\pack433-payouts.ts:106:  externalPaymentId?: string; // Stripe/Wise transaction ID
+functions\src\pack433-payouts.ts:160:    if (!['STRIPE', 'WISE', 'CRYPTO', 'BANK_TRANSFER'].includes(method)) {
+functions\src\pack433-payouts.ts:596:      // TODO: Integrate with Stripe/Wise to send payment
+functions\src\pack434-ambassador-compensation.ts:88:  provider: 'stripe' | 'wise' | 'paypal' | 'manual';
+functions\src\pack434-ambassador-compensation.ts:770:    // For Stripe Connect, Wise, PayPal, etc.
+functions\src\pack434-fraud-detection.ts:298:        .where('eventId', '==', event.id)
+functions\src\pack434-fraud-detection.ts:312:          eventIds: [event.id],
+functions\src\pack434-partner-expansion.ts:108:    webhookUrl?: string;
+functions\src\pack451-creator-agreement.ts:163: * IDEMPOTENCY:
+functions\src\pack451-creator-agreement.ts:197:    // If already accepted current version, return early (idempotent)
+functions\src\pack90-admin.ts:221:        id: event.id,
+functions\src\pack90-admin.ts:309:        id: event.id,
+functions\src\pack90-admin.ts:397:        id: event.id,
+functions\src\payments\index.ts:9:// Re-export Stripe module
+functions\src\payments\index.ts:10:export * from './stripe';
+functions\src\payments\stripe\index.ts:2: * Central Stripe module exports
+functions\src\payments\stripe\index.ts:6:  getStripe,
+functions\src\payments\stripe\index.ts:7:  requireStripe,
+functions\src\payments\stripe\index.ts:8:  requireStripeForWebhook,
+functions\src\payments\stripe\index.ts:9:  getWebhookSecret,
+functions\src\payments\stripe\index.ts:10:  isStripeAvailable,
+functions\src\payments\stripe\index.ts:11:  isWebhookAvailable,
+functions\src\payments\stripe\index.ts:12:  Stripe,
+functions\src\payments\stripe\index.ts:13:} from './stripeClient';
+functions\src\payments\stripe\index.ts:15:export { stripeWebhookV1 } from './webhook';
+functions\src\payments\stripe\stripeClient.ts:2: * PACK PHASE 3.1 + 4.1 — Centralized Stripe Client
+functions\src\payments\stripe\stripeClient.ts:5: * - Single Stripe instance per process (lazy init)
+functions\src\payments\stripe\stripeClient.ts:6: * - Webhook secret MUST be present for webhook endpoints (fail-fast)
+functions\src\payments\stripe\stripeClient.ts:7: * - Non-webhook endpoints can operate without webhook secret
+functions\src\payments\stripe\stripeClient.ts:14: * @module payments/stripe/stripeClient
+functions\src\payments\stripe\stripeClient.ts:17:import Stripe from 'stripe';
+functions\src\payments\stripe\stripeClient.ts:26:let stripeInstance: Stripe | null = null;
+functions\src\payments\stripe\stripeClient.ts:27:let stripeSecretKey: string | null = null;
+functions\src\payments\stripe\stripeClient.ts:28:let stripeWebhookSecret: string | null = null;
+functions\src\payments\stripe\stripeClient.ts:36:    logger.error('[stripeClient] CRITICAL SECURITY VIOLATION: Test Stripe key in production', {
+functions\src\payments\stripe\stripeClient.ts:41:      '[PRODUCTION_VIOLATION] Stripe test key (sk_test_*) detected in production environment. ' +
+functions\src\payments\stripe\stripeClient.ts:48: * Load Stripe secret key from environment.
+functions\src\payments\stripe\stripeClient.ts:53:function loadStripeSecretKey(): string {
+functions\src\payments\stripe\stripeClient.ts:54:  if (stripeSecretKey !== null) {
+functions\src\payments\stripe\stripeClient.ts:55:    return stripeSecretKey;
+functions\src\payments\stripe\stripeClient.ts:59:  const key = process.env.STRIPE_SECRET_KEY || '';
+functions\src\payments\stripe\stripeClient.ts:62:    logger.error('[stripeClient] STRIPE_SECRET_KEY not configured');
+functions\src\payments\stripe\stripeClient.ts:68:  stripeSecretKey = key;
+functions\src\payments\stripe\stripeClient.ts:73: * Load Stripe webhook secret from environment.
+functions\src\payments\stripe\stripeClient.ts:74: * Required for webhook signature verification.
+functions\src\payments\stripe\stripeClient.ts:76:function loadStripeWebhookSecret(): string {
+functions\src\payments\stripe\stripeClient.ts:77:  if (stripeWebhookSecret !== null) {
+functions\src\payments\stripe\stripeClient.ts:78:    return stripeWebhookSecret;
+functions\src\payments\stripe\stripeClient.ts:81:  const secret = process.env.STRIPE_WEBHOOK_SECRET || '';
+functions\src\payments\stripe\stripeClient.ts:84:    console.warn('[stripeClient] STRIPE_WEBHOOK_SECRET not configured - webhook verification disabled');
+functions\src\payments\stripe\stripeClient.ts:87:  stripeWebhookSecret = secret;
+functions\src\payments\stripe\stripeClient.ts:92: * Get Stripe client instance.
+functions\src\payments\stripe\stripeClient.ts:97: * @returns Stripe instance or null (emulator only)
+functions\src\payments\stripe\stripeClient.ts:100:export function getStripe(): Stripe | null {
+functions\src\payments\stripe\stripeClient.ts:101:  if (stripeInstance) {
+functions\src\payments\stripe\stripeClient.ts:102:    return stripeInstance;
+functions\src\payments\stripe\stripeClient.ts:105:  const secretKey = loadStripeSecretKey();
+functions\src\payments\stripe\stripeClient.ts:109:      console.warn('[stripeClient] Stripe disabled in emulator (no STRIPE_SECRET_KEY)');
+functions\src\payments\stripe\stripeClient.ts:112:    throw new Error('[stripeClient] STRIPE_SECRET_KEY is required in production');
+functions\src\payments\stripe\stripeClient.ts:115:  stripeInstance = new Stripe(secretKey, {
+functions\src\payments\stripe\stripeClient.ts:121:  console.log('[stripeClient] Stripe client initialized');
+functions\src\payments\stripe\stripeClient.ts:122:  return stripeInstance;
+functions\src\payments\stripe\stripeClient.ts:126: * Get Stripe client for non-webhook operations.
+functions\src\payments\stripe\stripeClient.ts:128: * More lenient than requireStripeForWebhook - allows operations
+functions\src\payments\stripe\stripeClient.ts:129: * where webhook secret isn't needed.
+functions\src\payments\stripe\stripeClient.ts:131: * @returns Stripe instance
+functions\src\payments\stripe\stripeClient.ts:132: * @throws Error if Stripe cannot be initialized
+functions\src\payments\stripe\stripeClient.ts:134:export function requireStripe(): Stripe {
+functions\src\payments\stripe\stripeClient.ts:135:  const stripe = getStripe();
+functions\src\payments\stripe\stripeClient.ts:136:  if (!stripe) {
+functions\src\payments\stripe\stripeClient.ts:137:    throw new Error('[stripeClient] Stripe is not available');
+functions\src\payments\stripe\stripeClient.ts:139:  return stripe;
+functions\src\payments\stripe\stripeClient.ts:143: * Get Stripe client specifically for webhook processing.
+functions\src\payments\stripe\stripeClient.ts:145: * STRICT: Fails if webhook secret is missing.
+functions\src\payments\stripe\stripeClient.ts:146: * This prevents fake webhook events from crediting tokens.
+functions\src\payments\stripe\stripeClient.ts:148: * @returns Object with stripe instance and webhook secret
+functions\src\payments\stripe\stripeClient.ts:149: * @throws Error if either key or webhook secret is missing
+functions\src\payments\stripe\stripeClient.ts:151:export function requireStripeForWebhook(): { stripe: Stripe; webhookSecret: string } {
+functions\src\payments\stripe\stripeClient.ts:152:  const stripe = getStripe();
+functions\src\payments\stripe\stripeClient.ts:153:  if (!stripe) {
+functions\src\payments\stripe\stripeClient.ts:154:    throw new Error('[stripeClient] Stripe is not available - cannot process webhooks');
+functions\src\payments\stripe\stripeClient.ts:157:  const webhookSecret = loadStripeWebhookSecret();
+functions\src\payments\stripe\stripeClient.ts:158:  if (!webhookSecret) {
+functions\src\payments\stripe\stripeClient.ts:159:    // CRITICAL: Never allow webhook processing without signature verification
+functions\src\payments\stripe\stripeClient.ts:160:    throw new Error('[stripeClient] STRIPE_WEBHOOK_SECRET is required for webhook processing');
+functions\src\payments\stripe\stripeClient.ts:163:  return { stripe, webhookSecret };
+functions\src\payments\stripe\stripeClient.ts:167: * Get just the webhook secret (for existing code paths).
+functions\src\payments\stripe\stripeClient.ts:169: * @returns Webhook secret string
+functions\src\payments\stripe\stripeClient.ts:170: * @throws Error if webhook secret is not configured
+functions\src\payments\stripe\stripeClient.ts:172:export function getWebhookSecret(): string {
+functions\src\payments\stripe\stripeClient.ts:173:  const secret = loadStripeWebhookSecret();
+functions\src\payments\stripe\stripeClient.ts:175:    throw new Error('[stripeClient] STRIPE_WEBHOOK_SECRET is not configured');
+functions\src\payments\stripe\stripeClient.ts:181: * Check if Stripe is available (for conditional logic).
+functions\src\payments\stripe\stripeClient.ts:183: * @returns true if Stripe can be initialized, false otherwise
+functions\src\payments\stripe\stripeClient.ts:185:export function isStripeAvailable(): boolean {
+functions\src\payments\stripe\stripeClient.ts:186:  const key = loadStripeSecretKey();
+functions\src\payments\stripe\stripeClient.ts:191: * Check if webhook processing is available.
+functions\src\payments\stripe\stripeClient.ts:193: * @returns true if both API key and webhook secret are configured
+functions\src\payments\stripe\stripeClient.ts:195:export function isWebhookAvailable(): boolean {
+functions\src\payments\stripe\stripeClient.ts:196:  const key = loadStripeSecretKey();
+functions\src\payments\stripe\stripeClient.ts:197:  const secret = loadStripeWebhookSecret();
+functions\src\payments\stripe\stripeClient.ts:201:// Re-export Stripe types for convenience
+functions\src\payments\stripe\stripeClient.ts:202:export { Stripe };
+functions\src\payments\stripe\webhook.ts:3:import Stripe from "stripe";
+functions\src\payments\stripe\webhook.ts:5:export const stripeWebhookV1 = onRequest(
+functions\src\payments\stripe\webhook.ts:11:    secrets: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
+functions\src\payments\stripe\webhook.ts:20:      const stripeSecret = process.env.STRIPE_SECRET_KEY;
+functions\src\payments\stripe\webhook.ts:21:      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+functions\src\payments\stripe\webhook.ts:23:      if (!stripeSecret || !webhookSecret) {
+functions\src\payments\stripe\webhook.ts:24:        logger.error("Stripe secrets not configured");
+functions\src\payments\stripe\webhook.ts:25:        res.status(500).send("Stripe configuration error");
+functions\src\payments\stripe\webhook.ts:29:      const stripe = new Stripe(stripeSecret, {
+functions\src\payments\stripe\webhook.ts:33:      const sig = req.headers["stripe-signature"] as string;
+functions\src\payments\stripe\webhook.ts:40:      let event: Stripe.Event;
+functions\src\payments\stripe\webhook.ts:43:        event = stripe.webhooks.constructEvent(
+functions\src\payments\stripe\webhook.ts:46:          webhookSecret
+functions\src\payments\stripe\webhook.ts:50:        res.status(400).send(`Webhook Error: ${err.message}`);
+functions\src\payments\stripe\webhook.ts:70:      logger.error("Unhandled webhook error", err);
+functions\src\payments.providers.ts:5: * - Stripe (existing, global)
+functions\src\payments.providers.ts:13: * - handleProviderWebhook: Unified webhook handler for all providers
+functions\src\payments.providers.ts:21:import Stripe from "stripe";
+functions\src\payments.providers.ts:47:  STRIPE = "stripe",
+functions\src\payments.providers.ts:90:    case PaymentProvider.STRIPE:
+functions\src\payments.providers.ts:92:        secretKey: env.STRIPE_SECRET_KEY || "",
+functions\src\payments.providers.ts:93:        webhookSecret: env.STRIPE_WEBHOOK_SECRET || "",
+functions\src\payments.providers.ts:120:        webhookSecret: env.COINBASE_WEBHOOK_SECRET || "",
+functions\src\payments.providers.ts:157:        case PaymentProvider.STRIPE:
+functions\src\payments.providers.ts:158:          ({ paymentUrl, providerSessionId } = await createStripeSession(uid, amount, currency, tokens));
+functions\src\payments.providers.ts:215: * Create Stripe session (existing implementation)
+functions\src\payments.providers.ts:217:async function createStripeSession(
+functions\src\payments.providers.ts:223:  const config = getProviderConfig(PaymentProvider.STRIPE);
+functions\src\payments.providers.ts:224:  const stripe = new Stripe(config.secretKey, { apiVersion: "2025-02-24.acacia" as any });
+functions\src\payments.providers.ts:226:  const session = await stripe.checkout.sessions.create({
+functions\src\payments.providers.ts:288:      urlStatus: `${process.env.FUNCTIONS_URL}/p24Webhook`,
+functions\src\payments.providers.ts:339:      notifyUrl: `${process.env.FUNCTIONS_URL}/payuWebhook`,
+functions\src\payments.providers.ts:415: * Unified webhook handler for all providers
+functions\src\payments.providers.ts:417:export const handleProviderWebhook = onRequest(
+functions\src\payments.providers.ts:422:    console.log(`Webhook received from provider: ${provider}`);
+functions\src\payments.providers.ts:427:          await handleP24Webhook(req, res);
+functions\src\payments.providers.ts:431:          await handlePayUWebhook(req, res);
+functions\src\payments.providers.ts:435:          await handleCoinbaseWebhook(req, res);
+functions\src\payments.providers.ts:442:      console.error("Webhook error:", error);
+functions\src\payments.providers.ts:443:      res.status(500).send("Webhook processing failed");
+functions\src\payments.providers.ts:449: * Handle P24 webhook
+functions\src\payments.providers.ts:451:async function handleP24Webhook(req: any, res: any) {
+functions\src\payments.providers.ts:483: * Handle PayU webhook
+functions\src\payments.providers.ts:485:async function handlePayUWebhook(req: any, res: any) {
+functions\src\payments.providers.ts:524: * Handle Coinbase webhook
+functions\src\payments.providers.ts:526:async function handleCoinbaseWebhook(req: any, res: any) {
+functions\src\payments.ts:2: * PAYMENTS — Stripe Webhook, Token Credit, Payout Request
+functions\src\payments.ts:5: *   stripeWebhook         — onRequest: Stripe webhook handler (europe-west1)
+functions\src\payments.ts:11: *   - session.id idempotency via `purchases` collection
+functions\src\payments.ts:12: *   - Stripe signature verification
+functions\src\payments.ts:17:import Stripe from 'stripe';
+functions\src\payments.ts:24:// Stripe SDK — initialised lazily from Cloud Run secret
+functions\src\payments.ts:26:const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+functions\src\payments.ts:36:// STRIPE WEBHOOK (europe-west1, onRequest)
+functions\src\payments.ts:38:export const stripeWebhook = onRequest(
+functions\src\payments.ts:47:    // ── 1. Verify Stripe signature ─────────────────────────────────
+functions\src\payments.ts:48:    const sig = req.headers['stripe-signature'];
+functions\src\payments.ts:50:      logger.warn('[stripeWebhook] Missing stripe-signature header');
+functions\src\payments.ts:51:      res.status(400).send('Missing stripe-signature header');
+functions\src\payments.ts:55:    let event: Stripe.Event;
+functions\src\payments.ts:57:      event = stripe.webhooks.constructEvent(
+functions\src\payments.ts:60:        process.env.STRIPE_WEBHOOK_SECRET || ''
+functions\src\payments.ts:63:      logger.error('[stripeWebhook] Signature verification failed:', err.message);
+functions\src\payments.ts:64:      res.status(400).send(`Webhook Error: ${err.message}`);
+functions\src\payments.ts:74:    const session = event.data.object as Stripe.Checkout.Session;
+functions\src\payments.ts:78:      logger.info('[stripeWebhook] payment_status not paid, ignoring:', session.payment_status);
+functions\src\payments.ts:85:      logger.error('[stripeWebhook] Non-USD currency rejected:', session.currency);
+functions\src\payments.ts:97:      logger.error('[stripeWebhook] Invalid metadata:', { userId, packId, tokensFromMeta });
+functions\src\payments.ts:105:      logger.error('[stripeWebhook] Unknown packId:', packId);
+functions\src\payments.ts:112:      logger.error('[stripeWebhook] Pack missing priceUSD:', packId);
+functions\src\payments.ts:118:    //    DEFAULT_TOKEN_PACKS.priceUSD is in dollars; Stripe amount_total is in cents.
+functions\src\payments.ts:121:      logger.error('[stripeWebhook] Amount mismatch:', {
+functions\src\payments.ts:133:      logger.error('[stripeWebhook] Token count mismatch:', {
+functions\src\payments.ts:142:    // ── 10. Atomic transaction: idempotency + wallet credit ───────
+functions\src\payments.ts:152:        // Idempotency: check if session already processed
+functions\src\payments.ts:155:          logger.info(`[stripeWebhook] Duplicate session ${sessionId} — skipping`);
+functions\src\payments.ts:163:        // Write purchase record (idempotency sentinel)
+functions\src\payments.ts:172:          stripePaymentIntentId: session.payment_intent,
+functions\src\payments.ts:173:          stripeCustomerId: session.customer,
+functions\src\payments.ts:196:      logger.info(`[stripeWebhook] Credited ${pack.tokens} tokens to ${userId} (session ${sessionId})`);
+functions\src\payments.ts:199:      logger.error('[stripeWebhook] Transaction failed:', error);
+functions\src\payments.ts:200:      res.status(500).send(`Webhook handler error: ${error.message}`);
+functions\src\payments.ts:239:      // Idempotency check
+functions\src\payments.ts:254:      // Write purchase record (idempotency sentinel)
+functions\src\paymentsComplete.ts:8: * - Android/Web: Stripe Checkout
+functions\src\paymentsComplete.ts:11: * - Idempotency across all operations
+functions\src\paymentsComplete.ts:27:import Stripe from "stripe";
+functions\src\paymentsComplete.ts:44:  STRIPE = "stripe",
+functions\src\paymentsComplete.ts:81:  idempotencyKey: string;
+functions\src\paymentsComplete.ts:82:  webhookProcessedAt?: Timestamp;
+functions\src\paymentsComplete.ts:83:  webhookAttempts: number;
+functions\src\paymentsComplete.ts:129:  stripeCustomerId?: string;
+functions\src\paymentsComplete.ts:191:// STRIPE CHECKOUT SESSION
+functions\src\paymentsComplete.ts:195: * Create Stripe checkout session with full idempotency
+functions\src\paymentsComplete.ts:197:export const createStripeCheckoutSession = onCall(
+functions\src\paymentsComplete.ts:215:      // Generate idempotency key
+functions\src\paymentsComplete.ts:216:      const idempotencyKey = `checkout_${userId}_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+functions\src\paymentsComplete.ts:223:      // Initialize Stripe
+functions\src\paymentsComplete.ts:224:      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+functions\src\paymentsComplete.ts:228:      // Create Stripe session with idempotency
+functions\src\paymentsComplete.ts:229:      const session = await stripe.checkout.sessions.create({
+functions\src\paymentsComplete.ts:249:          idempotencyKey,
+functions\src\paymentsComplete.ts:253:        idempotencyKey: `stripe_${idempotencyKey}`,
+functions\src\paymentsComplete.ts:260:        provider: PaymentProvider.STRIPE,
+functions\src\paymentsComplete.ts:268:        idempotencyKey,
+functions\src\paymentsComplete.ts:269:        webhookAttempts: 0,
+functions\src\paymentsComplete.ts:282:        provider: "stripe",
+functions\src\paymentsComplete.ts:295:      logger.error("Error creating Stripe checkout session:", error);
+functions\src\paymentsComplete.ts:302:// STRIPE WEBHOOK PROCESSOR V2
+functions\src\paymentsComplete.ts:306: * Secure Stripe webhook processor with signature verification and idempotency
+functions\src\paymentsComplete.ts:308:export const stripeWebhookV2 = onRequest(
+functions\src\paymentsComplete.ts:311:    const sig = req.headers["stripe-signature"] as string;
+functions\src\paymentsComplete.ts:314:      logger.error("Missing Stripe signature");
+functions\src\paymentsComplete.ts:319:    let event: Stripe.Event;
+functions\src\paymentsComplete.ts:322:      // Verify webhook signature
+functions\src\paymentsComplete.ts:323:      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+functions\src\paymentsComplete.ts:327:      event = stripe.webhooks.constructEvent(
+functions\src\paymentsComplete.ts:330:        process.env.STRIPE_WEBHOOK_SECRET || ""
+functions\src\paymentsComplete.ts:333:      logger.error("Webhook signature verification failed:", err);
+functions\src\paymentsComplete.ts:334:      res.status(400).send(`Webhook Error: ${err.message}`);
+functions\src\paymentsComplete.ts:338:    logger.info(`Stripe webhook received: ${event.type}, id: ${event.id}`);
+functions\src\paymentsComplete.ts:343:          await handleStripeCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+functions\src\paymentsComplete.ts:348:          await handleStripeSubscriptionUpdate(event.data.object as Stripe.Subscription);
+functions\src\paymentsComplete.ts:352:          await handleStripeSubscriptionDeleted(event.data.object as Stripe.Subscription);
+functions\src\paymentsComplete.ts:356:          await handleStripeRefund(event.data.object as Stripe.Charge);
+functions\src\paymentsComplete.ts:365:      logger.error("Webhook processing error:", error);
+functions\src\paymentsComplete.ts:371:async function handleStripeCheckoutCompleted(session: Stripe.Checkout.Session) {
+functions\src\paymentsComplete.ts:375:    // Credit tokens atomically — idempotency check is INSIDE the transaction
+functions\src\paymentsComplete.ts:376:    // to prevent TOCTOU race conditions on concurrent webhook deliveries
+functions\src\paymentsComplete.ts:378:      // Re-read payment session inside transaction for atomic idempotency
+functions\src\paymentsComplete.ts:388:      // Idempotency check — inside transaction to prevent duplicate credit
+functions\src\paymentsComplete.ts:390:        logger.info(`Already processed (idempotent skip): ${sessionId}`);
+functions\src\paymentsComplete.ts:424:      const txRef = db.collection("transactions").doc(`tx_stripe_${sessionId}`);
+functions\src\paymentsComplete.ts:426:        txId: `tx_stripe_${sessionId}`,
+functions\src\paymentsComplete.ts:433:        provider: PaymentProvider.STRIPE,
+functions\src\paymentsComplete.ts:457:        webhookProcessedAt: FieldValue.serverTimestamp(),
+functions\src\paymentsComplete.ts:463:    // Post-transaction logging (session metadata retrieved from Stripe session object)
+functions\src\paymentsComplete.ts:466:      provider: "stripe",
+functions\src\paymentsComplete.ts:474:      webhookAttempts: FieldValue.increment(1),
+functions\src\paymentsComplete.ts:482:async function handleStripeSubscriptionUpdate(subscription: Stripe.Subscription) {
+functions\src\paymentsComplete.ts:487:async function handleStripeSubscriptionDeleted(subscription: Stripe.Subscription) {
+functions\src\paymentsComplete.ts:492:async function handleStripeRefund(charge: Stripe.Charge) {
+functions\src\paymentsComplete.ts:523:      // Check idempotency
+functions\src\paymentsComplete.ts:1609: * Process SEPA payout (placeholder - requires Stripe Connect)
+functions\src\paymentsComplete.ts:1615:  // In production, integrate with Stripe Connect or similar
+functions\src\paymentsV2.ts:621:    // Process payment (simplified - in production integrate with Stripe/Coinbase)
+functions\src\payoutProviders\index.ts:8:  type: 'stripe' | 'wise' | 'sepa' | 'ach' | 'local' | 'crypto';
+functions\src\payoutProviders\index.ts:57:export { StripeProvider } from './stripe';
+functions\src\payoutProviders\stripe.ts:2: * Stripe Connect Payout Provider
+functions\src\payoutProviders\stripe.ts:6:export class StripeProvider implements PayoutProvider {
+functions\src\payoutProviders\stripe.ts:7:  name = 'Stripe Connect';
+functions\src\payoutProviders\stripe.ts:8:  type: 'stripe' = 'stripe';
+functions\src\payoutProviders\stripe.ts:19:      throw new Error('Stripe provider not initialized');
+functions\src\payoutProviders\stripe.ts:22:    // TODO: Implement actual Stripe Connect payout
+functions\src\payoutProviders\stripe.ts:23:    // const stripe = require('stripe')(this.apiKey);
+functions\src\payoutProviders\stripe.ts:24:    // const payout = await stripe.payouts.create({...});
+functions\src\payoutProviders\stripe.ts:29:      providerTransactionId: `stripe_${Date.now()}`,
+functions\src\payoutProviders\stripe.ts:45:    return false; // Stripe payouts cannot be cancelled once created
+functions\src\payouts.ts:4: * Main payout logic integrating with Stripe Connect, Wise, and eligibility checks.
+functions\src\payouts.ts:16:  createOrUpdateStripeAccount,
+functions\src\payouts.ts:17:  createStripeOnboardingLink,
+functions\src\payouts.ts:18:  getStripeAccountStatus,
+functions\src\payouts.ts:19:  createStripeTransfer,
+functions\src\payouts.ts:20:} from "./integrations/stripeConnect";
+functions\src\payouts.ts:31:export type PayoutRail = "STRIPE" | "WISE" | "AUTO";
+functions\src\payouts.ts:32:export type PayoutRailEffective = "STRIPE" | "WISE" | null;
+functions\src\payouts.ts:44:  stripe: {
+functions\src\payouts.ts:65:  rail: "STRIPE" | "WISE";
+functions\src\payouts.ts:75:    stripeTransferId?: string;
+functions\src\payouts.ts:92:  defaultRail: "STRIPE" | "WISE";
+functions\src\payouts.ts:93:  countryRailOverrides: Record<string, "STRIPE" | "WISE">;
+functions\src\payouts.ts:95:    STRIPE: string[];
+functions\src\payouts.ts:120:    defaultRail: "STRIPE",
+functions\src\payouts.ts:137:      US: "STRIPE",
+functions\src\payouts.ts:138:      CA: "STRIPE",
+functions\src\payouts.ts:139:      AU: "STRIPE",
+functions\src\payouts.ts:142:      STRIPE: ["USD", "EUR", "GBP", "AUD", "CAD"],
+functions\src\payouts.ts:166:): "STRIPE" | "WISE" {
+functions\src\payouts.ts:293:      stripe: {
+functions\src\payouts.ts:375:  // Initialize stripe/wise data if not exists
+functions\src\payouts.ts:379:    accountData.stripe = {
+functions\src\payouts.ts:390:  // Setup Stripe Connect if needed
+functions\src\payouts.ts:392:  if (effectiveRail === "STRIPE") {
+functions\src\payouts.ts:394:    const stripeAccountId = existingData?.stripe?.accountId;
+functions\src\payouts.ts:396:    if (!stripeAccountId) {
+functions\src\payouts.ts:397:      // Create new Stripe Connect account
+functions\src\payouts.ts:398:      const stripeResult = await createOrUpdateStripeAccount({
+functions\src\payouts.ts:404:      accountData.stripe = {
+functions\src\payouts.ts:405:        accountId: stripeResult.accountId,
+functions\src\payouts.ts:406:        onboardingStatus: stripeResult.onboardingStatus,
+functions\src\payouts.ts:411:      const linkResult = await createStripeOnboardingLink({
+functions\src\payouts.ts:412:        accountId: stripeResult.accountId,
+functions\src\payouts.ts:418:      accountData.stripe.lastOnboardingUrl = linkResult.url;
+functions\src\payouts.ts:421:      const statusResult = await getStripeAccountStatus(stripeAccountId);
+functions\src\payouts.ts:422:      accountData.stripe = {
+functions\src\payouts.ts:423:        accountId: stripeAccountId,
+functions\src\payouts.ts:430:        const linkResult = await createStripeOnboardingLink({
+functions\src\payouts.ts:431:          accountId: stripeAccountId,
+functions\src\payouts.ts:437:        accountData.stripe.lastOnboardingUrl = linkResult.url;
+functions\src\performanceOptimization.ts:442:  stripe: null as any,
+functions\src\performanceOptimization.ts:447:export async function getLazyStripe() {
+functions\src\performanceOptimization.ts:448:  if (!lazyImports.stripe) {
+functions\src\performanceOptimization.ts:449:    const Stripe = await import("stripe");
+functions\src\performanceOptimization.ts:450:    lazyImports.stripe = new Stripe.default(process.env.STRIPE_SECRET_KEY || "", {
+functions\src\performanceOptimization.ts:454:  return lazyImports.stripe;
+functions\src\referrals.ts:313:      // Already attributed, idempotent
+functions\src\referrals.ts:446:    // Check if milestone already tracked (idempotent)
+functions\src\royalEngine.ts:43:  stripeCustomerId: string;
+functions\src\royalEngine.ts:44:  stripeSubscriptionId: string;
+functions\src\royalEngine.ts:332: * Create or update Royal subscription from Stripe webhook.
+functions\src\royalEngine.ts:336:  stripeData: {
+functions\src\royalEngine.ts:349:    stripeCustomerId: stripeData.customerId,
+functions\src\royalEngine.ts:350:    stripeSubscriptionId: stripeData.subscriptionId,
+functions\src\royalEngine.ts:351:    currentTier: stripeData.tier,
+functions\src\royalEngine.ts:352:    status: stripeData.status,
+functions\src\royalEngine.ts:353:    currentPeriodStart: admin.firestore.Timestamp.fromMillis(stripeData.currentPeriodStart * 1000),
+functions\src\royalEngine.ts:354:    currentPeriodEnd: admin.firestore.Timestamp.fromMillis(stripeData.currentPeriodEnd * 1000),
+functions\src\royalEngine.ts:366: * Cancel Royal subscription (from Stripe webhook).
+functions\src\royalWebhooks.ts:2: * PACK 50 — Royal Club Stripe Webhook Handler
+functions\src\royalWebhooks.ts:6:import Stripe from 'stripe';
+functions\src\royalWebhooks.ts:13: * Handle Stripe webhook events for Royal subscriptions
+functions\src\royalWebhooks.ts:15:export async function handleRoyalStripeWebhook(
+functions\src\royalWebhooks.ts:16:  event: Stripe.Event
+functions\src\royalWebhooks.ts:33:    console.error('[RoyalWebhooks] Error handling webhook:', error);
+functions\src\royalWebhooks.ts:42:  event: Stripe.Event
+functions\src\royalWebhooks.ts:45:  const subscription = event.data.object as Stripe.Subscription;
+functions\src\royalWebhooks.ts:58:    console.error('[RoyalWebhooks] No userId in subscription metadata', subscription.id);
+functions\src\royalWebhooks.ts:66:    console.error('[RoyalWebhooks] Could not determine Royal tier', subscription.id);
+functions\src\royalWebhooks.ts:80:  console.log(`[RoyalWebhooks] Upserted Royal subscription for ${userId}: ${tier}`);
+functions\src\royalWebhooks.ts:89:  event: Stripe.Event
+functions\src\royalWebhooks.ts:92:  const subscription = event.data.object as Stripe.Subscription;
+functions\src\royalWebhooks.ts:108:  console.log(`[RoyalWebhooks] Canceled Royal subscription for ${userId}`);
+functions\src\royalWebhooks.ts:116:function checkIfRoyalSubscription(subscription: Stripe.Subscription): boolean {
+functions\src\royalWebhooks.ts:139:  subscription: Stripe.Subscription
+functions\src\royalWebhooks.ts:163:console.log('✅ Royal Webhooks initialized - PACK 50');
+functions\src\runtime.ts:5:export const stripeSecretKey = defineSecret("STRIPE_SECRET_KEY");
+functions\src\runtime.ts:6:export const stripeWebhookSecret = defineSecret("STRIPE_WEBHOOK_SECRET");
+functions\src\runtime.ts:13:  secrets: [stripeSecretKey, stripeWebhookSecret],
+functions\src\scheduled.ts:279:          // (would need to check Stripe subscription)
+functions\src\secretManager.ts:82:let _stripeSecretKey: string | null = null;
+functions\src\secretManager.ts:83:let _stripeWebhookSecret: string | null = null;
+functions\src\secretManager.ts:90: * Get Stripe Secret Key
+functions\src\secretManager.ts:92:export async function getStripeSecretKey(): Promise<string> {
+functions\src\secretManager.ts:93:  if (!_stripeSecretKey) {
+functions\src\secretManager.ts:94:    _stripeSecretKey = await getSecret('stripe-secret-key');
+functions\src\secretManager.ts:96:  return _stripeSecretKey;
+functions\src\secretManager.ts:100: * Get Stripe Webhook Secret
+functions\src\secretManager.ts:102:export async function getStripeWebhookSecret(): Promise<string> {
+functions\src\secretManager.ts:103:  if (!_stripeWebhookSecret) {
+functions\src\secretManager.ts:104:    _stripeWebhookSecret = await getSecret('stripe-webhook-secret');
+functions\src\secretManager.ts:106:  return _stripeWebhookSecret;
+functions\src\secretManager.ts:187:  getStripeSecretKey,
+functions\src\secretManager.ts:188:  getStripeWebhookSecret,
+functions\src\seedPolicies.ts:64:- Payment information (processed by Stripe)
+functions\src\seedPolicies.ts:77:- We share data with service providers (Stripe, cloud hosting)
+functions\src\seedPolicies.ts:270:We use third-party services (Firebase, Stripe) that may set their own cookies.
+functions\src\stubs.ts:53:// Stripe helpers
+functions\src\stubs.ts:54:export function getStripeSecretKey(): string {
+functions\src\stubs.ts:55:  return process.env.STRIPE_SECRET_KEY || '';
+functions\src\stubs.ts:58:export function getStripeWebhookSecret(): string {
+functions\src\stubs.ts:59:  return process.env.STRIPE_WEBHOOK_SECRET || '';
+functions\src\trustRiskIntegrations.ts:209: * Call when Stripe webhook receives chargeback
+functions\src\trustSafetyPack46.ts:249:  // Check if already blocked (idempotent)
+functions\src\types\integrations.ts:120:  webhookUrl?: string;
+functions\src\types\pack167-affiliates.ts:276:  payoutMethod: string;  // 'stripe' | 'bank_transfer' | 'crypto'
+functions\src\types\pack189-ai-federation.types.ts:171:  stripePaymentIntentId?: string;
+functions\src\types\pack277-wallet.types.ts:122:  paymentIntentId?: string;  // For web (Stripe)
+functions\src\types\pack277-wallet.types.ts:164:  payoutMethod: 'stripe_connect' | 'bank_transfer' | 'wise';
+functions\src\types\pack278-subscription.types.ts:54:  subscriptionId?: string;           // Stripe subscription ID for web
+functions\src\types\pack278-subscription.types.ts:77:  // Web (Stripe)
+functions\src\types\pack278-subscription.types.ts:110: * Subscription webhook event from Stripe
+functions\src\types\pack278-subscription.types.ts:112:export interface StripeSubscriptionEvent {
+functions\src\types\pack288-token-store.types.ts:28:  provider: 'google_play' | 'app_store' | 'stripe';
+functions\src\types\pack288-token-store.types.ts:117: * Web purchase request (Stripe)
+functions\src\types\pack288-token-store.types.ts:136: * Stripe webhook event data
+functions\src\types\pack288-token-store.types.ts:138:export interface StripeWebhookEvent {
+functions\src\types\pack288-token-store.types.ts:207:  payoutMethod: 'stripe_connect' | 'bank_transfer' | 'wise' | 'paypal';
+functions\src\types\pack288-token-store.types.ts:295:  stripePriceId?: string;
+functions\src\types\pack289-withdrawals.types.ts:366:export interface PayoutWebhookData {
+functions\src\types\payouts.types.ts:28:export interface StripeConnectDetails {
+functions\src\types\payouts.types.ts:29:  stripeAccountId: string;
+functions\src\types\payouts.types.ts:33:export type PayoutMethodDetails = BankTransferDetails | WiseDetails | StripeConnectDetails;
+functions\src\types\payouts.types.ts:148:export function isStripeConnectDetails(details: any): details is StripeConnectDetails {
+functions\src\types\payouts.types.ts:151:    typeof details.stripeAccountId === 'string'
+functions\src\types\payouts.types.ts:164:    case 'STRIPE_CONNECT':
+functions\src\types\payouts.types.ts:165:      return isStripeConnectDetails(details);
+functions\src\types\shared\types\pack421-observability.types.ts:73:export type AlertChannel = 'SLACK' | 'PAGERDUTY' | 'EMAIL' | 'SMS' | 'WEBHOOK' | 'oncall_slack' | 'oncall_pagerduty' | 'oncall_email' | 'oncall_sms' | 'email_ops' | 'email_finance' | 'safety_team' | 'pagerduty' | 'webhook';
+functions\src\types\treasury.types.ts:201:  paymentMethodType: string;           // 'STRIPE', 'APPLE_PAY', etc.
+functions\src\types\treasury.types.ts:208:    stripeSessionId?: string;
+functions\src\types.ts:144:    stripeSessionId?: string;
+functions\src\types.ts:273:  stripeSubscriptionId?: string;
+functions\src\types.ts:274:  stripePriceId?: string;
+functions\src\validation.schemas.ts:138:  idempotencyKey: uuidSchema,
+functions\src\wallet\index.ts:25:  IdempotencySentinel,
+functions\src\wallet\index.ts:32:  IDEMPOTENCY_COLLECTION,
+functions\src\wallet\index.ts:80:  calculateStripeFee,
+functions\src\wallet\index.ts:90:  STRIPE_FEE_FIXED_USD,
+functions\src\wallet\index.ts:91:  STRIPE_FEE_PERCENT,
+functions\src\wallet\payoutService.ts:6: * KEY RULE: Payout fees (Stripe/transfer fees) are charged to the withdrawing
+functions\src\wallet\payoutService.ts:14: * STRIPE INTEGRATION:
+functions\src\wallet\payoutService.ts:15: * - Uses createStripeTransfer from integrations/stripeConnect
+functions\src\wallet\payoutService.ts:16: * - Idempotency keys prevent duplicate Stripe transfers
+functions\src\wallet\payoutService.ts:17: * - Transfer amount = gross USD - Stripe fee (charged to user)
+functions\src\wallet\payoutService.ts:32:import { createStripeTransfer } from '../integrations/stripeConnect';
+functions\src\wallet\payoutService.ts:45: * Estimated Stripe transfer fee structure.
+functions\src\wallet\payoutService.ts:46: * Stripe Connect: 0.25% + $0.25 per transfer (Express accounts).
+functions\src\wallet\payoutService.ts:49:export const STRIPE_FEE_FIXED_USD = 0.25;
+functions\src\wallet\payoutService.ts:50:export const STRIPE_FEE_PERCENT = 0.0025; // 0.25%
+functions\src\wallet\payoutService.ts:67: * Calculate Stripe transfer fee.
+functions\src\wallet\payoutService.ts:72: * @returns The Stripe fee in USD (rounded to 2 decimal places)
+functions\src\wallet\payoutService.ts:74:export function calculateStripeFee(grossUsd: number): number {
+functions\src\wallet\payoutService.ts:75:  const fee = grossUsd * STRIPE_FEE_PERCENT + STRIPE_FEE_FIXED_USD;
+functions\src\wallet\payoutService.ts:83: * @returns Breakdown with grossUsd, stripeFeeUsd, netUsd
+functions\src\wallet\payoutService.ts:89:  stripeFeeUsd: number;
+functions\src\wallet\payoutService.ts:95:  const stripeFeeUsd = calculateStripeFee(grossUsd);
+functions\src\wallet\payoutService.ts:96:  const netUsd = Math.round((grossUsd - stripeFeeUsd) * 100) / 100;
+functions\src\wallet\payoutService.ts:103:    stripeFeeUsd,
+functions\src\wallet\payoutService.ts:187: * @param stripeAccountId — user's Stripe Connect account ID
+functions\src\wallet\payoutService.ts:193:  stripeAccountId: string;
+functions\src\wallet\payoutService.ts:195:  const { userId, tokensRequested, stripeAccountId } = params;
+functions\src\wallet\payoutService.ts:208:  if (!stripeAccountId || stripeAccountId.trim().length === 0) {
+functions\src\wallet\payoutService.ts:209:    throw new Error('[PayoutService] stripeAccountId is required');
+functions\src\wallet\payoutService.ts:217:      `[PayoutService] Net payout amount is zero or negative after fees. Gross: $${breakdown.grossUsd}, Fee: $${breakdown.stripeFeeUsd}`,
+functions\src\wallet\payoutService.ts:223:  const stripeIdempotencyKey = `payout_stripe_${payoutId}`;
+functions\src\wallet\payoutService.ts:224:  const walletIdempotencyKey = `payout_debit_${payoutId}`;
+functions\src\wallet\payoutService.ts:226:  // Debit tokens from wallet (transactional + idempotent + writes ledger)
+functions\src\wallet\payoutService.ts:230:    idempotencyKey: walletIdempotencyKey,
+functions\src\wallet\payoutService.ts:242:    stripeFeeUsd: breakdown.stripeFeeUsd,
+functions\src\wallet\payoutService.ts:244:    stripeAccountId,
+functions\src\wallet\payoutService.ts:245:    stripeTransferId: null,
+functions\src\wallet\payoutService.ts:246:    stripeIdempotencyKey,
+functions\src\wallet\payoutService.ts:292:// PROCESS PAYOUT — EXECUTE STRIPE TRANSFER
+functions\src\wallet\payoutService.ts:296: * Process an approved payout via Stripe.
+functions\src\wallet\payoutService.ts:301: * 3. Creates Stripe transfer (with idempotency key)
+functions\src\wallet\payoutService.ts:307: * - stripeFeeUsd = calculateStripeFee(grossUsd)
+functions\src\wallet\payoutService.ts:308: * - netUsd = grossUsd - stripeFeeUsd  ← this is what user receives
+functions\src\wallet\payoutService.ts:309: * - Stripe transfer amount = netUsd in cents
+functions\src\wallet\payoutService.ts:313:  stripeTransferId?: string;
+functions\src\wallet\payoutService.ts:332:  await transitionStatus(payoutId, 'PROCESSING', 'Starting Stripe transfer');
+functions\src\wallet\payoutService.ts:335:    // Execute Stripe transfer
+functions\src\wallet\payoutService.ts:343:    const transferResult = await createStripeTransfer({
+functions\src\wallet\payoutService.ts:344:      accountId: payout.stripeAccountId,
+functions\src\wallet\payoutService.ts:353:        stripeFeeUsd: String(payout.stripeFeeUsd),
+functions\src\wallet\payoutService.ts:355:        idempotencyKey: payout.stripeIdempotencyKey,
+functions\src\wallet\payoutService.ts:360:    await transitionStatus(payoutId, 'COMPLETED', 'Stripe transfer successful', {
+functions\src\wallet\payoutService.ts:361:      stripeTransferId: transferResult.transferId,
+functions\src\wallet\payoutService.ts:366:      stripeTransferId: transferResult.transferId,
+functions\src\wallet\payoutService.ts:372:    await transitionStatus(payoutId, 'FAILED', `Stripe transfer failed: ${errorMessage}`);
+functions\src\wallet\payoutService.ts:391:  stripeTransferId?: string;
+functions\src\wallet\types.ts:124:   * Idempotency key to prevent duplicate processing.
+functions\src\wallet\types.ts:127:  idempotencyKey: string;
+functions\src\wallet\types.ts:193: * All Stripe/transfer fees are charged to the withdrawing user.
+functions\src\wallet\types.ts:215:   * Stripe/transfer fee in USD charged to the withdrawing user.
+functions\src\wallet\types.ts:218:  stripeFeeUsd: number;
+functions\src\wallet\types.ts:220:  /** Net USD amount the user receives = grossUsd - stripeFeeUsd. */
+functions\src\wallet\types.ts:223:  /** Stripe Connect account ID for the transfer. */
+functions\src\wallet\types.ts:224:  stripeAccountId: string;
+functions\src\wallet\types.ts:226:  /** Stripe Transfer ID (set after transfer is created). */
+functions\src\wallet\types.ts:227:  stripeTransferId: string | null;
+functions\src\wallet\types.ts:229:  /** Idempotency key for the Stripe transfer. */
+functions\src\wallet\types.ts:230:  stripeIdempotencyKey: string;
+functions\src\wallet\types.ts:285:  /** Idempotency key (must be unique per operation). */
+functions\src\wallet\types.ts:286:  idempotencyKey: string;
+functions\src\wallet\types.ts:314:// IDEMPOTENCY SENTINEL
+functions\src\wallet\types.ts:318: * Idempotency sentinel stored at `idempotency_sentinels/{key}`.
+functions\src\wallet\types.ts:321:export interface IdempotencySentinel {
+functions\src\wallet\types.ts:329:export const IDEMPOTENCY_COLLECTION = 'idempotency_sentinels';
+functions\src\wallet\walletService.ts:12: * - Idempotency sentinels prevent duplicate processing.
+functions\src\wallet\walletService.ts:25:  IdempotencySentinel,
+functions\src\wallet\walletService.ts:29:  IDEMPOTENCY_COLLECTION,
+functions\src\wallet\walletService.ts:94:// IDEMPOTENCY CHECK
+functions\src\wallet\walletService.ts:101:async function checkIdempotency(
+functions\src\wallet\walletService.ts:103:  idempotencyKey: string,
+functions\src\wallet\walletService.ts:105:  const ref = db.collection(IDEMPOTENCY_COLLECTION).doc(idempotencyKey);
+functions\src\wallet\walletService.ts:109:    const sentinel = snap.data() as IdempotencySentinel;
+functions\src\wallet\walletService.ts:117: * Write an idempotency sentinel inside a transaction.
+functions\src\wallet\walletService.ts:119:function writeIdempotencySentinel(
+functions\src\wallet\walletService.ts:121:  idempotencyKey: string,
+functions\src\wallet\walletService.ts:124:  const ref = db.collection(IDEMPOTENCY_COLLECTION).doc(idempotencyKey);
+functions\src\wallet\walletService.ts:127:  const sentinel: IdempotencySentinel = {
+functions\src\wallet\walletService.ts:128:    key: idempotencyKey,
+functions\src\wallet\walletService.ts:142: * Execute a wallet mutation atomically with ledger entry and idempotency.
+functions\src\wallet\walletService.ts:147: * 1. Check idempotency sentinel — if exists, return cached result.
+functions\src\wallet\walletService.ts:152: * 6. Write idempotency sentinel.
+functions\src\wallet\walletService.ts:177:  if (!params.idempotencyKey || params.idempotencyKey.trim().length === 0) {
+functions\src\wallet\walletService.ts:178:    throw new Error('[WalletService] idempotencyKey is required');
+functions\src\wallet\walletService.ts:183:    // 1. Idempotency check
+functions\src\wallet\walletService.ts:184:    const existingTxId = await checkIdempotency(transaction, params.idempotencyKey);
+functions\src\wallet\walletService.ts:186:      // Already processed — return idempotent result
+functions\src\wallet\walletService.ts:297:      idempotencyKey: params.idempotencyKey,
+functions\src\wallet\walletService.ts:304:    // 7. Write idempotency sentinel
+functions\src\wallet\walletService.ts:305:    writeIdempotencySentinel(transaction, params.idempotencyKey, txId);
+functions\src\wallet\walletService.ts:327: * @param idempotencyKey — unique key for this operation
+functions\src\wallet\walletService.ts:335:  idempotencyKey: string;
+functions\src\wallet\walletService.ts:343:    // Idempotency check
+functions\src\wallet\walletService.ts:344:    const existingTxId = await checkIdempotency(transaction, params.idempotencyKey);
+functions\src\wallet\walletService.ts:392:      idempotencyKey: params.idempotencyKey,
+functions\src\wallet\walletService.ts:397:    writeIdempotencySentinel(transaction, params.idempotencyKey, txId);
+functions\src\wallet\walletService.ts:414: * @param idempotencyKey — unique payout idempotency key
+functions\src\wallet\walletService.ts:420:  idempotencyKey: string;
+functions\src\wallet\walletService.ts:428:    // Idempotency check
+functions\src\wallet\walletService.ts:429:    const existingTxId = await checkIdempotency(transaction, params.idempotencyKey);
+functions\src\wallet\walletService.ts:487:      idempotencyKey: params.idempotencyKey,
+functions\src\wallet\walletService.ts:492:    writeIdempotencySentinel(transaction, params.idempotencyKey, txId);
+functions\src\walletFintech.ts:15: * - FIAT purchase via Stripe
+functions\src\walletFintech.ts:39:import Stripe from "stripe";
+functions\src\walletFintech.ts:48:// INIT STRIPE (FULLY FIXED VERSION)
+functions\src\walletFintech.ts:65:// Load stripe secret from env (Gen2: no runtime config)
+functions\src\walletFintech.ts:66:const STRIPE_SECRET =
+functions\src\walletFintech.ts:67:  process.env.STRIPE_SECRET_KEY ||
+functions\src\walletFintech.ts:70:if (!STRIPE_SECRET) {
+functions\src\walletFintech.ts:75:    throw new Error("❌ Stripe secret key missing in production runtime.");
+functions\src\walletFintech.ts:77:    console.warn("[walletFintech] Stripe disabled (emulator or deploy analysis).");
+functions\src\walletFintech.ts:82:// Create Stripe client (or placeholder during deploy analysis)
+functions\src\walletFintech.ts:83:const stripe = STRIPE_SECRET 
+functions\src\walletFintech.ts:84:  ? new Stripe(STRIPE_SECRET, {
+functions\src\walletFintech.ts:87:  : null as unknown as Stripe; // Placeholder during deploy analysis - will error at runtime if used
+functions\src\walletFintech.ts:429:    // Create Stripe checkout session
+functions\src\walletFintech.ts:430:    const session = await stripe.checkout.sessions.create({
+functions\src\webOperations.ts:206: * Create Stripe checkout session for web token purchase
+functions\src\webOperations.ts:224:    // in the Next.js API routes to keep Stripe operations secure
+functions\src\webOperations.ts:233: * Create Stripe subscription checkout session
+functions\src\webOperations.ts:251:    // in the Next.js API routes to keep Stripe operations secure
+functions\src\workers\payoutProcessor.ts:5: * Integrates with Stripe Connect, Wise, and AML monitoring.
+functions\src\workers\payoutProcessor.ts:11:  createStripeTransfer,
+functions\src\workers\payoutProcessor.ts:12:  getStripeTransfer,
+functions\src\workers\payoutProcessor.ts:13:} from "../integrations/stripeConnect";
+functions\src\workers\payoutProcessor.ts:110:    if (payout.rail === "STRIPE") {
+functions\src\workers\payoutProcessor.ts:111:      const result = await executeStripeTransfer(payout);
+functions\src\workers\payoutProcessor.ts:153: * Execute Stripe Connect transfer.
+functions\src\workers\payoutProcessor.ts:155:async function executeStripeTransfer(payout: PayoutRequest) {
+functions\src\workers\payoutProcessor.ts:163:  const stripeAccountId = account?.stripe?.accountId;
+functions\src\workers\payoutProcessor.ts:165:  if (!stripeAccountId) {
+functions\src\workers\payoutProcessor.ts:166:    throw new Error("Stripe account not configured");
+functions\src\workers\payoutProcessor.ts:173:  const result = await createStripeTransfer({
+functions\src\workers\payoutProcessor.ts:174:    accountId: stripeAccountId,
+functions\src\workers\payoutProcessor.ts:385:    if (payout.rail === "STRIPE" && payout.providerData.stripeTransferId) {
+functions\src\workers\payoutProcessor.ts:386:      const result = await getStripeTransfer(payout.providerData.stripeTransferId);
+functions\src\__tests__\pack303-creator-earnings.test.ts:245:    it('should be idempotent - re-running aggregation yields same result', () => {
+functions\src\__tests__\pack399-influencer-engine.test.ts:565:        paymentMethodPriorities: ['stripe', 'paypal'],
+functions\src\__tests__\stripe-e2e-audit.test.ts:3: * STRIPE + WALLET END-TO-END PRODUCTION READINESS AUDIT
+functions\src\__tests__\stripe-e2e-audit.test.ts:8: * 2. Webhook signature verification rejects invalid signatures
+functions\src\__tests__\stripe-e2e-audit.test.ts:9: * 3. Idempotency key handling prevents duplicate credit
+functions\src\__tests__\stripe-e2e-audit.test.ts:11: * 5. No duplicate credit on concurrent webhook delivery
+functions\src\__tests__\stripe-e2e-audit.test.ts:15: * Simulates Stripe test transaction lifecycle.
+functions\src\__tests__\stripe-e2e-audit.test.ts:21: * - No unhandled webhook
+functions\src\__tests__\stripe-e2e-audit.test.ts:79:// TEST 3: Webhook signature verification (structural)
+functions\src\__tests__\stripe-e2e-audit.test.ts:82:describe('Webhook signature verification', () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:83:  it('stripeWebhookV2 must reject missing stripe-signature header', async () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:90:  it('stripeWebhookV2 must call constructEvent with rawBody and secret', () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:92:    // paymentsComplete.ts:330-333 calls stripe.webhooks.constructEvent(req.rawBody, sig, secret)
+functions\src\__tests__\stripe-e2e-audit.test.ts:93:    // payments.ts:65-68 calls stripeClient.webhooks.constructEvent(req.rawBody, sig, webhookSecret)
+functions\src\__tests__\stripe-e2e-audit.test.ts:94:    // pack302-web-billing.ts:153-156 calls stripe.webhooks.constructEvent(req.rawBody, sig, secret)
+functions\src\__tests__\stripe-e2e-audit.test.ts:95:    // pack288-web-stripe.ts:192-195 calls stripe.webhooks.constructEvent(req.rawBody, sig, secret)
+functions\src\__tests__\stripe-e2e-audit.test.ts:101:// TEST 4: Idempotency key handling
+functions\src\__tests__\stripe-e2e-audit.test.ts:104:describe('Idempotency protection', () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:105:  it('payments.ts webhook checks webhookEvents collection inside transaction', () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:106:    // payments.ts:79-86 — checks webhookEvents doc BEFORE transaction
+functions\src\__tests__\stripe-e2e-audit.test.ts:108:    // This is the strongest idempotency pattern in the codebase
+functions\src\__tests__\stripe-e2e-audit.test.ts:112:  it('paymentsComplete.ts webhook checks session status INSIDE transaction', () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:113:    // After fix: handleStripeCheckoutCompleted reads paymentSession inside db.runTransaction
+functions\src\__tests__\stripe-e2e-audit.test.ts:119:  it('pack288 webhook uses idempotency sentinel doc inside transaction', () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:120:    // After fix: handleCheckoutCompleted reads processedStripeEvents doc inside transaction
+functions\src\__tests__\stripe-e2e-audit.test.ts:146:    // pack288-web-stripe.ts: All 4 writes inside single db.runTransaction:
+functions\src\__tests__\stripe-e2e-audit.test.ts:147:    // 1. Idempotency sentinel
+functions\src\__tests__\stripe-e2e-audit.test.ts:160:  it('Stripe checkout amount = pack price * 100 (cents conversion)', () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:162:    // pack288-web-stripe.ts:108 — Math.round(pack.priceUSD * 100)
+functions\src\__tests__\stripe-e2e-audit.test.ts:171:    // pack288-web-stripe.ts:236 — parseInt(session.metadata?.tokens || '0')
+functions\src\__tests__\stripe-e2e-audit.test.ts:180:// TEST 7: Simulated Stripe test transaction lifecycle
+functions\src\__tests__\stripe-e2e-audit.test.ts:183:describe('Simulated Stripe test transaction', () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:184:  const mockUserId = 'test_user_stripe_e2e';
+functions\src\__tests__\stripe-e2e-audit.test.ts:194:      provider: PaymentProvider.STRIPE,
+functions\src\__tests__\stripe-e2e-audit.test.ts:202:      idempotencyKey: `checkout_${mockUserId}_${Date.now()}_abcd1234`,
+functions\src\__tests__\stripe-e2e-audit.test.ts:203:      webhookAttempts: 0,
+functions\src\__tests__\stripe-e2e-audit.test.ts:210:    expect(session.provider).toBe(PaymentProvider.STRIPE);
+functions\src\__tests__\stripe-e2e-audit.test.ts:213:  it('webhook processing creates valid Transaction shape', () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:216:      txId: `tx_stripe_${mockSessionId}`,
+functions\src\__tests__\stripe-e2e-audit.test.ts:223:      provider: PaymentProvider.STRIPE,
+functions\src\__tests__\stripe-e2e-audit.test.ts:246:  it('duplicate webhook delivery is idempotently skipped', () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:247:    // After fixes, all webhook handlers check for duplicates inside transactions:
+functions\src\__tests__\stripe-e2e-audit.test.ts:248:    // - payments.ts: webhookEvents doc inside transaction
+functions\src\__tests__\stripe-e2e-audit.test.ts:250:    // - pack288: processedStripeEvents sentinel inside transaction
+functions\src\__tests__\stripe-e2e-audit.test.ts:260:  it('no unhandled webhook types cause errors', () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:261:    // All webhook handlers have a default case that logs and returns 200:
+functions\src\__tests__\stripe-e2e-audit.test.ts:264:    // - pack288:218-219: logger.info('Unhandled Stripe event type:', event.type)
+functions\src\__tests__\stripe-e2e-audit.test.ts:267:    // All return 200 — Stripe will not retry unhandled event types
+functions\src\__tests__\stripe-e2e-audit.test.ts:286:describe('STRIPE SYSTEM STATUS', () => {
+functions\src\__tests__\stripe-e2e-audit.test.ts:291:      IDEMPOTENCY_INSIDE_TRANSACTION: true,       // After fixes
+functions\src\__tests__\stripe-e2e-audit.test.ts:302:    // STRIPE SYSTEM STATUS: PASS

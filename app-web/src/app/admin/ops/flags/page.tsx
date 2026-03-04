@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * PHASE 3.3 — Admin Feature Flags Page (READ-ONLY)
  * 
@@ -134,3 +136,5 @@ export default function AdminFlagsPage() {
     </div>
   );
 }
+
+

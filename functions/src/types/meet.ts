@@ -58,3 +58,12 @@ export interface MeetAvailability {
   startTime: string;
   endTime: string;
 }
+
+
+
+
+
+
+
+
+

@@ -22,7 +22,7 @@ const db = getFirestore();
  */
 export async function aggregateBundleMetricsDaily(date: Date): Promise<{
   totalPurchases: number;
-  totalRevenuePLN: number;
+  totalRevenueUSD: number;
   bundleBreakdown: Record<string, { purchases: number; revenue: number }>;
   platformBreakdown: { web: number; ios: number; android: number };
 }> {
@@ -42,7 +42,7 @@ export async function aggregateBundleMetricsDaily(date: Date): Promise<{
       .where('activatedAt', '<=', endOfDay.toISOString())
       .get();
 
-    let totalRevenuePLN = 0;
+    let totalRevenueUSD = 0;
     const bundleBreakdown: Record<string, { purchases: number; revenue: number }> = {};
     const platformBreakdown = { web: 0, ios: 0, android: 0 };
 
@@ -55,9 +55,9 @@ export async function aggregateBundleMetricsDaily(date: Date): Promise<{
       if (!bundleDoc.exists) continue;
       
       const bundle = bundleDoc.data()!;
-      const revenue = bundle.pricePLN || 0;
+      const revenue = bundle.priceUSD || 0;
       
-      totalRevenuePLN += revenue;
+      totalRevenueUSD += revenue;
       
       // Bundle breakdown
       if (!bundleBreakdown[purchase.bundleId]) {
@@ -78,7 +78,7 @@ export async function aggregateBundleMetricsDaily(date: Date): Promise<{
 
     const metrics = {
       totalPurchases: purchasesSnapshot.size,
-      totalRevenuePLN,
+      totalRevenueUSD,
       bundleBreakdown,
       platformBreakdown,
     };
@@ -119,9 +119,9 @@ export async function getBundleConversionMetrics(
 
     // Get bundle price
     const bundleDoc = await db.collection('promoBundles').doc(bundleId).get();
-    const pricePLN = bundleDoc.exists ? bundleDoc.data()!.pricePLN : 0;
+    const priceUSD = bundleDoc.exists ? bundleDoc.data()!.priceUSD : 0;
 
-    const revenue = purchases * pricePLN;
+    const revenue = purchases * priceUSD;
 
     // TODO: Track bundle views when implemented in UI
     // For now, conversion rate is based on purchases only
@@ -158,11 +158,11 @@ export async function extendPlatformKpiWithBundles(
       ...existingKpi,
       bundles: {
         totalPurchases: bundleMetrics.totalPurchases,
-        totalRevenuePLN: bundleMetrics.totalRevenuePLN,
+        totalRevenueUSD: bundleMetrics.totalRevenueUSD,
         platformBreakdown: bundleMetrics.platformBreakdown,
       },
       // Add bundle revenue to total platform revenue
-      totalTokenRevenuePLN: (existingKpi.totalTokenRevenuePLN || 0) + bundleMetrics.totalRevenuePLN,
+      totalTokenRevenueUSD: (existingKpi.totalTokenRevenueUSD || 0) + bundleMetrics.totalRevenueUSD,
     };
   } catch (error: any) {
     logger.error('Error extending platform KPI with bundles:', error);
@@ -210,12 +210,12 @@ export const pack327_getBundlePerformance = onCall(
       const dailyMetrics = analyticsSnapshot.docs.map(doc => ({
         date: doc.data().date,
         purchases: doc.data().totalPurchases,
-        revenuePLN: doc.data().totalRevenuePLN,
+        revenueUSD: doc.data().totalRevenueUSD,
         platformBreakdown: doc.data().platformBreakdown,
       }));
 
       const totalPurchases = dailyMetrics.reduce((sum, day) => sum + day.purchases, 0);
-      const totalRevenue = dailyMetrics.reduce((sum, day) => sum + day.revenuePLN, 0);
+      const totalRevenue = dailyMetrics.reduce((sum, day) => sum + day.revenueUSD, 0);
 
       return {
         success: true,
@@ -224,7 +224,7 @@ export const pack327_getBundlePerformance = onCall(
         dailyMetrics,
         summary: {
           totalPurchases,
-          totalRevenuePLN: totalRevenue,
+          totalRevenueUSD: totalRevenue,
           averageDailyPurchases: dailyMetrics.length > 0 ? totalPurchases / dailyMetrics.length : 0,
           averageDailyRevenue: dailyMetrics.length > 0 ? totalRevenue / dailyMetrics.length : 0,
         },
@@ -287,3 +287,12 @@ export const pack327_trackBundleView = onCall(
 );
 
 logger.info('✅ PACK 327 - Analytics Integration loaded successfully');
+
+
+
+
+
+
+
+
+

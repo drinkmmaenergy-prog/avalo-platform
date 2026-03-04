@@ -424,7 +424,7 @@ export const createAdvertiser = onCall<{
   contactEmail: string;
   contactPhone?: string;
   brandCategory: string;
-  websiteUrl: string;
+  websitUSDl: string;
 }, Promise<{ success: boolean; advertiserId?: string }>>(
   { region: 'us-central1' },
   async (request) => {
@@ -450,7 +450,7 @@ export const createAdvertiser = onCall<{
       contactPhone: data.contactPhone,
       kycStatus: 'PENDING',
       brandCategory: data.brandCategory,
-      websiteUrl: data.websiteUrl,
+      websitUSDl: data.websitUSDl,
       tokenBalance: 0,
       active: true,
       createdAt: now,
@@ -540,3 +540,12 @@ export const addAdvertiserTokens = onCall<{
     return { success: true };
   }
 );
+
+
+
+
+
+
+
+
+

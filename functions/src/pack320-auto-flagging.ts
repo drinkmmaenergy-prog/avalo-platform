@@ -179,7 +179,7 @@ export const onImageUpload = onDocumentCreated(
         const userDoc = await db.collection('users').doc(userId).get();
         const userData = userDoc.data();
         
-        if (userData?.verificationSelfieUrl) {
+        if (userData?.verificationSelfiUSDl) {
           // TODO: Implement face comparison
           // For now, use placeholder logic
           faceMismatch = 0;
@@ -466,3 +466,12 @@ export default {
   onPanicButton,
   onUserReport
 };
+
+
+
+
+
+
+
+
+

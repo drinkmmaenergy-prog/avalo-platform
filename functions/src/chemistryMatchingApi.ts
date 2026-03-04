@@ -327,3 +327,12 @@ export const getChemistryFeedScoresCallable = onCall(
   });
 
 console.log('✅ PACK 195 — Chemistry Matching API initialized');
+
+
+
+
+
+
+
+
+

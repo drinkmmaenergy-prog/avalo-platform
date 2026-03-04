@@ -182,7 +182,7 @@ export interface AgencyPayout {
   
   // Amount
   amountTokens: number;
-  amountPLN: number;
+  amountUSD: number;
   
   // Method
   method: 'BANK_TRANSFER' | 'WISE' | 'STRIPE';
@@ -352,3 +352,12 @@ export class AgencyError extends Error {
     this.name = 'AgencyError';
   }
 }
+
+
+
+
+
+
+
+
+

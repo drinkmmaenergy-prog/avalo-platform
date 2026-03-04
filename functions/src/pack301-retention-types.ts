@@ -69,7 +69,7 @@ export interface UserRetentionProfile {
   daysActive30: number;  // Active days in past 30 days
   
   // Churn prediction
-  riskOfChurn: number;   // 0-1 heuristic score
+  riskOfChurn: number;   // 0-1 hUSDistic score
   segment: UserSegment;
   
   // Win-back tracking
@@ -360,3 +360,12 @@ export const WIN_BACK_MESSAGES: WinBackMessage[] = [
     priority: 'HIGH',
   },
 ];
+
+
+
+
+
+
+
+
+

@@ -536,3 +536,12 @@ export const getLaunchStatus = functions.https.onCall(async (request) => {
     recentEvents: recentEvents.docs.map(doc => ({ id: doc.id, ...doc.data() })),
   };
 });
+
+
+
+
+
+
+
+
+

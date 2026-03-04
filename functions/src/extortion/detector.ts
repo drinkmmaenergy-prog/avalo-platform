@@ -483,3 +483,12 @@ export class ExtortionDetector {
 }
 
 export const extortionDetector = new ExtortionDetector();
+
+
+
+
+
+
+
+
+

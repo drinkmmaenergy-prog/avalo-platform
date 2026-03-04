@@ -651,3 +651,12 @@ export async function getUserFanshipStats(suitorId: string): Promise<{
     totalTokensSpent: fanships.reduce((sum, f) => sum + (f.totalTokensSpent || 0), 0)
   };
 }
+
+
+
+
+
+
+
+
+

@@ -1,50 +1,61 @@
 /**
- * Avalo Token Economy Configuration — CANONICAL CONSTANTS
- * USD is canonical settlement currency.
- * Creator payout = 0.03 USD per token.
+ * Economy Configuration — Canonical token pricing & payout constants.
+ *
+ * INVARIANTS:
+ *   - These values MUST match backend config exactly.
+ *   - Do NOT change pricing without backend coordination.
+ *   - No discounts, no coupons, no overrides.
  */
 
-// ================================
-// TOKEN PRICING (CANONICAL)
-// ================================
+/** USD value of 1 Avalo token for payout calculations. */
+export const TOKEN_PAYOUT_USD = 0.01;
 
-/** Purchase value per token */
-export const TOKEN_BASE_USD = 0.05;
+/** Creator revenue share percentage (0-1 range). */
+export const CREATOR_REVENUE_SHARE = 0.70;
 
-/** Creator payout per token */
-export const PAYOUT_PER_TOKEN_USD = 0.03;
+/** Platform fee percentage (0-1 range). */
+export const PLATFORM_FEE = 0.30;
 
-/** Backward compatibility alias */
-export const TOKEN_PAYOUT_USD = PAYOUT_PER_TOKEN_USD;
+/** Minimum payout threshold in tokens. */
+export const MIN_PAYOUT_TOKENS = 1000;
 
-/** PLN display payout (internal FX buffered) */
-export const TOKEN_PAYOUT_PLN = 0.096; // 0.03 * 3.2 buffered FX
-
-// ================================
-// REVENUE SPLIT
-// ================================
-
-export const CREATOR_REVENUE_SHARE = 0.65;
-export const PLATFORM_REVENUE_SHARE = 0.35;
-
-export const CREATOR_SHARE = CREATOR_REVENUE_SHARE;
-export const PLATFORM_SHARE = PLATFORM_REVENUE_SHARE;
-
-// ================================
-// CHAT PRICING
-// ================================
-
-export const CHAT_COST_TOKENS = 100;
-
-// ================================
-// INTERNAL FX (BUFFERED FOR SAFETY)
-// ================================
-
+/** Internal FX rates for display purposes (backend is source of truth). */
 export const INTERNAL_FX_RATES: Record<string, number> = {
   USD: 1.0,
-  PLN: 3.2,
-  EUR: 0.80,
-  GBP: 0.70
+  EUR: 0.92,
+  GBP: 0.79,
+  PLN: 4.05,
+  CAD: 1.36,
+  AUD: 1.53,
+  JPY: 149.5,
+  CHF: 0.88,
+  SEK: 10.45,
+  NOK: 10.72,
+  DKK: 6.87,
+  CZK: 23.15,
 };
 
-export const SUPPORTED_PAYOUT_CURRENCIES = Object.keys(INTERNAL_FX_RATES);
+/** Alias for PayoutPreview compatibility */
+export const PAYOUT_PER_TOKEN_USD = TOKEN_PAYOUT_USD;
+
+/** Alias for PayoutPreview compatibility */
+export const CREATOR_SHARE = CREATOR_REVENUE_SHARE;
+
+/** Alias for PayoutPreview compatibility */
+export const PLATFORM_SHARE = PLATFORM_FEE;
+
+/**
+ * Format a token amount to its USD equivalent for display.
+ */
+export function tokensToUsd(tokens: number): string {
+  return `$${(tokens * TOKEN_PAYOUT_USD).toFixed(2)}`;
+}
+
+/**
+ * Format a token amount to a given currency equivalent for display.
+ */
+export function tokensToCurrency(tokens: number, currency: string): string {
+  const rate = INTERNAL_FX_RATES[currency] ?? 1;
+  const value = tokens * TOKEN_PAYOUT_USD * rate;
+  return `${value.toFixed(2)} ${currency}`;
+}

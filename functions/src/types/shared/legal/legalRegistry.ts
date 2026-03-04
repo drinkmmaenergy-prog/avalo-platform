@@ -31,3 +31,12 @@ export const LEGAL_DOCS: Record<LegalDocType, { currentVersion: string; required
 };
 
 export const getCurrentLegalVersion = (type: string): string => '1.0.0';
+
+
+
+
+
+
+
+
+

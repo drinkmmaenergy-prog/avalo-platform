@@ -567,3 +567,12 @@ export async function getUserIncognitoSettings(
   const profile = await getUserControlProfile(userId);
   return profile.incognito;
 }
+
+
+
+
+
+
+
+
+

@@ -452,3 +452,12 @@ export const getShadowDensityStats_Admin = functions.https.onCall(async (request
 );
 
 logger.info('✅ Smart Social Graph Cloud Functions initialized');
+
+
+
+
+
+
+
+
+

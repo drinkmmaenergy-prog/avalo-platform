@@ -25,7 +25,7 @@ import { timestamp, onSchedule } from './runtime';
 export const dailyDuplicateScan = onSchedule(
   {
     schedule: '0 2 * * *',
-    timeZone: 'Europe/Warsaw',
+    timeZone: 'USDope/Warsaw',
     region: 'europe-west1',
   },
   async () => {
@@ -129,7 +129,7 @@ async function createAutoCopyrightCase(
 export const weeklyPiracyNetworkScan = onSchedule(
   {
     schedule: '0 3 * * 1',
-    timeZone: 'Europe/Warsaw',
+    timeZone: 'USDope/Warsaw',
     region: 'europe-west1',
   },
   async () => {
@@ -192,7 +192,7 @@ async function createNetworkModerationCase(network: any): Promise<void> {
 export const hourlyWatermarkAudit = onSchedule(
   {
     schedule: '0 * * * *',
-    timeZone: 'Europe/Warsaw',
+    timeZone: 'USDope/Warsaw',
     region: 'europe-west1',
   },
   async () => {
@@ -250,7 +250,7 @@ export const hourlyWatermarkAudit = onSchedule(
 export const dailyAccessCleanup = onSchedule(
   {
     schedule: '0 4 * * *',
-    timeZone: 'Europe/Warsaw',
+    timeZone: 'USDope/Warsaw',
     region: 'europe-west1',
   },
   async () => {
@@ -315,7 +315,7 @@ export const dailyAccessCleanup = onSchedule(
 export const dailyWatchlistUpdate = onSchedule(
   {
     schedule: '0 5 * * *',
-    timeZone: 'Europe/Warsaw',
+    timeZone: 'USDope/Warsaw',
     region: 'europe-west1',
   },
   async () => {
@@ -394,3 +394,12 @@ export default {
   dailyAccessCleanup,
   dailyWatchlistUpdate,
 };
+
+
+
+
+
+
+
+
+

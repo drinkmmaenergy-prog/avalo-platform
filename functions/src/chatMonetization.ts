@@ -1,9 +1,20 @@
 /**
+ * @deprecated LEGACY — SUPERSEDED by canonical-chat-engine.ts (v2_canonical)
+ *
+ * This module is retained for backward compatibility only.
+ * ALL new code MUST use canonical-chat-engine.ts instead.
+ *
+ * Legacy paths in this file:
+ * - processMessageBilling → use processMessage from canonical-chat-engine.ts
+ * - determineChatRoles → use determineRoles from canonical-chat-engine.ts
+ * - FREE_A/FREE_B modes → REMOVED (use FREE_ACTIVE/AWAITING_DEPOSIT/PAID_ACTIVE)
+ * - pack242 pricing imports → REMOVED (deposit = max(100, earnerConfig))
+ * - pack452 premium imports → REMOVED (multiplier = next session only)
+ *
+ * See: canonical-chat-legacy-shim.ts for redirect wrappers.
+ *
+ * ORIGINAL DESCRIPTION:
  * Chat Monetization Logic for Avalo
- *
- * This module implements the complete chat monetization specification.
- * DO NOT modify this logic without updating the full specification.
- *
  * Specification Priority Order:
  * 1. Influencer override
  * 2. Heterosexual rule (man always pays)
@@ -980,3 +991,12 @@ export async function getUserContext(userId: string): Promise<ChatParticipantCon
     accountAgeDays
   };
 }
+
+
+
+
+
+
+
+
+

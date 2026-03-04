@@ -892,3 +892,12 @@ async function sendMarketingAlert(alert: any): Promise<void> {
   }
 }
 
+
+
+
+
+
+
+
+
+

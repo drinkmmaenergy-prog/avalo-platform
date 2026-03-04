@@ -20,3 +20,12 @@ export interface ReputationPolicy  {
   [key: string]: any;
 }
 export type ReputationTier = 'NEW' | 'TRUSTED' | 'VERIFIED' | 'ELITE';
+
+
+
+
+
+
+
+
+

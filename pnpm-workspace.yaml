@@ -1,4 +1,4 @@
 packages:
+  - "app-web"
   - "functions"
   - "app-mobile"
-  - "app-web"

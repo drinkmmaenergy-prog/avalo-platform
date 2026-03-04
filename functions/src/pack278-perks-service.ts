@@ -362,3 +362,12 @@ export async function recordDiscoveryView(
     viewedAt: FieldValue.serverTimestamp(),
   });
 }
+
+
+
+
+
+
+
+
+

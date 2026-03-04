@@ -1,0 +1,879 @@
+functions\src\config\productionGuards.ts:34:  'modifyLedger',
+functions\src\config\productionGuards.ts:60:      `Admin panels are READ-ONLY for wallet/ledger data.`
+functions\src\creatorAnalytics.ts:145: * Update daily analytics when earnings ledger is written
+functions\src\creatorAnalytics.ts:146: * Triggered on every earnings_ledger entry creation
+functions\src\creatorAnalytics.ts:148:export const onLedgerEntryWrite = onDocumentWritten(
+functions\src\creatorAnalytics.ts:150:    document: 'earnings_ledger/{entryId}',
+functions\src\creatorAnalytics.ts:225:      // Don't throw - we don't want to fail the ledger write
+functions\src\creatorAnalytics.ts:377:  // Get unique payers from ledger (more accurate)
+functions\src\creatorAnalytics.ts:378:  const ledgerQuery = await db
+functions\src\creatorAnalytics.ts:379:    .collection('earnings_ledger')
+functions\src\creatorAnalytics.ts:385:  ledgerQuery.forEach((doc) => {
+functions\src\creatorAnalytics.ts:422:  const ledgerQuery = await db
+functions\src\creatorAnalytics.ts:423:    .collection('earnings_ledger')
+functions\src\creatorAnalytics.ts:432:  ledgerQuery.forEach((doc) => {
+functions\src\creatorAnalytics.ts:529:  const ledgerQuery = await db
+functions\src\creatorAnalytics.ts:530:    .collection('earnings_ledger')
+functions\src\creatorAnalytics.ts:540:  ledgerQuery.forEach((doc) => {
+functions\src\creatorAnalytics.ts:575:  const ledgerQuery = await db
+functions\src\creatorAnalytics.ts:576:    .collection('earnings_ledger')
+functions\src\creatorAnalytics.ts:586:  ledgerQuery.forEach((doc) => {
+functions\src\creatorEarnings.ts:2: * PACK 81 — Creator Earnings Wallet & Payout Ledger
+functions\src\creatorEarnings.ts:27:  MAX_LEDGER_PAGE_SIZE: 100,
+functions\src\creatorEarnings.ts:28:  DEFAULT_LEDGER_PAGE_SIZE: 50,
+functions\src\creatorEarnings.ts:43:export interface EarningsLedgerEntry {
+functions\src\creatorEarnings.ts:89:export interface LedgerQuery {
+functions\src\creatorEarnings.ts:97:export interface LedgerPage {
+functions\src\creatorEarnings.ts:98:  entries: EarningsLedgerEntry[];
+functions\src\creatorEarnings.ts:105:// CORE LEDGER FUNCTIONS
+functions\src\creatorEarnings.ts:109: * Record an earning event in the ledger
+functions\src\creatorEarnings.ts:126:  const ledgerEntry: Omit<EarningsLedgerEntry, 'id'> = {
+functions\src\creatorEarnings.ts:138:  // Write to ledger
+functions\src\creatorEarnings.ts:139:  const ledgerRef = await db.collection('earnings_ledger').add(ledgerEntry);
+functions\src\creatorEarnings.ts:144:  logger.info(`Recorded earning: ${ledgerRef.id} for creator ${creatorId}`, {
+functions\src\creatorEarnings.ts:149:  return ledgerRef.id;
+functions\src\creatorEarnings.ts:256:    .collection('earnings_ledger')
+functions\src\creatorEarnings.ts:279:    const entry = doc.data() as EarningsLedgerEntry;
+functions\src\creatorEarnings.ts:309:// EARNINGS LEDGER API
+functions\src\creatorEarnings.ts:313: * Get earnings ledger with pagination and filters
+functions\src\creatorEarnings.ts:315:export const getEarningsLedger = onCall(
+functions\src\creatorEarnings.ts:317:  async (request): Promise<LedgerPage> => {
+functions\src\creatorEarnings.ts:324:    // Security: Users can only view their own ledger
+functions\src\creatorEarnings.ts:326:      throw new HttpsError('permission-denied', 'Cannot access another user\'s ledger');
+functions\src\creatorEarnings.ts:329:    const filters: LedgerQuery = {
+functions\src\creatorEarnings.ts:335:        request.data.limit || EARNINGS_CONFIG.DEFAULT_LEDGER_PAGE_SIZE,
+functions\src\creatorEarnings.ts:336:        EARNINGS_CONFIG.MAX_LEDGER_PAGE_SIZE
+functions\src\creatorEarnings.ts:341:      return await fetchLedgerPage(userId, filters);
+functions\src\creatorEarnings.ts:343:      logger.error('Error fetching earnings ledger', error);
+functions\src\creatorEarnings.ts:344:      throw new HttpsError('internal', `Failed to fetch ledger: ${error.message}`);
+functions\src\creatorEarnings.ts:350: * Fetch paginated ledger entries
+functions\src\creatorEarnings.ts:352:async function fetchLedgerPage(
+functions\src\creatorEarnings.ts:354:  filters: LedgerQuery
+functions\src\creatorEarnings.ts:355:): Promise<LedgerPage> {
+functions\src\creatorEarnings.ts:357:    .collection('earnings_ledger')
+functions\src\creatorEarnings.ts:377:      .collection('earnings_ledger')
+functions\src\creatorEarnings.ts:387:  const limit = filters.limit || EARNINGS_CONFIG.DEFAULT_LEDGER_PAGE_SIZE;
+functions\src\creatorEarnings.ts:391:  const entries: EarningsLedgerEntry[] = [];
+functions\src\creatorEarnings.ts:397:      entries.push({ id: doc.id, ...doc.data() } as EarningsLedgerEntry);
+functions\src\creatorEarnings.ts:406:    .collection('earnings_ledger')
+functions\src\creatorEarnings.ts:443:      // Fetch all ledger entries for the period
+functions\src\creatorEarnings.ts:445:        .collection('earnings_ledger')
+functions\src\creatorEarnings.ts:464:        const entry = doc.data() as EarningsLedgerEntry;
+functions\src\earningsIntegration.ts:3: * Helper functions to integrate earnings ledger into existing payment modules
+functions\src\earningsIntegration.ts:11: * Record gift earning in ledger
+functions\src\earningsIntegration.ts:37:    logger.info(`Gift earning recorded in ledger: ${params.transactionId}`);
+functions\src\earningsIntegration.ts:39:    logger.error('Failed to record gift earning in ledger', error);
+functions\src\earningsIntegration.ts:40:    // Don't throw - ledger is for reporting only, shouldn't fail the transaction
+functions\src\earningsIntegration.ts:45: * Record premium story unlock earning in ledger
+functions\src\earningsIntegration.ts:67:    logger.info(`Story earning recorded in ledger: ${params.unlockId}`);
+functions\src\earningsIntegration.ts:69:    logger.error('Failed to record story earning in ledger', error);
+functions\src\earningsIntegration.ts:74: * Record paid media unlock earning in ledger
+functions\src\earningsIntegration.ts:100:    logger.info(`Paid media earning recorded in ledger: ${params.transactionId}`);
+functions\src\earningsIntegration.ts:102:    logger.error('Failed to record paid media earning in ledger', error);
+functions\src\earningsIntegration.ts:107: * Record paid call earning in ledger
+functions\src\earningsIntegration.ts:130:    logger.info(`Call earning recorded in ledger: ${params.callId}`);
+functions\src\earningsIntegration.ts:132:    logger.error('Failed to record call earning in ledger', error);
+functions\src\earningsIntegration.ts:137: * Record AI companion earning in ledger
+functions\src\earningsIntegration.ts:160:    logger.info(`AI earning recorded in ledger: ${params.conversationId}`);
+functions\src\earningsIntegration.ts:162:    logger.error('Failed to record AI earning in ledger', error);
+functions\src\engines\economyEngine.ts:5: * - Transaction ledger
+functions\src\engines\economyEngine.ts:67: * Normalized transaction ledger entry
+functions\src\engines\economyEngine.ts:69:export interface LedgerEntry {
+functions\src\engines\economyEngine.ts:70:  ledgerId: string;
+functions\src\engines\economyEngine.ts:98:      // Normalize and store in ledger
+functions\src\engines\economyEngine.ts:99:      const ledgerRef = db.collection("economyLedger").doc();
+functions\src\engines\economyEngine.ts:100:      const ledgerEntry: LedgerEntry = {
+functions\src\engines\economyEngine.ts:101:        ledgerId: ledgerRef.id,
+functions\src\engines\economyEngine.ts:117:      await ledgerRef.set(ledgerEntry);
+functions\src\engines\economyEngine.ts:119:      console.log(`Transaction ${txId} logged to economy ledger`);
+functions\src\engines\economyEngine.ts:187:      // Query ledger for the past hour
+functions\src\engines\economyEngine.ts:189:      const ledgerSnapshot = await db
+functions\src\engines\economyEngine.ts:190:        .collection("economyLedger")
+functions\src\engines\economyEngine.ts:216:      ledgerSnapshot.docs.forEach((doc) => {
+functions\src\engines\economyEngine.ts:217:        const entry = doc.data() as LedgerEntry;
+functions\src\gifts\sendGift.ts:301:    // 6. Record earning in ledger (PACK 81)
+functions\src\gifts\sendGift.ts:312:    } catch (ledgerError) {
+functions\src\gifts\sendGift.ts:313:      console.error('Failed to record gift in earnings ledger:', ledgerError);
+functions\src\index.ts:206:// --- UNIFIED WALLET + LEDGER + PAYOUT (canonical path: wallets/{userId}) ---
+functions\src\index.ts:214:  replayLedger,
+functions\src\index.ts:215:  verifyLedgerConsistency,
+functions\src\index.ts:228:  LEDGER_COLLECTION,
+functions\src\index.ts:1061:  validateBoostLedgerV1,
+functions\src\monetization\monetizationV2.service.ts:10: *   3. Ledger entry is written automatically by WalletService.
+functions\src\monetization\monetizationV2.service.ts:25:  featureToLedgerType,
+functions\src\monetization\monetizationV2.service.ts:67:  // 2. Determine ledger type
+functions\src\monetization\monetizationV2.service.ts:68:  const ledgerType = featureToLedgerType(feature);
+functions\src\monetization\monetizationV2.service.ts:76:    type: ledgerType,
+functions\src\monetization\monetizationV2.service.ts:96:    ledgerType,
+functions\src\monetization\monetizationV2.service.ts:235: * @returns ChargeResult (using CALL_ESCROW_RESERVE ledger type)
+functions\src\monetization\monetizationV2.service.ts:272:    ledgerType: 'CALL_ESCROW_RESERVE',
+functions\src\monetization\monetizationV2.service.ts:425: * This is a read-only check — does not mutate wallet or ledger.
+functions\src\monetization\monetizationV2.service.ts:497: * - Ledger entry required per burn.
+functions\src\monetization\monetizationV2.types.ts:11:import { LedgerEntryType, WalletMutationResult } from '../wallet/types';
+functions\src\monetization\monetizationV2.types.ts:43:  /** The ledger entry type written. */
+functions\src\monetization\monetizationV2.types.ts:44:  ledgerType: LedgerEntryType;
+functions\src\monetization\monetizationV2.types.ts:240:  /** Ledger txId for the refund entry. */
+functions\src\monetization\refundV2.service.ts:12: *    - Each refund writes a ledger entry.
+functions\src\monetization\refundV2.service.ts:66: *   - Ledger entry required for each refund.
+functions\src\monetization\refundV2.service.ts:96:  // Credit refund to buyer's wallet via creditTokens (CALENDAR_REFUND ledger type)
+functions\src\monetization\refundV2.service.ts:131: *   - Refund writes a ledger entry.
+functions\src\pack100-disaster-recovery.ts:54:  'earnings_ledger',           // All earning events
+functions\src\pack100-disaster-recovery.ts:129:    if (collectionName === 'earnings_ledger') {
+functions\src\pack100-disaster-recovery.ts:131:      const negativeQuery = await db.collection('earnings_ledger')
+functions\src\pack100-disaster-recovery.ts:137:        issues.push('Found negative token amounts in earnings ledger');
+functions\src\pack100-disaster-recovery.ts:397: *    - earnings_ledger (all earnings events)
+functions\src\pack100-disaster-recovery.ts:423: *   --collection-ids=earnings_ledger,creator_balances,payout_requests
+functions\src\pack100-disaster-recovery.ts:439:    'earnings_ledger',
+functions\src\pack101-success-engine.ts:193:    const earningsSnapshot = await db.collection('earnings_ledger')
+functions\src\pack101-success-engine.ts:225:    const earningsSnapshot = await db.collection('earnings_ledger')
+functions\src\pack105-revenue-export.ts:109:    .collection('earnings_ledger')
+functions\src\pack105-types.ts:112:  | 'LEDGER_CORRUPTION'
+functions\src\pack114-analytics-api.ts:191:        .collection('earnings_ledger')
+functions\src\pack114-earnings-integration.ts:88:  // Create earnings ledger entry first
+functions\src\pack114-earnings-integration.ts:101:  const ledgerRef = await db.collection('earnings_ledger').add(earningEntry);
+functions\src\pack114-earnings-integration.ts:102:  const earningId = ledgerRef.id;
+functions\src\pack114-earnings-integration.ts:120:  // Update ledger entry with actual creator amount after split
+functions\src\pack114-earnings-integration.ts:122:    await ledgerRef.update({
+functions\src\pack114-earnings-integration.ts:317:    .collection('earnings_ledger')
+functions\src\pack114-earnings-integration.ts:442: * Backfill agency earnings for existing ledger entries
+functions\src\pack114-earnings-integration.ts:458:      .collection('earnings_ledger')
+functions\src\pack114-types.ts:114:// EARNINGS LEDGER EXTENSION
+functions\src\pack114-types.ts:118:  earningId: string;              // Reference to earnings_ledger entry
+functions\src\pack119-analytics.ts:52:  // Get earnings from Pack 81 (creator earnings ledger)
+functions\src\pack119-analytics.ts:54:    .collection('creator_earnings_ledger')
+functions\src\pack119-analytics.ts:118:      .collection('creator_earnings_ledger')
+functions\src\pack132-analytics-cloud.ts:273:    // Get earnings from ledger (AGGREGATED ONLY)
+functions\src\pack132-analytics-cloud.ts:275:      .collection('earnings_ledger')
+functions\src\pack132-analytics-cloud.ts:813:        .collection('earnings_ledger')
+functions\src\pack148-blockchain-verification.ts:11:  LedgerTransaction,
+functions\src\pack148-blockchain-verification.ts:50:    .collection('blockchain_ledger')
+functions\src\pack148-blockchain-verification.ts:54:    const startDoc = await db.collection('blockchain_ledger').doc(startFromId).get();
+functions\src\pack148-blockchain-verification.ts:106:  // Get ledger transaction
+functions\src\pack148-blockchain-verification.ts:107:  const ledgerSnapshot = await db
+functions\src\pack148-blockchain-verification.ts:108:    .collection('ledger_transactions')
+functions\src\pack148-blockchain-verification.ts:113:  if (ledgerSnapshot.empty) {
+functions\src\pack148-blockchain-verification.ts:115:      'Transaction not found in ledger',
+functions\src\pack148-blockchain-verification.ts:122:  const ledgerEntry = ledgerSnapshot.docs[0].data() as LedgerTransaction;
+functions\src\pack148-blockchain-verification.ts:126:    .collection('blockchain_ledger')
+functions\src\pack148-blockchain-verification.ts:135:      blockchainHash: ledgerEntry.blockchainHash,
+functions\src\pack148-blockchain-verification.ts:146:  const hashMatches = blockchainEntry.blockHash === ledgerEntry.blockchainHash;
+functions\src\pack148-blockchain-verification.ts:153:    blockchainEntry.data.senderHash === ledgerEntry.senderHash &&
+functions\src\pack148-blockchain-verification.ts:154:    blockchainEntry.data.receiverHash === ledgerEntry.receiverHash &&
+functions\src\pack148-blockchain-verification.ts:155:    blockchainEntry.data.tokenAmount === ledgerEntry.tokenAmount &&
+functions\src\pack148-blockchain-verification.ts:156:    blockchainEntry.data.productType === ledgerEntry.productType;
+functions\src\pack148-blockchain-verification.ts:210:    .collection('blockchain_ledger')
+functions\src\pack148-blockchain-verification.ts:223:    .collection('blockchain_ledger')
+functions\src\pack148-blockchain-verification.ts:230:    .collection('blockchain_ledger')
+functions\src\pack148-blockchain-verification.ts:324:      .collection('ledger_transactions')
+functions\src\pack148-blockchain-verification.ts:339:      const transaction = doc.data() as LedgerTransaction;
+functions\src\pack148-blockchain-verification.ts:386:    .collection('ledger_transactions')
+functions\src\pack148-blockchain-verification.ts:394:    .collection('ledger_transactions')
+functions\src\pack148-endpoints.ts:3: * Callable functions for ledger access and management
+functions\src\pack148-endpoints.ts:8:  recordLedgerTransaction,
+functions\src\pack148-endpoints.ts:9:  updateLedgerOnEscrowRelease,
+functions\src\pack148-endpoints.ts:10:  updateLedgerOnDispute,
+functions\src\pack148-endpoints.ts:11:  getLedgerTransaction,
+functions\src\pack148-endpoints.ts:12:  getUserLedgerTransactions,
+functions\src\pack148-endpoints.ts:13:  validateLedgerEscrowStatus,
+functions\src\pack148-endpoints.ts:14:  getLedgerStats,
+functions\src\pack148-endpoints.ts:15:} from './pack148-ledger-engine';
+functions\src\pack148-endpoints.ts:30:  RecordLedgerTransactionRequest,
+functions\src\pack148-endpoints.ts:31:  ValidateLedgerEscrowRequest,
+functions\src\pack148-endpoints.ts:32:  ExportLedgerHistoryRequest,
+functions\src\pack148-endpoints.ts:33:  DownloadLedgerReportRequest,
+functions\src\pack148-endpoints.ts:35:  GetLedgerOverviewRequest,
+functions\src\pack148-endpoints.ts:36:  LedgerError,
+functions\src\pack148-endpoints.ts:45: * Record a transaction to the ledger
+functions\src\pack148-endpoints.ts:48:export const recordLedgerTransactionEndpoint = functions.https.onCall(async (request) => {
+functions\src\pack148-endpoints.ts:66:      const result = await recordLedgerTransaction(data);
+functions\src\pack148-endpoints.ts:70:        ledgerId: result.ledgerId,
+functions\src\pack148-endpoints.ts:75:      console.error('Error recording ledger transaction:', error);
+functions\src\pack148-endpoints.ts:77:      if (error instanceof LedgerError) {
+functions\src\pack148-endpoints.ts:87: * Validate ledger entry against escrow status
+functions\src\pack148-endpoints.ts:89:export const validateLedgerEscrowStatusEndpoint = functions.https.onCall(async (request) => {
+functions\src\pack148-endpoints.ts:96:      const result = await validateLedgerEscrowStatus(
+functions\src\pack148-endpoints.ts:104:        ledgerEntry: result.ledgerEntry,
+functions\src\pack148-endpoints.ts:115: * Get user's ledger overview
+functions\src\pack148-endpoints.ts:117:export const getLedgerOverviewEndpoint = functions.https.onCall(async (request) => {
+functions\src\pack148-endpoints.ts:127:      const stats = await getLedgerStats(userId);
+functions\src\pack148-endpoints.ts:130:      const recentTransactions = await getUserLedgerTransactions(userId, {
+functions\src\pack148-endpoints.ts:136:      const userTransactions = await getUserLedgerTransactions(userId, {
+functions\src\pack148-endpoints.ts:211:      console.error('Error getting ledger overview:', error);
+functions\src\pack148-endpoints.ts:212:      throw new functions.https.HttpsError('internal', 'Failed to get ledger overview');
+functions\src\pack148-endpoints.ts:228:      const transactions = await getUserLedgerTransactions(userId, {
+functions\src\pack148-endpoints.ts:317: * Request export of ledger data
+functions\src\pack148-endpoints.ts:319:export const exportLedgerHistoryEndpoint = functions.https.onCall(async (request) => {
+functions\src\pack148-endpoints.ts:403:export const downloadLedgerReportEndpoint = functions.https.onCall(async (request) => {
+functions\src\pack148-endpoints.ts:492: * Internal: Update ledger on escrow release (called by payment system)
+functions\src\pack148-endpoints.ts:494:export const updateLedgerOnEscrowReleaseEndpoint = functions.https.onCall(async (request) => {
+functions\src\pack148-endpoints.ts:502:      await updateLedgerOnEscrowRelease(data.transactionId, data.escrowOutcome);
+functions\src\pack148-endpoints.ts:506:        message: 'Ledger updated successfully',
+functions\src\pack148-endpoints.ts:509:      console.error('Error updating ledger on escrow release:', error);
+functions\src\pack148-endpoints.ts:510:      throw new functions.https.HttpsError('internal', 'Failed to update ledger');
+functions\src\pack148-endpoints.ts:516: * Internal: Update ledger on dispute (called by dispute system)
+functions\src\pack148-endpoints.ts:518:export const updateLedgerOnDisputeEndpoint = functions.https.onCall(async (request) => {
+functions\src\pack148-endpoints.ts:525:      await updateLedgerOnDispute(data.transactionId, data.disputeId);
+functions\src\pack148-endpoints.ts:529:        message: 'Ledger updated with dispute status',
+functions\src\pack148-endpoints.ts:532:      console.error('Error updating ledger on dispute:', error);
+functions\src\pack148-endpoints.ts:533:      throw new functions.https.HttpsError('internal', 'Failed to update ledger');
+functions\src\pack148-export-engine.ts:2: * PACK 148 - Ledger Export Engine
+functions\src\pack148-export-engine.ts:9:  LedgerExport,
+functions\src\pack148-export-engine.ts:10:  LedgerTransaction,
+functions\src\pack148-export-engine.ts:15:  PayoutLedgerSummary,
+functions\src\pack148-export-engine.ts:25:import { getUserLedgerTransactions } from './pack148-ledger-engine';
+functions\src\pack148-export-engine.ts:48:function convertToCSV(transactions: LedgerTransaction[]): string {
+functions\src\pack148-export-engine.ts:86:function convertToJSON(transactions: LedgerTransaction[]): string {
+functions\src\pack148-export-engine.ts:111:function generatePDFContent(transactions: LedgerTransaction[], userId: string): string {
+functions\src\pack148-export-engine.ts:119:  <title>Avalo Transaction Ledger</title>
+functions\src\pack148-export-engine.ts:134:    <h1>Avalo Blockchain Token Ledger</h1>
+functions\src\pack148-export-engine.ts:175:    <p><strong>Note:</strong> All transactions are recorded on Avalo's immutable blockchain ledger.</p>
+functions\src\pack148-export-engine.ts:193:): Promise<PayoutLedgerSummary> {
+functions\src\pack148-export-engine.ts:194:  const transactions = await getUserLedgerTransactions(userId, {
+functions\src\pack148-export-engine.ts:293:  const transactions = await getUserLedgerTransactions(userId, {
+functions\src\pack148-export-engine.ts:382:  const exportRecord: LedgerExport = {
+functions\src\pack148-export-engine.ts:401:  await db.collection('ledger_exports').doc(exportId).set(exportRecord);
+functions\src\pack148-export-engine.ts:424:    await db.collection('ledger_exports').doc(exportId).update({
+functions\src\pack148-export-engine.ts:435:        const transactions = await getUserLedgerTransactions(userId, {
+functions\src\pack148-export-engine.ts:515:    await db.collection('ledger_exports').doc(exportId).update({
+functions\src\pack148-export-engine.ts:527:    await db.collection('ledger_exports').doc(exportId).update({
+functions\src\pack148-export-engine.ts:537:export async function getExportStatus(exportId: string): Promise<LedgerExport> {
+functions\src\pack148-export-engine.ts:538:  const doc = await db.collection('ledger_exports').doc(exportId).get();
+functions\src\pack148-export-engine.ts:544:  return doc.data() as LedgerExport;
+functions\src\pack148-export-engine.ts:577:  await db.collection('ledger_exports').doc(exportId).update({
+functions\src\pack148-export-engine.ts:590:export async function getUserExports(userId: string): Promise<LedgerExport[]> {
+functions\src\pack148-export-engine.ts:592:    .collection('ledger_exports')
+functions\src\pack148-export-engine.ts:598:  return snapshot.docs.map(doc => doc.data() as LedgerExport);
+functions\src\pack148-export-engine.ts:607:    .collection('ledger_exports')
+functions\src\pack148-export-engine.ts:615:    const exportRecord = doc.data() as LedgerExport;
+functions\src\pack148-integrations.ts:6:import { recordLedgerTransaction, updateLedgerOnEscrowRelease, updateLedgerOnDispute } from './pack148-ledger-engine';
+functions\src\pack148-integrations.ts:14: * Record chat payment to ledger
+functions\src\pack148-integrations.ts:16:export async function recordChatPaymentToLedger(
+functions\src\pack148-integrations.ts:24:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:25:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:38: * Record call payment to ledger
+functions\src\pack148-integrations.ts:40:export async function recordCallPaymentToLedger(
+functions\src\pack148-integrations.ts:48:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:49:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:62: * Record digital product purchase to ledger
+functions\src\pack148-integrations.ts:64:export async function recordProductPurchaseToLedger(
+functions\src\pack148-integrations.ts:72:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:73:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:86: * Record event ticket purchase to ledger
+functions\src\pack148-integrations.ts:88:export async function recordEventTicketToLedger(
+functions\src\pack148-integrations.ts:96:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:97:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:110: * Record club membership to ledger
+functions\src\pack148-integrations.ts:112:export async function recordClubMembershipToLedger(
+functions\src\pack148-integrations.ts:120:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:121:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:134: * Record challenge participation to ledger
+functions\src\pack148-integrations.ts:136:export async function recordChallengeParticipationToLedger(
+functions\src\pack148-integrations.ts:144:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:145:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:158: * Record mentorship session to ledger
+functions\src\pack148-integrations.ts:160:export async function recordMentorshipSessionToLedger(
+functions\src\pack148-integrations.ts:168:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:169:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:182: * Record subscription payment to ledger
+functions\src\pack148-integrations.ts:184:export async function recordSubscriptionToLedger(
+functions\src\pack148-integrations.ts:191:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:192:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:204: * Record paid gift to ledger
+functions\src\pack148-integrations.ts:206:export async function recordPaidGiftToLedger(
+functions\src\pack148-integrations.ts:214:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:215:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:228: * Record paid post unlock to ledger
+functions\src\pack148-integrations.ts:230:export async function recordPaidPostToLedger(
+functions\src\pack148-integrations.ts:238:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:239:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:252: * Record media unlock to ledger
+functions\src\pack148-integrations.ts:254:export async function recordMediaUnlockToLedger(
+functions\src\pack148-integrations.ts:262:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:263:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:277: * Record ad spend to ledger
+functions\src\pack148-integrations.ts:279:export async function recordAdSpendToLedger(
+functions\src\pack148-integrations.ts:285:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:286:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:304:  await updateLedgerOnEscrowRelease(
+functions\src\pack148-integrations.ts:317:  await updateLedgerOnDispute(transactionId, disputeId);
+functions\src\pack148-integrations.ts:324:export async function recordGenericTransactionToLedger(
+functions\src\pack148-integrations.ts:333:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-integrations.ts:334:  return await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:361:): Promise<Array<{ ledgerId: string; blockchainHash: string; transactionId: string }>> {
+functions\src\pack148-integrations.ts:366:      const result = await recordLedgerTransaction({
+functions\src\pack148-integrations.ts:379:        ledgerId: '',
+functions\src\pack148-ledger-engine.ts:2: * PACK 148 - Ledger Recording Engine
+functions\src\pack148-ledger-engine.ts:3: * Core functionality for recording transactions to immutable ledger
+functions\src\pack148-ledger-engine.ts:9:  LedgerTransaction,
+functions\src\pack148-ledger-engine.ts:13:  RecordLedgerTransactionRequest,
+functions\src\pack148-ledger-engine.ts:14:  LedgerError,
+functions\src\pack148-ledger-engine.ts:54:    .collection('blockchain_ledger')
+functions\src\pack148-ledger-engine.ts:80: * Record transaction to Firestore ledger (fast layer)
+functions\src\pack148-ledger-engine.ts:82:async function recordToFirestoreLedger(
+functions\src\pack148-ledger-engine.ts:83:  transaction: LedgerTransaction
+functions\src\pack148-ledger-engine.ts:86:    .collection('ledger_transactions')
+functions\src\pack148-ledger-engine.ts:139:    .collection('blockchain_ledger')
+functions\src\pack148-ledger-engine.ts:150: * Main function: Record a transaction to the ledger
+functions\src\pack148-ledger-engine.ts:152:export async function recordLedgerTransaction(
+functions\src\pack148-ledger-engine.ts:153:  request: RecordLedgerTransactionRequest
+functions\src\pack148-ledger-engine.ts:154:): Promise<{ ledgerId: string; blockchainHash: string }> {
+functions\src\pack148-ledger-engine.ts:168:    throw new LedgerError('Missing required fields', 'INVALID_INPUT');
+functions\src\pack148-ledger-engine.ts:172:    throw new LedgerError('Token amount must be positive', 'INVALID_AMOUNT');
+functions\src\pack148-ledger-engine.ts:177:    .collection('ledger_transactions')
+functions\src\pack148-ledger-engine.ts:183:    const existingData = existing.docs[0].data() as LedgerTransaction;
+functions\src\pack148-ledger-engine.ts:185:      ledgerId: existingData.id,
+functions\src\pack148-ledger-engine.ts:218:  // Create ledger transaction record
+functions\src\pack148-ledger-engine.ts:219:  const ledgerId = generateId();
+functions\src\pack148-ledger-engine.ts:222:  const ledgerTransaction: LedgerTransaction = {
+functions\src\pack148-ledger-engine.ts:223:    id: ledgerId,
+functions\src\pack148-ledger-engine.ts:247:  // Record to Firestore ledger (fast access layer)
+functions\src\pack148-ledger-engine.ts:248:  await recordToFirestoreLedger(ledgerTransaction);
+functions\src\pack148-ledger-engine.ts:251:  await logLedgerEvent('transaction_created', transactionId, {
+functions\src\pack148-ledger-engine.ts:252:    ledgerId,
+functions\src\pack148-ledger-engine.ts:260:    ledgerId,
+functions\src\pack148-ledger-engine.ts:266: * Update ledger when escrow is released
+functions\src\pack148-ledger-engine.ts:268:export async function updateLedgerOnEscrowRelease(
+functions\src\pack148-ledger-engine.ts:272:  // Find ledger entry
+functions\src\pack148-ledger-engine.ts:274:    .collection('ledger_transactions')
+functions\src\pack148-ledger-engine.ts:280:    throw new LedgerError('Ledger entry not found', 'NOT_FOUND', { transactionId });
+functions\src\pack148-ledger-engine.ts:284:  const ledgerEntry = doc.data() as LedgerTransaction;
+functions\src\pack148-ledger-engine.ts:295:    version: ledgerEntry.version + 1,
+functions\src\pack148-ledger-engine.ts:301:    ledgerEntry.senderHash,
+functions\src\pack148-ledger-engine.ts:302:    ledgerEntry.receiverHash,
+functions\src\pack148-ledger-engine.ts:303:    ledgerEntry.productType,
+functions\src\pack148-ledger-engine.ts:304:    ledgerEntry.tokenAmount,
+functions\src\pack148-ledger-engine.ts:308:    ledgerEntry.regionTag
+functions\src\pack148-ledger-engine.ts:312:  await logLedgerEvent(
+functions\src\pack148-ledger-engine.ts:315:    { escrowOutcome, ledgerId: ledgerEntry.id }
+functions\src\pack148-ledger-engine.ts:320: * Update ledger when dispute occurs
+functions\src\pack148-ledger-engine.ts:322:export async function updateLedgerOnDispute(
+functions\src\pack148-ledger-engine.ts:327:    .collection('ledger_transactions')
+functions\src\pack148-ledger-engine.ts:333:    throw new LedgerError('Ledger entry not found', 'NOT_FOUND', { transactionId });
+functions\src\pack148-ledger-engine.ts:337:  const ledgerEntry = doc.data() as LedgerTransaction;
+functions\src\pack148-ledger-engine.ts:343:    version: ledgerEntry.version + 1,
+functions\src\pack148-ledger-engine.ts:346:  await logLedgerEvent('dispute_opened', transactionId, {
+functions\src\pack148-ledger-engine.ts:348:    ledgerId: ledgerEntry.id,
+functions\src\pack148-ledger-engine.ts:353: * Log ledger event to audit trail
+functions\src\pack148-ledger-engine.ts:355:async function logLedgerEvent(
+functions\src\pack148-ledger-engine.ts:360:  await db.collection('ledger_audit_logs').add({
+functions\src\pack148-ledger-engine.ts:370: * Get ledger transaction by ID
+functions\src\pack148-ledger-engine.ts:372:export async function getLedgerTransaction(
+functions\src\pack148-ledger-engine.ts:374:): Promise<LedgerTransaction | null> {
+functions\src\pack148-ledger-engine.ts:376:    .collection('ledger_transactions')
+functions\src\pack148-ledger-engine.ts:385:  return snapshot.docs[0].data() as LedgerTransaction;
+functions\src\pack148-ledger-engine.ts:389: * Get user's ledger transactions (authorized access only)
+functions\src\pack148-ledger-engine.ts:391:export async function getUserLedgerTransactions(
+functions\src\pack148-ledger-engine.ts:399:): Promise<LedgerTransaction[]> {
+functions\src\pack148-ledger-engine.ts:403:    .collection('ledger_transactions')
+functions\src\pack148-ledger-engine.ts:412:  let transactions = snapshot.docs.map(doc => doc.data() as LedgerTransaction);
+functions\src\pack148-ledger-engine.ts:416:    .collection('ledger_transactions')
+functions\src\pack148-ledger-engine.ts:421:  const receivedTransactions = receivedSnapshot.docs.map(doc => doc.data() as LedgerTransaction);
+functions\src\pack148-ledger-engine.ts:451: * Validate ledger entry against escrow
+functions\src\pack148-ledger-engine.ts:453:export async function validateLedgerEscrowStatus(
+functions\src\pack148-ledger-engine.ts:456:): Promise<{ isValid: boolean; ledgerEntry?: LedgerTransaction }> {
+functions\src\pack148-ledger-engine.ts:458:    .collection('ledger_transactions')
+functions\src\pack148-ledger-engine.ts:467:  const ledgerEntry = snapshot.docs[0].data() as LedgerTransaction;
+functions\src\pack148-ledger-engine.ts:468:  const isValid = ledgerEntry.escrowLogicOutcome === expectedStatus;
+functions\src\pack148-ledger-engine.ts:470:  return { isValid, ledgerEntry };
+functions\src\pack148-ledger-engine.ts:474: * Get ledger statistics for user
+functions\src\pack148-ledger-engine.ts:476:export async function getLedgerStats(userId: string): Promise<{
+functions\src\pack148-ledger-engine.ts:485:  const transactions = await getUserLedgerTransactions(userId, { limit: 1000 });
+functions\src\pack148-scheduled.ts:3: * Background jobs for ledger maintenance
+functions\src\pack148-types.ts:2: * PACK 148 - Avalo Blockchain Token Ledger
+functions\src\pack148-types.ts:9: * - Ledger only registers, doesn't modify rules
+functions\src\pack148-types.ts:42:export type LedgerEventType =
+functions\src\pack148-types.ts:53:// Ledger Transaction Record
+functions\src\pack148-types.ts:56:export interface LedgerTransaction {
+functions\src\pack148-types.ts:131:export interface LedgerExport {
+functions\src\pack148-types.ts:183:export interface LedgerAuditLog {
+functions\src\pack148-types.ts:185:  eventType: LedgerEventType;
+functions\src\pack148-types.ts:202:// Payout Ledger
+functions\src\pack148-types.ts:205:export interface PayoutLedgerSummary {
+functions\src\pack148-types.ts:285:// Ledger Statistics
+functions\src\pack148-types.ts:288:export interface LedgerStats {
+functions\src\pack148-types.ts:327:export interface RecordLedgerTransactionRequest {
+functions\src\pack148-types.ts:338:export interface RecordLedgerTransactionResponse {
+functions\src\pack148-types.ts:340:  ledgerId: string;
+functions\src\pack148-types.ts:345:export interface ValidateLedgerEscrowRequest {
+functions\src\pack148-types.ts:350:export interface ValidateLedgerEscrowResponse {
+functions\src\pack148-types.ts:353:  ledgerEntry?: LedgerTransaction;
+functions\src\pack148-types.ts:357:export interface ExportLedgerHistoryRequest {
+functions\src\pack148-types.ts:370:export interface ExportLedgerHistoryResponse {
+functions\src\pack148-types.ts:377:export interface DownloadLedgerReportRequest {
+functions\src\pack148-types.ts:382:export interface DownloadLedgerReportResponse {
+functions\src\pack148-types.ts:402:export interface GetLedgerOverviewRequest {
+functions\src\pack148-types.ts:409:export interface GetLedgerOverviewResponse {
+functions\src\pack148-types.ts:411:  stats: LedgerStats;
+functions\src\pack148-types.ts:412:  recentTransactions: LedgerTransaction[];
+functions\src\pack148-types.ts:413:  payoutSummary: PayoutLedgerSummary;
+functions\src\pack148-types.ts:455:export class LedgerError extends Error {
+functions\src\pack148-types.ts:462:    this.name = 'LedgerError';
+functions\src\pack200-resolve-stability-conflict.ts:154:      const ledgerRef = db.collection('transaction_ledger').doc(generateId());
+functions\src\pack200-resolve-stability-conflict.ts:155:      transaction.set(ledgerRef, {
+functions\src\pack200-resolve-stability-conflict.ts:356:    const ledgerSnapshot = await db.collection('transaction_ledger')
+functions\src\pack200-resolve-stability-conflict.ts:362:    for (const doc of ledgerSnapshot.docs) {
+functions\src\pack200-resolve-stability-conflict.ts:368:      console.warn(`[Stability] Balance inconsistency for user ${userId}: wallet ${walletBalance}, ledger ${calculatedBalance}`);
+functions\src\pack247-withdrawal-antifraud.ts:502:  const recentEarnings = await db.collection('earnings_ledger')
+functions\src\pack247-withdrawal-antifraud.ts:507:  const previousEarnings = await db.collection('earnings_ledger')
+functions\src\pack253-royal-benefits.ts:317:    await db.collection('earnings_ledger').add({
+functions\src\pack359-creator-tax-statements.ts:185:  const transactions = await db.collection('tax_ledger')
+functions\src\pack359-gdpr-retention.ts:118:    collection: 'tax_ledger',
+functions\src\pack359-tax-calculator.ts:281: * Log tax transaction to immutable ledger
+functions\src\pack359-tax-calculator.ts:302:  // Store in immutable tax ledger
+functions\src\pack359-tax-calculator.ts:303:  await db.collection('tax_ledger').doc(transactionId).set({
+functions\src\pack390-aml.ts:319:  const transactionsSnapshot = await db.collection('fiatLedgers')
+functions\src\pack390-bank.ts:203:  const ledgerSnapshot = await db.collection('fiatLedgers')
+functions\src\pack390-bank.ts:212:  ledgerSnapshot.forEach(doc => {
+functions\src\pack390-bank.ts:220:  return { totalRevenue, revenueByDay, transactionCount: ledgerSnapshot.size };
+functions\src\pack390-bank.ts:367:  const ledgerSnapshot = await db.collection('fiatLedgers')
+functions\src\pack390-bank.ts:374:  ledgerSnapshot.forEach(doc => {
+functions\src\pack390-payouts.ts:243:      // Create fiat ledger entry
+functions\src\pack390-payouts.ts:244:      await db.collection('fiatLedgers').add({
+functions\src\pack390-payouts.ts:345:    // Create reversal ledger entry
+functions\src\pack390-payouts.ts:346:    await db.collection('fiatLedgers').add({
+functions\src\pack390-tax.ts:172:    const ledgerSnapshot = await db.collection('fiatLedgers')
+functions\src\pack390-tax.ts:184:    for (const doc of ledgerSnapshot.docs) {
+functions\src\pack390-tax.ts:272:    const ledgerSnapshot = await db.collection('fiatLedgers')
+functions\src\pack390-tax.ts:284:    ledgerSnapshot.forEach(doc => {
+functions\src\pack390-tax.ts:361:    const ledgerSnapshot = await db.collection('fiatLedgers')
+functions\src\pack390-tax.ts:369:    ledgerSnapshot.forEach(doc => {
+functions\src\pack390-tax.ts:455:        const ledgerSnapshot = await db.collection('fiatLedgers')
+functions\src\pack390-tax.ts:462:        if (ledgerSnapshot.empty) continue;
+functions\src\pack390-tax.ts:465:        ledgerSnapshot.forEach(doc => {
+functions\src\pack414-health.ts:44:      // Check ledger integrity
+functions\src\pack414-health.ts:45:      const ledgerSnap = await db.collection('wallet_ledger').limit(1).get();
+functions\src\pack414-health.ts:46:      checks.ledgerAccessible = true;
+functions\src\pack443\ExperimentLedgerService.ts:3: * Module: ExperimentLedgerService
+functions\src\pack443\ExperimentLedgerService.ts:14:export interface ExperimentLedgerEntry {
+functions\src\pack443\ExperimentLedgerService.ts:85:export class ExperimentLedgerService {
+functions\src\pack443\ExperimentLedgerService.ts:93:   * Record an experiment event in the ledger
+functions\src\pack443\ExperimentLedgerService.ts:97:    eventType: ExperimentLedgerEntry['eventType'],
+functions\src\pack443\ExperimentLedgerService.ts:105:  ): Promise<ExperimentLedgerEntry> {
+functions\src\pack443\ExperimentLedgerService.ts:109:    const entry: ExperimentLedgerEntry = {
+functions\src\pack443\ExperimentLedgerService.ts:126:    await this.db.collection('experimentLedger').add(entry);
+functions\src\pack443\ExperimentLedgerService.ts:128:    logger.info('Experiment event recorded in ledger', {
+functions\src\pack443\ExperimentLedgerService.ts:141:  async getAuditTrail(experimentId: string): Promise<ExperimentLedgerEntry[]> {
+functions\src\pack443\ExperimentLedgerService.ts:143:      .collection('experimentLedger')
+functions\src\pack443\ExperimentLedgerService.ts:148:    return snapshot.docs.map((doc) => doc.data() as ExperimentLedgerEntry);
+functions\src\pack443\ExperimentLedgerService.ts:152:   * Verify ledger integrity (hash chain)
+functions\src\pack443\ExperimentLedgerService.ts:154:  async verifyLedgerIntegrity(experimentId: string): Promise<{
+functions\src\pack443\ExperimentLedgerService.ts:196:      throw new Error(`No ledger entries found for experiment ${experimentId}`);
+functions\src\pack443\ExperimentLedgerService.ts:297:      .collection('experimentLedger')
+functions\src\pack443\ExperimentLedgerService.ts:304:      const data = doc.data() as ExperimentLedgerEntry;
+functions\src\pack443\ExperimentLedgerService.ts:317:      .collection('experimentLedger')
+functions\src\pack443\ExperimentLedgerService.ts:323:      const data = doc.data() as ExperimentLedgerEntry;
+functions\src\pack443\ExperimentLedgerService.ts:329:   * Get ledger statistics
+functions\src\pack443\ExperimentLedgerService.ts:331:  async getLedgerStatistics(): Promise<{
+functions\src\pack443\ExperimentLedgerService.ts:344:    const snapshot = await this.db.collection('experimentLedger').get();
+functions\src\pack443\ExperimentLedgerService.ts:348:      const entry = doc.data() as ExperimentLedgerEntry;
+functions\src\pack443\ExperimentLedgerService.ts:376:  private async getLatestEntry(experimentId: string): Promise<ExperimentLedgerEntry | null> {
+functions\src\pack443\ExperimentLedgerService.ts:378:      .collection('experimentLedger')
+functions\src\pack443\ExperimentLedgerService.ts:388:    return snapshot.docs[0].data() as ExperimentLedgerEntry;
+functions\src\pack443\ExperimentLedgerService.ts:391:  private calculateEntryHash(entry: ExperimentLedgerEntry): string {
+functions\src\pack443\ExperimentLedgerService.ts:406:  private determineStatus(entries: ExperimentLedgerEntry[]): string {
+functions\src\pack443\index.ts:13:import { ExperimentLedgerService } from './ExperimentLedgerService';
+functions\src\pack443\index.ts:20:export * from './ExperimentLedgerService';
+functions\src\pack443\index.ts:31:  ledger: ExperimentLedgerService;
+functions\src\pack443\index.ts:42:    this.ledger = new ExperimentLedgerService(db);
+functions\src\pack443\index.ts:79:    // 3. Record in ledger
+functions\src\pack443\index.ts:80:    await this.ledger.recordEvent(experiment.id, 'CREATED', config.author, {
+functions\src\pack443\pack443.test.ts:10: * - Audit ledger
+functions\src\pack443\pack443.test.ts:285:describe('PACK 443 - Experiment Ledger Service', () => {
+functions\src\pack443\pack443.test.ts:293:    const entry = await services.ledger.recordEvent(
+functions\src\pack443\pack443.test.ts:307:    const entry1 = await services.ledger.recordEvent(
+functions\src\pack443\pack443.test.ts:314:    const entry2 = await services.ledger.recordEvent(
+functions\src\pack443\pack443.test.ts:324:  it('should verify ledger integrity', async () => {
+functions\src\pack443\pack443.test.ts:325:    await services.ledger.recordEvent('test-experiment-id', 'CREATED', 'test@example.com', {});
+functions\src\pack443\pack443.test.ts:326:    await services.ledger.recordEvent('test-experiment-id', 'APPROVED', 'approver@example.com', {});
+functions\src\pack443\pack443.test.ts:328:    const verification = await services.ledger.verifyLedgerIntegrity('test-experiment-id');
+functions\src\pack443\pack443.test.ts:336:    await services.ledger.recordEvent('test-experiment-id', 'CREATED', 'test@example.com', {});
+functions\src\pack443\pack443.test.ts:338:    const report = await services.ledger.generateAuditReport('test-experiment-id');
+functions\src\pack443\pack443.test.ts:347:    await services.ledger.recordEvent('test-experiment-id', 'CREATED', 'test@example.com', {});
+functions\src\pack443\pack443.test.ts:349:    const json = await services.ledger.exportAuditReport('test-experiment-id', 'JSON');
+functions\src\pack443\pack443.test.ts:353:    const csv = await services.ledger.exportAuditReport('test-experiment-id', 'CSV');
+functions\src\pack452-kpi-engine.ts:94:  // Get revenue breakdown from ledger
+functions\src\pack452-kpi-engine.ts:95:  const ledgerSnap = await db.collection('earningsLedger')
+functions\src\pack452-kpi-engine.ts:104:  for (const doc of ledgerSnap.docs) {
+functions\src\pack452-premium-burn-engine.ts:23: * - Historical ledger never recalculated
+functions\src\pack452-premium-burn-engine.ts:33:  PremiumLedgerFields,
+functions\src\pack452-premium-burn-engine.ts:81:  /** Ledger fields for this burn event */
+functions\src\pack452-premium-burn-engine.ts:82:  ledgerFields: PremiumLedgerFields;
+functions\src\pack452-premium-burn-engine.ts:126:      ledgerFields: {
+functions\src\pack452-premium-burn-engine.ts:156:    ledgerFields: {
+functions\src\pack452-premium-burn-engine.ts:173: * Records ledger entry with premium fields.
+functions\src\pack452-premium-burn-engine.ts:263:    const offerId = burnResult.ledgerFields.offerId;
+functions\src\pack452-premium-burn-engine.ts:300:    // Record ledger entry with premium fields + PACK 452 audit fields
+functions\src\pack452-premium-burn-engine.ts:301:    const ledgerRef = db.collection('earningsLedger').doc(generateId());
+functions\src\pack452-premium-burn-engine.ts:302:    transaction.set(ledgerRef, {
+functions\src\pack452-premium-burn-engine.ts:313:      // Premium ledger fields
+functions\src\pack452-premium-burn-engine.ts:314:      pricingMode: burnResult.ledgerFields.pricingMode,
+functions\src\pack452-premium-burn-engine.ts:315:      premiumMultiplier: burnResult.ledgerFields.premiumMultiplier,
+functions\src\pack452-premium-burn-engine.ts:316:      offerId: burnResult.ledgerFields.offerId,
+functions\src\pack452-premium-burn-engine.ts:317:      exclusiveFlag: burnResult.ledgerFields.exclusiveFlag,
+functions\src\pack452-premium-burn-engine.ts:347:        pricingMode: burnResult.ledgerFields.pricingMode,
+functions\src\pack452-premium-burn-engine.ts:348:        premiumMultiplier: burnResult.ledgerFields.premiumMultiplier,
+functions\src\pack452-premium-burn-engine.ts:349:        offerId: burnResult.ledgerFields.offerId,
+functions\src\pack452-premium-burn-engine.ts:350:        exclusiveFlag: burnResult.ledgerFields.exclusiveFlag,
+functions\src\pack452-premium-burn-engine.ts:376:          pricingMode: burnResult.ledgerFields.pricingMode,
+functions\src\pack452-premium-burn-engine.ts:377:          premiumMultiplier: burnResult.ledgerFields.premiumMultiplier,
+functions\src\pack452-premium-burn-engine.ts:378:          offerId: burnResult.ledgerFields.offerId,
+functions\src\pack452-premium-burn-engine.ts:379:          exclusiveFlag: burnResult.ledgerFields.exclusiveFlag,
+functions\src\pack452-premium-offer-engine.ts:258: * - Pricing snapshot is stored for ledger integrity
+functions\src\pack460-boost-ranking-hook.ts:225: *   - Writes ledger entry
+functions\src\pack460-boost-visibility-endpoints.ts:7: * - Tokens deducted per confirmed impression via unified wallet + ledger.
+functions\src\pack460-boost-visibility-endpoints.ts:24:  validateCampaignLedger,
+functions\src\pack460-boost-visibility-endpoints.ts:263: * Validate campaign ledger consistency (admin/debug).
+functions\src\pack460-boost-visibility-endpoints.ts:265:export const validateBoostLedgerV1 = onCall(
+functions\src\pack460-boost-visibility-endpoints.ts:284:    const validation = await validateCampaignLedger(campaignId);
+functions\src\pack460-boost-visibility-engine.ts:8: * - All mutations go through unified wallet + ledger.
+functions\src\pack460-boost-visibility-engine.ts:14: * 2. Impression confirmation with atomic wallet deduction + ledger write
+functions\src\pack460-boost-visibility-engine.ts:28:  BoostImpressionLedgerEntry,
+functions\src\pack460-boost-visibility-engine.ts:71: *  - Writes BOOST ledger entry
+functions\src\pack460-boost-visibility-engine.ts:133:  const ledgerRef = db.collection(C.COLLECTION_LEDGER).doc(generateId());
+functions\src\pack460-boost-visibility-engine.ts:185:      // Ledger entry for budget allocation
+functions\src\pack460-boost-visibility-engine.ts:186:      transaction.set(ledgerRef, {
+functions\src\pack460-boost-visibility-engine.ts:187:        ledgerId: ledgerRef.id,
+functions\src\pack460-boost-visibility-engine.ts:313:// 2. IMPRESSION CONFIRMATION — ATOMIC WALLET + LEDGER
+functions\src\pack460-boost-visibility-engine.ts:326: *     - Writes ledger entry (type=BOOST_IMPRESSION)
+functions\src\pack460-boost-visibility-engine.ts:342:  const ledgerId = generateId();
+functions\src\pack460-boost-visibility-engine.ts:343:  const ledgerRef = db.collection(C.COLLECTION_LEDGER).doc(ledgerId);
+functions\src\pack460-boost-visibility-engine.ts:424:        ledgerEntryId: ledgerId,
+functions\src\pack460-boost-visibility-engine.ts:431:      // Write ledger entry (type=BOOST_IMPRESSION)
+functions\src\pack460-boost-visibility-engine.ts:432:      const ledgerEntry: BoostImpressionLedgerEntry = {
+functions\src\pack460-boost-visibility-engine.ts:433:        ledgerId,
+functions\src\pack460-boost-visibility-engine.ts:449:      transaction.set(ledgerRef, ledgerEntry);
+functions\src\pack460-boost-visibility-engine.ts:773:      const ledgerRef = db.collection(C.COLLECTION_LEDGER).doc(generateId());
+functions\src\pack460-boost-visibility-engine.ts:788:        // Ledger entry for refund of unspent budget
+functions\src\pack460-boost-visibility-engine.ts:789:        transaction.set(ledgerRef, {
+functions\src\pack460-boost-visibility-engine.ts:790:          ledgerId: ledgerRef.id,
+functions\src\pack460-boost-visibility-engine.ts:844: * Get ledger entries for a campaign (for replay validation).
+functions\src\pack460-boost-visibility-engine.ts:846:export async function getCampaignLedgerEntries(
+functions\src\pack460-boost-visibility-engine.ts:848:): Promise<BoostImpressionLedgerEntry[]> {
+functions\src\pack460-boost-visibility-engine.ts:850:    .collection(C.COLLECTION_LEDGER)
+functions\src\pack460-boost-visibility-engine.ts:856:  return snap.docs.map((doc) => doc.data() as BoostImpressionLedgerEntry);
+functions\src\pack460-boost-visibility-engine.ts:860: * Validate ledger consistency for a campaign.
+functions\src\pack460-boost-visibility-engine.ts:861: * Sum of ledger tokenAmount should equal campaign.spentBudget.
+functions\src\pack460-boost-visibility-engine.ts:863:export async function validateCampaignLedger(campaignId: string): Promise<{
+functions\src\pack460-boost-visibility-engine.ts:866:  ledgerTotal: number;
+functions\src\pack460-boost-visibility-engine.ts:868:  ledgerEntryCount: number;
+functions\src\pack460-boost-visibility-engine.ts:870:  const [campaign, impressions, ledgerEntries] = await Promise.all([
+functions\src\pack460-boost-visibility-engine.ts:873:    getCampaignLedgerEntries(campaignId),
+functions\src\pack460-boost-visibility-engine.ts:877:    return { valid: false, campaignSpent: 0, ledgerTotal: 0, impressionCount: 0, ledgerEntryCount: 0 };
+functions\src\pack460-boost-visibility-engine.ts:880:  const ledgerTotal = ledgerEntries.reduce((sum, entry) => sum + entry.tokenAmount, 0);
+functions\src\pack460-boost-visibility-engine.ts:884:    valid: Math.abs(campaign.spentBudget - ledgerTotal) < 0.01,
+functions\src\pack460-boost-visibility-engine.ts:886:    ledgerTotal,
+functions\src\pack460-boost-visibility-engine.ts:888:    ledgerEntryCount: ledgerEntries.length,
+functions\src\pack92-integrations.ts:368: *   const ledgerRef = await db.collection('earnings_ledger').add(ledgerEntry);
+functions\src\pack92-integrations.ts:378: *     sourceId: ledgerRef.id,
+functions\src\pack92-integrations.ts:381: *   return ledgerRef.id;
+functions\src\pack93-data-rights.ts:18: * - Deletion must not corrupt financial ledgers (ledgers stay but pseudonymized)
+functions\src\pack93-data-rights.ts:89:    earningsLedger: any[];
+functions\src\pack93-data-rights.ts:332:      earningsLedger: [],
+functions\src\pack93-data-rights.ts:422:    // Earnings Ledger (for creators)
+functions\src\pack93-data-rights.ts:424:      .collection('earnings_ledger')
+functions\src\pack93-data-rights.ts:429:    data.monetization.earningsLedger = earningsSnapshot.docs.map(doc => doc.data());
+functions\src\pack93-data-rights.ts:535:  count += data.monetization?.earningsLedger?.length || 0;
+functions\src\pack93-data-rights.ts:848: * Financial ledgers must remain for compliance but are made anonymous
+functions\src\pack93-data-rights.ts:899:  // Pseudonymize earnings ledger
+functions\src\pack93-data-rights.ts:901:    .collection('earnings_ledger')
+functions\src\pack97-creatorAnalytics.ts:10: * - Numbers must match authoritative sources (earnings_ledger, creator_balances)
+functions\src\pack97-creatorAnalytics.ts:140:  // Aggregate from earnings_ledger
+functions\src\pack97-creatorAnalytics.ts:141:  const ledgerQuery = await db
+functions\src\pack97-creatorAnalytics.ts:142:    .collection('earnings_ledger')
+functions\src\pack97-creatorAnalytics.ts:156:  ledgerQuery.forEach((doc) => {
+functions\src\pack97-creatorAnalytics.ts:282:        .collection('earnings_ledger')
+functions\src\pack97-creatorAnalytics.ts:303:        .collection('earnings_ledger')
+functions\src\paidMedia.ts:531:      // Record earning in ledger (PACK 81)
+functions\src\paidMedia.ts:541:        console.error('[unlockPaidMedia] Error recording in earnings ledger:', error);
+functions\src\premiumStories.ts:278:    // Record earning in ledger (PACK 81)
+functions\src\premiumStories.ts:286:      logger.error('Failed to record story earning in ledger', err);
+functions\src\tax-calculation.ts:182: * Get earnings from treasury ledger
+functions\src\tax-calculation.ts:184:async function getEarningsFromLedger(
+functions\src\tax-calculation.ts:190:    const ledgerQuery = await db
+functions\src\tax-calculation.ts:191:      .collection('treasury_ledger')
+functions\src\tax-calculation.ts:213:    ledgerQuery.docs.forEach(doc => {
+functions\src\tax-calculation.ts:231:    logger.error('Failed to get earnings from ledger', { error, userId });
+functions\src\tax-calculation.ts:272:      const ledgerEarnings = await getEarningsFromLedger(userId, periodStart, periodEnd);
+functions\src\tax-calculation.ts:273:      earnings = ledgerEarnings.total;
+functions\src\tax-calculation.ts:274:      earningsBreakdown = ledgerEarnings.byCategory;
+functions\src\tax-calculation.ts:487:        ledgerIds: [], // Will be populated when ledger entries are created
+functions\src\tax-engine\tax-profile.ts:434:  ledgerReferenceId?: string;
+functions\src\tax-engine\types.ts:164:  ledgerReferenceId?: string;
+functions\src\tax-treasury-integration.ts:8: * - Creates tax-aware ledger entries
+functions\src\tax-treasury-integration.ts:16:import { createLedgerEntry } from './treasury-helpers';
+functions\src\tax-treasury-integration.ts:104:      undefined // Will fetch from ledger
+functions\src\tax-treasury-integration.ts:162:      ledgerIds: [],
+functions\src\tax-treasury-integration.ts:165:    // Create ledger entry for withholding
+functions\src\tax-treasury-integration.ts:166:    const ledgerId = await createLedgerEntry(
+functions\src\tax-treasury-integration.ts:180:    // Update withholding record with ledger ID
+functions\src\tax-treasury-integration.ts:181:    withholdingRecord.ledgerIds = [ledgerId];
+functions\src\tax-treasury-integration.ts:329:    const ledgerQuery = await db
+functions\src\tax-treasury-integration.ts:330:      .collection('treasury_ledger')
+functions\src\tax-treasury-integration.ts:349:    ledgerQuery.docs.forEach(doc => {
+functions\src\treasury-audit.ts:17:  TreasuryLedgerEntry,
+functions\src\treasury-audit.ts:86:      // Get ledger entries for period
+functions\src\treasury-audit.ts:87:      const ledgerSnapshot = await db
+functions\src\treasury-audit.ts:88:        .collection('treasury_ledger')
+functions\src\treasury-audit.ts:93:      const ledgerEntries = ledgerSnapshot.docs.map(doc => doc.data() as TreasuryLedgerEntry);
+functions\src\treasury-audit.ts:97:        purchases: ledgerEntries.filter(e => e.eventType === 'PURCHASE').length,
+functions\src\treasury-audit.ts:98:        spends: ledgerEntries.filter(e => e.eventType === 'SPEND').length,
+functions\src\treasury-audit.ts:99:        earns: ledgerEntries.filter(e => e.eventType === 'EARN').length,
+functions\src\treasury-audit.ts:100:        refunds: ledgerEntries.filter(e => e.eventType === 'REFUND').length,
+functions\src\treasury-audit.ts:101:        payouts: ledgerEntries.filter(e => e.eventType === 'PAYOUT_RELEASE').length,
+functions\src\treasury-audit.ts:106:      ledgerEntries
+functions\src\treasury-audit.ts:137:          ledgerComplete: true,
+functions\src\treasury-audit.ts:231:          ledgerComplete: true,
+functions\src\treasury-audit.ts:366:      const recentLedger = await db
+functions\src\treasury-audit.ts:367:        .collection('treasury_ledger')
+functions\src\treasury-audit.ts:372:        purchases: recentLedger.docs.filter(d => d.data().eventType === 'PURCHASE').length,
+functions\src\treasury-audit.ts:373:        spends: recentLedger.docs.filter(d => d.data().eventType === 'SPEND').length,
+functions\src\treasury-audit.ts:374:        refunds: recentLedger.docs.filter(d => d.data().eventType === 'REFUND').length,
+functions\src\treasury-audit.ts:375:        payouts: recentLedger.docs.filter(d => d.data().eventType === 'PAYOUT_RELEASE').length,
+functions\src\treasury-helpers.ts:9:  TreasuryLedgerEntry,
+functions\src\treasury-helpers.ts:11:  LedgerEventType,
+functions\src\treasury-helpers.ts:16: * Create immutable ledger entry
+functions\src\treasury-helpers.ts:19:export async function createLedgerEntry(
+functions\src\treasury-helpers.ts:20:  eventType: LedgerEventType,
+functions\src\treasury-helpers.ts:27:  const ledgerId = generateId();
+functions\src\treasury-helpers.ts:29:  const entry: TreasuryLedgerEntry = {
+functions\src\treasury-helpers.ts:30:    ledgerId,
+functions\src\treasury-helpers.ts:40:  await db.collection('treasury_ledger').doc(ledgerId).set(entry);
+functions\src\treasury-helpers.ts:42:  logger.info('Ledger entry created', {
+functions\src\treasury-helpers.ts:43:    ledgerId,
+functions\src\treasury-helpers.ts:50:  return ledgerId;
+functions\src\treasury-helpers.ts:54: * Get recent ledger entries for a user
+functions\src\treasury-helpers.ts:56:export async function getUserLedgerEntries(
+functions\src\treasury-helpers.ts:59:): Promise<TreasuryLedgerEntry[]> {
+functions\src\treasury-helpers.ts:61:    .collection('treasury_ledger')
+functions\src\treasury-helpers.ts:67:  return snapshot.docs.map(doc => doc.data() as TreasuryLedgerEntry);
+functions\src\treasury-helpers.ts:71: * Get ledger entries by transaction ID
+functions\src\treasury-helpers.ts:73:export async function getTransactionLedgerEntries(
+functions\src\treasury-helpers.ts:75:): Promise<TreasuryLedgerEntry[]> {
+functions\src\treasury-helpers.ts:77:    .collection('treasury_ledger')
+functions\src\treasury-helpers.ts:81:  return snapshot.docs.map(doc => doc.data() as TreasuryLedgerEntry);
+functions\src\treasury-payout-safety.ts:24:import { createLedgerEntry } from './treasury-helpers';
+functions\src\treasury-payout-safety.ts:106:    // Check for suspicious patterns in ledger
+functions\src\treasury-payout-safety.ts:107:    const recentLedger = await db
+functions\src\treasury-payout-safety.ts:108:      .collection('treasury_ledger')
+functions\src\treasury-payout-safety.ts:114:    const refunds = recentLedger.docs.filter(doc => 
+functions\src\treasury-payout-safety.ts:340:      // Create ledger entry
+functions\src\treasury-payout-safety.ts:341:      await createLedgerEntry(
+functions\src\treasury-payout-safety.ts:436:        // Create ledger entry
+functions\src\treasury-payout-safety.ts:437:        await createLedgerEntry(
+functions\src\treasury-payout-safety.ts:488:        // Create ledger entry
+functions\src\treasury-payout-safety.ts:489:        await createLedgerEntry(
+functions\src\treasury-wallet.ts:20:import { createLedgerEntry } from './treasury-helpers';
+functions\src\treasury-wallet.ts:195:      // Create ledger entry
+functions\src\treasury-wallet.ts:196:      await createLedgerEntry(
+functions\src\treasury-wallet.ts:298:      // Create ledger entry
+functions\src\treasury-wallet.ts:299:      await createLedgerEntry(
+functions\src\treasury-wallet.ts:451:      // Create ledger entry
+functions\src\treasury-wallet.ts:452:      await createLedgerEntry(
+functions\src\treasury.ts:23:  TreasuryLedgerEntry,
+functions\src\treasury.ts:30:  LedgerEventType,
+functions\src\treasury.ts:45: * Create ledger entry (immutable audit record)
+functions\src\treasury.ts:47:async function createLedgerEntry(
+functions\src\treasury.ts:48:  eventType: LedgerEventType,
+functions\src\treasury.ts:55:  const ledgerId = generateId();
+functions\src\treasury.ts:57:  const entry: TreasuryLedgerEntry = {
+functions\src\treasury.ts:58:    ledgerId,
+functions\src\treasury.ts:68:  await db.collection('treasury_ledger').doc(ledgerId).set(entry);
+functions\src\treasury.ts:70:  logger.info('Ledger entry created', {
+functions\src\treasury.ts:71:    ledgerId,
+functions\src\treasury.ts:78:  return ledgerId;
+functions\src\treasury.ts:92:  // Check if transaction ID already exists in ledger
+functions\src\treasury.ts:94:    .collection('treasury_ledger')
+functions\src\treasury.ts:171:  // Find original transaction in ledger
+functions\src\treasury.ts:172:  const ledgerSnapshot = await db
+functions\src\treasury.ts:173:    .collection('treasury_ledger')
+functions\src\treasury.ts:179:  if (ledgerSnapshot.empty) {
+functions\src\treasury.ts:186:  const ledgerEntry = ledgerSnapshot.docs[0].data() as TreasuryLedgerEntry;
+functions\src\treasury.ts:189:  if (ledgerEntry.metadata.contentDelivered) {
+functions\src\treasury.ts:197:  const transactionTime = ledgerEntry.timestamp;
+functions\src\treasury.ts:337:      // Create ledger entries (outside transaction for performance)
+functions\src\treasury.ts:338:      const ledgerMetadata = {
+functions\src\treasury.ts:346:      // User spend ledger entry
+functions\src\treasury.ts:347:      const spendLedgerId = await createLedgerEntry(
+functions\src\treasury.ts:352:        ledgerMetadata
+functions\src\treasury.ts:355:      // Creator earn ledger entry
+functions\src\treasury.ts:356:      await createLedgerEntry(
+functions\src\treasury.ts:361:        { ...ledgerMetadata, spendLedgerId },
+functions\src\treasury.ts:365:      // Avalo commission ledger entry
+functions\src\treasury.ts:366:      await createLedgerEntry(
+functions\src\treasury.ts:371:        { ...ledgerMetadata, spendLedgerId }
+functions\src\treasury.ts:376:        ledgerId: spendLedgerId,
+functions\src\treasury.ts:426:      const ledgerSnapshot = await db
+functions\src\treasury.ts:427:        .collection('treasury_ledger')
+functions\src\treasury.ts:433:      if (ledgerSnapshot.empty) {
+functions\src\treasury.ts:437:      const originalLedger = ledgerSnapshot.docs[0].data() as TreasuryLedgerEntry;
+functions\src\treasury.ts:438:      const userId = originalLedger.userId;
+functions\src\treasury.ts:439:      const creatorId = originalLedger.creatorId;
+functions\src\treasury.ts:440:      const tokenAmount = Math.abs(originalLedger.tokenAmount);
+functions\src\treasury.ts:495:      // Create refund ledger entries
+functions\src\treasury.ts:504:      await createLedgerEntry('REFUND', userId, tokenAmount, 'USER', refundMetadata);
+functions\src\treasury.ts:508:        await createLedgerEntry('REFUND_CREATOR', creatorId, -split.creatorAmount, 'CREATOR', refundMetadata, creatorId);
+functions\src\treasury.ts:509:        await createLedgerEntry('REFUND_COMMISSION', userId, -split.avaloAmount, 'AVALO_REVENUE', refundMetadata);
+functions\src\treasury.ts:538:        ledgerIds: [refundId],
+functions\src\treasury.ts:685:      // Create ledger entry
+functions\src\treasury.ts:686:      await createLedgerEntry('PURCHASE', userId, tokenAmount, 'USER', {
+functions\src\types\boostCampaign.types.ts:8: * - All mutations go through unified wallet + ledger.
+functions\src\types\boostCampaign.types.ts:156:  /** Ledger entry ID for audit trail */
+functions\src\types\boostCampaign.types.ts:157:  ledgerEntryId: string;
+functions\src\types\boostCampaign.types.ts:173:// LEDGER ENTRY TYPE FOR BOOST IMPRESSIONS
+functions\src\types\boostCampaign.types.ts:177: * Ledger entry representing a single boost impression deduction.
+functions\src\types\boostCampaign.types.ts:178: * Written to `treasury_ledger` collection.
+functions\src\types\boostCampaign.types.ts:180:export interface BoostImpressionLedgerEntry {
+functions\src\types\boostCampaign.types.ts:181:  ledgerId: string;
+functions\src\types\boostCampaign.types.ts:275:  COLLECTION_LEDGER: 'treasury_ledger',
+functions\src\types\canonical-chat.types.ts:21: * - Historical ledger never recalculated
+functions\src\types\pack452-monetization-vnext.types.ts:16: * - Historical ledger never recalculated
+functions\src\types\pack452-monetization-vnext.types.ts:219:// LEDGER SNAPSHOT EXTENSIONS
+functions\src\types\pack452-monetization-vnext.types.ts:223: * Extended ledger fields for premium billing.
+functions\src\types\pack452-monetization-vnext.types.ts:224: * These fields are ADDED to existing ledger entries.
+functions\src\types\pack452-monetization-vnext.types.ts:226:export interface PremiumLedgerFields {
+functions\src\types\tax.types.ts:248:  ledgerIds: string[];                     // References to treasury ledger
+functions\src\types\treasury.types.ts:25:// LEDGER EVENT TYPES
+functions\src\types\treasury.types.ts:28:export type LedgerEventType =
+functions\src\types\treasury.types.ts:71:// TREASURY LEDGER ENTRY
+functions\src\types\treasury.types.ts:78:export interface TreasuryLedgerEntry {
+functions\src\types\treasury.types.ts:79:  ledgerId: string;                    // UUID
+functions\src\types\treasury.types.ts:80:  eventType: LedgerEventType;          // Type of transaction
+functions\src\types\treasury.types.ts:236:    originalEventType?: LedgerEventType;
+functions\src\types\treasury.types.ts:298:    ledgerComplete: boolean;           // No gaps in ledger
+functions\src\types\treasury.types.ts:357:  ledgerId: string;
+functions\src\types\treasury.types.ts:376:  ledgerIds?: string[];
+functions\src\types\treasury.types.ts:463:export function isValidLedgerEvent(event: string): event is LedgerEventType {
+functions\src\wallet\index.ts:4: * Unified wallet, ledger, and payout services.
+functions\src\wallet\index.ts:9: *   ledger/{txId}            — immutable ledger
+functions\src\wallet\index.ts:12: *   import { transactTokens, creditTokens, replayLedger } from '../wallet';
+functions\src\wallet\index.ts:19:  LedgerEntry,
+functions\src\wallet\index.ts:20:  LedgerEntryType,
+functions\src\wallet\index.ts:31:  LEDGER_COLLECTION,
+functions\src\wallet\index.ts:50:// ── Ledger Service ──────────────────────────────────────────────────────────
+functions\src\wallet\index.ts:52:  getLedgerEntry,
+functions\src\wallet\index.ts:53:  getLedgerEntriesByActor,
+functions\src\wallet\index.ts:54:  getLedgerEntriesByCounterparty,
+functions\src\wallet\index.ts:55:  getAllLedgerEntries,
+functions\src\wallet\index.ts:56:  replayLedger,
+functions\src\wallet\index.ts:57:  verifyLedgerConsistency,
+functions\src\wallet\index.ts:59:  countLedgerEntriesByType,
+functions\src\wallet\index.ts:60:} from './ledgerService';
+functions\src\wallet\index.ts:65:  featureToLedgerType,
+functions\src\wallet\ledgerService.ts:2: * LEDGER SERVICE — Immutable Financial Ledger
+functions\src\wallet\ledgerService.ts:4: * Every wallet balance mutation writes a ledger entry at: ledger/{txId}
+functions\src\wallet\ledgerService.ts:6: * The ledger is append-only. Entries are NEVER updated or deleted.
+functions\src\wallet\ledgerService.ts:7: * Ledger replay MUST reconstruct wallet balances exactly.
+functions\src\wallet\ledgerService.ts:9: * This module provides read/query operations on the ledger.
+functions\src\wallet\ledgerService.ts:15:  LedgerEntry,
+functions\src\wallet\ledgerService.ts:16:  LedgerEntryType,
+functions\src\wallet\ledgerService.ts:17:  LEDGER_COLLECTION,
+functions\src\wallet\ledgerService.ts:30:// LEDGER QUERIES
+functions\src\wallet\ledgerService.ts:34: * Get a single ledger entry by txId.
+functions\src\wallet\ledgerService.ts:36:export async function getLedgerEntry(txId: string): Promise<LedgerEntry | null> {
+functions\src\wallet\ledgerService.ts:37:  const snap = await db.collection(LEDGER_COLLECTION).doc(txId).get();
+functions\src\wallet\ledgerService.ts:39:  return snap.data() as LedgerEntry;
+functions\src\wallet\ledgerService.ts:43: * Get all ledger entries for a given actor (payer / spender).
+functions\src\wallet\ledgerService.ts:45:export async function getLedgerEntriesByActor(
+functions\src\wallet\ledgerService.ts:48:    type?: LedgerEntryType;
+functions\src\wallet\ledgerService.ts:52:): Promise<LedgerEntry[]> {
+functions\src\wallet\ledgerService.ts:54:    .collection(LEDGER_COLLECTION)
+functions\src\wallet\ledgerService.ts:69:  return snap.docs.map((doc) => doc.data() as LedgerEntry);
+functions\src\wallet\ledgerService.ts:73: * Get all ledger entries where a given user is the counterparty (earner / receiver).
+functions\src\wallet\ledgerService.ts:75:export async function getLedgerEntriesByCounterparty(
+functions\src\wallet\ledgerService.ts:78:    type?: LedgerEntryType;
+functions\src\wallet\ledgerService.ts:81:): Promise<LedgerEntry[]> {
+functions\src\wallet\ledgerService.ts:83:    .collection(LEDGER_COLLECTION)
+functions\src\wallet\ledgerService.ts:95:  return snap.docs.map((doc) => doc.data() as LedgerEntry);
+functions\src\wallet\ledgerService.ts:99: * Get all ledger entries (for full replay).
+functions\src\wallet\ledgerService.ts:102:export async function getAllLedgerEntries(): Promise<LedgerEntry[]> {
+functions\src\wallet\ledgerService.ts:104:    .collection(LEDGER_COLLECTION)
+functions\src\wallet\ledgerService.ts:108:  return snap.docs.map((doc) => doc.data() as LedgerEntry);
+functions\src\wallet\ledgerService.ts:112:// LEDGER REPLAY — RECONSTRUCT BALANCES
+functions\src\wallet\ledgerService.ts:116: * Replay the entire ledger and reconstruct all wallet balances.
+functions\src\wallet\ledgerService.ts:124:export async function replayLedger(): Promise<Map<string, number>> {
+functions\src\wallet\ledgerService.ts:125:  const entries = await getAllLedgerEntries();
+functions\src\wallet\ledgerService.ts:166: * Verify that all wallet balances match the ledger replay.
+functions\src\wallet\ledgerService.ts:170:export async function verifyLedgerConsistency(): Promise<
+functions\src\wallet\ledgerService.ts:174:    ledgerBalance: number;
+functions\src\wallet\ledgerService.ts:178:  const replayedBalances = await replayLedger();
+functions\src\wallet\ledgerService.ts:182:    ledgerBalance: number;
+functions\src\wallet\ledgerService.ts:186:  // Check each user that appears in the ledger
+functions\src\wallet\ledgerService.ts:187:  for (const [userId, ledgerBalance] of replayedBalances.entries()) {
+functions\src\wallet\ledgerService.ts:193:    if (walletBalance !== ledgerBalance) {
+functions\src\wallet\ledgerService.ts:197:        ledgerBalance,
+functions\src\wallet\ledgerService.ts:198:        discrepancy: walletBalance - ledgerBalance,
+functions\src\wallet\ledgerService.ts:212: * across ALL ledger entries.
+functions\src\wallet\ledgerService.ts:214: * Returns { matched, platformBalance, ledgerSum, discrepancy }
+functions\src\wallet\ledgerService.ts:219:  ledgerSum: number;
+functions\src\wallet\ledgerService.ts:232:  // Sum all avaloTokens from ledger entries
+functions\src\wallet\ledgerService.ts:233:  const entries = await getAllLedgerEntries();
+functions\src\wallet\ledgerService.ts:234:  let ledgerSum = 0;
+functions\src\wallet\ledgerService.ts:237:    ledgerSum += entry.split.avaloTokens;
+functions\src\wallet\ledgerService.ts:240:  const discrepancy = platformBalance - ledgerSum;
+functions\src\wallet\ledgerService.ts:245:    ledgerSum,
+functions\src\wallet\ledgerService.ts:251:// LEDGER ENTRY COUNT BY TYPE
+functions\src\wallet\ledgerService.ts:255: * Get count of ledger entries by type for a user (as actor).
+functions\src\wallet\ledgerService.ts:257:export async function countLedgerEntriesByType(
+functions\src\wallet\ledgerService.ts:259:): Promise<Record<LedgerEntryType, number>> {
+functions\src\wallet\ledgerService.ts:260:  const entries = await getLedgerEntriesByActor(actorId);
+functions\src\wallet\ledgerService.ts:267:  return counts as Record<LedgerEntryType, number>;
+functions\src\wallet\payoutService.ts:226:  // Debit tokens from wallet (transactional + idempotent + writes ledger)
+functions\src\wallet\payoutService.ts:247:    ledgerTxId: debitResult.txId,
+functions\src\wallet\splitEngine.ts:23:import { LedgerEntryType } from './types';
+functions\src\wallet\splitEngine.ts:169:// FEATURE → LEDGER TYPE MAPPING
+functions\src\wallet\splitEngine.ts:173: * Map a MonetizationFeature to its canonical LedgerEntryType.
+functions\src\wallet\splitEngine.ts:174: * Used to ensure ledger entries use the correct type.
+functions\src\wallet\splitEngine.ts:176:export function featureToLedgerType(feature: MonetizationFeature): LedgerEntryType {
+functions\src\wallet\splitEngine.ts:177:  const mapping: Record<MonetizationFeature, LedgerEntryType> = {
+functions\src\wallet\splitEngine.ts:186:    AI_COMPANION_AVALO:    'CALL_BILL',   // AI sessions use CALL_BILL ledger type
+functions\src\wallet\splitEngine.ts:187:    AI_COMPANION_USER:     'CALL_BILL',   // AI sessions use CALL_BILL ledger type
+functions\src\wallet\types.ts:2: * WALLET + LEDGER + PAYOUT — Unified Types
+functions\src\wallet\types.ts:4: * Single source of truth for ALL wallet, ledger, and payout types.
+functions\src\wallet\types.ts:9: *   ledger/{txId}            — immutable ledger entry per mutation
+functions\src\wallet\types.ts:55: * Canonical Firestore collection name for ledger entries.
+functions\src\wallet\types.ts:57:export const LEDGER_COLLECTION = 'ledger';
+functions\src\wallet\types.ts:80:// LEDGER ENTRY — ledger/{txId}
+functions\src\wallet\types.ts:84: * Every balance mutation MUST produce exactly one LedgerEntry.
+functions\src\wallet\types.ts:85: * Ledger entries are immutable — once written, never updated.
+functions\src\wallet\types.ts:87:export interface LedgerEntry {
+functions\src\wallet\types.ts:88:  /** Unique transaction ID (document ID in `ledger` collection). */
+functions\src\wallet\types.ts:92:  type: LedgerEntryType;
+functions\src\wallet\types.ts:134: * All supported ledger entry types.
+functions\src\wallet\types.ts:136:export type LedgerEntryType =
+functions\src\wallet\types.ts:232:  /** Ledger entry ID for this payout. */
+functions\src\wallet\types.ts:233:  ledgerTxId: string | null;
+functions\src\wallet\types.ts:267:  /** Ledger entry type. */
+functions\src\wallet\types.ts:268:  type: LedgerEntryType;
+functions\src\wallet\types.ts:300:  /** The ledger entry ID created. */
+functions\src\wallet\walletService.ts:11: * - Every mutation writes a ledger entry (via LedgerService).
+functions\src\wallet\walletService.ts:26:  LedgerEntry,
+functions\src\wallet\walletService.ts:28:  LEDGER_COLLECTION,
+functions\src\wallet\walletService.ts:142: * Execute a wallet mutation atomically with ledger entry and idempotency.
+functions\src\wallet\walletService.ts:151: * 5. Write ledger entry.
+functions\src\wallet\walletService.ts:265:    // 6. Generate txId and write ledger entry
+functions\src\wallet\walletService.ts:266:    const txId = db.collection(LEDGER_COLLECTION).doc().id;
+functions\src\wallet\walletService.ts:268:    const ledgerEntry: LedgerEntry = {
+functions\src\wallet\walletService.ts:301:    const ledgerRef = db.collection(LEDGER_COLLECTION).doc(txId);
+functions\src\wallet\walletService.ts:302:    transaction.set(ledgerRef, ledgerEntry);
+functions\src\wallet\walletService.ts:326: * @param type — ledger entry type
+functions\src\wallet\walletService.ts:329: * @returns The ledger txId and new balance
+functions\src\wallet\walletService.ts:365:    // Generate ledger entry
+functions\src\wallet\walletService.ts:366:    const txId = db.collection(LEDGER_COLLECTION).doc().id;
+functions\src\wallet\walletService.ts:368:    const ledgerEntry: LedgerEntry = {
+functions\src\wallet\walletService.ts:396:    transaction.set(db.collection(LEDGER_COLLECTION).doc(txId), ledgerEntry);
+functions\src\wallet\walletService.ts:404:// DEBIT FOR PAYOUT (special: reduces user balance, writes ledger)
+functions\src\wallet\walletService.ts:415: * @returns The ledger txId and new balance
+functions\src\wallet\walletService.ts:460:    // Generate ledger entry
+functions\src\wallet\walletService.ts:461:    const txId = db.collection(LEDGER_COLLECTION).doc().id;
+functions\src\wallet\walletService.ts:463:    const ledgerEntry: LedgerEntry = {
+functions\src\wallet\walletService.ts:491:    transaction.set(db.collection(LEDGER_COLLECTION).doc(txId), ledgerEntry);
+functions\src\__tests__\pack452-smoke-tests.ts:119:      expect(result.ledgerFields.exclusiveFlag).toBe(true);
+functions\src\__tests__\pack452-smoke-tests.ts:170:    test('premium burn ledger stores correct payout rate', () => {
+functions\src\__tests__\pack452-smoke-tests.ts:179:      // Ledger fields should reference the pricing mode
+functions\src\__tests__\pack452-smoke-tests.ts:180:      expect(result.ledgerFields.pricingMode).toBe('premium');
+functions\src\__tests__\pack452-smoke-tests.ts:181:      expect(result.ledgerFields.premiumMultiplier).toBe(5);
+functions\src\__tests__\pack452-smoke-tests.ts:187:    test('standard mode produces standard ledger fields', () => {
+functions\src\__tests__\pack452-smoke-tests.ts:196:      expect(result.ledgerFields.pricingMode).toBe('standard');
+functions\src\__tests__\pack452-smoke-tests.ts:197:      expect(result.ledgerFields.premiumMultiplier).toBe(1);
+functions\src\__tests__\pack452-smoke-tests.ts:198:      expect(result.ledgerFields.offerId).toBeNull();
+functions\src\__tests__\pack452-smoke-tests.ts:199:      expect(result.ledgerFields.exclusiveFlag).toBe(false);

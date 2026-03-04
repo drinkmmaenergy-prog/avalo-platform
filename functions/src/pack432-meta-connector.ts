@@ -69,7 +69,7 @@ interface MetaCreative {
 class MetaAdsAPI {
   private accessToken: string;
   private apiVersion = 'v18.0';
-  private baseUrl = `https://graph.facebook.com/${this.apiVersion}`;
+  private baseURL = `https://graph.facebook.com/${this.apiVersion}`;
 
   constructor(accessToken: string) {
     this.accessToken = accessToken;
@@ -78,7 +78,7 @@ class MetaAdsAPI {
   async createCampaign(adAccountId: string, config: MetaCampaignConfig) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/act_${adAccountId}/campaigns`,
+        `${this.baseURL}/act_${adAccountId}/campaigns`,
         {
           name: config.name,
           objective: config.objective,
@@ -97,7 +97,7 @@ class MetaAdsAPI {
   async createAdSet(adAccountId: string, campaignId: string, config: MetaCampaignConfig) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/act_${adAccountId}/adsets`,
+        `${this.baseURL}/act_${adAccountId}/adsets`,
         {
           name: `${config.name} - AdSet`,
           campaign_id: campaignId,
@@ -124,7 +124,7 @@ class MetaAdsAPI {
   async createAd(adAccountId: string, adSetId: string, name: string, creativeId: string, status: string) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/act_${adAccountId}/ads`,
+        `${this.baseURL}/act_${adAccountId}/ads`,
         {
           name,
           adset_id: adSetId,
@@ -143,7 +143,7 @@ class MetaAdsAPI {
   async createCreative(adAccountId: string, creative: MetaCreative) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/act_${adAccountId}/adcreatives`,
+        `${this.baseURL}/act_${adAccountId}/adcreatives`,
         {
           name: creative.name,
           object_story_spec: creative.objectStorySpec,
@@ -161,7 +161,7 @@ class MetaAdsAPI {
   async updateCampaignBudget(campaignId: string, dailyBudget: number) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/${campaignId}`,
+        `${this.baseURL}/${campaignId}`,
         {
           daily_budget: dailyBudget * 100,
           access_token: this.accessToken
@@ -177,7 +177,7 @@ class MetaAdsAPI {
   async updateCampaignStatus(campaignId: string, status: 'ACTIVE' | 'PAUSED') {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/${campaignId}`,
+        `${this.baseURL}/${campaignId}`,
         {
           status,
           access_token: this.accessToken
@@ -193,7 +193,7 @@ class MetaAdsAPI {
   async getCampaignInsights(campaignId: string, datePreset: string = 'last_7d') {
     try {
       const response = await axios.get(
-        `${this.baseUrl}/${campaignId}/insights`,
+        `${this.baseURL}/${campaignId}/insights`,
         {
           params: {
             date_preset: datePreset,
@@ -212,7 +212,7 @@ class MetaAdsAPI {
   async uploadVideo(adAccountId: string, videoUrl: string) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/act_${adAccountId}/advideos`,
+        `${this.baseURL}/act_${adAccountId}/advideos`,
         {
           file_url: videoUrl,
           access_token: this.accessToken
@@ -228,7 +228,7 @@ class MetaAdsAPI {
   async uploadImage(adAccountId: string, imageUrl: string) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/act_${adAccountId}/adimages`,
+        `${this.baseURL}/act_${adAccountId}/adimages`,
         {
           url: imageUrl,
           access_token: this.accessToken
@@ -588,3 +588,12 @@ export const metaConnector = {
   syncMetaInsights,
   trackMetaPixelEvent
 };
+
+
+
+
+
+
+
+
+

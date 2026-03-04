@@ -122,7 +122,7 @@ export const admin_listPayouts = onCall(
           userName: userData?.displayName || 'Unknown',
           method: data.method || 'unknown',
           amountTokens: data.amountTokens || 0,
-          amountPLN: data.amountPLN || 0,
+          amountUSD: data.amountUSD || 0,
           status: data.status || 'pending',
           kycStatus: kycStatus || 'NOT_STARTED',
           requestedAt: data.createdAt.toDate().toISOString(),
@@ -206,7 +206,7 @@ export const admin_getPayout = onCall(
         userPhone: userData?.phone,
         method: data.method || 'unknown',
         amountTokens: data.amountTokens || 0,
-        amountPLN: data.amountPLN || 0,
+        amountUSD: data.amountUSD || 0,
         status: data.status || 'pending',
         kycStatus,
         requestedAt: data.createdAt.toDate().toISOString(),
@@ -428,7 +428,7 @@ export const admin_getFinanceDashboardMetrics = onCall(
       let totalPayoutAmount = 0;
       payoutsCompletedSnapshot.forEach(doc => {
         const data = doc.data();
-        totalPayoutAmount += data.amountPLN || 0;
+        totalPayoutAmount += data.amountUSD || 0;
       });
 
       const metrics: FinanceDashboardMetrics = {
@@ -438,7 +438,7 @@ export const admin_getFinanceDashboardMetrics = onCall(
           processing: payoutsProcessing.data().count,
           completed: payoutsCompleted.data().count,
           failed: payoutsFailed.data().count,
-          totalAmountPLN: totalPayoutAmount,
+          totalAmountUSD: totalPayoutAmount,
         },
         kyc: {
           pending: kycStats.pendingCount,
@@ -597,3 +597,12 @@ export const admin_reconcilePayout = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+

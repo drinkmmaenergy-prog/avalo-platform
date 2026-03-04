@@ -87,10 +87,10 @@ export const SECURITY_POLICY = {
  * Fiat to token conversion
  */
 export const PURCHASE_POLICY = {
-  FIXED_RATE_PER_TOKEN_EUR: 0.20,      // 1 token = €0.20 (from PACK 83)
+  FIXED_RATE_PER_TOKEN_USD: 0.20,      // 1 token = €0.20 (from PACK 83)
   MIN_PURCHASE_TOKENS: 100,            // Minimum purchase
   MAX_PURCHASE_TOKENS: 1000000,        // Maximum single purchase
-  SUPPORTED_CURRENCIES: ['EUR', 'USD', 'GBP', 'PLN'],
+  SUPPORTED_CURRENCIES: ['USD', 'USD', 'USD', 'USD'],
   INSTANT_SETTLEMENT: true,            // Tokens available immediately
   NO_PRICE_VARIATIONS: true,           // No discounts or bundles
 } as const;
@@ -225,3 +225,12 @@ export function getTreasuryConfigSummary(): Record<string, any> {
 
 // Validate on module load
 validateTreasuryConfig();
+
+
+
+
+
+
+
+
+

@@ -264,3 +264,12 @@ export const getTotalScans = ScanTracker.getTotalScans.bind(ScanTracker);
 export const getScansByCity = ScanTracker.getScansByCity.bind(ScanTracker);
 export const getScansByDevice = ScanTracker.getScansByDevice.bind(ScanTracker);
 export const getRecentScansSummary = ScanTracker.getRecentScansSummary.bind(ScanTracker);
+
+
+
+
+
+
+
+
+

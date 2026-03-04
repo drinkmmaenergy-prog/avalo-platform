@@ -3,10 +3,10 @@
  * Based on AVALO_CORE_FULL_SPEC.md
  */
 
-import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 
 // Token Economy — derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
-export const SETTLEMENT_RATE_PLN = TOKEN_PAYOUT_PLN;
+export const SETTLEMENT_RATE_USD = TOKEN_PAYOUT_USD;
 
 // Chat Configuration
 export const CHAT_INITIAL_DEPOSIT_TOKENS = 100;
@@ -90,21 +90,21 @@ export const getStripeConfig = () => ({
 // These are the canonical token packages for the entire platform
 // DO NOT CHANGE - prices are fixed and must remain consistent
 export const TOKEN_PACKAGES = {
-  MINI: { tokens: 100, pricePLN: 31.99 },
-  BASIC: { tokens: 300, pricePLN: 85.99 },
-  STANDARD: { tokens: 500, pricePLN: 134.99 },
-  PREMIUM: { tokens: 1000, pricePLN: 244.99 },
-  PRO: { tokens: 2000, pricePLN: 469.99 },
-  ELITE: { tokens: 5000, pricePLN: 1125.99 },
-  ROYAL: { tokens: 10000, pricePLN: 2149.99 },
+  MINI: { tokens: 100, priceUSD: 31.99 },
+  BASIC: { tokens: 300, priceUSD: 85.99 },
+  STANDARD: { tokens: 500, priceUSD: 134.99 },
+  PREMIUM: { tokens: 1000, priceUSD: 244.99 },
+  PRO: { tokens: 2000, priceUSD: 469.99 },
+  ELITE: { tokens: 5000, priceUSD: 1125.99 },
+  ROYAL: { tokens: 10000, priceUSD: 2149.99 },
 };
 
 // Legacy token packages (deprecated - use TOKEN_PACKAGES above)
 export const LEGACY_TOKEN_PACKAGES = {
-  STARTER: { tokens: 100, pricePLN: 30 },
-  VALUE: { tokens: 500, pricePLN: 125 },
-  PRO: { tokens: 1000, pricePLN: 230 },
-  ELITE: { tokens: 5000, pricePLN: 1000 },
+  STARTER: { tokens: 100, priceUSD: 30 },
+  VALUE: { tokens: 500, priceUSD: 125 },
+  PRO: { tokens: 1000, priceUSD: 230 },
+  ELITE: { tokens: 5000, priceUSD: 1000 },
 };
 
 // Gender and Seeking Values
@@ -195,5 +195,14 @@ export const containsBannedTerms = (text: string): boolean => {
   const lowerText = text.toLowerCase();
   return BANNED_TERMS.some((term) => lowerText.includes(term.toLowerCase()));
 };
+
+
+
+
+
+
+
+
+
 
 

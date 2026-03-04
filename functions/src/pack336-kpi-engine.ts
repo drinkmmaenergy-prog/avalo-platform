@@ -24,9 +24,9 @@ import type {
   KpiAggregationOptions,
 } from './pack336-types.js';
 import { functions } from './runtime';
-import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 
-const TOKEN_TO_PLN = TOKEN_PAYOUT_PLN; // derived from TOKEN_PAYOUT_USD (0.03 USD)
+const TOKEN_TO_USD = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.03 USD)
 
 // ============================================================================
 // NORTH STAR METRIC CALCULATOR
@@ -88,7 +88,7 @@ export async function calculateNorthStarMetric(
     : 0;
   
   const avgRevenuePerUser = monthlyPayingUsers > 0
-    ? (totalMonthlyRevenue * TOKEN_TO_PLN) / monthlyPayingUsers
+    ? (totalMonthlyRevenue * TOKEN_TO_USD) / monthlyPayingUsers
     : 0;
   
   return {
@@ -184,7 +184,7 @@ export async function calculateDailyGlobalKpi(
     const amount = Math.abs(doc.data().amount || 0);
     totalTokenSpent += amount;
   });
-  const totalRevenuePLN = totalTokenSpent * TOKEN_TO_PLN;
+  const totalRevenueUSD = totalTokenSpent * TOKEN_TO_USD;
   
   // Get refund metrics
   const refunds = await db.collection('walletTransactions')
@@ -194,13 +194,13 @@ export async function calculateDailyGlobalKpi(
     .get();
   
   const refundsCount = refunds.size;
-  let refundVolumePLN = 0;
+  let refundVolumeUSD = 0;
   refunds.docs.forEach(doc => {
     const amount = Math.abs(doc.data().amount || 0);
-    refundVolumePLN += amount * TOKEN_TO_PLN;
+    refundVolumeUSD += amount * TOKEN_TO_USD;
   });
   
-  const refundRate = totalRevenuePLN > 0 ? refundVolumePLN / totalRevenuePLN : 0;
+  const refundRate = totalRevenueUSD > 0 ? refundVolumeUSD / totalRevenueUSD : 0;
   
   return {
     date,
@@ -213,9 +213,9 @@ export async function calculateDailyGlobalKpi(
     payingUsersWAU,
     payingUsersMAU,
     totalTokenSpent,
-    totalRevenuePLN,
+    totalRevenueUSD,
     refundsCount,
-    refundVolumePLN,
+    refundVolumeUSD,
     refundRate,
     calculatedAt: serverTimestamp() as any,
   };
@@ -293,9 +293,9 @@ export async function calculateDailyByCountryKpi(
       }
     }
     
-    const revenuePLN = countryRevenue * TOKEN_TO_PLN;
-    const avgSpendPerUserPLN = countryPayingUsers.size > 0
-      ? revenuePLN / countryPayingUsers.size
+    const revenueUSD = countryRevenue * TOKEN_TO_USD;
+    const avgSpendPerUserUSD = countryPayingUsers.size > 0
+      ? revenueUSD / countryPayingUsers.size
       : 0;
     
     results.push({
@@ -304,8 +304,8 @@ export async function calculateDailyByCountryKpi(
       usersActive: countryActiveUsers.size,
       newRegistrations: newRegistrations.data().count,
       payingUsers: countryPayingUsers.size,
-      revenuePLN,
-      avgSpendPerUserPLN,
+      revenueUSD,
+      avgSpendPerUserUSD,
       calculatedAt: serverTimestamp() as any,
     });
   }
@@ -376,22 +376,22 @@ export async function calculateRevenueStreams(
     }
   });
   
-  const totalRevenuePLN = (
+  const totalRevenueUSD = (
     chatRevenue + voiceRevenue + videoRevenue + calendarRevenue +
     eventsRevenue + aiRevenue + subscriptionsRevenue + tipsRevenue
-  ) * TOKEN_TO_PLN;
+  ) * TOKEN_TO_USD;
   
   return {
     date,
-    chatRevenuePLN: chatRevenue * TOKEN_TO_PLN,
-    voiceRevenuePLN: voiceRevenue * TOKEN_TO_PLN,
-    videoRevenuePLN: videoRevenue * TOKEN_TO_PLN,
-    calendarRevenuePLN: calendarRevenue * TOKEN_TO_PLN,
-    eventsRevenuePLN: eventsRevenue * TOKEN_TO_PLN,
-    aiRevenuePLN: aiRevenue * TOKEN_TO_PLN,
-    subscriptionsPLN: subscriptionsRevenue * TOKEN_TO_PLN,
-    tipsRevenuePLN: tipsRevenue * TOKEN_TO_PLN,
-    totalRevenuePLN,
+    chatRevenueUSD: chatRevenue * TOKEN_TO_USD,
+    voiceRevenueUSD: voiceRevenue * TOKEN_TO_USD,
+    videoRevenueUSD: videoRevenue * TOKEN_TO_USD,
+    calendarRevenueUSD: calendarRevenue * TOKEN_TO_USD,
+    eventsRevenueUSD: eventsRevenue * TOKEN_TO_USD,
+    aiRevenueUSD: aiRevenue * TOKEN_TO_USD,
+    subscriptionsUSD: subscriptionsRevenue * TOKEN_TO_USD,
+    tipsRevenueUSD: tipsRevenue * TOKEN_TO_USD,
+    totalRevenueUSD,
     calculatedAt: serverTimestamp() as any,
   };
 }
@@ -464,7 +464,7 @@ export async function calculateViralityMetrics(
     invitedUsers: invitedUsers.data().count,
     activatedFromInvite: activatedUsers.data().count,
     kFactor,
-    viralRevenuePLN: viralRevenue * TOKEN_TO_PLN,
+    viralRevenueUSD: viralRevenue * TOKEN_TO_USD,
     calculatedAt: serverTimestamp() as any,
   };
 }
@@ -494,3 +494,12 @@ export function getDateRange(date: string): { start: Date; end: Date } {
   
   return { start, end };
 }
+
+
+
+
+
+
+
+
+

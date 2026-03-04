@@ -57,7 +57,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await sdk.signUpWithEmail(email, password, displayName);
+      await sdk.registerWithEmail(email, password, displayName);
       toast({
         type: 'success',
         title: t('auth.accountCreated'),
@@ -319,3 +319,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

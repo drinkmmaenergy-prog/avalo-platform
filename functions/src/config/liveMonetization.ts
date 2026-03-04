@@ -321,3 +321,12 @@ export function canAffordGift(userBalance: number, giftId: string): boolean {
 export function canAffordQueue(userBalance: number): boolean {
   return userBalance >= QUEUE_CONFIG.QUEUE_ENTRY_COST_TOKENS;
 }
+
+
+
+
+
+
+
+
+

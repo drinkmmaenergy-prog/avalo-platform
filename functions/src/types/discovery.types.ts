@@ -244,3 +244,12 @@ export interface FeedGenerationDiagnostics {
   averageScore: number;
   generationTimeMs: number;
 }
+
+
+
+
+
+
+
+
+

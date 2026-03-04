@@ -293,7 +293,7 @@ export interface TaxDocument {
   // File Storage
   formats: Array<{
     format: DocumentFormat;
-    storageUrl: string;
+    storagUSDl: string;
     generatedAt: Timestamp;
   }>;
   
@@ -524,7 +524,7 @@ export interface TaxRemittance {
   // Amounts
   totalCollected: number;                  // Total tax collected (tokens)
   totalRemitted: number;                   // Actually remitted
-  currencyRemitted: string;                // e.g., 'USD', 'EUR'
+  currencyRemitted: string;                // e.g., 'USD', 'USD'
   exchangeRate: number;                    // Token to fiat rate used
   
   // Affected Users
@@ -684,3 +684,12 @@ export function isValidDocumentType(type: string): type is TaxDocumentType {
     'ANNUAL_SUMMARY',
   ].includes(type);
 }
+
+
+
+
+
+
+
+
+

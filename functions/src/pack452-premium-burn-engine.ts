@@ -458,3 +458,12 @@ export async function getChatBurnParameters(chatId: string): Promise<{
     wordsPerToken,
   };
 }
+
+
+
+
+
+
+
+
+

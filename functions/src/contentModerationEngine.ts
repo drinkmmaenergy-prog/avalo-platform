@@ -407,7 +407,7 @@ function fallbackKeywordDetection(
 }
 
 /**
- * Detect language (simple heuristic)
+ * Detect language (simple hUSDistic)
  */
 function detectLanguage(text: string): string {
   // Simple detection based on character patterns
@@ -616,3 +616,12 @@ export default {
   logModerationIncident,
   getUserModerationStats,
 };
+
+
+
+
+
+
+
+
+

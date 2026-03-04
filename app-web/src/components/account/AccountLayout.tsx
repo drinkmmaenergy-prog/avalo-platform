@@ -74,3 +74,4 @@ export function AccountLayout({ children }: AccountLayoutProps) {
     </div>
   );
 }
+

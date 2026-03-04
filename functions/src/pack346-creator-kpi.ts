@@ -25,7 +25,7 @@ export const updateCreatorKPIOnChat = onDocumentUpdated("chats/{chatId}", async 
       if (earnerId) {
         await incrementCreatorMetric(earnerId, {
           totalChats: 1,
-          earningsPLN: (after.billing?.totalConsumed || 0) * 0.01, // Convert tokens to PLN
+          earningsUSD: (after.billing?.totalConsumed || 0) * 0.01, // Convert tokens to USD
         });
       }
     }
@@ -49,7 +49,7 @@ export const updateCreatorKPIOnCall = onDocumentUpdated("calls/{callId}", async 
       if (creatorId) {
         await incrementCreatorMetric(creatorId, {
           totalCalls: 1,
-          earningsPLN: after.totalEarnings || 0,
+          earningsUSD: after.totalEarnings || 0,
         });
       }
     }
@@ -76,7 +76,7 @@ export const updateCreatorKPIOnBooking = onDocumentUpdated("calendarBookings/{bo
     if (before.status !== "completed" && after.status === "completed") {
       await incrementCreatorMetric(creatorId, {
         totalCalendar: 1,
-        earningsPLN: after.creatorEarnings || 0,
+        earningsUSD: after.creatorEarnings || 0,
       });
     }
 
@@ -176,8 +176,8 @@ async function recalculateCreatorRates(creatorId: string): Promise<void> {
       totalCalls: 0,
       totalCalendar: 0,
       totalEvents: 0,
-      earningsPLN: 0,
-      tipsReceivedPLN: 0,
+      earningsUSD: 0,
+      tipsReceivedUSD: 0,
       tokensEarned: 0,
       refundRate: 0,
       cancelRate: 0,
@@ -341,3 +341,12 @@ export const getCreatorKPI = functions.https.onCall(async (request) => {
     return kpiSnap.data();
   }
 );
+
+
+
+
+
+
+
+
+

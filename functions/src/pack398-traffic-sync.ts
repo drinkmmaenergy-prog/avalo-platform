@@ -706,3 +706,12 @@ async function calculateCampaignFraudScore(campaignId: string): Promise<number> 
 
   return count > 0 ? totalFraudScore / count : 0;
 }
+
+
+
+
+
+
+
+
+

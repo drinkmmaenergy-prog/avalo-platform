@@ -252,7 +252,7 @@ export const completeInstagramAuth = onCall(
     const totalEngagement = recentPosts.reduce((sum, p) => sum + p.engagement, 0);
     const avgEngagement = recentPosts.length > 0 ? totalEngagement / recentPosts.length : 0;
 
-    // Estimate followers (not provided by basic API, use heuristic)
+    // Estimate followers (not provided by basic API, use hUSDistic)
     const estimatedFollowers = Math.max(avgEngagement * 10, 100);
 
     const engagementRate = estimatedFollowers > 0 ? (avgEngagement / estimatedFollowers) * 100 : 0;
@@ -803,4 +803,13 @@ async function calculateCreatorScore(userId: string): Promise<CreatorScore> {
 }
 
 logger.info("✅ Social Verification module loaded successfully");
+
+
+
+
+
+
+
+
+
 

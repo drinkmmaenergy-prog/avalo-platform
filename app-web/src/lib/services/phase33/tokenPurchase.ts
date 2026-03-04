@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * PHASE 3.3 — Web Token Purchase Service
  * 
@@ -13,7 +15,7 @@
  * - CANONICAL_TOKEN_PACKS: Fixed pricing, no overrides
  */
 
-import { functions } from '../../firebase';
+import { requireFunctions } from '../../firebase';
 import { httpsCallable } from 'firebase/functions';
 import type {
   CheckoutSessionRequest,
@@ -76,8 +78,7 @@ export function formatPackPrice(pack: CanonicalTokenPack, currency: 'USD' | 'EUR
 export async function createTokenCheckoutSession(
   request: CheckoutSessionRequest
 ): Promise<CheckoutSessionResponse> {
-  if (!functions) throw new Error('Functions not initialized');
-  
+    
   // Validate pack exists in canonical list
   const pack = getTokenPackById(request.packageId);
   if (!pack) {
@@ -91,7 +92,7 @@ export async function createTokenCheckoutSession(
     const createCheckoutSession = httpsCallable<
       CheckoutSessionRequest,
       { success: boolean; checkoutUrl?: string; sessionId?: string; error?: string }
-    >(functions, 'tokens_createCheckoutSession');
+    >(requireFunctions(), 'tokens_createCheckoutSession');
     
     // Default URLs if not provided
     const successUrl = request.successUrl || `${window.location.origin}/wallet/success?session_id={CHECKOUT_SESSION_ID}`;
@@ -169,3 +170,4 @@ export async function initiatePurchase(
     redirectToCheckout(response.checkoutUrl);
   }
 }
+

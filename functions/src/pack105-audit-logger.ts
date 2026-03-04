@@ -259,7 +259,7 @@ export async function logPayoutRequested(params: {
   userId: string;
   payoutId: string;
   amountTokens: number;
-  amountPLN: number;
+  amountUSD: number;
   method: string;
 }): Promise<string> {
   return logBusinessAudit({
@@ -268,7 +268,7 @@ export async function logPayoutRequested(params: {
     relatedId: params.payoutId,
     context: {
       amountTokens: params.amountTokens,
-      amountPLN: params.amountPLN,
+      amountUSD: params.amountUSD,
       method: params.method,
     },
     source: 'payout_system',
@@ -525,3 +525,12 @@ export async function exportAuditLogs(params: {
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+

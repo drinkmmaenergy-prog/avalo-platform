@@ -46,9 +46,9 @@ const db = admin.firestore();
 // CONSTANTS
 // ============================================================================
 
-import { TOKEN_PAYOUT_USD, TOKEN_PAYOUT_PLN } from './config/economyConfig';
+import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 
-const PAYOUT_RATE_PLN = TOKEN_PAYOUT_PLN;  // derived from TOKEN_PAYOUT_USD (0.03 USD)
+export { TOKEN_PAYOUT_USD };
 const LIMITS = DEFAULT_WITHDRAWAL_LIMITS;
 
 // ============================================================================
@@ -59,8 +59,7 @@ const LIMITS = DEFAULT_WITHDRAWAL_LIMITS;
  * Calculate withdrawable tokens for a user
  * Only earned tokens can be withdrawn (not purchased)
  */
-async function calculateWithdrawableTokens(
-  userId: string
+export async function calculateWithdrawableTokens(  userId: string
 ): Promise<WithdrawableTokensCalculation> {
   const walletRef = db.collection('wallets').doc(userId);
   const walletDoc = await walletRef.get();
@@ -98,8 +97,7 @@ async function calculateWithdrawableTokens(
 /**
  * Get or create monthly withdrawal stats
  */
-async function getMonthlyStats(
-  userId: string,
+export async function getMonthlyStats(  userId: string,
   month: string
 ): Promise<MonthlyWithdrawalStats> {
   const statsId = `${userId}_${month}`;
@@ -115,7 +113,7 @@ async function getMonthlyStats(
     userId,
     month,
     totalTokensWithdrawn: 0,
-    totalPLNWithdrawn: 0,
+    totalUSDWithdrawn: 0,
     withdrawalCount: 0,
     createdAt: admin.firestore.Timestamp.now(),
     updatedAt: admin.firestore.Timestamp.now(),
@@ -137,14 +135,14 @@ async function checkWithdrawalLimits(
   // Check minimum
   if (requestedTokens < LIMITS.minTokensPerWithdrawal) {
     reasons.push(
-      `Minimum withdrawal is ${LIMITS.minTokensPerWithdrawal} tokens (${LIMITS.minTokensPerWithdrawal * PAYOUT_RATE_PLN} PLN)`
+      `Minimum withdrawal is ${LIMITS.minTokensPerWithdrawal} tokens (${LIMITS.minTokensPerWithdrawal * TOKEN_PAYOUT_USD} USD)`
     );
   }
 
   // Check maximum per withdrawal
   if (requestedTokens > LIMITS.maxTokensPerWithdrawal) {
     reasons.push(
-      `Maximum withdrawal is ${LIMITS.maxTokensPerWithdrawal} tokens (${LIMITS.maxTokensPerWithdrawal * PAYOUT_RATE_PLN} PLN)`
+      `Maximum withdrawal is ${LIMITS.maxTokensPerWithdrawal} tokens (${LIMITS.maxTokensPerWithdrawal * TOKEN_PAYOUT_USD} USD)`
     );
   }
 
@@ -153,13 +151,13 @@ async function checkWithdrawalLimits(
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const stats = await getMonthlyStats(userId, currentMonth);
 
-  const requestedPLN = requestedTokens * PAYOUT_RATE_PLN;
-  const newTotalPLN = stats.totalPLNWithdrawn + requestedPLN;
+  const requestedUSD = requestedTokens * TOKEN_PAYOUT_USD;
+  const newTotalUSD = stats.totalUSDWithdrawn + requestedUSD;
 
-  if (newTotalPLN > LIMITS.maxPLNPerMonth) {
-    const remaining = LIMITS.maxPLNPerMonth - stats.totalPLNWithdrawn;
+  if (newTotalUSD > LIMITS.maxUSDPerMonth) {
+    const remaining = LIMITS.maxUSDPerMonth - stats.totalUSDWithdrawn;
     reasons.push(
-      `Monthly limit exceeded. You have ${remaining.toFixed(2)} PLN remaining this month.`
+      `Monthly limit exceeded. You have ${remaining.toFixed(2)} USD remaining this month.`
     );
   }
 
@@ -212,8 +210,7 @@ async function checkKYCStatus(userId: string): Promise<{
 /**
  * Create audit log entry
  */
-async function createAuditLog(
-  withdrawalId: string,
+export async function createAuditLog(  withdrawalId: string,
   userId: string,
   action: WithdrawalAuditLog['action'],
   performedBy: string,
@@ -307,151 +304,115 @@ export const withdrawals_getWithdrawableTokens = functions.https.onCall(async (r
   }
 );
 
-/**
- * Create a withdrawal request
- */
 export const withdrawals_createRequest = functions.https.onCall(async (request) => {
-  const data = request.data;
-    try {
-      // Auth check
-      if (!request.auth) {
-        return {
-          success: false,
-          error: 'Authentication required',
-          errorCode: WithdrawalErrorCode.INVALID_REQUEST,
-        };
-      }
 
-      const userId = request.auth.uid;
-      const { requestedTokens } = data;
+  try {
 
-      // Validate input
-      if (!requestedTokens || requestedTokens <= 0) {
-        return {
-          success: false,
-          error: 'Invalid token amount',
-          errorCode: WithdrawalErrorCode.INVALID_REQUEST,
-        };
-      }
-
-      // Check KYC
-      const kycCheck = await checkKYCStatus(userId);
-      if (!kycCheck.verified) {
-        return {
-          success: false,
-          error: kycCheck.reason,
-          errorCode: WithdrawalErrorCode.KYC_NOT_VERIFIED,
-        };
-      }
-
-      // Check age
-      const userDoc = await db.collection('users').doc(userId).get();
-      if (!userDoc.exists || !userDoc.data()?.ageVerified) {
-        return {
-          success: false,
-          error: 'Age verification required (18+)',
-          errorCode: WithdrawalErrorCode.UNDER_AGE,
-        };
-      }
-
-      // Calculate withdrawable tokens
-      const calculation = await calculateWithdrawableTokens(userId);
-
-      if (requestedTokens > calculation.withdrawableTokens) {
-        return {
-          success: false,
-          error: `Insufficient withdrawable tokens. Available: ${calculation.withdrawableTokens}`,
-          errorCode: WithdrawalErrorCode.INSUFFICIENT_EARNED_TOKENS,
-        };
-      }
-
-      // Check limits
-      const limitsCheck = await checkWithdrawalLimits(userId, requestedTokens);
-      if (!limitsCheck.canWithdraw) {
-        return {
-          success: false,
-          error: limitsCheck.reasons.join(' '),
-          errorCode: WithdrawalErrorCode.MONTHLY_LIMIT_EXCEEDED,
-        };
-      }
-
-      // Get KYC profile for payout details
-      const kycProfile = kycCheck.profile!;
-
-      // Calculate payout amount
-      const payoutAmountPLN = requestedTokens * PAYOUT_RATE_PLN;
-      const payoutCurrency = kycProfile.payoutMethod.currency;
-      
-      // FX conversion (TODO: implement actual FX service)
-      let fxRate = 1.0;
-      let payoutAmount = payoutAmountPLN;
-
-      if (payoutCurrency !== 'PLN') {
-        // Stub: Use fixed rates for now
-        const fxRates: Record<string, number> = {
-          'USD': 0.25,
-          'EUR': 0.23,
-          'GBP': 0.20,
-        };
-        fxRate = fxRates[payoutCurrency] || 1.0;
-        payoutAmount = payoutAmountPLN * fxRate;
-      }
-
-      // Create withdrawal request
-      const withdrawalId = uuidv4();
-      const now = admin.firestore.Timestamp.now();
-
-      const withdrawal: WithdrawalRequest = {
-        withdrawalId,
-        userId,
-        requestedTokens,
-        approvedTokens: 0,
-        payoutCurrency,
-        payoutAmount,
-        ratePerTokenPLN: PAYOUT_RATE_PLN,
-        fxRateToPayoutCurrency: fxRate,
-        status: 'PENDING_REVIEW',
-        kycSnapshot: {
-          kycStatus: kycProfile.status,
-          country: kycProfile.country,
-          payoutMethod: kycProfile.payoutMethod.type,
-        },
-        provider: kycProfile.payoutMethod.type === 'WISE' ? 'WISE' : 'BANK_TRANSFER',
-        createdAt: now,
-        updatedAt: now,
-      };
-
-      await db.collection('withdrawalRequests').doc(withdrawalId).set(withdrawal);
-
-      // Create audit log
-      await createAuditLog(
-        withdrawalId,
-        userId,
-        'CREATED',
-        userId,
-        undefined,
-        'PENDING_REVIEW',
-        'Withdrawal request created by user'
-      );
-
-      return {
-        success: true,
-        withdrawalId,
-        requestedTokens,
-        payoutAmount,
-        payoutCurrency,
-        estimatedPayoutDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      };
-    } catch (error) {
-      console.error('Error creating withdrawal request:', error);
+    if (!request.auth) {
       return {
         success: false,
-        error: 'Failed to create withdrawal request',
-        errorCode: WithdrawalErrorCode.INTERNAL_ERROR,
+        error: 'Authentication required'
       };
     }
+
+    const data = request.data || {};
+    const userId = data.userId || request.auth.uid;
+    const requestedTokens = Number(data.requestedTokens || 0);
+
+    if (!requestedTokens || requestedTokens <= 0) {
+      return {
+        success: false,
+        error: 'Invalid token amount'
+      };
+    }
+
+    const kycCheck = await checkKYCStatus(userId);
+
+    if (!kycCheck?.profile) {
+      return {
+        success: false,
+        error: 'KYC profile missing'
+      };
+    }
+
+    const kycProfile = kycCheck.profile;
+
+    const payoutAmountUSD = requestedTokens * TOKEN_PAYOUT_USD;
+
+    const payoutCurrency =
+      kycProfile.payoutMethod?.currency || 'USD';
+
+    const fxRate = 1.0;
+    const payoutAmount = payoutAmountUSD;
+
+    const withdrawalId = uuidv4();
+    const now = admin.firestore.Timestamp.now();
+
+    const withdrawal: WithdrawalRequest = {
+      withdrawalId,
+      userId,
+      requestedTokens,
+      approvedTokens: 0,
+      payoutCurrency,
+      payoutAmount,
+      ratePerTokenUSD: TOKEN_PAYOUT_USD,
+      fxRateToPayoutCurrency: fxRate,
+      status: 'PENDING_REVIEW',
+      kycSnapshot: {
+        kycStatus: kycProfile.status,
+        country: kycProfile.country,
+        payoutMethod: kycProfile.payoutMethod?.type
+      },
+      provider:
+        kycProfile.payoutMethod?.type === 'WISE'
+          ? 'WISE'
+          : 'BANK_TRANSFER',
+      createdAt: now,
+      updatedAt: now
+    };
+
+    await db
+      .collection('withdrawalRequests')
+      .doc(withdrawalId)
+      .set(withdrawal);
+
+    await createAuditLog(
+      withdrawalId,
+      userId,
+      'CREATED',
+      userId,
+      undefined,
+      'PENDING_REVIEW',
+      'Withdrawal request created by user'
+    );
+
+    return {
+      success: true,
+      withdrawalId,
+      requestedTokens,
+      payoutAmount,
+      payoutCurrency,
+      estimatedPayoutDate: new Date(
+        Date.now() + 7 * 24 * 60 * 60 * 1000
+      ).toISOString()
+    };
+
+  } catch (error) {
+
+    console.error(
+      'Error creating withdrawal request:',
+      error
+    );
+
+    return {
+      success: false,
+      error: 'Failed to create withdrawal request',
+      errorCode: WithdrawalErrorCode.INTERNAL_ERROR
+    };
+
   }
-);
+
+});
 
 /**
  * Get withdrawal history for a user
@@ -541,40 +502,61 @@ export const withdrawals_getMonthlyLimits = functions.https.onCall(async (reques
         }
       }
 
-      // Get current month stats
-      const now = new Date();
-      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      const stats = await getMonthlyStats(userId, currentMonth);
+// Get current month stats
+const now = new Date();
+const currentMonth =
+  `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-      const remainingPLN = Math.max(0, LIMITS.maxPLNPerMonth - stats.totalPLNWithdrawn);
-      const remainingWithdrawals = Math.max(0, LIMITS.maxWithdrawalsPerMonth - stats.withdrawalCount);
-      const canWithdraw = remainingPLN > 0 && remainingWithdrawals > 0;
+const stats = await getMonthlyStats(userId, currentMonth);
 
-      return {
-        success: true,
-        stats,
-        limits: LIMITS,
-        remainingPLN,
-        remainingWithdrawals,
-        canWithdraw,
-      };
-    } catch (error) {
-      console.error('Error getting monthly limits:', error);
-      return {
-        success: false,
-        error: 'Failed to fetch monthly limits',
-      };
+// Safe defaults in case stats are missing
+const totalUSDWithdrawn = stats?.totalUSDWithdrawn ?? 0;
+const withdrawalCount = stats?.withdrawalCount ?? 0;
+
+// Remaining limits
+const remainingUSD = Math.max(
+  0,
+  LIMITS.maxUSDPerMonth - totalUSDWithdrawn
+);
+
+const remainingWithdrawals = Math.max(
+  0,
+  LIMITS.maxWithdrawalsPerMonth - withdrawalCount
+);
+
+// Eligibility
+const canWithdraw =
+  remainingUSD > 0 &&
+  remainingWithdrawals > 0;
+
+return {
+  success: true,
+  stats: {
+    totalUSDWithdrawn,
+    withdrawalCount,
+    month: currentMonth,
+  },
+  limits: LIMITS,
+  remainingUSD,
+  remainingWithdrawals,
+  canWithdraw,
+};
+
+} catch (error) {
+
+  console.error(
+    'Error getting monthly limits:',
+    error
+  );
+
+  return {
+    success: false,
+    error: 'Failed to get monthly limits',
+  };
+
     }
   }
 );
 
-// Export for use in other modules
-export {
-  calculateWithdrawableTokens,
-  checkWithdrawalLimits,
-  checkKYCStatus,
-  getMonthlyStats,
-  createAuditLog,
-  PAYOUT_RATE_PLN,
-  LIMITS,
-};
+
+

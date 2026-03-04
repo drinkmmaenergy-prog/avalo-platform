@@ -270,3 +270,12 @@ export interface DefenseStatus {
   ratingTrend: 'up' | 'down' | 'stable';
   healthScore: number; // 0-100
 }
+
+
+
+
+
+
+
+
+

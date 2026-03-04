@@ -562,3 +562,12 @@ export async function getDetectedClusters(
   
   return query.docs.map(doc => doc.data() as CommercialSpamCluster);
 }
+
+
+
+
+
+
+
+
+

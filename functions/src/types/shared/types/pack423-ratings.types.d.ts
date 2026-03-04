@@ -21,3 +21,12 @@ export interface RatingMetrics  {
   [key: string]: any;
 }
 export type RatingCategory = 'OVERALL' | 'COMMUNICATION' | 'RELIABILITY' | 'QUALITY';
+
+
+
+
+
+
+
+
+

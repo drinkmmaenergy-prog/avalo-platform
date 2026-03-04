@@ -34,8 +34,8 @@ export const createOrUpdatePortfolio = onCall(
       handle,
       displayName,
       bio,
-      profileImageUrl,
-      coverImageUrl,
+      profileimageUrl,
+      coverimageUrl,
       socialLinks,
       featuredAssets,
       customSections,
@@ -121,8 +121,8 @@ export const createOrUpdatePortfolio = onCall(
           handle,
           displayName,
           bio,
-          profileImageUrl,
-          coverImageUrl,
+          profileimageUrl,
+          coverimageUrl,
           socialLinks: socialLinks || {},
           featuredAssets: featuredAssets || [],
           customSections: customSections || [],
@@ -145,8 +145,8 @@ export const createOrUpdatePortfolio = onCall(
           handle,
           displayName,
           bio,
-          profileImageUrl,
-          coverImageUrl,
+          profileimageUrl,
+          coverimageUrl,
           socialLinks: socialLinks || {},
           featuredAssets: featuredAssets || [],
           customSections: customSections || [],
@@ -351,3 +351,12 @@ export const getPortfolioAnalytics = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+

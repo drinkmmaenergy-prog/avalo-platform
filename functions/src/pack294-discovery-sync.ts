@@ -225,3 +225,12 @@ function calculateActivityScore(userData: any): number {
   
   return Math.min(score, 100);
 }
+
+
+
+
+
+
+
+
+

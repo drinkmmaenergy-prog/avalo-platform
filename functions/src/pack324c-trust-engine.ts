@@ -516,3 +516,12 @@ export async function recalculateAllCreatorTrustScores(): Promise<number> {
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+

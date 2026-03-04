@@ -621,3 +621,12 @@ export const overdueInvoiceRemindersScheduled = onSchedule({ schedule: "0 10 * *
     console.log(`Marked ${invoicesSnap.size} invoices as overdue`);
     return;
   });
+
+
+
+
+
+
+
+
+

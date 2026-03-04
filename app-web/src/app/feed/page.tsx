@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * PACK 323 - Feed Page (Web)
  * Main feed view with posts, reels, and stories
@@ -16,7 +18,7 @@ import {
   Timestamp 
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '@/lib/firebase';
+import { requireDb, requireFunctions } from '@/lib/firebase';
 import { useI18n } from '@/components/providers/I18nProvider';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -54,7 +56,7 @@ export default function FeedPage() {
 
       // Fetch posts
       const postsQuery = query(
-        collection(db, 'feedPosts'),
+        collection(requireDb(), 'feedPosts'),
         where('visibility', '==', 'PUBLIC'),
         where('isDeleted', '==', false),
         orderBy('createdAt', 'desc'),
@@ -63,7 +65,7 @@ export default function FeedPage() {
 
       // Fetch reels
       const reelsQuery = query(
-        collection(db, 'feedReels'),
+        collection(requireDb(), 'feedReels'),
         where('visibility', '==', 'PUBLIC'),
         where('isDeleted', '==', false),
         orderBy('createdAt', 'desc'),
@@ -111,7 +113,7 @@ export default function FeedPage() {
     try {
       const now = Timestamp.now();
       const storiesQuery = query(
-        collection(db, 'feedStories'),
+        collection(requireDb(), 'feedStories'),
         where('isDeleted', '==', false),
         where('expiresAt', '>', now),
         orderBy('expiresAt', 'asc'),
@@ -133,7 +135,7 @@ export default function FeedPage() {
 
   const handleLike = async (contentId: string, contentType: string) => {
     try {
-      const likeContent = httpsCallable(functions, 'pack323_likeContent');
+      const likeContent = httpsCallable(requireFunctions(), 'pack323_likeContent');
       await likeContent({ contentId, contentType });
       
       // Optimistic update
@@ -298,3 +300,5 @@ export default function FeedPage() {
     </div>
   );
 }
+
+

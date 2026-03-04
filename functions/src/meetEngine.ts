@@ -631,3 +631,12 @@ async function autoSettleBooking(bookingId: string): Promise<void> {
     console.error('Error auto-settling booking:', error);
   }
 }
+
+
+
+
+
+
+
+
+

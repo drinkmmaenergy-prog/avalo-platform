@@ -314,3 +314,12 @@ export interface EarningThreshold {
   monthlyEarnings: number;
   protectionTriggered: boolean;
 }
+
+
+
+
+
+
+
+
+

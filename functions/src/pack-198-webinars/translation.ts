@@ -386,3 +386,12 @@ export async function reviewTranslationQuality(
     updatedAt: admin.firestore.Timestamp.now(),
   });
 }
+
+
+
+
+
+
+
+
+

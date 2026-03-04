@@ -356,3 +356,12 @@ export interface AdSafetyCheckResult {
     ageInappropriate: boolean;
   };
 }
+
+
+
+
+
+
+
+
+

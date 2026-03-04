@@ -622,3 +622,12 @@ export async function getRecommendationReason(
   
   return reasonDoc.data() as RecommendationReason;
 }
+
+
+
+
+
+
+
+
+

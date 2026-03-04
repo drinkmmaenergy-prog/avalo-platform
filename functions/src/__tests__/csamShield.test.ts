@@ -156,3 +156,12 @@ describe('CSAM Shield - Text Detection', () => {
  * cd functions
  * npm test -- csamShield.test.ts
  */
+
+
+
+
+
+
+
+
+

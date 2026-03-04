@@ -44,9 +44,9 @@ export interface UserKycDocument {
   userId: string;                    // Owner
   status: DocumentStatus;            // Document review status
   documentType: DocumentType;        // Type of ID document
-  frontImageUrl: string;             // Storage URL for front of document
-  backImageUrl?: string;             // Optional back image (for two-sided docs)
-  selfieImageUrl: string;            // Selfie holding document
+  frontimageUrl: string;             // Storage URL for front of document
+  backimageUrl?: string;             // Optional back image (for two-sided docs)
+  selfieimageUrl: string;            // Selfie holding document
   country: string;                   // ISO country code (e.g., "PL", "DE")
   fullName: string;                  // Full name from document
   dateOfBirth: string;               // YYYY-MM-DD format
@@ -59,9 +59,9 @@ export interface UserKycDocument {
 // KYC Application Payload (for submission)
 export interface KycApplicationPayload {
   documentType: DocumentType;
-  frontImageUrl: string;
-  backImageUrl?: string;
-  selfieImageUrl: string;
+  frontimageUrl: string;
+  backimageUrl?: string;
+  selfieimageUrl: string;
   country: string;
   fullName: string;
   dateOfBirth: string;              // YYYY-MM-DD
@@ -145,3 +145,12 @@ export const KYC_ERROR_CODES = {
   UNAUTHORIZED: "UNAUTHORIZED",
   USER_NOT_FOUND: "USER_NOT_FOUND",
 } as const;
+
+
+
+
+
+
+
+
+

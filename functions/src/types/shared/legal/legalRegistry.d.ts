@@ -13,3 +13,12 @@ export interface UserConsent {
 }
 export declare const LEGAL_DOCUMENTS: Record<string, LegalDocument>;
 export declare const getCurrentLegalVersion: (type: string) => string;
+
+
+
+
+
+
+
+
+

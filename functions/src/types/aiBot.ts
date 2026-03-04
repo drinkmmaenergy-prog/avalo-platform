@@ -350,3 +350,12 @@ export interface CreatorBotDashboard {
   totalMessages: number;
   bots: BotListItem[];
 }
+
+
+
+
+
+
+
+
+

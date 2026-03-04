@@ -169,3 +169,12 @@ export interface ConflictDetectionResult {
   recommendedAction: 'none' | 'monitor' | 'downrank' | 'disable_virality' | 'freeze';
   reasoning: string;
 }
+
+
+
+
+
+
+
+
+

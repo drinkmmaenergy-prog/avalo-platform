@@ -2,7 +2,7 @@
  * PACK 423 — Interaction Rating Modal (Web)
  * Post-interaction rating UI for web
  */
-
+"use client";
 import React, { useState } from 'react';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getAuth } from 'firebase/auth';

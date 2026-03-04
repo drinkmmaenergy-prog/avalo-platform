@@ -1,27 +1,24 @@
 /**
- * PACK 452 — Premium Offer Engine v1
+ * @deprecated LEGACY — SUPERSEDED by canonical-chat-engine.ts (v2_canonical)
  *
+ * PACK 452 mid-chat premium offers are ELIMINATED.
+ * Multiplier changes can only apply to the NEXT paid session via
+ * setMultiplierForNextSession in canonical-chat-engine.ts.
+ *
+ * What changed:
+ * - createPremiumOffer → REMOVED (use setMultiplierForNextSession)
+ * - acceptPremiumOffer → REMOVED (multiplier applied at next deposit)
+ * - declinePremiumOffer → REMOVED
+ * - Wallet reservation model → REMOVED (deposit handles escrow)
+ * - Exclusive mode → REMOVED
+ *
+ * See: canonical-chat-legacy-shim.ts for error stubs.
+ *
+ * ORIGINAL: PACK 452 — Premium Offer Engine v1
  * Allows payers to create premium offers for chats with multiplied burn rates.
- * Handles offer lifecycle: create, accept, decline, expire, cancel.
- * Manages wallet reservation (available/reserved split).
- *
- * Reservation model:
- *   reserveTokens = baseChatEntryTokens * multiplier
- *   available -= reserve
- *   reserved += reserve
- *
- * Collision rule: Only 1 PENDING per chat. New offer auto-cancels previous.
- *
- * INVARIANTS PRESERVED:
- * - Free chemistry messages unchanged
- * - Chat initiation never blocked
- * - Base burn = 1 token per bucket unchanged
- * - 65/35 split unchanged
- * - Payout per token = 0.03 USD unchanged
- * - Historical ledger never recalculated
  *
  * @module pack452-premium-offer-engine
- * @version 1.0.0
+ * @version 1.0.0 (DEPRECATED)
  */
 
 import { db, serverTimestamp, generateId } from './init';
@@ -704,3 +701,12 @@ export async function releasePremiumOnChatEnd(chatId: string): Promise<void> {
     }
   });
 }
+
+
+
+
+
+
+
+
+

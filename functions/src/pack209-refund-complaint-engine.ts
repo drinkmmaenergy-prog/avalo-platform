@@ -167,7 +167,7 @@ export async function processAppearanceComplaint(params: {
   bookingId: string;
   complainantId: string;
   reportedUserId: string;
-  liveSelfieUrl: string;
+  liveSelfiUSDl: string;
   decision: ComplaintDecision;
   notes?: string;
   mismatchScore?: number;
@@ -179,7 +179,7 @@ export async function processAppearanceComplaint(params: {
     bookingId,
     complainantId,
     reportedUserId,
-    liveSelfieUrl,
+    liveSelfiUSDl,
     decision,
     notes,
     mismatchScore,
@@ -285,7 +285,7 @@ export async function processAppearanceComplaint(params: {
     reportedUserId,
     reportedUserName,
     decision,
-    liveSelfieUrl,
+    liveSelfiUSDl,
     profilePhotosUrls,
     mismatchScore,
     manualReview: mismatchScore ? mismatchScore > 50 : true,
@@ -320,7 +320,7 @@ export async function processAppearanceComplaint(params: {
     requiresManualReview: true,
     createdAt: serverTimestamp() as Timestamp,
     metadata: {
-      selfieUrls: [liveSelfieUrl],
+      selfiUSDls: [liveSelfiUSDl],
       comparisonScore: mismatchScore,
     },
   };
@@ -764,3 +764,12 @@ export async function getUserRefundHistory(params: {
 
   return { refunds, voluntaryRefunds, complaints };
 }
+
+
+
+
+
+
+
+
+

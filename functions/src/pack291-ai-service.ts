@@ -9,7 +9,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { logger } from 'firebase-functions/v2';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
-import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 import {
   AIInputData,
   ClaudePrompt,
@@ -164,7 +164,7 @@ Your insights should be direct, data-driven, and immediately actionable.`;
 
     const userPrompt = `Analyze this creator's performance for today and provide a brief summary (max 200 chars):
 
-Earnings Today: ${data.earnings.total} tokens (${(data.earnings.total * TOKEN_PAYOUT_PLN).toFixed(2)} PLN)
+Earnings Today: ${data.earnings.total} tokens (${(data.earnings.total * TOKEN_PAYOUT_USD).toFixed(2)} USD)
 Trend: ${data.earnings.trend > 0 ? '+' : ''}${data.earnings.trend.toFixed(1)}%
 Profile Views: ${data.activity.profileViews}
 Paid Chats: ${data.activity.paidChats}
@@ -227,7 +227,7 @@ Provide a single-sentence summary highlighting the key insight.`;
     highlights,
     topPerformingFeature,
     earningsToday: data.earnings.total,
-    earningsTodayPLN: data.earnings.total * TOKEN_PAYOUT_PLN,
+    earningsTodayUSD: data.earnings.total * TOKEN_PAYOUT_USD,
     profileViews: data.activity.profileViews,
     newPayers: data.engagement.newPayers,
     summary,
@@ -568,3 +568,12 @@ export async function generateProfileHealth(
     weaknesses,
   };
 }
+
+
+
+
+
+
+
+
+

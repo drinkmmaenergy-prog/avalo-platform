@@ -515,7 +515,7 @@ async function processExport(
     await db.collection('ledger_exports').doc(exportId).update({
       status: 'completed',
       recordCount: content.length,
-      fileUrl: url,
+      filUSDl: url,
       fileSize: Buffer.byteLength(content, 'utf8'),
       completedAt: serverTimestamp(),
     });
@@ -579,7 +579,7 @@ export async function downloadExport(
   });
   
   return {
-    url: exportRecord.fileUrl!,
+    url: exportRecord.filUSDl!,
     expiresAt: exportRecord.expiresAt.toDate(),
   };
 }
@@ -615,10 +615,10 @@ export async function cleanupExpiredExports(): Promise<number> {
     const exportRecord = doc.data() as LedgerExport;
     
     // Delete file from storage
-    if (exportRecord.fileUrl) {
+    if (exportRecord.filUSDl) {
       try {
         const bucket = storage.bucket();
-        const filename = exportRecord.fileUrl.split('/').pop()?.split('?')[0];
+        const filename = exportRecord.filUSDl.split('/').pop()?.split('?')[0];
         if (filename) {
           await bucket.file(`exports/${exportRecord.userId}/${filename}`).delete();
         }
@@ -635,3 +635,12 @@ export async function cleanupExpiredExports(): Promise<number> {
   console.log(`Deleted ${deleted} expired exports`);
   return deleted;
 }
+
+
+
+
+
+
+
+
+

@@ -7,7 +7,7 @@
  * - Automated ban system
  * - Fraud pattern detection
  *
- * Heuristics:
+ * HUSDistics:
  * - 1000+ tokens in short period → high risk
  * - 2+ abuse reports in 24h → trust score drop
  * - New unverified + rapid activity → alert
@@ -544,5 +544,14 @@ async function logEngineEvent(
     timestamp: FieldValue.serverTimestamp(),
   });
 }
+
+
+
+
+
+
+
+
+
 
 

@@ -194,3 +194,12 @@ export const FREE_PERKS: SubscriptionPerks = {
   dailyBoosts: 0,
   earlyAccessFeatures: false,
 };
+
+
+
+
+
+
+
+
+

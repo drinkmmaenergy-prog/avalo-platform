@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * WebRTC Call Service - PACK 124.4 Enhanced
  * Handles voice/video calls with per-minute token billing
@@ -16,7 +18,7 @@
 import SimplePeer from 'simple-peer';
 // Import type augmentation for SimplePeer._pc
 import '../types/simple-peer';
-import { db, functions } from '../firebase';
+import { requireDb, requireFunctions } from '../firebase';
 import { doc, onSnapshot, Unsubscribe, updateDoc, Timestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { CallSession, CallType } from '../types';
@@ -78,7 +80,7 @@ export async function checkCallBalance(params: {
       userBalance: number;
       requiredTokens: number;
       pricePerMinute: number;
-    }>(functions, 'checkCallBalance');
+    }>(requireFunctions(), 'checkCallBalance');
     
     const result = await check(params);
     return result.data;
@@ -94,8 +96,7 @@ export async function checkCallBalance(params: {
  */
 export async function startCall(params: CallInitParams): Promise<CallInfo> {
   try {
-    const start = httpsCallable<CallInitParams, CallInfo>(
-      functions,
+    const start = httpsCallable<CallInitParams, CallInfo>(requireFunctions(),
       'startCall'
     );
     
@@ -126,7 +127,7 @@ export async function endCall(params: {
       totalTokens: number;
       earnerReceived: number;
       avaloReceived: number;
-    }>(functions, 'endCall');
+    }>(requireFunctions(), 'endCall');
     
     const result = await end(params);
     return result.data;
@@ -142,8 +143,7 @@ export async function endCall(params: {
  */
 export async function updateCallActivity(callId: string): Promise<void> {
   try {
-    const update = httpsCallable<{ callId: string }, void>(
-      functions,
+    const update = httpsCallable<{ callId: string }, void>(requireFunctions(),
       'updateCallActivity'
     );
     await update({ callId });
@@ -159,7 +159,7 @@ export function subscribeToCall(
   callId: string,
   callback: (call: CallSession | null) => void
 ): Unsubscribe {
-  const callRef = doc(db, 'calls', callId);
+  const callRef = doc(requireDb(), 'calls', callId);
   
   return onSnapshot(callRef, (snapshot) => {
     if (!snapshot.exists()) {
@@ -294,8 +294,7 @@ export async function sendSignalingData(params: {
   data: SignalingData;
 }): Promise<void> {
   try {
-    const send = httpsCallable<typeof params, void>(
-      functions,
+    const send = httpsCallable<typeof params, void>(requireFunctions(),
       'sendSignalingData'
     );
     await send(params);
@@ -312,7 +311,7 @@ export function subscribeToSignaling(
   userId: string,
   callback: (data: SignalingData) => void
 ): Unsubscribe {
-  const signalingRef = doc(db, 'calls', callId, 'signaling', userId);
+  const signalingRef = doc(requireDb(), 'calls', callId, 'signaling', userId);
   
   return onSnapshot(signalingRef, (snapshot) => {
     if (!snapshot.exists()) return;
@@ -402,9 +401,9 @@ export async function updateCallQualityMetrics(params: {
   avgRttMs: number;
 }): Promise<void> {
   try {
-    if (!db) throw new Error('Firestore not initialized');
+    if (false /* requireDb handles null */) throw new Error('Firestore not initialized');
     
-    const callRef = doc(db, 'calls', params.callId);
+    const callRef = doc(requireDb(), 'calls', params.callId);
     
     // Determine quality rating
     let qualityRating: 'Excellent' | 'Good' | 'Fair' | 'Poor';
@@ -440,8 +439,7 @@ export async function emitCallEndedEvent(params: {
   panicActive?: boolean;
 }): Promise<void> {
   try {
-    const emitEvent = httpsCallable<typeof params, void>(
-      functions,
+    const emitEvent = httpsCallable<typeof params, void>(requireFunctions(),
       'emitCallEndedEvent'
     );
     await emitEvent(params);
@@ -459,8 +457,7 @@ export async function emitCallEndedWithPanicEvent(params: {
   panicReason?: string;
 }): Promise<void> {
   try {
-    const emitEvent = httpsCallable<typeof params, void>(
-      functions,
+    const emitEvent = httpsCallable<typeof params, void>(requireFunctions(),
       'emitCallEndedWithPanicEvent'
     );
     await emitEvent(params);

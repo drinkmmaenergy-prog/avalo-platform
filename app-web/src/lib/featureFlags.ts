@@ -54,7 +54,7 @@ export function useFeatureFlag(key: FeatureFlagKey) {
     const initializeFlag = async () => {
       try {
         // Import db dynamically to avoid SSR issues
-        const { db } = await import('./firebase');
+        const { requireDb } = await import('./firebase');
         
         // Get initial value from cache or Firestore
         const cached = cachedFlags.get(key);
@@ -67,7 +67,7 @@ export function useFeatureFlag(key: FeatureFlagKey) {
             setLoading(false);
           }
         } else {
-          const flagRef = doc(db, 'featureFlags', key);
+          const flagRef = doc(requireDb(), 'featureFlags', key);
           const snapshot = await getDoc(flagRef);
           
           if (snapshot.exists() && mounted) {
@@ -88,7 +88,7 @@ export function useFeatureFlag(key: FeatureFlagKey) {
         }
         
         // Set up real-time listener
-        const flagRef = doc(db, 'featureFlags', key);
+        const flagRef = doc(requireDb(), 'featureFlags', key);
         unsubscribe = onSnapshot(
           flagRef,
           (snapshot) => {
@@ -165,7 +165,7 @@ export function useFeatureFlags(keys: FeatureFlagKey[]) {
     
     const initializeFlags = async () => {
       try {
-        const { db } = await import('./firebase');
+        const { requireDb } = await import('./firebase');
         const userContext = getUserContext();
         
         // Load initial values
@@ -177,7 +177,7 @@ export function useFeatureFlags(keys: FeatureFlagKey[]) {
             if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
               flagStates[key] = checkFeatureEnabled(cached.config, userContext);
             } else {
-              const flagRef = doc(db, 'featureFlags', key);
+              const flagRef = doc(requireDb(), 'featureFlags', key);
               const snapshot = await getDoc(flagRef);
               
               if (snapshot.exists()) {
@@ -198,7 +198,7 @@ export function useFeatureFlags(keys: FeatureFlagKey[]) {
         
         // Set up real-time listeners
         keys.forEach(key => {
-          const flagRef = doc(db, 'featureFlags', key);
+          const flagRef = doc(requireDb(), 'featureFlags', key);
           const unsubscribe = onSnapshot(
             flagRef,
             (snapshot) => {
@@ -265,3 +265,4 @@ function getUserContext(): FeatureFlagUserContext {
 export function clearFeatureFlagsCache(): void {
   cachedFlags.clear();
 }
+

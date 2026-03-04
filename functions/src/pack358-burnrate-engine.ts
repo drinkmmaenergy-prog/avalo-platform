@@ -14,14 +14,14 @@ import { FieldValue, HttpsError, auth, onCall, serverTimestamp, storage, logger,
 // ============================================================================
 
 export type BurnRateSnapshot = {
-  monthlyInfraCostPLN: number;
-  marketingCostPLN: number;
-  supportCostPLN: number;
-  moderationCostPLN: number;
-  paymentProcessingCostPLN: number;
-  storeFeesCostPLN: number;
-  totalBurnPLN: number;
-  netProfitPLN: number;
+  monthlyInfraCostUSD: number;
+  marketingCostUSD: number;
+  supportCostUSD: number;
+  moderationCostUSD: number;
+  paymentProcessingCostUSD: number;
+  storeFeesCostUSD: number;
+  totalBurnUSD: number;
+  netProfitUSD: number;
   profitMargin: number; // Percentage
   monthYear: string; // YYYY-MM
   calculatedAt: string;
@@ -87,14 +87,14 @@ class BurnRateEngine {
     const profitMargin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
 
     const snapshot: BurnRateSnapshot = {
-      monthlyInfraCostPLN: Math.round(infraCost * 100) / 100,
-      marketingCostPLN: Math.round(marketingCost * 100) / 100,
-      supportCostPLN: Math.round(supportCost * 100) / 100,
-      moderationCostPLN: Math.round(moderationCost * 100) / 100,
-      paymentProcessingCostPLN: Math.round(paymentProcessingCost * 100) / 100,
-      storeFeesCostPLN: Math.round(storeFees * 100) / 100,
-      totalBurnPLN: Math.round(totalBurn * 100) / 100,
-      netProfitPLN: Math.round(netProfit * 100) / 100,
+      monthlyInfraCostUSD: Math.round(infraCost * 100) / 100,
+      marketingCostUSD: Math.round(marketingCost * 100) / 100,
+      supportCostUSD: Math.round(supportCost * 100) / 100,
+      moderationCostUSD: Math.round(moderationCost * 100) / 100,
+      paymentProcessingCostUSD: Math.round(paymentProcessingCost * 100) / 100,
+      storeFeesCostUSD: Math.round(storeFees * 100) / 100,
+      totalBurnUSD: Math.round(totalBurn * 100) / 100,
+      netProfitUSD: Math.round(netProfit * 100) / 100,
       profitMargin: Math.round(profitMargin * 100) / 100,
       monthYear,
       calculatedAt: new Date().toISOString(),
@@ -138,9 +138,9 @@ class BurnRateEngine {
     // Fallback: estimate based on user count
     const userCount = await this.getMonthlyActiveUsers(year, month);
     
-    // Cost estimation model (PLN)
+    // Cost estimation model (USD)
     const baseCost = 500; // Base Firebase plan
-    const costPerUser = 0.05; // ~0.05 PLN per active user
+    const costPerUser = 0.05; // ~0.05 USD per active user
     const estimatedCost = baseCost + userCount * costPerUser;
 
     return estimatedCost;
@@ -163,11 +163,11 @@ class BurnRateEngine {
     if (campaignsSnapshot.exists) {
       const data = campaignsSnapshot.data()!;
       return (
-        (data.facebookSpendPLN || 0) +
-        (data.googleSpendPLN || 0) +
-        (data.tiktokSpendPLN || 0) +
-        (data.influencerSpendPLN || 0) +
-        (data.otherSpendPLN || 0)
+        (data.facebookSpendUSD || 0) +
+        (data.googleSpendUSD || 0) +
+        (data.tiktokSpendUSD || 0) +
+        (data.influencerSpendUSD || 0) +
+        (data.otherSpendUSD || 0)
       );
     }
 
@@ -193,14 +193,14 @@ class BurnRateEngine {
       const ticketCount = data.resolvedTickets || 0;
       const avgTimeMinutes = data.avgResolutionTimeMinutes || 10;
       
-      // Cost per minute of support (assuming PLN 2/minute)
+      // Cost per minute of support (assuming USD 2/minute)
       const costPerMinute = 2;
       return ticketCount * avgTimeMinutes * costPerMinute;
     }
 
     // Fallback estimate
     const userCount = await this.getMonthlyActiveUsers(year, month);
-    const supportCostPerUser = 0.2; // ~0.2 PLN per active user per month
+    const supportCostPerUser = 0.2; // ~0.2 USD per active user per month
     return userCount * supportCostPerUser;
   }
 
@@ -224,15 +224,15 @@ class BurnRateEngine {
       const aiReviews = data.aiReviews || 0;
       
       // Cost per review
-      const manualCostPerReview = 5; // PLN
-      const aiCostPerReview = 0.1; // PLN
+      const manualCostPerReview = 5; // USD
+      const aiCostPerReview = 0.1; // USD
       
       return manualReviews * manualCostPerReview + aiReviews * aiCostPerReview;
     }
 
     // Fallback estimate
     const userCount = await this.getMonthlyActiveUsers(year, month);
-    const moderationCostPerUser = 0.15; // ~0.15 PLN per active user per month
+    const moderationCostPerUser = 0.15; // ~0.15 USD per active user per month
     return userCount * moderationCostPerUser;
   }
 
@@ -242,7 +242,7 @@ class BurnRateEngine {
   private async calculatePaymentProcessingCost(year: number, month: number): Promise<number> {
     const revenue = await this.getMonthlyRevenue(year, month);
     
-    // Stripe fees: 2.9% + 0.30 PLN per transaction
+    // Stripe fees: 2.9% + 0.30 USD per transaction
     const stripePercentageFee = 0.029;
     const transactions = await this.getMonthlyTransactionCount(year, month);
     const stripeFixedFee = 0.30;
@@ -266,11 +266,11 @@ class BurnRateEngine {
 
     if (iapDoc.exists) {
       const data = iapDoc.data()!;
-      const iapRevenuePLN = data.iapRevenuePLN || 0;
+      const iapRevenueUSD = data.iapRevenueUSD || 0;
       
       // Apple/Google take 15-30% (assume 20% average after small business program)
       const storeFeePercentage = 0.20;
-      return iapRevenuePLN * storeFeePercentage;
+      return iapRevenueUSD * storeFeePercentage;
     }
 
     return 0;
@@ -290,7 +290,7 @@ class BurnRateEngine {
       .get();
 
     if (revenueDoc.exists) {
-      return revenueDoc.data()!.totalRevenuePLN || 0;
+      return revenueDoc.data()!.totalRevenueUSD || 0;
     }
 
     return 0;
@@ -381,7 +381,7 @@ class BurnRateEngine {
     }
 
     // Alert: Burn > Revenue for extended period
-    if (snapshot.netProfitPLN < 0) {
+    if (snapshot.netProfitUSD < 0) {
       const consecutiveLosses = await this.countConsecutiveNegativeMonths();
       if (consecutiveLosses >= 3) {
         alerts.push('CONSECUTIVE_LOSSES');
@@ -389,22 +389,22 @@ class BurnRateEngine {
           type: 'CONSECUTIVE_LOSSES',
           severity: 'critical',
           message: `${consecutiveLosses} consecutive months of losses`,
-          data: { consecutiveLosses, currentLoss: snapshot.netProfitPLN },
+          data: { consecutiveLosses, currentLoss: snapshot.netProfitUSD },
         });
       }
     }
 
     // Alert: Marketing cost > 50% of revenue
-    if (revenue > 0 && (snapshot.marketingCostPLN / revenue) > 0.5) {
+    if (revenue > 0 && (snapshot.marketingCostUSD / revenue) > 0.5) {
       alerts.push('MARKETING_COST_HIGH');
       await this.createAlert({
         type: 'MARKETING_COST_HIGH',
         severity: 'medium',
         message: 'Marketing costs exceed 50% of revenue',
         data: { 
-          marketingCost: snapshot.marketingCostPLN,
+          marketingCost: snapshot.marketingCostUSD,
           revenue,
-          percentage: (snapshot.marketingCostPLN / revenue) * 100,
+          percentage: (snapshot.marketingCostUSD / revenue) * 100,
         },
       });
     }
@@ -429,7 +429,7 @@ class BurnRateEngine {
     let count = 0;
     for (const doc of snapshot.docs) {
       const data = doc.data() as BurnRateSnapshot;
-      if (data.netProfitPLN < 0) {
+      if (data.netProfitUSD < 0) {
         count++;
       } else {
         break; // Stop at first positive month
@@ -462,7 +462,7 @@ class BurnRateEngine {
   /**
    * Calculate runway (days until cash zero)
    */
-  async calculateRunway(currentCashPLN: number): Promise<number> {
+  async calculateRunway(currentCashUSD: number): Promise<number> {
     // Get average daily burn from last 3 months
     const now = new Date();
     const burns: number[] = [];
@@ -482,7 +482,7 @@ class BurnRateEngine {
 
       if (snapshot.exists) {
         const data = snapshot.data() as BurnRateSnapshot;
-        burns.push(data.totalBurnPLN);
+        burns.push(data.totalBurnUSD);
       }
     }
 
@@ -493,7 +493,7 @@ class BurnRateEngine {
 
     if (avgDailyBurn <= 0) return Infinity;
 
-    return Math.floor(currentCashPLN / avgDailyBurn);
+    return Math.floor(currentCashUSD / avgDailyBurn);
   }
 }
 
@@ -506,7 +506,7 @@ const engine = new BurnRateEngine();
 /**
  * Scheduled function: Calculate burn rate on 1st of each month at 3 AM
  */
-export const calculateMonthlyBurnRate = onSchedule({ schedule: "0 3 1 * *", timeZone: "Europe/Warsaw", region: "europe-west1" }, async (event) => {
+export const calculateMonthlyBurnRate = onSchedule({ schedule: "0 3 1 * *", timeZone: "USDope/Warsaw", region: "europe-west1" }, async (event) => {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth(); // Previous month (0-11)
@@ -517,8 +517,8 @@ export const calculateMonthlyBurnRate = onSchedule({ schedule: "0 3 1 * *", time
       const snapshot = await engine.calculateMonthlyBurnRate(year, month);
       console.log('[PACK 358] Burn rate calculated:', {
         month: snapshot.monthYear,
-        burn: snapshot.totalBurnPLN,
-        profit: snapshot.netProfitPLN,
+        burn: snapshot.totalBurnUSD,
+        profit: snapshot.netProfitUSD,
         margin: snapshot.profitMargin,
       });
       
@@ -580,9 +580,9 @@ export const getFinancialRunway = onCall(
       );
     }
 
-    const { currentCashPLN } = data;
+    const { currentCashUSD } = data;
 
-    if (!currentCashPLN || currentCashPLN < 0) {
+    if (!currentCashUSD || currentCashUSD < 0) {
       throw new HttpsError(
         'invalid-argument',
         'Valid current cash amount required'
@@ -590,12 +590,12 @@ export const getFinancialRunway = onCall(
     }
 
     try {
-      const runwayDays = await engine.calculateRunway(currentCashPLN);
+      const runwayDays = await engine.calculateRunway(currentCashUSD);
       
       console.log('Scheduled job result:', {
         runwayDays,
         runwayMonths: Math.floor(runwayDays / 30),
-        currentCashPLN,
+        currentCashUSD,
         calculatedAt: new Date().toISOString(),
       });
 
@@ -642,3 +642,12 @@ export const getBurnRateHistory = onCall(
       throw new HttpsError('internal', 'Failed to fetch history');
     }
   });
+
+
+
+
+
+
+
+
+

@@ -51,7 +51,7 @@ export interface JurisdictionDetectionData {
 // ============================================================================
 
 const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
-  // European Union Countries
+  // USDopean Union Countries
   'PL': {
     countryCode: 'PL',
     vatRate: 0.23,
@@ -62,7 +62,7 @@ const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
     dataRetentionDays: 365,
     gdprApplies: true,
     dsaApplies: true,
-    currency: 'PLN',
+    currency: 'USD',
     languageCode: 'pl',
     requiresWithholdingTax: false,
     withholdingTaxRate: 0,
@@ -78,7 +78,7 @@ const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
     dataRetentionDays: 365,
     gdprApplies: true,
     dsaApplies: true,
-    currency: 'EUR',
+    currency: 'USD',
     languageCode: 'de',
     requiresWithholdingTax: false,
     withholdingTaxRate: 0,
@@ -94,7 +94,7 @@ const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
     dataRetentionDays: 365,
     gdprApplies: true,
     dsaApplies: true,
-    currency: 'EUR',
+    currency: 'USD',
     languageCode: 'fr',
     requiresWithholdingTax: false,
     withholdingTaxRate: 0,
@@ -110,7 +110,7 @@ const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
     dataRetentionDays: 365,
     gdprApplies: true,
     dsaApplies: true,
-    currency: 'EUR',
+    currency: 'USD',
     languageCode: 'it',
     requiresWithholdingTax: false,
     withholdingTaxRate: 0,
@@ -126,7 +126,7 @@ const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
     dataRetentionDays: 365,
     gdprApplies: true,
     dsaApplies: true,
-    currency: 'EUR',
+    currency: 'USD',
     languageCode: 'es',
     requiresWithholdingTax: false,
     withholdingTaxRate: 0,
@@ -142,7 +142,7 @@ const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
     dataRetentionDays: 365,
     gdprApplies: true,
     dsaApplies: true,
-    currency: 'EUR',
+    currency: 'USD',
     languageCode: 'nl',
     requiresWithholdingTax: false,
     withholdingTaxRate: 0,
@@ -176,7 +176,7 @@ const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
     dataRetentionDays: 365,
     gdprApplies: true,
     dsaApplies: false,
-    currency: 'GBP',
+    currency: 'USD',
     languageCode: 'en',
     requiresWithholdingTax: false,
     withholdingTaxRate: 0,
@@ -627,3 +627,12 @@ export const checkCompliance = functions.https.onCall(async (request) => {
     payoutReason: payoutEligibility.reason,
   };
 });
+
+
+
+
+
+
+
+
+

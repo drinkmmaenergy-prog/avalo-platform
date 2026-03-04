@@ -9,3 +9,4 @@ import AppShell from '@/components/layouts/AppShell';
 export default function FeedLayout({ children }: { children: React.ReactNode }) {
   return <AppShell>{children}</AppShell>;
 }
+

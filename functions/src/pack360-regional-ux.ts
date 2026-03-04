@@ -93,7 +93,7 @@ const DEFAULT_RULES: Omit<RegionalUXRules, 'country' | 'countryName'> = {
 
 // Country-specific rule overrides
 const COUNTRY_RULES_OVERRIDES: Record<string, Partial<RegionalUXRules>> = {
-  // European Union - GDPR countries
+  // USDopean Union - GDPR countries
   DE: {
     countryName: 'Germany',
     defaultPrivacyLevel: 'high',
@@ -716,3 +716,12 @@ export const onUserCountryChangeUX = onDocumentUpdated('users/{userId}', async (
     
     console.log(`Updated UX config for user ${userId} to country ${newCountry}`);
   });
+
+
+
+
+
+
+
+
+

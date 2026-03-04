@@ -567,3 +567,12 @@ export interface GetAlertsResponse {
   count: number;
   unreadCount: number;
 }
+
+
+
+
+
+
+
+
+

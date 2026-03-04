@@ -68,7 +68,7 @@ interface TikTokCreative {
 
 class TikTokAdsAPI {
   private accessToken: string;
-  private baseUrl = 'https://business-api.tiktok.com/open_api/v1.3';
+  private baseURL = 'https://business-api.tiktok.com/open_api/v1.3';
 
   constructor(accessToken: string) {
     this.accessToken = accessToken;
@@ -84,7 +84,7 @@ class TikTokAdsAPI {
   async createCampaign(advertiserId: string, config: TikTokCampaignConfig) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/campaign/create/`,
+        `${this.baseURL}/campaign/create/`,
         {
           advertiser_id: advertiserId,
           campaign_name: config.campaignName,
@@ -108,7 +108,7 @@ class TikTokAdsAPI {
   async createAdGroup(advertiserId: string, config: TikTokAdGroupConfig) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/adgroup/create/`,
+        `${this.baseURL}/adgroup/create/`,
         {
           advertiser_id: advertiserId,
           campaign_id: config.campaignId,
@@ -143,7 +143,7 @@ class TikTokAdsAPI {
   async createAd(advertiserId: string, creative: TikTokCreative) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/ad/create/`,
+        `${this.baseURL}/ad/create/`,
         {
           advertiser_id: advertiserId,
           adgroup_id: creative.adgroupId,
@@ -173,7 +173,7 @@ class TikTokAdsAPI {
   async updateCampaignStatus(advertiserId: string, campaignIds: string[], optStatus: 'ENABLE' | 'DISABLE') {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/campaign/update/status/`,
+        `${this.baseURL}/campaign/update/status/`,
         {
           advertiser_id: advertiserId,
           campaign_ids: campaignIds,
@@ -195,7 +195,7 @@ class TikTokAdsAPI {
   async updateAdGroupBudget(advertiserId: string, adgroupId: string, budget: number) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/adgroup/update/`,
+        `${this.baseURL}/adgroup/update/`,
         {
           advertiser_id: advertiserId,
           adgroup_id: adgroupId,
@@ -217,7 +217,7 @@ class TikTokAdsAPI {
   async getReports(advertiserId: string, campaignIds: string[], startDate: string, endDate: string) {
     try {
       const response = await axios.get(
-        `${this.baseUrl}/reports/integrated/get/`,
+        `${this.baseURL}/reports/integrated/get/`,
         {
           headers: this.getHeaders(),
           params: {
@@ -253,7 +253,7 @@ class TikTokAdsAPI {
   async uploadVideo(advertiserId: string, videoUrl: string) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/file/video/ad/upload/`,
+        `${this.baseURL}/file/video/ad/upload/`,
         {
           advertiser_id: advertiserId,
           video_url: videoUrl,
@@ -275,7 +275,7 @@ class TikTokAdsAPI {
   async uploadImage(advertiserId: string, imageUrl: string) {
     try {
       const response = await axios.post(
-        `${this.baseUrl}/file/image/ad/upload/`,
+        `${this.baseURL}/file/image/ad/upload/`,
         {
           advertiser_id: advertiserId,
           image_url: imageUrl,
@@ -652,3 +652,12 @@ export const tiktokConnector = {
   syncTikTokReports,
   trackTikTokEvent
 };
+
+
+
+
+
+
+
+
+

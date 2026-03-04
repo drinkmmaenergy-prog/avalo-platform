@@ -12,3 +12,12 @@ export interface AuditResult {
     timestamp: any;
 }
 export declare const INTEGRATION_REGISTRY: Record<string, IntegrationEntry>;
+
+
+
+
+
+
+
+
+

@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * PACK 279D - AI Discovery Page (Web)
  * Browse and filter AI Companions
@@ -8,7 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, query, getDocs, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 
 // ============================================================================
 // TYPES
@@ -70,7 +72,7 @@ export default function AIDiscoveryPage() {
   const loadCompanions = async () => {
     try {
       setLoading(true);
-      const companionsRef = collection(db, 'aiCompanions');
+      const companionsRef = collection(requireDb(), 'aiCompanions');
       const snapshot = await getDocs(companionsRef);
 
       const loadedCompanions: AICompanionProfile[] = snapshot.docs.map((doc) => ({
@@ -361,3 +363,4 @@ export default function AIDiscoveryPage() {
     </div>
   );
 }
+

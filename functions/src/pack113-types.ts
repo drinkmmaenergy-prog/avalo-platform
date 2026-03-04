@@ -525,3 +525,12 @@ export function validateScopeRequest(requestedScopes: string[]): {
   
   return { valid, invalid, forbidden };
 }
+
+
+
+
+
+
+
+
+

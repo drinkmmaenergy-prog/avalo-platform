@@ -161,7 +161,7 @@ export const createLegalSnapshot = functions.https.onCall(async (request) => {
       requestedAt: new Date().toISOString(),
       period: data.period,
       status: 'PENDING',
-      fileUrl: null,
+      filUSDl: null,
       fileFormat: data.format,
       metadata: {
         notes: data.notes || null,
@@ -370,3 +370,12 @@ export const getLegalSnapshot = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+

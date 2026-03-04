@@ -377,3 +377,12 @@ export async function getMomentumStats(userId: string): Promise<{
     visualIndicator: visual?.indicatorLevel || 'none'
   };
 }
+
+
+
+
+
+
+
+
+

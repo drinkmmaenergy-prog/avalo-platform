@@ -107,7 +107,7 @@ export interface MeetingValidation {
   verificationType: VerificationType;
   timestamp: Timestamp;
   verified: boolean;
-  selfieUrl?: string;
+  selfiUSDl?: string;
   qrCode?: string;
   location?: { lat: number; lng: number };
   verificationScore?: number; // AI similarity score for selfies
@@ -156,7 +156,7 @@ export interface PanicAlert {
   status: 'ACTIVE' | 'RESOLVED' | 'FALSE_ALARM';
   trustedContactId?: string;
   emergencyContactNotified: boolean;
-  selfieUrl?: string;
+  selfiUSDl?: string;
   matchedUserProfile?: {
     userId: string;
     name: string;
@@ -403,7 +403,7 @@ export async function validateMeetingCheckpoint(
   validationType: ValidationType,
   verificationData: {
     verificationType: VerificationType;
-    selfieUrl?: string;
+    selfiUSDl?: string;
     qrCode?: string;
     location?: { lat: number; lng: number };
   }
@@ -472,7 +472,7 @@ export async function validateMeetingCheckpoint(
       meeting.verificationType === 'SELFIE' ||
       meeting.verificationType === 'BOTH'
     ) {
-      if (!verificationData.selfieUrl) {
+      if (!verificationData.selfiUSDl) {
         throw new HttpsError('invalid-argument', 'Selfie required');
       }
     }
@@ -501,7 +501,7 @@ export async function validateMeetingCheckpoint(
       verificationType: verificationData.verificationType,
       timestamp: Timestamp.now(),
       verified: true, // TODO: Integrate AI verification for selfies
-      selfieUrl: verificationData.selfieUrl,
+      selfiUSDl: verificationData.selfiUSDl,
       qrCode: verificationData.qrCode,
       location: verificationData.location,
     };
@@ -828,7 +828,7 @@ export async function triggerPanicAlert(
   alertType: AlertType,
   alertData: {
     location: { lat: number; lng: number };
-    selfieUrl?: string;
+    selfiUSDl?: string;
     trustedContactId?: string;
   }
 ): Promise<{ alertId: string; emergencyContactNotified: boolean }> {
@@ -873,7 +873,7 @@ export async function triggerPanicAlert(
       status: 'ACTIVE',
       trustedContactId: alertData.trustedContactId,
       emergencyContactNotified: false,
-      selfieUrl: alertData.selfieUrl,
+      selfiUSDl: alertData.selfiUSDl,
       matchedUserProfile: otherUser ? {
         userId: otherUserId!,
         name: otherUser.displayName || 'Anonymous',
@@ -1058,3 +1058,12 @@ export async function submitMeetingRating(
     return { ratingId: ratingRef.id };
   });
 }
+
+
+
+
+
+
+
+
+

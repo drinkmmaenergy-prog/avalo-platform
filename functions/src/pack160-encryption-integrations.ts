@@ -523,3 +523,12 @@ export async function wipeEncryptedDataOnLogout(
     timestamp: Date.now()
   }, 'logout_cleanup');
 }
+
+
+
+
+
+
+
+
+

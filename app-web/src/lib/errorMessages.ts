@@ -23,3 +23,4 @@ export function getErrorMessage(
   if (locale === 'pl') return entry.pl;
   return entry.en;
 }
+

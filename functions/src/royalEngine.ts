@@ -484,3 +484,12 @@ export async function recomputeAllMemberships(batchSize: number = 100): Promise<
 }
 
 console.log('✅ Royal Engine initialized - PACK 50');
+
+
+
+
+
+
+
+
+

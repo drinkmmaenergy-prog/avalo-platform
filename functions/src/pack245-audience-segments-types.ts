@@ -755,3 +755,12 @@ export interface SegmentScore {
   passion: number;
   overall: number;
 }
+
+
+
+
+
+
+
+
+

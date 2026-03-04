@@ -1053,3 +1053,12 @@ export const getTopSupporters = onCall<{ limit?: number }>(
 );
 
 logger.info("Fan Club functions loaded");
+
+
+
+
+
+
+
+
+

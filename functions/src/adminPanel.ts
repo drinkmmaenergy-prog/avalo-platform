@@ -147,7 +147,7 @@ export interface WithdrawalReview {
   creatorId: string;
   creatorName: string;
   amount: number;
-  amountPLN: number;
+  amountUSD: number;
   method: string;
   destination: string;
 
@@ -722,4 +722,13 @@ export const createFraudAlert = onCall(
 );
 
 logger.info("✅ Admin Panel 3.0 module loaded successfully");
+
+
+
+
+
+
+
+
+
 

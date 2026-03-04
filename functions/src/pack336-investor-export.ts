@@ -48,7 +48,7 @@ export async function generateInvestorReport(
   
   dailyGlobalSnapshot.docs.forEach(doc => {
     const data = doc.data();
-    totalRevenue += data.totalRevenuePLN || 0;
+    totalRevenue += data.totalRevenueUSD || 0;
     totalActiveUsers = Math.max(totalActiveUsers, data.activeUsersMAU || 0);
     totalPayingUsers = Math.max(totalPayingUsers, data.payingUsersMAU || 0);
     totalRegisteredUsers = Math.max(totalRegisteredUsers, data.registeredUsersTotal || 0);
@@ -75,14 +75,14 @@ export async function generateInvestorReport(
   
   revenueStreamsSnapshot.docs.forEach(doc => {
     const data = doc.data();
-    revenueByStream.chat += data.chatRevenuePLN || 0;
-    revenueByStream.voice += data.voiceRevenuePLN || 0;
-    revenueByStream.video += data.videoRevenuePLN || 0;
-    revenueByStream.calendar += data.calendarRevenuePLN || 0;
-    revenueByStream.events += data.eventsRevenuePLN || 0;
-    revenueByStream.ai += data.aiRevenuePLN || 0;
-    revenueByStream.subscriptions += data.subscriptionsPLN || 0;
-    revenueByStream.tips += data.tipsRevenuePLN || 0;
+    revenueByStream.chat += data.chatRevenueUSD || 0;
+    revenueByStream.voice += data.voiceRevenueUSD || 0;
+    revenueByStream.video += data.videoRevenueUSD || 0;
+    revenueByStream.calendar += data.calendarRevenueUSD || 0;
+    revenueByStream.events += data.eventsRevenueUSD || 0;
+    revenueByStream.ai += data.aiRevenueUSD || 0;
+    revenueByStream.subscriptions += data.subscriptionsUSD || 0;
+    revenueByStream.tips += data.tipsRevenueUSD || 0;
   });
   
   // Get cohort performance
@@ -96,7 +96,7 @@ export async function generateInvestorReport(
     return {
       cohort: data.cohortId,
       retention: data.day30Retention || 0,
-      revenue: data.revenueDay30PLN || 0,
+      revenue: data.revenueDay30USD || 0,
     };
   });
   
@@ -115,7 +115,7 @@ export async function generateInvestorReport(
     
     countryAggregates.set(country, {
       users: Math.max(existing.users, data.usersActive || 0),
-      revenue: existing.revenue + (data.revenuePLN || 0),
+      revenue: existing.revenue + (data.revenueUSD || 0),
     });
   });
   
@@ -135,8 +135,8 @@ export async function generateInvestorReport(
     ? ((lastDay.registeredUsersTotal - firstDay.registeredUsersTotal) / firstDay.registeredUsersTotal) * 100
     : 0;
   
-  const revenueGrowthPercent = firstDay && lastDay && firstDay.totalRevenuePLN > 0
-    ? ((lastDay.totalRevenuePLN - firstDay.totalRevenuePLN) / firstDay.totalRevenuePLN) * 100
+  const revenueGrowthPercent = firstDay && lastDay && firstDay.totalRevenueUSD > 0
+    ? ((lastDay.totalRevenueUSD - firstDay.totalRevenueUSD) / firstDay.totalRevenueUSD) * 100
     : 0;
   
   // Get average k-factor
@@ -158,7 +158,7 @@ export async function generateInvestorReport(
       totalUsers: totalRegisteredUsers,
       activeUsers: totalActiveUsers,
       payingUsers: totalPayingUsers,
-      totalRevenuePLN: totalRevenue,
+      totalRevenueUSD: totalRevenue,
       avgRevenuePerUser,
     },
     revenueByStream,
@@ -192,13 +192,13 @@ export async function exportReportToCSV(
   lines.push(`Total Users,${reportData.summary.totalUsers}`);
   lines.push(`Active Users,${reportData.summary.activeUsers}`);
   lines.push(`Paying Users,${reportData.summary.payingUsers}`);
-  lines.push(`Total Revenue (PLN),${reportData.summary.totalRevenuePLN.toFixed(2)}`);
-  lines.push(`Avg Revenue Per User (PLN),${reportData.summary.avgRevenuePerUser.toFixed(2)}`);
+  lines.push(`Total Revenue (USD),${reportData.summary.totalRevenueUSD.toFixed(2)}`);
+  lines.push(`Avg Revenue Per User (USD),${reportData.summary.avgRevenuePerUser.toFixed(2)}`);
   lines.push('');
   
   // Revenue by stream
   lines.push('REVENUE BY STREAM');
-  lines.push('Stream,Revenue (PLN)');
+  lines.push('Stream,Revenue (USD)');
   Object.entries(reportData.revenueByStream).forEach(([stream, revenue]) => {
     lines.push(`${stream},${revenue.toFixed(2)}`);
   });
@@ -206,7 +206,7 @@ export async function exportReportToCSV(
   
   // Country breakdown
   lines.push('COUNTRY BREAKDOWN');
-  lines.push('Country,Users,Revenue (PLN)');
+  lines.push('Country,Users,Revenue (USD)');
   reportData.countryBreakdown.forEach(country => {
     lines.push(`${country.country},${country.users},${country.revenue.toFixed(2)}`);
   });
@@ -214,7 +214,7 @@ export async function exportReportToCSV(
   
   // Cohort performance
   lines.push('COHORT PERFORMANCE');
-  lines.push('Cohort,Retention (%),Revenue (PLN)');
+  lines.push('Cohort,Retention (%),Revenue (USD)');
   reportData.cohortData.forEach(cohort => {
     lines.push(`${cohort.cohort},${cohort.retention.toFixed(2)},${cohort.revenue.toFixed(2)}`);
   });
@@ -479,3 +479,12 @@ export const pack336_getInvestorSummary = functions.https.onCall(async (request)
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+

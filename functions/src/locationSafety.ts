@@ -533,3 +533,12 @@ export function getLocationSafetyRules() {
     forbiddenFeatures: LOCATION_SAFETY_RULES.forbiddenFeatures,
   };
 }
+
+
+
+
+
+
+
+
+

@@ -277,3 +277,12 @@ export async function initializeDefaultFeatureFlags(): Promise<void> {
   await batch.commit();
   console.log('Default feature flags initialized');
 }
+
+
+
+
+
+
+
+
+

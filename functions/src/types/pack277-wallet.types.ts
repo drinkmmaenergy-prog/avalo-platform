@@ -100,9 +100,7 @@ export interface TokenPack {
   id: string;
   name: string;              // Mini, Basic, Standard, Premium, Pro, Elite, Royal
   tokens: number;
-  pricePLN: number;
-  priceUSD?: number;         // Optional USD price
-  priceEUR?: number;         // Optional EUR price
+  priceUSD: number;
   active: boolean;
   order: number;             // Display order
   popularBadge?: boolean;    // Show "Most Popular" badge
@@ -152,11 +150,11 @@ export interface VerifyReceiptResponse {
 // PAYOUT TYPES
 // ============================================================================
 
-import { TOKEN_PAYOUT_USD, TOKEN_PAYOUT_PLN } from '../config/economyConfig';
+import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 
 /** @deprecated Use TOKEN_PAYOUT_USD from config/economyConfig.ts — kept for backward-compat re-exports */
-export const PAYOUT_RATE = TOKEN_PAYOUT_PLN; // derived from TOKEN_PAYOUT_USD (0.03 USD)
-export const MIN_PAYOUT_TOKENS = 1000; // Minimum 200 PLN payout
+export const PAYOUT_RATE = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.03 USD)
+export const MIN_PAYOUT_TOKENS = 1000; // Minimum 200 USD payout
 
 export interface PayoutRequest {
   userId: string;
@@ -168,14 +166,14 @@ export interface PayoutRequest {
     swift?: string;
     accountHolder?: string;
   };
-  currency?: string; // Default PLN
+  currency?: string; // Default USD
 }
 
 export interface PayoutResponse {
   success: boolean;
   txId?: string;
   amountTokens?: number;
-  amountPLN?: number;
+  amountUSD?: number;
   amountLocal?: number;
   localCurrency?: string;
   exchangeRate?: number;
@@ -189,7 +187,7 @@ export interface PayoutRecord {
   id: string;
   userId: string;
   amountTokens: number;
-  amountPLN: number;
+  amountUSD: number;
   amountLocal?: number;
   localCurrency?: string;
   exchangeRate?: number;
@@ -266,3 +264,12 @@ export interface RefundTokensResponse {
   newBalance?: number;
   error?: string;
 }
+
+
+
+
+
+
+
+
+

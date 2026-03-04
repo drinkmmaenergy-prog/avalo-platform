@@ -1,10 +1,10 @@
 /**
  * PHASE 5.1 — Web Foundation Header Component
  * 
- * Minimal, professional header for the Avalo web app.
- * Infrastructure UI — not marketing.
+ * Header for marketing/unauthenticated pages (legal, standalone).
+ * For authenticated app pages, AppShell provides its own top navigation.
  * 
- * @version v1.0
+ * @version v2.0 — updated to include Buy Tokens CTA and consistent links
  */
 
 'use client';
@@ -27,28 +27,30 @@ export default function Header({ showAuthButtons = true }: HeaderProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold text-gray-900">Avalo</span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-pink-500 bg-clip-text text-transparent">
+              Avalo
+            </span>
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link 
+              href="/feed" 
+              className="text-gray-600 hover:text-gray-900 font-medium transition"
+            >
+              Feed
+            </Link>
+            <Link 
+              href="/discover" 
+              className="text-gray-600 hover:text-gray-900 font-medium transition"
+            >
+              Discover
+            </Link>
             <Link 
               href="/wallet/buy" 
-              className="text-gray-600 hover:text-gray-900 font-medium transition"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-semibold shadow-sm hover:shadow-md hover:from-pink-600 hover:to-purple-700 transition-all"
             >
-              Buy Tokens
-            </Link>
-            <Link 
-              href="/legal/terms" 
-              className="text-gray-600 hover:text-gray-900 font-medium transition"
-            >
-              Terms
-            </Link>
-            <Link 
-              href="/legal/privacy" 
-              className="text-gray-600 hover:text-gray-900 font-medium transition"
-            >
-              Privacy
+              💎 Buy Tokens
             </Link>
           </nav>
 
@@ -73,12 +75,20 @@ export default function Header({ showAuthButtons = true }: HeaderProps) {
                   </Link>
                 </div>
               ) : (
-                <Link
-                  href="/auth/login"
-                  className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-                >
-                  Sign In
-                </Link>
+                <div className="flex items-center space-x-2">
+                  <Link
+                    href="/auth/login"
+                    className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/auth/register"
+                    className="hidden sm:inline-block bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
               )}
             </div>
           )}
@@ -107,3 +117,4 @@ export default function Header({ showAuthButtons = true }: HeaderProps) {
     </header>
   );
 }
+

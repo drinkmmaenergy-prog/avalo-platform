@@ -772,3 +772,12 @@ export const getPendingBusinessPartners = onCall<{
     total: partners.length,
   };
 });
+
+
+
+
+
+
+
+
+

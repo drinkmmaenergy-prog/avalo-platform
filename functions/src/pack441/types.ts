@@ -177,3 +177,12 @@ export interface InviteQualityScore {
   calculatedAt?: any;
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+

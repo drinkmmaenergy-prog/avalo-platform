@@ -596,3 +596,12 @@ export function getLocalizedText(
   const firstKey = Object.keys(localizedText)[0];
   return localizedText[firstKey] || '';
 }
+
+
+
+
+
+
+
+
+

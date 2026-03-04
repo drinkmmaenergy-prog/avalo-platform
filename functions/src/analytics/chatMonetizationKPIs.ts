@@ -345,3 +345,12 @@ export const aggregateChatMonetizationKPIs = onSchedule({ schedule: "0 1 * * *",
       throw error;
     }
   });
+
+
+
+
+
+
+
+
+

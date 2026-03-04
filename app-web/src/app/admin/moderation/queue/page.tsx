@@ -6,20 +6,20 @@ import { AlertTriangle, ArrowRight, Clock, User, Shield } from 'lucide-react';
 import { useRealtimeIncidents, sortByPriority, RealtimeIncident } from '@/lib/moderation/realtime';
 import { Badge } from '../components/Badge';
 import { doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 import { useTranslations } from '@/lib/moderation/i18n';
 
 export default function QueuePage() {
   const router = useRouter();
-  const t = useTranslations('en'); // Can be made dynamic based on user preference
+  const { t } = useTranslations('en'); // Can be made dynamic based on user preference
   const { incidents, loading } = useRealtimeIncidents(100);
   const [sortedIncidents, setSortedIncidents] = useState<RealtimeIncident[]>([]);
   const [isStarting, setIsStarting] = useState(false);
 
   useEffect(() => {
-    // Filter only pending/under_review incidents and sort by priority
+    // Filter only open/in-progress incidents and sort by priority
     const activeIncidents = incidents.filter(
-      (inc) => inc.status === 'pending' || inc.status === 'under_review'
+      (inc) => inc.status === 'OPEN' || inc.status === 'IN_PROGRESS'
     );
     setSortedIncidents(sortByPriority(activeIncidents));
   }, [incidents]);
@@ -32,7 +32,7 @@ export default function QueuePage() {
 
     try {
       // Create lock for this incident
-      const lockRef = doc(db, 'locks', highestPriorityIncident.id);
+      const lockRef = doc(requireDb(), 'locks', highestPriorityIncident.id);
       await setDoc(lockRef, {
         moderatorId: 'current-moderator', // Replace with actual moderator ID
         timestamp: serverTimestamp(),
@@ -81,7 +81,7 @@ export default function QueuePage() {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="inline-block w-16 h-16 border-4 border-[#40E0D0] border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-400">{t.common.loading}</p>
+          <p className="text-gray-400">{t('common.loading')}</p>
         </div>
       </div>
     );

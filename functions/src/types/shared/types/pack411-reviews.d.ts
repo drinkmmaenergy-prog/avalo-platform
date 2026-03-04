@@ -22,3 +22,12 @@ export interface ReputationScore  {
     trend: 'UP' | 'DOWN' | 'STABLE';
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+

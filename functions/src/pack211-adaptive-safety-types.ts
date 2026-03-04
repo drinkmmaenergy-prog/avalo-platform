@@ -537,3 +537,12 @@ export interface AssessLocationSafetyRequest {
   };
   requestedBy: string;
 }
+
+
+
+
+
+
+
+
+

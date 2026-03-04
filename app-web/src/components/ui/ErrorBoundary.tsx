@@ -62,8 +62,7 @@ export class ErrorBoundary extends Component<Props, State> {
       url: typeof window !== 'undefined' ? window.location.href : 'unknown'
     };
 
-    console.log('Error logged:', errorReport);
-    // TODO: Send errorReport to logging backend
+    console.error('[ErrorBoundary] Uncaught error:', errorReport);
   }
 
   resetError = () => {

@@ -147,7 +147,7 @@ async function getServiceAccountToken(): Promise<string> {
 
 export interface MediaProcessingRequest {
   mediaId: string;
-  sourceUrl: string;
+  sourcUSDl: string;
   operations: {
     type: 'resize' | 'transcode' | 'thumbnail' | 'compress';
     params: Record<string, any>;
@@ -490,4 +490,13 @@ export const CloudRunServices = {
 };
 
 logger.info('✅ Cloud Run services client loaded - Heavy task offloading ready');
+
+
+
+
+
+
+
+
+
 

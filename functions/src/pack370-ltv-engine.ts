@@ -53,7 +53,7 @@ interface ROASSignal {
 }
 
 // ============================================================================
-// LTV TIER THRESHOLDS (PLN)
+// LTV TIER THRESHOLDS (USD)
 // ============================================================================
 
 const LTV_TIERS = {
@@ -393,7 +393,7 @@ async function updateROASSignals() {
       // Determine action
       let action: ROASSignal['recommendedAction'] = 'HOLD';
       let scaleLevel = 1.0;
-      let maxBudget = 1000; // Default PLN
+      let maxBudget = 1000; // Default USD
       
       if (avgCPI > avgLTV * 0.5) {
         // CPI > 50% of LTV → scale down
@@ -736,3 +736,12 @@ async function logAuditEvent(event: {
     timestamp: admin.firestore.Timestamp.now()
   });
 }
+
+
+
+
+
+
+
+
+

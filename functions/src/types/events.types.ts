@@ -384,3 +384,12 @@ export function validateEventData(data: Partial<Event>): {
     errors,
   };
 }
+
+
+
+
+
+
+
+
+

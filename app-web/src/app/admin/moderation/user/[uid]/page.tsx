@@ -45,7 +45,7 @@ interface ModalState {
 }
 
 export default function UserModerationPage() {
-  const params = useParams();
+  const params = useParams()!;
   const router = useRouter();
   const userId = params.uid as string;
 
@@ -170,13 +170,13 @@ export default function UserModerationPage() {
       });
 
       if (result.success) {
-        setToast({ message: result.message, type: 'success' });
+        setToast({ message: result.message ?? 'Action applied', type: 'success' });
         setModalState({ ...modalState, isOpen: false });
         
         // Reload user data to get updated status
         await loadUserData();
       } else {
-        setToast({ message: result.message, type: 'error' });
+        setToast({ message: result.message ?? result.error ?? 'Action failed', type: 'error' });
       }
     } catch (error: any) {
       console.error('Error applying action:', error);

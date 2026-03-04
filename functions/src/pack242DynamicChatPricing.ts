@@ -1,23 +1,24 @@
 /**
- * PACK 242 - Dynamic Chat Pricing Modifier (Elite Earners Upgrade)
- * 
- * Performance-based chat pricing system that allows elite creators to increase
- * their chat entry price from 100 tokens (baseline) to 500 tokens (maximum).
- * 
- * KEY DIFFERENCES FROM PACK 219:
- * - Performance-based (not reputation-based)
- * - Requires 60+ days active, 250+ partners OR 100+ bookings
- * - Requires 70%+ reply rate, 4.3★+ rating, 35k+ tokens/month
- * - Gender-inclusive (men need Influencer Badge)
- * - Price lock on 3 consecutive months of earnings drop
- * - No price reduction allowed (prevents bait & switch)
- * - 30-day change cooldown (vs 7 days in PACK 219)
- * 
- * ECONOMICS:
- * - 65/35 split unchanged
- * - 11/7 word billing unchanged
- * - Base price: 100 tokens for everyone
- * - Unlock is earned, not purchased
+ * @deprecated LEGACY — ELIMINATED by canonical-chat-engine.ts (v2_canonical)
+ *
+ * PACK 242 deposit modifiers are ENTIRELY REMOVED.
+ * Deposit is now simply: max(100, earnerConfiguredDepositTokensForNextSession)
+ * configured via setDepositForNextSession in canonical-chat-engine.ts.
+ *
+ * What changed:
+ * - Dynamic pricing tiers (0-5) → REMOVED
+ * - Eligibility requirements → REMOVED
+ * - Performance-based unlocks → REMOVED
+ * - Price lock on earnings drop → REMOVED
+ * - 30-day change cooldown → REMOVED
+ *
+ * Earners now freely set their deposit amount (min 100 tokens) via
+ * setDepositForNextSession. No eligibility gates.
+ *
+ * See: canonical-chat-legacy-shim.ts for error stubs.
+ *
+ * ORIGINAL: PACK 242 — Dynamic Chat Pricing Modifier (Elite Earners Upgrade)
+ * Performance-based chat pricing system (100-500 tokens)
  */
 
 import { db, serverTimestamp, increment, generateId } from './init.js';
@@ -817,3 +818,12 @@ export async function unlockPack242Pricing(
   
   return { success: true, message: 'Pricing unlocked successfully' };
 }
+
+
+
+
+
+
+
+
+

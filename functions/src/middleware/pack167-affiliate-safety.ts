@@ -326,7 +326,7 @@ export async function logBlockedContent(
     contentType: 'link' | 'banner' | 'description';
     contentId: string;
     blockedText?: string;
-    blockedImageUrl?: string;
+    blockedimageUrl?: string;
     safetyCheck: ContentSafetyCheck;
   }
 ): Promise<void> {
@@ -336,7 +336,7 @@ export async function logBlockedContent(
       contentType: params.contentType,
       contentId: params.contentId,
       blockedText: params.blockedText || '',
-      blockedImageUrl: params.blockedImageUrl || '',
+      blockedimageUrl: params.blockedimageUrl || '',
       reason: params.safetyCheck.blockedReasons[0],
       detectionMethod: 'keyword',
       confidence: params.safetyCheck.confidence,
@@ -345,3 +345,12 @@ export async function logBlockedContent(
     });
   }
 }
+
+
+
+
+
+
+
+
+

@@ -604,3 +604,12 @@ export const pack392_recalculateTrustScore = onCall(
     const trustDoc = await db.collection('appTrustScore').doc('current').get();
     return trustDoc.data();
   });
+
+
+
+
+
+
+
+
+

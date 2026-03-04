@@ -70,30 +70,58 @@ export default function AICompanionOnboarding() {
     );
   };
 
-  const handleComplete = async () => {
-    if (selectedGoals.length === 0) {
-      Alert.alert('Select Goals', 'Please select at least one goal to continue.');
-      return;
-    }
+const handleComplete = async () => {
+  if (!user) return;
 
-    if (selectedCategories.length === 0) {
-      Alert.alert('Select Categories', 'Please select at least one companion category.');
-      return;
-    }
+  if (selectedCategories.length === 0) {
+    Alert.alert(
+      "Select Categories",
+      "Please select at least one companion category."
+    );
+    return;
+  }
 
-    try {
-      setSaving(true);
-      const completeOnboarding = httpsCallable(functions, 'completeAICompanionOnboarding');
-      
-      await completeOnboarding({
-        selectedGoals,
-        communicationStyle,
-        notificationFrequency,
-        allowedCategories: selectedCategories,
-        disableEmotionalTopics,
-        disableVoiceMessages,
-        disableAvatarImages,
-      });
+  try {
+    setSaving(true);
+
+    const completeOnboarding = httpsCallable(
+      functions,
+      "completeAICompanionOnboarding"
+    );
+
+    await completeOnboarding({
+      selectedGoals,
+      communicationStyle,
+      notificationFrequency,
+      allowedCategories: selectedCategories,
+      disableEmotionalTopics,
+      disableVoiceMessages,
+      disableAvatarImages,
+    });
+
+    const db = requireDb();
+
+    await setDoc(
+      doc(db, "users", user.uid),
+      {
+        onboarding: {
+          profileComplete: true,
+          termsAcceptedAt: serverTimestamp(),
+          ageVerifiedAt: serverTimestamp(),
+        },
+        lastLoginAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    router.replace("/feed");
+  } catch (error) {
+    console.error("Onboarding error:", error);
+    Alert.alert("Error", "Failed to complete onboarding.");
+  } finally {
+    setSaving(false);
+  }
+};
 
       Alert.alert(
         'Setup Complete!',

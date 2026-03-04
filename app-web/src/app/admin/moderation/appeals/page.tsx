@@ -13,10 +13,12 @@ type AppealStatus =
   | 'UNDER_REVIEW'
   | 'APPROVED'
   | 'REJECTED'
+  | 'DENIED'
   | 'pending'
   | 'under_review'
   | 'approved'
-  | 'rejected';
+  | 'rejected'
+  | 'denied';
 
 interface Appeal {
   id: string;
@@ -233,3 +235,4 @@ export default function AppealsPage() {
     </div>
   );
 }
+

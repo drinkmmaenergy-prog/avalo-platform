@@ -514,3 +514,12 @@ export const aggregateSafetyMetrics = onSchedule({ schedule: "0 3 * * *", timeZo
       throw error;
     }
   });
+
+
+
+
+
+
+
+
+

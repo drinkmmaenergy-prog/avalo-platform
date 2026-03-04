@@ -513,8 +513,8 @@ async function assessAMLRisk(userId: string): Promise<void> {
     const amlData = amlDoc.data() as AMLProfile;
     const now = admin.firestore.Timestamp.now();
 
-    // Simple heuristics (configurable thresholds)
-    const KYC_THRESHOLD_365D = 2000; // Equivalent to ~2000 EUR in tokens
+    // Simple hUSDistics (configurable thresholds)
+    const KYC_THRESHOLD_365D = 2000; // Equivalent to ~2000 USD in tokens
     const HIGH_RISK_COUNTRIES = ['XX', 'YY']; // Placeholder
 
     let riskScore = amlData.riskScore;
@@ -826,3 +826,12 @@ export const acceptPolicy = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+

@@ -185,3 +185,12 @@ export async function onRatingCreated(targetUserId?: string): Promise<void> {
     updateReputationFromRatings(targetUserId).catch(console.error);
   }
 }
+
+
+
+
+
+
+
+
+

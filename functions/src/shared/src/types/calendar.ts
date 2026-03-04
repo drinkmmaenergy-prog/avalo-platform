@@ -204,3 +204,12 @@ export interface RefundPolicy {
   refundPercentage?: number;
   description?: string;
 }
+
+
+
+
+
+
+
+
+

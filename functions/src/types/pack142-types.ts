@@ -281,7 +281,7 @@ export interface StolenPhotoCheck {
 export interface CelebrityMatch {
   celebrityName: string;
   similarityScore: number; // 0-1
-  sourceUrl?: string;
+  sourcUSDl?: string;
   confidence: number;
 }
 
@@ -663,3 +663,12 @@ export function getVerificationMessage(
     ? IDENTITY_MESSAGES[key] 
     : IDENTITY_MESSAGES.LIVENESS_REQUIRED;
 }
+
+
+
+
+
+
+
+
+

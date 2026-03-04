@@ -538,3 +538,12 @@ export async function getUserConsentRecordsByState(
   const allRecords = await getUserConsentRecords(userId);
   return allRecords.filter(r => r.state === state);
 }
+
+
+
+
+
+
+
+
+

@@ -583,3 +583,12 @@ export function countWords(text: string): number {
   const words = cleaned.trim().split(/\s+/).filter(w => w.length > 0);
   return words.length;
 }
+
+
+
+
+
+
+
+
+

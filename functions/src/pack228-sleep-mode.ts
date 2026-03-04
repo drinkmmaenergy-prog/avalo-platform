@@ -733,3 +733,12 @@ export const getSleepModeMessage = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', 'Failed to check sleep mode');
   }
 });
+
+
+
+
+
+
+
+
+

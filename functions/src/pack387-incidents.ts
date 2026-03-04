@@ -404,3 +404,12 @@ async function deactivateCrisisMeasures(incidentId: string): Promise<void> {
     timestamp: admin.firestore.Timestamp.now(),
   });
 }
+
+
+
+
+
+
+
+
+

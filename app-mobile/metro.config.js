@@ -1,20 +1,32 @@
 // metro.config.js — Monorepo-aware Metro configuration for Expo
 // Fixes pnpm virtual store path resolution issues on Windows
-const { getDefaultConfig } = require('expo/metro-config');
-const path = require('path');
+const { getDefaultConfig } = require("expo/metro-config");
+const path = require("path");
 
 const config = getDefaultConfig(__dirname);
 
-config.resolver.extraNodeModules = {
-  '@': path.resolve(__dirname),
-};
-
 config.resolver.nodeModulesPaths = [
-  path.resolve(__dirname, 'node_modules'),
-  path.resolve(__dirname, '../node_modules'),
+  path.resolve(__dirname, "node_modules"),
+  path.resolve(__dirname, "..", "node_modules"),
 ];
 
+config.resolver.disableHierarchicalLookup = true;
+
 module.exports = config;
+const { getDefaultConfig } = require("expo/metro-config");
+const path = require("path");
+
+const config = getDefaultConfig(__dirname);
+
+config.resolver.nodeModulesPaths = [
+  path.resolve(__dirname, "node_modules"),
+  path.resolve(__dirname, "..", "node_modules"),
+];
+
+config.resolver.disableHierarchicalLookup = true;
+
+module.exports = config;
+
 
 // Enable pnpm symlink support
 config.resolver.unstable_enableSymlinks = true;

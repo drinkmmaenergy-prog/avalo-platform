@@ -1,14 +1,25 @@
 /**
- * Stripe Server SDK — Server-side only.
+ * Stripe Server SDK — Server-side only (API routes).
  *
- * Used in API routes for creating checkout sessions and handling webhooks.
- * IMPORTANT: This file must NEVER be imported from client components.
+ * INVARIANTS:
+ *   - NEVER import from client components.
+ *   - STRIPE_SECRET_KEY must be set in env.
+ *   - If missing, throws a clear error at import time.
  */
 
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', {
-  apiVersion: '2023-10-16',
+const secretKey = process.env.STRIPE_SECRET_KEY;
+
+if (!secretKey) {
+  throw new Error(
+    '[stripe-server] STRIPE_SECRET_KEY is not set. ' +
+    'Add it to .env.local for local development or set it in your deployment environment.'
+  );
+}
+
+const stripe = new Stripe(secretKey, {
+  apiVersion: '2024-04-10' as Stripe.LatestApiVersion,
   typescript: true,
 });
 

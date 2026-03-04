@@ -200,7 +200,7 @@ export { crypto };
  * Convert Buffer to Uint8Array for Node 20 crypto compatibility.
  * Node 20 tightened types for crypto functions - requires Uint8Array<ArrayBuffer>.
  */
-export function toUint8Array(buffer: Buffer): Uint8Array<ArrayBuffer> {
+export function toUint8Array(buffer: Buffer): Uint8Array {
   // Create a new ArrayBuffer copy to ensure we have ArrayBuffer, not SharedArrayBuffer
   const arrayBuffer = new ArrayBuffer(buffer.byteLength);
   const uint8Array = new Uint8Array(arrayBuffer);
@@ -321,3 +321,12 @@ export function createSuccessResponse<T>(data: T): SuccessResponse<T> {
 
   return;
 }
+
+
+
+
+
+
+
+
+

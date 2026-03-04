@@ -493,3 +493,12 @@ export async function validateLegalAcceptance(
 
 // Export validation helper for use in other modules
 export { checkLegalRequirements };
+
+
+
+
+
+
+
+
+

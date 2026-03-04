@@ -49,7 +49,7 @@ export interface PayoutRecordExtended {
   
   // Standard payout fields
   amountTokens: number;
-  amountPLN: number;
+  amountUSD: number;
   method: string;
   status: string;
   
@@ -233,9 +233,9 @@ export async function processPayoutWithAgencyTracking(params: {
   const creatorAmount = amountTokens - agencyAmount;
   const payoutId = db.collection('payouts').doc().id;
 
-  // Calculate PLN conversion (example rate, should be dynamic)
-  const TOKEN_TO_PLN_RATE = 0.1; // Example: 1 token = 0.1 PLN
-  const amountPLN = amountTokens * TOKEN_TO_PLN_RATE;
+  // Calculate USD conversion (example rate, should be dynamic)
+  const TOKEN_PAYOUT_USD = 0.1; // Example: 1 token = 0.1 USD
+  const amountUSD = amountTokens * TOKEN_PAYOUT_USD;
 
   // Create payout record
   const payoutRecord: PayoutRecordExtended = {
@@ -248,7 +248,7 @@ export async function processPayoutWithAgencyTracking(params: {
     agencyId,
     agencyPercentage,
     amountTokens,
-    amountPLN,
+    amountUSD,
     method,
     status: 'PENDING',
     createdAt: Timestamp.now(),
@@ -274,7 +274,7 @@ export async function processPayoutWithAgencyTracking(params: {
         linkedPayoutId: payoutId,
         creatorUserId: userId,
         amountTokens: agencyAmount,
-        amountPLN: agencyAmount * TOKEN_TO_PLN_RATE,
+        amountUSD: agencyAmount * TOKEN_PAYOUT_USD,
         method,
         status: 'PENDING',
         kycVerified: false, // Will be checked separately
@@ -510,3 +510,12 @@ export async function backfillAgencyEarnings(): Promise<{
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+

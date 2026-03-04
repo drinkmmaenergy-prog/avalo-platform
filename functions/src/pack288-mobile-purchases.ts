@@ -25,13 +25,13 @@ import {
 import { admin, functions, increment, onCall, timestamp } from './runtime';
 // Token package configuration (must match app-mobile/lib/token-store-config.ts)
 const TOKEN_PACKAGES = [
-  { id: 'mini', tokens: 100, basePricePLN: 31.99 },
-  { id: 'basic', tokens: 300, basePricePLN: 85.99 },
-  { id: 'standard', tokens: 500, basePricePLN: 134.99 },
-  { id: 'premium', tokens: 1000, basePricePLN: 244.99 },
-  { id: 'pro', tokens: 2000, basePricePLN: 469.99 },
-  { id: 'elite', tokens: 5000, basePricePLN: 1125.99 },
-  { id: 'royal', tokens: 10000, basePricePLN: 2149.99 },
+  { id: 'mini', tokens: 100, priceUSD: 31.99 },
+  { id: 'basic', tokens: 300, priceUSD: 85.99 },
+  { id: 'standard', tokens: 500, priceUSD: 134.99 },
+  { id: 'premium', tokens: 1000, priceUSD: 244.99 },
+  { id: 'pro', tokens: 2000, priceUSD: 469.99 },
+  { id: 'elite', tokens: 5000, priceUSD: 1125.99 },
+  { id: 'royal', tokens: 10000, priceUSD: 2149.99 },
 ] as const;
 
 const getPackageById = (id: string) => {
@@ -91,8 +91,8 @@ async function verifyAppleReceipt(
       packId: pack.id,
       tokens: pack.tokens,
       transactionId: `apple_${Date.now()}`,
-      paidAmount: pack.basePricePLN,
-      paidCurrency: 'PLN',
+      paidAmount: pack.priceUSD,
+      paidCurrency: 'USD',
     };
   } catch (error: any) {
     logger.error('Apple receipt verification error:', error);
@@ -152,8 +152,8 @@ async function verifyGoogleReceipt(
       packId: pack.id,
       tokens: pack.tokens,
       transactionId: `google_${Date.now()}`,
-      paidAmount: pack.basePricePLN,
-      paidCurrency: 'PLN',
+      paidAmount: pack.priceUSD,
+      paidCurrency: 'USD',
     };
   } catch (error: any) {
     logger.error('Google receipt verification error:', error);
@@ -192,7 +192,7 @@ async function checkReceiptConsumed(
  */
 async function validatePurchaseLimits(
   userId: string,
-  amountPLN: number
+  amountUSD: number
 ): Promise<{ valid: boolean; reason?: string }> {
   // Check age verification (must be 18+)
   const userDoc = await db.collection('users').doc(userId).get();
@@ -205,18 +205,18 @@ async function validatePurchaseLimits(
     };
   }
   
-  // Check monthly limit (10000 PLN equivalent)
+  // Check monthly limit (10000 USD equivalent)
   const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
   const monthlyLimitDoc = await db
     .collection('purchaseLimits')
     .doc(`${userId}_${currentMonth}`)
     .get();
     
-  const monthlyTotal = monthlyLimitDoc.data()?.totalPLN || 0;
-  if (monthlyTotal + amountPLN > 10000) {
+  const monthlyTotal = monthlyLimitDoc.data()?.totalUSD || 0;
+  if (monthlyTotal + amountUSD > 10000) {
     return {
       valid: false,
-      reason: 'Monthly purchase limit exceeded (10000 PLN)',
+      reason: 'Monthly purchase limit exceeded (10000 USD)',
     };
   }
   
@@ -388,7 +388,7 @@ export const tokens_mobilePurchase = https.onCall(
       
       const limitsCheck = await validatePurchaseLimits(
         auth.uid,
-        pack.basePricePLN
+        pack.priceUSD
       );
       
       if (!limitsCheck.valid) {
@@ -405,9 +405,9 @@ export const tokens_mobilePurchase = https.onCall(
         userId: auth.uid,
         packageId: packageId as any,
         tokens: pack.tokens,
-        basePricePLN: pack.basePricePLN,
-        paidCurrency: verification.paidCurrency || 'PLN',
-        paidAmount: verification.paidAmount || pack.basePricePLN,
+        priceUSD: pack.priceUSD,
+        paidCurrency: verification.paidCurrency || 'USD',
+        paidAmount: verification.paidAmount || pack.priceUSD,
         platform,
         provider: platform === 'ios' ? 'app_store' : 'google_play',
         providerOrderId: verification.transactionId || `${platform}_${Date.now()}`,
@@ -448,7 +448,7 @@ export const tokens_mobilePurchase = https.onCall(
         {
           userId: auth.uid,
           month: currentMonth,
-          totalPLN: FieldValue.increment(pack.basePricePLN),
+          totalUSD: FieldValue.increment(pack.priceUSD),
           purchaseCount: FieldValue.increment(1),
           lastPurchaseAt: serverTimestamp(),
         },
@@ -538,15 +538,15 @@ export const tokens_getMonthlyLimits = https.onCall(
         .get();
         
       const limitData = limitDoc.data();
-      const totalPLN = limitData?.totalPLN || 0;
-      const maxPLN = 10000;
-      const remaining = Math.max(0, maxPLN - totalPLN);
+      const totalUSD = limitData?.totalUSD || 0;
+      const maxUSD = 10000;
+      const remaining = Math.max(0, maxUSD - totalUSD);
       
       return {
         success: true,
         month: currentMonth,
-        totalSpent: totalPLN,
-        limit: maxPLN,
+        totalSpent: totalUSD,
+        limit: maxUSD,
         remaining,
         purchaseCount: limitData?.purchaseCount || 0,
         canPurchase: remaining > 0,
@@ -557,3 +557,12 @@ export const tokens_getMonthlyLimits = https.onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+

@@ -240,7 +240,7 @@ export function validateSocialProfile(platform: string, url: string): {
   reason?: string;
 } {
   const lowercasePlatform = platform.toLowerCase();
-  const lowercaseUrl = url.toLowerCase();
+  const lowercasUSDl = url.toLowerCase();
 
   // Blocked platforms
   const blockedPlatforms = [
@@ -257,7 +257,7 @@ export function validateSocialProfile(platform: string, url: string): {
   ];
 
   for (const blocked of blockedPlatforms) {
-    if (lowercasePlatform.includes(blocked) || lowercaseUrl.includes(blocked)) {
+    if (lowercasePlatform.includes(blocked) || lowercasUSDl.includes(blocked)) {
       return {
         valid: false,
         reason: `Platform '${blocked}' is not allowed for ambassador applications`
@@ -303,3 +303,12 @@ export async function validatePortfolioItem(
     valid: true
   };
 }
+
+
+
+
+
+
+
+
+

@@ -29,7 +29,7 @@ export interface PersonalityTraits {
   conscientiousness: number;
   extraversion: number;
   agreeableness: number;
-  neuroticism: number;
+  nUSDoticism: number;
   customTraits: Record<string, number>;
   archetype: string;
 }
@@ -279,3 +279,12 @@ export const ALLOWED_SEED_ARCHETYPES = [
 
 export const PLATFORM_REVENUE_SHARE = 0.35;
 export const CREATOR_REVENUE_SHARE = 0.65;
+
+
+
+
+
+
+
+
+

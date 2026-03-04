@@ -63,3 +63,12 @@ export function calculateChatEarningsSplit(totalTokens: number): {
  * IMPORTANT: No changes regardless of subscription tier
  */
 export const CHAT_ENTRY_PRICE = 100;  // tokens
+
+
+
+
+
+
+
+
+

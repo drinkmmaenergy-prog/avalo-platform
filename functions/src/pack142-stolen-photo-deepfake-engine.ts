@@ -64,7 +64,7 @@ async function matchAgainstCelebrities(photoUrl: string): Promise<CelebrityMatch
   return [{
     celebrityName: celebrities[Math.floor(Math.random() * celebrities.length)],
     similarityScore: 0.85 + Math.random() * 0.1,
-    sourceUrl: 'https://example.com/celebrity-photo',
+    sourcUSDl: 'https://example.com/celebrity-photo',
     confidence: 0.9,
   }];
 }
@@ -563,3 +563,12 @@ export default {
   runStolenPhotoCheck,
   runDeepfakeDetection,
 };
+
+
+
+
+
+
+
+
+

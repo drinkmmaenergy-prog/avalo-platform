@@ -127,10 +127,10 @@ async function calculateMonetizationScore(userId: string): Promise<number> {
     
     // Total earned (40 points)
     const totalEarned = walletData?.earned || 0;
-    if (totalEarned >= 100) score += 10; // ~20 PLN
-    if (totalEarned >= 500) score += 10; // ~100 PLN
-    if (totalEarned >= 2000) score += 10; // ~400 PLN
-    if (totalEarned >= 5000) score += 10; // ~1000 PLN
+    if (totalEarned >= 100) score += 10; // ~20 USD
+    if (totalEarned >= 500) score += 10; // ~100 USD
+    if (totalEarned >= 2000) score += 10; // ~400 USD
+    if (totalEarned >= 5000) score += 10; // ~1000 USD
     
     // Paid interactions count (30 points)
     const transactionsSnapshot = await db
@@ -535,3 +535,12 @@ export async function degradeInactiveUserScores(
 }
 
 logger.info('✅ Discovery Profile Builder initialized');
+
+
+
+
+
+
+
+
+

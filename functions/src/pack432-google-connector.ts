@@ -55,7 +55,7 @@ interface GoogleAdAsset {
 
 class GoogleAdsAPI {
   private config: GoogleAdsAccount;
-  private baseUrl = 'https://googleads.googleapis.com/v14';
+  private baseURL = 'https://googleads.googleapis.com/v14';
 
   constructor(config: GoogleAdsAccount) {
     this.config = config;
@@ -133,7 +133,7 @@ class GoogleAdsAPI {
       };
 
       const response = await axios.post(
-        `${this.baseUrl}/customers/${this.config.customerId}/campaigns:mutate`,
+        `${this.baseURL}/customers/${this.config.customerId}/campaigns:mutate`,
         {
           operations: [campaignOperation]
         },
@@ -164,7 +164,7 @@ class GoogleAdsAPI {
       };
 
       const response = await axios.post(
-        `${this.baseUrl}/customers/${this.config.customerId}/adGroups:mutate`,
+        `${this.baseURL}/customers/${this.config.customerId}/adGroups:mutate`,
         {
           operations: [adGroupOperation]
         },
@@ -195,7 +195,7 @@ class GoogleAdsAPI {
         } else if (asset.type === 'YOUTUBE_VIDEO' && asset.youtubeVideoId) {
           assetData.youtubeVideoAsset = { youtubeVideoId: asset.youtubeVideoId };
         } else if (asset.type === 'IMAGE' && asset.imageUrl) {
-          assetData.imageAsset = { fullSizeImageUrl: asset.imageUrl };
+          assetData.imageAsset = { fullSizeimageUrl: asset.imageUrl };
         }
 
         return {
@@ -208,7 +208,7 @@ class GoogleAdsAPI {
       });
 
       const response = await axios.post(
-        `${this.baseUrl}/customers/${this.config.customerId}/campaignAssets:mutate`,
+        `${this.baseURL}/customers/${this.config.customerId}/campaignAssets:mutate`,
         { operations },
         { headers }
       );
@@ -225,7 +225,7 @@ class GoogleAdsAPI {
       const headers = await this.getHeaders();
 
       const response = await axios.post(
-        `${this.baseUrl}/customers/${this.config.customerId}/campaigns:mutate`,
+        `${this.baseURL}/customers/${this.config.customerId}/campaigns:mutate`,
         {
           operations: [{
             update: {
@@ -250,7 +250,7 @@ class GoogleAdsAPI {
       const headers = await this.getHeaders();
 
       const response = await axios.post(
-        `${this.baseUrl}/customers/${this.config.customerId}/campaigns:mutate`,
+        `${this.baseURL}/customers/${this.config.customerId}/campaigns:mutate`,
         {
           operations: [{
             update: {
@@ -293,7 +293,7 @@ class GoogleAdsAPI {
       `;
 
       const response = await axios.post(
-        `${this.baseUrl}/customers/${this.config.customerId}/googleAds:searchStream`,
+        `${this.baseURL}/customers/${this.config.customerId}/googleAds:searchStream`,
         { query },
         { headers }
       );
@@ -317,7 +317,7 @@ class GoogleAdsAPI {
       }));
 
       const response = await axios.post(
-        `${this.baseUrl}/customers/${this.config.customerId}/campaignCriteria:mutate`,
+        `${this.baseURL}/customers/${this.config.customerId}/campaignCriteria:mutate`,
         { operations },
         { headers }
       );
@@ -655,3 +655,12 @@ export const googleConnector = {
   syncGoogleStats,
   trackGoogleConversion
 };
+
+
+
+
+
+
+
+
+

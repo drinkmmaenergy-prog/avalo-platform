@@ -168,7 +168,7 @@ export interface TrainingProgress {
   completedAt?: firestore.Timestamp;
   quizScore?: number;
   attempts: number;
-  certificateUrl?: string;
+  certificatUSDl?: string;
 }
 
 // ============================================================================
@@ -706,3 +706,12 @@ export function createAmbassadorOnboardingService(
 ): AmbassadorOnboardingService {
   return new AmbassadorOnboardingService(db);
 }
+
+
+
+
+
+
+
+
+

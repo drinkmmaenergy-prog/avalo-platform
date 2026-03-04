@@ -597,3 +597,12 @@ async function getRegularDiscoveryProfiles(
 
   return snapshot.docs.map((doc) => doc.id);
 }
+
+
+
+
+
+
+
+
+

@@ -222,3 +222,12 @@ export const getRemoteConfigParam = onCall(async (request) => {
     throw new HttpsError('internal', 'Failed to fetch remote config param');
   }
 });
+
+
+
+
+
+
+
+
+

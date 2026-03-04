@@ -199,3 +199,12 @@ function generateFeedItemForStage(recovery: any): any {
   // Return random affirmation
   return affirmations[Math.floor(Math.random() * affirmations.length)];
 }
+
+
+
+
+
+
+
+
+

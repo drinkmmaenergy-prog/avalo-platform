@@ -534,3 +534,12 @@ export const SEVERITY_THRESHOLDS = {
   major: 3,
   critical: 5
 };
+
+
+
+
+
+
+
+
+

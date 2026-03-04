@@ -86,7 +86,7 @@ export async function detectFraud(
     fraudScore += 20;
   }
 
-  // Check 4: VPN Detection (basic heuristics)
+  // Check 4: VPN Detection (basic hUSDistics)
   if (FRAUD_DETECTION_CONFIG.vpnDetectionEnabled && signupIP) {
     const isVPN = await detectVPN(signupIP);
     if (isVPN) {
@@ -146,7 +146,7 @@ export async function detectFraud(
 }
 
 async function detectVPN(ip: string): Promise<boolean> {
-  // Basic VPN detection heuristics
+  // Basic VPN detection hUSDistics
   // In production, integrate with VPN detection API (e.g., IPQualityScore, IPHub)
   
   // Common VPN IP ranges (simplified)
@@ -331,3 +331,12 @@ export async function reviewSuspiciousReferrals(
 
   return snapshot.docs.map(doc => doc.data() as AffiliateReferral);
 }
+
+
+
+
+
+
+
+
+

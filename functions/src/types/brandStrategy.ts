@@ -301,3 +301,12 @@ export interface UpdateStrategyWithAnalyticsRequest {
     eventParticipation?: { eventId: string; eventName: string; attendees: number; engagement: number; }[];
   };
 }
+
+
+
+
+
+
+
+
+

@@ -72,3 +72,12 @@ export const generateId = (): string => db.collection("_").doc().id;
 console.log("🔥 Firebase Admin initialized successfully with Firestore, Auth, and Storage.");
 
 
+
+
+
+
+
+
+
+
+

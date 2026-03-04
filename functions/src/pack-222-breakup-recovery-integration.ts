@@ -171,3 +171,12 @@ export async function onSafetyIncidentResolved(
     console.error('Error on safety incident resolution:', error);
   }
 }
+
+
+
+
+
+
+
+
+

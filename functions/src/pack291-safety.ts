@@ -378,3 +378,12 @@ export function generateSafeFallback(type: string): string {
 
   return fallbacks[type] || 'Continue focusing on quality engagement and consistent activity.';
 }
+
+
+
+
+
+
+
+
+

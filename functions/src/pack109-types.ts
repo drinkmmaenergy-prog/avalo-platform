@@ -412,3 +412,12 @@ export class PartnershipError extends Error {
     this.name = 'PartnershipError';
   }
 }
+
+
+
+
+
+
+
+
+

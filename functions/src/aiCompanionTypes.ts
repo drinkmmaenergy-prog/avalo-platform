@@ -166,3 +166,12 @@ export interface AIAvatarEvent {
   metadata?: Record<string, any>;
   timestamp: string; // ISO_DATETIME
 }
+
+
+
+
+
+
+
+
+

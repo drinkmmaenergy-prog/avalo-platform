@@ -98,3 +98,4 @@ shared/
 !app-web/src/lib/**
 
 app-web/.env.local
+app-web/pnpm-lock.yaml

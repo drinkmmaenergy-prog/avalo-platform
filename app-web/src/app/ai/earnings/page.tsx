@@ -1,10 +1,10 @@
+"use client";
+
 /**
  * PACK 279E — AI Creator Earnings Dashboard (Web)
  * Next.js page for AI creators to track earnings from chat/voice/video
  * Read-only analytics displaying real earnings from PACK 277
  */
-
-'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -18,7 +18,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 import { TOKEN_PAYOUT_USD, CREATOR_REVENUE_SHARE } from '@/lib/economyConfig';
 
 const TOKEN_TO_USD = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.03 USD)
@@ -82,7 +82,7 @@ export default function AIEarningsWebPage() {
       const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
       // Fetch AI companion earnings
-      const earningsRef = collection(db, 'aiCompanionEarnings');
+      const earningsRef = collection(requireDb(), 'aiCompanionEarnings');
       const earningsQuery = query(
         earningsRef,
         where('creatorId', '==', userId),
@@ -420,3 +420,4 @@ export default function AIEarningsWebPage() {
     </div>
   );
 }
+

@@ -52,7 +52,7 @@ const quickActions: QuickAction[] = [
 ];
 
 export default function AssistantPage() {
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams()!;
   const incidentId = searchParams.get('incidentId');
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -91,7 +91,7 @@ export default function AssistantPage() {
       const incidentData = incidentDoc.data();
       
       // Fetch user data if available
-      let userData = null;
+      let userData: Record<string, unknown> | null = null;
       if (incidentData.userId) {
         const userDoc = await getDoc(doc(db, 'users', incidentData.userId));
         if (userDoc.exists()) {

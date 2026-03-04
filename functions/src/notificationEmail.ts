@@ -119,3 +119,12 @@ To manage your notification preferences, visit: https://avalo.app/settings/notif
 
   return { text, html };
 }
+
+
+
+
+
+
+
+
+

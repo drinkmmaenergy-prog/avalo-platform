@@ -453,3 +453,12 @@ export interface SafeDatesMetric {
   totalMeetings: number;
   totalScore: number;
 }
+
+
+
+
+
+
+
+
+

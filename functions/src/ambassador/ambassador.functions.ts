@@ -752,3 +752,12 @@ export const reportAmbassadorMisconduct = functions.https.onCall(async (request)
     message: 'Report submitted successfully. Our team will investigate.'
   };
 });
+
+
+
+
+
+
+
+
+

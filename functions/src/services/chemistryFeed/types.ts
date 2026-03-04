@@ -108,3 +108,12 @@ export interface AnalyticsEvent {
   metadata?: Record<string, any>;
   timestamp: Date;
 }
+
+
+
+
+
+
+
+
+

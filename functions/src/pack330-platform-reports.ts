@@ -84,7 +84,7 @@ async function generatePlatformReport(period: string): Promise<TaxReportPlatform
   // Initialize counters
   let totalGrossTokensSold = 0;
   let totalTokensPaidOutToCreators = 0;
-  let totalPayoutsPLN = 0;
+  let totalPayoutsUSD = 0;
 
   const regionBreakdown: {
     PL?: RegionBreakdown;
@@ -175,7 +175,7 @@ async function generatePlatformReport(period: string): Promise<TaxReportPlatform
 
   payoutsQuery.docs.forEach(doc => {
     const payout = doc.data();
-    totalPayoutsPLN += payout.amountPLN || 0;
+    totalPayoutsUSD += payout.amountUSD || 0;
   });
 
   // Build region breakdown
@@ -184,24 +184,24 @@ async function generatePlatformReport(period: string): Promise<TaxReportPlatform
       regionBreakdown[region as keyof typeof regionBreakdown] = {
         creators: creators.size,
         tokens: tokensByRegion[region],
-        payoutPLN: tokensByRegion[region] * TAX_CONFIG.TOKEN_TO_PLN_RATE,
+        payoutUSD: tokensByRegion[region] * TAX_CONFIG.TOKEN_PAYOUT_USD,
       };
     }
   }
 
   // Calculate platform revenue
-  const totalGrossRevenuePLN = totalGrossTokensSold * TAX_CONFIG.TOKEN_TO_PLN_RATE;
-  const totalCreatorPayoutsPLN = totalTokensPaidOutToCreators * TAX_CONFIG.TOKEN_TO_PLN_RATE;
-  const totalAvaloRevenuePLN = totalGrossRevenuePLN - totalCreatorPayoutsPLN;
+  const totalGrossRevenueUSD = totalGrossTokensSold * TAX_CONFIG.TOKEN_PAYOUT_USD;
+  const totalCreatorPayoutsUSD = totalTokensPaidOutToCreators * TAX_CONFIG.TOKEN_PAYOUT_USD;
+  const totalAvaloRevenueUSD = totalGrossRevenueUSD - totalCreatorPayoutsUSD;
 
   // Create report
   const report: TaxReportPlatform = {
     period,
     totalGrossTokensSold,
-    totalGrossRevenuePLN,
+    totalGrossRevenueUSD,
     totalTokensPaidOutToCreators,
-    totalPayoutsPLN: totalCreatorPayoutsPLN,
-    totalAvaloRevenuePLN,
+    totalPayoutsUSD: totalCreatorPayoutsUSD,
+    totalAvaloRevenueUSD,
     regionBreakdown,
     generatedAt: serverTimestamp() as any,
   };
@@ -215,8 +215,8 @@ async function generatePlatformReport(period: string): Promise<TaxReportPlatform
 
   logger.info('Platform tax report generated', {
     period,
-    totalGrossRevenuePLN,
-    totalAvaloRevenuePLN,
+    totalGrossRevenueUSD,
+    totalAvaloRevenueUSD,
     regions: Object.keys(regionBreakdown),
   });
 
@@ -418,3 +418,12 @@ export const pack330_generateYearlyPlatformReport = scheduler.onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+

@@ -1,9 +1,11 @@
+"use client";
+
 /**
  * Chat Service with Token Engine
  * Implements 6/10 free messages (3 per participant), word-based billing, 65/35 split
  */
 
-import { db, functions } from '../firebase';
+import { requireDb, requireFunctions } from '../firebase';
 import {
   collection,
   query,
@@ -35,8 +37,7 @@ export async function initializeChat(params: {
   initiatorId: string;
 }): Promise<{ chatId: string; chat: Chat }> {
   try {
-    const createChat = httpsCallable<typeof params, { chatId: string; chat: Chat }>(
-      functions,
+    const createChat = httpsCallable<typeof params, { chatId: string; chat: Chat }>(requireFunctions(),
       'createChat'
     );
     const result = await createChat(params);
@@ -52,7 +53,7 @@ export async function initializeChat(params: {
  */
 export async function getChat(chatId: string): Promise<Chat | null> {
   try {
-    const chatRef = doc(db, 'chats', chatId);
+    const chatRef = doc(requireDb(), 'chats', chatId);
     const chatSnap = await getDoc(chatRef);
 
     if (!chatSnap.exists()) {
@@ -75,7 +76,7 @@ export async function getChat(chatId: string): Promise<Chat | null> {
 export async function getUserChats(userId: string): Promise<Chat[]> {
   try {
     const q = query(
-      collection(db, 'chats'),
+      collection(requireDb(), 'chats'),
       where('participants', 'array-contains', userId),
       where('state', '!=', 'CLOSED'),
       orderBy('state'),
@@ -120,7 +121,7 @@ export async function sendMessage(params: {
       messageId?: string;
       error?: string;
       tokensCost?: number;
-    }>(functions, 'sendChatMessage');
+    }>(requireFunctions(), 'sendChatMessage');
     
     const result = await sendMsg(params);
     return result.data;
@@ -141,7 +142,7 @@ export function subscribeToMessages(
   callback: (messages: ChatMessage[]) => void
 ): Unsubscribe {
   const q = query(
-    collection(db, 'chats', chatId, 'messages'),
+    collection(requireDb(), 'chats', chatId, 'messages'),
     orderBy('createdAt', 'asc'),
     limit(100)
   );
@@ -162,7 +163,7 @@ export function subscribeToChat(
   chatId: string,
   callback: (chat: Chat | null) => void
 ): Unsubscribe {
-  const chatRef = doc(db, 'chats', chatId);
+  const chatRef = doc(requireDb(), 'chats', chatId);
   
   return onSnapshot(chatRef, (snapshot) => {
     if (!snapshot.exists()) {
@@ -193,7 +194,7 @@ export async function processChatDeposit(params: {
       success: boolean;
       escrowAmount: number;
       platformFee: number;
-    }>(functions, 'processChatDeposit');
+    }>(requireFunctions(), 'processChatDeposit');
     
     const result = await deposit(params);
     return result.data;
@@ -237,7 +238,7 @@ export async function closeChat(params: {
     const close = httpsCallable<typeof params, {
       success: boolean;
       refunded: number;
-    }>(functions, 'closeChat');
+    }>(requireFunctions(), 'closeChat');
     
     const result = await close(params);
     return result.data;

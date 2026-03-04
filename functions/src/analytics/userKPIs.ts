@@ -359,3 +359,12 @@ export const aggregateDailyUserKPIs = onSchedule({ schedule: "0 0 * * *", timeZo
       throw error;
     }
   });
+
+
+
+
+
+
+
+
+

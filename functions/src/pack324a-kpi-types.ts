@@ -7,7 +7,7 @@
 
 import { Timestamp } from 'firebase-admin/firestore';
 import { admin } from './runtime';
-import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 
 // ============================================================================
 // PLATFORM KPI TYPES
@@ -24,7 +24,7 @@ export interface PlatformKpiDaily {
   
   // Revenue Metrics (tokens)
   totalTokensSpent: number;
-  totalTokenRevenuePLN: number; // tokens * 0.20 PLN
+  totalTokenRevenueUSD: number; // tokens * 0.20 USD
   
   // Activity Metrics
   totalChats: number;
@@ -47,7 +47,7 @@ export interface PlatformKpiHourly {
   
   // Real-time revenue (tokens)
   tokensSpent: number;
-  tokenRevenuePLN: number;
+  tokenRevenueUSD: number;
   
   // Real-time activity counts
   chatsStarted: number;
@@ -75,7 +75,7 @@ export interface CreatorKpiDaily {
   
   // Totals
   totalEarnedTokens: number;
-  totalEarnedPLN: number; // tokens * 0.20 PLN
+  totalEarnedUSD: number; // tokens * 0.20 USD
   
   // Activity
   sessionsCount: number;
@@ -169,7 +169,7 @@ export interface PlatformKpiResponse {
   };
   revenue: {
     tokensSpent: number;
-    revenuePLN: number;
+    revenueUSD: number;
   };
   activity: {
     chats: number;
@@ -193,7 +193,7 @@ export interface CreatorKpiResponse {
     other: number;
     total: number;
   };
-  earningsPLN: number;
+  earningsUSD: number;
   sessions: number;
   lastUpdated: Date;
 }
@@ -219,7 +219,7 @@ export interface SafetyKpiResponse {
 
 export const KPI_CONFIG = {
   // Revenue conversion rate — derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
-  TOKEN_TO_PLN_RATE: TOKEN_PAYOUT_PLN,
+  TOKEN_PAYOUT_USD: TOKEN_PAYOUT_USD,
   
   // Aggregation schedule
   DAILY_AGGREGATION_HOUR_UTC: 0, // 00:10 UTC
@@ -239,3 +239,12 @@ export const KPI_CONFIG = {
     DAILY: 365,
   },
 } as const;
+
+
+
+
+
+
+
+
+

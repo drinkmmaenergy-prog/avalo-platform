@@ -311,3 +311,12 @@ export const getChurnStatistics = functions.https.onCall(async (request) => {
 });
 
 console.log('✅ PACK 301B - Daily Churn Recalculation initialized');
+
+
+
+
+
+
+
+
+

@@ -1339,3 +1339,12 @@ export const scheduledAnomalyDetection = onSchedule({ schedule: "*/15 * * * *", 
       }
     }
   });
+
+
+
+
+
+
+
+
+

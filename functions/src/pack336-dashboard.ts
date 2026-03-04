@@ -137,7 +137,7 @@ export const pack336_getDailyGlobalTimeseries = functions.https.onCall(async (re
       payingDAU: doc.data().payingUsersDAU,
       payingWAU: doc.data().payingUsersWAU,
       payingMAU: doc.data().payingUsersMAU,
-      revenue: doc.data().totalRevenuePLN,
+      revenue: doc.data().totalRevenueUSD,
       refundRate: doc.data().refundRate,
       tokenSpent: doc.data().totalTokenSpent,
     }));
@@ -181,15 +181,15 @@ export const pack336_getRevenueStreamsTimeseries = functions.https.onCall(async 
       const data = doc.data();
       return {
         date: data.date,
-        chat: data.chatRevenuePLN,
-        voice: data.voiceRevenuePLN,
-        video: data.videoRevenuePLN,
-        calendar: data.calendarRevenuePLN,
-        events: data.eventsRevenuePLN,
-        ai: data.aiRevenuePLN,
-        subscriptions: data.subscriptionsPLN,
-        tips: data.tipsRevenuePLN,
-        total: data.totalRevenuePLN,
+        chat: data.chatRevenueUSD,
+        voice: data.voiceRevenueUSD,
+        video: data.videoRevenueUSD,
+        calendar: data.calendarRevenueUSD,
+        events: data.eventsRevenueUSD,
+        ai: data.aiRevenueUSD,
+        subscriptions: data.subscriptionsUSD,
+        tips: data.tipsRevenueUSD,
+        total: data.totalRevenueUSD,
       };
     });
     
@@ -250,7 +250,7 @@ export const pack336_getCountryBreakdown = functions.https.onCall(async (request
         users: Math.max(existing.users, data.usersActive || 0),
         newRegistrations: existing.newRegistrations + (data.newRegistrations || 0),
         payingUsers: Math.max(existing.payingUsers, data.payingUsers || 0),
-        revenue: existing.revenue + (data.revenuePLN || 0),
+        revenue: existing.revenue + (data.revenueUSD || 0),
       });
     });
     
@@ -304,10 +304,10 @@ export const pack336_getCohortAnalysis = functions.https.onCall(async (request) 
         day7Retention: data.day7Retention,
         day30Retention: data.day30Retention,
         day90Retention: data.day90Retention,
-        revenueDay7: data.revenueDay7PLN,
-        revenueDay30: data.revenueDay30PLN,
-        revenueDay90: data.revenueDay90PLN,
-        avgLTV: data.avgLTVPLN,
+        revenueDay7: data.revenueDay7USD,
+        revenueDay30: data.revenueDay30USD,
+        revenueDay90: data.revenueDay90USD,
+        avgLTV: data.avgLTVUSD,
       };
     });
     
@@ -353,7 +353,7 @@ export const pack336_getViralityTimeseries = functions.https.onCall(async (reque
         invitedUsers: data.invitedUsers,
         activatedFromInvite: data.activatedFromInvite,
         kFactor: data.kFactor,
-        viralRevenue: data.viralRevenuePLN,
+        viralRevenue: data.viralRevenueUSD,
         conversionRate: data.invitedUsers > 0
           ? (data.activatedFromInvite / data.invitedUsers) * 100
           : 0,
@@ -398,11 +398,11 @@ export const pack336_getARPUMetrics = functions.https.onCall(async (request) => 
     const metrics = snapshot.docs.map(doc => {
       const data = doc.data();
       const arpu = data.activeUsersDAU > 0
-        ? data.totalRevenuePLN / data.activeUsersDAU
+        ? data.totalRevenueUSD / data.activeUsersDAU
         : 0;
       
       const arppu = data.payingUsersDAU > 0
-        ? data.totalRevenuePLN / data.payingUsersDAU
+        ? data.totalRevenueUSD / data.payingUsersDAU
         : 0;
       
       return {
@@ -411,7 +411,7 @@ export const pack336_getARPUMetrics = functions.https.onCall(async (request) => 
         arppu,
         dau: data.activeUsersDAU,
         payingDAU: data.payingUsersDAU,
-        revenue: data.totalRevenuePLN,
+        revenue: data.totalRevenueUSD,
       };
     });
     
@@ -525,9 +525,9 @@ export const pack336_getRefundAnalysis = functions.https.onCall(async (request) 
       return {
         date: data.date,
         refundCount: data.refundsCount,
-        refundVolume: data.refundVolumePLN,
+        refundVolume: data.refundVolumeUSD,
         refundRate: data.refundRate * 100,
-        revenue: data.totalRevenuePLN,
+        revenue: data.totalRevenueUSD,
       };
     });
     
@@ -627,8 +627,8 @@ export const pack336_getPlatformHealth = functions.https.onCall(async (request) 
       ? ((today.activeUsersDAU - yesterday.activeUsersDAU) / yesterday.activeUsersDAU) * 100
       : 0;
     
-    const revenueChange = yesterday && yesterday.totalRevenuePLN > 0
-      ? ((today.totalRevenuePLN - yesterday.totalRevenuePLN) / yesterday.totalRevenuePLN) * 100
+    const revenueChange = yesterday && yesterday.totalRevenueUSD > 0
+      ? ((today.totalRevenueUSD - yesterday.totalRevenueUSD) / yesterday.totalRevenueUSD) * 100
       : 0;
     
     return {
@@ -637,7 +637,7 @@ export const pack336_getPlatformHealth = functions.https.onCall(async (request) 
         northStarMetric: northStar?.weeklyPayingUsers || 0,
         dau: today?.activeUsersDAU || 0,
         dauChange,
-        revenue: today?.totalRevenuePLN || 0,
+        revenue: today?.totalRevenueUSD || 0,
         revenueChange,
         payingUsers: today?.payingUsersDAU || 0,
         refundRate: (today?.refundRate || 0) * 100,
@@ -650,3 +650,12 @@ export const pack336_getPlatformHealth = functions.https.onCall(async (request) 
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+

@@ -102,7 +102,7 @@ export interface TokenPack {
   packId: string;
   tier: TokenPackTier;
   tokens: number;
-  price: number; // in PLN
+  price: number; // in USD
   currency: string;
   bonus: number; // bonus tokens
   totalTokens: number; // tokens + bonus
@@ -187,7 +187,7 @@ export interface EarningsDashboard {
   projectedYear: number;
 
   // Tax info
-  taxableIncome: number; // in PLN
+  taxableIncome: number; // in USD
   withholdingRequired: boolean;
 
   updatedAt: Timestamp;
@@ -200,7 +200,7 @@ export interface SettlementReport {
 
   // Earnings
   totalEarnings: number; // tokens
-  earningsInPLN: number; // at settlement rate
+  earningsInUSD: number; // at settlement rate
 
   // Platform fees
   platformFees: number;
@@ -234,7 +234,7 @@ export interface Invoice {
   // Details
   invoiceNumber: string;
   description: string;
-  amount: number; // PLN
+  amount: number; // USD
   tokens: number;
 
   // Parties
@@ -267,9 +267,9 @@ export interface Invoice {
 // CONSTANTS
 // ============================================================================
 
-import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 
-const SETTLEMENT_RATE = TOKEN_PAYOUT_PLN; // derived from TOKEN_PAYOUT_USD (0.03 USD)
+const SETTLEMENT_RATE = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.03 USD)
 
 const TOKEN_PACKS: TokenPack[] = [
   {
@@ -277,7 +277,7 @@ const TOKEN_PACKS: TokenPack[] = [
     tier: TokenPackTier.STARTER,
     tokens: 100,
     price: 30,
-    currency: "PLN",
+    currency: "USD",
     bonus: 0,
     totalTokens: 100,
     popular: false,
@@ -288,7 +288,7 @@ const TOKEN_PACKS: TokenPack[] = [
     tier: TokenPackTier.VALUE,
     tokens: 500,
     price: 125,
-    currency: "PLN",
+    currency: "USD",
     bonus: 0,
     totalTokens: 500,
     popular: true,
@@ -300,7 +300,7 @@ const TOKEN_PACKS: TokenPack[] = [
     tier: TokenPackTier.PRO,
     tokens: 1000,
     price: 230,
-    currency: "PLN",
+    currency: "USD",
     bonus: 0,
     totalTokens: 1000,
     popular: false,
@@ -312,7 +312,7 @@ const TOKEN_PACKS: TokenPack[] = [
     tier: TokenPackTier.ELITE,
     tokens: 5000,
     price: 1000,
-    currency: "PLN",
+    currency: "USD",
     bonus: 0,
     totalTokens: 5000,
     popular: false,
@@ -432,7 +432,7 @@ export const purchaseTokens = onCall(
       line_items: [
         {
           price_data: {
-            currency: "pln",
+            currency: "USD",
             product_data: {
               name: `${finalTokens} Avalo Tokens`,
               description: pack.tier.toUpperCase() + " Pack",
@@ -583,7 +583,7 @@ export const applyPromoCode = onCall(
 
       if (pack) {
         if (promo.minPurchase && pack.price < promo.minPurchase) {
-          throw new HttpsError("failed-precondition", `Minimum purchase is ${promo.minPurchase} PLN`);
+          throw new HttpsError("failed-precondition", `Minimum purchase is ${promo.minPurchase} USD`);
         }
 
         if (promo.type === "percentage") {
@@ -776,7 +776,7 @@ export const generateSettlementReport = onCall(
       }
     });
 
-    const earningsInPLN = totalEarnings * SETTLEMENT_RATE;
+    const earningsInUSD = totalEarnings * SETTLEMENT_RATE;
     const netEarnings = totalEarnings;
 
     const reportId = `rpt_${period}_${uid.substring(0, 8)}`;
@@ -786,12 +786,12 @@ export const generateSettlementReport = onCall(
       userId: uid,
       period,
       totalEarnings,
-      earningsInPLN,
+      earningsInUSD,
       platformFees,
       netEarnings,
       breakdown,
-      taxableAmount: earningsInPLN,
-      suggestedWithholding: earningsInPLN > 2000 ? earningsInPLN * 0.12 : 0,
+      taxableAmount: earningsInUSD,
+      suggestedWithholding: earningsInUSD > 2000 ? earningsInUSD * 0.12 : 0,
       status: "finalized",
       finalizedAt: Timestamp.now(),
       createdAt: Timestamp.now(),
@@ -900,5 +900,14 @@ export const getCashbackStatus = onCall(
 );
 
 logger.info("✅ Wallet 2.0 + Fintech module loaded successfully");
+
+
+
+
+
+
+
+
+
 
 

@@ -26,7 +26,7 @@ import {
 } from '../types/pack452-monetization-vnext.types';
 import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 import { calculatePremiumBurn } from '../pack452-premium-burn-engine';
-import { evaluateHeuristics } from '../pack452-revenue-coach';
+import { evaluateHUSDistics } from '../pack452-revenue-coach';
 
 // ============================================================================
 // UNIT TESTS (can run without Firestore)
@@ -254,10 +254,10 @@ describe('PACK 452 — Smoke Tests', () => {
     });
   });
 
-  // ---- Revenue Coach Heuristics ----
-  describe('Revenue Coach Heuristics', () => {
+  // ---- Revenue Coach HUSDistics ----
+  describe('Revenue Coach HUSDistics', () => {
     test('high traffic + earn_off → suggest enable earning', () => {
-      const suggestions = evaluateHeuristics('user-1', {
+      const suggestions = evaluateHUSDistics('user-1', {
         paidChatConversionRate: 0,
         avgSessionLength: 0,
         premiumAcceptanceRate: 0,
@@ -274,7 +274,7 @@ describe('PACK 452 — Smoke Tests', () => {
     });
 
     test('high conversion + high demand → suggest increase threshold', () => {
-      const suggestions = evaluateHeuristics('user-2', {
+      const suggestions = evaluateHUSDistics('user-2', {
         paidChatConversionRate: 0.6,
         avgSessionLength: 20,
         premiumAcceptanceRate: 0.5,
@@ -291,7 +291,7 @@ describe('PACK 452 — Smoke Tests', () => {
     });
 
     test('low conversion + high entry → suggest decrease threshold', () => {
-      const suggestions = evaluateHeuristics('user-3', {
+      const suggestions = evaluateHUSDistics('user-3', {
         paidChatConversionRate: 0.05,
         avgSessionLength: 5,
         premiumAcceptanceRate: 0.1,
@@ -308,7 +308,7 @@ describe('PACK 452 — Smoke Tests', () => {
     });
 
     test('high multiplier + low acceptance → warning', () => {
-      const suggestions = evaluateHeuristics('user-4', {
+      const suggestions = evaluateHUSDistics('user-4', {
         paidChatConversionRate: 0.3,
         avgSessionLength: 15,
         premiumAcceptanceRate: 0.1,
@@ -466,3 +466,12 @@ describe('PACK 452 — Smoke Tests', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+

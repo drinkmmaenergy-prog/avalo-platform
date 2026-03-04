@@ -163,7 +163,7 @@ export async function createDrop(
     type: data.type,
     title: data.title.trim(),
     description: data.description.trim(),
-    coverImageUrl: data.coverImageUrl,
+    coverimageUrl: data.coverimageUrl,
     tags: data.tags.map(t => t.toLowerCase().trim()),
     priceTokens: data.priceTokens,
     maxQuantity: data.maxQuantity ?? null,
@@ -240,7 +240,7 @@ function validateDropInput(data: CreateDropInput): void {
   }
   
   // Validate cover image
-  if (!data.coverImageUrl) {
+  if (!data.coverimageUrl) {
     throw new HttpsError('invalid-argument', 'Cover image is required');
   }
 }
@@ -366,8 +366,8 @@ export async function updateDrop(
     updateData.description = updates.description.trim();
   }
   
-  if (updates.coverImageUrl !== undefined) {
-    updateData.coverImageUrl = updates.coverImageUrl;
+  if (updates.coverimageUrl !== undefined) {
+    updateData.coverimageUrl = updates.coverimageUrl;
   }
   
   if (updates.tags !== undefined) {
@@ -513,7 +513,7 @@ export async function getDropPublicInfo(dropId: string): Promise<DropPublicInfo>
     type: drop.type,
     title: drop.title,
     description: drop.description,
-    coverImageUrl: drop.coverImageUrl,
+    coverimageUrl: drop.coverimageUrl,
     tags: drop.tags,
     priceTokens: drop.priceTokens,
     soldCount: drop.soldCount,
@@ -858,3 +858,12 @@ export async function getCreatorDrops(creatorId: string): Promise<Drop[]> {
   
   return dropsSnapshot.docs.map(doc => doc.data() as Drop);
 }
+
+
+
+
+
+
+
+
+

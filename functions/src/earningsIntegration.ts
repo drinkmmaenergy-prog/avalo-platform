@@ -162,3 +162,12 @@ export async function recordAIEarning(params: {
     logger.error('Failed to record AI earning in ledger', error);
   }
 }
+
+
+
+
+
+
+
+
+

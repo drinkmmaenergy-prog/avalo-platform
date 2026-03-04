@@ -572,3 +572,12 @@ export async function getUserFraudHistory(userId: string): Promise<FraudDetectio
   
   return snapshot.docs.map(doc => doc.data() as FraudDetectionRecord);
 }
+
+
+
+
+
+
+
+
+

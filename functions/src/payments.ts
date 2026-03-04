@@ -1,404 +1,362 @@
 /**
- * Payment Webhooks and Token Management
- * Handles Stripe webhooks, token crediting, and subscriptions
- * WITH IDEMPOTENCY PROTECTION
+ * PAYMENTS — Stripe Webhook, Token Credit, Payout Request
+ *
+ * Exports:
+ *   stripeWebhook         — onRequest: Stripe webhook handler (europe-west1)
+ *   creditTokensCallable  — onCall: credit tokens to wallet
+ *   requestPayoutCallable — onCall: request payout (USD canonical)
+ *
+ * Invariants:
+ *   - USD canonical pricing
+ *   - session.id idempotency via `purchases` collection
+ *   - Stripe signature verification
+ *   - Atomic wallet credit inside Firestore transaction
+ *   - DEFAULT_TOKEN_PACKS as price source of truth
  */
 
-;
-;
-import { HttpsError } from 'firebase-functions/v2/https';
-import type { CallableRequest } from "firebase-functions/v2/https";
-import Stripe from "stripe";
-;
-import { TransactionType } from './config.js';
-import { Transaction, FunctionResponse } from "./types.js";
-import { auth, db, functions, generateId, increment, onCall, onRequest, serverTimestamp } from './runtime';
-import { getStripeSecretKey, getStripeWebhookSecret } from './lib/stubs';
+import Stripe from 'stripe';
+import { db, serverTimestamp, increment, generateId } from './init';
+import { onCall, onRequest, HttpsError, logger } from './runtime';
+import { FunctionResponse } from './types';
+import { DEFAULT_TOKEN_PACKS } from './pack277-token-packs';
 
-;
+// ─────────────────────────────────────────────
+// Stripe SDK — initialised lazily from Cloud Run secret
+// ─────────────────────────────────────────────
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2023-10-16',
+});
 
-// Lazy Stripe initialization with Secret Manager
-let stripe: Stripe | null = null;
+// Build a lookup map: packId → pack definition
+const PACK_BY_ID = new Map(
+  DEFAULT_TOKEN_PACKS.map((p) => [p.id, p])
+);
 
-const getStripe = async (): Promise<Stripe> => {
-  if (!stripe) {
-    const secretKey = await getStripeSecretKey();
-    stripe = new Stripe(secretKey, {
-      apiVersion: "2025-02-24.acacia" as any,
-    });
-  }
-  return stripe;
-};
-
-/**
- * Stripe Webhook Handler with Idempotency Protection
- * POST /stripeWebhook
- */
+// ─────────────────────────────────────────────
+// STRIPE WEBHOOK (europe-west1, onRequest)
+// ─────────────────────────────────────────────
 export const stripeWebhook = onRequest(
-  {
-    region: "europe-west1",
-    // PERFORMANCE: Keep 2 warm instances for critical payment processing
-    // Target: <100ms p95 latency (from ~900ms with cold starts)
-    minInstances: 2,
-    maxInstances: 10,
-    concurrency: 80,
-    memory: "512MiB",
-    timeoutSeconds: 60,
-    cpu: 1,
-  },
+  { region: 'europe-west1', memory: '256MiB', timeoutSeconds: 60 },
   async (req, res) => {
-    const sig = req.headers["stripe-signature"];
+    // Only accept POST
+    if (req.method !== 'POST') {
+      res.status(405).send('Method Not Allowed');
+      return;
+    }
 
-    if (!sig) {
-      console.error("No signature header");
-      res.status(400).send("No signature");
+    // ── 1. Verify Stripe signature ─────────────────────────────────
+    const sig = req.headers['stripe-signature'];
+    if (!sig || typeof sig !== 'string') {
+      logger.warn('[stripeWebhook] Missing stripe-signature header');
+      res.status(400).send('Missing stripe-signature header');
       return;
     }
 
     let event: Stripe.Event;
-
     try {
-      const stripeClient = await getStripe();
-      const webhookSecret = await getStripeWebhookSecret();
-
-      // Verify webhook signature
-      event = stripeClient.webhooks.constructEvent(
+      event = stripe.webhooks.constructEvent(
         req.rawBody,
         sig,
-        webhookSecret
+        process.env.STRIPE_WEBHOOK_SECRET || ''
       );
     } catch (err: any) {
-      console.error("Webhook signature verification failed:", err.message);
+      logger.error('[stripeWebhook] Signature verification failed:', err.message);
       res.status(400).send(`Webhook Error: ${err.message}`);
       return;
     }
 
-    console.log("Stripe event received:", event.type, "ID:", event.id);
-
-    // 🔒 IDEMPOTENCY CHECK
-    const eventDocRef = db.collection("webhookEvents").doc(`stripe_${event.id}`);
-    const eventDoc = await eventDocRef.get();
-
-    if (eventDoc.exists) {
-      const eventData = eventDoc.data();
-      console.log(`Duplicate webhook event detected: ${event.id}, status: ${eventData?.status}`);
-      res.json({ received: true, duplicate: true, status: eventData?.status });
-      return;
-    }
-
-    // Process webhook with idempotency protection
-    try {
-      await db.runTransaction(async (transaction) => {
-        // Mark event as processing first (prevents race conditions)
-        transaction.set(eventDocRef, {
-          eventId: event.id,
-          type: event.type,
-          status: "processing",
-          processedAt: serverTimestamp(),
-          retryCount: 0,
-        });
-
-        // Process the webhook event
-        switch (event.type) {
-          case "checkout.session.completed":
-            await handleCheckoutCompletedWithTx(
-              event.data.object as Stripe.Checkout.Session,
-              transaction
-            );
-            break;
-
-          case "payment_intent.succeeded":
-            await handlePaymentSucceeded(event.data.object as Stripe.PaymentIntent);
-            break;
-
-          case "customer.subscription.created":
-          case "customer.subscription.updated":
-            await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
-            break;
-
-          case "customer.subscription.deleted":
-            await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
-            break;
-
-          default:
-            console.log(`Unhandled event type: ${event.type}`);
-        }
-
-        // Mark as completed
-        transaction.update(eventDocRef, {
-          status: "completed",
-          completedAt: serverTimestamp(),
-        });
-      });
-
-      console.log(`Webhook ${event.id} processed successfully`);
+    // ── 2. Only handle checkout.session.completed ──────────────────
+    if (event.type !== 'checkout.session.completed') {
       res.json({ received: true });
-    } catch (error: any) {
-      console.error("Error processing webhook:", error);
-
-      // Update status to failed
-      try {
-        await eventDocRef.update({
-          status: "failed",
-          error: error.message,
-          failedAt: serverTimestamp(),
-        });
-      } catch (updateError) {
-        console.error("Failed to update webhook status:", updateError);
-      }
-
-      res.status(500).send("Webhook processing failed");
-    }
-  });
-
-/**
- * Handle completed checkout session (with transaction support)
- */
-async function handleCheckoutCompletedWithTx(
-  session: Stripe.Checkout.Session,
-  transaction: FirebaseFirestore.Transaction
-) {
-  console.log("Processing checkout session:", session.id);
-
-  const userId = session.metadata?.userId;
-  const productType = session.metadata?.productType; // "tokens" or "subscription"
-
-  if (!userId) {
-    console.error("No userId in session metadata");
-    return;
-  }
-
-  if (productType === "tokens") {
-    const tokens = parseInt(session.metadata?.tokens || "0", 10);
-    if (!tokens) {
-      console.error("No tokens in session metadata");
       return;
     }
-    await creditTokensWithTx(userId, tokens, session.id, transaction);
-  } else if (productType === "subscription") {
-    console.log("Subscription checkout completed, waiting for subscription event");
-  }
-}
 
-/**
- * Handle successful payment intent
- */
-async function handlePaymentSucceeded(paymentIntent: Stripe.PaymentIntent) {
-  console.log("Payment succeeded:", paymentIntent.id);
-}
+    const session = event.data.object as Stripe.Checkout.Session;
 
-/**
- * Handle subscription created/updated
- */
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-  console.log("Processing subscription:", subscription.id);
+    // ── 3. HARD CHECK: payment_status must be "paid" ──────────────
+    if (session.payment_status !== 'paid') {
+      logger.info('[stripeWebhook] payment_status not paid, ignoring:', session.payment_status);
+      res.json({ received: true });
+      return;
+    }
 
-  const userId = subscription.metadata?.userId;
-  const subscriptionType = subscription.metadata?.subscriptionType; // "vip", "royal", etc.
+    // ── 4. HARD CHECK: currency must be "usd" ─────────────────────
+    if (session.currency !== 'usd') {
+      logger.error('[stripeWebhook] Non-USD currency rejected:', session.currency);
+      res.json({ received: true, error: 'Non-USD currency' });
+      return;
+    }
 
-  if (!userId || !subscriptionType) {
-    console.error("Missing userId or subscriptionType in subscription metadata");
-    return;
-  }
+    // ── 5. Extract metadata ───────────────────────────────────────
+    const sessionId = session.id;
+    const userId = session.metadata?.userId;
+    const packId = session.metadata?.packId;
+    const tokensFromMeta = parseInt(session.metadata?.tokens || '0', 10);
 
-  const roleUpdate: Record<string, boolean> = {};
+    if (!userId || !packId || tokensFromMeta <= 0) {
+      logger.error('[stripeWebhook] Invalid metadata:', { userId, packId, tokensFromMeta });
+      res.json({ received: true, error: 'Invalid metadata' });
+      return;
+    }
 
-  if (subscriptionType === "vip") roleUpdate["roles.vip"] = true;
-  if (subscriptionType === "royal") roleUpdate["roles.royal"] = true;
+    // ── 6. Validate pack exists in DEFAULT_TOKEN_PACKS ────────────
+    const pack = PACK_BY_ID.get(packId);
+    if (!pack) {
+      logger.error('[stripeWebhook] Unknown packId:', packId);
+      res.json({ received: true, error: 'Unknown packId' });
+      return;
+    }
 
-  if (Object.keys(roleUpdate).length > 0) {
-    await db.collection("users").doc(userId).update({
-      ...roleUpdate,
-      updatedAt: serverTimestamp(),
-    });
-    console.log(`Granted ${subscriptionType} role to user ${userId}`);
-  }
-}
+    // ── 7. HARD CHECK: priceUSD must be defined on pack ───────────
+    if (pack.priceUSD == null) {
+      logger.error('[stripeWebhook] Pack missing priceUSD:', packId);
+      res.json({ received: true, error: 'Pack missing priceUSD' });
+      return;
+    }
 
-/**
- * Handle subscription deleted/cancelled
- */
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  console.log("Processing subscription deletion:", subscription.id);
+    // ── 8. HARD CHECK: amount_total must match pack priceUSD ──────
+    //    DEFAULT_TOKEN_PACKS.priceUSD is in dollars; Stripe amount_total is in cents.
+    const expectedCents = Math.round(pack.priceUSD * 100);
+    if (session.amount_total !== expectedCents) {
+      logger.error('[stripeWebhook] Amount mismatch:', {
+        expected: expectedCents,
+        got: session.amount_total,
+        packId,
+        sessionId,
+      });
+      res.json({ received: true, error: 'Amount mismatch' });
+      return;
+    }
 
-  const userId = subscription.metadata?.userId;
-  const subscriptionType = subscription.metadata?.subscriptionType;
+    // ── 9. Validate token count from metadata matches pack ────────
+    if (tokensFromMeta !== pack.tokens) {
+      logger.error('[stripeWebhook] Token count mismatch:', {
+        expected: pack.tokens,
+        got: tokensFromMeta,
+        packId,
+      });
+      res.json({ received: true, error: 'Token count mismatch' });
+      return;
+    }
 
-  if (!userId || !subscriptionType) {
-    console.error("Missing userId or subscriptionType in subscription metadata");
-    return;
-  }
+    // ── 10. Atomic transaction: idempotency + wallet credit ───────
+    const purchaseRef = db.collection('purchases').doc(sessionId);
+    const walletRef = db
+      .collection('users')
+      .doc(userId)
+      .collection('wallet')
+      .doc('current');
 
-  const roleUpdate: Record<string, boolean> = {};
-
-  if (subscriptionType === "vip") roleUpdate["roles.vip"] = false;
-  if (subscriptionType === "royal") roleUpdate["roles.royal"] = false;
-
-  if (Object.keys(roleUpdate).length > 0) {
-    await db.collection("users").doc(userId).update({
-      ...roleUpdate,
-      updatedAt: serverTimestamp(),
-    });
-    console.log(`Revoked ${subscriptionType} role from user ${userId}`);
-  }
-}
-
-/**
- * Credit tokens to user wallet (within existing transaction)
- */
-async function creditTokensWithTx(
-  userId: string,
-  tokens: number,
-  stripeSessionId: string,
-  transaction: FirebaseFirestore.Transaction
-) {
-  const txId = generateId();
-  const walletRef = db.collection("users").doc(userId).collection("wallet").doc("current");
-  const walletSnap = await transaction.get(walletRef);
-
-  if (!walletSnap.exists) {
-    transaction.set(walletRef, {
-      balance: tokens,
-      pending: 0,
-      earned: 0,
-      settlementRate: 0.2,
-    });
-  } else {
-    transaction.update(walletRef, {
-      balance: increment(tokens),
-    });
-  }
-
-  transaction.set(db.collection("transactions").doc(txId), {
-    txId,
-    uid: userId,
-    type: TransactionType.PURCHASE,
-    amountTokens: tokens,
-    status: "completed",
-    metadata: { stripeSessionId },
-    createdAt: serverTimestamp(),
-    completedAt: serverTimestamp(),
-  } as Transaction);
-
-  console.log(`Credited ${tokens} tokens to user ${userId} (txId: ${txId})`);
-}
-
-/**
- * Manually credit tokens (admin only)
- */
-export const creditTokensCallable = onCall(
-    { region: "europe-west1" },
-    async (request): Promise<FunctionResponse<{ newBalance: number }>> => {
-      if (!request.auth) {
-        throw new HttpsError("unauthenticated", "Must be authenticated");
-      }
-
-      const adminSnap = await db.collection("users").doc(request.auth.uid).get();
-      const admin = adminSnap.data();
-
-      if (!admin?.roles?.admin) {
-        throw new HttpsError("permission-denied", "Admin access required");
-      }
-
-      const { uid, tokens, source } = request.data;
-      const txId = generateId();
-      let newBalance = 0;
-
-      await db.runTransaction(async (transaction) => {
-        const walletRef = db.collection("users").doc(uid).collection("wallet").doc("current");
-        const walletSnap = await transaction.get(walletRef);
-
-        if (!walletSnap.exists) {
-          transaction.set(walletRef, {
-            balance: tokens,
-            pending: 0,
-            earned: 0,
-            settlementRate: 0.2,
-          });
-          newBalance = tokens;
-        } else {
-          const prev = (walletSnap.data()?.balance || 0) as number;
-          transaction.update(walletRef, {
-            balance: increment(tokens),
-          });
-          newBalance = prev + tokens;
+    try {
+      await db.runTransaction(async (tx) => {
+        // Idempotency: check if session already processed
+        const existingPurchase = await tx.get(purchaseRef);
+        if (existingPurchase.exists) {
+          logger.info(`[stripeWebhook] Duplicate session ${sessionId} — skipping`);
+          return;
         }
 
-        transaction.set(db.collection("transactions").doc(txId), {
-          txId,
-          uid,
-          type: TransactionType.PURCHASE,
-          amountTokens: tokens,
-          status: "completed",
-          metadata: { source, adminUid: request.auth?.uid ?? "system" },
+        // Read wallet inside transaction for consistency
+        const walletSnap = await tx.get(walletRef);
+        const wallet = walletSnap.data();
+
+        // Write purchase record (idempotency sentinel)
+        tx.set(purchaseRef, {
+          sessionId,
+          userId,
+          packId: pack.id,
+          tokens: pack.tokens,
+          amountTotal: session.amount_total,
+          currency: session.currency,
+          status: 'COMPLETED',
+          stripePaymentIntentId: session.payment_intent,
+          stripeCustomerId: session.customer,
           createdAt: serverTimestamp(),
-          completedAt: serverTimestamp(),
-        } as Transaction);
+          processedAt: serverTimestamp(),
+        });
+
+        // Credit tokens to wallet atomically
+        if (walletSnap.exists) {
+          tx.update(walletRef, {
+            purchased: increment(pack.tokens),
+            updatedAt: serverTimestamp(),
+          });
+        } else {
+          tx.set(walletRef, {
+            userId,
+            purchased: pack.tokens,
+            earned: 0,
+            spent: 0,
+            updatedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+          });
+        }
       });
 
-      return { ok: true, data: { newBalance } };
+      logger.info(`[stripeWebhook] Credited ${pack.tokens} tokens to ${userId} (session ${sessionId})`);
+      res.json({ received: true, success: true });
+    } catch (error: any) {
+      logger.error('[stripeWebhook] Transaction failed:', error);
+      res.status(500).send(`Webhook handler error: ${error.message}`);
     }
-  );
+  }
+);
 
-/**
- * Request payout (creator withdrawal)
- */
-export const requestPayoutCallable = onCall(
-    { region: "europe-west1" },
-    async (
-      request
-    ): Promise<FunctionResponse<{ payoutId: string }>> => {
-      if (!request.auth) {
-        throw new HttpsError("unauthenticated", "Must be authenticated");
+// ─────────────────────────────────────────────
+// CREDIT TOKENS CALLABLE
+// ─────────────────────────────────────────────
+export const creditTokensCallable = onCall(
+  { region: 'europe-west1' },
+  async (request): Promise<FunctionResponse<{ newBalance: number }>> => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Auth required');
+    }
+
+    const { packId, sessionId } = request.data;
+
+    if (!packId || typeof packId !== 'string') {
+      throw new HttpsError('invalid-argument', 'packId is required');
+    }
+    if (!sessionId || typeof sessionId !== 'string') {
+      throw new HttpsError('invalid-argument', 'sessionId is required');
+    }
+
+    const userId = request.auth.uid;
+
+    const pack = PACK_BY_ID.get(packId);
+    if (!pack) {
+      throw new HttpsError('not-found', `Unknown packId: ${packId}`);
+    }
+
+    const purchaseRef = db.collection('purchases').doc(sessionId);
+    const walletRef = db
+      .collection('users')
+      .doc(userId)
+      .collection('wallet')
+      .doc('current');
+
+    const result = await db.runTransaction(async (tx) => {
+      // Idempotency check
+      const existingPurchase = await tx.get(purchaseRef);
+      if (existingPurchase.exists) {
+        // Already credited — return current wallet balance
+        const walletSnap = await tx.get(walletRef);
+        const wallet = walletSnap.data();
+        return { newBalance: (wallet?.purchased || 0), alreadyProcessed: true };
       }
 
-      const userId = request.auth.uid;
-      const { method, amountTokens, details } = request.data;
-
-      const walletSnap = await db
-        .collection("users")
-        .doc(userId)
-        .collection("wallet")
-        .doc("current")
-        .get();
-
+      // Read wallet
+      const walletSnap = await tx.get(walletRef);
       const wallet = walletSnap.data();
+      const currentPurchased = wallet?.purchased || 0;
+      const newBalance = currentPurchased + pack.tokens;
 
-      if (!wallet || wallet.earned < amountTokens) {
-        throw new HttpsError("failed-precondition", "Insufficient earned tokens");
+      // Write purchase record (idempotency sentinel)
+      tx.set(purchaseRef, {
+        sessionId,
+        userId,
+        packId: pack.id,
+        tokens: pack.tokens,
+        status: 'COMPLETED',
+        source: 'creditTokensCallable',
+        createdAt: serverTimestamp(),
+        processedAt: serverTimestamp(),
+      });
+
+      // Credit wallet
+      if (walletSnap.exists) {
+        tx.update(walletRef, {
+          purchased: increment(pack.tokens),
+          updatedAt: serverTimestamp(),
+        });
+      } else {
+        tx.set(walletRef, {
+          userId,
+          purchased: pack.tokens,
+          earned: 0,
+          spent: 0,
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp(),
+        });
       }
 
-      if (amountTokens < 500) {
-        throw new HttpsError("invalid-argument", "Minimum payout is 500 tokens");
-      }
+      return { newBalance, alreadyProcessed: false };
+    });
 
-      const amountPLN = amountTokens * 0.2;
-      const payoutId = generateId();
+    if (result.alreadyProcessed) {
+      logger.info(`[creditTokensCallable] Already processed session ${sessionId}`);
+    } else {
+      logger.info(`[creditTokensCallable] Credited ${pack.tokens} tokens to ${userId}`);
+    }
 
-      await db.collection("payoutRequests").doc(payoutId).set({
+    return { ok: true, data: { newBalance: result.newBalance } };
+  }
+);
+
+// ─────────────────────────────────────────────
+// REQUEST PAYOUT (USD canonical)
+// ─────────────────────────────────────────────
+export const requestPayoutCallable = onCall(
+  { region: "europe-west1" },
+  async (request): Promise<FunctionResponse<{ payoutId: string }>> => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Auth required");
+    }
+
+    const userId = request.auth.uid;
+    const { amountTokens } = request.data;
+
+    if (!amountTokens || amountTokens <= 0) {
+      throw new HttpsError("invalid-argument", "Invalid token amount");
+    }
+
+    const walletRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("wallet")
+      .doc("current");
+
+    const walletSnap = await walletRef.get();
+    const wallet = walletSnap.data();
+
+    if (!wallet || wallet.earned < amountTokens) {
+      throw new HttpsError("failed-precondition", "Insufficient earned tokens");
+    }
+
+    if (amountTokens < 500) {
+      throw new HttpsError("invalid-argument", "Minimum payout is 500 tokens");
+    }
+
+    // USD canonical payout rate
+    const TOKEN_PAYOUT_USD = 0.03;
+    const amountUSD = amountTokens * TOKEN_PAYOUT_USD;
+
+    const payoutId = generateId();
+
+    await db.runTransaction(async (tx) => {
+      tx.update(walletRef, {
+        earned: increment(-amountTokens),
+      });
+
+      tx.set(db.collection("payoutRequests").doc(payoutId), {
         payoutId,
         userId,
-        method,
         amountTokens,
-        amountPLN,
-        details,
+        amountUSD,
         status: "pending",
         createdAt: serverTimestamp(),
       });
+    });
 
-      await db
-        .collection("users")
-        .doc(userId)
-        .collection("wallet")
-        .doc("current")
-        .update({
-          earned: increment(-amountTokens),
-        });
+    return { ok: true, data: { payoutId } };
+  }
+);
 
-      console.log(`Payout request ${payoutId} created for user ${userId}`);
 
-      return { ok: true, data: { payoutId } };
-    }
-  );
+
+
+
+
+
 
 

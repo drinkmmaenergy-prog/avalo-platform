@@ -21,8 +21,8 @@ export interface TokenPurchase {
   userId: string;
   packageId: 'mini' | 'basic' | 'standard' | 'premium' | 'pro' | 'elite' | 'royal';
   tokens: number;
-  basePricePLN: number;
-  paidCurrency: string; // 'PLN' | 'EUR' | 'USD' | etc.
+  priceUSD: number;
+  paidCurrency: string; // 'USD' | 'USD' | 'USD' | etc.
   paidAmount: number;
   platform: 'android' | 'ios' | 'web';
   provider: 'google_play' | 'app_store' | 'stripe';
@@ -173,7 +173,7 @@ export interface FraudCheckResult {
 export interface MonthlyPurchaseLimit {
   userId: string;
   month: string; // YYYY-MM
-  totalPLN: number;
+  totalUSD: number;
   purchaseCount: number;
   limitExceeded: boolean;
   lastPurchaseAt: Timestamp;
@@ -194,9 +194,7 @@ export interface AgeVerification {
 // PAYOUT TYPES (from PACK 277, extended for PACK 288)
 // ============================================================================
 
-import { TOKEN_PAYOUT_PLN } from '../config/economyConfig';
-
-export const PAYOUT_RATE_PLN = TOKEN_PAYOUT_PLN; // derived from TOKEN_PAYOUT_USD (0.03 USD)
+import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 
 /**
  * Payout request
@@ -222,7 +220,7 @@ export interface PayoutResponse {
   success: boolean;
   payoutId?: string;
   amountTokens?: number;
-  amountPLN?: number;
+  amountUSD?: number;
   amountLocal?: number;
   localCurrency?: string;
   exchangeRate?: number;
@@ -263,10 +261,8 @@ export interface CurrencyConfig {
  * Multi-currency price
  */
 export interface MultiCurrencyPrice {
-  PLN: number;
-  USD?: number;
-  EUR?: number;
-  GBP?: number;
+  USD: number;
+
   [currency: string]: number | undefined;
 }
 
@@ -281,7 +277,7 @@ export interface TokenPackageConfig {
   id: string;
   name: string;
   tokens: number;
-  basePricePLN: number;
+  priceUSD: number;
   prices: MultiCurrencyPrice;
   active: boolean;
   order: number;
@@ -303,13 +299,13 @@ export interface StoreConfig {
   maintenanceMode: boolean;
   packages: TokenPackageConfig[];
   purchaseLimits: {
-    maxMonthlyPLN: number;
+    maxMonthlyUSD: number;
     minAge: number;
     maxPurchasesPerDay: number;
     cooldownMs: number;
   };
   payoutConfig: {
-    ratePLN: number;
+    rateUSD: number;
     minTokens: number;
     processingFeePercent: number;
     supportedMethods: string[];
@@ -351,7 +347,7 @@ export interface PurchaseAnalytics {
   packageId: string;
   tokens: number;
   revenue: {
-    pln: number;
+    USD: number;
     usd: number;
   };
   platform: string;
@@ -386,6 +382,15 @@ export function isValidPackageId(id: string): id is TokenPackageConfig['id'] {
 }
 
 export function isValidCurrency(currency: string): boolean {
-  const validCurrencies = ['PLN', 'USD', 'EUR', 'GBP'];
+  const validCurrencies = ['USD', 'USD', 'USD', 'USD'];
   return validCurrencies.includes(currency);
 }
+
+
+
+
+
+
+
+
+

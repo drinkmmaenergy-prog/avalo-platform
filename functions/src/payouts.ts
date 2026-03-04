@@ -96,11 +96,8 @@ export interface PayoutConfig {
     WISE: string[];
   };
   tokenToFiatRate: {
-    USD: number;
-    EUR: number;
-    GBP: number;
-    PLN: number;
-  };
+  USD: number;
+};
   minimumPayoutTokens: number;
   payoutFeePlatformPercent: number;
 }
@@ -138,16 +135,13 @@ async function getPayoutConfig(): Promise<PayoutConfig> {
       CA: "STRIPE",
       AU: "STRIPE",
     },
-    supportedCurrenciesByRail: {
-      STRIPE: ["USD", "EUR", "GBP", "AUD", "CAD"],
-      WISE: ["EUR", "GBP", "PLN", "USD", "SEK", "DKK", "NOK"],
-    },
-    tokenToFiatRate: {
-      USD: 0.01, // 1 token = $0.01
-      EUR: 0.009, // 1 token = €0.009
-      GBP: 0.008, // 1 token = £0.008
-      PLN: 0.04, // 1 token = 0.04 PLN
-    },
+ supportedCurrenciesByRail: {
+ STRIPE: ["USD"],
+ WISE: ["USD"]
+},
+ tokenToFiatRate: {
+  USD: 0.03,
+},
     minimumPayoutTokens: 1000, // Minimum 1000 tokens ($10 USD equivalent)
     payoutFeePlatformPercent: 0.02, // 2% platform fee on payouts
   };
@@ -182,21 +176,21 @@ function getCurrencyForCountry(country: string): string {
   const currencyMap: Record<string, string> = {
     US: "USD",
     CA: "CAD",
-    GB: "GBP",
+    GB: "USD",
     AU: "AUD",
     NZ: "NZD",
-    PL: "PLN",
-    DE: "EUR",
-    FR: "EUR",
-    ES: "EUR",
-    IT: "EUR",
-    NL: "EUR",
-    BE: "EUR",
-    AT: "EUR",
-    PT: "EUR",
-    IE: "EUR",
-    FI: "EUR",
-    GR: "EUR",
+    PL: "USD",
+    DE: "USD",
+    FR: "USD",
+    ES: "USD",
+    IT: "USD",
+    NL: "USD",
+    BE: "USD",
+    AT: "USD",
+    PT: "USD",
+    IE: "USD",
+    FI: "USD",
+    GR: "USD",
     SE: "SEK",
     DK: "DKK",
     NO: "NOK",
@@ -207,7 +201,7 @@ function getCurrencyForCountry(country: string): string {
     BG: "BGN",
   };
 
-  return currencyMap[country] || "EUR";
+  return currencyMap[country] || "USD";
 }
 
 /**
@@ -693,3 +687,12 @@ export async function getPendingWithdrawals(userIdOrLimit?: string | number): Pr
   // TODO: Implement
   return [];
 }
+
+
+
+
+
+
+
+
+

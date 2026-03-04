@@ -103,3 +103,12 @@ export class ViralLoopRiskScorer {
     return 'LOW';
   }
 }
+
+
+
+
+
+
+
+
+

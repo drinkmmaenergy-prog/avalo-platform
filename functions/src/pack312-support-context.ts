@@ -215,7 +215,7 @@ export const support_getMeetingContext = onCall(
       }
 
       // Check selfie verification
-      const selfieValidations = validations.filter(v => v.selfieUrl);
+      const selfieValidations = validations.filter(v => v.selfiUSDl);
       let selfieStatus: 'MATCHED' | 'MISMATCH' | 'NOT_TAKEN' = 'NOT_TAKEN';
       if (selfieValidations.length > 0) {
         // Check verification scores if available
@@ -513,3 +513,12 @@ export const support_getSafetyContext = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+

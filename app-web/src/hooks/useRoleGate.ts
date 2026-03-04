@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * PHASE 3.3 — Role-Based Access Control Hook
  * 
@@ -10,7 +12,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import type { UserRole } from '@/types/phase33.types';
 
@@ -29,10 +31,8 @@ interface RoleGateResult {
  * Check if user has admin role by reading from Firestore admin_users collection.
  */
 async function checkIsAdmin(uid: string): Promise<boolean> {
-  if (!db) return false;
-  
   try {
-    const adminDoc = await getDoc(doc(db, 'admin_users', uid));
+    const adminDoc = await getDoc(doc(requireDb(), 'admin_users', uid));
     return adminDoc.exists() && adminDoc.data()?.isActive === true;
   } catch {
     return false;
@@ -165,3 +165,5 @@ export function withRoleGate<P extends object>(
     };
   };
 }
+
+

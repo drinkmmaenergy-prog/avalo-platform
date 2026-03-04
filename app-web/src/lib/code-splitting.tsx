@@ -188,3 +188,4 @@ export default {
   ProfileEditor,
   SettingsPanel
 };
+

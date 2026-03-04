@@ -122,3 +122,12 @@ export function getEligibilityReasonMessage(
 
   return messages[reason]?.[language] || reason;
 }
+
+
+
+
+
+
+
+
+

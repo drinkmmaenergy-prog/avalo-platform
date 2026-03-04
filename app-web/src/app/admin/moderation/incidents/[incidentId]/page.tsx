@@ -47,7 +47,7 @@ interface ModalState {
 }
 
 export default function IncidentDetailsPage() {
-  const params = useParams();
+  const params = useParams()!;
   const router = useRouter();
   const incidentId = params.incidentId as string;
 
@@ -172,10 +172,10 @@ export default function IncidentDetailsPage() {
       });
 
       if (result.success) {
-        setToast({ message: result.message, type: 'success' });
+        setToast({ message: result.message ?? 'Action applied', type: 'success' });
         setModalState({ ...modalState, isOpen: false });
       } else {
-        setToast({ message: result.message, type: 'error' });
+        setToast({ message: result.message ?? result.error ?? 'Action failed', type: 'error' });
       }
     } catch (error: any) {
       console.error('Error applying action:', error);

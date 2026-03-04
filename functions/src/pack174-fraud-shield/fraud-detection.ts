@@ -390,3 +390,12 @@ async function checkIsAdmin(userId: string): Promise<boolean> {
   const userDoc = await db.collection('users').doc(userId).get();
   return userDoc.exists && userDoc.data()?.role === 'admin';
 }
+
+
+
+
+
+
+
+
+

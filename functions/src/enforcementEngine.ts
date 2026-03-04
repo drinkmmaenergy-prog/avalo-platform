@@ -505,3 +505,12 @@ async function logEnforcementAudit(
     // Don't throw - audit failure shouldn't block enforcement
   }
 }
+
+
+
+
+
+
+
+
+

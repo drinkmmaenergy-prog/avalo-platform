@@ -261,3 +261,12 @@ export interface FanBehaviorProfile {
   isPermanentlyBanned: boolean;
   creatorsAffected: string[];
 }
+
+
+
+
+
+
+
+
+

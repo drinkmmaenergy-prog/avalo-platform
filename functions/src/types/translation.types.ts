@@ -375,3 +375,12 @@ export interface TranslationServiceResponse<T = any> {
   error?: string;
   code?: string;
 }
+
+
+
+
+
+
+
+
+

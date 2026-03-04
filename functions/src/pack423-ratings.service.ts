@@ -360,3 +360,12 @@ export async function getMyInteractionRatings(
 
   return ratingsSnap.docs.map(doc => doc.data() as UserInteractionRating);
 }
+
+
+
+
+
+
+
+
+

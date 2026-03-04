@@ -71,3 +71,12 @@ export function calculateCallEarningsSplit(totalTokens: number): {
     avaloReceives,
   };
 }
+
+
+
+
+
+
+
+
+

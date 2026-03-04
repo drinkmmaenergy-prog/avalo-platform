@@ -96,7 +96,7 @@ export interface VerificationDocument {
   userId: string;
   requestId: string;
   type: DocumentType;
-  storageUrl: string; // Cloud Storage reference
+  storagUSDl: string; // Cloud Storage reference
   uploadedAt: Timestamp;
   
   // Processing status
@@ -282,3 +282,12 @@ export const VERIFICATION_TRIGGERS: VerificationTrigger[] = [
     priority: 3,
   },
 ];
+
+
+
+
+
+
+
+
+

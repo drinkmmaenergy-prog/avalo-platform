@@ -196,3 +196,12 @@ export interface TrustedContactResponse {
   contact?: TrustedContact;
   error?: string;
 }
+
+
+
+
+
+
+
+
+

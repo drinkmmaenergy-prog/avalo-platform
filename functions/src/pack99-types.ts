@@ -164,3 +164,12 @@ export interface UpdateRemoteConfigParamInput {
   rules?: TargetingRule[];
   safeScope?: SafeScope[];
 }
+
+
+
+
+
+
+
+
+

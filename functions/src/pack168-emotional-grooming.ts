@@ -453,3 +453,12 @@ export async function scanConversationHistory(
     totalRisk: suspicious.length > 0 ? totalRisk / suspicious.length : 0
   };
 }
+
+
+
+
+
+
+
+
+

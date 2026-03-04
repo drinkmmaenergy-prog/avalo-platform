@@ -315,3 +315,12 @@ export interface StoreDefenseDashboard {
     conversionRate: number;
   };
 }
+
+
+
+
+
+
+
+
+

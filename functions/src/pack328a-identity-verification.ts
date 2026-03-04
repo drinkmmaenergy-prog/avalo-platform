@@ -138,7 +138,7 @@ export const identityVerification_uploadDocuments = functions.https.onCall(async
           userId,
           requestId,
           type: doc.type,
-          storageUrl: doc.data, // In production, this would be a Cloud Storage URL
+          storagUSDl: doc.data, // In production, this would be a Cloud Storage URL
           uploadedAt: serverTimestamp(),
           encrypted: false, // In production, encrypt before storing
           processed: false,
@@ -488,3 +488,12 @@ export const identityVerification_onMismatchReport = onDocumentCreated('reports/
       }
     }
   });
+
+
+
+
+
+
+
+
+

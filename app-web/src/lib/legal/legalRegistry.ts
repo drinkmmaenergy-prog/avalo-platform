@@ -93,3 +93,4 @@ export type LegalDocKey = keyof typeof LEGAL_DOCS;
 export function getAllLegalDocKeys(): LegalDocKey[] {
   return Object.keys(LEGAL_DOCS) as LegalDocKey[];
 }
+

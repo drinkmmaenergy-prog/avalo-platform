@@ -188,3 +188,12 @@ export interface ReferralAnalytics {
   attributionBreakdown: Record<string, number>;
   countryBreakdown: Record<string, number>;
 }
+
+
+
+
+
+
+
+
+

@@ -7,7 +7,7 @@
  * with intelligent translation, cultural adaptation, and regional customization.
  *
  * Supported Languages (42):
- * - European: English, Spanish, French, German, Italian, Portuguese, Polish,
+ * - USDopean: English, Spanish, French, German, Italian, Portuguese, Polish,
  *   Dutch, Swedish, Danish, Norwegian, Finnish, Czech, Romanian, Hungarian,
  *   Greek, Turkish, Ukrainian, Russian
  * - Asian: Chinese (Simplified/Traditional), Japanese, Korean, Hindi, Bengali,
@@ -62,7 +62,7 @@ const db = getFirestore();
  * Supported language codes (ISO 639-1 + region)
  */
 export enum LanguageCode {
-  // European
+  // USDopean
   EN = "en",           // English (Global)
   EN_US = "en-US",     // English (US)
   EN_GB = "en-GB",     // English (UK)
@@ -264,7 +264,7 @@ const LANGUAGE_CONFIGS: Partial<Record<LanguageCode, LanguageConfig>> = {
     thousandsSeparator: ".",
     isRTL: false,
     fallbackLanguage: LanguageCode.EN,
-    region: "Europe",
+    region: "USDope",
     isActive: true,
   },
   [LanguageCode.FR]: {
@@ -281,7 +281,7 @@ const LANGUAGE_CONFIGS: Partial<Record<LanguageCode, LanguageConfig>> = {
     thousandsSeparator: " ",
     isRTL: false,
     fallbackLanguage: LanguageCode.EN,
-    region: "Europe",
+    region: "USDope",
     isActive: true,
   },
   [LanguageCode.DE]: {
@@ -298,7 +298,7 @@ const LANGUAGE_CONFIGS: Partial<Record<LanguageCode, LanguageConfig>> = {
     thousandsSeparator: ".",
     isRTL: false,
     fallbackLanguage: LanguageCode.EN,
-    region: "Europe",
+    region: "USDope",
     isActive: true,
   },
   [LanguageCode.PL]: {
@@ -315,7 +315,7 @@ const LANGUAGE_CONFIGS: Partial<Record<LanguageCode, LanguageConfig>> = {
     thousandsSeparator: " ",
     isRTL: false,
     fallbackLanguage: LanguageCode.EN,
-    region: "Europe",
+    region: "USDope",
     isActive: true,
   },
   [LanguageCode.PT_BR]: {
@@ -434,7 +434,7 @@ const LANGUAGE_CONFIGS: Partial<Record<LanguageCode, LanguageConfig>> = {
     thousandsSeparator: " ",
     isRTL: false,
     fallbackLanguage: LanguageCode.EN,
-    region: "Europe",
+    region: "USDope",
     isActive: true,
   },
   [LanguageCode.TR]: {
@@ -451,7 +451,7 @@ const LANGUAGE_CONFIGS: Partial<Record<LanguageCode, LanguageConfig>> = {
     thousandsSeparator: ".",
     isRTL: false,
     fallbackLanguage: LanguageCode.EN,
-    region: "Europe/Asia",
+    region: "USDope/Asia",
     isActive: true,
   },
   // Add simplified configs for remaining 30 languages
@@ -937,4 +937,13 @@ export type {
   TranslationResponse,
   LanguageConfig,
 };
+
+
+
+
+
+
+
+
+
 

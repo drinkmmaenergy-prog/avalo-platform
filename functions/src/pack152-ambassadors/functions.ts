@@ -599,7 +599,7 @@ export const reportComplianceIncident = functions.https.onCall(async (request) =
   }
 
   const reportedBy = request.auth.uid;
-  const { ambassadorId, eventId, incidentType, severity, description, evidenceUrls, witnessStatements } = data;
+  const { ambassadorId, eventId, incidentType, severity, description, evidencUSDls, witnessStatements } = data;
 
   if (!ambassadorId || !incidentType || !severity || !description) {
     throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
@@ -615,7 +615,7 @@ export const reportComplianceIncident = functions.https.onCall(async (request) =
     severity,
     description,
     reportedBy,
-    evidenceUrls: evidenceUrls || [],
+    evidencUSDls: evidencUSDls || [],
     witnessStatements: witnessStatements || [],
     status: 'reported',
     createdAt: new Date(),
@@ -633,3 +633,12 @@ export const reportComplianceIncident = functions.https.onCall(async (request) =
 
   return { incidentId, status: 'reported' };
 });
+
+
+
+
+
+
+
+
+

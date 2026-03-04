@@ -466,3 +466,12 @@ export async function validateNewCreatorBoost(creatorId: string): Promise<boolea
   
   return true; // All checks passed
 }
+
+
+
+
+
+
+
+
+

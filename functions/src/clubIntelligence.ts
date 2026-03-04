@@ -774,3 +774,12 @@ function calculateContributionDiversity(contributions: any[]): number {
 
   return (uniqueTypes / totalTypes) * 100;
 }
+
+
+
+
+
+
+
+
+

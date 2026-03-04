@@ -242,3 +242,12 @@ export interface KpiEventContext  {
   ticketPrice?: number;
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+

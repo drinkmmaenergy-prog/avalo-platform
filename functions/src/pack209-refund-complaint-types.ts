@@ -110,7 +110,7 @@ export interface AppearanceComplaint {
   
   decision: ComplaintDecision;
   
-  liveSelfieUrl?: string; // Selfie taken at meeting spot
+  liveSelfiUSDl?: string; // Selfie taken at meeting spot
   profilePhotosUrls?: string[]; // Profile photos for comparison
   
   mismatchScore?: number; // AI comparison score (0-100)
@@ -242,7 +242,7 @@ export interface TrustSafetyIncident {
   createdAt: Timestamp;
   
   metadata?: {
-    selfieUrls?: string[];
+    selfiUSDls?: string[];
     comparisonScore?: number;
     patternData?: any;
   };
@@ -275,3 +275,12 @@ export interface VoluntaryRefundResponse {
   refundAmount?: number;
   error?: string;
 }
+
+
+
+
+
+
+
+
+

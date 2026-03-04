@@ -1363,3 +1363,12 @@ export const sendMeetingReminders = onSchedule("0 * * * *", async (event) => {
     console.log(`Sent reminders for ${upcomingReservations24h.size + upcomingReservations1h.size} meetings`);
     return;
   });
+
+
+
+
+
+
+
+
+

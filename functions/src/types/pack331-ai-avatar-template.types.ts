@@ -75,7 +75,7 @@ export interface AIAvatarTemplatePurchase {
 export interface AICompanionWithAvatar {
   // ... existing AICompanion fields
   avatarTemplateId?: string; // Reference to purchased template
-  avatarImageUrl?: string; // URL from template or custom
+  avatarimageUrl?: string; // URL from template or custom
 }
 
 // ============================================================================
@@ -213,3 +213,12 @@ export interface UserAvatarPurchases {
   totalSpent: number;
   purchaseCount: number;
 }
+
+
+
+
+
+
+
+
+

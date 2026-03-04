@@ -31,3 +31,12 @@ export function initializePack446(db: FirebaseFirestore.Firestore) {
 
 // Convenience export for Firebase Functions
 export const pack446Services = initializePack446(admin.firestore());
+
+
+
+
+
+
+
+
+

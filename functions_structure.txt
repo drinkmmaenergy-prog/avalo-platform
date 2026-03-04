@@ -1,0 +1,73 @@
+
+C:\a\avalo\functions
+ÔöťÔöÇÔöÇ aggressive-fix-v2.js
+ÔöťÔöÇÔöÇ aggressive-fix.js
+ÔöťÔöÇÔöÇ analyze-errors.js
+ÔöťÔöÇÔöÇ batch-e-convert.js
+ÔöťÔöÇÔöÇ batch-fix-all.js
+ÔöťÔöÇÔöÇ build-current.txt
+ÔöťÔöÇÔöÇ build-errors.txt
+ÔöťÔöÇÔöÇ build-output.txt
+ÔöťÔöÇÔöÇ build-test1.txt
+ÔöťÔöÇÔöÇ build-test2.txt
+ÔöťÔöÇÔöÇ build-test3.txt
+ÔöťÔöÇÔöÇ build-test4.txt
+ÔöťÔöÇÔöÇ build-test5.txt
+ÔöťÔöÇÔöÇ build-test6.txt
+ÔöťÔöÇÔöÇ build-test7.txt
+ÔöťÔöÇÔöÇ build-test8.txt
+ÔöťÔöÇÔöÇ build_errors.txt
+ÔöťÔöÇÔöÇ build_output.txt
+ÔöťÔöÇÔöÇ comprehensive-batch-fix.js
+ÔöťÔöÇÔöÇ comprehensive-fix-v2.js
+ÔöťÔöÇÔöÇ comprehensive-fix.js
+ÔöťÔöÇÔöÇ console.log(v+'
+ÔöťÔöÇÔöÇ create-shared-types.js
+ÔöťÔöÇÔöÇ deploy
+ÔöťÔöÇÔöÇ errors.txt
+ÔöťÔöÇÔöÇ final-comprehensive-fix.js
+ÔöťÔöÇÔöÇ final-fix.js
+ÔöťÔöÇÔöÇ firebase-debug.log
+ÔöťÔöÇÔöÇ firestore-debug.log
+ÔöťÔöÇÔöÇ FIRESTORE_PAYMENT_SCHEMA.md
+ÔöťÔöÇÔöÇ fix-imports.ps1
+ÔöťÔöÇÔöÇ functions-list.txt
+ÔöťÔöÇÔöÇ generate-all-types.js
+ÔöťÔöÇÔöÇ generate-index.js
+ÔöťÔöÇÔöÇ jest.config.js
+ÔöťÔöÇÔöÇ lib
+ÔöťÔöÇÔöÇ lib_backup
+ÔöťÔöÇÔöÇ mega-fix.js
+ÔöťÔöÇÔöÇ migrate-all-schedules-v2.js
+ÔöťÔöÇÔöÇ migrate-firestore-v2-pass2.js
+ÔöťÔöÇÔöÇ migrate-firestore-v2.js
+ÔöťÔöÇÔöÇ migrate-schedule-v2-pass2.js
+ÔöťÔöÇÔöÇ migrate-schedule-v2.js
+ÔöťÔöÇÔöÇ migrate-scheduled-v2.js
+ÔöťÔöÇÔöÇ migrate-v1-to-v2.js
+ÔöťÔöÇÔöÇ MIGRATION_SUMMARY.md
+ÔöťÔöÇÔöÇ node_modules
+ÔöťÔöÇÔöÇ pack369-ads-brain.ts
+ÔöťÔöÇÔöÇ pack375-creator-growth.js
+ÔöťÔöÇÔöÇ pack445-due-diligence.ts
+ÔöťÔöÇÔöÇ pack449-insider-monitoring.ts
+ÔöťÔöÇÔöÇ package-lock.json
+ÔöťÔöÇÔöÇ package.json
+ÔöťÔöÇÔöÇ personalizationEngine.d.ts
+ÔöťÔöÇÔöÇ personalizationEngine.js
+ÔöťÔöÇÔöÇ README.md
+ÔöťÔöÇÔöÇ run-build.js
+ÔöťÔöÇÔöÇ src
+ÔöťÔöÇÔöÇ test
+ÔöťÔöÇÔöÇ tests
+ÔöťÔöÇÔöÇ ts-errors.txt
+ÔöťÔöÇÔöÇ ts2739-errors.txt
+ÔöťÔöÇÔöÇ tsconfig.build.json
+ÔöťÔöÇÔöÇ tsconfig.json
+ÔööÔöÇÔöÇ ui-debug.log
+
+directory: 7 file: 58
+
+
+
+[2K[1G

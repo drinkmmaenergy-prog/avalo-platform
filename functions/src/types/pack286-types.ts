@@ -172,3 +172,12 @@ export interface EventPayoutResult {
   organizerPaid?: number;
   error?: string;
 }
+
+
+
+
+
+
+
+
+

@@ -359,3 +359,12 @@ export const trackUninstallSpike = onDocumentCreated('appUninstalls/{uninstallId
       console.error('Error tracking uninstall spike:', error);
     }
   });
+
+
+
+
+
+
+
+
+

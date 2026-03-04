@@ -115,7 +115,7 @@ export function analyzeSafety(text: string, context?: string): SafetyAnalysis {
 /**
  * Analyze thumbnail/image URL for safety
  */
-export function analyzeImageUrl(url: string): SafetyAnalysis {
+export function analyzeimageUrl(url: string): SafetyAnalysis {
   const lowerUrl = url.toLowerCase();
   const flags: string[] = [];
   let safetyScore = 100;
@@ -186,7 +186,7 @@ export function analyzeSearchContent(entry: Omit<SearchIndexEntry, 'safetyScore'
 export function validateCreatorProfile(profile: {
   bio: string;
   tags: string[];
-  profileImageUrl?: string;
+  profileimageUrl?: string;
 }): SafetyAnalysis {
   const bioAnalysis = analyzeSafety(profile.bio, 'profile');
   
@@ -202,8 +202,8 @@ export function validateCreatorProfile(profile: {
 
   let imageScore = 100;
   const imageFlags: string[] = [];
-  if (profile.profileImageUrl) {
-    const imageAnalysis = analyzeImageUrl(profile.profileImageUrl);
+  if (profile.profileimageUrl) {
+    const imageAnalysis = analyzeimageUrl(profile.profileimageUrl);
     imageScore = imageAnalysis.safetyScore;
     imageFlags.push(...imageAnalysis.flags);
   }
@@ -256,7 +256,7 @@ export function getContentRating(safetyScore: number): 'SAFE' | 'CAUTION' | 'UNS
  * Check if thumbnail should be blocked
  */
 export function shouldBlockThumbnail(url: string, contentType: string): boolean {
-  const imageAnalysis = analyzeImageUrl(url);
+  const imageAnalysis = analyzeimageUrl(url);
   
   // Block if unsafe
   if (!imageAnalysis.isSafe) return true;
@@ -328,3 +328,12 @@ export function shouldFlagForReview(entry: SearchIndexEntry): boolean {
 
   return false;
 }
+
+
+
+
+
+
+
+
+

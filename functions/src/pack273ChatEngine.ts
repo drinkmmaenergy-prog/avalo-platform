@@ -1,17 +1,23 @@
 /**
- * PACK 273 — Full Chat Logic System
- * 
- * Complete Avalo chat engine with:
- * - Payment rules (heterosexual, same-gender, nonbinary, influencer)
- * - Free message limits (10/6 messages)
- * - Prepaid bucket system with word-based billing
- * - Token refunds for unused words
- * - Expiration rules (48h/72h)
- * - Media support (photos, voice, video)
- * - Copy/paste abuse prevention
- * - Safety & mismatch selfie logic
- * 
- * This REPLACES all previous chat logic packs.
+ * @deprecated LEGACY — SUPERSEDED by canonical-chat-engine.ts (v2_canonical)
+ *
+ * PACK 273 chat engine is FULLY REPLACED by the canonical chat engine.
+ * ALL new code MUST use canonical-chat-engine.ts instead.
+ *
+ * Legacy paths:
+ * - pack273_chats collection → migrated to 'chats' collection
+ * - pack273 role determination → use determineRoles from canonical-chat-engine.ts
+ * - pack273 processMessage → use processMessage from canonical-chat-engine.ts
+ * - pack273 expiration (48h/72h) → canonical 48h via expireInactiveChats
+ * - FREE_LP mode → REMOVED
+ * - AWAITING_PREPAID state → mapped to AWAITING_DEPOSIT
+ *
+ * See: canonical-chat-legacy-shim.ts for redirect wrappers.
+ * See: migrations/migrate-chats-to-v2-canonical.ts for data migration.
+ *
+ * ORIGINAL: PACK 273 — Full Chat Logic System
+ * - Payment rules, free message limits, prepaid bucket with word billing
+ * - Token refunds, expiration, media, copy-paste abuse, safety
  */
 
 import { db, serverTimestamp, increment, generateId } from './init.js';
@@ -934,3 +940,12 @@ export async function getPack273ParticipantContext(
     priceModeration: user.priceModeration || { enabled: false }
   };
 }
+
+
+
+
+
+
+
+
+

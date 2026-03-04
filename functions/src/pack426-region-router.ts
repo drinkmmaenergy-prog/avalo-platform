@@ -116,3 +116,12 @@ export function getAvailableRegions(): Region[] {
 export function isRegionAvailable(region: Region): boolean {
   return REGION_CONFIGS[region]?.enabled ?? false;
 }
+
+
+
+
+
+
+
+
+

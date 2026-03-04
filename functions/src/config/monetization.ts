@@ -44,3 +44,12 @@ export const TIPS_CONFIG = {
   /** Avalo platform fee on tips (as decimal) */
   TIP_FEE_PERCENTAGE: 0.20,
 } as const;
+
+
+
+
+
+
+
+
+

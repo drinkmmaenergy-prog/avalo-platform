@@ -381,3 +381,12 @@ export async function getTimePatternInsights(userId: string): Promise<{
     confidenceLevel,
   };
 }
+
+
+
+
+
+
+
+
+

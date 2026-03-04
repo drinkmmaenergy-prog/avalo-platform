@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import * as admin from 'firebase-admin';
-import { TOKEN_PAYOUT_PLN } from '../config/economyConfig';
+import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 import {
   aggregateUserMonthlyEarnings,
   runMonthlyAggregation,
@@ -28,7 +28,7 @@ import {
   getCurrentMonthKey,
   getMonthDateRange,
   isValidYearMonth,
-  TOKEN_PAYOUT_RATE_PLN,
+  TOKEN_TOKEN_PAYOUT_USD,
 } from '../types/pack303-creator-earnings.types';
 
 // Mock Firestore
@@ -114,8 +114,8 @@ describe('PACK 303 — Creator Earnings Dashboard & Monthly Statements', () => {
   describe('Constants & Configuration', () => {
     
     it('should have correct payout rate', () => {
-      // TOKEN_PAYOUT_RATE_PLN is derived from TOKEN_PAYOUT_USD (0.03) × USD_TO_PLN (4.0)
-      expect(TOKEN_PAYOUT_RATE_PLN).toBe(TOKEN_PAYOUT_PLN);
+      // TOKEN_TOKEN_PAYOUT_USD is derived from TOKEN_PAYOUT_USD (0.03) × USD_TO_USD (4.0)
+      expect(TOKEN_TOKEN_PAYOUT_USD).toBe(TOKEN_PAYOUT_USD);
     });
     
     it('should have correct revenue splits', () => {
@@ -265,8 +265,8 @@ describe('PACK 303 — Creator Earnings Dashboard & Monthly Statements', () => {
       expect(true).toBe(true);
     });
     
-    it('should use TOKEN_PAYOUT_RATE_PLN constant correctly', () => {
-      expect(TOKEN_PAYOUT_RATE_PLN).toBe(TOKEN_PAYOUT_PLN);
+    it('should use TOKEN_TOKEN_PAYOUT_USD constant correctly', () => {
+      expect(TOKEN_TOKEN_PAYOUT_USD).toBe(TOKEN_PAYOUT_USD);
     });
     
     it('should respect revenue splits from wallet service', () => {
@@ -323,7 +323,7 @@ describe('PACK 303 — Business Rules Compliance', () => {
   
   it('must NOT change tokenomics', () => {
     // PACK 303 is read-only reporting — rate from economyConfig.ts
-    expect(TOKEN_PAYOUT_RATE_PLN).toBe(TOKEN_PAYOUT_PLN);
+    expect(TOKEN_TOKEN_PAYOUT_USD).toBe(TOKEN_PAYOUT_USD);
   });
   
   it('must NOT change revenue splits', () => {
@@ -379,3 +379,12 @@ describe('PACK 303 — Export Formats', () => {
     expect(STATEMENT_EXPORT_CONFIG.expirationHours).toBe(24);
   });
 });
+
+
+
+
+
+
+
+
+

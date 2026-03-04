@@ -30,7 +30,7 @@ const SUBSCRIPTION_TIERS = {
     creatorAccess: false,
   },
   Plus: {
-    priceMonthly: 39, // PLN
+    priceMonthly: 39, // USD
     dailyMessageLimit: -1, // Unlimited
     aiAccessLimit: -1, // All standard AIs
     nsfwAccess: false,
@@ -38,7 +38,7 @@ const SUBSCRIPTION_TIERS = {
     mediaTokenCost: 2,
   },
   Intimate: {
-    priceMonthly: 79, // PLN
+    priceMonthly: 79, // USD
     dailyMessageLimit: -1,
     aiAccessLimit: -1,
     nsfwAccess: true,
@@ -46,7 +46,7 @@ const SUBSCRIPTION_TIERS = {
     mediaTokenCost: 3,
   },
   Creator: {
-    priceMonthly: 149, // PLN
+    priceMonthly: 149, // USD
     dailyMessageLimit: -1,
     aiAccessLimit: -1,
     nsfwAccess: true,
@@ -799,5 +799,14 @@ async function generateAIResponse(
 
   return responses[Math.floor(Math.random() * responses.length)];
 }
+
+
+
+
+
+
+
+
+
 
 

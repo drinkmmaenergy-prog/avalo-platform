@@ -6,7 +6,7 @@
 import { OfflineAsset, PosterFormat, PosterTemplate, PosterElement } from './types';
 import { db, generateId, serverTimestamp } from '../../init';
 import { moderatePoster, checkRateLimit } from './moderation';
-import { generateQRImageUrl } from './qr-generator';
+import { generateQRimageUrl } from './qr-generator';
 
 export class PosterGenerator {
   private static readonly BASE_URL = process.env.AVALO_BASE_URL || 'https://avalo.app';
@@ -86,14 +86,14 @@ export class PosterGenerator {
 
     const userData = userDoc.data()!;
     const username = userData.username || userId;
-    const profileUrl = `${this.BASE_URL}/u/${username}`;
-    const qrCodeUrl = generateQRImageUrl(profileUrl, { size: 500 });
+    const profilUSDl = `${this.BASE_URL}/u/${username}`;
+    const qrCodUSDl = generateQRimageUrl(profilUSDl, { size: 500 });
 
     const template = this.TEMPLATES[format];
     const posterElements = this.buildPosterElements(
       template,
       content,
-      qrCodeUrl
+      qrCodUSDl
     );
 
     const assetId = generateId();
@@ -107,7 +107,7 @@ export class PosterGenerator {
         displayName: content.displayName,
         tagline: content.tagline,
         profilePhoto: content.profilePhoto,
-        qrCode: qrCodeUrl,
+        qrCode: qrCodUSDl,
         customText: content.customText,
       },
       urls: {
@@ -152,7 +152,7 @@ export class PosterGenerator {
       profilePhoto?: string;
       customText?: string;
     },
-    qrCodeUrl: string
+    qrCodUSDl: string
   ): PosterElement[] {
     const elements: PosterElement[] = [];
     const { width, height, format } = template;
@@ -201,7 +201,7 @@ export class PosterGenerator {
         y: height - 250,
         width: 200,
         height: 200,
-        qrData: qrCodeUrl,
+        qrData: qrCodUSDl,
       });
     } else if (format === 'badge') {
       if (content.profilePhoto) {
@@ -247,7 +247,7 @@ export class PosterGenerator {
         y: height - 500,
         width: 400,
         height: 400,
-        qrData: qrCodeUrl,
+        qrData: qrCodUSDl,
       });
     } else {
       if (content.profilePhoto) {
@@ -293,7 +293,7 @@ export class PosterGenerator {
         y: height - 600,
         width: 500,
         height: 500,
-        qrData: qrCodeUrl,
+        qrData: qrCodUSDl,
       });
     }
 
@@ -405,3 +405,12 @@ export const generateEventBundle = PosterGenerator.generateEventBundle.bind(Post
 export const submitForReview = PosterGenerator.submitForReview.bind(PosterGenerator);
 export const moderatePosterAsset = PosterGenerator.moderatePosterAsset.bind(PosterGenerator);
 export const getUserAssets = PosterGenerator.getUserAssets.bind(PosterGenerator);
+
+
+
+
+
+
+
+
+

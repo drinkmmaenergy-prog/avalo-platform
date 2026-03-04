@@ -85,7 +85,7 @@ export type ExpertiseCategory =
   | 'design'
   | 'production'
   | 'teaching'
-  | 'entrepreneurship'
+  | 'entreprenUSDship'
   | 'public_speaking'
   | 'coaching'
   | 'workshops';
@@ -257,7 +257,7 @@ export interface AmbassadorProgress {
   // Certification
   certified: boolean;
   certificationDate?: Date;
-  certificateUrl?: string;
+  certificatUSDl?: string;
   
   updatedAt: Date;
 }
@@ -529,9 +529,9 @@ export const ALLOWED_CHANNELS: AllowedRecruitmentChannel[] = [
     id: 'business_schools',
     name: 'Business Schools & Universities',
     type: 'educational',
-    description: 'Academic institutions focused on business, entrepreneurship',
+    description: 'Academic institutions focused on business, entreprenUSDship',
     approved: true,
-    examples: ['MBA programs', 'Business student groups', 'Entrepreneurship clubs']
+    examples: ['MBA programs', 'Business student groups', 'EntreprenUSDship clubs']
   },
   {
     id: 'fitness_communities',
@@ -567,9 +567,9 @@ export const ALLOWED_CHANNELS: AllowedRecruitmentChannel[] = [
   },
   {
     id: 'startup_hubs',
-    name: 'Startup & Entrepreneurship Hubs',
+    name: 'Startup & EntreprenUSDship Hubs',
     type: 'business',
-    description: 'Startup ecosystems, entrepreneurship networks',
+    description: 'Startup ecosystems, entreprenUSDship networks',
     approved: true,
     examples: ['Startup incubators', 'Founders groups', 'Innovation hubs']
   },
@@ -706,3 +706,12 @@ export const COMMISSION_STRUCTURE = {
   noBonuses: true,              // No bonus tokens
   noFreeTokens: true            // No free tokens
 };
+
+
+
+
+
+
+
+
+

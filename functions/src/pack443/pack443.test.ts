@@ -418,3 +418,12 @@ if (require.main === module) {
   console.log('Note: These tests require a proper Jest setup.');
   console.log('Run with: npm test -- pack443.test.ts');
 }
+
+
+
+
+
+
+
+
+

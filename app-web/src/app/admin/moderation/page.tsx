@@ -11,7 +11,7 @@ export default function ModerationDashboardPage() {
 
   // Calculate stats from real-time data
   const totalIncidents = incidents.length;
-  const activeRestrictions = incidents.filter(i => i.status === 'under_review' || i.status === 'pending').length;
+  const activeRestrictions = incidents.filter(i => i.status === 'OPEN' || i.status === 'IN_PROGRESS').length;
   const pendingAppeals = appeals.filter(a => a.status === 'PENDING').length;
 
   const loading = incidentsLoading || appealsLoading;

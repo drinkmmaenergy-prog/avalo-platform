@@ -193,3 +193,12 @@ export interface BoostQuestionResponse {
   newBoostScore: number;
   tokensCharged: number;
 }
+
+
+
+
+
+
+
+
+

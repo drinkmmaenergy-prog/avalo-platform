@@ -15,9 +15,9 @@ import { FieldValue, HttpsError, auth, onCall, serverTimestamp, logger, onSchedu
 
 export type RevenueForecast = {
   date: string;
-  predictedRevenuePLN: number;
-  predictedPayoutsPLN: number;
-  predictedGrossProfitPLN: number;
+  predictedRevenueUSD: number;
+  predictedPayoutsUSD: number;
+  predictedGrossProfitUSD: number;
   confidence: number; // 0–1
 };
 
@@ -29,17 +29,17 @@ export type ForecastResult = {
   p50: number; // Median
   p75: number; // 75th percentile
   p90: number; // 90th percentile
-  totalRevenuePLN: number;
-  totalPayoutsPLN: number;
-  totalGrossProfitPLN: number;
-  avgDailyRevenuePLN: number;
+  totalRevenueUSD: number;
+  totalPayoutsUSD: number;
+  totalGrossProfitUSD: number;
+  avgDailyRevenueUSD: number;
   generatedAt: string;
 };
 
 type HistoricalDataPoint = {
   date: string;
-  revenuePLN: number;
-  payoutsPLN: number;
+  revenueUSD: number;
+  payoutsUSD: number;
   activeUsers: number;
   newUsers: number;
   transactions: number;
@@ -145,8 +145,8 @@ class RevenueForecastEngine {
         const data = snapshot.data()!;
         dataPoints.push({
           date: dateStr,
-          revenuePLN: data.revenuePLN || 0,
-          payoutsPLN: data.payoutsPLN || 0,
+          revenueUSD: data.revenueUSD || 0,
+          payoutsUSD: data.payoutsUSD || 0,
           activeUsers: data.activeUsers || 0,
           newUsers: data.newUsers || 0,
           transactions: data.transactions || 0,
@@ -155,8 +155,8 @@ class RevenueForecastEngine {
         // Fill gaps with zeros
         dataPoints.push({
           date: dateStr,
-          revenuePLN: 0,
-          payoutsPLN: 0,
+          revenueUSD: 0,
+          payoutsUSD: 0,
           activeUsers: 0,
           newUsers: 0,
           transactions: 0,
@@ -213,7 +213,7 @@ class RevenueForecastEngine {
     const data = snapshot.data()!;
     return {
       conversionRate: data.installToPayRate || 0.03,
-      avgRevenuePerUser: data.arppuPLN || 25,
+      avgRevenuePerUser: data.arppuUSD || 25,
     };
   }
 
@@ -275,12 +275,12 @@ class RevenueForecastEngine {
     
     // Calculate baseline from recent historical data
     const recentData = inputs.historical.slice(-7); // Last 7 days
-    const avgDailyRevenue = recentData.reduce((sum, d) => sum + d.revenuePLN, 0) / recentData.length;
-    const avgDailyPayouts = recentData.reduce((sum, d) => sum + d.payoutsPLN, 0) / recentData.length;
+    const avgDailyRevenue = recentData.reduce((sum, d) => sum + d.revenueUSD, 0) / recentData.length;
+    const avgDailyPayouts = recentData.reduce((sum, d) => sum + d.payoutsUSD, 0) / recentData.length;
 
     // Calculate trends
-    const revenueTrend = this.calculateTrend(inputs.historical.map(d => d.revenuePLN));
-    const payoutTrend = this.calculateTrend(inputs.historical.map(d => d.payoutsPLN));
+    const revenueTrend = this.calculateTrend(inputs.historical.map(d => d.revenueUSD));
+    const payoutTrend = this.calculateTrend(inputs.historical.map(d => d.payoutsUSD));
 
     for (let i = 1; i <= days; i++) {
       const date = new Date(Date.now() + i * 24 * 60 * 60 * 1000);
@@ -312,9 +312,9 @@ class RevenueForecastEngine {
 
       forecasts.push({
         date: dateStr,
-        predictedRevenuePLN: Math.round(predictedRevenue * 100) / 100,
-        predictedPayoutsPLN: Math.round(predictedPayouts * 100) / 100,
-        predictedGrossProfitPLN: Math.round((predictedRevenue - predictedPayouts) * 100) / 100,
+        predictedRevenueUSD: Math.round(predictedRevenue * 100) / 100,
+        predictedPayoutsUSD: Math.round(predictedPayouts * 100) / 100,
+        predictedGrossProfitUSD: Math.round((predictedRevenue - predictedPayouts) * 100) / 100,
         confidence: Math.round(confidence * 100) / 100,
       });
     }
@@ -351,22 +351,22 @@ class RevenueForecastEngine {
     p50: number;
     p75: number;
     p90: number;
-    totalRevenuePLN: number;
-    totalPayoutsPLN: number;
-    totalGrossProfitPLN: number;
-    avgDailyRevenuePLN: number;
+    totalRevenueUSD: number;
+    totalPayoutsUSD: number;
+    totalGrossProfitUSD: number;
+    avgDailyRevenueUSD: number;
   } {
-    const revenues = forecasts.map(f => f.predictedRevenuePLN).sort((a, b) => a - b);
+    const revenues = forecasts.map(f => f.predictedRevenueUSD).sort((a, b) => a - b);
     const n = revenues.length;
 
     console.log('Scheduled job result:', {
       p50: revenues[Math.floor(n * 0.5)],
       p75: revenues[Math.floor(n * 0.75)],
       p90: revenues[Math.floor(n * 0.9)],
-      totalRevenuePLN: forecasts.reduce((sum, f) => sum + f.predictedRevenuePLN, 0),
-      totalPayoutsPLN: forecasts.reduce((sum, f) => sum + f.predictedPayoutsPLN, 0),
-      totalGrossProfitPLN: forecasts.reduce((sum, f) => sum + f.predictedGrossProfitPLN, 0),
-      avgDailyRevenuePLN: revenues.reduce((sum, r) => sum + r, 0) / n,
+      totalRevenueUSD: forecasts.reduce((sum, f) => sum + f.predictedRevenueUSD, 0),
+      totalPayoutsUSD: forecasts.reduce((sum, f) => sum + f.predictedPayoutsUSD, 0),
+      totalGrossProfitUSD: forecasts.reduce((sum, f) => sum + f.predictedGrossProfitUSD, 0),
+      avgDailyRevenueUSD: revenues.reduce((sum, r) => sum + r, 0) / n,
     });
 
 
@@ -425,14 +425,14 @@ const engine = new RevenueForecastEngine();
 /**
  * Scheduled function: Generate 30-day forecast daily at 2 AM
  */
-export const forecastRevenueNext30Days = onSchedule({ schedule: "0 2 * * *", timeZone: "Europe/Warsaw", region: "europe-west1" }, async (event) => {
+export const forecastRevenueNext30Days = onSchedule({ schedule: "0 2 * * *", timeZone: "USDope/Warsaw", region: "europe-west1" }, async (event) => {
     console.log('[PACK 358] Generating 30-day revenue forecast');
     
     try {
       const result = await engine.generateForecast('30d');
       console.log('[PACK 358] 30-day forecast generated:', {
-        totalRevenue: result.totalRevenuePLN,
-        totalProfit: result.totalGrossProfitPLN,
+        totalRevenue: result.totalRevenueUSD,
+        totalProfit: result.totalGrossProfitUSD,
       });
       
       console.log('Scheduled job result:', { success: true });
@@ -448,14 +448,14 @@ export const forecastRevenueNext30Days = onSchedule({ schedule: "0 2 * * *", tim
 /**
  * Scheduled function: Generate 90-day forecast weekly on Monday at 3 AM
  */
-export const forecastRevenueNext90Days = onSchedule({ schedule: "0 3 * * 1", timeZone: "Europe/Warsaw", region: "europe-west1" }, async (event) => {
+export const forecastRevenueNext90Days = onSchedule({ schedule: "0 3 * * 1", timeZone: "USDope/Warsaw", region: "europe-west1" }, async (event) => {
     console.log('[PACK 358] Generating 90-day revenue forecast');
     
     try {
       const result = await engine.generateForecast('90d');
       console.log('[PACK 358] 90-day forecast generated:', {
-        totalRevenue: result.totalRevenuePLN,
-        totalProfit: result.totalGrossProfitPLN,
+        totalRevenue: result.totalRevenueUSD,
+        totalProfit: result.totalGrossProfitUSD,
       });
       
       console.log('Scheduled job result:', { success: true });
@@ -471,14 +471,14 @@ export const forecastRevenueNext90Days = onSchedule({ schedule: "0 3 * * 1", tim
 /**
  * Scheduled function: Generate 12-month forecast monthly on 1st at 4 AM
  */
-export const forecastRevenueNext12Months = onSchedule({ schedule: "0 4 1 * *", timeZone: "Europe/Warsaw", region: "europe-west1" }, async (event) => {
+export const forecastRevenueNext12Months = onSchedule({ schedule: "0 4 1 * *", timeZone: "USDope/Warsaw", region: "europe-west1" }, async (event) => {
     console.log('[PACK 358] Generating 12-month revenue forecast');
     
     try {
       const result = await engine.generateForecast('12m');
       console.log('[PACK 358] 12-month forecast generated:', {
-        totalRevenue: result.totalRevenuePLN,
-        totalProfit: result.totalGrossProfitPLN,
+        totalRevenue: result.totalRevenueUSD,
+        totalProfit: result.totalGrossProfitUSD,
       });
       
       console.log('Scheduled job result:', { success: true });
@@ -570,3 +570,12 @@ export const getLatestForecast = onCall(
       throw new HttpsError('internal', 'Failed to fetch forecast');
     }
   });
+
+
+
+
+
+
+
+
+

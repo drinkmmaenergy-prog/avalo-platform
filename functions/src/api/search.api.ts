@@ -310,3 +310,12 @@ export async function getSearchCategories(req: Request, res: Response): Promise<
     res.status(500).json({ error: 'Failed to get categories', message: error.message });
   }
 }
+
+
+
+
+
+
+
+
+

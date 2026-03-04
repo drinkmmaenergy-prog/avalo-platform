@@ -270,3 +270,12 @@ export function validateLogSafety(logEntry: any): {
     violations,
   };
 }
+
+
+
+
+
+
+
+
+

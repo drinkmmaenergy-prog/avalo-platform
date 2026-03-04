@@ -42,143 +42,138 @@ interface AuditCheck {
  * 1) PACK 414 — Run Full Integration Audit
  * Runs 40+ checks across all critical systems
  */
-export const pack414_runFullAudit = onCall(
+import { onRequest } from 'firebase-functions/v2/https';
+
+export const pack414_runFullAudit = onRequest(
   { timeoutSeconds: 540, memory: '2GiB' },
-  async (request) => {
-    // Require admin authentication
-    if (!request.auth?.token?.admin) {
-      throw new HttpsError(
-        'permission-denied',
-        'Only admins can run integration audits'
-      );
-    }
+  async (req, res): Promise<void> => {
 
     const startTime = Date.now();
     const checks: AuditCheck[] = [];
-    const registry = Object.values(AvaloIntegrationRegistry);
+
+    const safeAudit = async (
+      name: string,
+      category: string,
+      fn: () => Promise<AuditCheck>
+    ): Promise<AuditCheck> => {
+      try {
+        const result = await fn();
+
+        if (!result || !result.status) {
+          logger.error(`${name} returned invalid result`, result);
+          return {
+            name,
+            status: 'FAIL',
+            message: `${name} returned invalid result`,
+            category,
+          };
+        }
+
+        return result;
+
+      } catch (error: any) {
+        logger.error(`${name} crashed`, error);
+        return {
+          name,
+          status: 'FAIL',
+          message: error?.message || 'Unknown crash',
+          category,
+        };
+      }
+    };
 
     try {
-      // CATEGORY 1: AUTHENTICATION & IDENTITY
-      checks.push(await auditAuthentication());
-      checks.push(await auditFirebaseAuth());
-      checks.push(await auditSessionManagement());
 
-      // CATEGORY 2: PROFILE SYSTEM
-      checks.push(await auditProfileSystem());
-      checks.push(await auditVerificationSystem());
-      checks.push(await auditKYCSystem());
+      checks.push(await safeAudit('auditAuthentication', 'AUTH', auditAuthentication));
+      checks.push(await safeAudit('auditFirebaseAuth', 'AUTH', auditFirebaseAuth));
+      checks.push(await safeAudit('auditSessionManagement', 'AUTH', auditSessionManagement));
 
-      // CATEGORY 3: MONETIZATION
-      checks.push(await auditPaidChat());
-      checks.push(await auditPaidCalls());
-      checks.push(await auditPaidEvents());
-      checks.push(await auditWalletSystem());
-      checks.push(await auditPayoutEngine());
-      checks.push(await auditTaxEngine());
-      checks.push(await auditRevenueSplit());
-      checks.push(await auditTokenPurchase());
+      checks.push(await safeAudit('auditProfileSystem', 'PROFILE', auditProfileSystem));
+      checks.push(await safeAudit('auditVerificationSystem', 'PROFILE', auditVerificationSystem));
+      checks.push(await safeAudit('auditKYCSystem', 'PROFILE', auditKYCSystem));
 
-      // CATEGORY 4: SAFETY & MODERATION
-      checks.push(await auditPanicMode());
-      checks.push(await auditSafetyEngine());
-      checks.push(await auditAbuseDetection());
-      checks.push(await auditFraudDetection());
-      checks.push(await auditMinorProtection());
-      checks.push(await auditContentModeration());
+      checks.push(await safeAudit('auditPaidChat', 'MONETIZATION', auditPaidChat));
+      checks.push(await safeAudit('auditPaidCalls', 'MONETIZATION', auditPaidCalls));
+      checks.push(await safeAudit('auditPaidEvents', 'MONETIZATION', auditPaidEvents));
+      checks.push(await safeAudit('auditWalletSystem', 'MONETIZATION', auditWalletSystem));
+      checks.push(await safeAudit('auditPayoutEngine', 'MONETIZATION', auditPayoutEngine));
+      checks.push(await safeAudit('auditTaxEngine', 'MONETIZATION', auditTaxEngine));
+      checks.push(await safeAudit('auditRevenueSplit', 'MONETIZATION', auditRevenueSplit));
+      checks.push(await safeAudit('auditTokenPurchase', 'MONETIZATION', auditTokenPurchase));
 
-      // CATEGORY 5: SUPPORT SYSTEM
-      checks.push(await auditSupportCore());
-      checks.push(await auditAdminConsole());
-      checks.push(await auditSLAMonitoring());
-      checks.push(await auditTicketingSystem());
+      checks.push(await safeAudit('auditPanicMode', 'SAFETY', auditPanicMode));
+      checks.push(await safeAudit('auditSafetyEngine', 'SAFETY', auditSafetyEngine));
+      checks.push(await safeAudit('auditAbuseDetection', 'SAFETY', auditAbuseDetection));
+      checks.push(await safeAudit('auditFraudDetection', 'SAFETY', auditFraudDetection));
+      checks.push(await safeAudit('auditMinorProtection', 'SAFETY', auditMinorProtection));
+      checks.push(await safeAudit('auditContentModeration', 'SAFETY', auditContentModeration));
 
-      // CATEGORY 6: AI SYSTEMS
-      checks.push(await auditAICompanions());
-      checks.push(await auditAIVideoVoice());
-      checks.push(await auditAIEndpoints());
-      checks.push(await auditAIBilling());
+      checks.push(await safeAudit('auditSupportCore', 'SUPPORT', auditSupportCore));
+      checks.push(await safeAudit('auditAdminConsole', 'SUPPORT', auditAdminConsole));
+      checks.push(await safeAudit('auditSLAMonitoring', 'SUPPORT', auditSLAMonitoring));
+      checks.push(await safeAudit('auditTicketingSystem', 'SUPPORT', auditTicketingSystem));
 
-      // CATEGORY 7: NOTIFICATIONS
-      checks.push(await auditPushNotifications());
-      checks.push(await auditNotificationDelivery());
-      checks.push(await auditAdminTopics());
+      checks.push(await safeAudit('auditAICompanions', 'AI', auditAICompanions));
+      checks.push(await safeAudit('auditAIVideoVoice', 'AI', auditAIVideoVoice));
+      checks.push(await safeAudit('auditAIEndpoints', 'AI', auditAIEndpoints));
+      checks.push(await safeAudit('auditAIBilling', 'AI', auditAIBilling));
 
-      // CATEGORY 8: GROWTH & RETENTION
-      checks.push(await auditGrowthNudges());
-      checks.push(await auditRetentionSystem());
-      checks.push(await auditReEngagement());
+      checks.push(await safeAudit('auditPushNotifications', 'NOTIFICATIONS', auditPushNotifications));
+      checks.push(await safeAudit('auditNotificationDelivery', 'NOTIFICATIONS', auditNotificationDelivery));
+      checks.push(await safeAudit('auditAdminTopics', 'NOTIFICATIONS', auditAdminTopics));
 
-      // CATEGORY 9: APP STORE & REPUTATION
-      checks.push(await auditRatingDefense());
-      checks.push(await auditKeywordDefense());
-      checks.push(await auditStoreReputation());
+      checks.push(await safeAudit('auditGrowthNudges', 'GROWTH', auditGrowthNudges));
+      checks.push(await safeAudit('auditRetentionSystem', 'GROWTH', auditRetentionSystem));
+      checks.push(await safeAudit('auditReEngagement', 'GROWTH', auditReEngagement));
 
-      // CATEGORY 10: INFRASTRUCTURE
-      checks.push(await auditRegionalLaunch());
-      checks.push(await auditAPIGateway());
-      checks.push(await auditDatabasePerformance());
-      checks.push(await auditFirestoreRules());
-      checks.push(await auditFirestoreIndexes());
-      checks.push(await auditCloudFunctions());
-      checks.push(await auditErrorTracking());
+      checks.push(await safeAudit('auditRatingDefense', 'STORE', auditRatingDefense));
+      checks.push(await safeAudit('auditKeywordDefense', 'STORE', auditKeywordDefense));
+      checks.push(await safeAudit('auditStoreReputation', 'STORE', auditStoreReputation));
 
-      // Update registry based on check results
-      updateRegistryFromChecks(registry, checks);
+      checks.push(await safeAudit('auditRegionalLaunch', 'INFRA', auditRegionalLaunch));
+      checks.push(await safeAudit('auditAPIGateway', 'INFRA', auditAPIGateway));
+      checks.push(await safeAudit('auditDatabasePerformance', 'INFRA', auditDatabasePerformance));
+      checks.push(await safeAudit('auditFirestoreRules', 'INFRA', auditFirestoreRules));
+      checks.push(await safeAudit('auditFirestoreIndexes', 'INFRA', auditFirestoreIndexes));
+      checks.push(await safeAudit('auditCloudFunctions', 'INFRA', auditCloudFunctions));
+      checks.push(await safeAudit('auditErrorTracking', 'INFRA', auditErrorTracking));
 
-      // Calculate overall status
-      const passed = checks.filter(c => c.status === 'PASS').length;
       const failed = checks.filter(c => c.status === 'FAIL').length;
       const warnings = checks.filter(c => c.status === 'WARN').length;
+      const passed = checks.filter(c => c.status === 'PASS').length;
 
       const criticalFailures = checks
         .filter(c => c.status === 'FAIL' && c.category === 'CRITICAL')
         .map(c => c.name);
 
-      let overall: 'GREEN' | 'YELLOW' | 'RED';
-      if (criticalFailures.length > 0) {
-        overall = 'RED';
-      } else if (failed > 5 || warnings > 10) {
-        overall = 'YELLOW';
-      } else {
-        overall = 'GREEN';
-      }
+      const overall =
+        criticalFailures.length > 0
+          ? 'RED'
+          : failed > 5
+          ? 'YELLOW'
+          : 'GREEN';
 
-      const result: AuditResult = {
+      res.status(200).json({
         overall,
-        criticalFailures,
-        warnings: checks.filter(c => c.status === 'WARN').map(c => c.name),
-        passed,
         failed,
+        warnings,
+        passed,
         time: new Date().toISOString(),
-        details: checks
-      };
-
-      // Store audit result
-      await db.collection('pack414_audits').add({
-        ...result,
-        completedAt: admin.firestore.FieldValue.serverTimestamp(),
-        duration: Date.now() - startTime,
-        runBy: request.auth.uid
+        details: checks,
+        durationMs: Date.now() - startTime
       });
+      return;
 
-      // Update registry document
-      await db.collection('pack414_registry').doc('current').set({
-        registry,
-        lastAudit: result,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    } catch (error: any) {
+      logger.error('Fatal audit crash', error);
+      res.status(500).json({
+        error: error?.message || 'Audit crashed'
       });
-
-      return result;
-
-    } catch (error) {
-      console.error('Audit failed:', error);
-      throw new HttpsError(
-        'internal',
-        `Audit failed: ${error.message}`
-      );
+      return;
     }
-  });
 
+  }
+);
 /**
  * 2) PACK 414 — Run Pack-Specific Audit
  * Audits a specific pack and updates the Integration Registry
@@ -431,20 +426,39 @@ async function auditVerificationSystem(): Promise<AuditCheck> {
   }
 }
 
+async function auditErrorTracking(): Promise<AuditCheck> {
+  try {
+    const errorConfig = await db.collection('system_config').doc('error_tracking').get();
+    return {
+      name: 'Error Tracking',
+      status: errorConfig.exists ? 'PASS' : 'WARN',
+      message: errorConfig.exists ? 'Error tracking configured' : 'Error tracking config missing',
+      category: 'HIGH'
+    };
+  } catch (error: any) {
+    return {
+      name: 'Error Tracking',
+      status: 'WARN',
+      message: `Error tracking check warning: ${error.message}`,
+      category: 'HIGH'
+    };
+  }
+}
+
 async function auditKYCSystem(): Promise<AuditCheck> {
   try {
-    const kycDoc = await db.collection('system_config').doc('kyc').get();
+    const kycConfig = await db.collection('system_config').doc('kyc').get();
     return {
       name: 'KYC System',
-      status: kycDoc.exists ? 'PASS' : 'WARN',
-      message: kycDoc.exists ? 'KYC system configured' : 'KYC config missing',
+      status: kycConfig.exists ? 'PASS' : 'WARN',
+      message: kycConfig.exists ? 'KYC system configured' : 'KYC config missing',
       category: 'CRITICAL'
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
       name: 'KYC System',
       status: 'FAIL',
-      message: `KYC check failed: ${error.message}`,
+      message: `KYC system check failed: ${error.message}`,
       category: 'CRITICAL'
     };
   }
@@ -459,7 +473,7 @@ async function auditPaidChat(): Promise<AuditCheck> {
       message: chatConfig.exists ? 'Paid chat configured' : 'Paid chat config missing',
       category: 'CRITICAL'
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
       name: 'Paid Chat',
       status: 'FAIL',
@@ -471,14 +485,14 @@ async function auditPaidChat(): Promise<AuditCheck> {
 
 async function auditPaidCalls(): Promise<AuditCheck> {
   try {
-    const callConfig = await db.collection('system_config').doc('paid_calls').get();
+    const callsConfig = await db.collection('system_config').doc('paid_calls').get();
     return {
       name: 'Paid Calls',
-      status: callConfig.exists ? 'PASS' : 'FAIL',
-      message: callConfig.exists ? 'Paid calls configured' : 'Paid calls config missing',
+      status: callsConfig.exists ? 'PASS' : 'FAIL',
+      message: callsConfig.exists ? 'Paid calls configured' : 'Paid calls config missing',
       category: 'CRITICAL'
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
       name: 'Paid Calls',
       status: 'FAIL',
@@ -490,19 +504,19 @@ async function auditPaidCalls(): Promise<AuditCheck> {
 
 async function auditPaidEvents(): Promise<AuditCheck> {
   try {
-    const eventsSnap = await db.collection('events').limit(1).get();
+    const eventsConfig = await db.collection('system_config').doc('paid_events').get();
     return {
       name: 'Paid Events',
-      status: 'PASS',
-      message: 'Events system operational',
-      category: 'HIGH'
+      status: eventsConfig.exists ? 'PASS' : 'FAIL',
+      message: eventsConfig.exists ? 'Paid events configured' : 'Paid events config missing',
+      category: 'CRITICAL'
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
       name: 'Paid Events',
-      status: 'WARN',
-      message: `Events check warning: ${error.message}`,
-      category: 'HIGH'
+      status: 'FAIL',
+      message: `Paid events check failed: ${error.message}`,
+      category: 'CRITICAL'
     };
   }
 }
@@ -1131,27 +1145,6 @@ async function auditCloudFunctions(): Promise<AuditCheck> {
   }
 }
 
-async function auditErrorTracking(): Promise<AuditCheck> {
-  try {
-    const errorConfig = await db.collection('system_config').doc('error_tracking').get();
-    console.log('Scheduled job result:', {
-      name: 'Error Tracking',
-      status: errorConfig.exists ? 'PASS' : 'WARN',
-      message: errorConfig.exists ? 'Error tracking configured' : 'Error tracking config missing',
-      category: 'HIGH'
-    });
-
-    return;
-  } catch (error) {
-    return {
-      name: 'Error Tracking',
-      status: 'WARN',
-      message: `Error tracking check warning: ${error.message}`,
-      category: 'HIGH'
-    };
-  }
-}
-
 async function auditSpecificPack(packId: number, moduleName: string): Promise<AuditCheck> {
   // This is a simplified version - in production, this would route to specific audit functions
   // based on the pack ID
@@ -1271,3 +1264,12 @@ export const pack414_scheduledHealthCheck = onSchedule("every 15 minutes", async
       console.error('Health check failed:', error);
     }
   });
+
+
+
+
+
+
+
+
+

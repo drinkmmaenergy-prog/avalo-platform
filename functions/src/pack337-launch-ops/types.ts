@@ -25,10 +25,10 @@ export interface GeoRolloutCountry {
 
 export interface MarketingBudget {
   countryCode: string;
-  dailyBudgetPLN: number;
-  monthlyBudgetPLN: number;
-  spentTodayPLN: number;
-  spentThisMonthPLN: number;
+  dailyBudgetUSD: number;
+  monthlyBudgetUSD: number;
+  spentTodayUSD: number;
+  spentThisMonthUSD: number;
   lastResetAt: FirebaseFirestore.Timestamp;
 }
 
@@ -42,7 +42,7 @@ export interface AdAttributionEvent {
   countryCode: string;
   firstOpenAt: FirebaseFirestore.Timestamp;
   firstPaymentAt?: FirebaseFirestore.Timestamp;
-  totalRevenuePLN: number;
+  totalRevenueUSD: number;
   isPayingUser: boolean;
 }
 
@@ -75,7 +75,7 @@ export interface CountryRegistrationQuota {
 export interface MarketingSpendLog {
   id: string;
   countryCode: string;
-  amountPLN: number;
+  amountUSD: number;
   source: AdSource;
   campaignId?: string;
   timestamp: FirebaseFirestore.Timestamp;
@@ -124,3 +124,12 @@ export interface MarketingBudgetCheck {
   spentThisMonth: number;
   monthlyLimit: number;
 }
+
+
+
+
+
+
+
+
+

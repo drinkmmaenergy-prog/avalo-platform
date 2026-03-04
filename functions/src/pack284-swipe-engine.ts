@@ -927,3 +927,12 @@ export const syncSwipeProfiles = onDocumentWritten(
     console.log(`Synced swipeProfile for user: ${userId}`);
   }
 );
+
+
+
+
+
+
+
+
+

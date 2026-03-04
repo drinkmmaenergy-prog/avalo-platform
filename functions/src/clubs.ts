@@ -507,7 +507,7 @@ export const postToClub = functions.https.onCall(async (request) => {
       }
 
       const userId = request.auth.uid;
-      const { clubId, type, content, mediaUrl, resourceUrl, pollQuestion, pollOptions } = data;
+      const { clubId, type, content, mediaUrl, resourcUSDl, pollQuestion, pollOptions } = data;
 
       // Verify membership
       const memberId = `${userId}_${clubId}`;
@@ -559,7 +559,7 @@ export const postToClub = functions.https.onCall(async (request) => {
         type,
         content: content?.trim(),
         mediaUrl,
-        resourceUrl,
+        resourcUSDl,
         pollQuestion,
         pollOptions,
         pollVotes: type === ClubPostType.POLL ? {} : undefined,
@@ -1069,3 +1069,12 @@ export const getClubAnalytics = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+

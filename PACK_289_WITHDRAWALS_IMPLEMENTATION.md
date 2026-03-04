@@ -125,7 +125,7 @@ Main withdrawal logic and user-facing functions.
 
 **Key Functions:**
 ```typescript
-async function calculateWithdrawableTokens(userId: string): Promise<WithdrawableTokensCalculation>
+export async function calculateWithdrawableTokens(userId: string): Promise<WithdrawableTokensCalculation>
 async function checkWithdrawalLimits(userId: string, tokens: number): Promise<{canWithdraw, reasons}>
 async function checkKYCStatus(userId: string): Promise<{verified, profile, reason}>
 ```

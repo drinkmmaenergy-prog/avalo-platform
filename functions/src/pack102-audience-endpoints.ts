@@ -214,20 +214,20 @@ export const audienceGrowth_generateSmartLinks = onCall(
       const username = userData?.username || userId;
 
       // Generate smart links for each platform
-      const baseUrl = 'https://avalo.app/u';
+      const baseURL = 'https://avalo.app/u';
       const smartLinks: Partial<Record<string, string>> = {
-        tiktok: `${baseUrl}/${username}?src=tiktok`,
-        instagram: `${baseUrl}/${username}?src=instagram`,
-        youtube: `${baseUrl}/${username}?src=youtube`,
-        twitch: `${baseUrl}/${username}?src=twitch`,
-        snapchat: `${baseUrl}/${username}?src=snapchat`,
-        x: `${baseUrl}/${username}?src=x`,
-        facebook: `${baseUrl}/${username}?src=facebook`,
-        other: `${baseUrl}/${username}?src=other`,
+        tiktok: `${baseURL}/${username}?src=tiktok`,
+        instagram: `${baseURL}/${username}?src=instagram`,
+        youtube: `${baseURL}/${username}?src=youtube`,
+        twitch: `${baseURL}/${username}?src=twitch`,
+        snapchat: `${baseURL}/${username}?src=snapchat`,
+        x: `${baseURL}/${username}?src=x`,
+        facebook: `${baseURL}/${username}?src=facebook`,
+        other: `${baseURL}/${username}?src=other`,
       };
 
       // QR code URL (would integrate with QR service in production)
-      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(smartLinks.other!)}`;
+      const qrCodUSDl = `https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(smartLinks.other!)}`;
 
       // Share text
       const shareText = `Follow me on Avalo! ${smartLinks.other}`;
@@ -237,7 +237,7 @@ export const audienceGrowth_generateSmartLinks = onCall(
       console.log('Scheduled job result:', {
         success: true,
         smartLinks: smartLinks as any,
-        qrCodeUrl,
+        qrCodUSDl,
         shareText,
       });
 
@@ -383,3 +383,12 @@ export const audienceGrowth_dailyAggregation = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+

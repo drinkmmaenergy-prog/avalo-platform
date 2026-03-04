@@ -528,3 +528,12 @@ export const processMinimumGuarantees = onSchedule({ schedule: "0 0 1 * *", time
     await SponsoredCreatorEngine.processMinimumGuarantees();
     return null;
   });
+
+
+
+
+
+
+
+
+

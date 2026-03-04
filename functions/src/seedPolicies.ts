@@ -145,7 +145,7 @@ Avalo complies with anti-money laundering regulations and implements KYC procedu
 ## 2. KYC Requirements
 
 KYC verification is required when:
-- You earn more than 2,000 EUR equivalent in tokens per year
+- You earn more than 2,000 USD equivalent in tokens per year
 - You request payout of earnings
 - Flagged by automated risk assessment
 
@@ -339,3 +339,12 @@ export async function seedPoliciesCallable(): Promise<{ success: boolean; messag
     };
   }
 }
+
+
+
+
+
+
+
+
+

@@ -399,3 +399,12 @@ export function canEnableCertificate(
   
   return educationalTypes.includes(eventType);
 }
+
+
+
+
+
+
+
+
+

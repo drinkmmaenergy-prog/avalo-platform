@@ -1,5 +1,5 @@
 /**
- * PACK 153 — Avalo Anti-Harassment & Hate-Speech Neural Filter 2.0
+ * PACK 153 — Avalo Anti-Harassment & Hate-Speech NUSDal Filter 2.0
  * 
  * Real-Time Intervention · Multilingual · Cross-Media · Zero Over-Blocking
  * 
@@ -314,13 +314,13 @@ export interface SafetyEducationTip {
   
   title: string;
   message: string;
-  learnMoreUrl?: string;
+  learnMorUSDl?: string;
   
   // Multilingual support
   translations: Record<string, {
     title: string;
     message: string;
-    learnMoreUrl?: string;
+    learnMorUSDl?: string;
   }>;
   
   active: boolean;
@@ -688,3 +688,12 @@ export function isProtectedContent(
   
   return false;
 }
+
+
+
+
+
+
+
+
+

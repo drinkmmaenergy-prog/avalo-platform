@@ -1,46 +1,93 @@
 /**
- * PACK 83 — Creator Payout Requests & Compliance Layer
- * Configuration for payout system (manual review, no auto-withdrawal)
- * 
- * NON-NEGOTIABLE RULES:
- * - Token price per unit remains fixed (config-driven, not user-changeable)
- * - Revenue split 65% creator / 35% Avalo (inherited from PACK 81)
- * - No bonuses, no free tokens, no discounts, no promo codes, no cashback
- * - Tokens deducted on payout request are permanent
- * - No refunds on completed payouts (only on rejected requests)
+ * PAYOUTS CONFIG (USD-CANONICAL)
+ *
+ * Canonical rules:
+ * - Accounting is USD-only.
+ * - No PLN/EUR/GBP in production logic.
+ * - Platform payout fee is charged to the payout flow (creator side), not subsidized by Avalo.
  */
 
-import { TOKEN_PAYOUT_EUR } from './economyConfig';
+import { db } from "../init";
+import { TOKEN_PAYOUT_USD } from "./economyConfig";
 
-export const PAYOUT_CONFIG = {
-  // Minimum withdrawable amount in tokens
-  MIN_PAYOUT_TOKENS: 5000,
+export type PayoutMethodType =
+  | "STRIPE"
+  | "WISE"
+  // Legacy identifiers still referenced in code paths:
+  | "BANK_TRANSFER"
+  | "STRIPE_CONNECT";
 
-  // Derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
-  PAYOUT_TOKEN_TO_EUR_RATE: TOKEN_PAYOUT_EUR,
+export type PayoutStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "FAILED"
+  // payoutRequests.ts compares with REJECTED:
+  | "REJECTED";
 
-  // Supported payout methods
-  SUPPORTED_PAYOUT_METHODS: ['BANK_TRANSFER', 'WISE', 'STRIPE_CONNECT'] as const,
+export type PayoutCurrency = "USD";
 
-  // Maximum number of payout methods per user
-  MAX_PAYOUT_METHODS_PER_USER: 5,
+export interface PayoutConfig {
+  // Primary settings
+  defaultRail: PayoutMethodType;
+  payoutCurrency: PayoutCurrency;
 
-  // Payout request status transitions
+  // Limits
+  MIN_PAYOUT_TOKENS: number;
+  MAX_PAYOUT_METHODS_PER_USER: number;
+
+  // Fee model
+  payoutFeePlatformPercent: number; // 0.05 => 5%
+
+  // Canonical token->USD rate for payout calculations (display/requests validation)
+  PAYOUT_TOKEN_TO_USD_RATE: number; // must equal TOKEN_PAYOUT_USD (0.03)
+
+  // Compatibility arrays referenced in payoutRequests.ts
+  SUPPORTED_PAYOUT_METHODS: readonly PayoutMethodType[];
+  SUPPORTED_CURRENCIES: readonly PayoutCurrency[];
+
+  // Status transitions referenced in payoutRequests.ts
+  ALLOWED_STATUS_TRANSITIONS: Record<PayoutStatus, readonly PayoutStatus[]>;
+}
+
+export const PAYOUT_CONFIG: PayoutConfig = {
+  defaultRail: "STRIPE",
+  payoutCurrency: "USD",
+
+  MIN_PAYOUT_TOKENS: 1000,
+  MAX_PAYOUT_METHODS_PER_USER: 3,
+
+  payoutFeePlatformPercent: 0.05,
+
+  PAYOUT_TOKEN_TO_USD_RATE: TOKEN_PAYOUT_USD,
+
+  SUPPORTED_PAYOUT_METHODS: ["STRIPE","WISE","BANK_TRANSFER","STRIPE_CONNECT"] as const,
+  SUPPORTED_CURRENCIES: ["USD"] as const,
+
   ALLOWED_STATUS_TRANSITIONS: {
-    PENDING: ['UNDER_REVIEW'],
-    UNDER_REVIEW: ['APPROVED', 'REJECTED'],
-    APPROVED: ['PAID'],
-    REJECTED: [],
-    PAID: [],
-  } as const,
+    PENDING: ["PROCESSING","REJECTED","FAILED"] as const,
+    PROCESSING: ["COMPLETED","FAILED"] as const,
+    COMPLETED: [] as const,
+    FAILED: [] as const,
+    REJECTED: [] as const
+  }
+};
 
-  // Default currency
-  DEFAULT_CURRENCY: 'EUR',
+/**
+ * Firestore bootstrapper for payout_config/global.
+ */
+export async function ensurePayoutConfig(): Promise<PayoutConfig> {
+  const ref = db.collection("payout_config").doc("global");
+  const snap = await ref.get();
 
-  // Supported currencies
-  SUPPORTED_CURRENCIES: ['EUR', 'USD', 'GBP', 'PLN'] as const,
-} as const;
+  if (snap.exists) {
+    const data = snap.data() as Partial<PayoutConfig> | undefined;
+    if (data?.payoutCurrency === "USD") {
+      return { ...PAYOUT_CONFIG, ...data } as PayoutConfig;
+    }
+  }
 
-export type PayoutMethodType = typeof PAYOUT_CONFIG.SUPPORTED_PAYOUT_METHODS[number];
-export type PayoutStatus = 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'PAID';
-export type PayoutCurrency = typeof PAYOUT_CONFIG.SUPPORTED_CURRENCIES[number];
+  await ref.set(PAYOUT_CONFIG, { merge: false });
+  return PAYOUT_CONFIG;
+}
+

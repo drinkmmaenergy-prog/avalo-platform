@@ -621,3 +621,12 @@ export async function markAllNotificationsRead(userId: string): Promise<void> {
   await batch.commit();
   logger.info(`Marked all notifications as read for user ${userId}`);
 }
+
+
+
+
+
+
+
+
+

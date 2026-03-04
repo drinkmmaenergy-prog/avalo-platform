@@ -42,7 +42,7 @@ const RECRUITMENT_PATTERNS = [
 
 const POSITIVE_CATEGORIES = {
   lifestyle: ['travel', 'fitness', 'workout', 'vacation', 'adventure', 'wellness', 'balance'],
-  business: ['career', 'entrepreneur', 'startup', 'business', 'leadership', 'management', 'professional'],
+  business: ['career', 'entreprenUSD', 'startup', 'business', 'leadership', 'management', 'professional'],
   art: ['photography', 'music', 'design', 'painting', 'drawing', 'creative', 'artistic'],
   food: ['recipe', 'cooking', 'nutrition', 'healthy eating', 'chef', 'culinary', 'food'],
   education: ['learn', 'study', 'course', 'tutorial', 'lesson', 'knowledge', 'science', 'history'],
@@ -310,3 +310,12 @@ export class AIContentModerator {
 }
 
 export const aiModerator = new AIContentModerator();
+
+
+
+
+
+
+
+
+

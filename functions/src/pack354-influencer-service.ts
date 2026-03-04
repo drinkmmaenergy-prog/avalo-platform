@@ -21,7 +21,7 @@ import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { admin, functions, serverTimestamp } from './runtime';
-import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 
 const db = getFirestore();
 
@@ -231,7 +231,7 @@ export const ECONOMY_RULES = {
   calendar: { creatorShare: 0.80, avaloShare: 0.20 },
   events: { creatorShare: 0.80, avaloShare: 0.20 },
   tips: { creatorShare: 0.90, avaloShare: 0.10 },
-  tokenPayoutRate: TOKEN_PAYOUT_PLN, // derived from TOKEN_PAYOUT_USD (0.03 USD)
+  tokenPayoutRate: TOKEN_PAYOUT_USD, // derived from TOKEN_PAYOUT_USD (0.03 USD)
 } as const;
 
 // Safety thresholds
@@ -789,3 +789,12 @@ export async function updateCreatorRiskFlags(userId: string): Promise<void> {
 }
 
 logger.info('✅ PACK 354 Influencer Service loaded successfully');
+
+
+
+
+
+
+
+
+

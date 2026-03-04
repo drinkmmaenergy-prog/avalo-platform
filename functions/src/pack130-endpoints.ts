@@ -505,3 +505,12 @@ async function checkIsModerator(userId: string): Promise<boolean> {
   const role = userDoc.data()?.role;
   return role === 'admin' || role === 'moderator';
 }
+
+
+
+
+
+
+
+
+

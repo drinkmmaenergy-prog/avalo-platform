@@ -176,7 +176,7 @@ export const admin_updateCurrencyProfile = onCall(
 // ============================================================================
 
 /**
- * Set base token price (EUR)
+ * Set base token price (USD)
  * Requires 2-key approval from different admins
  * This is a CRITICAL operation that affects global pricing
  */
@@ -192,7 +192,7 @@ export const admin_setBaseTokenPrice = onCall(
     try {
       const params = request.data as SetBaseTokenPriceRequest;
 
-      if (!params.basePriceEUR || params.basePriceEUR <= 0) {
+      if (!params.priceUSD || params.priceUSD <= 0) {
         throw new HttpsError('invalid-argument', 'Invalid base price');
       }
 
@@ -212,8 +212,8 @@ export const admin_setBaseTokenPrice = onCall(
         if (config.pendingApproval && config.pendingApproval.admin1 !== request.auth.uid) {
           // Second approval - execute change
           const newConfig: BaseTokenPriceConfig = {
-            basePriceEUR: config.pendingApproval.basePriceEUR,
-            referenceCurrency: 'EUR',
+            priceUSD: config.pendingApproval.priceUSD,
+            referenceCurrency: 'USD',
             updatedAt: Timestamp.now(),
             updatedBy: request.auth.uid,
             approvals: {
@@ -231,8 +231,8 @@ export const admin_setBaseTokenPrice = onCall(
             userId: request.auth.uid,
             context: {
               action: 'BASE_TOKEN_PRICE_CHANGED',
-              oldPrice: config.basePriceEUR,
-              newPrice: newConfig.basePriceEUR,
+              oldPrice: config.priceUSD,
+              newPrice: newConfig.priceUSD,
               approver1: config.pendingApproval.admin1,
               approver2: request.auth.uid,
               reason: config.pendingApproval.reason,
@@ -240,7 +240,7 @@ export const admin_setBaseTokenPrice = onCall(
             source: 'pack106-admin',
           });
 
-          logger.warn(`[PACK106] BASE TOKEN PRICE CHANGED: €${newConfig.basePriceEUR}`, {
+          logger.warn(`[PACK106] BASE TOKEN PRICE CHANGED: €${newConfig.priceUSD}`, {
             admin1: config.pendingApproval.admin1,
             admin2: request.auth.uid,
           });
@@ -253,14 +253,14 @@ export const admin_setBaseTokenPrice = onCall(
       await configRef.set({
         ...(configDoc.exists ? configDoc.data() : {}),
         pendingApproval: {
-          basePriceEUR: params.basePriceEUR,
+          priceUSD: params.priceUSD,
           admin1: request.auth.uid,
           reason: params.reason,
           requestedAt: Timestamp.now(),
         },
       }, { merge: true });
 
-      logger.info(`[PACK106] Admin ${request.auth.uid} requested base price change to €${params.basePriceEUR}`, {
+      logger.info(`[PACK106] Admin ${request.auth.uid} requested base price change to €${params.priceUSD}`, {
         reason: params.reason,
       });
 
@@ -324,9 +324,9 @@ export const admin_getCurrencyDashboardStats = onCall(
 
       // Get top currencies by transaction count (stub - would need actual transaction data)
       const topCurrencies = [
-        { code: 'EUR', transactions: 0, volume: 0 },
         { code: 'USD', transactions: 0, volume: 0 },
-        { code: 'GBP', transactions: 0, volume: 0 },
+        { code: 'USD', transactions: 0, volume: 0 },
+        { code: 'USD', transactions: 0, volume: 0 },
       ];
 
       // Check for FX variance warnings (stub)
@@ -419,8 +419,8 @@ export const admin_getBaseTokenPriceConfig = onCall(
       if (!configDoc.exists) {
         // Return default if not set
         return {
-          basePriceEUR: 0.25, // Default from pack106-types
-          referenceCurrency: 'EUR',
+          priceUSD: 0.25, // Default from pack106-types
+          referenceCurrency: 'USD',
           updatedAt: Timestamp.now(),
         };
       }
@@ -432,3 +432,12 @@ export const admin_getBaseTokenPriceConfig = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+

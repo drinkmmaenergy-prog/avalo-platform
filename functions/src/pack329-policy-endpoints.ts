@@ -498,3 +498,12 @@ function getViolationSeverity(violationType: ViolationType): 'LOW' | 'MEDIUM' | 
       return 'LOW';
   }
 }
+
+
+
+
+
+
+
+
+

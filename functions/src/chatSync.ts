@@ -40,7 +40,7 @@ interface ChatMessagePayload {
   unlockPriceTokens?: number;
   // PACK 47: Cloud Media Delivery
   mediaStoragePath?: string;
-  mediaRemoteUrl?: string;
+  mediaRemotUSDl?: string;
 }
 
 interface ConversationMetadata {
@@ -82,7 +82,7 @@ export const syncMessage = functions.https.onCall(async (request) => {
     payToUnlock,
     unlockPriceTokens,
     mediaStoragePath,
-    mediaRemoteUrl,
+    mediaRemotUSDl,
   } = data;
 
   // Validate sender matches authenticated user
@@ -132,7 +132,7 @@ export const syncMessage = functions.https.onCall(async (request) => {
       if (unlockPriceTokens) messageData.unlockPriceTokens = unlockPriceTokens;
       // PACK 47: Cloud Media Delivery
       if (mediaStoragePath) messageData.mediaStoragePath = mediaStoragePath;
-      if (mediaRemoteUrl) messageData.mediaRemoteUrl = mediaRemoteUrl;
+      if (mediaRemotUSDl) messageData.mediaRemotUSDl = mediaRemotUSDl;
 
       if (messageDoc.exists) {
         // Message already exists - update only missing fields (idempotent)
@@ -146,8 +146,8 @@ export const syncMessage = functions.https.onCall(async (request) => {
         if (mediaStoragePath && !existingData?.mediaStoragePath) {
           updates.mediaStoragePath = mediaStoragePath;
         }
-        if (mediaRemoteUrl && !existingData?.mediaRemoteUrl) {
-          updates.mediaRemoteUrl = mediaRemoteUrl;
+        if (mediaRemotUSDl && !existingData?.mediaRemotUSDl) {
+          updates.mediaRemotUSDl = mediaRemotUSDl;
         }
 
         if (Object.keys(updates).length > 0) {
@@ -434,3 +434,12 @@ export const markConversationRead = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+

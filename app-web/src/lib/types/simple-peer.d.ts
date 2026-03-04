@@ -14,3 +14,4 @@ declare module 'simple-peer' {
     _pc?: RTCPeerConnection;
   }
 }
+

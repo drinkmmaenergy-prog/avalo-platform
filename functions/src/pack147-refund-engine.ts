@@ -49,10 +49,10 @@ export async function requestRefund(params: {
   transactionType: TransactionType;
   reason: RefundReason;
   description: string;
-  evidenceUrls?: string[];
+  evidencUSDls?: string[];
 }): Promise<string> {
   
-  const { userId, transactionId, transactionType, reason, description, evidenceUrls = [] } = params;
+  const { userId, transactionId, transactionType, reason, description, evidencUSDls = [] } = params;
   
   // Validate reason (auto-reject emotional/romantic claims)
   if (!isValidRefundReason(reason)) {
@@ -116,7 +116,7 @@ export async function requestRefund(params: {
     recipientId: escrow.recipientId,
     reason,
     description,
-    evidenceUrls,
+    evidencUSDls,
     status: 'PENDING',
     tier,
     requestedAt: now,
@@ -480,3 +480,12 @@ export async function adminResolveRefund(params: {
   
   logger.info(`Admin ${adminId} resolved refund ${refundId}: ${outcome}`);
 }
+
+
+
+
+
+
+
+
+

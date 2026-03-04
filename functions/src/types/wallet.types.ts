@@ -79,3 +79,12 @@ export enum WalletSecurityErrorCode {
   INSUFFICIENT_CONFIRMATIONS = "INSUFFICIENT_CONFIRMATIONS",
 }
 
+
+
+
+
+
+
+
+
+

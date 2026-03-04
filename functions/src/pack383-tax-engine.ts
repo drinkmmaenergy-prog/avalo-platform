@@ -457,3 +457,12 @@ async function getYearToDatePayouts(userId: string): Promise<number> {
     return total + (doc.data().grossAmount || 0);
   }, 0);
 }
+
+
+
+
+
+
+
+
+

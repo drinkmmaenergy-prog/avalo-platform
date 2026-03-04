@@ -213,3 +213,12 @@ export async function generateWeeklyQualityReport(
 
   return report;
 }
+
+
+
+
+
+
+
+
+

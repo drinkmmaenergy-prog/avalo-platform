@@ -61,13 +61,13 @@ const SUBSCRIPTION_TIERS: Record<string, SubscriptionTier> = {
   },
   Plus: {
     tier: 'Plus',
-    priceMonthly: 39, // PLN
+    priceMonthly: 39, // USD
     dailyFreeMessages: 0, // NO free messages
     nsfwAccess: false,
   },
   Premium: {
     tier: 'Premium',
-    priceMonthly: 79, // PLN
+    priceMonthly: 79, // USD
     dailyFreeMessages: 0, // NO free messages
     nsfwAccess: true,
   },
@@ -625,3 +625,12 @@ export const getMessages = onCall(
 );
 
 console.log('✅ PACK 48 — AI Companion functions initialized');
+
+
+
+
+
+
+
+
+

@@ -104,18 +104,18 @@ export const uploadMeetupSelfieFunction = onCall(
     region: 'us-central1',
   },
   async (request) => {
-    const { bookingId, selfieUrl } = request.data;
+    const { bookingId, selfiUSDl } = request.data;
     const userId = request.auth?.uid;
 
     if (!userId) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    if (!bookingId || !selfieUrl) {
+    if (!bookingId || !selfiUSDl) {
       throw new HttpsError('invalid-argument', 'Missing required fields');
     }
 
-    const result = await uploadMeetupSelfie(bookingId, userId, selfieUrl);
+    const result = await uploadMeetupSelfie(bookingId, userId, selfiUSDl);
 
     if (!result.success) {
       throw new HttpsError('failed-precondition', result.error || 'Failed to upload selfie');
@@ -305,3 +305,12 @@ export const cleanupSelfieTimeouts = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+

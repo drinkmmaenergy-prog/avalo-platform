@@ -31,7 +31,7 @@ export interface ValidationContext {
   userId: string;
   validationType: 'CHECK_IN' | 'CHECK_OUT';
   verificationType: 'SELFIE' | 'QR' | 'BOTH';
-  selfieUrl?: string;
+  selfiUSDl?: string;
   qrCode?: string;
   location?: { lat: number; lng: number };
   expectedStartTime: Date;
@@ -58,7 +58,7 @@ export interface SafetyContext {
   reportedUserId?: string;
   alertType: AlertType;
   location: { lat: number; lng: number };
-  selfieUrl?: string;
+  selfiUSDl?: string;
   trustedContactId?: string;
 }
 
@@ -120,7 +120,7 @@ export async function validateIdentity(
 
   // Validate verification data based on type
   if (context.verificationType === 'SELFIE' || context.verificationType === 'BOTH') {
-    if (!context.selfieUrl) {
+    if (!context.selfiUSDl) {
       throw new HttpsError('invalid-argument', 'Selfie required for verification');
     }
   }
@@ -146,7 +146,7 @@ export async function validateIdentity(
     verificationType: context.verificationType,
     timestamp: Timestamp.now(),
     verified: true, // TODO: Integrate AI verification for selfies
-    selfieUrl: context.selfieUrl,
+    selfiUSDl: context.selfiUSDl,
     qrCode: context.qrCode,
     location: context.location,
   };
@@ -266,7 +266,7 @@ export async function handlePanicAlert(
     status: 'ACTIVE',
     trustedContactId: context.trustedContactId,
     emergencyContactNotified: !!context.trustedContactId,
-    selfieUrl: context.selfieUrl,
+    selfiUSDl: context.selfiUSDl,
   };
 
   transaction.set(alertRef, alert);
@@ -441,3 +441,12 @@ export async function getValidationStats(
     verifiedUsers,
   };
 }
+
+
+
+
+
+
+
+
+

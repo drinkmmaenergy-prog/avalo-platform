@@ -821,3 +821,12 @@ export async function sendAISubscriptionActivatedEmail(
   return sendEmail(userId, email, NotificationType.AI_SUBSCRIPTION_ACTIVATED, template);
 }
 
+
+
+
+
+
+
+
+
+

@@ -26,7 +26,7 @@ import { HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import Stripe from "stripe";
 import { admin, auth, functions, getFirestore, increment, logger, onCall, onRequest, onSchedule, serverTimestamp } from './runtime';
-import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
+import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 import { logServerEvent } from './lib/stubs';
 import * as crypto from 'crypto';
 
@@ -46,11 +46,9 @@ export enum PaymentProvider {
 }
 
 export enum Currency {
-  PLN = "PLN",
-  EUR = "EUR",
   USD = "USD",
-  GBP = "GBP",
 }
+
 
 export interface TokenPack {
   tokens: number;
@@ -58,12 +56,12 @@ export interface TokenPack {
 }
 
 export const TOKEN_PACKS: Record<string, TokenPack> = {
-  MINI: { tokens: 100, prices: { PLN: 20, USD: 5.49, EUR: 4.99, GBP: 4.49 } },
-  BASIC: { tokens: 300, prices: { PLN: 60, USD: 15.99, EUR: 14.99, GBP: 12.99 } },
-  STANDARD: { tokens: 500, prices: { PLN: 100, USD: 26.99, EUR: 24.99, GBP: 21.99 } },
-  PREMIUM: { tokens: 1000, prices: { PLN: 200, USD: 52.99, EUR: 49.99, GBP: 43.99 } },
-  PRO: { tokens: 2000, prices: { PLN: 400, USD: 104.99, EUR: 99.99, GBP: 87.99 } },
-  ELITE: { tokens: 5000, prices: { PLN: 1000, USD: 259.99, EUR: 249.99, GBP: 219.99 } },
+  MINI: { tokens: 100, prices: { USD: 4.49 } },
+  BASIC: { tokens: 300, prices: { USD: 12.99 } },
+  STANDARD: { tokens: 500, prices: { USD: 21.99 } },
+  PREMIUM: { tokens: 1000, prices: { USD: 43.99 } },
+  PRO: { tokens: 2000, prices: { USD: 87.99 } },
+  ELITE: { tokens: 5000, prices: { USD: 219.99 } },
 };
 
 export interface PaymentSession {
@@ -986,7 +984,7 @@ function calculateVAT(netAmount: number, countryCode: string): VATCalculation {
 export const generateMonthlySettlements = onSchedule(
   {
     schedule: "0 0 1 * *", // 1st of each month at midnight
-    timeZone: "Europe/Warsaw",
+    timeZone: "USDope/Warsaw",
     region: "europe-west1",
   },
   async () => {
@@ -1022,7 +1020,7 @@ export const generateMonthlySettlements = onSchedule(
       if (totalTokens === 0) continue;
 
       // Calculate payout — rate from economyConfig.ts (TOKEN_PAYOUT_USD = 0.03)
-      const settlementRate = TOKEN_PAYOUT_PLN;
+      const settlementRate = TOKEN_PAYOUT_USD;
       const fiatAmount = totalTokens * settlementRate;
 
       // Get VAT rate
@@ -1043,7 +1041,7 @@ export const generateMonthlySettlements = onSchedule(
         netTokensPayable: totalTokens,
         settlementRate,
         fiatAmount: vatCalc.netAmount,
-        fiatCurrency: "PLN",
+        fiatCurrency: "USD",
         vatApplicable: vatCalc.vatRate > 0,
         vatRate: vatCalc.vatRate,
         vatAmount: vatCalc.vatAmount,
@@ -1055,7 +1053,7 @@ export const generateMonthlySettlements = onSchedule(
 
       await settlementRef.set(settlement);
 
-      logger.info(`Settlement created for ${creatorId}: ${vatCalc.grossAmount} PLN`);
+      logger.info(`Settlement created for ${creatorId}: ${vatCalc.grossAmount} USD`);
     }
   }
 );
@@ -1731,5 +1729,14 @@ export const getPendingSettlements = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
 
 

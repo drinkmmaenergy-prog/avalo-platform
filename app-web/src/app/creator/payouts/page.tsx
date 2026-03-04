@@ -97,10 +97,10 @@ export default function CreatorPayoutsPage() {
     setRequestSuccess(null);
     
     try {
-      const result = await requestCreatorPayout(user.uid, requestAmount, 'primary');
+      const result = await requestCreatorPayout(user.uid, requestAmount);
       
       if (result.success) {
-        setRequestSuccess(`Payout request submitted! ID: ${result.payoutRequestId}`);
+        setRequestSuccess(`Payout request submitted! ID: ${(result as { payoutRequestId?: string }).payoutRequestId ?? 'pending'}`);
         
         // Refresh data
         const [earningsData, historyData] = await Promise.all([
@@ -284,3 +284,4 @@ export default function CreatorPayoutsPage() {
     </div>
   );
 }
+

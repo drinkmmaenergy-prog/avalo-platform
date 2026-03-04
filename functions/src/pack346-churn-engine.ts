@@ -425,3 +425,12 @@ export const getChurnAnalytics = functions.https.onCall(async (request) => {
     };
   }
 );
+
+
+
+
+
+
+
+
+

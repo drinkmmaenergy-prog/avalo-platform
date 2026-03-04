@@ -178,7 +178,7 @@ export interface CopyrightCase {
   // Claim details
   claimType: 'UNAUTHORIZED_UPLOAD' | 'SCREENSHOT_THEFT' | 'SCREEN_RECORDING' | 'RESALE' | 'EXTERNAL_LEAK';
   claimDescription: string;
-  evidenceUrls: string[];
+  evidencUSDls: string[];
   
   // Detection
   detectedBy: 'CREATOR_REPORT' | 'AUTO_SCAN' | 'COMMUNITY_FLAG';
@@ -679,3 +679,12 @@ export interface CopyrightNotification {
   
   createdAt: Timestamp;
 }
+
+
+
+
+
+
+
+
+

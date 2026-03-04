@@ -105,3 +105,12 @@ export function validateCallPricing(tokensPerMinute: number, mode: CallMode): bo
     return tokensPerMinute >= 10 && tokensPerMinute <= 15;
   }
 }
+
+
+
+
+
+
+
+
+

@@ -41,7 +41,7 @@ export interface ComplianceAuditLog {
 
 
 // Additional exports for pack418-compliance.service.ts
-export const TOKEN_PAYOUT_RATE_PLN = 0.04; // 1 token = 0.04 PLN
+export const TOKEN_TOKEN_PAYOUT_USD = 0.04; // 1 token = 0.04 USD
 export const AGE_MINIMUM_YEARS = 18;
 export const REQUIRE_SELFIE_VERIFICATION_FOR_EARNING = true;
 export const REQUIRE_SELFIE_FOR_MEETINGS_AND_EVENTS = true;
@@ -66,7 +66,7 @@ export interface TokenomicsContext {
   type?: string;
   creatorShare?: number;
   avaloShare?: number;
-  payoutRatePlnPerToken?: number;
+  payoutRateUSDPerToken?: number;
   transactionId?: string;
   [key: string]: any;
 }
@@ -137,3 +137,12 @@ export function validateSplit(
   const total = (revSplit.creatorShare ?? 0) + (revSplit.platformShare ?? 0) + (revSplit.taxWithholding ?? 0);
   return Math.abs(total - 1.0) < 0.001;
 }
+
+
+
+
+
+
+
+
+

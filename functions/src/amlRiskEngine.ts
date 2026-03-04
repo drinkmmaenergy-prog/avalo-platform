@@ -3,7 +3,7 @@
  * Risk Scoring Engine
  *
  * Pure functions for computing AML risk scores based on user metrics.
- * No ML required - uses heuristic thresholds and weighted scoring.
+ * No ML required - uses hUSDistic thresholds and weighted scoring.
  */
 
 // ============================================================================
@@ -335,3 +335,12 @@ export function suggestAmlStatus(
     reason: 'Low risk - normal operations' 
   };
 }
+
+
+
+
+
+
+
+
+

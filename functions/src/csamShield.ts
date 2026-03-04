@@ -121,7 +121,7 @@ export const CSAM_CONFIG: CsamShieldConfig = {
 
 /**
  * Evaluate text for CSAM risk
- * Uses rule-based heuristics to detect concerning patterns
+ * Uses rule-based hUSDistics to detect concerning patterns
  * 
  * @param text - Text to evaluate
  * @param locale - Language code (en, pl, etc.)
@@ -536,3 +536,12 @@ export default {
   isUserUnderCsamReview,
   evaluateImageForCsamRisk,
 };
+
+
+
+
+
+
+
+
+

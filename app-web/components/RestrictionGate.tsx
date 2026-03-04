@@ -35,12 +35,10 @@ export const RestrictionGate: React.FC<RestrictionGateProps> = ({ children, user
 
   const handleLogout = () => {
     // Navigate to signin
-    router.push('/auth/signin');
-  };
+router.push('/auth/login');  };
 
   const handleAppeal = () => {
-    router.push('/restriction/appeal');
-  };
+router.push('/admin/moderation/appeals');  };
 
   const formatDate = (date: Date | null): string => {
     if (!date) return '';

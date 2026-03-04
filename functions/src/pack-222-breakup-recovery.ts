@@ -647,3 +647,12 @@ export function getEmotionalSafetyCopy(phase: RecoveryPhase): { title: string; m
   
   return copy[phase];
 }
+
+
+
+
+
+
+
+
+

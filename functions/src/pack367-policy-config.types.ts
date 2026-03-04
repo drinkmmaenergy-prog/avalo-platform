@@ -30,7 +30,7 @@ export interface StorePolicyConfig {
   
   // Compliance flags
   requirePrivacyPolicyUrl: boolean;
-  requireTermsOfServiceUrl: boolean;
+  requireTermsOfServicUSDl: boolean;
   requireAgeGate: boolean;
   
   // Content rating
@@ -146,3 +146,12 @@ export interface PolicyAuditLog {
   details: Record<string, any>;
   result: "success" | "failure" | "warning";
 }
+
+
+
+
+
+
+
+
+

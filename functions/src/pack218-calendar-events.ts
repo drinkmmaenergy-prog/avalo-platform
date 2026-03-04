@@ -866,7 +866,7 @@ export const getMeetingSummary = onCall<{
       partner: {
         userId: partnerId,
         displayName: partner?.displayName,
-        avatar: partner?.profilePictureUrl,
+        avatar: partner?.profilePicturUSDl,
       },
       tokensAmount: booking?.tokensAmount,
       tokensEarned: isEarner ? earnerShare : 0,
@@ -1389,3 +1389,12 @@ export const updateScheduleStatuses = onSchedule(
     console.log(`Updated ${upcomingSnapshot.size} items to active`);
   }
 );
+
+
+
+
+
+
+
+
+

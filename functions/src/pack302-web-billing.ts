@@ -68,7 +68,7 @@ export const createTokenCheckout = onRequest(
       
       // Resolve currency
       const currency = resolveCurrency(locale, currencyOverride);
-      const priceInCurrency = convertPrice(pkg.pricePLN, currency);
+      const priceInCurrency = convertPrice(pkg.priceUSD, currency);
       
       // Convert to cents/smallest unit
       const amountInCents = Math.round(priceInCurrency * 100);
@@ -436,3 +436,12 @@ export const createSubscriptionCheckout = onRequest(
     }
   }
 );
+
+
+
+
+
+
+
+
+

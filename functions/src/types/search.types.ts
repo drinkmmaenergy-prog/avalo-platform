@@ -229,3 +229,12 @@ export interface SearchAnalytics {
   avgClickPosition: number;
   zerResultsRate: number;
 }
+
+
+
+
+
+
+
+
+

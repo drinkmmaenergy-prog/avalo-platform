@@ -27,7 +27,7 @@ import { functions, onSchedule } from './runtime';
 export const submitMeetingFeedback = onRequest(
   {
     cors: true,
-    region: 'europe-central2',
+    region: 'USDope-central2',
     memory: '512MiB'
   },
   async (req, res) => {
@@ -98,7 +98,7 @@ export const submitMeetingFeedback = onRequest(
 export const submitEventFeedbackEndpoint = onRequest(
   {
     cors: true,
-    region: 'europe-central2',
+    region: 'USDope-central2',
     memory: '512MiB'
   },
   async (req, res) => {
@@ -156,7 +156,7 @@ export const submitEventFeedbackEndpoint = onRequest(
 export const getGlowState = onRequest(
   {
     cors: true,
-    region: 'europe-central2',
+    region: 'USDope-central2',
     memory: '256MiB'
   },
   async (req, res) => {
@@ -196,7 +196,7 @@ export const getGlowState = onRequest(
 export const getGlowSuggestions = onRequest(
   {
     cors: true,
-    region: 'europe-central2',
+    region: 'USDope-central2',
     memory: '256MiB'
   },
   async (req, res) => {
@@ -236,7 +236,7 @@ export const getGlowSuggestions = onRequest(
 export const dismissSuggestion = onRequest(
   {
     cors: true,
-    region: 'europe-central2',
+    region: 'USDope-central2',
     memory: '256MiB'
   },
   async (req, res) => {
@@ -279,7 +279,7 @@ export const dismissSuggestion = onRequest(
 export const interactWithSuggestion = onRequest(
   {
     cors: true,
-    region: 'europe-central2',
+    region: 'USDope-central2',
     memory: '256MiB'
   },
   async (req, res) => {
@@ -327,7 +327,7 @@ export const expireGlowStates = onSchedule(
   {
     schedule: 'every 1 hours',
     timeZone: 'UTC',
-    region: 'europe-central2',
+    region: 'USDope-central2',
     memory: '512MiB'
   },
   async (event) => {
@@ -341,3 +341,12 @@ export const expireGlowStates = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+

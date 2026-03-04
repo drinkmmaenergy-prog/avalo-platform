@@ -318,3 +318,12 @@ export class AdTargetingValidator {
     return maxScore > 0 ? (score / maxScore) * 100 : 0;
   }
 }
+
+
+
+
+
+
+
+
+

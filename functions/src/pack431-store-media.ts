@@ -169,26 +169,26 @@ export const DEVICE_SPECS = {
 
 export const CURRENCY_PER_COUNTRY: Record<string, string> = {
   US: "USD",
-  GB: "GBP",
-  EU: "EUR",
-  PL: "PLN",
-  DE: "EUR",
-  FR: "EUR",
-  IT: "EUR",
-  ES: "EUR",
-  PT: "EUR",
+  GB: "USD",
+  EU: "USD",
+  PL: "USD",
+  DE: "USD",
+  FR: "USD",
+  IT: "USD",
+  ES: "USD",
+  PT: "USD",
   RO: "RON",
   BG: "BGN",
   CZ: "CZK",
-  SK: "EUR",
-  HR: "EUR",
-  SL: "EUR",
-  LT: "EUR",
-  LV: "EUR",
-  ET: "EUR",
+  SK: "USD",
+  HR: "USD",
+  SL: "USD",
+  LT: "USD",
+  LV: "USD",
+  ET: "USD",
   UA: "UAH",
   SR: "RSD",
-  EL: "EUR"
+  EL: "USD"
 };
 
 // ============================================================================
@@ -663,3 +663,12 @@ export const createStoreMediaEngine = (
 export const createScreenshotABTestEngine = (db: FirebaseFirestore.Firestore) => {
   return new ScreenshotABTestEngine(db);
 };
+
+
+
+
+
+
+
+
+

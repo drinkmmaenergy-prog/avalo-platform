@@ -5,7 +5,7 @@
  * Revenue Model:
  * - Creator templates: 65/35 split (creator/Avalo)
  * - Official Avalo templates: 100% Avalo
- * - No tokenomics drift: Uses existing 0.20 PLN token price
+ * - No tokenomics drift: Uses existing 0.20 USD token price
  */
 
 import { https } from 'firebase-functions/v2';
@@ -596,3 +596,12 @@ export default {
   pack331_getCreatorStats,
   pack331_trackTemplateUsage,
 };
+
+
+
+
+
+
+
+
+

@@ -195,7 +195,7 @@ export interface TokenPurchaseRecord {
   id: string;                          // UUID
   userId: string;                      // Buyer
   fiatAmount: number;                  // Amount paid in fiat
-  fiatCurrency: string;                // e.g., 'USD', 'EUR'
+  fiatCurrency: string;                // e.g., 'USD', 'USD'
   tokenAmount: number;                 // Tokens received
   exchangeRateDisplayOnly: number;     // Rate at time of purchase (audit only)
   paymentMethodType: string;           // 'STRIPE', 'APPLE_PAY', etc.
@@ -492,3 +492,12 @@ export function isValidTransactionType(type: string): type is TransactionType {
     'OTHER',
   ].includes(type);
 }
+
+
+
+
+
+
+
+
+

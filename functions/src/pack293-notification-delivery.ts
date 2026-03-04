@@ -475,3 +475,12 @@ export async function updateDeviceLastSeen(deviceId: string): Promise<void> {
     lastSeenAt: admin.firestore.Timestamp.now(),
   });
 }
+
+
+
+
+
+
+
+
+

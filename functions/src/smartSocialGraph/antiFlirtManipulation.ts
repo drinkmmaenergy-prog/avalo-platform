@@ -493,3 +493,12 @@ export async function scanRecentContentForFlirts(hours: number = 24): Promise<{
 }
 
 logger.info('✅ Anti-Flirt Manipulation Detection initialized');
+
+
+
+
+
+
+
+
+

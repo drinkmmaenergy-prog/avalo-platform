@@ -118,7 +118,7 @@ export interface GetPayoutRequestsResponse {
 
 export interface PayoutConfigResponse {
   minPayoutTokens: number;
-  tokenToEurRate: number;
+  tokenToUSDRate: number;
   supportedMethods: readonly string[];
   supportedCurrencies: readonly string[];
 }
@@ -167,3 +167,12 @@ export function validatePayoutMethodDetails(
       return false;
   }
 }
+
+
+
+
+
+
+
+
+

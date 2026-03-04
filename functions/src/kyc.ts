@@ -47,11 +47,11 @@ function validateKycApplicationPayload(payload: any): KycApplicationPayload {
   if (!payload.documentType || !["ID_CARD", "PASSPORT", "DRIVERS_LICENSE"].includes(payload.documentType)) {
     errors.push("Invalid or missing documentType");
   }
-  if (!payload.frontImageUrl || typeof payload.frontImageUrl !== "string") {
-    errors.push("Missing frontImageUrl");
+  if (!payload.frontimageUrl || typeof payload.frontimageUrl !== "string") {
+    errors.push("Missing frontimageUrl");
   }
-  if (!payload.selfieImageUrl || typeof payload.selfieImageUrl !== "string") {
-    errors.push("Missing selfieImageUrl");
+  if (!payload.selfieimageUrl || typeof payload.selfieimageUrl !== "string") {
+    errors.push("Missing selfieimageUrl");
   }
   if (!payload.country || typeof payload.country !== "string" || payload.country.length !== 2) {
     errors.push("Invalid country code (expected 2-letter ISO code)");
@@ -75,9 +75,9 @@ function validateKycApplicationPayload(payload: any): KycApplicationPayload {
 
   return {
     documentType: payload.documentType,
-    frontImageUrl: payload.frontImageUrl,
-    backImageUrl: payload.backImageUrl || undefined,
-    selfieImageUrl: payload.selfieImageUrl,
+    frontimageUrl: payload.frontimageUrl,
+    backimageUrl: payload.backimageUrl || undefined,
+    selfieimageUrl: payload.selfieimageUrl,
     country: payload.country.toUpperCase(),
     fullName: payload.fullName.trim(),
     dateOfBirth: payload.dateOfBirth,
@@ -203,9 +203,9 @@ export const kyc_submitApplication_callable = functions.https.onCall(async (requ
         userId,
         status: "PENDING",
         documentType: payload.documentType,
-        frontImageUrl: payload.frontImageUrl,
-        backImageUrl: payload.backImageUrl,
-        selfieImageUrl: payload.selfieImageUrl,
+        frontimageUrl: payload.frontimageUrl,
+        backimageUrl: payload.backimageUrl,
+        selfieimageUrl: payload.selfieimageUrl,
         country: payload.country,
         fullName: payload.fullName,
         dateOfBirth: payload.dateOfBirth,
@@ -642,3 +642,12 @@ export const kyc_block_callable = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+

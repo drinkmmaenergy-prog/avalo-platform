@@ -577,3 +577,12 @@ export const FEEDBACK_ELIGIBILITY = {
   MEETING_MUST_BE_COMPLETED: true,
   EVENT_ORGANIZER_ONLY: true,
 };
+
+
+
+
+
+
+
+
+

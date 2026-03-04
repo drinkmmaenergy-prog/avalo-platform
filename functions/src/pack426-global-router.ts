@@ -390,7 +390,7 @@ export const getRegionConfig = https.onRequest(async (req, res) => {
       data: {
         assignedRegion: config.region,
         fallbackRegion: config.fallbackRegion,
-        cdnBaseUrl: config.cdnEndpoint,
+        cdnbaseURL: config.cdnEndpoint,
         aiEndpoint: config.aiEndpoint,
         firestoreLocation: config.firestoreLocation,
         health: {
@@ -457,3 +457,12 @@ export default {
   getRegionConfig,
   regionHealthCheck,
 };
+
+
+
+
+
+
+
+
+

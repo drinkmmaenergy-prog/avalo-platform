@@ -119,3 +119,12 @@ export interface AnalyticsAggregationResult {
   tokensEarned30d: number;
   retentionScore: number;
 }
+
+
+
+
+
+
+
+
+

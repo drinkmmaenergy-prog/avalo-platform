@@ -266,3 +266,12 @@ export const onPhotoUploaded = onDocumentCreated('users/{userId}/photos/{photoId
   });
 
 console.log('✅ PACK 301B - Onboarding Funnel Tracking initialized');
+
+
+
+
+
+
+
+
+

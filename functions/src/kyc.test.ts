@@ -278,12 +278,12 @@ describe("KYC Identity Verification", () => {
 
     test("should generate unique URLs for different file types", () => {
       const userId = "user123";
-      const selfieUrl = generateUploadURL(userId, "selfie");
+      const selfiUSDl = generateUploadURL(userId, "selfie");
       const docFrontUrl = generateUploadURL(userId, "document_front");
 
-      expect(selfieUrl.url).toContain("selfie");
+      expect(selfiUSDl.url).toContain("selfie");
       expect(docFrontUrl.url).toContain("document_front");
-      expect(selfieUrl.url).not.toBe(docFrontUrl.url);
+      expect(selfiUSDl.url).not.toBe(docFrontUrl.url);
     });
 
     test("should expire URLs in 30 minutes", () => {
@@ -388,5 +388,14 @@ describe("KYC Identity Verification", () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+
 
 

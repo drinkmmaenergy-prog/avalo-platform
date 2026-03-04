@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * PACK 305 — Legal & Audit Snapshot Export
  * Admin UI: Create Snapshot Request Form

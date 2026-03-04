@@ -547,3 +547,12 @@ export const onCalendarBooking = onDocumentCreated('calendar_bookings/{bookingId
       booking.creatorId
     );
   });
+
+
+
+
+
+
+
+
+

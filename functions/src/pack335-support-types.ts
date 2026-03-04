@@ -135,3 +135,12 @@ export interface AiSupportResponse {
   relatedFaqs: string[];
   suggestedActions?: string[];
 }
+
+
+
+
+
+
+
+
+

@@ -48,7 +48,7 @@ export const pack327_getBundles = onCall(
       const bundlesSnapshot = await db
         .collection('promoBundles')
         .where('available', '==', true)
-        .orderBy('pricePLN', 'asc')
+        .orderBy('priceUSD', 'asc')
         .get();
 
       const bundles: PromoBundle[] = bundlesSnapshot.docs.map(doc => ({
@@ -227,7 +227,7 @@ export const pack327_purchaseBundle = onCall(
       }
 
       // Record analytics
-      await recordBundleAnalytics(bundle.id, data.platform, bundle.pricePLN);
+      await recordBundleAnalytics(bundle.id, data.platform, bundle.priceUSD);
 
       logger.info(`Bundle purchased: ${purchaseId} by ${uid}`, {
         bundleId: bundle.id,
@@ -311,24 +311,24 @@ export const pack327_admin_createBundle = onCall(
     const data = request.data as CreateBundleRequest;
 
     // Validate input
-    if (!data.title || !data.description || !data.includes || !data.pricePLN) {
+    if (!data.title || !data.description || !data.includes || !data.priceUSD) {
       throw new HttpsError('invalid-argument', 'Missing required fields');
     }
 
-    if (data.pricePLN < PACK327_CONFIG.MIN_BUNDLE_PRICE_PLN || 
-        data.pricePLN > PACK327_CONFIG.MAX_BUNDLE_PRICE_PLN) {
+    if (data.priceUSD < PACK327_CONFIG.MIN_BUNDLE_PRICE_USD || 
+        data.priceUSD > PACK327_CONFIG.MAX_BUNDLE_PRICE_USD) {
       throw new HttpsError('invalid-argument', 'Invalid bundle price');
     }
 
     try {
       const now = new Date().toISOString();
-      const priceTokensEquivalent = Math.round(data.pricePLN / PACK327_CONFIG.TOKEN_CONVERSION_RATE);
+      const priceTokensEquivalent = Math.round(data.priceUSD / PACK327_CONFIG.TOKEN_CONVERSION_RATE);
 
       const bundle: Omit<PromoBundle, 'id'> = {
         title: data.title,
         description: data.description,
         includes: data.includes,
-        pricePLN: data.pricePLN,
+        priceUSD: data.priceUSD,
         priceTokensEquivalent,
         available: true,
         createdAt: now,
@@ -395,13 +395,13 @@ export const pack327_admin_updateBundle = onCall(
         const currentIncludes = bundleDoc.data()!.includes;
         updates.includes = { ...currentIncludes, ...data.includes };
       }
-      if (data.pricePLN !== undefined) {
-        if (data.pricePLN < PACK327_CONFIG.MIN_BUNDLE_PRICE_PLN || 
-            data.pricePLN > PACK327_CONFIG.MAX_BUNDLE_PRICE_PLN) {
+      if (data.priceUSD !== undefined) {
+        if (data.priceUSD < PACK327_CONFIG.MIN_BUNDLE_PRICE_USD || 
+            data.priceUSD > PACK327_CONFIG.MAX_BUNDLE_PRICE_USD) {
           throw new HttpsError('invalid-argument', 'Invalid bundle price');
         }
-        updates.pricePLN = data.pricePLN;
-        updates.priceTokensEquivalent = Math.round(data.pricePLN / PACK327_CONFIG.TOKEN_CONVERSION_RATE);
+        updates.priceUSD = data.priceUSD;
+        updates.priceTokensEquivalent = Math.round(data.priceUSD / PACK327_CONFIG.TOKEN_CONVERSION_RATE);
       }
       if (data.available !== undefined) updates.available = data.available;
 
@@ -516,7 +516,7 @@ export const pack327_admin_getBundleAnalytics = onCall(
       const totals = analytics.reduce(
         (acc, item: any) => {
           acc.totalPurchases += item.totalPurchases || 0;
-          acc.totalRevenuePLN += item.totalRevenuePLN || 0;
+          acc.totalRevenueUSD += item.totalRevenueUSD || 0;
           acc.platformBreakdown.web += item.platformBreakdown?.web || 0;
           acc.platformBreakdown.ios += item.platformBreakdown?.ios || 0;
           acc.platformBreakdown.android += item.platformBreakdown?.android || 0;
@@ -524,7 +524,7 @@ export const pack327_admin_getBundleAnalytics = onCall(
         },
         {
           totalPurchases: 0,
-          totalRevenuePLN: 0,
+          totalRevenueUSD: 0,
           platformBreakdown: { web: 0, ios: 0, android: 0 },
         }
       );
@@ -577,10 +577,10 @@ export const pack327_admin_getSalesSummary = onCall(
           return {
             bundleId: doc.id,
             title: bundle.title,
-            pricePLN: bundle.pricePLN,
+            priceUSD: bundle.priceUSD,
             available: bundle.available,
             totalPurchases: purchaseCount.data().count,
-            totalRevenue: purchaseCount.data().count * bundle.pricePLN,
+            totalRevenue: purchaseCount.data().count * bundle.priceUSD,
           };
         })
       );
@@ -594,7 +594,7 @@ export const pack327_admin_getSalesSummary = onCall(
         success: true,
         summary: {
           totalPurchases,
-          totalRevenuePLN: totalRevenue,
+          totalRevenueUSD: totalRevenue,
           averageOrderValue: totalPurchases > 0 ? totalRevenue / totalPurchases : 0,
           bundleStats,
         },
@@ -700,7 +700,7 @@ async function applyBoost(
 async function recordBundleAnalytics(
   bundleId: string,
   platform: string,
-  revenuePLN: number
+  revenueUSD: number
 ): Promise<void> {
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
   const analyticsRef = db.collection('bundleAnalytics').doc(`${bundleId}_${today}`);
@@ -712,7 +712,7 @@ async function recordBundleAnalytics(
       const current = doc.data()!;
       transaction.update(analyticsRef, {
         totalPurchases: FieldValue.increment(1),
-        totalRevenuePLN: FieldValue.increment(revenuePLN),
+        totalRevenueUSD: FieldValue.increment(revenueUSD),
         [`platformBreakdown.${platform.toLowerCase()}`]: FieldValue.increment(1),
       });
     } else {
@@ -720,7 +720,7 @@ async function recordBundleAnalytics(
         bundleId,
         date: today,
         totalPurchases: 1,
-        totalRevenuePLN: revenuePLN,
+        totalRevenueUSD: revenueUSD,
         platformBreakdown: {
           web: platform === 'WEB' ? 1 : 0,
           ios: platform === 'IOS' ? 1 : 0,
@@ -759,3 +759,12 @@ function calculateAge(dateOfBirth: any): number {
 }
 
 logger.info('✅ PACK 327 - Creator Promo Bundles loaded successfully');
+
+
+
+
+
+
+
+
+

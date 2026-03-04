@@ -190,3 +190,12 @@ export class ConsentVerificationEngine {
 }
 
 export const consentVerification = new ConsentVerificationEngine();
+
+
+
+
+
+
+
+
+

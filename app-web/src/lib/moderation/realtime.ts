@@ -1,100 +1,64 @@
 /**
- * Moderation Realtime — Hooks for real-time moderation data.
- *
- * Provides React hooks that subscribe to Firestore snapshots
- * for incidents, appeals, online moderators, and alert counts.
+ * Moderation Realtime — Hooks for real-time incident/appeal monitoring.
  */
 
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  limit,
-  onSnapshot,
-  Timestamp,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-
-// ── Types ──────────────────────────────────────────────
+import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { requireDb } from '@/lib/firebase';
 
 export interface RealtimeIncident {
   id: string;
   type: string;
-  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'DISMISSED';
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | string;
+  status: string;
   reportedUserId: string;
   reporterUserId: string;
   description: string;
-  category: string;
   createdAt: Date;
-  assignedTo?: string;
+  updatedAt: Date;
+  /** Optional fields populated from Firestore when available */
+  userId?: string;
+  username?: string;
+  category?: string;
+  contentSnippet?: string;
+  snippet?: string;
+  reportedDate?: string;
+  timestamp?: string | { toMillis: () => number };
 }
 
 export interface RealtimeAppeal {
   id: string;
-  userId: string;
   incidentId: string;
+  userId: string;
   reason: string;
-  status: 'PENDING' | 'REVIEWING' | 'APPROVED' | 'DENIED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
   createdAt: Date;
-  reviewedAt?: Date;
-  reviewerUid?: string;
 }
-
-export interface OnlineModerator {
-  uid: string;
-  displayName: string;
-  role: string;
-  currentAction?: string;
-  lastActiveAt: Date;
-}
-
-// ── Sort helper ────────────────────────────────────────
-
-const SEVERITY_ORDER: Record<string, number> = {
-  CRITICAL: 0,
-  HIGH: 1,
-  MEDIUM: 2,
-  LOW: 3,
-};
 
 export function sortByPriority(incidents: RealtimeIncident[]): RealtimeIncident[] {
-  return [...incidents].sort((a, b) => {
-    const aSev = SEVERITY_ORDER[a.severity] ?? 99;
-    const bSev = SEVERITY_ORDER[b.severity] ?? 99;
-    if (aSev !== bSev) return aSev - bSev;
-    return b.createdAt.getTime() - a.createdAt.getTime();
-  });
+  const priorityOrder: Record<string, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+  return [...incidents].sort(
+    (a, b) => (priorityOrder[a.severity] ?? 4) - (priorityOrder[b.severity] ?? 4),
+  );
 }
 
-// ── Hooks ──────────────────────────────────────────────
-
-export function useRealtimeIncidents(limitCount = 100): {
-  incidents: RealtimeIncident[];
-  loading: boolean;
-} {
+export function useRealtimeIncidents(limitCount: number = 50) {
   const [incidents, setIncidents] = useState<RealtimeIncident[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!db) {
-      setLoading(false);
-      return;
-    }
-
     const q = query(
-      collection(db, 'moderation_incidents'),
+      collection(requireDb(), 'moderationIncidents'),
       orderBy('createdAt', 'desc'),
-      limit(limitCount)
+      limit(limitCount),
     );
 
     const unsub = onSnapshot(q, (snap) => {
-      const items: RealtimeIncident[] = snap.docs.map((d) => {
+      const items = snap.docs.map((d) => {
         const data = d.data();
+        const createdAtDate = data.createdAt?.toDate?.() ?? new Date();
         return {
           id: d.id,
           type: data.type ?? 'UNKNOWN',
@@ -103,10 +67,16 @@ export function useRealtimeIncidents(limitCount = 100): {
           reportedUserId: data.reportedUserId ?? '',
           reporterUserId: data.reporterUserId ?? '',
           description: data.description ?? '',
-          category: data.category ?? '',
-          createdAt: data.createdAt?.toDate() ?? new Date(),
-          assignedTo: data.assignedTo,
-        };
+          createdAt: createdAtDate,
+          updatedAt: data.updatedAt?.toDate?.() ?? new Date(),
+          userId: data.userId ?? data.reportedUserId ?? undefined,
+          username: data.username ?? undefined,
+          category: data.category ?? undefined,
+          contentSnippet: data.contentSnippet ?? undefined,
+          snippet: data.snippet ?? undefined,
+          reportedDate: data.reportedDate ?? undefined,
+          timestamp: data.timestamp ?? createdAtDate.toISOString(),
+        } as RealtimeIncident;
       });
       setIncidents(items);
       setLoading(false);
@@ -118,38 +88,28 @@ export function useRealtimeIncidents(limitCount = 100): {
   return { incidents, loading };
 }
 
-export function useRealtimeAppeals(limitCount = 50): {
-  appeals: RealtimeAppeal[];
-  loading: boolean;
-} {
+export function useRealtimeAppeals(limitCount: number = 50) {
   const [appeals, setAppeals] = useState<RealtimeAppeal[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!db) {
-      setLoading(false);
-      return;
-    }
-
     const q = query(
-      collection(db, 'moderation_appeals'),
+      collection(requireDb(), 'moderationAppeals'),
       orderBy('createdAt', 'desc'),
-      limit(limitCount)
+      limit(limitCount),
     );
 
     const unsub = onSnapshot(q, (snap) => {
-      const items: RealtimeAppeal[] = snap.docs.map((d) => {
+      const items = snap.docs.map((d) => {
         const data = d.data();
         return {
           id: d.id,
-          userId: data.userId ?? '',
           incidentId: data.incidentId ?? '',
+          userId: data.userId ?? '',
           reason: data.reason ?? '',
           status: data.status ?? 'PENDING',
-          createdAt: data.createdAt?.toDate() ?? new Date(),
-          reviewedAt: data.reviewedAt?.toDate(),
-          reviewerUid: data.reviewerUid,
-        };
+          createdAt: data.createdAt?.toDate?.() ?? new Date(),
+        } as RealtimeAppeal;
       });
       setAppeals(items);
       setLoading(false);
@@ -161,34 +121,36 @@ export function useRealtimeAppeals(limitCount = 50): {
   return { appeals, loading };
 }
 
-export function useOnlineModerators(): {
-  moderators: OnlineModerator[];
-  loading: boolean;
-} {
-  const [moderators, setModerators] = useState<OnlineModerator[]>([]);
+export function useOnlineModerators() {
+  const [moderators, setModerators] = useState<Array<{
+    id: string;
+    uid: string;
+    displayName: string;
+    email?: string;
+    currentIncidentId?: string;
+    timeOnCase?: number;
+    lastSeen: { toMillis: () => number };
+  }>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!db) {
-      setLoading(false);
-      return;
-    }
-
-    const fiveMinutesAgo = Timestamp.fromDate(new Date(Date.now() - 5 * 60 * 1000));
     const q = query(
-      collection(db, 'moderator_presence'),
-      where('lastActiveAt', '>', fiveMinutesAgo)
+      collection(requireDb(), 'moderatorPresence'),
+      where('online', '==', true),
     );
 
     const unsub = onSnapshot(q, (snap) => {
-      const items: OnlineModerator[] = snap.docs.map((d) => {
+      const items = snap.docs.map((d) => {
         const data = d.data();
+        const lastSeenDate = data.lastSeen?.toDate?.() ?? new Date();
         return {
+          id: d.id,
           uid: d.id,
           displayName: data.displayName ?? 'Moderator',
-          role: data.role ?? 'moderator',
-          currentAction: data.currentAction,
-          lastActiveAt: data.lastActiveAt?.toDate() ?? new Date(),
+          email: data.email ?? undefined,
+          currentIncidentId: data.currentIncidentId ?? undefined,
+          timeOnCase: data.timeOnCase ?? undefined,
+          lastSeen: { toMillis: () => lastSeenDate.getTime() },
         };
       });
       setModerators(items);
@@ -201,12 +163,21 @@ export function useOnlineModerators(): {
   return { moderators, loading };
 }
 
-export function useAlertCounts(): { incidents: number; appeals: number } {
-  const { incidents } = useRealtimeIncidents(500);
-  const { appeals } = useRealtimeAppeals(200);
+export function useAlertCounts() {
+  const { incidents } = useRealtimeIncidents(100);
+  const { appeals } = useRealtimeAppeals(100);
 
-  const openIncidents = incidents.filter((i) => i.status === 'OPEN' || i.status === 'IN_PROGRESS').length;
+  const openIncidents = incidents.filter((i) => i.status === 'OPEN').length;
   const pendingAppeals = appeals.filter((a) => a.status === 'PENDING').length;
+  const criticalCount = incidents.filter((i) => i.severity === 'CRITICAL' && i.status === 'OPEN').length;
 
-  return { incidents: openIncidents, appeals: pendingAppeals };
+  return {
+    openIncidents,
+    pendingAppeals,
+    criticalCount,
+    /** Alias for criticalCount — used by TopbarClient */
+    criticalIncidents: criticalCount,
+    /** Sum of all alert-worthy counts */
+    totalAlerts: openIncidents + pendingAppeals,
+  };
 }

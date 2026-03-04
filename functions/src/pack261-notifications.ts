@@ -429,3 +429,12 @@ export const getUnreadCount = functions.https.onCall(async (request) => {
 
   return { count: snapshot.size };
 });
+
+
+
+
+
+
+
+
+

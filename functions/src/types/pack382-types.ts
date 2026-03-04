@@ -683,3 +683,12 @@ export interface CreatorAcademyAnalytics {
   
   generatedAt: Timestamp;
 }
+
+
+
+
+
+
+
+
+

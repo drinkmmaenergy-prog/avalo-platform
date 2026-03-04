@@ -473,3 +473,12 @@ export const cleanupTranslationLogs = onSchedule("every 24 hours", async (event)
     console.log(`Cleaned up ${oldLogsSnapshot.size} old translation logs`);
     return null;
   });
+
+
+
+
+
+
+
+
+

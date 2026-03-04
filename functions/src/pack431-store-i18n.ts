@@ -263,7 +263,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, TranslationKeys> = {
     
     safety_verified: "Vérifié et fiable",
     safety_reporting: "Signaler un comportement inapproprié",
-    safety_blocking: "Bloquer les utilisateurs indésirables",
+    safety_blocking: "Bloquer les utilisatUSDs indésirables",
     safety_moderation: "Modération 24/7"
   },
   
@@ -533,3 +533,12 @@ export class StoreI18nEngine {
 export const createStoreI18nEngine = (db: FirebaseFirestore.Firestore) => {
   return new StoreI18nEngine(db);
 };
+
+
+
+
+
+
+
+
+

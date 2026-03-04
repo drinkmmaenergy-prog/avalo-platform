@@ -14,7 +14,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 
 export default function StartPage() {
   const router = useRouter();
@@ -41,7 +41,8 @@ export default function StartPage() {
       }
 
       // Create preSignup document
-      const preSignupRef = await addDoc(collection(db, 'preSignup'), {
+      const preSignupRef = await addDoc(collection(requireDb(), 'preSignup')
+, {
         email: formData.email,
         phone: formData.phone || null,
         country: formData.country,
@@ -149,8 +150,9 @@ export default function StartPage() {
                 Your info has been saved. Complete your registration now.
               </p>
               <button
-                onClick={() => router.push(`/auth/signup?preSignupId=${preSignupId}`)}
-                className="w-full px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-semibold hover:from-purple-500 hover:to-pink-500 transition-all flex items-center justify-center space-x-2"
+onClick={() =>
+  router.push(`/auth/register?preSignupId=${preSignupId}`)
+}                className="w-full px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-semibold hover:from-purple-500 hover:to-pink-500 transition-all flex items-center justify-center space-x-2"
               >
                 <span>Continue Registration</span>
                 <ChevronRight className="w-5 h-5" />

@@ -659,3 +659,12 @@ async function logToTrustEngine(
     console.warn('[2FA] Failed to log to trust engine:', error);
   }
 }
+
+
+
+
+
+
+
+
+

@@ -13,3 +13,12 @@ export interface CalendarSlot {
     available: boolean;
 }
 export type CalendarEventType = 'MEETING' | 'CALL' | 'DATE' | 'OTHER';
+
+
+
+
+
+
+
+
+

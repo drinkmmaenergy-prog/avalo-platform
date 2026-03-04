@@ -338,3 +338,12 @@ export interface PrivacyViolationAlert {
   resolvedAt?: Date;
   actionTaken?: string;
 }
+
+
+
+
+
+
+
+
+

@@ -24,20 +24,20 @@ export type UserSegment =
 
 export type LTVProfile = {
   segment: UserSegment;
-  avgLTVPLN: number;
+  avgLTVUSD: number;
   avgDaysActive: number;
   payFrequencyPerMonth: number;
-  avgTransactionSizePLN: number;
+  avgTransactionSizeUSD: number;
   churnProbability: number;
   userCount: number;
-  totalValuePLN: number;
+  totalValueUSD: number;
   calculatedAt: string;
 };
 
 export type LTVTrend = {
   segment: UserSegment;
   monthYear: string;
-  ltvPLN: number;
+  ltvUSD: number;
   userCount: number;
 };
 
@@ -107,13 +107,13 @@ class LTVModelEngine {
     if (userCount === 0) {
       console.log('Scheduled job result:', {
         segment,
-        avgLTVPLN: 0,
+        avgLTVUSD: 0,
         avgDaysActive: 0,
         payFrequencyPerMonth: 0,
-        avgTransactionSizePLN: 0,
+        avgTransactionSizeUSD: 0,
         churnProbability: this.getSegmentChurnProbability(segment),
         userCount: 0,
-        totalValuePLN: 0,
+        totalValueUSD: 0,
         calculatedAt: new Date().toISOString(),
       });
 
@@ -147,13 +147,13 @@ class LTVModelEngine {
 
     console.log('Scheduled job result:', {
       segment,
-      avgLTVPLN: Math.round(avgLTV * 100) / 100,
+      avgLTVUSD: Math.round(avgLTV * 100) / 100,
       avgDaysActive: Math.round(avgDaysActive),
       payFrequencyPerMonth: Math.round((avgPaymentsPerUser / avgDaysActive) * 30 * 100) / 100,
-      avgTransactionSizePLN: Math.round(avgTransactionSize * 100) / 100,
+      avgTransactionSizeUSD: Math.round(avgTransactionSize * 100) / 100,
       churnProbability: this.getSegmentChurnProbability(segment),
       userCount,
-      totalValuePLN: Math.round(totalValue * 100) / 100,
+      totalValueUSD: Math.round(totalValue * 100) / 100,
       calculatedAt: new Date().toISOString(),
     });
 
@@ -208,7 +208,7 @@ class LTVModelEngine {
     let totalSpent = 0;
     for (const doc of transactionsSnapshot.docs) {
       const data = doc.data();
-      totalSpent += data.amountPLN || 0;
+      totalSpent += data.amountUSD || 0;
     }
 
     const paymentCount = transactionsSnapshot.size;
@@ -338,7 +338,7 @@ class LTVModelEngine {
       let userLTV = 0;
       for (const doc of transactionsSnapshot.docs) {
         const data = doc.data();
-        userLTV += data.amountPLN || 0;
+        userLTV += data.amountUSD || 0;
       }
 
       totalLTV += userLTV;
@@ -405,7 +405,7 @@ class LTVModelEngine {
     batch.set(summaryRef, {
       profiles,
       totalUsers: profiles.reduce((sum, p) => sum + p.userCount, 0),
-      totalValuePLN: profiles.reduce((sum, p) => sum + p.totalValuePLN, 0),
+      totalValueUSD: profiles.reduce((sum, p) => sum + p.totalValueUSD, 0),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
 
@@ -434,7 +434,7 @@ class LTVModelEngine {
       const trend: LTVTrend = {
         segment: profile.segment,
         monthYear,
-        ltvPLN: profile.avgLTVPLN,
+        ltvUSD: profile.avgLTVUSD,
         userCount: profile.userCount,
       };
 
@@ -471,19 +471,19 @@ class LTVModelEngine {
 
     if (!cacDoc.exists) return;
 
-    const cac = cacDoc.data()!.avgCACPLN || 0;
+    const cac = cacDoc.data()!.avgCACUSD || 0;
 
     for (const profile of profiles) {
       // Alert if CAC > LTV for any segment
-      if (cac > profile.avgLTVPLN && profile.userCount > 100) {
+      if (cac > profile.avgLTVUSD && profile.userCount > 100) {
         await this.createAlert({
           type: 'CAC_EXCEEDS_LTV',
           segment: profile.segment,
           severity: 'high',
-          message: `CAC (${cac.toFixed(2)} PLN) exceeds LTV (${profile.avgLTVPLN.toFixed(2)} PLN) for ${profile.segment} segment`,
+          message: `CAC (${cac.toFixed(2)} USD) exceeds LTV (${profile.avgLTVUSD.toFixed(2)} USD) for ${profile.segment} segment`,
           data: {
             cac,
-            ltv: profile.avgLTVPLN,
+            ltv: profile.avgLTVUSD,
             segment: profile.segment,
             userCount: profile.userCount,
           },
@@ -500,7 +500,7 @@ class LTVModelEngine {
           data: {
             segment: profile.segment,
             churnProbability: profile.churnProbability,
-            avgLTV: profile.avgLTVPLN,
+            avgLTV: profile.avgLTVUSD,
             userCount: profile.userCount,
           },
         });
@@ -540,7 +540,7 @@ const engine = new LTVModelEngine();
 /**
  * Scheduled function: Calculate segment LTVs weekly on Sundays at 3 AM
  */
-export const calculateSegmentLTVs = onSchedule({ schedule: "0 3 * * 0", timeZone: "Europe/Warsaw", region: "europe-west1" }, async (event) => {
+export const calculateSegmentLTVs = onSchedule({ schedule: "0 3 * * 0", timeZone: "USDope/Warsaw", region: "europe-west1" }, async (event) => {
     console.log('[PACK 358] Calculating LTV for all segments');
     
     try {
@@ -551,7 +551,7 @@ export const calculateSegmentLTVs = onSchedule({ schedule: "0 3 * * 0", timeZone
       
       console.log('[PACK 358] LTV calculation complete:', {
         segments: profiles.length,
-        totalValue: profiles.reduce((sum, p) => sum + p.totalValuePLN, 0),
+        totalValue: profiles.reduce((sum, p) => sum + p.totalValueUSD, 0),
       });
       
       console.log('Scheduled job result:', { success: true });
@@ -667,3 +667,12 @@ export const getLTVTrends = onCall(
       throw new HttpsError('internal', 'Failed to fetch LTV trends');
     }
   });
+
+
+
+
+
+
+
+
+

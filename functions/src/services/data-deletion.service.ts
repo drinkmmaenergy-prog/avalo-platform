@@ -650,3 +650,12 @@ export async function getDeletionRequestStatus(
 
   return requestQuery.docs[0].data() as DataDeletionRequestSchema;
 }
+
+
+
+
+
+
+
+
+

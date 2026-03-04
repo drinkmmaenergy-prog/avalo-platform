@@ -495,3 +495,12 @@ async function getUnreadCount(chatId: string, userId: string): Promise<number> {
 
   return unreadSnapshot.data().count;
 }
+
+
+
+
+
+
+
+
+

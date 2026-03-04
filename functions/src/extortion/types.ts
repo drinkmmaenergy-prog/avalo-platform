@@ -133,7 +133,7 @@ export interface ExtortionReport {
   accusedUserId: string;
   reportType: ExtortionType;
   description: string;
-  evidenceUrls: string[];
+  evidencUSDls: string[];
   chatId?: string;
   messageIds: string[];
   urgency: 'low' | 'medium' | 'high' | 'critical';
@@ -298,3 +298,12 @@ export interface DetectionResult {
   suggestedActions: EnforcementAction[];
   evidenceSnippets: string[];
 }
+
+
+
+
+
+
+
+
+

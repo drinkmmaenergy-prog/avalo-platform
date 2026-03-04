@@ -86,7 +86,7 @@ export const pack336_generateDailyKPIs = onSchedule({ schedule: "30 0 * * *", ti
       console.log(`[PACK 336] Successfully aggregated KPIs for ${date}`);
       console.log(`  - North Star: ${northStar.weeklyPayingUsers} weekly users, ${northStar.monthlyPayingUsers} monthly users`);
       console.log(`  - DAU: ${dailyGlobal.activeUsersDAU}, Paying DAU: ${dailyGlobal.payingUsersDAU}`);
-      console.log(`  - Revenue: ${dailyGlobal.totalRevenuePLN.toFixed(2)} PLN`);
+      console.log(`  - Revenue: ${dailyGlobal.totalRevenueUSD.toFixed(2)} USD`);
       console.log(`  - Refund Rate: ${(dailyGlobal.refundRate * 100).toFixed(2)}%`);
       console.log(`  - Countries: ${dailyByCountry.length}`);
       console.log(`  - K-Factor: ${viralityMetrics.kFactor.toFixed(2)}`);
@@ -100,7 +100,7 @@ export const pack336_generateDailyKPIs = onSchedule({ schedule: "30 0 * * *", ti
         metrics: {
           northStar: northStar.weeklyPayingUsers,
           dau: dailyGlobal.activeUsersDAU,
-          revenue: dailyGlobal.totalRevenuePLN,
+          revenue: dailyGlobal.totalRevenueUSD,
           refundRate: dailyGlobal.refundRate,
           countries: dailyByCountry.length,
         },
@@ -289,7 +289,7 @@ export const pack336_manualAggregation = functions.https.onCall(async (request) 
       metrics: {
         northStar: northStar.weeklyPayingUsers,
         dau: dailyGlobal.activeUsersDAU,
-        revenue: dailyGlobal.totalRevenuePLN,
+        revenue: dailyGlobal.totalRevenueUSD,
       },
     };
   } catch (error: any) {
@@ -297,3 +297,12 @@ export const pack336_manualAggregation = functions.https.onCall(async (request) 
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+

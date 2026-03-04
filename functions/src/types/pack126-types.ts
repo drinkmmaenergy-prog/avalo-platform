@@ -393,3 +393,12 @@ export const DEFAULT_SAFETY_CONFIG: SafetyFrameworkConfig = {
   
   refundWindowMinutes: 5,  // Only refund if content not delivered within 5 mins
 };
+
+
+
+
+
+
+
+
+

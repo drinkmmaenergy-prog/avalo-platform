@@ -356,3 +356,12 @@ export const sendMeetingReminders = onSchedule("every 1 hours", async (event) =>
     console.error('Error sending meeting reminders:', error);
   }
 });
+
+
+
+
+
+
+
+
+

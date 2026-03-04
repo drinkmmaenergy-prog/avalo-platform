@@ -314,7 +314,7 @@ export interface NSFWViolation {
   
   // Evidence
   detectedBy: 'SYSTEM' | 'USER_REPORT' | 'MODERATOR';
-  evidenceUrls?: string[];
+  evidencUSDls?: string[];
   
   // Status
   status: 'DETECTED' | 'UNDER_REVIEW' | 'CONFIRMED' | 'DISMISSED';
@@ -546,3 +546,12 @@ export const NSFW_VIOLATION_SEVERITY: Record<NSFWModerationReasonCode, NSFWViola
   'NSFW_MISCLASSIFICATION': 'MEDIUM',
   'NSFW_PSP_VIOLATION': 'HIGH',
 };
+
+
+
+
+
+
+
+
+

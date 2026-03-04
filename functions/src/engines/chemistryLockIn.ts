@@ -442,7 +442,7 @@ async function generateConversionSuggestion(
 
   const messages = messagesSnapshot.docs.map(doc => doc.data());
 
-  // Simple heuristic-based suggestions (can be enhanced with AI)
+  // Simple hUSDistic-based suggestions (can be enhanced with AI)
   const lastMessages = messages.slice(0, 5).map(m => m.content?.toLowerCase() || '');
   
   // Check for meeting-related keywords
@@ -544,7 +544,7 @@ export async function applyToxicCooldown(conversationId: string): Promise<void> 
  */
 async function detectInsideJoke(messages: any[]): Promise<boolean> {
   // TODO: Integrate with AI service to detect inside jokes
-  // For now, use simple heuristics
+  // For now, use simple hUSDistics
   const recentMessages = messages.slice(0, 10);
   const laughterCount = recentMessages.filter(m => 
     /😂|😄|😆|lol|haha|lmao/i.test(m.content || '')
@@ -669,3 +669,12 @@ export async function processLockInExpirations(): Promise<void> {
 
   console.log(`[Chemistry Lock-In] Processed ${activeConversations.size} active Lock-Ins, expired ${updateCount}`);
 }
+
+
+
+
+
+
+
+
+

@@ -12,3 +12,12 @@ export interface FAQEntry  {
     category: string;
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+

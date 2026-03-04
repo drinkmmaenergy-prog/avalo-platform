@@ -74,3 +74,4 @@ export const LOCALE_DISPLAY_NAMES: Record<SupportedLocale, string> = {
   sq: 'Shqip',
   ka: 'ქართული',
 };
+

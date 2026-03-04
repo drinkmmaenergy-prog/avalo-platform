@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+.next
+**/.next
+.git
+.gitignore
+dist
+coverage
+.env
+.env.local
+.env.production
+app-mobile
+functions/node_modules

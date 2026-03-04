@@ -652,3 +652,12 @@ async function updateMetrics(
 
   await metricsRef.set(updates, { merge: true });
 }
+
+
+
+
+
+
+
+
+

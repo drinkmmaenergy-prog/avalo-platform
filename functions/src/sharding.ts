@@ -143,7 +143,7 @@ export function getRegionalShard(
       return longitude < -100 ? 'us-west' : 'us-east';
     }
 
-    // Europe
+    // USDope
     if (latitude >= 35 && latitude <= 70 && longitude >= -10 && longitude <= 40) {
       return longitude < 15 ? 'eu-west' : 'eu-central';
     }
@@ -355,4 +355,13 @@ export const ShardingStrategy = {
 };
 
 logger.info('✅ Firestore sharding strategy loaded - 20M user scale ready');
+
+
+
+
+
+
+
+
+
 

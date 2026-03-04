@@ -28,3 +28,12 @@ export function generateDeviceFingerprint(
     .update(data)
     .digest('hex');
 }
+
+
+
+
+
+
+
+
+

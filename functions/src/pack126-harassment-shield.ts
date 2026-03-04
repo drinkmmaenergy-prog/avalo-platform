@@ -620,3 +620,12 @@ async function logSafetyEvent(
   
   await db.collection(SAFETY_AUDIT_COLLECTION).add(log);
 }
+
+
+
+
+
+
+
+
+

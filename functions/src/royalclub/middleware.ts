@@ -378,3 +378,12 @@ export const RoyalClubSafetyMiddleware = {
   validateTokenPricing,
   validateRevenueSplit
 };
+
+
+
+
+
+
+
+
+

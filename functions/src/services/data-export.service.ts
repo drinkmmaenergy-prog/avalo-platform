@@ -373,7 +373,7 @@ async function exportUserProfile(userId: string): Promise<any> {
     email: data.email,
     displayName: data.displayName,
     bio: data.bio,
-    profilePictureUrl: data.profilePictureUrl,
+    profilePicturUSDl: data.profilePicturUSDl,
     createdAt: data.createdAt?.toDate().toISOString(),
     lastActive: data.lastActive?.toDate().toISOString()
   };
@@ -526,3 +526,12 @@ export async function cleanupExpiredExports(): Promise<number> {
 
   return deletedCount;
 }
+
+
+
+
+
+
+
+
+

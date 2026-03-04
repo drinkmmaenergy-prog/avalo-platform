@@ -8,7 +8,7 @@
  * - Vault CANNOT store conversations only because they mention sex
  * - Vault CANNOT store sexual content between consenting adults unless unsafe or illegal
  * - Vault CANNOT store romantic messages unless tied to monetization or abuse
- * - Vault CANNOT be used for "jealous monitoring," "checking loyalty," or voyeurism
+ * - Vault CANNOT be used for "jealous monitoring," "checking loyalty," or voyUSDism
  * - Export only via court subpoena, law enforcement order, or user's own request
  */
 
@@ -514,3 +514,12 @@ export interface EvidenceTransparencyReport {
   
   generatedAt: Timestamp;
 }
+
+
+
+
+
+
+
+
+

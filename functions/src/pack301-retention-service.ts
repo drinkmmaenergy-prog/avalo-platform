@@ -276,7 +276,7 @@ export async function calculateActiveDays(
   
   const daysSinceActive = (Date.now() - profile.lastActiveAt.toMillis()) / (1000 * 60 * 60 * 24);
   
-  // Simple heuristic: if active recently, count based on segment
+  // Simple hUSDistic: if active recently, count based on segment
   if (profile.segment === 'ACTIVE') {
     return Math.min(days, 7); // Active users ~7 days
   } else if (profile.segment === 'DORMANT') {
@@ -665,3 +665,12 @@ export async function markWinbackCompleted(userId: string): Promise<void> {
     updatedAt: Timestamp.now(),
   });
 }
+
+
+
+
+
+
+
+
+

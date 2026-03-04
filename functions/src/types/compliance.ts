@@ -156,7 +156,7 @@ export const COMPLIANCE_CONFIG = {
   MINIMUM_AGE: 18,
   
   // AML thresholds
-  KYC_THRESHOLD_365D: 2000, // tokens (≈ 2000 EUR)
+  KYC_THRESHOLD_365D: 2000, // tokens (≈ 2000 USD)
   KYC_THRESHOLD_ALL_TIME: 5000, // tokens
   
   // High-risk countries (placeholder)
@@ -175,3 +175,12 @@ export const COMPLIANCE_CONFIG = {
   POLICY_CACHE_TTL: 24 * 60 * 60 * 1000, // 24 hours
   AML_STATE_CACHE_TTL: 60 * 60 * 1000, // 1 hour
 };
+
+
+
+
+
+
+
+
+

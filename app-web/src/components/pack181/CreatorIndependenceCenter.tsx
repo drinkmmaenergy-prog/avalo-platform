@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { collection, doc, getDoc, setDoc, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { requireDb } from '../../lib/firebase';
 import { getAuth } from 'firebase/auth';
 
 interface BoundarySettings {
@@ -49,7 +51,7 @@ export default function CreatorIndependenceCenter() {
     
     try {
       const settingsDoc = await getDoc(
-        doc(db, 'creator_boundary_settings', userId)
+        doc(requireDb(), 'creator_boundary_settings', userId)
       );
 
       if (settingsDoc.exists()) {
@@ -70,28 +72,28 @@ export default function CreatorIndependenceCenter() {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       const casesQuery = query(
-        collection(db, 'creator_independence_cases'),
+        collection(requireDb(), 'creator_independence_cases'),
         where('creatorId', '==', userId),
         where('timestamp', '>=', thirtyDaysAgo)
       );
       const casesSnapshot = await getDocs(casesQuery);
 
       const eventsQuery = query(
-        collection(db, 'fan_entitlement_events'),
+        collection(requireDb(), 'fan_entitlement_events'),
         where('creatorId', '==', userId),
         where('timestamp', '>=', thirtyDaysAgo)
       );
       const eventsSnapshot = await getDocs(eventsQuery);
 
       const logsQuery = query(
-        collection(db, 'emotional_pressure_logs'),
+        collection(requireDb(), 'emotional_pressure_logs'),
         where('creatorId', '==', userId),
         where('timestamp', '>=', thirtyDaysAgo)
       );
       const logsSnapshot = await getDocs(logsQuery);
 
       const restrictionsQuery = query(
-        collection(db, 'fan_restriction_records'),
+        collection(requireDb(), 'fan_restriction_records'),
         where('creatorId', '==', userId),
         where('status', '==', 'active')
       );
@@ -120,7 +122,7 @@ export default function CreatorIndependenceCenter() {
       setSettings(newSettings);
 
       await setDoc(
-        doc(db, 'creator_boundary_settings', userId),
+        doc(requireDb(), 'creator_boundary_settings', userId),
         {
           ...newSettings,
           creatorId: userId,
@@ -308,3 +310,4 @@ export default function CreatorIndependenceCenter() {
     </div>
   );
 }
+

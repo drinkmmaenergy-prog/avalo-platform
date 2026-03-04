@@ -415,3 +415,12 @@ export class HoldoutCohortManager {
     return hashValue <= cohort.percentage;
   }
 }
+
+
+
+
+
+
+
+
+

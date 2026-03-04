@@ -591,3 +591,12 @@ export const initializeRegions = functions.https.onCall(async (request) => {
     return;
   }
 );
+
+
+
+
+
+
+
+
+

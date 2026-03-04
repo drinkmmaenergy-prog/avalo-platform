@@ -465,3 +465,12 @@ export async function getCreatorMarketplaceGuidelines(
   const filter = new MarketplaceFilter();
   return filter.getCreatorMarketplaceGuidelines(creatorId, regionCode);
 }
+
+
+
+
+
+
+
+
+

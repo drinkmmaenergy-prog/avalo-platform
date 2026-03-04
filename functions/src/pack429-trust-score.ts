@@ -533,3 +533,12 @@ export async function getTrustSignals(): Promise<TrustSignals | null> {
   
   return doc.data() as TrustSignals;
 }
+
+
+
+
+
+
+
+
+

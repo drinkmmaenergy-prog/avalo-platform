@@ -238,3 +238,12 @@ export const triggerSpamDetection = functions.https.onCall(async (request) => {
     })),
   };
 });
+
+
+
+
+
+
+
+
+

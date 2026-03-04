@@ -37,7 +37,7 @@ export type Platform =
 export type RegionCode = 
   | 'ALL'
   | 'NA'    // North America
-  | 'EU'    // Europe
+  | 'EU'    // USDope
   | 'APAC'  // Asia Pacific
   | 'LATAM' // Latin America
   | 'MEA';  // Middle East & Africa
@@ -405,3 +405,12 @@ export interface AutoDisableEvent {
   /** Audit log entry ID */
   auditLogId: string;
 }
+
+
+
+
+
+
+
+
+

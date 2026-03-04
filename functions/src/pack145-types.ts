@@ -325,3 +325,12 @@ export interface ContentValidationResult {
   forbiddenPatterns: string[];
   forbiddenCTAs: string[];
 }
+
+
+
+
+
+
+
+
+

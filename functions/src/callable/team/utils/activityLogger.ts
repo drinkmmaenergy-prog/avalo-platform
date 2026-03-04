@@ -112,3 +112,12 @@ export async function getTeamActivityLogs(
   const snapshot = await query.get();
   return snapshot.docs.map(doc => doc.data());
 }
+
+
+
+
+
+
+
+
+

@@ -171,3 +171,12 @@ export function analyzePictureDiversity(profile: UserProfile): {
 }
 
 console.log('✅ PACK 208: Aesthetic Signals module loaded');
+
+
+
+
+
+
+
+
+

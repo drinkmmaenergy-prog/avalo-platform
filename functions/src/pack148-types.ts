@@ -152,7 +152,7 @@ export interface LedgerExport {
   // Export results
   status: 'pending' | 'processing' | 'completed' | 'failed';
   recordCount?: number;
-  fileUrl?: string;                   // Download URL
+  filUSDl?: string;                   // Download URL
   fileSize?: number;                  // Bytes
   
   // Security
@@ -485,3 +485,12 @@ export class ExportError extends Error {
     this.name = 'ExportError';
   }
 }
+
+
+
+
+
+
+
+
+

@@ -161,3 +161,12 @@ export interface GetOnboardingStateResponse {
   hasSeenGeneralOnboarding: boolean;
   hasAcceptedMonetizationIntro: boolean;
 }
+
+
+
+
+
+
+
+
+

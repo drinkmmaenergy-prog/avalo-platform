@@ -25,3 +25,12 @@ export interface LeagueReward {
   type: 'badge' | 'tokens' | 'feature_unlock';
   value: number | string;
 }
+
+
+
+
+
+
+
+
+

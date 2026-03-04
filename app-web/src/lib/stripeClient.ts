@@ -59,3 +59,4 @@ export function isStripeConfigured(): boolean {
 }
 
 export default getStripe;
+

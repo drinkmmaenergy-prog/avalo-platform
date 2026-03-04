@@ -1,29 +1,27 @@
 /**
- * Moderator Server Auth — Server-side moderator access control.
+ * Moderator Auth — Server-side (for server components / API routes).
  *
- * Used in server components (layout.tsx) to check if the
- * current user has moderator/admin role before rendering
- * the moderation dashboard.
+ * INVARIANTS:
+ *   - NEVER import from client components.
+ *   - Uses firebase-admin to verify tokens.
  */
 
 export interface CurrentUser {
   uid: string;
   email: string;
-  displayName: string;
-  role: 'moderator' | 'admin' | 'super_admin';
-  permissions: string[];
+  role: string;
+  displayName?: string;
 }
 
 /**
- * Get current user with role from server context.
+ * Get current user with role from server-side context.
+ * Returns null if not authenticated or not a moderator/admin.
  *
- * NOTE: In a real server component, this would use cookies/headers
- * to identify the user and check their role in Firestore via admin SDK.
- * For now, returns null (redirected to no-access by the layout).
+ * NOTE: In a full implementation, this would read from cookies/headers.
+ * For now, returns null to let client-side handle auth.
  */
 export async function getCurrentUserWithRole(): Promise<CurrentUser | null> {
-  // Server-side auth check would go here.
-  // This is called from the moderator layout.tsx server component.
-  // Returns null to trigger the no-access redirect.
+  // Server-side auth check is handled by middleware or API routes.
+  // This function is a placeholder for server component usage.
   return null;
 }

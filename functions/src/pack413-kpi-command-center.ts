@@ -640,3 +640,12 @@ async function isAdminOrService(uid: string): Promise<boolean> {
     return false;
   }
 }
+
+
+
+
+
+
+
+
+

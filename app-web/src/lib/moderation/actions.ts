@@ -1,72 +1,89 @@
 /**
- * Moderation Actions — Client-side helpers for moderation operations.
- *
- * All moderation actions are executed via Cloud Functions to ensure
- * proper authorization, audit logging, and security rules enforcement.
+ * Moderation Actions — Apply moderation actions via Cloud Functions.
  */
 
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '@/lib/firebase';
+import { requireFunctions } from '@/lib/firebase';
 
 export type ModerationActionType =
   | 'WARN'
   | 'MUTE'
   | 'SUSPEND'
   | 'BAN'
-  | 'UNBAN'
-  | 'DISMISS'
+  | 'BAN_PERMANENT'
+  | 'RESTRICT'
+  | 'SHADOWBAN'
   | 'ESCALATE'
   | 'RESOLVE'
+  | 'DISMISS'
   | 'APPROVE_APPEAL'
-  | 'DENY_APPEAL';
+  | 'REJECT_APPEAL'
+  | 'UNLOCK';
 
-export interface ModerationActionResult {
+interface ModerationActionResult {
   success: boolean;
-  actionId?: string;
+  message?: string;
   error?: string;
 }
 
-/**
- * Apply a moderation action to a user or incident.
- */
-export async function applyModerationAction(
-  actionType: ModerationActionType,
-  targetUserId: string,
-  reason: string,
-  incidentId?: string,
-  duration?: number,
-): Promise<ModerationActionResult> {
-  const fn = httpsCallable<
-    {
-      actionType: ModerationActionType;
-      targetUserId: string;
-      reason: string;
-      incidentId?: string;
-      duration?: number;
-    },
-    ModerationActionResult
-  >(functions, 'applyModerationAction');
+interface ApplyModerationActionParams {
+  /** User ID targeted by action. Pass as `userId` or `targetId`. */
+  userId?: string;
+  targetId?: string;
+  targetType?: string;
+  action: ModerationActionType | string;
+  reason?: string;
+  duration?: string | number;
+  moderatorNote?: string;
+}
 
-  const result = await fn({
-    actionType,
-    targetUserId,
-    reason,
-    incidentId,
-    duration,
-  });
-
-  return result.data;
+interface UpdateAppealStatusParams {
+  appealId: string;
+  status: string;
 }
 
 /**
- * Update appeal status (convenience wrapper for moderation action on appeals).
+ * Apply a moderation action via Cloud Function.
+ */
+export async function applyModerationAction(
+  params: ApplyModerationActionParams,
+): Promise<ModerationActionResult> {
+  try {
+    const fn = httpsCallable<ApplyModerationActionParams, ModerationActionResult>(
+      requireFunctions(),
+      'moderation_applyAction',
+    );
+
+    const result = await fn(params);
+    return result.data;
+  } catch (error) {
+    console.error('[moderation] applyAction error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to apply action',
+    };
+  }
+}
+
+/**
+ * Update the status of a moderation appeal via Cloud Function.
  */
 export async function updateAppealStatus(
-  appealId: string,
-  status: 'APPROVED' | 'DENIED',
-  reason: string,
-  targetUserId: string,
+  params: UpdateAppealStatusParams,
 ): Promise<ModerationActionResult> {
-  const actionType: ModerationActionType = status === 'APPROVED' ? 'APPROVE_APPEAL' : 'DENY_APPEAL';
-  return applyModerationAction(actionType, targetUserId, reason, appealId);
+  try {
+    const fn = httpsCallable<UpdateAppealStatusParams, ModerationActionResult>(
+      requireFunctions(),
+      'moderation_updateAppealStatus',
+    );
+
+    const result = await fn(params);
+    return result.data;
+  } catch (error) {
+    console.error('[moderation] updateAppealStatus error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update appeal status',
+    };
+  }
 }

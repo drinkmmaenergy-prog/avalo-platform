@@ -714,3 +714,12 @@ export const onLikeDeleted = onDocumentCreated(
     logger.info(`Post ${like.postId} likes decremented`);
   }
 );
+
+
+
+
+
+
+
+
+

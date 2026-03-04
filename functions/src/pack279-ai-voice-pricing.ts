@@ -36,3 +36,12 @@ export function calculateVoiceTokens(minutes: number, tier: AiVoiceTier): number
   const pricePerMinute = getAiVoicePricePerMinuteTokens(tier);
   return Math.floor(minutes * pricePerMinute);
 }
+
+
+
+
+
+
+
+
+

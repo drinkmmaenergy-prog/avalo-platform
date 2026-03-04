@@ -224,7 +224,7 @@ export const createEvent = onCall<{
     eventId,
     hostUserId: userId,
     hostName: userData?.displayName || 'Unknown Host',
-    hostAvatar: userData?.profilePictureUrl,
+    hostAvatar: userData?.profilePicturUSDl,
     
     title: data.title,
     description: data.description,
@@ -698,7 +698,7 @@ export const joinEvent = onCall<{
     eventTitle: event.title,
     userId,
     userName: userData?.displayName || 'Unknown User',
-    userAvatar: userData?.profilePictureUrl,
+    userAvatar: userData?.profilePicturUSDl,
     hostUserId: event.hostUserId,
     tokensAmount: event.priceTokens,
     platformFee,
@@ -946,3 +946,12 @@ export const submitEventSafetySurvey = onCall<{
     message: 'Thank you for your feedback',
   };
 });
+
+
+
+
+
+
+
+
+

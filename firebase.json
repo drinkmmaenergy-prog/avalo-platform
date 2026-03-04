@@ -3,17 +3,10 @@
     "rules": "infrastructure/firebase/firestore.rules",
     "indexes": "infrastructure/firebase/firestore.indexes.json"
   },
-
-  "functions": [
-    {
-      "source": "functions",
-      "codebase": "default",
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run build"
-      ]
-    }
-  ],
-
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20"
+  },
   "hosting": [
     {
       "target": "app",
@@ -33,8 +26,7 @@
           "destination": "/index.html"
         }
       ],
-      "cleanUrls": true,
-      "trailingSlash": false
+      "cleanUrls": true
     },
     {
       "target": "web",
@@ -54,8 +46,7 @@
           "destination": "/index.html"
         }
       ],
-      "cleanUrls": true,
-      "trailingSlash": false
+      "cleanUrls": true
     },
     {
       "target": "landing",
@@ -71,57 +62,32 @@
           "destination": "/index.html"
         }
       ],
-      "cleanUrls": true,
-      "trailingSlash": false
+      "cleanUrls": true
     }
   ],
-
   "storage": {
     "rules": "infrastructure/firebase/storage.rules"
   },
-
   "emulators": {
     "singleProjectMode": true,
-
     "auth": {
-      "host": "127.0.0.1",
       "port": 9099
     },
-
     "firestore": {
-      "host": "127.0.0.1",
       "port": 8080
     },
-
     "functions": {
-      "host": "127.0.0.1",
       "port": 5001
     },
-
     "hosting": {
-      "host": "127.0.0.1",
       "port": 5000
     },
-
     "storage": {
-      "host": "127.0.0.1",
       "port": 9199
     },
-
     "ui": {
       "enabled": true,
-      "host": "127.0.0.1",
       "port": 4000
-    },
-
-    "hub": {
-      "host": "127.0.0.1",
-      "port": 4610
-    },
-
-    "logging": {
-      "host": "127.0.0.1",
-      "port": 4710
     }
   }
 }

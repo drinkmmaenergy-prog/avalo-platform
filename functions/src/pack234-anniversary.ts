@@ -914,3 +914,12 @@ export const initializeAnniversaryStatus = functions.https.onCall(async (request
 });
 
 console.log('✅ PACK 234: Anniversary System functions loaded');
+
+
+
+
+
+
+
+
+

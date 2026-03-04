@@ -1,5 +1,7 @@
-import { logEvent } from 'firebase/analytics';
-import { analytics } from './firebase';
+"use client";
+
+import { logEvent, getAnalytics } from 'firebase/analytics';
+import { getFirebaseApp } from './firebase';
 
 export enum AnalyticsEvent {
   // Marketing funnel events
@@ -30,8 +32,9 @@ interface AnalyticsParams {
 export const trackEvent = (eventName: AnalyticsEvent, params?: AnalyticsParams) => {
   try {
     // Track with Firebase Analytics
-    if (analytics) {
-      logEvent(analytics, eventName, params);
+    if (typeof window !== 'undefined') {
+      const analyticsInstance = getAnalytics(getFirebaseApp());
+      logEvent(analyticsInstance, eventName, params);
     }
 
     // Also log to console in development

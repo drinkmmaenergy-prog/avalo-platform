@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, CheckCircle, ChevronRight, ChevronLeft, Globe, Shield } from 'lucide-react';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
 import {
@@ -44,9 +44,11 @@ export default function OnboardingPage() {
   // Redirect if not authenticated or already onboarded
   useEffect(() => {
     if (!authLoading && !firebaseUser) {
-      router.replace('/auth/login');
+      // Not logged in — redirect to home (AuthModal will handle login)
+      router.replace('/');
     }
     if (!authLoading && firebaseUser && !needsOnboarding) {
+      // Already completed onboarding — go to feed (NOT back to onboarding)
       router.replace('/feed');
     }
   }, [authLoading, firebaseUser, needsOnboarding, router]);
@@ -75,14 +77,14 @@ export default function OnboardingPage() {
   };
 
   const handleComplete = async () => {
-    if (!firebaseUser || !db) return;
+    if (!firebaseUser) return;
 
     setCreating(true);
     setError(null);
 
     try {
       // Atomically create the user document with all required fields
-      const userRef = doc(db, 'users', firebaseUser.uid);
+      const userRef = doc(requireDb(), 'users', firebaseUser.uid);
       await setDoc(userRef, {
         uid: firebaseUser.uid,
         email: firebaseUser.email ?? '',
@@ -107,11 +109,11 @@ export default function OnboardingPage() {
         title: t('onboarding.profileCreated'),
       });
 
-      // Update auth context
-      completeOnboarding();
+      // Update auth context — must await to prevent onboarding loop
+      await completeOnboarding();
       await refreshUser();
 
-      // Navigate to app
+      // Navigate to app — use replace to prevent back-button loop
       router.replace('/feed');
     } catch (err: unknown) {
       // Show explicit Firestore error
@@ -324,3 +326,4 @@ export default function OnboardingPage() {
     </div>
   );
 }
+

@@ -168,7 +168,7 @@ export class StoreReviewService {
    */
   async linkReviewToUser(review: StoreReview): Promise<string | undefined> {
     // Try to match by username, device info, or timing patterns
-    // This is a heuristic approach as stores don't provide user IDs
+    // This is a hUSDistic approach as stores don't provide user IDs
 
     try {
       // Search for users who:
@@ -420,3 +420,12 @@ export class StoreReviewService {
 }
 
 export const storeReviewService = new StoreReviewService();
+
+
+
+
+
+
+
+
+

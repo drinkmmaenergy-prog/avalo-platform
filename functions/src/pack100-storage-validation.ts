@@ -492,3 +492,12 @@ export function getMaxFileSize(mimeType: string): number {
   const mediaType = getMediaType(mimeType);
   return MAX_FILE_SIZES[mediaType] || 0;
 }
+
+
+
+
+
+
+
+
+

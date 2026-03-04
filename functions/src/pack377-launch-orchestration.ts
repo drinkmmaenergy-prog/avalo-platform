@@ -724,3 +724,12 @@ export const getUserCountryCode = async (userId: string): Promise<string | null>
   const userDoc = await db.collection('users').doc(userId).get();
   return userDoc.data()?.countryCode || null;
 };
+
+
+
+
+
+
+
+
+

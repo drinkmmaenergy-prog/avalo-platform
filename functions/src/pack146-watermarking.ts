@@ -363,3 +363,12 @@ export default {
   getWatermarkCoordinates,
   calculateWatermarkSize,
 };
+
+
+
+
+
+
+
+
+

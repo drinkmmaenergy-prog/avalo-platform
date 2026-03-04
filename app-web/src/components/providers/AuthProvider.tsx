@@ -20,7 +20,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 
-import { auth, db } from '@/lib/firebase';
+import { auth, requireDb } from '@/lib/firebase';
 import { User } from '@/types';
 import sdk from '@/lib/sdk';
 
@@ -31,7 +31,7 @@ interface AuthContextType {
   needsOnboarding: boolean;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
-  completeOnboarding: () => void;
+  completeOnboarding: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -41,26 +41,11 @@ const AuthContext = createContext<AuthContextType>({
   needsOnboarding: false,
   signOut: async () => {},
   refreshUser: async () => {},
-  completeOnboarding: () => {},
+  completeOnboarding: async () => {},
 });
 
-/**
- * Check if users/{uid} exists without creating it.
- * Returns true if the document exists, false otherwise.
- */
-async function checkUserDocExists(uid: string): Promise<boolean> {
-  if (!db) return false;
-  const ref = doc(db, 'users', uid);
-  const snap = await getDoc(ref);
-  return snap.exists();
-}
-
-/**
- * 🔒 KANONICZNY BOOTSTRAP USERA
- * Tworzy users/{uid} ZAWSZE przy pierwszym logowaniu
- */
 async function ensureUserDocument(firebaseUser: FirebaseUser): Promise<void> {
-  const ref = doc(db, 'users', firebaseUser.uid);
+  const ref = doc(requireDb(), 'users', firebaseUser.uid);
   const snap = await getDoc(ref);
 
   if (!snap.exists()) {
@@ -69,6 +54,7 @@ async function ensureUserDocument(firebaseUser: FirebaseUser): Promise<void> {
       email: firebaseUser.email ?? '',
       displayName: firebaseUser.displayName ?? '',
       role: 'user',
+      profileComplete: false,
       createdAt: serverTimestamp(),
     });
   }
@@ -87,24 +73,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profile = await sdk.getUserProfile(firebaseUser.uid);
       setUser(profile);
 
-      // Check if onboarding is complete
-      const profileComplete = (profile as User & { profileComplete?: boolean }).profileComplete;
+      const profileComplete =
+        (profile as User & { profileComplete?: boolean }).profileComplete;
+
       setNeedsOnboarding(!profileComplete);
     } catch (error) {
       console.error('[Auth] Failed to refresh user profile:', error);
     }
   };
 
-  const completeOnboarding = () => {
+  const completeOnboarding = async () => {
+    if (!firebaseUser) return;
+
+    const ref = doc(requireDb(), 'users', firebaseUser.uid);
+
+    await setDoc(
+      ref,
+      {
+        profileComplete: true,
+        onboardingCompletedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+
     setNeedsOnboarding(false);
+    await refreshUser();
   };
 
   useEffect(() => {
-    if (!auth) {
-      setLoading(false);
-      return;
-    }
-
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser);
 
@@ -116,28 +112,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        // Check if user doc exists
-        const exists = await checkUserDocExists(fbUser.uid);
+        // ZAWSZE upewnij się, że dokument istnieje
+        await ensureUserDocument(fbUser);
 
-        if (!exists) {
-          // New user — needs onboarding
+        const ref = doc(requireDb(), 'users', fbUser.uid);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+          // To już nie powinno się zdarzyć
           setNeedsOnboarding(true);
           setUser(null);
           setLoading(false);
           return;
         }
 
-        // Existing user — load profile
         const profile = await sdk.getUserProfile(fbUser.uid);
         setUser(profile);
 
-        // Check profileComplete flag
-        const profileComplete = (profile as User & { profileComplete?: boolean }).profileComplete;
+        const profileComplete =
+          (profile as User & { profileComplete?: boolean }).profileComplete;
+
         setNeedsOnboarding(!profileComplete);
       } catch (error) {
-        console.error('[Auth] Failed to bootstrap/load user:', error);
-        // If user doc missing or error, treat as needs onboarding
-        setNeedsOnboarding(true);
+        console.error('[Auth] Bootstrap error:', error);
+        // Do NOT set needsOnboarding=true on error — prevents false redirect
+        // to onboarding when Firestore is temporarily unavailable.
+        // User will see a blank state; refresh will retry.
         setUser(null);
       } finally {
         setLoading(false);

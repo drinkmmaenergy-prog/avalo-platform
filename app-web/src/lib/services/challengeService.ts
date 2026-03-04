@@ -1,9 +1,11 @@
+"use client";
+
 /**
  * Brand Challenges & Rewards Service
  * Handles task-based engagement and token rewards
  */
 
-import { db, functions } from '../firebase';
+import { requireDb, requireFunctions } from '../firebase';
 import {
   collection,
   query,
@@ -29,7 +31,7 @@ export async function getActiveChallenges(limitCount: number = 20): Promise<Bran
   try {
     const now = Timestamp.now();
     const q = query(
-      collection(db, 'brand_challenges'),
+      collection(requireDb(), 'brand_challenges'),
       where('startDate', '<=', now),
       where('endDate', '>', now),
       orderBy('startDate', 'desc'),
@@ -52,7 +54,7 @@ export async function getActiveChallenges(limitCount: number = 20): Promise<Bran
  */
 export async function getChallenge(challengeId: string): Promise<BrandChallenge | null> {
   try {
-    const challengeRef = doc(db, 'brand_challenges', challengeId);
+    const challengeRef = doc(requireDb(), 'brand_challenges', challengeId);
     const challengeSnap = await getDoc(challengeRef);
 
     if (!challengeSnap.exists()) {
@@ -75,7 +77,7 @@ export async function getChallenge(challengeId: string): Promise<BrandChallenge 
 export async function getUserChallenges(userId: string): Promise<any[]> {
   try {
     const q = query(
-      collection(db, 'user_challenges'),
+      collection(requireDb(), 'user_challenges'),
       where('userId', '==', userId),
       where('status', 'in', ['active', 'completed']),
       orderBy('enrolledAt', 'desc'),
@@ -112,7 +114,7 @@ export async function enrollInChallenge(params: {
     const enroll = httpsCallable<typeof params, {
       success: boolean;
       enrollmentId: string;
-    }>(functions, 'enrollInChallenge');
+    }>(requireFunctions(), 'enrollInChallenge');
     
     const result = await enroll(params);
     return result.data;
@@ -148,7 +150,7 @@ export async function completeTask(params: {
       success: boolean;
       tokensEarned: number;
       challengeCompleted: boolean;
-    }>(functions, 'completeChallengeTask');
+    }>(requireFunctions(), 'completeChallengeTask');
     
     const result = await complete(params);
     return result.data;
@@ -178,7 +180,7 @@ export async function verifyTaskCompletion(params: {
     const verify = httpsCallable<typeof params, {
       verified: boolean;
       tokensEarned: number;
-    }>(functions, 'verifyChallengeTask');
+    }>(requireFunctions(), 'verifyChallengeTask');
     
     const result = await verify(params);
     return result.data;
@@ -207,7 +209,7 @@ export async function claimReward(params: {
     const claim = httpsCallable<typeof params, {
       success: boolean;
       tokensAwarded: number;
-    }>(functions, 'claimChallengeReward');
+    }>(requireFunctions(), 'claimChallengeReward');
     
     const result = await claim(params);
     return result.data;
@@ -226,7 +228,7 @@ export async function claimReward(params: {
 export async function getRewardHistory(userId: string, limitCount: number = 50): Promise<any[]> {
   try {
     const q = query(
-      collection(db, 'challenge_rewards'),
+      collection(requireDb(), 'challenge_rewards'),
       where('userId', '==', userId),
       orderBy('claimedAt', 'desc'),
       limit(limitCount)
@@ -265,7 +267,7 @@ export async function getChallengeProgress(params: {
       totalTasks: number;
       tokensEarned: number;
       isComplete: boolean;
-    }>(functions, 'getChallengeProgress');
+    }>(requireFunctions(), 'getChallengeProgress');
     
     const result = await getProgress(params);
     return result.data;
@@ -308,7 +310,7 @@ export async function getChallengeLeaderboard(params: {
         tokensEarned: number;
         rank: number;
       }>;
-    }>(functions, 'getChallengeLeaderboard');
+    }>(requireFunctions(), 'getChallengeLeaderboard');
     
     const result = await getLeaderboard(params);
     return result.data.leaderboard;

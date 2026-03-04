@@ -209,7 +209,7 @@ export interface PanicAlert {
   otherUserId?: string;
   otherUserName?: string;
   otherUserPhotos?: string[];
-  otherUserProfileUrl?: string;
+  otherUserProfilUSDl?: string;
   
   // Trusted contact information
   trustedContactId?: string;
@@ -499,3 +499,12 @@ export const DEFAULT_SAFETY_TRACKING_CONFIG: SafetyTrackingConfig = {
   locationVisibleToOtherParty: false,
   locationVisibleToTrustedContact: true,
 };
+
+
+
+
+
+
+
+
+

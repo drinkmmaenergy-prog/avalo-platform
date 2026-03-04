@@ -56,11 +56,11 @@ export async function processLegalSnapshot(
     }
     
     // Generate file based on format
-    let fileUrl: string;
+    let filUSDl: string;
     if (snapshot.fileFormat === 'JSON') {
-      fileUrl = await generateJSONFile(snapshotId, content);
+      filUSDl = await generateJSONFile(snapshotId, content);
     } else if (snapshot.fileFormat === 'PDF') {
-      fileUrl = await generatePDFFile(snapshotId, content, snapshot.type);
+      filUSDl = await generatePDFFile(snapshotId, content, snapshot.type);
     } else {
       throw new Error(`Unsupported file format: ${snapshot.fileFormat}`);
     }
@@ -68,7 +68,7 @@ export async function processLegalSnapshot(
     // Update snapshot with file URL
     await snapshotRef.update({
       status: 'READY',
-      fileUrl,
+      filUSDl,
     });
     
     // Log success
@@ -248,9 +248,9 @@ async function aggregateEconomics(from: string, to: string) {
   // TODO: Connect to platformFinanceMonthly from PACK 304
   return {
     gmvTokens: 0,
-    gmvPLN: 0,
+    gmvUSD: 0,
     avaloFeesTokens: 0,
-    avaloFeesPLN: 0,
+    avaloFeesUSD: 0,
     creatorShareTokens: 0,
     numberOfPayouts: 0,
     totalPayoutFiat: 0,
@@ -526,3 +526,12 @@ async function logSnapshotAudit(auditLog: any): Promise<void> {
     console.error('Error logging snapshot audit:', error);
   }
 }
+
+
+
+
+
+
+
+
+

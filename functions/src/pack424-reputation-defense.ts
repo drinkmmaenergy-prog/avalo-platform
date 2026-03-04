@@ -30,7 +30,7 @@ export class ReputationDefenseService {
       const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
       const recentReviews = await this.getRecentReviews(sevenDaysAgo);
 
-      // Run detection heuristics
+      // Run detection hUSDistics
       const burstResults = await this.detectReviewBursts(recentReviews);
       const similarityResults = await this.detectSimilarReviews(recentReviews);
       const anomalyResults = await this.detectAnomalousPatterns(recentReviews);
@@ -461,3 +461,12 @@ export class ReputationDefenseService {
 }
 
 export const reputationDefenseService = new ReputationDefenseService();
+
+
+
+
+
+
+
+
+

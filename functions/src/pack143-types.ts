@@ -206,3 +206,12 @@ export const ALLOWED_PRODUCT_TYPES = [
 export const MAX_BROADCAST_SIZE = 10000;
 export const MAX_FUNNEL_STEPS = 10;
 export const MAX_LABELS_PER_CONTACT = 20;
+
+
+
+
+
+
+
+
+

@@ -532,3 +532,12 @@ export interface ReadinessCategory {
   blockingIssues: number;
   warnings: number;
 }
+
+
+
+
+
+
+
+
+

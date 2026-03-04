@@ -133,24 +133,24 @@ function generateMonthlyFinanceCSV(data: PlatformFinanceMonthly): string {
   const lines: string[] = [];
 
   // Header
-  lines.push('Metric,Tokens,Fiat PLN');
+  lines.push('Metric,Tokens,Fiat USD');
 
   // GMV
-  lines.push(`GMV Total,${data.gmvTokens},${data.gmvFiatPLN.toFixed(2)}`);
+  lines.push(`GMV Total,${data.gmvTokens},${data.gmvFiatUSD.toFixed(2)}`);
 
   // Revenue Split
-  lines.push(`Creator Share,${data.totalCreatorShareTokens},${(data.totalCreatorShareTokens * FINANCE_CONSTANTS.PAYOUT_RATE_PLN_PER_TOKEN).toFixed(2)}`);
-  lines.push(`Avalo Share (Fees),${data.totalAvaloShareTokens},${(data.totalAvaloShareTokens * FINANCE_CONSTANTS.PAYOUT_RATE_PLN_PER_TOKEN).toFixed(2)}`);
+  lines.push(`Creator Share,${data.totalCreatorShareTokens},${(data.totalCreatorShareTokens * FINANCE_CONSTANTS.TOKEN_PAYOUT_USD_PER_TOKEN).toFixed(2)}`);
+  lines.push(`Avalo Share (Fees),${data.totalAvaloShareTokens},${(data.totalAvaloShareTokens * FINANCE_CONSTANTS.TOKEN_PAYOUT_USD_PER_TOKEN).toFixed(2)}`);
 
   // Token Purchases
-  lines.push(`Token Purchases,${data.totalTokenPurchasesTokens},${data.totalTokenPurchasesFiatPLN.toFixed(2)}`);
+  lines.push(`Token Purchases,${data.totalTokenPurchasesTokens},${data.totalTokenPurchasesFiatUSD.toFixed(2)}`);
 
   // Payouts
-  lines.push(`Payouts Completed,${data.totalPayoutTokens},${data.totalPayoutFiatPLN.toFixed(2)}`);
+  lines.push(`Payouts Completed,${data.totalPayoutTokens},${data.totalPayoutFiatUSD.toFixed(2)}`);
   lines.push(`Payout Transactions,${data.totalPayoutTransactions},`);
 
   // Outstanding Liability
-  lines.push(`Outstanding Liability,${data.outstandingCreatorLiabilityTokens},${data.outstandingCreatorLiabilityFiatPLN.toFixed(2)}`);
+  lines.push(`Outstanding Liability,${data.outstandingCreatorLiabilityTokens},${data.outstandingCreatorLiabilityFiatUSD.toFixed(2)}`);
 
   // Breakdown by Feature
   lines.push('');
@@ -319,3 +319,12 @@ function generateCreatorSummaryCSV(rows: CreatorSummaryExportRow[]): string {
 
   return lines.join('\n');
 }
+
+
+
+
+
+
+
+
+

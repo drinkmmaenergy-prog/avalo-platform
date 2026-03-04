@@ -422,3 +422,12 @@ export async function updateJourneyStreaks(): Promise<number> {
   
   return updatedCount;
 }
+
+
+
+
+
+
+
+
+

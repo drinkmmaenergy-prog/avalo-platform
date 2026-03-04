@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { useAuth } from './AuthProvider';
 import { Notification } from '@/types';
 import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 
 interface NotificationContextType {
   notifications: Notification[];
@@ -26,9 +26,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    if (!user || !db) return;
+    if (!user) return;
 
-    const notificationsRef = collection(db, 'notifications');
+    const notificationsRef = collection(requireDb(), 'notifications');
     const q = query(
       notificationsRef,
       where('userId', '==', user.uid),

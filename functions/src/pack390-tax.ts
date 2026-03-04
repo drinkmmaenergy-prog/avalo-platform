@@ -370,7 +370,7 @@ export const pack390_generateCountryRevenue = functions.https.onCall(async (requ
       const data = doc.data();
       const country = data.countryCode || 'UNKNOWN';
       const amount = data.amount || 0;
-      const currency = data.currency || 'PLN';
+      const currency = data.currency || 'USD';
       
       if (!revenueByCountry[country]) {
         revenueByCountry[country] = {
@@ -542,3 +542,12 @@ export const pack390_getTaxInfo = functions.https.onCall(async (request) => {
   
   return;
 });
+
+
+
+
+
+
+
+
+

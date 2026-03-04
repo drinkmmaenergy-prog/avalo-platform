@@ -934,3 +934,12 @@ async function generateDiscoveryScores(userId: string): Promise<void> {
 
 logger.info("✅ Feed & Discovery 3.0 module loaded successfully");
 
+
+
+
+
+
+
+
+
+

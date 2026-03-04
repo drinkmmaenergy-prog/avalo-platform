@@ -72,7 +72,7 @@ export async function initializeSelfieVerification(
 export async function uploadMeetupSelfie(
   bookingId: string,
   userId: string,
-  selfieUrl: string
+  selfiUSDl: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const bookingRef = db.collection('calendarBookings').doc(bookingId);
@@ -113,11 +113,11 @@ export async function uploadMeetupSelfie(
     if (isHost) {
       updates['safety.hostSelfieSubmitted'] = true;
       updates['safety.hostSelfieSubmittedAt'] = nowISO;
-      updates['safety.hostSelfieUrl'] = selfieUrl;
+      updates['safety.hostSelfiUSDl'] = selfiUSDl;
     } else {
       updates['safety.guestSelfieSubmitted'] = true;
       updates['safety.guestSelfieSubmittedAt'] = nowISO;
-      updates['safety.guestSelfieUrl'] = selfieUrl;
+      updates['safety.guestSelfiUSDl'] = selfiUSDl;
     }
 
     await bookingRef.update(updates);
@@ -565,3 +565,12 @@ async function sendMeetupStartedNotifications(
     }),
   ]);
 }
+
+
+
+
+
+
+
+
+

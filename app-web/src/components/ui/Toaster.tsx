@@ -72,7 +72,7 @@ export function Toaster() {
               initial={{ opacity: 0, y: -20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: 100, scale: 0.95 }}
-              className="pointer-events-auto"
+              {...{ className: "pointer-events-auto" } as any}
             >
               <div
                 className={`

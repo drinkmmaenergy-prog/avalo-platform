@@ -90,21 +90,21 @@ async function calculateDailyKPIs(dateStr: string): Promise<DailyKPI> {
       churnedUsers: 0,
     },
     revenue: {
-      tokenSalesPLN: 0,
-      chatRevenuePLN: 0,
-      voiceRevenuePLN: 0,
-      videoRevenuePLN: 0,
-      calendarRevenuePLN: 0,
-      eventsRevenuePLN: 0,
-      tipsRevenuePLN: 0,
-      totalRevenuePLN: 0,
+      tokenSalesUSD: 0,
+      chatRevenueUSD: 0,
+      voiceRevenueUSD: 0,
+      videoRevenueUSD: 0,
+      calendarRevenueUSD: 0,
+      eventsRevenueUSD: 0,
+      tipsRevenueUSD: 0,
+      totalRevenueUSD: 0,
     },
     platformEarnings: {
       chat35: 0,
       calendar20: 0,
       events20: 0,
       tips10: 0,
-      totalAvaloPLN: 0,
+      totalAvaloUSD: 0,
     },
     refunds: {
       chatWordRefunds: 0,
@@ -121,7 +121,7 @@ async function calculateDailyKPIs(dateStr: string): Promise<DailyKPI> {
     ai: {
       aiChats: 0,
       aiCalls: 0,
-      aiRevenuePLN: 0,
+      aiRevenueUSD: 0,
       aiAbuseFlags: 0,
     },
     createdAt: serverTimestamp(),
@@ -165,51 +165,51 @@ async function calculateDailyKPIs(dateStr: string): Promise<DailyKPI> {
 
   transactionsSnap.forEach((doc) => {
     const tx = doc.data();
-    const amountPLN = tx.amountPLN || 0;
+    const amountUSD = tx.amountUSD || 0;
     
     payingUserIds.add(tx.userId);
 
     switch (tx.type) {
       case "token_purchase":
-        kpi.revenue.tokenSalesPLN += amountPLN;
+        kpi.revenue.tokenSalesUSD += amountUSD;
         break;
       case "chat":
-        kpi.revenue.chatRevenuePLN += amountPLN;
-        kpi.platformEarnings.chat35 += amountPLN * 0.35;
+        kpi.revenue.chatRevenueUSD += amountUSD;
+        kpi.platformEarnings.chat35 += amountUSD * 0.35;
         break;
       case "voice_call":
-        kpi.revenue.voiceRevenuePLN += amountPLN;
+        kpi.revenue.voiceRevenueUSD += amountUSD;
         break;
       case "video_call":
-        kpi.revenue.videoRevenuePLN += amountPLN;
+        kpi.revenue.videoRevenueUSD += amountUSD;
         break;
       case "calendar_booking":
-        kpi.revenue.calendarRevenuePLN += amountPLN;
-        kpi.platformEarnings.calendar20 += amountPLN * 0.20;
+        kpi.revenue.calendarRevenueUSD += amountUSD;
+        kpi.platformEarnings.calendar20 += amountUSD * 0.20;
         break;
       case "event_ticket":
-        kpi.revenue.eventsRevenuePLN += amountPLN;
-        kpi.platformEarnings.events20 += amountPLN * 0.20;
+        kpi.revenue.eventsRevenueUSD += amountUSD;
+        kpi.platformEarnings.events20 += amountUSD * 0.20;
         break;
       case "tip":
-        kpi.revenue.tipsRevenuePLN += amountPLN;
-        kpi.platformEarnings.tips10 += amountPLN * 0.10;
+        kpi.revenue.tipsRevenueUSD += amountUSD;
+        kpi.platformEarnings.tips10 += amountUSD * 0.10;
         break;
     }
   });
 
   kpi.users.payingUsers = payingUserIds.size;
 
-  kpi.revenue.totalRevenuePLN =
-    kpi.revenue.tokenSalesPLN +
-    kpi.revenue.chatRevenuePLN +
-    kpi.revenue.voiceRevenuePLN +
-    kpi.revenue.videoRevenuePLN +
-    kpi.revenue.calendarRevenuePLN +
-    kpi.revenue.eventsRevenuePLN +
-    kpi.revenue.tipsRevenuePLN;
+  kpi.revenue.totalRevenueUSD =
+    kpi.revenue.tokenSalesUSD +
+    kpi.revenue.chatRevenueUSD +
+    kpi.revenue.voiceRevenueUSD +
+    kpi.revenue.videoRevenueUSD +
+    kpi.revenue.calendarRevenueUSD +
+    kpi.revenue.eventsRevenueUSD +
+    kpi.revenue.tipsRevenueUSD;
 
-  kpi.platformEarnings.totalAvaloPLN =
+  kpi.platformEarnings.totalAvaloUSD =
     kpi.platformEarnings.chat35 +
     kpi.platformEarnings.calendar20 +
     kpi.platformEarnings.events20 +
@@ -306,7 +306,7 @@ async function calculateDailyKPIs(dateStr: string): Promise<DailyKPI> {
 
   aiRevenueSnap.forEach((doc) => {
     const tx = doc.data();
-    kpi.ai.aiRevenuePLN += tx.amountPLN || 0;
+    kpi.ai.aiRevenueUSD += tx.amountUSD || 0;
   });
 
   const aiAbuseSnap = await db
@@ -352,8 +352,8 @@ async function calculateHourlyMetrics(hour: string): Promise<HourlyMetrics> {
     newChats: 0,
     newCalls: 0,
     newCalendarBookings: 0,
-    revenuePLN: 0,
-    refundsPLN: 0,
+    revenueUSD: 0,
+    refundsUSD: 0,
     panicTriggers: 0,
     moderationFlags: 0,
     aiInteractions: 0,
@@ -408,7 +408,7 @@ async function calculateHourlyMetrics(hour: string): Promise<HourlyMetrics> {
     .get();
   
   revenueSnap.forEach((doc) => {
-    metrics.revenuePLN += doc.data().amountPLN || 0;
+    metrics.revenueUSD += doc.data().amountUSD || 0;
   });
 
   // Refunds
@@ -420,7 +420,7 @@ async function calculateHourlyMetrics(hour: string): Promise<HourlyMetrics> {
     .get();
   
   refundSnap.forEach((doc) => {
-    metrics.refundsPLN += doc.data().amountPLN || 0;
+    metrics.refundsUSD += doc.data().amountUSD || 0;
   });
 
   // Safety
@@ -497,3 +497,12 @@ export const triggerKPIAggregation = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+

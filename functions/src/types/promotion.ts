@@ -198,3 +198,12 @@ export interface PromotionItemResponse {
 export interface FetchPromotionsResponse {
   items: PromotionItemResponse[];
 }
+
+
+
+
+
+
+
+
+

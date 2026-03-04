@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Moderator Presence Tracking System
  * Tracks online moderators and their current activities
@@ -5,7 +7,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 
 export interface ModeratorPresence {
   moderatorId: string;
@@ -26,7 +28,7 @@ export async function initializePresence(
   email?: string
 ): Promise<void> {
   try {
-    const presenceRef = doc(db, 'moderatorPresence', moderatorId);
+    const presenceRef = doc(requireDb(), 'moderatorPresence', moderatorId);
 
     // Set presence
     await setDoc(presenceRef, {
@@ -55,7 +57,7 @@ export async function updatePresence(
   timeOnCase?: number
 ): Promise<void> {
   try {
-    const presenceRef = doc(db, 'moderatorPresence', moderatorId);
+    const presenceRef = doc(requireDb(), 'moderatorPresence', moderatorId);
 
     await setDoc(
       presenceRef,
@@ -76,7 +78,7 @@ export async function updatePresence(
  */
 export async function removePresence(moderatorId: string): Promise<void> {
   try {
-    const presenceRef = doc(db, 'moderatorPresence', moderatorId);
+    const presenceRef = doc(requireDb(), 'moderatorPresence', moderatorId);
     await deleteDoc(presenceRef);
   } catch (error) {
     console.error('Error removing presence:', error);

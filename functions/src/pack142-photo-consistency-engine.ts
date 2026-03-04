@@ -489,3 +489,12 @@ export default {
   runPhotoConsistencyCheck,
   runRecurrentAuthenticityCheck,
 };
+
+
+
+
+
+
+
+
+

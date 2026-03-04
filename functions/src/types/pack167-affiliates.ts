@@ -221,7 +221,7 @@ export interface BlockedAffiliateContent {
   
   // Content that was blocked
   blockedText: string;
-  blockedImageUrl?: string;
+  blockedimageUrl?: string;
   
   // Moderation details
   reason: BlockReason;
@@ -316,3 +316,12 @@ export interface RevenueSplitValidation {
   referralPercentage: number;
   platformFee: number;
 }
+
+
+
+
+
+
+
+
+

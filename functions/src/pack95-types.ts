@@ -162,3 +162,12 @@ export interface DeviceContext {
   userAgent?: string;
   ipCountry?: string;
 }
+
+
+
+
+
+
+
+
+

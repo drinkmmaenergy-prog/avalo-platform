@@ -244,7 +244,7 @@ export async function detectPiracyFromWatermark(
     creatorEarningsAffected: false,
     leakerPayoutFrozen: false,
     
-    evidenceUrls: piratedUrl ? [piratedUrl] : [],
+    evidencUSDls: piratedUrl ? [piratedUrl] : [],
     detectedAt: serverTimestamp() as any,
   };
   
@@ -299,7 +299,7 @@ export async function reportPiracy(
     creatorEarningsAffected: false,
     leakerPayoutFrozen: false,
     
-    evidenceUrls: [piratedUrl],
+    evidencUSDls: [piratedUrl],
     detectedAt: serverTimestamp() as any,
   };
   
@@ -574,3 +574,12 @@ export async function getSuspiciousAccessRecords(): Promise<ContentAccessRecord[
   
   return snapshot.docs.map(doc => doc.data() as ContentAccessRecord);
 }
+
+
+
+
+
+
+
+
+

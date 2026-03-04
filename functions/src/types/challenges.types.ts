@@ -313,7 +313,7 @@ export interface ChallengeBadge {
   tasksCompleted: number;
   
   // Display
-  badgeImageUrl?: string;
+  badgeimageUrl?: string;
   displayOnProfile: boolean; // Optional, not profile page visible
   
   earnedAt: Timestamp;
@@ -568,3 +568,12 @@ export interface ChallengeResponse<T = any> {
   error?: string;
   message?: string;
 }
+
+
+
+
+
+
+
+
+

@@ -854,3 +854,12 @@ export const calculateAcceleratorAnalytics = onSchedule("every 1 hours", async (
     
     console.log('Calculated accelerator analytics');
   });
+
+
+
+
+
+
+
+
+

@@ -27,3 +27,12 @@ export const deliverNotifications = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+

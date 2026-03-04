@@ -739,12 +739,12 @@ export const getCreatorCampaigns = onCall(
         });
         
         // Generate smart links
-        const baseUrl = 'https://avalo.app/c/';
+        const baseURL = 'https://avalo.app/c/';
         const smartLinks = {
-          web: `${baseUrl}${campaign.slug}?t=${talentId}`,
-          tiktok: `${baseUrl}${campaign.slug}?t=${talentId}&utm_source=tiktok`,
-          instagram: `${baseUrl}${campaign.slug}?t=${talentId}&utm_source=instagram`,
-          youtube: `${baseUrl}${campaign.slug}?t=${talentId}&utm_source=youtube`,
+          web: `${baseURL}${campaign.slug}?t=${talentId}`,
+          tiktok: `${baseURL}${campaign.slug}?t=${talentId}&utm_source=tiktok`,
+          instagram: `${baseURL}${campaign.slug}?t=${talentId}&utm_source=instagram`,
+          youtube: `${baseURL}${campaign.slug}?t=${talentId}&utm_source=youtube`,
         };
         
         campaigns.push({
@@ -775,3 +775,12 @@ export const getCreatorCampaigns = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+

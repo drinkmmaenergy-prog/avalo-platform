@@ -317,7 +317,7 @@ export const sendPaidMediaMessage = functions.https.onCall(async (request) => {
         mediaType,
         payToUnlock: true,
         unlockPriceTokens: priceTokens,
-        mediaRemoteUrl: thumbnailUrl,
+        mediaRemotUSDl: thumbnailUrl,
         paidMediaId: mediaRef.id,
         status: 'synced',
         createdAt: serverTimestamp(),
@@ -639,3 +639,12 @@ export default {
   unlockPaidMedia,
   cleanupDeletedMedia,
 };
+
+
+
+
+
+
+
+
+

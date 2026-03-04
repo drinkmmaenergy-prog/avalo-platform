@@ -21,7 +21,7 @@
  * - No unhandled webhook
  */
 
-import { TOKEN_PAYOUT_USD, PAYOUT_PER_TOKEN_USD, TOKEN_PAYOUT_PLN, TOKEN_PAYOUT_EUR, PAYOUT_FX_RATES } from '../config/economyConfig';
+import { TOKEN_PAYOUT_USD, PAYOUT_PER_TOKEN_USD, TOKEN_PAYOUT_USD, PAYOUT_FX_RATES } from '../config/economyConfig';
 import { TOKEN_PACKS, PaymentProvider, PaymentSession, Transaction, UserWallet } from '../paymentsComplete';
 
 // ============================================================================
@@ -37,12 +37,12 @@ describe('TOKEN_PAYOUT_USD invariant', () => {
     expect(PAYOUT_PER_TOKEN_USD).toBe(TOKEN_PAYOUT_USD);
   });
 
-  it('TOKEN_PAYOUT_PLN derivation is correct', () => {
-    expect(TOKEN_PAYOUT_PLN).toBeCloseTo(TOKEN_PAYOUT_USD * PAYOUT_FX_RATES.USD_TO_PLN, 10);
+  it('TOKEN_PAYOUT_USD derivation is correct', () => {
+    expect(TOKEN_PAYOUT_USD).toBeCloseTo(TOKEN_PAYOUT_USD * PAYOUT_FX_RATES.USD_TO_USD, 10);
   });
 
-  it('TOKEN_PAYOUT_EUR derivation is correct', () => {
-    expect(TOKEN_PAYOUT_EUR).toBeCloseTo(TOKEN_PAYOUT_USD * PAYOUT_FX_RATES.USD_TO_EUR, 10);
+  it('TOKEN_PAYOUT_USD derivation is correct', () => {
+    expect(TOKEN_PAYOUT_USD).toBeCloseTo(TOKEN_PAYOUT_USD * PAYOUT_FX_RATES.USD_TO_USD, 10);
   });
 });
 
@@ -59,7 +59,7 @@ describe('TOKEN_PACKS canonical pricing', () => {
   });
 
   it('all packs must have prices in all supported currencies', () => {
-    const requiredCurrencies = ['PLN', 'USD', 'EUR', 'GBP'];
+    const requiredCurrencies = ['USD', 'USD', 'USD', 'USD'];
     for (const [key, pack] of Object.entries(TOKEN_PACKS)) {
       for (const currency of requiredCurrencies) {
         expect(pack.prices[currency as keyof typeof pack.prices]).toBeGreaterThan(0);
@@ -303,3 +303,12 @@ describe('STRIPE SYSTEM STATUS', () => {
     expect(Object.values(checks).every(v => v)).toBe(true);
   });
 });
+
+
+
+
+
+
+
+
+

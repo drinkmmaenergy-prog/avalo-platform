@@ -8,7 +8,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 
 interface Reel {
   id: string;
@@ -21,7 +21,7 @@ interface Reel {
 }
 
 export default function ReelViewerPage() {
-  const params = useParams();
+  const params = useParams()!;
   const router = useRouter();
   const reelId = params.id as string;
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -40,13 +40,13 @@ export default function ReelViewerPage() {
   const loadReel = async () => {
     try {
       setLoading(true);
-      const reelDoc = await getDoc(doc(db, 'feedReels', reelId));
+      const reelDoc = await getDoc(doc(requireDb(), 'feedReels', reelId));
       
       if (reelDoc.exists()) {
         setReel({ id: reelDoc.id, ...reelDoc.data() } as Reel);
         
         // Load aggregate data
-        const aggDoc = await getDoc(doc(db, 'feedAggregates', reelId));
+        const aggDoc = await getDoc(doc(requireDb(), 'feedAggregates', reelId));
         if (aggDoc.exists()) {
           const aggData = aggDoc.data();
           setLikeCount(aggData?.likes || 0);

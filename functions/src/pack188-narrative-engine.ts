@@ -764,7 +764,7 @@ export const activateSeasonalEvents = onSchedule(
   {
     schedule: '0 0 * * *',
     region: 'europe-west1',
-    timeZone: 'Europe/Warsaw'
+    timeZone: 'USDope/Warsaw'
   },
   async (event) => {
     try {
@@ -851,3 +851,12 @@ export const reportStoryContent = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+

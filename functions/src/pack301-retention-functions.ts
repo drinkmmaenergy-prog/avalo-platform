@@ -660,3 +660,12 @@ export const pack301_rebuildRetentionProfile = functions.https.onCall(async (req
 );
 
 console.log('✅ PACK 301A — Growth & Retention Automation Engine initialized');
+
+
+
+
+
+
+
+
+

@@ -86,7 +86,7 @@ export interface IncidentEvidence {
   locked: boolean;
   lockedAt?: Timestamp;
   lockedBy?: string;
-  storageUrl: string;
+  storagUSDl: string;
   hash: string;
   metadata: Record<string, any>;
 }
@@ -245,7 +245,7 @@ export interface RegulatorSnapshot {
   timestamp: Timestamp;
   snapshotType: 'full' | 'incremental' | 'targeted';
   scope: string[];
-  storageUrl: string;
+  storagUSDl: string;
   hash: string;
   size: number;
   encrypted: boolean;
@@ -518,3 +518,12 @@ export interface RegulatorNotificationEvent {
   incidentIds: string[];
   urgency: 'routine' | 'urgent' | 'critical';
 }
+
+
+
+
+
+
+
+
+

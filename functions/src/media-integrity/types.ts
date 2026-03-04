@@ -38,7 +38,7 @@ export enum DetectionMethod {
   COMPRESSION_SIGNATURE_MISMATCH = 'compression_signature_mismatch',
   METADATA_INCONSISTENCY = 'metadata_inconsistency',
   AI_ARTIFACT_DETECTION = 'ai_artifact_detection',
-  NEURAL_TEXTURE_ANALYSIS = 'neural_texture_analysis'
+  NUSDAL_TEXTURE_ANALYSIS = 'nUSDal_texture_analysis'
 }
 
 export interface MediaIntegrityCase {
@@ -190,3 +190,12 @@ export interface MediaIntegrityStatistics {
   averageConfidence: number;
   victimProtections: number;
 }
+
+
+
+
+
+
+
+
+

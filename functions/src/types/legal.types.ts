@@ -195,3 +195,12 @@ export interface LegalValidationError {
   }[];
   action: ProtectedAction;
 }
+
+
+
+
+
+
+
+
+

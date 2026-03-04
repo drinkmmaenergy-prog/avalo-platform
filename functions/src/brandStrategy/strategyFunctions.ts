@@ -601,3 +601,12 @@ function generateCareerOutcomes(
 
   return baseOutcomes;
 }
+
+
+
+
+
+
+
+
+

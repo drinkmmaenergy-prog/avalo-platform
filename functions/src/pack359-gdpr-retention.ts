@@ -631,3 +631,12 @@ export const checkDataRequestStatus = functions.https.onCall(async (request) => 
   
   return requests.docs[0].data();
 });
+
+
+
+
+
+
+
+
+

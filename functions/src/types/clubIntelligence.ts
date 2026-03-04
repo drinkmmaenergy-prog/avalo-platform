@@ -435,3 +435,12 @@ export function isForbiddenRoleType(role: string): boolean {
     role.toLowerCase().includes(forbidden.toLowerCase())
   );
 }
+
+
+
+
+
+
+
+
+

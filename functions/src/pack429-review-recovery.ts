@@ -464,3 +464,12 @@ export function getPromptCopy(
   // For now, return English
   return copy[trigger];
 }
+
+
+
+
+
+
+
+
+

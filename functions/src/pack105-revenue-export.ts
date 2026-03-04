@@ -72,8 +72,8 @@ export const getCreatorRevenueExport = onCall(
       });
 
       if (format === 'pdf' || format === 'csv') {
-        const fileUrl = await generateExportFile(revenueExport, format);
-        revenueExport.fileUrl = fileUrl;
+        const filUSDl = await generateExportFile(revenueExport, format);
+        revenueExport.filUSDl = filUSDl;
       }
 
       logger.info('[RevenueExport] Generated export', {
@@ -149,7 +149,7 @@ async function generateCreatorRevenueExport(
   });
 
   const settlementRate = 0.2;
-  const totalEarningsPLN = totalEarningsTokens * settlementRate;
+  const totalEarningsUSD = totalEarningsTokens * settlementRate;
 
   const payoutsSnapshot = await db
     .collection('payoutRequests')
@@ -163,20 +163,20 @@ async function generateCreatorRevenueExport(
   const payouts: Array<{
     payoutId: string;
     date: string;
-    amountPLN: number;
+    amountUSD: number;
     method: string;
     status: string;
   }> = [];
 
   payoutsSnapshot.forEach(doc => {
     const payout = doc.data();
-    const amountPLN = payout.amountPLN || 0;
-    payoutsTotal += amountPLN;
+    const amountUSD = payout.amountUSD || 0;
+    payoutsTotal += amountUSD;
 
     payouts.push({
       payoutId: doc.id,
       date: payout.createdAt.toDate().toISOString().split('T')[0],
-      amountPLN,
+      amountUSD,
       method: payout.method || 'unknown',
       status: payout.status,
     });
@@ -186,7 +186,7 @@ async function generateCreatorRevenueExport(
   const userData = userDoc.data();
   const userCountry = userData?.location?.country || 'UNKNOWN';
 
-  const vatInfo = determineVATApplicability(userCountry, totalEarningsPLN);
+  const vatInfo = determineVATApplicability(userCountry, totalEarningsUSD);
 
   const revenueExport: CreatorRevenueExport = {
     userId,
@@ -197,7 +197,7 @@ async function generateCreatorRevenueExport(
     },
     summary: {
       totalEarningsTokens,
-      totalEarningsPLN,
+      totalEarningsUSD,
       paidInteractions: earningsSnapshot.size,
       payoutsTotal,
       payoutsCount: payoutsSnapshot.size,
@@ -235,7 +235,7 @@ function determineVATApplicability(
     return {
       applicable: earnings >= 200000,
       jurisdiction: 'Poland',
-      notes: 'VAT registration required if annual revenue exceeds 200,000 PLN. This is informational only - consult a tax advisor.',
+      notes: 'VAT registration required if annual revenue exceeds 200,000 USD. This is informational only - consult a tax advisor.',
     };
   }
 
@@ -312,9 +312,9 @@ function generateCSVContent(revenueExport: CreatorRevenueExport): string {
     '',
     '## Summary',
     `Total Earnings (Tokens),${revenueExport.summary.totalEarningsTokens}`,
-    `Total Earnings (PLN),${revenueExport.summary.totalEarningsPLN.toFixed(2)}`,
+    `Total Earnings (USD),${revenueExport.summary.totalEarningsUSD.toFixed(2)}`,
     `Paid Interactions,${revenueExport.summary.paidInteractions}`,
-    `Payouts Total (PLN),${revenueExport.summary.payoutsTotal.toFixed(2)}`,
+    `Payouts Total (USD),${revenueExport.summary.payoutsTotal.toFixed(2)}`,
     `Payouts Count,${revenueExport.summary.payoutsCount}`,
     '',
     '## Breakdown by Source',
@@ -326,12 +326,12 @@ function generateCSVContent(revenueExport: CreatorRevenueExport): string {
     `Other,${revenueExport.breakdown.other}`,
     '',
     '## Payouts',
-    'Date,Payout ID,Amount (PLN),Method,Status',
+    'Date,Payout ID,Amount (USD),Method,Status',
   ];
 
   revenueExport.payouts.forEach(payout => {
     lines.push(
-      `${payout.date},${payout.payoutId},${payout.amountPLN.toFixed(2)},${payout.method},${payout.status}`
+      `${payout.date},${payout.payoutId},${payout.amountUSD.toFixed(2)},${payout.method},${payout.status}`
     );
   });
 
@@ -358,9 +358,9 @@ Generated: ${new Date().toISOString()}
 
 SUMMARY
 -------
-Total Earnings: ${revenueExport.summary.totalEarningsTokens} tokens (${revenueExport.summary.totalEarningsPLN.toFixed(2)} PLN)
+Total Earnings: ${revenueExport.summary.totalEarningsTokens} tokens (${revenueExport.summary.totalEarningsUSD.toFixed(2)} USD)
 Paid Interactions: ${revenueExport.summary.paidInteractions}
-Total Payouts: ${revenueExport.summary.payoutsTotal.toFixed(2)} PLN (${revenueExport.summary.payoutsCount} payouts)
+Total Payouts: ${revenueExport.summary.payoutsTotal.toFixed(2)} USD (${revenueExport.summary.payoutsCount} payouts)
 
 BREAKDOWN BY SOURCE
 -------------------
@@ -414,7 +414,7 @@ export async function generateVATInvoice(params: {
       vatRate: params.vatRate,
       vatAmount: params.vatAmount,
       gross: params.amount + params.vatAmount,
-      currency: 'PLN',
+      currency: 'USD',
     },
     seller: {
       name: 'Avalo Sp. z o.o.',
@@ -465,3 +465,12 @@ export async function generateVATInvoice(params: {
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+

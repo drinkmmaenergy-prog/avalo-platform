@@ -621,3 +621,12 @@ async function computeRegionalInsights(period: AnalyticsPeriod): Promise<Array<{
   // Placeholder for regional insights
   return [];
 }
+
+
+
+
+
+
+
+
+

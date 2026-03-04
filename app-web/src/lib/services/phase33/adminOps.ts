@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * PHASE 3.3 — Admin / Ops Service (READ-ONLY)
  * 
@@ -13,7 +15,7 @@
  * - systemHealth (monitoring endpoints)
  */
 
-import { db, functions } from '../../firebase';
+import { requireDb, requireFunctions } from '../../firebase';
 import { httpsCallable } from 'firebase/functions';
 import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
 import type {
@@ -32,10 +34,10 @@ import type {
  * Reads from Firestore — NO modifications.
  */
 export async function getFeatureFlags(): Promise<FeatureFlagSummary[]> {
-  if (!db) throw new Error('Firestore not initialized');
+  if (false /* requireDb handles null */) throw new Error('Firestore not initialized');
   
   try {
-    const flagsRef = collection(db, 'featureFlags');
+    const flagsRef = collection(requireDb(), 'featureFlags');
     const snapshot = await getDocs(flagsRef);
     
     return snapshot.docs.map((doc) => {
@@ -59,10 +61,10 @@ export async function getFeatureFlags(): Promise<FeatureFlagSummary[]> {
  * Get specific feature flag status.
  */
 export async function getFeatureFlag(flagName: string): Promise<FeatureFlagSummary | null> {
-  if (!db) throw new Error('Firestore not initialized');
+  if (false /* requireDb handles null */) throw new Error('Firestore not initialized');
   
   try {
-    const flagRef = doc(db, 'featureFlags', flagName);
+    const flagRef = doc(requireDb(), 'featureFlags', flagName);
     const flagSnap = await getDoc(flagRef);
     
     if (!flagSnap.exists()) {
@@ -98,11 +100,11 @@ export async function getTrustSignals(options?: {
   limitCount?: number;
   unresolvedOnly?: boolean;
 }): Promise<TrustSignal[]> {
-  if (!db) throw new Error('Firestore not initialized');
+  if (false /* requireDb handles null */) throw new Error('Firestore not initialized');
   
   try {
     let q = query(
-      collection(db, 'trust_signals'),
+      collection(requireDb(), 'trust_signals'),
       orderBy('createdAt', 'desc'),
       limit(options?.limitCount || 100)
     );
@@ -170,10 +172,9 @@ export async function getTrustSignalCounts(): Promise<{
  * Reads from backend monitoring endpoint.
  */
 export async function getSystemHealth(): Promise<SystemHealthMetric[]> {
-  if (!functions) throw new Error('Functions not initialized');
-  
+    
   try {
-    const getHealth = httpsCallable<void, { services: any[] }>(functions, 'getSystemHealth');
+    const getHealth = httpsCallable<void, { services: any[] }>(requireFunctions(), 'getSystemHealth');
     const result = await getHealth();
     
     if (!result.data || !result.data.services) {
@@ -231,3 +232,4 @@ export async function getAdminOpsView(): Promise<AdminOpsView> {
     snapshotTime: new Date(),
   };
 }
+

@@ -310,3 +310,12 @@ export const searchBrands = functions.https.onCall(async (request) => {
     };
   }
 );
+
+
+
+
+
+
+
+
+

@@ -89,3 +89,4 @@ export function ComplianceGate({ complianceStatus, requiredFor, children }: Comp
   // All checks passed - render children
   return <>{children}</>;
 }
+

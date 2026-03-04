@@ -30,7 +30,7 @@ import {
   calculateWithdrawableTokens,
   createAuditLog,
   getMonthlyStats,
-  PAYOUT_RATE_PLN,
+  TOKEN_PAYOUT_USD,
 } from './pack289-withdrawals';
 import { startPayout } from './pack289-payout-providers';
 import { Timestamp, auth, onCall, timestamp } from './runtime';
@@ -92,10 +92,10 @@ async function burnTokensForWithdrawal(
         afterBalance: newBalance,
         metadata: {
           withdrawalId,
-          payoutAmount: tokens * PAYOUT_RATE_PLN,
-          payoutCurrency: 'PLN',
+          payoutAmount: tokens * TOKEN_PAYOUT_USD,
+          payoutCurrency: 'USD',
           provider: 'MANUAL',
-          ratePerTokenPLN: PAYOUT_RATE_PLN,
+          ratePerTokenUSD: TOKEN_PAYOUT_USD,
         },
         timestamp: admin.firestore.Timestamp.now(),
       };
@@ -119,7 +119,7 @@ async function burnTokensForWithdrawal(
 async function updateMonthlyStats(
   userId: string,
   tokens: number,
-  pln: number
+  USD: number
 ): Promise<void> {
   const now = new Date();
   const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -133,7 +133,7 @@ async function updateMonthlyStats(
       const stats = statsDoc.data() as MonthlyWithdrawalStats;
       transaction.update(statsRef, {
         totalTokensWithdrawn: stats.totalTokensWithdrawn + tokens,
-        totalPLNWithdrawn: stats.totalPLNWithdrawn + pln,
+        totalUSDWithdrawn: stats.totalUSDWithdrawn + USD,
         withdrawalCount: stats.withdrawalCount + 1,
         lastWithdrawalAt: admin.firestore.Timestamp.now(),
         updatedAt: admin.firestore.Timestamp.now(),
@@ -143,7 +143,7 @@ async function updateMonthlyStats(
         userId,
         month,
         totalTokensWithdrawn: tokens,
-        totalPLNWithdrawn: pln,
+        totalUSDWithdrawn: USD,
         withdrawalCount: 1,
         lastWithdrawalAt: admin.firestore.Timestamp.now(),
         createdAt: admin.firestore.Timestamp.now(),
@@ -225,12 +225,12 @@ export const withdrawals_admin_approve = functions.https.onCall(async (request) 
       }
 
       // Calculate payout amount
-      const payoutAmountPLN = finalApprovedTokens * PAYOUT_RATE_PLN;
+      const payoutAmountUSD = finalApprovedTokens * TOKEN_PAYOUT_USD;
 
       // Update withdrawal to APPROVED
       await withdrawalRef.update({
         approvedTokens: finalApprovedTokens,
-        payoutAmount: payoutAmountPLN * withdrawal.fxRateToPayoutCurrency,
+        payoutAmount: payoutAmountUSD * withdrawal.fxRateToPayoutCurrency,
         status: 'APPROVED',
         updatedAt: admin.firestore.Timestamp.now(),
         adminNotes,
@@ -268,7 +268,7 @@ export const withdrawals_admin_approve = functions.https.onCall(async (request) 
       }
 
       // Update monthly stats
-      await updateMonthlyStats(withdrawal.userId, finalApprovedTokens, payoutAmountPLN);
+      await updateMonthlyStats(withdrawal.userId, finalApprovedTokens, payoutAmountUSD);
 
       // Update to PROCESSING
       await withdrawalRef.update({
@@ -576,3 +576,12 @@ export const withdrawals_markAsPaid = functions.https.onCall(async (request) => 
 
 // Export for testing and use in other modules
 export { burnTokensForWithdrawal, updateMonthlyStats };
+
+
+
+
+
+
+
+
+

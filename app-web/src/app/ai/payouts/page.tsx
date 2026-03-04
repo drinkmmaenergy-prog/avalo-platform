@@ -1,10 +1,10 @@
+"use client";
+
 /**
  * PACK 279E — AI Creator Payout Screen (Web)
  * Request payouts for AI companion earnings
  * Minimum payout: 1000 tokens = 200 PLN
  */
-
-'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -20,7 +20,7 @@ import {
 } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { getAuth } from 'firebase/auth';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 
 const MIN_PAYOUT_TOKENS = 1000;
 const TOKEN_TO_PLN = 0.20;
@@ -65,7 +65,7 @@ export default function AIPayoutsWebPage() {
       setLoading(true);
 
       // Load wallet balance
-      const walletRef = doc(db, 'wallets', userId);
+      const walletRef = doc(requireDb(), 'wallets', userId);
       const walletSnap = await getDoc(walletRef);
 
       if (walletSnap.exists()) {
@@ -75,7 +75,7 @@ export default function AIPayoutsWebPage() {
       }
 
       // Load payout history
-      const payoutsRef = collection(db, 'payoutRequests');
+      const payoutsRef = collection(requireDb(), 'payoutRequests');
       const payoutsQuery = query(
         payoutsRef,
         where('userId', '==', userId),
@@ -371,3 +371,4 @@ export default function AIPayoutsWebPage() {
     </div>
   );
 }
+

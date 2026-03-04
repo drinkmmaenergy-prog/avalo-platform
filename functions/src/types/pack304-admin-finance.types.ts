@@ -37,7 +37,7 @@ export interface PlatformFinanceMonthly {
 
   // Gross Merchandise Value (GMV)
   gmvTokens: number;           // Total tokens spent on monetized features
-  gmvFiatPLN: number;           // GMV in PLN (gmvTokens * 0.20)
+  gmvFiatUSD: number;           // GMV in USD (gmvTokens * 0.20)
 
   // Revenue Split
   totalCreatorShareTokens: number;  // Total tokens going to creators
@@ -45,16 +45,16 @@ export interface PlatformFinanceMonthly {
 
   // Token Purchases (Revenue In)
   totalTokenPurchasesTokens: number;    // Sum of TOKEN_PURCHASE transactions
-  totalTokenPurchasesFiatPLN: number;   // True revenue from sales
+  totalTokenPurchasesFiatUSD: number;   // True revenue from sales
 
   // Payouts (Cash Outflows)
   totalPayoutTokens: number;        // Tokens paid out to creators
-  totalPayoutFiatPLN: number;       // Fiat equivalent paid out
+  totalPayoutFiatUSD: number;       // Fiat equivalent paid out
   totalPayoutTransactions: number;  // Number of payout transactions
 
   // Outstanding Liability
   outstandingCreatorLiabilityTokens: number;  // Tokens earned but not paid out
-  outstandingCreatorLiabilityFiatPLN: number; // Fiat equivalent
+  outstandingCreatorLiabilityFiatUSD: number; // Fiat equivalent
 
   // Breakdown by Feature
   feesFromChatTokens: number;
@@ -252,11 +252,11 @@ export interface AnomalyDetectionResult {
 // CONSTANTS
 // ============================================================================
 
-import { TOKEN_PAYOUT_PLN } from '../config/economyConfig';
+import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 
 export const FINANCE_CONSTANTS = {
   // Tokenomics — derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
-  PAYOUT_RATE_PLN_PER_TOKEN: TOKEN_PAYOUT_PLN,
+  TOKEN_PAYOUT_USD_PER_TOKEN: TOKEN_PAYOUT_USD,
   
   // Revenue Splits (read-only, from existing packs)
   SPLIT_CHAT_CREATOR: 0.65,
@@ -327,3 +327,12 @@ export interface MonthlyFinanceExportData {
     creatorShareTokens: number;
   }[];
 }
+
+
+
+
+
+
+
+
+

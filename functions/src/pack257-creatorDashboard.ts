@@ -424,7 +424,7 @@ async function calculateTopViewers(
     const paidIntentScore = Math.min(100, Math.floor((viewCount / 10) * 100));
 
     let displayName: string | undefined;
-    let profilePictureUrl: string | undefined;
+    let profilePicturUSDl: string | undefined;
 
     // Only fetch user details if paid interaction exists (privacy)
     if (hasPaidInteraction) {
@@ -432,7 +432,7 @@ async function calculateTopViewers(
       if (viewerDoc.exists) {
         const viewerData = viewerDoc.data()!;
         displayName = viewerData.displayName;
-        profilePictureUrl = viewerData.profilePictureUrl;
+        profilePicturUSDl = viewerData.profilePicturUSDl;
       }
     }
 
@@ -442,7 +442,7 @@ async function calculateTopViewers(
       lastViewedAt: viewerLastSeen.get(viewerId) || new Date(),
       hasPaidInteraction,
       displayName,
-      profilePictureUrl,
+      profilePicturUSDl,
       paidIntentScore,
     });
   }
@@ -1009,3 +1009,12 @@ export const actOnSuggestion = functions.https.onCall(async (request) => {
 
   return { success: true };
 });
+
+
+
+
+
+
+
+
+

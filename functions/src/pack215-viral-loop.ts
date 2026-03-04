@@ -698,3 +698,12 @@ export const aggregateViralMetrics = onSchedule({ schedule: "0 2 * * *", timeZon
 
     console.log(`Viral metrics aggregated for ${yesterday.toISOString().split('T')[0]}`);
   });
+
+
+
+
+
+
+
+
+

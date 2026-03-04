@@ -1001,3 +1001,12 @@ export const cancelChallenge = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+

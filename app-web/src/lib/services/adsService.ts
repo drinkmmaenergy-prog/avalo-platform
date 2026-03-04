@@ -1,10 +1,12 @@
+"use client";
+
 /**
  * Ads Integration Service
  * Non-intrusive ad placement with delayed activation via remote config
  * NSFW auto-disable
  */
 
-import { db, functions } from '../firebase';
+import { requireDb, requireFunctions } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 
@@ -46,7 +48,7 @@ export async function getAdConfig(): Promise<{
   minTimeBetweenAds: number;
 }> {
   try {
-    const configRef = doc(db, 'remote_config', 'ads');
+    const configRef = doc(requireDb(), 'remote_config', 'ads');
     const configSnap = await getDoc(configRef);
 
     if (!configSnap.exists()) {
@@ -104,8 +106,7 @@ export async function fetchAd(params: {
     }
 
     // Fetch ad from backend
-    const getAd = httpsCallable<typeof params, { ad: AdContent | null }>(
-      functions,
+    const getAd = httpsCallable<typeof params, { ad: AdContent | null }>(requireFunctions(),
       'getAdForPlacement'
     );
     
@@ -134,8 +135,7 @@ export async function trackAdImpression(params: {
   placement: string;
 }): Promise<void> {
   try {
-    const track = httpsCallable<typeof params, void>(
-      functions,
+    const track = httpsCallable<typeof params, void>(requireFunctions(),
       'trackAdImpression'
     );
     await track(params);
@@ -153,8 +153,7 @@ export async function trackAdClick(params: {
   placement: string;
 }): Promise<void> {
   try {
-    const track = httpsCallable<typeof params, void>(
-      functions,
+    const track = httpsCallable<typeof params, void>(requireFunctions(),
       'trackAdClick'
     );
     await track(params);
@@ -210,8 +209,7 @@ export function getAdDimensions(placement: string): {
  */
 export async function hasAdFreeSubscription(userId: string): Promise<boolean> {
   try {
-    const check = httpsCallable<{ userId: string }, { adFree: boolean }>(
-      functions,
+    const check = httpsCallable<{ userId: string }, { adFree: boolean }>(requireFunctions(),
       'checkAdFreeStatus'
     );
     
@@ -231,7 +229,7 @@ export async function getAdPreferences(userId: string): Promise<{
   adFrequency: 'normal' | 'reduced' | 'none';
 }> {
   try {
-    const prefsRef = doc(db, 'users', userId, 'settings', 'ads');
+    const prefsRef = doc(requireDb(), 'users', userId, 'settings', 'ads');
     const prefsSnap = await getDoc(prefsRef);
 
     if (!prefsSnap.exists()) {

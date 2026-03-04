@@ -691,3 +691,12 @@ export const moderateSponsorship = functions.https.onCall(async (request) => {
 
   return { success: true };
 });
+
+
+
+
+
+
+
+
+

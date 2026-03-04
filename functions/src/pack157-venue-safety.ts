@@ -37,7 +37,7 @@ export const createVenueSafetyCase = onCall<{
   violationType: ViolationType;
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   description: string;
-  evidenceUrls?: string[];
+  evidencUSDls?: string[];
   witnessStatements?: string[];
 }>({ region: 'us-central1' }, async (request) => {
   if (!request.auth) {
@@ -72,7 +72,7 @@ export const createVenueSafetyCase = onCall<{
     reportedBy: userId,
     reportedByType: 'USER',
     
-    evidenceUrls: data.evidenceUrls || [],
+    evidencUSDls: data.evidencUSDls || [],
     witnessStatements: data.witnessStatements || [],
     
     status: 'OPEN',
@@ -399,7 +399,7 @@ export const detectFilmingViolation = onDocumentCreated(
         reportedBy: undefined,
         reportedByType: 'SYSTEM',
         
-        evidenceUrls: [],
+        evidencUSDls: [],
         witnessStatements: [],
         
         status: 'OPEN',
@@ -519,3 +519,12 @@ export const getVenueSafetyStats = onCall<{
     stats,
   };
 });
+
+
+
+
+
+
+
+
+

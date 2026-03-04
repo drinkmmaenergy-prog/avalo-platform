@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * WebRTC Configuration Layer
  * PACK 124.4 - Secure TURN/STUN configuration
@@ -10,7 +12,7 @@
  */
 
 import { httpsCallable } from 'firebase/functions';
-import { functions } from './firebase';
+import { requireFunctions } from './firebase';
 
 // ============================================================================
 // TYPES
@@ -130,12 +132,7 @@ export async function getWebRTCConfig(): Promise<WebRTCConfig> {
 
   // Fetch from backend
   try {
-    if (!functions) {
-      throw new Error('Firebase Functions not initialized');
-    }
-
-    const getConfig = httpsCallable<void, WebRTCConfig>(
-      functions,
+    const getConfig = httpsCallable<void, WebRTCConfig>(requireFunctions(),
       'getWebRTCConfig'
     );
 

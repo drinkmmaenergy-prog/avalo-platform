@@ -364,3 +364,12 @@ export async function scheduleKPICalculation(): Promise<void> {
   logger.info('Scheduled referral KPI calculation triggered');
   await calculateReferralKPIs();
 }
+
+
+
+
+
+
+
+
+

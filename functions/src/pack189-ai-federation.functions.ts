@@ -42,7 +42,7 @@ export const generateAiSeed = onCall<SeedGenerationRequest>(async (request) => {
       conscientiousness: personality.conscientiousness || 0.5,
       extraversion: personality.extraversion || 0.5,
       agreeableness: personality.agreeableness || 0.5,
-      neuroticism: personality.neuroticism || 0.5,
+      nUSDoticism: personality.nUSDoticism || 0.5,
       customTraits: {},
       archetype,
     },
@@ -525,3 +525,12 @@ export const onMarketplaceListingUpdated = onDocumentUpdated('ai_seed_marketplac
     }
   }
 });
+
+
+
+
+
+
+
+
+

@@ -338,3 +338,12 @@ export const MANDATORY_CHECKLIST_ITEMS: Record<string, Partial<LaunchChecklistIt
 };
 
 export type ChecklistOperation = "verify" | "reset" | "view" | "report";
+
+
+
+
+
+
+
+
+

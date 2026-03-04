@@ -537,3 +537,12 @@ async function lockHighRiskAccount(userId: string): Promise<void> {
   
   console.log(`[Risk Profile] Locked account for high-risk user ${userId}`);
 }
+
+
+
+
+
+
+
+
+

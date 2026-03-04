@@ -11,3 +11,4 @@ export default function WalletLayout({ children }: { children: React.ReactNode }
   // AppShell handles auth guard, onboarding guard, and navigation
   return <AppShell>{children}</AppShell>;
 }
+

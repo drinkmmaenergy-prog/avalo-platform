@@ -538,3 +538,12 @@ export async function checkKycBacklog(): Promise<boolean> {
     return false;
   }
 }
+
+
+
+
+
+
+
+
+

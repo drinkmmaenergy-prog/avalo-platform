@@ -336,3 +336,12 @@ export const calculateCPA = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" 
       console.error("Error calculating CPA:", error);
     }
   });
+
+
+
+
+
+
+
+
+

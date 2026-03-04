@@ -144,7 +144,7 @@ export interface IPClaim {
   claimType: 'EXACT_COPY' | 'DERIVATIVE_WORK' | 'UNAUTHORIZED_USE' | 'TRADEMARK' | 'OTHER';
   description: string;
   evidenceRef: string;  // Reference to evidence storage
-  evidenceUrls?: string[];
+  evidencUSDls?: string[];
   
   // Status
   status: ClaimStatus;
@@ -322,7 +322,7 @@ export interface PiracyDetection {
   // Investigation
   investigatedBy?: string;
   investigationNotes?: string;
-  evidenceUrls: string[];
+  evidencUSDls: string[];
   
   // Timestamps
   detectedAt: Timestamp;
@@ -625,7 +625,7 @@ export interface SubmitClaimInput {
   accusedAssetId: string;
   claimType: IPClaim['claimType'];
   description: string;
-  evidenceUrls?: string[];
+  evidencUSDls?: string[];
 }
 
 /**
@@ -689,3 +689,12 @@ export const ECONOMIC_ISOLATION_RULES = {
   NO_PAID_IP_PRIORITY: true,
   ALL_CREATORS_PROTECTED_EQUALLY: true,
 } as const;
+
+
+
+
+
+
+
+
+

@@ -1,10 +1,12 @@
+"use client";
+
 /**
  * Case Locking System
  * Prevents multiple moderators from working on the same case
  */
 
 import { doc, setDoc, deleteDoc, getDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 
 export interface CaseLock {
   moderatorId: string;
@@ -23,7 +25,7 @@ export async function acquireLock(
   moderatorName?: string
 ): Promise<boolean> {
   try {
-    const lockRef = doc(db, 'locks', incidentId);
+    const lockRef = doc(requireDb(), 'locks', incidentId);
     const lockDoc = await getDoc(lockRef);
 
     // Check if case is already locked
@@ -58,7 +60,7 @@ export async function acquireLock(
  */
 export async function releaseLock(incidentId: string): Promise<void> {
   try {
-    const lockRef = doc(db, 'locks', incidentId);
+    const lockRef = doc(requireDb(), 'locks', incidentId);
     await deleteDoc(lockRef);
   } catch (error) {
     console.error('Error releasing lock:', error);
@@ -70,7 +72,7 @@ export async function releaseLock(incidentId: string): Promise<void> {
  */
 export async function checkLock(incidentId: string): Promise<CaseLock | null> {
   try {
-    const lockRef = doc(db, 'locks', incidentId);
+    const lockRef = doc(requireDb(), 'locks', incidentId);
     const lockDoc = await getDoc(lockRef);
 
     if (!lockDoc.exists()) {
@@ -100,7 +102,7 @@ export async function checkLock(incidentId: string): Promise<CaseLock | null> {
  */
 export async function refreshLock(incidentId: string, moderatorId: string): Promise<boolean> {
   try {
-    const lockRef = doc(db, 'locks', incidentId);
+    const lockRef = doc(requireDb(), 'locks', incidentId);
     const lockDoc = await getDoc(lockRef);
 
     if (!lockDoc.exists()) {

@@ -1,16 +1,22 @@
 /**
- * PACK 302 — Unified Token & Subscription Checkout
+ * PACK 302 — Unified Token & Subscription Checkout (USD Canonical)
  * Types and Interfaces
+ *
+ * NOTE:
+ * - Canonical currency is USD (global).
+ * - This file is a contract for callsites in:
+ *   - pack302-helpers.ts
+ *   - pack302-web-billing.ts
+ *   - pack302-mobile-billing.ts
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
-import { admin, timestamp, z } from './runtime';
 
 // ============================================================================
-// TOKEN PACKAGES
+// TOKEN PACKAGES (IDs used by callsites)
 // ============================================================================
 
-export type TokenPackageId = 
+export type TokenPackageId =
   | 'MINI'
   | 'BASIC'
   | 'STANDARD'
@@ -22,21 +28,18 @@ export type TokenPackageId =
 export interface TokenPackage {
   id: TokenPackageId;
   tokens: number;
-  pricePLN: number;
+  // Optional price metadata (kept optional to avoid breaking legacy callsites)
+  priceUSD?: number;
 }
 
-/**
- * Final Token Packages (PACK 302)
- * These prices are fixed and must not be changed
- */
 export const TOKEN_PACKAGES: Record<TokenPackageId, TokenPackage> = {
-  MINI: { id: 'MINI', tokens: 100, pricePLN: 31.99 },
-  BASIC: { id: 'BASIC', tokens: 300, pricePLN: 85.99 },
-  STANDARD: { id: 'STANDARD', tokens: 500, pricePLN: 134.99 },
-  PREMIUM: { id: 'PREMIUM', tokens: 1000, pricePLN: 244.99 },
-  PRO: { id: 'PRO', tokens: 2000, pricePLN: 469.99 },
-  ELITE: { id: 'ELITE', tokens: 5000, pricePLN: 1125.99 },
-  ROYAL: { id: 'ROYAL', tokens: 10000, pricePLN: 2149.99 },
+  MINI: { id: 'MINI', tokens: 100 },
+  BASIC: { id: 'BASIC', tokens: 300 },
+  STANDARD: { id: 'STANDARD', tokens: 500 },
+  PREMIUM: { id: 'PREMIUM', tokens: 1000 },
+  PRO: { id: 'PRO', tokens: 2000 },
+  ELITE: { id: 'ELITE', tokens: 5000 },
+  ROYAL: { id: 'ROYAL', tokens: 10000 },
 };
 
 // ============================================================================
@@ -45,10 +48,17 @@ export const TOKEN_PACKAGES: Record<TokenPackageId, TokenPackage> = {
 
 export interface UserWallet {
   userId: string;
+
+  // Callsites expect tokensBalance
   tokensBalance: number;
+
   lifetimePurchasedTokens: number;
   lifetimeEarnedTokens: number;
   lifetimeWithdrawnTokens: number;
+
+  // createdAt was missing in callsites - make optional for compatibility
+  createdAt?: Timestamp;
+
   updatedAt: Timestamp;
 }
 
@@ -69,24 +79,30 @@ export type WalletTransactionType =
 
 export type WalletTransactionDirection = 'IN' | 'OUT';
 
-export type WalletTransactionProvider = 
-  | 'STRIPE' 
-  | 'GOOGLE' 
-  | 'APPLE' 
-  | 'SYSTEM' 
+export type WalletTransactionProvider =
+  | 'STRIPE'
+  | 'GOOGLE'
+  | 'APPLE'
+  | 'SYSTEM'
   | 'USER';
 
 export interface WalletTransaction {
   txId: string;
   userId: string;
+
   type: WalletTransactionType;
   direction: WalletTransactionDirection;
+
+  // Callsites use amountTokens
   amountTokens: number;
-  externalId: string | null; // Stripe or Store transaction id
+
+  externalId: string | null;
   provider: WalletTransactionProvider;
+
   createdAt: Timestamp;
-  meta: {
-    packageId?: string | null;
+
+  meta?: {
+    packageId?: TokenPackageId | string | null;
     chatId?: string | null;
     bookingId?: string | null;
     eventId?: string | null;
@@ -98,27 +114,33 @@ export interface WalletTransaction {
 // SUBSCRIPTIONS
 // ============================================================================
 
-export type SubscriptionTier = 'VIP' | 'ROYAL';
+export type SubscriptionTier = 'FREE' | 'VIP' | 'ROYAL';
 
-export type SubscriptionProvider = 
-  | 'STRIPE' 
-  | 'GOOGLE' 
-  | 'APPLE' 
+export type SubscriptionProvider =
+  | 'STRIPE'
+  | 'GOOGLE'
+  | 'APPLE'
   | 'NONE';
 
 export interface UserSubscriptions {
   userId: string;
-  
+
+  // Some callsites want a single "tier" field - keep optional for backward compat
+  tier?: SubscriptionTier;
+
   vipActive: boolean;
   vipPlanId: string | null;
   vipProvider: SubscriptionProvider;
   vipCurrentPeriodEnd: string | null; // ISO_DATETIME
-  
+
   royalActive: boolean;
   royalPlanId: string | null;
   royalProvider: SubscriptionProvider;
   royalCurrentPeriodEnd: string | null; // ISO_DATETIME
-  
+
+  // createdAt missing in helper return - make optional
+  createdAt?: Timestamp;
+
   updatedAt: Timestamp;
 }
 
@@ -129,8 +151,13 @@ export interface UserSubscriptions {
 export interface UserBenefits {
   vipActive: boolean;
   royalActive: boolean;
-  callDiscountFactor: number; // 1.0 = no discount, 0.7 = 30% off, 0.5 = 50% off
+  callDiscountFactor: number; // 1.0 = no discount
 }
+
+// Call discount factors
+export const CALL_DISCOUNT_NONE = 1.0;
+export const CALL_DISCOUNT_VIP = 0.9;
+export const CALL_DISCOUNT_ROYAL = 0.8;
 
 // ============================================================================
 // API REQUEST/RESPONSE TYPES
@@ -141,12 +168,19 @@ export interface CreateTokenCheckoutRequest {
   userId: string;
   packageId: TokenPackageId;
   locale: string;
+
+  // pack302-web-billing destructures this
   currencyOverride?: string | null;
 }
 
 export interface CreateTokenCheckoutResponse {
   checkoutUrl: string;
   sessionId: string;
+
+  // Optional metadata (kept optional so callsites can add later without breaking)
+  packageId?: TokenPackageId;
+  tokens?: number;
+  priceUSD?: number;
 }
 
 // Mobile Token Verification
@@ -161,6 +195,7 @@ export interface VerifyMobilePurchaseRequest {
 
 export interface VerifyMobilePurchaseResponse {
   success: boolean;
+  packageId?: TokenPackageId;
   tokensAdded: number;
   newBalance: number;
   transactionId: string;
@@ -169,13 +204,14 @@ export interface VerifyMobilePurchaseResponse {
 // Web Subscription Checkout
 export interface CreateSubscriptionCheckoutRequest {
   userId: string;
-  tier: SubscriptionTier;
+  tier: Exclude<SubscriptionTier, 'FREE'>;
   locale: string;
 }
 
 export interface CreateSubscriptionCheckoutResponse {
   checkoutUrl: string;
   sessionId: string;
+  tier?: Exclude<SubscriptionTier, 'FREE'>;
 }
 
 // Mobile Subscription Sync
@@ -184,7 +220,7 @@ export type SubscriptionStatus = 'ACTIVE' | 'CANCELLED' | 'EXPIRED';
 export interface SyncMobileSubscriptionRequest {
   userId: string;
   platform: MobilePlatform;
-  tier: SubscriptionTier;
+  tier: Exclude<SubscriptionTier, 'FREE'>;
   status: SubscriptionStatus;
   currentPeriodEnd: string; // ISO_DATETIME
   originalTransactionId: string;
@@ -212,52 +248,36 @@ export interface BillingAuditLog {
   userId: string;
   provider: WalletTransactionProvider;
   amount?: number;
-  packageId?: string;
-  tier?: SubscriptionTier;
+  packageId?: TokenPackageId;
+  tier?: Exclude<SubscriptionTier, 'FREE'>;
   externalId?: string;
   timestamp: Timestamp;
 }
 
 // ============================================================================
-// CURRENCY MAPPING
+// USD CANONICAL CURRENCY CONFIG (minimal contract)
 // ============================================================================
 
-export interface CurrencyConfig {
-  code: string;
-  symbol: string;
-  conversionRate: number; // Relative to PLN
-}
-
-export const REGION_DEFAULT_CURRENCY: Record<string, string> = {
-  'pl-PL': 'PLN',
-  'en-GB': 'GBP',
+export const REGION_DEFAULT_CURRENCY: Record<string,string> = {
+  'pl-PL': 'USD',
   'en-US': 'USD',
-  'de-DE': 'EUR',
-  'fr-FR': 'EUR',
-  'es-ES': 'EUR',
-  'it-IT': 'EUR',
+  'en-GB': 'USD',
+  'de-DE': 'USD',
+  'fr-FR': 'USD',
+  'es-ES': 'USD',
+  'it-IT': 'USD'
 };
 
-export const CURRENCY_CONFIGS: Record<string, CurrencyConfig> = {
-  PLN: { code: 'PLN', symbol: 'zł', conversionRate: 1.0 },
-  EUR: { code: 'EUR', symbol: '€', conversionRate: 0.23 }, // Approximate
-  GBP: { code: 'GBP', symbol: '£', conversionRate: 0.19 }, // Approximate
-  USD: { code: 'USD', symbol: '$', conversionRate: 0.25 }, // Approximate
+export const CURRENCY_CONFIGS: Record<string,{
+  code:'USD',
+  symbol:'$',
+  conversionRate:number
+}> = {
+  USD:{
+    code:'USD',
+    symbol:'$',
+    conversionRate:1
+  }
 };
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
 
-import { TOKEN_PAYOUT_PLN } from './config/economyConfig';
-
-export const PAYOUT_RATE_PLN_PER_TOKEN = TOKEN_PAYOUT_PLN; // Derived from TOKEN_PAYOUT_USD (0.03 USD)
-
-// Call discount factors
-export const CALL_DISCOUNT_NONE = 1.0;
-export const CALL_DISCOUNT_VIP = 0.7; // 30% off
-export const CALL_DISCOUNT_ROYAL = 0.5; // 50% off
-
-// Base call rates (tokens per minute) - before discounts
-export const VOICE_CALL_BASE_RATE = 10;
-export const VIDEO_CALL_BASE_RATE = 20;

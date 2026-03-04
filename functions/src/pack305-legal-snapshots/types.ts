@@ -31,7 +31,7 @@ export interface LegalSnapshot {
   requestedAt: string; // ISO datetime
   period: SnapshotPeriod;
   status: SnapshotStatus;
-  fileUrl: string | null;
+  filUSDl: string | null;
   fileFormat: SnapshotFileFormat;
   metadata: {
     notes?: string | null;
@@ -89,9 +89,9 @@ export interface UserAndGrowthSection {
 
 export interface EconomicsSection {
   gmvTokens: number;
-  gmvPLN: number;
+  gmvUSD: number;
   avaloFeesTokens: number;
-  avaloFeesPLN: number;
+  avaloFeesUSD: number;
   creatorShareTokens: number;
   numberOfPayouts: number;
   totalPayoutFiat: number;
@@ -101,7 +101,7 @@ export interface CreatorActivitySection {
   numberOfEarningCreators: number;
   averageMonthlyEarnings: number;
   distributionBuckets: Array<{
-    range: string; // e.g., "0-100 PLN"
+    range: string; // e.g., "0-100 USD"
     count: number;
   }>;
 }
@@ -205,7 +205,7 @@ export interface DataProtectionSection {
 export interface FinancialComplianceSection {
   payoutsByCountry: Array<{
     country: string;
-    totalPLN: number;
+    totalUSD: number;
   }>;
   highVolumeEarners: number; // count only
   flaggedAccounts: number; // from financeAnomalies
@@ -345,3 +345,12 @@ export interface SnapshotAuditLog {
   errorMessage?: string;
   metadata?: Record<string, any>;
 }
+
+
+
+
+
+
+
+
+

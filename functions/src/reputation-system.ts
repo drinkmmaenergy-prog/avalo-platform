@@ -664,3 +664,12 @@ export function getReputationBadge(overallScore: number): {
   }
   return { level: 'Needs Improvement', color: '#EF4444', icon: '!' };
 }
+
+
+
+
+
+
+
+
+

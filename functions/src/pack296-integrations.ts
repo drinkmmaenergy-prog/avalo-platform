@@ -87,7 +87,7 @@ export async function exampleTokenPurchase(
   await logTokenPurchase(userId, {
     amountTokens,
     amountFiat,
-    currency: 'PLN',
+    currency: 'USD',
     provider: 'STRIPE',
     transactionId,
   });
@@ -129,7 +129,7 @@ export async function examplePayoutApproval(
     requestId,
     amountTokens,
     amountFiat,
-    currency: 'PLN',
+    currency: 'USD',
     reviewerId,
   });
 }
@@ -397,3 +397,12 @@ export async function exampleLegalDocUpdate(
  * - [ ] Policy acceptances (logPolicyAcceptance)
  * - [ ] Legal doc updates (logLegalDocUpdate)
  */
+
+
+
+
+
+
+
+
+

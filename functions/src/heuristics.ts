@@ -1,5 +1,5 @@
 /**
- * Fraud Detection Heuristics (Phase 8)
+ * Fraud Detection HUSDistics (Phase 8)
  *
  * Contains rules and scoring logic to detect:
  * - Spam messages
@@ -31,7 +31,7 @@ const SPAM_PATTERNS = [
   /\b(whatsapp|telegram|snapchat|kik)\s*[:=]?\s*[\d+]/i,
   /\b(cashapp|venmo|paypal|zelle)\s*[:=]?\s*[@\w]+/i,
   /(http|https):\/\/[^\s]+/g, // External links
-  /\$\d+|\d+\s*(usd|eur|pln|dollars?|euros?)/i, // Money mentions
+  /\$\d+|\d+\s*(usd|USD|USD|dollars?|USDos?)/i, // Money mentions
 ];
 
 /**
@@ -210,7 +210,7 @@ export function detectBotBehavior(timestamps: Timestamp[]): { isBot: boolean; ri
 }
 
 /**
- * Comprehensive content scan combining all heuristics
+ * Comprehensive content scan combining all hUSDistics
  */
 export interface ContentScanResult {
   overallRisk: RiskLevel;
@@ -302,5 +302,14 @@ export function calculateTrustScore(data: {
   // Clamp to 0-100
   return Math.max(0, Math.min(100, score));
 }
+
+
+
+
+
+
+
+
+
 
 

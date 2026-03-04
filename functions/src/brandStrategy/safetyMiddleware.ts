@@ -103,7 +103,7 @@ const ALLOWED_THEMES = [
   'art',
   'music',
   'business',
-  'entrepreneurship',
+  'entreprenUSDship',
   'education',
   'teaching',
   'coaching',
@@ -305,7 +305,7 @@ export function generateSafeCategories(niche: string[]): string[] {
     ],
     business: [
       'Business Strategy',
-      'Entrepreneurship Tips',
+      'EntreprenUSDship Tips',
       'Marketing Insights',
       'Productivity Hacks',
       'Leadership Skills',
@@ -428,3 +428,12 @@ export function getAlternativeSuggestions(blockedCategory: string, niche: string
   
   return suggestions;
 }
+
+
+
+
+
+
+
+
+

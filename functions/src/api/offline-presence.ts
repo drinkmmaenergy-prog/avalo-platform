@@ -338,3 +338,12 @@ export const cleanupOldScanLogs = onSchedule("every 24 hours", async (event) => 
     await ScanTracker.cleanupOldScans();
     console.log('Old scan logs cleanup completed');
   });
+
+
+
+
+
+
+
+
+

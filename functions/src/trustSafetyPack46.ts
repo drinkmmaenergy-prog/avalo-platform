@@ -390,3 +390,12 @@ export function getTrustScoreLevel(score: number): 'high' | 'medium' | 'low' {
   if (score >= 40) return 'medium';
   return 'low';
 }
+
+
+
+
+
+
+
+
+

@@ -575,3 +575,12 @@ function hashIp(ip: string): string {
   const crypto = require('crypto');
   return crypto.createHash('sha256').update(ip).digest('hex').substring(0, 16);
 }
+
+
+
+
+
+
+
+
+

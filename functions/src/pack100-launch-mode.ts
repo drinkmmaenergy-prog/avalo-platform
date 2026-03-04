@@ -78,7 +78,7 @@ const LAUNCH_MODE_CONFIGS: Record<LaunchMode, Omit<LaunchModeConfig, 'updatedAt'
   CLOSED_BETA: {
     mode: 'CLOSED_BETA',
     description: 'Closed beta with invite codes and selected regions',
-    allowedCountries: ['PL', 'DE', 'GB', 'FR', 'ES'],  // Initial European markets
+    allowedCountries: ['PL', 'DE', 'GB', 'FR', 'ES'],  // Initial USDopean markets
     requiresInviteCode: true,
     requiresAllowlist: false,
     maxDailySignups: 500,
@@ -437,3 +437,12 @@ export const admin_getLaunchModeHistory = functions.https.onCall(async (request)
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+

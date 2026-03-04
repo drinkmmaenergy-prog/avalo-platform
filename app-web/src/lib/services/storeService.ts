@@ -1,9 +1,11 @@
+"use client";
+
 /**
  * Digital Product Store Service
  * Handles unlockable media, token pricing, ownership tracking, NFT-ready interface
  */
 
-import { db, functions } from '../firebase';
+import { requireDb, requireFunctions } from '../firebase';
 import {
   collection,
   query,
@@ -48,7 +50,7 @@ export async function browseProducts(params: {
       constraints.unshift(where('isNSFW', '==', false));
     }
 
-    const q = query(collection(db, 'digital_products'), ...constraints);
+    const q = query(collection(requireDb(), 'digital_products'), ...constraints);
     const snapshot = await getDocs(q);
 
     return snapshot.docs.map(doc => ({
@@ -66,7 +68,7 @@ export async function browseProducts(params: {
  */
 export async function getProduct(productId: string): Promise<DigitalProduct | null> {
   try {
-    const productRef = doc(db, 'digital_products', productId);
+    const productRef = doc(requireDb(), 'digital_products', productId);
     const productSnap = await getDoc(productRef);
 
     if (!productSnap.exists()) {
@@ -89,7 +91,7 @@ export async function getProduct(productId: string): Promise<DigitalProduct | nu
 export async function getTrendingProducts(limitCount: number = 20): Promise<DigitalProduct[]> {
   try {
     const q = query(
-      collection(db, 'digital_products'),
+      collection(requireDb(), 'digital_products'),
       orderBy('sales', 'desc'),
       limit(limitCount)
     );
@@ -126,7 +128,7 @@ export async function purchaseProduct(params: {
       success: boolean;
       ownershipId: string;
       mediaUrls: string[];
-    }>(functions, 'purchaseDigitalProduct');
+    }>(requireFunctions(), 'purchaseDigitalProduct');
     
     const result = await purchase(params);
     return result.data;
@@ -147,7 +149,7 @@ export async function checkOwnership(params: {
   productId: string;
 }): Promise<boolean> {
   try {
-    const ownershipRef = doc(db, 'product_ownership', `${params.userId}_${params.productId}`);
+    const ownershipRef = doc(requireDb(), 'product_ownership', `${params.userId}_${params.productId}`);
     const ownershipSnap = await getDoc(ownershipRef);
     
     if (!ownershipSnap.exists()) {
@@ -174,7 +176,7 @@ export async function checkOwnership(params: {
 export async function getOwnedProducts(userId: string): Promise<DigitalProduct[]> {
   try {
     const q = query(
-      collection(db, 'product_ownership'),
+      collection(requireDb(), 'product_ownership'),
       where('userId', '==', userId)
     );
 
@@ -252,7 +254,7 @@ export async function prepareForNFTMinting(params: {
     const prepare = httpsCallable<typeof params, {
       success: boolean;
       metadata: any;
-    }>(functions, 'prepareProductForNFT');
+    }>(requireFunctions(), 'prepareProductForNFT');
     
     const result = await prepare(params);
     return result.data;
@@ -290,7 +292,7 @@ export async function createProduct(params: {
     const create = httpsCallable<typeof params, {
       success: boolean;
       productId: string;
-    }>(functions, 'createDigitalProduct');
+    }>(requireFunctions(), 'createDigitalProduct');
     
     const result = await create(params);
     return result.data;
@@ -312,8 +314,7 @@ export async function updateProductPrice(params: {
   newPrice: number;
 }): Promise<{ success: boolean; error?: string }> {
   try {
-    const update = httpsCallable<typeof params, { success: boolean }>(
-      functions,
+    const update = httpsCallable<typeof params, { success: boolean }>(requireFunctions(),
       'updateProductPrice'
     );
     

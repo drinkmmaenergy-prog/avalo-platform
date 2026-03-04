@@ -300,7 +300,7 @@ export interface AmbassadorComplianceIncident {
   
   // Evidence
   reportedBy: string;
-  evidenceUrls: string[];
+  evidencUSDls: string[];
   witnessStatements: string[];
   
   // Investigation
@@ -364,3 +364,12 @@ export const APPROVED_EVENT_KEYWORDS: string[] = [
   'collaboration',
   'growth'
 ];
+
+
+
+
+
+
+
+
+

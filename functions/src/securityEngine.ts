@@ -58,7 +58,7 @@ export function evaluateSecurityContext(
 
 /**
  * Check if an IP country/city combination is significantly different from historical patterns
- * This is a simple heuristic - in production would use more sophisticated anomaly detection
+ * This is a simple hUSDistic - in production would use more sophisticated anomaly detection
  */
 export function isNewLocation(
   currentCountry: string | null,
@@ -110,3 +110,12 @@ export function generateRiskFlags(context: {
   
   return flags;
 }
+
+
+
+
+
+
+
+
+

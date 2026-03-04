@@ -42,8 +42,7 @@ export interface StoreReview {
   // Metadata
   helpfulCount?: number;
   reportedCount?: number;
-  lastUpdatedAt?: number;
-}
+updatedAt?: FirebaseFirestore.Timestamp;}
 
 export interface ReviewResponse {
   reviewId: string;
@@ -230,3 +229,12 @@ export interface StoreHealthDashboard {
   pendingResponses: number;
   unresolvedFlags: number;
 }
+
+
+
+
+
+
+
+
+

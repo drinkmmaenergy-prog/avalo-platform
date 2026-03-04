@@ -243,3 +243,12 @@ export interface LawUpdateScanResult {
   errors: string[];
   nextScanAt: Timestamp;
 }
+
+
+
+
+
+
+
+
+

@@ -312,3 +312,12 @@ export async function isInWelcomeFunnel(userId: string): Promise<boolean> {
     return false;
   }
 }
+
+
+
+
+
+
+
+
+

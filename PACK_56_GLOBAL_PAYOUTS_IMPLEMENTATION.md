@@ -270,7 +270,7 @@ Complete translations for:
     PLN: 0.04   // 1 token = 0.04 PLN
   },
   minimumPayoutTokens: 1000,      // $10 USD equivalent
-  payoutFeePlatformPercent: 0.02  // 2% platform fee
+  payoutFeePlatformPercent: 0.05  // 5% platform fee
 }
 ```
 

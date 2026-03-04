@@ -164,3 +164,12 @@ export function isValidStatusTransition(
 export function getReportWeight(reasonCode: TransactionIssueReasonCode): number {
   return REPORT_WEIGHT_MAP[reasonCode] || 5;
 }
+
+
+
+
+
+
+
+
+

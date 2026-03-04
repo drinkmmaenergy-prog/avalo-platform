@@ -55,23 +55,23 @@ ${sections.userAndGrowth.geographicDistribution.map((geo, i) =>
 ---------------------------------------------
 GMV (Gross Merchandise Value):
 - Tokens: ${sections.economics.gmvTokens}
-- PLN: ${sections.economics.gmvPLN.toFixed(2)}
+- USD: ${sections.economics.gmvUSD.toFixed(2)}
 
 Avalo Fees:
 - Tokens: ${sections.economics.avaloFeesTokens}
-- PLN: ${sections.economics.avaloFeesPLN.toFixed(2)}
+- USD: ${sections.economics.avaloFeesUSD.toFixed(2)}
 
 Creator Share:
 - Tokens: ${sections.economics.creatorShareTokens}
 
 Payouts:
 - Number of Payouts: ${sections.economics.numberOfPayouts}
-- Total Payout (Fiat): ${sections.economics.totalPayoutFiat.toFixed(2)} PLN
+- Total Payout (Fiat): ${sections.economics.totalPayoutFiat.toFixed(2)} USD
 
 4. CREATOR ACTIVITY
 ---------------------------------------------
 Number of Earning Creators: ${sections.creatorActivity.numberOfEarningCreators}
-Average Monthly Earnings: ${sections.creatorActivity.averageMonthlyEarnings.toFixed(2)} PLN
+Average Monthly Earnings: ${sections.creatorActivity.averageMonthlyEarnings.toFixed(2)} USD
 
 Earnings Distribution:
 ${sections.creatorActivity.distributionBuckets.map(bucket =>
@@ -172,7 +172,7 @@ AML Checks: ${sections.financial.amlChecks}
 
 Payouts by Country:
 ${sections.financial.payoutsByCountry.map(p =>
-  `- ${p.country}: ${p.totalPLN.toFixed(2)} PLN`
+  `- ${p.country}: ${p.totalUSD.toFixed(2)} USD`
 ).join('\n') || 'No data available'}
 
 ===============================================
@@ -281,3 +281,12 @@ export function generatePDF(snapshot: any): string {
       throw new Error(`Unknown snapshot type: ${snapshot.type}`);
   }
 }
+
+
+
+
+
+
+
+
+

@@ -627,3 +627,12 @@ function calculateIntensityTrend(states: EmotionalState[]): number {
 
   return recentAvg - olderAvg;
 }
+
+
+
+
+
+
+
+
+

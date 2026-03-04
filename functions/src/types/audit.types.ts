@@ -171,10 +171,10 @@ export interface MetricsExportItem {
   activeUsers: number;
   payingUsers: number;
   totalTokenPurchases: number;
-  totalTokenPurchasesPLN: number;
-  totalPayoutsPLN: number;
+  totalTokenPurchasesUSD: number;
+  totalPayoutsUSD: number;
   gmvTokens: number;
-  netRevenuePLN: number;
+  netRevenueUSD: number;
   totalMeetingsBooked: number;
   totalEventsTickets: number;
   safetyReports: number;
@@ -249,3 +249,12 @@ export interface AuditLogParams {
   metadata?: AuditLogMetadata;
   sensitive?: boolean;
 }
+
+
+
+
+
+
+
+
+

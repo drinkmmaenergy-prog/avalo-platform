@@ -58,7 +58,7 @@ export interface CreatorSubmission {
   id: string;
   creatorId: string;
   creativeType: 'video' | 'image';
-  fileUrl: string;
+  filUSDl: string;
   caption?: string;
   targetCountry: string;
   targetEmotion: string;
@@ -108,7 +108,7 @@ export const submitUGCCreative = functions.https.onCall(async (request) => {
     id: db.collection('ugc_submissions').doc().id,
     creatorId: request.auth.uid,
     creativeType: type,
-    fileUrl: url,
+    filUSDl: url,
     caption: caption || text,
     targetCountry: country,
     targetEmotion: emotion,
@@ -144,7 +144,7 @@ async function autoApproveUGC(submissionId: string) {
     id: db.collection('ua_creatives').doc().id,
     name: `UGC-${submission.creatorId}-${Date.now()}`,
     type: submission.creativeType,
-    url: submission.fileUrl,
+    url: submission.filUSDl,
     text: submission.caption,
     platform: submission.platform as any,
     source: 'creator',
@@ -181,7 +181,7 @@ async function autoApproveUGC(submissionId: string) {
     creatorId: submission.creatorId,
     type: 'ugc_submission',
     amount: 50, // $50 per approved UGC
-    currency: 'PLN',
+    currency: 'USD',
     creativeId: creative.id,
     timestamp: admin.firestore.Timestamp.now(),
     status: 'pending'
@@ -341,7 +341,7 @@ export const rotateTopCreatives = onSchedule("every 6 hours", async (event) => {
               creatorId: creative.creatorId,
               type: 'ugc_performance_bonus',
               amount: 100, // $100 bonus for winners
-              currency: 'PLN',
+              currency: 'USD',
               creativeId: doc.id,
               timestamp: admin.firestore.Timestamp.now(),
               status: 'pending'
@@ -471,13 +471,13 @@ export const importFromUGCPlatform = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('unauthenticated', 'Admin auth required');
   }
 
-  const { platform, creativeUrls, country, emotion } = data;
+  const { platform, creativUSDls, country, emotion } = data;
 
   // Platforms: billo.app, insense.pro, etc.
   
   const imported = [];
 
-  for (const url of creativeUrls) {
+  for (const url of creativUSDls) {
     const creative: Partial<UGCCreative> = {
       id: db.collection('ua_creatives').doc().id,
       name: `Import-${platform}-${Date.now()}`,
@@ -608,3 +608,12 @@ export const ugcEngine = {
   importFromUGCPlatform,
   getCreativeAnalytics
 };
+
+
+
+
+
+
+
+
+

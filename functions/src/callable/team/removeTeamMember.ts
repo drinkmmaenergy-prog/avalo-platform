@@ -158,3 +158,12 @@ export const removeTeamMember = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+

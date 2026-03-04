@@ -477,7 +477,7 @@ export const generateAffiliateBanner = functions.https.onCall(async (request) =>
           contentType: 'banner',
           contentId: data.affiliateLinkId,
           blockedText: data.text,
-          blockedImageUrl: data.imageUrl,
+          blockedimageUrl: data.imageUrl,
           safetyCheck,
         });
 
@@ -662,3 +662,12 @@ export const trackAffiliateClick = onRequest({}, async (req, res) => {
     res.status(500).send('Internal error');
   }
 });
+
+
+
+
+
+
+
+
+

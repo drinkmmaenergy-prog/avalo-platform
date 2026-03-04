@@ -16,7 +16,7 @@ import {
   getMonthDateRange,
   getCurrentMonthKey,
   REVENUE_SPLITS,
-  TOKEN_PAYOUT_RATE_PLN,
+  TOKEN_TOKEN_PAYOUT_USD,
   AggregationResult,
 } from './types/pack303-creator-earnings.types';
 import { admin } from './runtime';
@@ -75,7 +75,7 @@ function initializeMonthlyEarnings(
     payoutTokensPaid: 0,
     
     payoutFiatPaid: 0,
-    payoutCurrency: 'PLN',
+    payoutCurrency: 'USD',
     
     currencyFxRate: 1.0,
     
@@ -232,7 +232,7 @@ export async function aggregateUserMonthlyEarnings(
       if (payout.status === 'PAID') {
         earnings.payoutTokensPaid += payout.approvedTokens || 0;
         earnings.payoutFiatPaid += payout.payoutAmount || 0;
-        earnings.payoutCurrency = payout.payoutCurrency || 'PLN';
+        earnings.payoutCurrency = payout.payoutCurrency || 'USD';
         earnings.currencyFxRate = payout.fxRateToPayoutCurrency || 1.0;
       }
     }
@@ -401,3 +401,12 @@ export async function backfillAggregation(
   
   return results;
 }
+
+
+
+
+
+
+
+
+

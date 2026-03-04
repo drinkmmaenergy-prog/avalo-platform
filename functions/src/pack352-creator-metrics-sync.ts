@@ -604,3 +604,12 @@ function getDateRange(
     endTimestamp: admin.firestore.Timestamp.fromDate(endDate),
   };
 }
+
+
+
+
+
+
+
+
+

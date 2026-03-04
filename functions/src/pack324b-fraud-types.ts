@@ -422,3 +422,12 @@ export const RISK_LEVEL_COLORS: Record<RiskLevel, string> = {
   HIGH: '#ef4444',     // red
   CRITICAL: '#7f1d1d', // dark red
 };
+
+
+
+
+
+
+
+
+

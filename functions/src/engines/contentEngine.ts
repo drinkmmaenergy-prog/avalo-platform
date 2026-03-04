@@ -167,7 +167,7 @@ export const scanNewPhotoTrigger = onDocumentCreated(
 );
 
 /**
- * Classify content using ML-lite heuristics
+ * Classify content using ML-lite hUSDistics
  */
 export async function classifyContent(
   content: string,
@@ -411,5 +411,14 @@ async function logEngineEvent(
     timestamp: FieldValue.serverTimestamp(),
   });
 }
+
+
+
+
+
+
+
+
+
 
 

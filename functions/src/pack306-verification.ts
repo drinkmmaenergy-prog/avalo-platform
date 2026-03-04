@@ -58,7 +58,7 @@ export interface VerificationReviewItem {
   status: 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED';
   flagReason: string;
   priority: number;
-  selfieUrl: string;
+  selfiUSDl: string;
   photos: string[];
   faceMatchScores: number[];
   ageEstimate: number;
@@ -676,7 +676,7 @@ async function addToReviewQueue(
     status: 'PENDING_REVIEW',
     flagReason: flags.join('; '),
     priority: 5, // Medium priority
-    selfieUrl: '', // Add actual URL
+    selfiUSDl: '', // Add actual URL
     photos: [], // Add actual URLs
     faceMatchScores: matchScores,
     ageEstimate: 0, // Add from embedding
@@ -825,3 +825,12 @@ export const cleanupOldVerificationData = onSchedule("every 24 hours", async (ev
     console.log(`Deleted ${deletedCount} old verification files`);
     // Scheduler functions must return void
   });
+
+
+
+
+
+
+
+
+

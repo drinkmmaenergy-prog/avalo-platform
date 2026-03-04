@@ -291,7 +291,7 @@ export const REGIONAL_CONFIGS: Record<string, RegionalConfiguration> = {
     requiresBackgroundCheck: true,
     requiresIdVerification: true,
     minAge: 18,
-    currency: 'GBP',
+    currency: 'USD',
   },
   DE: {
     country: 'Germany',
@@ -301,7 +301,7 @@ export const REGIONAL_CONFIGS: Record<string, RegionalConfiguration> = {
     requiresBackgroundCheck: true,
     requiresIdVerification: true,
     minAge: 18,
-    currency: 'EUR',
+    currency: 'USD',
   },
   PL: {
     country: 'Poland',
@@ -311,7 +311,7 @@ export const REGIONAL_CONFIGS: Record<string, RegionalConfiguration> = {
     requiresBackgroundCheck: false,
     requiresIdVerification: true,
     minAge: 18,
-    currency: 'PLN',
+    currency: 'USD',
   },
   BR: {
     country: 'Brazil',
@@ -475,3 +475,12 @@ export class AmbassadorTypeService {
 // ============================================================================
 
 export const ambassadorTypeService = new AmbassadorTypeService();
+
+
+
+
+
+
+
+
+

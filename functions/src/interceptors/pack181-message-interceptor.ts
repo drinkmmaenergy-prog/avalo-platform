@@ -260,3 +260,12 @@ export async function monitorFanBehaviorRealtime(
     console.error('Error monitoring fan behavior:', error);
   }
 }
+
+
+
+
+
+
+
+
+

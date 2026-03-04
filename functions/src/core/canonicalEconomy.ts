@@ -1,0 +1,25 @@
+export const CANONICAL_ECONOMY = {
+
+  CURRENCY: "USD",
+
+  TOKEN_PAYOUT_USD: 0.03,
+
+  SPLIT: {
+    CREATOR: 0.65,
+    PLATFORM: 0.35
+  },
+
+  AI_WORDS_PER_TOKEN: 30,
+
+  MIN_WITHDRAWAL_USD: 50
+
+};
+
+
+
+
+
+
+
+
+

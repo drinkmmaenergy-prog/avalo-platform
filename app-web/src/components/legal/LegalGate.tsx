@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * PACK 338a - Legal Acceptance Gate (Web)
  * Blocks app access until user accepts all legal documents
@@ -9,7 +11,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { LEGAL_DOCS, getAllLegalDocKeys } from '../../lib/legal/legalRegistry';
 import type { LegalDocKey } from '../../lib/legal/legalRegistry';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { requireDb } from '../../lib/firebase';
 import { useAuth } from '../providers/AuthProvider';
 
 interface LegalAcceptance {
@@ -57,7 +59,7 @@ export default function LegalGate({ onAccepted }: LegalGateProps) {
 
     try {
       setLoading(true);
-      const acceptanceRef = doc(db, 'userLegalAcceptances', user.uid);
+      const acceptanceRef = doc(requireDb(), 'userLegalAcceptances', user.uid);
       const acceptanceSnap = await getDoc(acceptanceRef);
 
       if (!acceptanceSnap.exists()) {
@@ -233,3 +235,5 @@ export default function LegalGate({ onAccepted }: LegalGateProps) {
     </div>
   );
 }
+
+

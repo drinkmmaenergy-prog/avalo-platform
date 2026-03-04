@@ -513,3 +513,12 @@ export const getWinBackEffectiveness = functions.https.onCall(async (request) =>
 });
 
 console.log('✅ PACK 301B - Retention Analytics initialized');
+
+
+
+
+
+
+
+
+

@@ -404,7 +404,7 @@ function matchTagToCategory(tag: string): InterestCategory[] {
     
     // Business
     'business': ['business'],
-    'entrepreneur': ['business'],
+    'entreprenUSD': ['business'],
     'startup': ['business'],
     
     // Lifestyle
@@ -645,3 +645,12 @@ export async function recalculateAllInterestVectors(batchSize: number = 100): Pr
     totalProcessed: processed,
   });
 }
+
+
+
+
+
+
+
+
+

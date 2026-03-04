@@ -180,3 +180,12 @@ async function initRemoteConfig() {
 
 // Run initialization
 initRemoteConfig();
+
+
+
+
+
+
+
+
+

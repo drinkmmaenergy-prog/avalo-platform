@@ -182,7 +182,7 @@ export interface EventMaterial {
   // File info
   type: 'slides' | 'document' | 'worksheet' | 'certificate_template' | 'glossary';
   fileName: string;
-  fileUrl: string;
+  filUSDl: string;
   fileSize: number;
   mimeType: string;
   
@@ -347,7 +347,7 @@ export interface EventCertificate {
   userId: string;
   
   // Certificate
-  certificateUrl: string;
+  certificatUSDl: string;
   certificateCode: string;
   
   // Verification
@@ -531,3 +531,12 @@ export interface GenerateCertificateInput {
   eventId: string;
   userId: string;
 }
+
+
+
+
+
+
+
+
+

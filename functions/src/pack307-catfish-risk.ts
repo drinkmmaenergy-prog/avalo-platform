@@ -56,7 +56,7 @@ export interface CatfishRiskProfile {
 export interface RiskComputationInput {
   userId: string;
   profilePhotos: string[];            // URLs of profile photos
-  verificationSelfieUrl?: string;     // From PACK 306
+  verificationSelfiUSDl?: string;     // From PACK 306
   declaredGender?: string;
   declaredAge?: number;
   profileCompleteness?: number;
@@ -202,7 +202,7 @@ export async function recomputeUserCatfishRisk(userId: string): Promise<CatfishR
 }
 
 /**
- * Calculate catfish risk score using heuristic algorithm
+ * Calculate catfish risk score using hUSDistic algorithm
  * Score range: 0.0 (definitely real) to 1.0 (definitely fake)
  */
 function calculateCatfishRiskScore(input: {
@@ -309,7 +309,7 @@ async function gatherUserData(userId: string): Promise<RiskComputationInput> {
   return {
     userId,
     profilePhotos,
-    verificationSelfieUrl: verificationData?.selfieUrl,
+    verificationSelfiUSDl: verificationData?.selfiUSDl,
     declaredGender: userData.gender,
     declaredAge: userData.age,
     profileCompleteness: userData.profileCompleteness || 0,
@@ -386,7 +386,7 @@ async function compareWithVerification(
 }> {
   // PLACEHOLDER: Replace with actual face comparison
   
-  if (!userData.verificationSelfieUrl || userData.profilePhotos.length === 0) {
+  if (!userData.verificationSelfiUSDl || userData.profilePhotos.length === 0) {
     return {
       score: 0.5,  // Unknown
       genderMismatch: false,
@@ -955,3 +955,12 @@ async function getCatfishRiskStats(): Promise<any> {
   
   return counters;
 }
+
+
+
+
+
+
+
+
+

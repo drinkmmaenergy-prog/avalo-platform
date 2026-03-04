@@ -3,7 +3,7 @@
  * Matches mobile types and backend schema
  */
 
-import { Timestamp } from 'firebase/firestore';
+import type { Timestamp } from 'firebase/firestore';
 
 export type CallType = 'VOICE' | 'VIDEO';
 export type UserStatus = 'STANDARD' | 'VIP' | 'ROYAL';

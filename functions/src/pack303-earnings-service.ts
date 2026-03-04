@@ -25,7 +25,7 @@ import {
   generateMonthlyDocId,
   getCurrentMonthKey,
   getMonthDateRange,
-  TOKEN_PAYOUT_RATE_PLN,
+  TOKEN_TOKEN_PAYOUT_USD,
 } from './types/pack303-creator-earnings.types';
 import { aggregateUserMonthlyEarnings } from './pack303-aggregation';
 import { admin, timestamp } from './runtime';
@@ -82,7 +82,7 @@ export async function getEarningsDashboard(
       currentMonthTokens: earnings?.tokensCreatorShare || 0,
       availableForPayout,
       totalPayoutsLifetime,
-      currency: earnings?.payoutCurrency || 'PLN',
+      currency: earnings?.payoutCurrency || 'USD',
     };
     
     // Build breakdown by source
@@ -229,8 +229,8 @@ export async function getMonthlyStatement(
     const statement: MonthlyStatement = {
       userId,
       period: { year, month },
-      baseCurrency: earnings.payoutCurrency || 'PLN',
-      tokenPayoutRate: TOKEN_PAYOUT_RATE_PLN,
+      baseCurrency: earnings.payoutCurrency || 'USD',
+      tokenPayoutRate: TOKEN_TOKEN_PAYOUT_USD,
       
       summary: {
         tokensNetEarned: earnings.tokensNetEarned,
@@ -440,3 +440,12 @@ export async function getAvailableEarningsMonths(
     return [];
   }
 }
+
+
+
+
+
+
+
+
+

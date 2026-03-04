@@ -59,7 +59,7 @@ export async function submitCopyrightClaim(
     claimType: input.claimType,
     description: input.description,
     evidenceRef: generateId(), // Evidence vault reference
-    evidenceUrls: input.evidenceUrls || [],
+    evidencUSDls: input.evidencUSDls || [],
     status: autoResolutionResult.canAutoResolve ? 'AUTO_RESOLVED' : 'OPEN',
     priority: determinePriority(input),
     autoResolved: autoResolutionResult.canAutoResolve,
@@ -488,7 +488,7 @@ async function createDisputeCase(claim: IPClaim): Promise<IPDisputeCase> {
     claimId: claim.claimId,
     claimantUserId: claim.claimantUserId,
     accusedUserId: claim.accusedUserId,
-    claimantEvidence: claim.evidenceUrls || [],
+    claimantEvidence: claim.evidencUSDls || [],
     status: 'OPEN',
     createdAt: serverTimestamp() as any,
     appealable: true,
@@ -663,3 +663,12 @@ async function sendResolutionNotifications(
     priority: 'HIGH',
   });
 }
+
+
+
+
+
+
+
+
+

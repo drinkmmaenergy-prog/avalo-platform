@@ -371,7 +371,7 @@ export const wallet_requestPayout = https.onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { amountTokens, payoutMethod, payoutDetails, currency = 'PLN' } = request.data as PayoutRequest;
+    const { amountTokens, payoutMethod, payoutDetails, currency = 'USD' } = request.data as PayoutRequest;
 
     if (!amountTokens || !payoutMethod || !payoutDetails) {
       throw new HttpsError('invalid-argument', 'Missing required parameters');
@@ -382,7 +382,7 @@ export const wallet_requestPayout = https.onCall(
       if (amountTokens < MIN_PAYOUT_TOKENS) {
         throw new HttpsError(
           'failed-precondition',
-          `Minimum payout is ${MIN_PAYOUT_TOKENS} tokens (${MIN_PAYOUT_TOKENS * PAYOUT_RATE} PLN)`
+          `Minimum payout is ${MIN_PAYOUT_TOKENS} tokens (${MIN_PAYOUT_TOKENS * PAYOUT_RATE} USD)`
         );
       }
 
@@ -452,31 +452,25 @@ export const wallet_requestPayout = https.onCall(
       const kycDoc = await db.collection('kycVerifications').doc(auth.uid).get();
       const kycVerified = kycDoc.exists && kycDoc.data()?.status === 'VERIFIED';
 
-      // Calculate payout amounts
-      const amountPLN = amountTokens * PAYOUT_RATE;
-      const processingFee = Math.ceil(amountPLN * 0.02); // 2% processing fee
-      const netAmount = amountPLN - processingFee;
+// Calculate payout amounts
+const amountUSD = amountTokens * PAYOUT_RATE;
 
-      // Exchange rate for other currencies (simplified - use real rates in production)
-      const exchangeRates: Record<string, number> = {
-        PLN: 1.0,
-        USD: 0.25,
-        EUR: 0.23,
-        GBP: 0.20,
-      };
-      const exchangeRate = exchangeRates[currency] || 1.0;
-      const amountLocal = Math.round(netAmount * exchangeRate * 100) / 100;
+// platform payout fee (5%)
+const processingFee =
+  Math.round(amountUSD * 0.05 * 100) / 100;
 
-      // Create payout request (would be processed by admin/automation)
-      const payoutId = db.collection('payoutRequests').doc().id;
+const netAmount = amountUSD - processingFee;
+
+// USD canonical economy — no FX conversions in backend
+const amountLocal =
+  Math.round(netAmount * 100) / 100;      const payoutId = db.collection('payoutRequests').doc().id;
       await db.collection('payoutRequests').doc(payoutId).set({
         id: payoutId,
         userId: auth.uid,
         amountTokens,
-        amountPLN,
+        amountUSD,
         amountLocal,
         localCurrency: currency,
-        exchangeRate,
         processingFee,
         netAmount,
         payoutMethod,
@@ -492,17 +486,16 @@ export const wallet_requestPayout = https.onCall(
         userId: auth.uid,
         payoutId,
         amountTokens,
-        amountPLN,
+        amountUSD,
       });
 
       const response: PayoutResponse = {
         success: true,
         txId: payoutId,
         amountTokens,
-        amountPLN,
+        amountUSD,
         amountLocal,
         localCurrency: currency,
-        exchangeRate,
         processingFee,
         netAmount,
         status: 'PENDING',
@@ -545,3 +538,12 @@ export const wallet_getPayoutHistory = https.onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+

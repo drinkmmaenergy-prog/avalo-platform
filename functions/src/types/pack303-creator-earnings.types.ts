@@ -50,11 +50,11 @@ export interface CreatorEarningsMonthly {
   payoutTokensPaid: number;
 
   // Fiat values
-  payoutFiatPaid: number; // in base currency (e.g. PLN)
-  payoutCurrency: string; // e.g., "PLN"
+  payoutFiatPaid: number; // in base currency (e.g. USD)
+  payoutCurrency: string; // e.g., "USD"
 
   // Exchange rate tracking
-  currencyFxRate: number; // fx used if local currency differs from PLN
+  currencyFxRate: number; // fx used if local currency differs from USD
 
   // Timestamps
   generatedAt: string; // ISO_DATETIME when aggregation was last computed
@@ -131,7 +131,7 @@ export interface MonthlyStatement {
     month: number;
   };
   baseCurrency: string;
-  tokenPayoutRate: number; // e.g., 0.2 (1 token = 0.20 PLN)
+  tokenPayoutRate: number; // e.g., 0.2 (1 token = 0.20 USD)
 
   summary: MonthlyStatementSummary;
   bySource: EarningsSourceBreakdown[];
@@ -242,12 +242,12 @@ export const REVENUE_SPLITS = {
   OTHER: { creator: 0.65, avalo: 0.35 },
 } as const;
 
-import { TOKEN_PAYOUT_USD, TOKEN_PAYOUT_PLN } from '../config/economyConfig';
+import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 
 /**
  * Payout rate derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
  */
-export const TOKEN_PAYOUT_RATE_PLN = TOKEN_PAYOUT_PLN;
+export const TOKEN_TOKEN_PAYOUT_USD = TOKEN_PAYOUT_USD;
 
 /**
  * Statement export file storage settings
@@ -327,3 +327,12 @@ export function isValidYearMonth(year: number, month: number): boolean {
   const targetDate = new Date(year, month - 1, 1);
   return targetDate <= now;
 }
+
+
+
+
+
+
+
+
+

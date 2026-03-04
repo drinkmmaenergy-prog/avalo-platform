@@ -1059,3 +1059,12 @@ export async function setToxicCooldown(userId: string, durationDays: number): Pr
     updatedAt: serverTimestamp(),
   });
 }
+
+
+
+
+
+
+
+
+

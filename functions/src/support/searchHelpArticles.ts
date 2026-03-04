@@ -210,3 +210,12 @@ export const searchHelpArticles = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+

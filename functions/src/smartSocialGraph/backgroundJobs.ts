@@ -455,3 +455,12 @@ async function grantGuaranteedSlotsToNewCreators(): Promise<void> {
 }
 
 logger.info('✅ Smart Social Graph Background Jobs initialized');
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,128 @@
+import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
+import stripe from '@/lib/stripe-server';
+import { adminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
+import { CANONICAL_TOKEN_PACKS } from '@/types/phase33.types';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+export async function POST(request: NextRequest) {
+  const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!WEBHOOK_SECRET) {
+    return NextResponse.json(
+      { error: 'Webhook secret not configured' },
+      { status: 500 }
+    );
+  }
+
+  const rawBody = await request.text();
+  const signature = request.headers.get('stripe-signature');
+
+  if (!signature) {
+    return NextResponse.json(
+      { error: 'Missing stripe-signature header' },
+      { status: 400 }
+    );
+  }
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(rawBody, signature, WEBHOOK_SECRET);
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: `Webhook signature verification failed: ${err.message}` },
+      { status: 400 }
+    );
+  }
+
+  if (event.type !== 'checkout.session.completed') {
+    return NextResponse.json({ received: true });
+  }
+
+  const session = event.data.object as Stripe.Checkout.Session;
+
+  // 🔐 HARD CHECK 1 — payment must be paid
+  if (session.payment_status !== 'paid') {
+    return NextResponse.json({ received: true });
+  }
+
+  const sessionId = session.id;
+  const userId = session.metadata?.userId;
+  const packId = session.metadata?.packId;
+  const tokens = parseInt(session.metadata?.tokens || '0', 10);
+
+  if (!userId || !packId || tokens <= 0) {
+    return NextResponse.json({ received: true });
+  }
+
+  const pack = CANONICAL_TOKEN_PACKS[packId];
+  if (!pack) {
+    return NextResponse.json({ received: true });
+  }
+
+  // 🔐 HARD CHECK 2 — verify price
+  if (session.amount_total !== pack.priceUSD) {
+    return NextResponse.json({ received: true });
+  }
+
+  const purchaseRef = adminDb.collection('purchases').doc(sessionId);
+  const userRef = adminDb.collection('users').doc(userId);
+
+  try {
+    await adminDb.runTransaction(async (tx) => {
+      const existing = await tx.get(purchaseRef);
+
+      // 🔐 HARD CHECK 3 — idempotency guard
+      if (existing.exists) {
+        return;
+      }
+
+      const userSnap = await tx.get(userRef);
+      if (!userSnap.exists) {
+        throw new Error('User does not exist');
+      }
+
+      const now = FieldValue.serverTimestamp();
+
+      tx.set(purchaseRef, {
+        sessionId,
+        userId,
+        packId,
+        tokens,
+        amountTotal: session.amount_total,
+        currency: session.currency,
+        status: 'COMPLETED',
+        stripePaymentIntentId: session.payment_intent,
+        stripeCustomerId: session.customer,
+        createdAt: now,
+      });
+
+      tx.update(userRef, {
+        tokenBalance: FieldValue.increment(tokens),
+        lastTokenPurchaseAt: now,
+      });
+
+      const txRef = adminDb.collection('token_transactions').doc();
+
+      tx.set(txRef, {
+        userId,
+        type: 'PURCHASE',
+        amount: tokens,
+        relatedId: sessionId,
+        status: 'COMPLETED',
+        createdAt: now,
+      });
+    });
+
+    return NextResponse.json({ received: true, success: true });
+  } catch (err) {
+    return NextResponse.json(
+      { error: 'Failed to process purchase' },
+      { status: 500 }
+    );
+  }
+}

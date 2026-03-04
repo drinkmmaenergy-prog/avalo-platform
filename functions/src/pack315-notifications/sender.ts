@@ -130,7 +130,7 @@ async function processNotification(
     const userData = userDoc.data()!;
     const language = userData.language || notification.language || 'en';
     const country = userData.country || 'PL';
-    const timeZone = userData.timeZone || 'Europe/Warsaw';
+    const timeZone = userData.timeZone || 'USDope/Warsaw';
     
     // Load preferences
     const settingsDoc = await db.collection('users').doc(notification.userId)
@@ -616,3 +616,12 @@ async function logNotificationSent(
     logger.error('Failed to log notification sent event', { error });
   }
 }
+
+
+
+
+
+
+
+
+

@@ -358,3 +358,12 @@ export class RankingConfigResolver {
     return snapshot.docs.map((doc) => doc.data() as import('./types').RankingAuditLog);
   }
 }
+
+
+
+
+
+
+
+
+

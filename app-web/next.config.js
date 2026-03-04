@@ -1,18 +1,16 @@
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  disable: process.env.NODE_ENV !== 'production',
-  register: true,
-  skipWaiting: true,
-});
-
-module.exports = withPWA({
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'standalone',
   reactStrictMode: true,
-  swcMinify: true,
-  // TEMP: build-only — skip type-checking during `next build` because
-  // @types/react-dom@18.2.18 resolves @types/react@19 as a peer dep
-  // in the pnpm lockfile, causing a spurious JSX element type mismatch.
-  // Types are still validated via `tsc --noEmit` separately.
-  typescript: {
-    ignoreBuildErrors: true,
+  poweredByHeader: false,
+  images: {
+    // Allow local images from /public/marketing/
+    unoptimized: false,
   },
-});
+  // Suppress hydration warnings for next-themes
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
+};
+
+module.exports = nextConfig;

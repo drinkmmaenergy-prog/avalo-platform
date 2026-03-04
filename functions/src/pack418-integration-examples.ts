@@ -19,7 +19,7 @@ import {
 } from './pack418-compliance.service';
 import {
   getRevenueSplit,
-  TOKEN_PAYOUT_RATE_PLN,
+  TOKEN_TOKEN_PAYOUT_USD,
   TokenomicsContext,
   UserComplianceContext,
 } from './types/shared/compliance/pack418-compliance-constants';
@@ -48,7 +48,7 @@ export async function exampleSpendTokensIntegration(
     type,
     creatorShare: split.creator,
     avaloShare: split.avalo,
-    payoutRatePlnPerToken: TOKEN_PAYOUT_RATE_PLN,
+    payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId,
     transactionId: `txn_${Date.now()}`,
   };
@@ -87,7 +87,7 @@ export async function exampleRequestPayoutIntegration(
     type: 'PAYOUT',
     creatorShare: 1.0, // User gets 100% of their earned balance
     avaloShare: 0.0,
-    payoutRatePlnPerToken: TOKEN_PAYOUT_RATE_PLN,
+    payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId,
   };
   
@@ -125,7 +125,7 @@ export async function examplePaidChatIntegration(
     type: 'CHAT',
     creatorShare: split.creator,
     avaloShare: split.avalo,
-    payoutRatePlnPerToken: TOKEN_PAYOUT_RATE_PLN,
+    payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId: senderId,
   };
   
@@ -177,7 +177,7 @@ export async function exampleMeetingBookingIntegration(
     type: 'MEETING',
     creatorShare: split.creator,
     avaloShare: split.avalo,
-    payoutRatePlnPerToken: TOKEN_PAYOUT_RATE_PLN,
+    payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId: fanId,
     transactionId: `meeting_${meetingId}`,
   };
@@ -224,7 +224,7 @@ export async function exampleEventTicketingIntegration(
     type: 'EVENT',
     creatorShare: split.creator,
     avaloShare: split.avalo,
-    payoutRatePlnPerToken: TOKEN_PAYOUT_RATE_PLN,
+    payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId: attendeeId,
     transactionId: `event_${eventId}`,
   };
@@ -271,7 +271,7 @@ export async function exampleAICompanionIntegration(
     type: 'AI_COMPANION',
     creatorShare: split.creator,
     avaloShare: split.avalo,
-    payoutRatePlnPerToken: TOKEN_PAYOUT_RATE_PLN,
+    payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId,
     transactionId: `ai_${aiCharacterId}_${Date.now()}`,
   };
@@ -306,7 +306,7 @@ export async function exampleTipIntegration(
     type: 'TIP',
     creatorShare: split.creator,
     avaloShare: split.avalo,
-    payoutRatePlnPerToken: TOKEN_PAYOUT_RATE_PLN,
+    payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId: fanId,
   };
   
@@ -398,3 +398,12 @@ export async function exampleManualRefundIntegration(
  *    ✓ MUST call appropriate guard function
  *    ✓ MUST NOT hard-code splits or rates
  */
+
+
+
+
+
+
+
+
+

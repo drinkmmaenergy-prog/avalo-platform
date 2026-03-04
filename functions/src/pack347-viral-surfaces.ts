@@ -93,7 +93,7 @@ export async function generateCreatorCardShare(data: {
 }): Promise<{
   success: boolean;
   shareId: string;
-  shareUrl: string;
+  sharUSDl: string;
   assetUrl: string;
 }> {
   const { creatorId, platform, campaignName } = data;
@@ -114,7 +114,7 @@ export async function generateCreatorCardShare(data: {
   // Create share tracking document
   const shareId = generateId();
   const trackingId = generateId();
-  const shareUrl = `https://avalo.app/c/${creatorId}?share=${trackingId}`;
+  const sharUSDl = `https://avalo.app/c/${creatorId}?share=${trackingId}`;
   
   const share: ViralShare = {
     shareId,
@@ -138,7 +138,7 @@ export async function generateCreatorCardShare(data: {
   return {
     success: true,
     shareId,
-    shareUrl,
+    sharUSDl,
     assetUrl
   };
 }
@@ -153,7 +153,7 @@ export async function generateEventPosterShare(data: {
 }): Promise<{
   success: boolean;
   shareId: string;
-  shareUrl: string;
+  sharUSDl: string;
   posterUrl: string;
 }> {
   const { creatorId, eventId, platform } = data;
@@ -177,7 +177,7 @@ export async function generateEventPosterShare(data: {
   // Create share tracking
   const shareId = generateId();
   const trackingId = generateId();
-  const shareUrl = `https://avalo.app/e/${eventId}?share=${trackingId}`;
+  const sharUSDl = `https://avalo.app/e/${eventId}?share=${trackingId}`;
   
   const share: ViralShare = {
     shareId,
@@ -201,7 +201,7 @@ export async function generateEventPosterShare(data: {
   return {
     success: true,
     shareId,
-    shareUrl,
+    sharUSDl,
     posterUrl
   };
 }
@@ -216,7 +216,7 @@ export async function generateAICompanionShare(data: {
 }): Promise<{
   success: boolean;
   shareId: string;
-  shareUrl: string;
+  sharUSDl: string;
   avatarUrl: string;
 }> {
   const { creatorId, aiCompanionId, platform } = data;
@@ -240,7 +240,7 @@ export async function generateAICompanionShare(data: {
   // Create share tracking
   const shareId = generateId();
   const trackingId = generateId();
-  const shareUrl = `https://avalo.app/ai/${aiCompanionId}?share=${trackingId}`;
+  const sharUSDl = `https://avalo.app/ai/${aiCompanionId}?share=${trackingId}`;
   
   const share: ViralShare = {
     shareId,
@@ -264,7 +264,7 @@ export async function generateAICompanionShare(data: {
   return {
     success: true,
     shareId,
-    shareUrl,
+    sharUSDl,
     avatarUrl
   };
 }
@@ -280,7 +280,7 @@ export async function generateBookingInviteShare(data: {
 }): Promise<{
   success: boolean;
   shareId: string;
-  shareUrl: string;
+  sharUSDl: string;
 }> {
   const { creatorId, bookingId, platform, recipientId } = data;
   
@@ -300,7 +300,7 @@ export async function generateBookingInviteShare(data: {
   // Create share tracking
   const shareId = generateId();
   const trackingId = generateId();
-  const shareUrl = `https://avalo.app/booking/${bookingId}?share=${trackingId}`;
+  const sharUSDl = `https://avalo.app/booking/${bookingId}?share=${trackingId}`;
   
   const share: ViralShare = {
     shareId,
@@ -324,7 +324,7 @@ export async function generateBookingInviteShare(data: {
   return {
     success: true,
     shareId,
-    shareUrl
+    sharUSDl
   };
 }
 
@@ -580,3 +580,12 @@ export async function getTopSharePlatforms(data: {
  * - Share performance analytics
  * - Creator card, event poster, AI companion, booking invite formats
  */
+
+
+
+
+
+
+
+
+

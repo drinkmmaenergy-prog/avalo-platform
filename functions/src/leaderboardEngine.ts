@@ -1204,3 +1204,12 @@ async function deactivateExpiredRewards(): Promise<void> {
   await badgeBatch.commit();
   logger.info(`Deactivated ${expiredBadgesSnapshot.size} expired badges`);
 }
+
+
+
+
+
+
+
+
+

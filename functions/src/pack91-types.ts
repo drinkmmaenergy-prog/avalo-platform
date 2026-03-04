@@ -317,3 +317,12 @@ export const CONTENT_RATING_DESCRIPTIONS: Record<ContentRating, string> = {
   NSFW_SOFT: 'Partial nudity, adult themes. Not suitable for all regions.',
   NSFW_STRONG: 'Full nudity, explicit sexual content. Highly restricted.',
 };
+
+
+
+
+
+
+
+
+

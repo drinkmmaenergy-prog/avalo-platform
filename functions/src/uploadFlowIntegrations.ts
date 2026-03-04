@@ -353,7 +353,7 @@ export async function moderateAICompanionAvatar(params: {
  *     photoUrls: {
  *       idFront: data.idFrontUrl,
  *       idBack: data.idBackUrl,
- *       selfie: data.selfieUrl,
+ *       selfie: data.selfiUSDl,
  *     },
  *   });
  *   
@@ -502,3 +502,12 @@ export async function moderateMessageMedia(params: {
     requiresReview: result.requiresReview,
   };
 }
+
+
+
+
+
+
+
+
+

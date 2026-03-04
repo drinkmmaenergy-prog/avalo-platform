@@ -167,3 +167,12 @@ export const KPI_COLLECTIONS = {
   safety: 'kpiSafety',
   support: 'kpiSupport',
 } as const;
+
+
+
+
+
+
+
+
+

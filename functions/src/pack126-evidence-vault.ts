@@ -138,7 +138,7 @@ async function sealMetadataItems(
  * Calculate relevance score for evidence
  */
 function calculateRelevance(message: any): number {
-  // Simple heuristic - can be improved with ML
+  // Simple hUSDistic - can be improved with ML
   let score = 0.5;
   
   // Boost for report-related keywords
@@ -439,3 +439,12 @@ async function logVaultEvent(
   
   await db.collection(SAFETY_AUDIT_COLLECTION).add(log);
 }
+
+
+
+
+
+
+
+
+

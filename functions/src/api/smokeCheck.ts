@@ -71,3 +71,12 @@ export const smokeCheck = onRequest(
     res.status(allSecretsPresent ? 200 : 503).json(result);
   },
 );
+
+
+
+
+
+
+
+
+

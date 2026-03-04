@@ -716,3 +716,12 @@ function calculateReadinessScore(region: RegionConfig): number {
 
   return score;
 }
+
+
+
+
+
+
+
+
+

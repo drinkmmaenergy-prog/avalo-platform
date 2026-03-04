@@ -266,7 +266,7 @@ export const resolveAnomaly = onCall(
 export const nightlyContractAuditor = onSchedule(
   {
     schedule: 'every day 02:00',
-    timeZone: 'Europe/Warsaw',
+    timeZone: 'USDope/Warsaw',
     region: 'europe-west1',
     memory: '1GiB',
     timeoutSeconds: 540,
@@ -486,7 +486,7 @@ async function notifyAdminsOfViolations(report: NightlyAuditReport): Promise<voi
 export const weeklyContractReport = onSchedule(
   {
     schedule: 'every monday 09:00',
-    timeZone: 'Europe/Warsaw',
+    timeZone: 'USDope/Warsaw',
     region: 'europe-west1',
     memory: '512MiB',
     timeoutSeconds: 300,
@@ -555,3 +555,12 @@ export const weeklyContractReport = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+

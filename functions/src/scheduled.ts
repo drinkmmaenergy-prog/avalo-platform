@@ -18,7 +18,7 @@ import { admin, db, generateId, increment, onSchedule, serverTimestamp } from '.
 export const expireStaleChats = onSchedule(
   {
     schedule: "0 * * * *",
-    timeZone: "Europe/Warsaw",
+    timeZone: "USDope/Warsaw",
     region: "europe-west1",
   },
   async (event) => {
@@ -109,7 +109,7 @@ export const expireStaleChats = onSchedule(
 export const calendarSweep = onSchedule(
   {
     schedule: "*/30 * * * *",
-    timeZone: "Europe/Warsaw",
+    timeZone: "USDope/Warsaw",
     region: "europe-west1",
   },
   async (event) => {
@@ -218,7 +218,7 @@ export const calendarSweep = onSchedule(
 export const updateRoyalEligibility = onSchedule(
   {
     schedule: "0 3 * * *",
-    timeZone: "Europe/Warsaw",
+    timeZone: "USDope/Warsaw",
     region: "europe-west1",
   },
   async (event) => {
@@ -296,5 +296,14 @@ export const updateRoyalEligibility = onSchedule(
 
     return;
   });
+
+
+
+
+
+
+
+
+
 
 

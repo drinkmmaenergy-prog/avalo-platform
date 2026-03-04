@@ -144,3 +144,12 @@ export const pack452_premiumKPIDaily = onSchedule(
     console.log('[PACK 452] Premium KPIs computed:', JSON.stringify(metrics));
   }
 );
+
+
+
+
+
+
+
+
+

@@ -384,3 +384,12 @@ export const healthCheck = onCall(
 
 logger.info("✅ Scaling Infrastructure module loaded successfully");
 
+
+
+
+
+
+
+
+
+

@@ -278,3 +278,12 @@ export const validateDeviceFingerprint = functions.https.onCall(async (request) 
     return { valid: true, isNewDevice: !isKnownDevice };
   }
 );
+
+
+
+
+
+
+
+
+

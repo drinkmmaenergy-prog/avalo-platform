@@ -51,3 +51,12 @@ export async function getRequiredDocuments(region?: string): Promise<LegalDocume
     LEGAL_DOCUMENT_TYPES.PRIVACY_POLICY,
   ];
 }
+
+
+
+
+
+
+
+
+

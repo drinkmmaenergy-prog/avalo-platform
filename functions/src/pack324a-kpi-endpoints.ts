@@ -100,7 +100,7 @@ export const pack324a_getPlatformKpiDaily = onCall(
           },
           revenue: {
             tokensSpent: kpi.totalTokensSpent,
-            revenuePLN: kpi.totalTokenRevenuePLN,
+            revenueUSD: kpi.totalTokenRevenueUSD,
           },
           activity: {
             chats: kpi.totalChats,
@@ -127,7 +127,7 @@ export const pack324a_getPlatformKpiDaily = onCall(
         },
         revenue: {
           tokensSpent: kpi.totalTokensSpent,
-          revenuePLN: kpi.totalTokenRevenuePLN,
+          revenueUSD: kpi.totalTokenRevenueUSD,
         },
         activity: {
           chats: kpi.totalChats,
@@ -208,7 +208,7 @@ export const pack324a_getCreatorKpiDaily = onCall(
             other: kpi.earnedTokensOther,
             total: kpi.totalEarnedTokens,
           },
-          earningsPLN: kpi.totalEarnedPLN,
+          earningsUSD: kpi.totalEarnedUSD,
           sessions: kpi.sessionsCount,
           lastUpdated: kpi.createdAt.toDate(),
         };
@@ -230,7 +230,7 @@ export const pack324a_getCreatorKpiDaily = onCall(
           other: kpi.earnedTokensOther,
           total: kpi.totalEarnedTokens,
         },
-        earningsPLN: kpi.totalEarnedPLN,
+        earningsUSD: kpi.totalEarnedUSD,
         sessions: kpi.sessionsCount,
         lastUpdated: kpi.createdAt.toDate(),
       };
@@ -359,7 +359,7 @@ export const pack324a_aggregateDailyKpi = onSchedule(
       logger.info('Daily KPI aggregation complete:', {
         date: result.platformKpi.date,
         creatorsProcessed: result.creatorsProcessed,
-        platformRevenue: result.platformKpi.totalTokenRevenuePLN,
+        platformRevenue: result.platformKpi.totalTokenRevenueUSD,
         safetyReports: result.safetyKpi.reportsTotal,
       });
     } catch (error: any) {
@@ -528,7 +528,7 @@ export const pack324a_admin_getKpiSummary = onCall(
           },
           revenue: {
             tokensSpent: kpi.totalTokensSpent,
-            revenuePLN: kpi.totalTokenRevenuePLN,
+            revenueUSD: kpi.totalTokenRevenueUSD,
           },
           activity: {
             chats: kpi.totalChats,
@@ -541,7 +541,7 @@ export const pack324a_admin_getKpiSummary = onCall(
         });
         
         totalUsers += kpi.newUsers;
-        totalRevenue += kpi.totalTokenRevenuePLN;
+        totalRevenue += kpi.totalTokenRevenueUSD;
       });
       
       return {
@@ -552,7 +552,7 @@ export const pack324a_admin_getKpiSummary = onCall(
         summary: {
           totalDays: dailyData.length,
           totalNewUsers: totalUsers,
-          totalRevenuePLN: totalRevenue,
+          totalRevenueUSD: totalRevenue,
           averageDailyRevenue: dailyData.length > 0 ? totalRevenue / dailyData.length : 0,
         },
       };
@@ -619,7 +619,7 @@ export const pack324a_admin_getTopCreators = onCall(
         .map(([userId, data]) => ({
           userId,
           totalEarningsTokens: data.totalEarnings,
-          totalEarningsPLN: data.totalEarnings * KPI_CONFIG.TOKEN_TO_PLN_RATE,
+          totalEarningsUSD: data.totalEarnings * KPI_CONFIG.TOKEN_PAYOUT_USD,
           totalSessions: data.totalSessions,
           activeDays: data.days,
           averageDailyEarnings: data.totalEarnings / data.days,
@@ -643,3 +643,12 @@ export const pack324a_admin_getTopCreators = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+

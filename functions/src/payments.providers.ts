@@ -5,7 +5,7 @@
  * - Stripe (existing, global)
  * - Przelewy24 (P24) - Poland
  * - Blik - Poland (mobile payment)
- * - PayU - Central/Eastern Europe
+ * - PayU - Central/Eastern USDope
  * - Coinbase Commerce - Cryptocurrency
  *
  * Callable functions:
@@ -55,13 +55,9 @@ export enum PaymentProvider {
  * Supported currencies
  */
 export enum Currency {
-  PLN = "PLN",
-  EUR = "EUR",
   USD = "USD",
-  GBP = "GBP",
-  BTC = "BTC",
-  ETH = "ETH",
 }
+
 
 /**
  * Payment session interface
@@ -265,10 +261,10 @@ async function createP24Session(
   const config = getProviderConfig(PaymentProvider.PRZELEWY24);
 
   const sessionId = `p24_${Date.now()}_${userId.substring(0, 8)}`;
-  const amountGroszy = Math.round(amount * 100); // PLN to groszy
+  const amountGroszy = Math.round(amount * 100); // USD to groszy
 
   // Calculate CRC signature
-  const crcData = `{"sessionId":"${sessionId}","merchantId":${config.merchantId},"amount":${amountGroszy},"currency":"PLN","crc":"${config.crcKey}"}`;
+  const crcData = `{"sessionId":"${sessionId}","merchantId":${config.merchantId},"amount":${amountGroszy},"currency":"USD","crc":"${config.crcKey}"}`;
   const sign = crypto.createHash("sha384").update(crcData).digest("hex");
 
   // Register transaction
@@ -279,7 +275,7 @@ async function createP24Session(
       posId: parseInt(config.posId),
       sessionId,
       amount: amountGroszy,
-      currency: "PLN",
+      currency: "USD",
       description: `${tokens} Avalo Tokens`,
       email: "user@avalo.app", // Should get from user profile
       country: "PL",
@@ -593,5 +589,14 @@ async function creditUserTokens(userId: string, tokens: number, transactionId: s
 
   console.log(`Credited ${tokens} tokens to user ${userId}`);
 }
+
+
+
+
+
+
+
+
+
 
 

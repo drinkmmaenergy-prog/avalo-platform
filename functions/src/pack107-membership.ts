@@ -91,18 +91,18 @@ async function calculateLocalizedPrice(
   billingCycle: MembershipBillingCycle,
   currencyCode: string
 ): Promise<{ amount: number; currency: string; fxRate: number }> {
-  // Get base price in EUR
+  // Get base price in USD
   const basePricing = MEMBERSHIP_PRICING[tier];
-  const basePriceEUR =
+  const priceUSD =
     billingCycle === 'MONTHLY'
-      ? basePricing.monthlyPriceEUR
-      : basePricing.annualPriceEUR;
+      ? basePricing.monthlyPriceUSD
+      : basePricing.annualPriceUSD;
 
-  // If currency is EUR, return as-is
-  if (currencyCode === 'EUR') {
+  // If currency is USD, return as-is
+  if (currencyCode === 'USD') {
     return {
-      amount: basePriceEUR,
-      currency: 'EUR',
+      amount: priceUSD,
+      currency: 'USD',
       fxRate: 1.0,
     };
   }
@@ -114,11 +114,11 @@ async function calculateLocalizedPrice(
     .get();
 
   if (!currencyDoc.exists) {
-    // Fallback to EUR if currency not supported
-    logger.warn(`Currency ${currencyCode} not found, falling back to EUR`);
+    // Fallback to USD if currency not supported
+    logger.warn(`Currency ${currencyCode} not found, falling back to USD`);
     return {
-      amount: basePriceEUR,
-      currency: 'EUR',
+      amount: priceUSD,
+      currency: 'USD',
       fxRate: 1.0,
     };
   }
@@ -126,7 +126,7 @@ async function calculateLocalizedPrice(
   const currencyProfile = currencyDoc.data() as CurrencyProfile;
 
   // Convert using FX rate
-  const convertedAmount = basePriceEUR * currencyProfile.fxRate;
+  const convertedAmount = priceUSD * currencyProfile.fxRate;
 
   // Round to appropriate decimal places
   const roundedAmount =
@@ -941,3 +941,12 @@ export async function handleSubscriptionDeleted(
     subscriptionId: subscription.id,
   });
 }
+
+
+
+
+
+
+
+
+

@@ -31,11 +31,10 @@ export default function AnalyticsPage() {
     setInsightsError(null);
 
     try {
-      const insights = await generateAIInsights({
-        incidents: incidents.slice(0, 200),
-        appeals: appeals.slice(0, 50),
-        restrictions: [], // Would need to fetch from userModerationStats
-      });
+      const insights = await generateAIInsights(
+        incidents.slice(0, 200),
+        appeals.slice(0, 50),
+      );
 
       if (insights) {
         setAiInsights(insights);

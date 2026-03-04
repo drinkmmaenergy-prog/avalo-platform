@@ -35,12 +35,12 @@ export interface CountryConfig {
 
 // Pre-configured country data for 42+ markets
 export const COUNTRY_CONFIGS: CountryConfig[] = [
-  // Central Europe
+  // Central USDope
   {
     countryCode: 'PL',
     region: 'EU',
     languageCodes: ['pl'],
-    currency: 'PLN',
+    currency: 'USD',
     asoScore: 85,
     trustScore: 0.8,
     fraudRiskScore: 30,
@@ -55,7 +55,7 @@ export const COUNTRY_CONFIGS: CountryConfig[] = [
     countryCode: 'DE',
     region: 'EU',
     languageCodes: ['de'],
-    currency: 'EUR',
+    currency: 'USD',
     asoScore: 90,
     trustScore: 0.85,
     fraudRiskScore: 25,
@@ -84,7 +84,7 @@ export const COUNTRY_CONFIGS: CountryConfig[] = [
     countryCode: 'SK',
     region: 'EU',
     languageCodes: ['sk'],
-    currency: 'EUR',
+    currency: 'USD',
     asoScore: 70,
     trustScore: 0.7,
     fraudRiskScore: 40,
@@ -95,12 +95,12 @@ export const COUNTRY_CONFIGS: CountryConfig[] = [
     monetizationRestricted: false,
   },
   
-  // Western Europe
+  // Western USDope
   {
     countryCode: 'FR',
     region: 'EU',
     languageCodes: ['fr'],
-    currency: 'EUR',
+    currency: 'USD',
     asoScore: 85,
     trustScore: 0.8,
     fraudRiskScore: 30,
@@ -115,7 +115,7 @@ export const COUNTRY_CONFIGS: CountryConfig[] = [
     countryCode: 'GB',
     region: 'EU',
     languageCodes: ['en'],
-    currency: 'GBP',
+    currency: 'USD',
     asoScore: 95,
     trustScore: 0.9,
     fraudRiskScore: 20,
@@ -130,7 +130,7 @@ export const COUNTRY_CONFIGS: CountryConfig[] = [
     countryCode: 'ES',
     region: 'EU',
     languageCodes: ['es'],
-    currency: 'EUR',
+    currency: 'USD',
     asoScore: 80,
     trustScore: 0.75,
     fraudRiskScore: 35,
@@ -145,7 +145,7 @@ export const COUNTRY_CONFIGS: CountryConfig[] = [
     countryCode: 'IT',
     region: 'EU',
     languageCodes: ['it'],
-    currency: 'EUR',
+    currency: 'USD',
     asoScore: 75,
     trustScore: 0.7,
     fraudRiskScore: 40,
@@ -204,7 +204,7 @@ export const COUNTRY_CONFIGS: CountryConfig[] = [
     countryCode: 'FI',
     region: 'EU',
     languageCodes: ['fi'],
-    currency: 'EUR',
+    currency: 'USD',
     asoScore: 80,
     trustScore: 0.85,
     fraudRiskScore: 20,
@@ -445,7 +445,7 @@ export async function seedCountry(config: CountryConfig): Promise<void> {
     countryCode: config.countryCode,
     region: config.region,
     languageCodes: config.languageCodes,
-    currency: config.currency,
+    currency: 'USD',
     asoScore: config.asoScore,
     trustScore: config.trustScore,
     fraudRiskScore: config.fraudRiskScore,
@@ -458,7 +458,7 @@ export async function seedCountry(config: CountryConfig): Promise<void> {
   await FeatureFlags.initializeCountryFlags(config.countryCode, config.featureOverrides);
   
   // Create payment profile
-  await Pricing.createCountryPaymentProfile(config.countryCode, config.currency, {
+  await Pricing.createCountryPaymentProfile(config.countryCode, 'USD', {
     purchasingPowerIndex: config.purchasingPowerIndex,
     payoutEnabled: config.payoutEnabled,
     monetizationRestricted: config.monetizationRestricted,
@@ -473,3 +473,12 @@ export async function seedCountry(config: CountryConfig): Promise<void> {
     }
   );
 }
+
+
+
+
+
+
+
+
+

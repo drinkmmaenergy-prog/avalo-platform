@@ -132,11 +132,11 @@ export interface MembershipPricing {
   /** Tier name */
   tier: MembershipTier;
   
-  /** Monthly price in EUR (base currency) */
-  monthlyPriceEUR: number;
+  /** Monthly price in USD (base currency) */
+  monthlyPriceUSD: number;
   
-  /** Annual price in EUR (simply 12 × monthly, no discount) */
-  annualPriceEUR: number;
+  /** Annual price in USD (simply 12 × monthly, no discount) */
+  annualPriceUSD: number;
   
   /** Stripe price ID for monthly */
   stripePriceIdMonthly?: string;
@@ -156,8 +156,8 @@ export interface MembershipPricing {
  */
 export const MEMBERSHIP_PRICING: Record<Exclude<MembershipTier, 'NONE'>, Omit<MembershipPricing, 'tier' | 'stripePriceIdMonthly' | 'stripePriceIdAnnual' | 'enabled'>> = {
   VIP: {
-    monthlyPriceEUR: 9.99,
-    annualPriceEUR: 119.88, // 12 × 9.99, no discount
+    monthlyPriceUSD: 9.99,
+    annualPriceUSD: 119.88, // 12 × 9.99, no discount
     features: [
       'VIP badge on profile',
       'Premium profile themes',
@@ -166,8 +166,8 @@ export const MEMBERSHIP_PRICING: Record<Exclude<MembershipTier, 'NONE'>, Omit<Me
     ],
   },
   ROYAL_CLUB: {
-    monthlyPriceEUR: 29.99,
-    annualPriceEUR: 359.88, // 12 × 29.99, no discount
+    monthlyPriceUSD: 29.99,
+    annualPriceUSD: 359.88, // 12 × 29.99, no discount
     features: [
       'Royal Club animated badge',
       'Exclusive profile frames',
@@ -240,7 +240,7 @@ export interface MembershipProfileTheme {
   
   /** Profile intro animation (Royal only) */
   introAnimation?: {
-    lottieUrl: string;
+    lottiUSDl: string;
     duration: number;
   };
   
@@ -681,3 +681,12 @@ export interface MembershipListItem {
   lifetimeValue?: number;
   activeDays?: number;
 }
+
+
+
+
+
+
+
+
+

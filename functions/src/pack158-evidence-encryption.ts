@@ -252,3 +252,12 @@ export function obfuscateUserData(data: string): string {
   
   return `redacted_${hash.substring(0, 8)}`;
 }
+
+
+
+
+
+
+
+
+

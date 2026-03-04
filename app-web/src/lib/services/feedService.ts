@@ -1,9 +1,11 @@
+"use client";
+
 /**
  * Feed, Stories, and Reels Service
  * Handles content fetching with infinite scroll, NSFW gating, and premium unlocks
  */
 
-import { db } from '../firebase';
+import { requireDb } from '../firebase';
 import {
   collection,
   query,
@@ -71,7 +73,7 @@ export async function fetchFeedPosts(
       constraints.push(startAfter(lastDoc));
     }
 
-    const q = query(collection(db, 'posts'), ...constraints);
+    const q = query(collection(requireDb(), 'posts'), ...constraints);
     const snapshot = await getDocs(q);
 
     const posts = snapshot.docs.map(doc => ({
@@ -98,7 +100,7 @@ export async function unlockPremiumPost(
   userId: string
 ): Promise<{ success: boolean; mediaUrl?: string }> {
   try {
-    const postRef = doc(db, 'posts', postId);
+    const postRef = doc(requireDb(), 'posts', postId);
     const postSnap = await getDoc(postRef);
 
     if (!postSnap.exists()) {
@@ -112,7 +114,7 @@ export async function unlockPremiumPost(
     }
 
     // Check if already unlocked
-    const unlockRef = doc(db, 'unlocks', `${userId}_post_${postId}`);
+    const unlockRef = doc(requireDb(), 'unlocks', `${userId}_post_${postId}`);
     const unlockSnap = await getDoc(unlockRef);
 
     if (unlockSnap.exists()) {
@@ -134,7 +136,7 @@ export async function unlockPremiumPost(
  */
 export async function incrementPostViews(postId: string): Promise<void> {
   try {
-    const postRef = doc(db, 'posts', postId);
+    const postRef = doc(requireDb(), 'posts', postId);
     await updateDoc(postRef, {
       views: increment(1),
     });
@@ -169,7 +171,7 @@ export async function fetchActiveStories(
       constraints.unshift(where('isNSFW', '==', false));
     }
 
-    const q = query(collection(db, 'stories'), ...constraints);
+    const q = query(collection(requireDb(), 'stories'), ...constraints);
     const snapshot = await getDocs(q);
 
     return snapshot.docs.map(doc => ({
@@ -205,7 +207,7 @@ export async function fetchUserStories(
       constraints.push(where('isNSFW', '==', false));
     }
 
-    const q = query(collection(db, 'stories'), ...constraints);
+    const q = query(collection(requireDb(), 'stories'), ...constraints);
     const snapshot = await getDocs(q);
 
     return snapshot.docs.map(doc => ({
@@ -226,7 +228,7 @@ export async function unlockPremiumStory(
   userId: string
 ): Promise<{ success: boolean; mediaUrl?: string }> {
   try {
-    const storyRef = doc(db, 'stories', storyId);
+    const storyRef = doc(requireDb(), 'stories', storyId);
     const storySnap = await getDoc(storyRef);
 
     if (!storySnap.exists()) {
@@ -240,7 +242,7 @@ export async function unlockPremiumStory(
     }
 
     // Check if already unlocked
-    const unlockRef = doc(db, 'unlocks', `${userId}_story_${storyId}`);
+    const unlockRef = doc(requireDb(), 'unlocks', `${userId}_story_${storyId}`);
     const unlockSnap = await getDoc(unlockRef);
 
     if (unlockSnap.exists()) {
@@ -261,7 +263,7 @@ export async function unlockPremiumStory(
  */
 export async function incrementStoryViews(storyId: string): Promise<void> {
   try {
-    const storyRef = doc(db, 'stories', storyId);
+    const storyRef = doc(requireDb(), 'stories', storyId);
     await updateDoc(storyRef, {
       views: increment(1),
     });
@@ -299,7 +301,7 @@ export async function fetchReels(
       constraints.push(startAfter(lastDoc));
     }
 
-    const q = query(collection(db, 'reels'), ...constraints);
+    const q = query(collection(requireDb(), 'reels'), ...constraints);
     const snapshot = await getDocs(q);
 
     const reels = snapshot.docs.map(doc => ({
@@ -326,7 +328,7 @@ export async function unlockPremiumReel(
   userId: string
 ): Promise<{ success: boolean; videoUrl?: string }> {
   try {
-    const reelRef = doc(db, 'reels', reelId);
+    const reelRef = doc(requireDb(), 'reels', reelId);
     const reelSnap = await getDoc(reelRef);
 
     if (!reelSnap.exists()) {
@@ -340,7 +342,7 @@ export async function unlockPremiumReel(
     }
 
     // Check if already unlocked
-    const unlockRef = doc(db, 'unlocks', `${userId}_reel_${reelId}`);
+    const unlockRef = doc(requireDb(), 'unlocks', `${userId}_reel_${reelId}`);
     const unlockSnap = await getDoc(unlockRef);
 
     if (unlockSnap.exists()) {
@@ -361,7 +363,7 @@ export async function unlockPremiumReel(
  */
 export async function incrementReelViews(reelId: string): Promise<void> {
   try {
-    const reelRef = doc(db, 'reels', reelId);
+    const reelRef = doc(requireDb(), 'reels', reelId);
     await updateDoc(reelRef, {
       views: increment(1),
     });
@@ -379,11 +381,11 @@ export async function toggleLike(
   contentType: 'post' | 'reel'
 ): Promise<{ liked: boolean }> {
   try {
-    const likeRef = doc(db, 'likes', `${userId}_${contentType}_${contentId}`);
+    const likeRef = doc(requireDb(), 'likes', `${userId}_${contentType}_${contentId}`);
     const likeSnap = await getDoc(likeRef);
 
     const contentCollection = contentType === 'post' ? 'posts' : 'reels';
-    const contentRef = doc(db, contentCollection, contentId);
+    const contentRef = doc(requireDb(), contentCollection, contentId);
 
     if (likeSnap.exists()) {
       // Unlike

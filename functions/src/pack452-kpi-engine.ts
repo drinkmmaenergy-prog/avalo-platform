@@ -243,3 +243,12 @@ export async function trackPremiumRevenue(
 
   await counterRef.set(updates, { merge: true });
 }
+
+
+
+
+
+
+
+
+

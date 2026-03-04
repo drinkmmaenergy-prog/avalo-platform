@@ -245,10 +245,10 @@ export const creator_analytics_overview = onCall(
           availableToWithdraw,
         },
         fiat: {
-          ratePerTokenPLN: CREATOR_ANALYTICS_CONSTANTS.TOKEN_TO_PLN_RATE,
-          totalEarnedPLN: (wallet.lifetimeEarnedTokens || 0) * CREATOR_ANALYTICS_CONSTANTS.TOKEN_TO_PLN_RATE,
-          currentBalancePLN: (wallet.balanceTokens || 0) * CREATOR_ANALYTICS_CONSTANTS.TOKEN_TO_PLN_RATE,
-          availableToWithdrawPLN: availableToWithdraw * CREATOR_ANALYTICS_CONSTANTS.TOKEN_TO_PLN_RATE,
+          ratePerTokenUSD: CREATOR_ANALYTICS_CONSTANTS.TOKEN_PAYOUT_USD,
+          totalEarnedUSD: (wallet.lifetimeEarnedTokens || 0) * CREATOR_ANALYTICS_CONSTANTS.TOKEN_PAYOUT_USD,
+          currentBalanceUSD: (wallet.balanceTokens || 0) * CREATOR_ANALYTICS_CONSTANTS.TOKEN_PAYOUT_USD,
+          availableToWithdrawUSD: availableToWithdraw * CREATOR_ANALYTICS_CONSTANTS.TOKEN_PAYOUT_USD,
         },
         byFeature,
         counts,
@@ -289,10 +289,10 @@ function getEmptyOverview(fromDate: Date, toDate: Date): EarningsOverview {
       availableToWithdraw: 0,
     },
     fiat: {
-      ratePerTokenPLN: CREATOR_ANALYTICS_CONSTANTS.TOKEN_TO_PLN_RATE,
-      totalEarnedPLN: 0,
-      currentBalancePLN: 0,
-      availableToWithdrawPLN: 0,
+      ratePerTokenUSD: CREATOR_ANALYTICS_CONSTANTS.TOKEN_PAYOUT_USD,
+      totalEarnedUSD: 0,
+      currentBalanceUSD: 0,
+      availableToWithdrawUSD: 0,
     },
     byFeature: {
       chatTokens: 0,
@@ -680,3 +680,12 @@ export const creator_analytics_payers = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+

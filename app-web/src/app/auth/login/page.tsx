@@ -218,13 +218,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <Link
-                href="/auth/phone"
-                className="text-primary-600 hover:text-primary-700 dark:text-primary-400"
-              >
-                {t('auth.signInWithPhone')}
-              </Link>
+            <div className="flex items-center justify-end text-sm">
               <Link
                 href="/auth/forgot-password"
                 className="text-muted-foreground hover:text-foreground"
@@ -273,3 +267,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

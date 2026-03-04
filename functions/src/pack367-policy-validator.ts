@@ -385,7 +385,7 @@ export class PolicyValidatorService {
       mustIncludeAge18Plus: true,
       allowedScreenshotTypes: ["profile", "chat", "explore", "event", "meeting"],
       requirePrivacyPolicyUrl: true,
-      requireTermsOfServiceUrl: true,
+      requireTermsOfServicUSDl: true,
       requireAgeGate: true,
       contentRating: {},
     };
@@ -441,3 +441,12 @@ export async function validateListingBeforeSave(
   
   return result;
 }
+
+
+
+
+
+
+
+
+

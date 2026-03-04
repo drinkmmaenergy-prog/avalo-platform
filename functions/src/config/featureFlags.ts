@@ -341,7 +341,7 @@ export const LAUNCH_WAVES = {
   },
   wave2: {
     countries: ['DE', 'FR', 'ES', 'IT', 'NL', 'BE', 'AT', 'CH'],
-    description: 'Western Europe',
+    description: 'Western USDope',
     features: {
       payoutsEnabled: true,
       liveStreaming: true,
@@ -349,7 +349,7 @@ export const LAUNCH_WAVES = {
   },
   wave3: {
     countries: ['SE', 'NO', 'DK', 'FI', 'PL', 'CZ', 'PT'],
-    description: 'Northern & Central Europe',
+    description: 'Northern & Central USDope',
     features: {
       payoutsEnabled: true,
       liveStreaming: true,
@@ -434,3 +434,12 @@ export function areCreatorFeaturesAvailable(
     followerCount >= flags.creatorMinFollowers
   );
 }
+
+
+
+
+
+
+
+
+

@@ -535,3 +535,12 @@ export const onUserCountryChangeLegal = onDocumentUpdated('users/{userId}', asyn
       });
     }
   });
+
+
+
+
+
+
+
+
+

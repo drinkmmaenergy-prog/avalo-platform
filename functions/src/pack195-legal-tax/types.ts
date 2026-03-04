@@ -296,3 +296,12 @@ export interface ContractTemplate {
   updatedAt: Date;
   usageCount: number;
 }
+
+
+
+
+
+
+
+
+

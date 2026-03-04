@@ -25,14 +25,14 @@ export type FinancialScenario = {
 export type ScenarioResult = {
   scenarioId: string;
   scenarioName: string;
-  baselineRevenuePLN: number;
-  baselinePayoutsPLN: number;
-  baselineProfitPLN: number;
-  stressedRevenuePLN: number;
-  stressedPayoutsPLN: number;
-  stressedProfitPLN: number;
-  revenueImpactPLN: number;
-  profitImpactPLN: number;
+  baselineRevenueUSD: number;
+  baselinePayoutsUSD: number;
+  baselineProfitUSD: number;
+  stressedRevenueUSD: number;
+  stressedPayoutsUSD: number;
+  stressedProfitUSD: number;
+  revenueImpactUSD: number;
+  profitImpactUSD: number;
   revenueImpactPercent: number;
   profitImpactPercent: number;
   timeToCashZeroDays: number | null;
@@ -43,13 +43,13 @@ export type ScenarioResult = {
 };
 
 type BaselineMetrics = {
-  dailyRevenuePLN: number;
-  dailyPayoutsPLN: number;
+  dailyRevenueUSD: number;
+  dailyPayoutsUSD: number;
   dailyActiveUsers: number;
   dailyTransactions: number;
   churnRate: number;
   conversionRate: number;
-  currentCashPLN: number;
+  currentCashUSD: number;
 };
 
 // ============================================================================
@@ -195,16 +195,16 @@ class StressScenarioEngine {
       .doc('cash')
       .get();
 
-    const currentCash = cashDoc.exists ? cashDoc.data()!.balancePLN || 100000 : 100000;
+    const currentCash = cashDoc.exists ? cashDoc.data()!.balanceUSD || 100000 : 100000;
 
     return {
-      dailyRevenuePLN: last7Days.avgRevenue,
-      dailyPayoutsPLN: last7Days.avgPayouts,
+      dailyRevenueUSD: last7Days.avgRevenue,
+      dailyPayoutsUSD: last7Days.avgPayouts,
       dailyActiveUsers: last7Days.avgActiveUsers,
       dailyTransactions: last7Days.avgTransactions,
       churnRate: last7Days.churnRate,
       conversionRate: last7Days.conversionRate,
-      currentCashPLN: currentCash,
+      currentCashUSD: currentCash,
     };
   }
 
@@ -240,8 +240,8 @@ class StressScenarioEngine {
 
       if (dayDoc.exists) {
         const data = dayDoc.data()!;
-        totalRevenue += data.revenuePLN || 0;
-        totalPayouts += data.payoutsPLN || 0;
+        totalRevenue += data.revenueUSD || 0;
+        totalPayouts += data.payoutsUSD || 0;
         totalUsers += data.activeUsers || 0;
         totalTransactions += data.transactions || 0;
         count++;
@@ -288,20 +288,20 @@ class StressScenarioEngine {
     baseline: BaselineMetrics,
     scenario: FinancialScenario
   ): {
-    dailyRevenuePLN: number;
-    dailyPayoutsPLN: number;
-    totalRevenuePLN: number;
-    totalPayoutsPLN: number;
+    dailyRevenueUSD: number;
+    dailyPayoutsUSD: number;
+    totalRevenueUSD: number;
+    totalPayoutsUSD: number;
   } {
     // Calculate daily stressed metrics
-    let stressedRevenue = baseline.dailyRevenuePLN * scenario.trafficMultiplier;
+    let stressedRevenue = baseline.dailyRevenueUSD * scenario.trafficMultiplier;
     
     // Churn affects revenue negatively
     const churnImpact = 1 - ((scenario.churnMultiplier - 1) * 0.5); // 50% direct impact
     stressedRevenue *= churnImpact;
 
     // Calculate stressed payouts
-    let stressedPayouts = baseline.dailyPayoutsPLN * scenario.payoutMultiplier;
+    let stressedPayouts = baseline.dailyPayoutsUSD * scenario.payoutMultiplier;
     
     // Payouts also affected by traffic
     stressedPayouts *= scenario.trafficMultiplier;
@@ -311,10 +311,10 @@ class StressScenarioEngine {
     const totalPayouts = stressedPayouts * scenario.durationDays;
 
     console.log('Scheduled job result:', {
-      dailyRevenuePLN: stressedRevenue,
-      dailyPayoutsPLN: stressedPayouts,
-      totalRevenuePLN: totalRevenue,
-      totalPayoutsPLN: totalPayouts,
+      dailyRevenueUSD: stressedRevenue,
+      dailyPayoutsUSD: stressedPayouts,
+      totalRevenueUSD: totalRevenue,
+      totalPayoutsUSD: totalPayouts,
     });
 
 
@@ -327,38 +327,38 @@ class StressScenarioEngine {
   private calculateImpacts(
     baseline: BaselineMetrics,
     stressed: {
-      dailyRevenuePLN: number;
-      dailyPayoutsPLN: number;
-      totalRevenuePLN: number;
-      totalPayoutsPLN: number;
+      dailyRevenueUSD: number;
+      dailyPayoutsUSD: number;
+      totalRevenueUSD: number;
+      totalPayoutsUSD: number;
     },
     scenario: FinancialScenario
   ): ScenarioResult {
     // Baseline totals
-    const baselineRevenue = baseline.dailyRevenuePLN * scenario.durationDays;
-    const baselinePayouts = baseline.dailyPayoutsPLN * scenario.durationDays;
+    const baselineRevenue = baseline.dailyRevenueUSD * scenario.durationDays;
+    const baselinePayouts = baseline.dailyPayoutsUSD * scenario.durationDays;
     const baselineProfit = baselineRevenue - baselinePayouts;
 
     // Stressed totals
-    const stressedProfit = stressed.totalRevenuePLN - stressed.totalPayoutsPLN;
+    const stressedProfit = stressed.totalRevenueUSD - stressed.totalPayoutsUSD;
 
     // Impacts
-    const revenueImpact = stressed.totalRevenuePLN - baselineRevenue;
+    const revenueImpact = stressed.totalRevenueUSD - baselineRevenue;
     const profitImpact = stressedProfit - baselineProfit;
     const revenueImpactPercent = baselineRevenue > 0 ? (revenueImpact / baselineRevenue) * 100 : 0;
     const profitImpactPercent = baselineProfit > 0 ? (profitImpact / baselineProfit) * 100 : 0;
 
     // Calculate time to cash zero
-    const dailyProfitDiff = stressed.dailyRevenuePLN - stressed.dailyPayoutsPLN;
+    const dailyProfitDiff = stressed.dailyRevenueUSD - stressed.dailyPayoutsUSD;
     const timeToCashZero = dailyProfitDiff < 0 
-      ? Math.floor(baseline.currentCashPLN / Math.abs(dailyProfitDiff))
+      ? Math.floor(baseline.currentCashUSD / Math.abs(dailyProfitDiff))
       : null;
 
     // Calculate survival runway
     const survivalRunway = this.calculateSurvivalRunway(
-      baseline.currentCashPLN,
-      stressed.dailyRevenuePLN,
-      stressed.dailyPayoutsPLN
+      baseline.currentCashUSD,
+      stressed.dailyRevenueUSD,
+      stressed.dailyPayoutsUSD
     );
 
     // Calculate recovery threshold (days to return to baseline)
@@ -379,14 +379,14 @@ class StressScenarioEngine {
     console.log('Scheduled job result:', {
       scenarioId: scenario.id,
       scenarioName: scenario.name,
-      baselineRevenuePLN: Math.round(baselineRevenue * 100) / 100,
-      baselinePayoutsPLN: Math.round(baselinePayouts * 100) / 100,
-      baselineProfitPLN: Math.round(baselineProfit * 100) / 100,
-      stressedRevenuePLN: Math.round(stressed.totalRevenuePLN * 100) / 100,
-      stressedPayoutsPLN: Math.round(stressed.totalPayoutsPLN * 100) / 100,
-      stressedProfitPLN: Math.round(stressedProfit * 100) / 100,
-      revenueImpactPLN: Math.round(revenueImpact * 100) / 100,
-      profitImpactPLN: Math.round(profitImpact * 100) / 100,
+      baselineRevenueUSD: Math.round(baselineRevenue * 100) / 100,
+      baselinePayoutsUSD: Math.round(baselinePayouts * 100) / 100,
+      baselineProfitUSD: Math.round(baselineProfit * 100) / 100,
+      stressedRevenueUSD: Math.round(stressed.totalRevenueUSD * 100) / 100,
+      stressedPayoutsUSD: Math.round(stressed.totalPayoutsUSD * 100) / 100,
+      stressedProfitUSD: Math.round(stressedProfit * 100) / 100,
+      revenueImpactUSD: Math.round(revenueImpact * 100) / 100,
+      profitImpactUSD: Math.round(profitImpact * 100) / 100,
       revenueImpactPercent: Math.round(revenueImpactPercent * 100) / 100,
       profitImpactPercent: Math.round(profitImpactPercent * 100) / 100,
       timeToCashZeroDays: timeToCashZero,
@@ -429,8 +429,8 @@ class StressScenarioEngine {
     stressed: any,
     scenario: FinancialScenario
   ): number | null {
-    const profitDiff = (baseline.dailyRevenuePLN - baseline.dailyPayoutsPLN) - 
-                       (stressed.dailyRevenuePLN - stressed.dailyPayoutsPLN);
+    const profitDiff = (baseline.dailyRevenueUSD - baseline.dailyPayoutsUSD) - 
+                       (stressed.dailyRevenueUSD - stressed.dailyPayoutsUSD);
     
     if (profitDiff <= 0) {
       return; // No recovery needed
@@ -598,7 +598,7 @@ const engine = new StressScenarioEngine();
 /**
  * Scheduled function: Run stress scenarios monthly on 5th at 4 AM
  */
-export const runMonthlyStressScenarios = onSchedule({ schedule: "0 4 5 * *", timeZone: "Europe/Warsaw", region: "europe-west1" }, async (event) => {
+export const runMonthlyStressScenarios = onSchedule({ schedule: "0 4 5 * *", timeZone: "USDope/Warsaw", region: "europe-west1" }, async (event) => {
     console.log('[PACK 358] Running monthly stress scenarios');
     
     try {
@@ -697,3 +697,12 @@ export const getScenarioResults = onCall(
       throw new HttpsError('internal', 'Failed to fetch results');
     }
   });
+
+
+
+
+
+
+
+
+

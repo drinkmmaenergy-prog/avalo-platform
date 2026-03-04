@@ -1,9 +1,11 @@
+"use client";
+
 /**
  * Events Service - Offline & Virtual Events
  * Handles event discovery, ticket purchases, QR check-in, and safety features
  */
 
-import { db, functions } from '../firebase';
+import { requireDb, requireFunctions } from '../firebase';
 import {
   collection,
   query,
@@ -47,7 +49,7 @@ export async function discoverEvents(params: {
       constraints.unshift(where('isNSFW', '==', false));
     }
 
-    const q = query(collection(db, 'events'), ...constraints);
+    const q = query(collection(requireDb(), 'events'), ...constraints);
     const snapshot = await getDocs(q);
 
     return snapshot.docs.map(doc => ({
@@ -65,7 +67,7 @@ export async function discoverEvents(params: {
  */
 export async function getEvent(eventId: string): Promise<Event | null> {
   try {
-    const eventRef = doc(db, 'events', eventId);
+    const eventRef = doc(requireDb(), 'events', eventId);
     const eventSnap = await getDoc(eventRef);
 
     if (!eventSnap.exists()) {
@@ -88,7 +90,7 @@ export async function getEvent(eventId: string): Promise<Event | null> {
 export async function getHostEvents(hostId: string): Promise<Event[]> {
   try {
     const q = query(
-      collection(db, 'events'),
+      collection(requireDb(), 'events'),
       where('hostId', '==', hostId),
       orderBy('date', 'desc'),
       limit(50)
@@ -127,7 +129,7 @@ export async function purchaseTicket(params: {
       success: boolean;
       ticketId: string;
       qrCode: string;
-    }>(functions, 'purchaseEventTicket');
+    }>(requireFunctions(), 'purchaseEventTicket');
     
     const result = await purchase(params);
     return result.data;
@@ -146,7 +148,7 @@ export async function purchaseTicket(params: {
 export async function getUserTickets(userId: string): Promise<EventTicket[]> {
   try {
     const q = query(
-      collection(db, 'event_tickets'),
+      collection(requireDb(), 'event_tickets'),
       where('userId', '==', userId),
       where('status', 'in', ['valid', 'used']),
       orderBy('purchasedAt', 'desc'),
@@ -169,7 +171,7 @@ export async function getUserTickets(userId: string): Promise<EventTicket[]> {
  */
 export async function getTicket(ticketId: string): Promise<EventTicket | null> {
   try {
-    const ticketRef = doc(db, 'event_tickets', ticketId);
+    const ticketRef = doc(requireDb(), 'event_tickets', ticketId);
     const ticketSnap = await getDoc(ticketRef);
 
     if (!ticketSnap.exists()) {
@@ -208,7 +210,7 @@ export async function verifyTicketQR(params: {
       valid: boolean;
       ticket: EventTicket;
       event: Event;
-    }>(functions, 'verifyEventTicket');
+    }>(requireFunctions(), 'verifyEventTicket');
     
     const result = await verify(params);
     return result.data;
@@ -230,8 +232,7 @@ export async function checkInTicket(params: {
   hostId: string;
 }): Promise<{ success: boolean; error?: string }> {
   try {
-    const checkIn = httpsCallable<typeof params, { success: boolean }>(
-      functions,
+    const checkIn = httpsCallable<typeof params, { success: boolean }>(requireFunctions(),
       'checkInEventTicket'
     );
     
@@ -264,7 +265,7 @@ export async function activatePanicMode(params: {
     const activate = httpsCallable<typeof params, {
       success: boolean;
       alertId: string;
-    }>(functions, 'activateEventPanicMode');
+    }>(requireFunctions(), 'activateEventPanicMode');
     
     const result = await activate(params);
     return result.data;
@@ -290,7 +291,7 @@ export async function reportSafetyConcern(params: {
     const report = httpsCallable<typeof params, {
       success: boolean;
       reportId: string;
-    }>(functions, 'reportEventSafetyConcern');
+    }>(requireFunctions(), 'reportEventSafetyConcern');
     
     const result = await report(params);
     return result.data;

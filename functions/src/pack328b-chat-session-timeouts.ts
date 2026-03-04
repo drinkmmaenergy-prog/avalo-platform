@@ -1,15 +1,22 @@
 /**
- * PACK 328B — Chat & Session Inactivity Timeouts (Anti-Abuse & UX Layer)
- * 
- * Core implementation for chat session timeout and auto-expiration logic.
- * 
- * Key Features:
+ * @deprecated LEGACY — SUPERSEDED by canonical-chat-engine.ts (v2_canonical)
+ *
+ * PACK 328B timeout divergence (48h free / 72h paid) is REPLACED by the
+ * canonical 48h inactivity expiry for ALL chat states.
+ *
+ * Legacy paths:
+ * - pack328b_chatSessionAutoExpireJob → use expireInactiveChats from canonical-chat-engine.ts
+ * - pack328b_endChatSession → use endChat from canonical-chat-engine.ts
+ * - pack328b_calculateUnusedBucketRefund → handled internally by endChat
+ * - 72h paid timeout → REMOVED (canonical = 48h for all)
+ *
+ * See: canonical-chat-legacy-shim.ts for redirect wrappers.
+ *
+ * ORIGINAL: PACK 328B — Chat & Session Inactivity Timeouts
  * - Auto-expire inactive chats (48h free, 72h paid)
  * - Calculate and refund unused word buckets
  * - Manual "End Chat" functionality
  * - Anti-abuse fraud detection for calls
- * 
- * NO tokenomics changes — uses existing chat monetization logic
  */
 
 import { db, serverTimestamp, increment, generateId } from './init.js';
@@ -519,3 +526,12 @@ export async function pack328b_getChatTimeoutInfo(
     isPaid,
   };
 }
+
+
+
+
+
+
+
+
+

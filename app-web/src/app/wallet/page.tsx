@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * /wallet — Main Wallet Hub Page
  *
@@ -23,7 +25,7 @@ import { Wallet as WalletIcon, ShoppingCart, ClipboardList, ArrowRight, Loader2 
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { requireDb } from '@/lib/firebase';
 import { TOKEN_PAYOUT_USD } from '@/lib/economyConfig';
 
 interface CreatorEarnings {
@@ -40,9 +42,9 @@ export default function WalletPage() {
 
   // Real-time listener for token balance
   useEffect(() => {
-    if (!firebaseUser?.uid || !db) return;
+    if (!firebaseUser?.uid) return;
 
-    const unsub = onSnapshot(doc(db, 'users', firebaseUser.uid), (snap) => {
+    const unsub = onSnapshot(doc(requireDb(), 'users', firebaseUser.uid), (snap) => {
       if (snap.exists()) {
         setTokenBalance(snap.data().tokenBalance ?? 0);
       }
@@ -53,9 +55,9 @@ export default function WalletPage() {
 
   // Load creator earnings if user is a creator
   useEffect(() => {
-    if (!user?.isCreator || !firebaseUser?.uid || !db) return;
+    if (!user?.isCreator || !firebaseUser?.uid) return;
 
-    const unsub = onSnapshot(doc(db, 'creator_earnings', firebaseUser.uid), (snap) => {
+    const unsub = onSnapshot(doc(requireDb(), 'creator_earnings', firebaseUser.uid), (snap) => {
       if (snap.exists()) {
         const d = snap.data();
         setCreatorEarnings({
@@ -221,3 +223,5 @@ export default function WalletPage() {
     </div>
   );
 }
+
+

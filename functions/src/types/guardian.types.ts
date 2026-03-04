@@ -273,3 +273,12 @@ export interface GuardianAnalysis {
     coolingMeasures?: CoolingMeasureConfig[];
   };
 }
+
+
+
+
+
+
+
+
+

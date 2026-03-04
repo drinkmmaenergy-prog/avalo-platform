@@ -1,0 +1,38 @@
+runConfig:
+  runtime: nodejs20
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+  minInstances: 0
+  maxInstances: 10
+
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSy...
+    availability: [BUILD]
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: avalostaging.firebaseapp.com
+    availability: [BUILD]
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: avalostaging
+    availability: [BUILD]
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: avalostaging.firebasestorage.app
+    availability: [BUILD]
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "1097334032970"
+    availability: [BUILD]
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:1097334032970:web:f637e2ed4aa40435fc34b3"
+    availability: [BUILD]
+  - variable: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    value: pk_live_...
+    availability: [BUILD]
+
+  - variable: STRIPE_SECRET_KEY
+    secret: STRIPE_SECRET_KEY
+    availability: [RUNTIME]
+
+  - variable: STRIPE_WEBHOOK_SECRET
+    secret: STRIPE_WEBHOOK_SECRET
+    availability: [RUNTIME]

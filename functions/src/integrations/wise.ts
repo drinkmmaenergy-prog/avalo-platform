@@ -235,7 +235,7 @@ export async function getWiseTransferStatus(
         transferId,
         status: "PENDING",
         amountFiat: 0,
-        currency: "EUR",
+        currency: "USD",
       };
     }
 
@@ -255,7 +255,7 @@ export async function getWiseTransferStatus(
       transferId: transfer.id.toString(),
       status,
       amountFiat: transfer.sourceValue || 0,
-      currency: transfer.sourceCurrency || "EUR",
+      currency: transfer.sourceCurrency || "USD",
     };
   } catch (error) {
     console.error("Error getting Wise transfer status:", error);
@@ -267,7 +267,7 @@ export async function getWiseTransferStatus(
         transferId,
         status: "PENDING",
         amountFiat: 0,
-        currency: "EUR",
+        currency: "USD",
       };
     }
     
@@ -282,3 +282,12 @@ export async function getWiseTransferStatus(
 export function getWiseProfileId(): string {
 return process.env.WISE_PROFILE_ID || "";
 }
+
+
+
+
+
+
+
+
+

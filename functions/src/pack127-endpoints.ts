@@ -151,7 +151,7 @@ export const pack127_submitClaim = onCall(async (request) => {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const { accusedUserId, accusedAssetId, claimType, description, evidenceUrls } = request.data;
+  const { accusedUserId, accusedAssetId, claimType, description, evidencUSDls } = request.data;
   
   if (!accusedUserId || !accusedAssetId || !claimType || !description) {
     throw new HttpsError('invalid-argument', 'Missing required parameters');
@@ -164,7 +164,7 @@ export const pack127_submitClaim = onCall(async (request) => {
       accusedAssetId,
       claimType,
       description,
-      evidenceUrls,
+      evidencUSDls,
     });
     
     console.log('Scheduled job result:', { success: true, ...result });
@@ -564,3 +564,12 @@ export const pack127_sendExpiryReminders = onSchedule({
   const remindersSent = await sendExpiryReminders();
   console.log(`[Pack 127] Sent ${remindersSent} license expiry reminders`);
 });
+
+
+
+
+
+
+
+
+
