@@ -52,6 +52,43 @@ firebase deploy --only $deployList
 
 } else {
 
+Write-Host "STEP 2 — DETECT CHANGED FUNCTIONS"
+
+cd $repo
+
+# Detect changed files between last two commits
+$changed = git diff --name-only HEAD~1 HEAD 2>$null
+
+if (-not $changed) {
+    Write-Host "No git diff detected, scanning full functions folder"
+    $changed = Get-ChildItem "$repo\functions\src" -Recurse -Filter *.ts | Select-Object -ExpandProperty FullName
+}
+
+$functionsList=@()
+
+foreach ($file in $changed) {
+
+if ($file -match "functions[\\/]+src") {
+
+$name = $file -replace ".*functions[\\/]+src[\\/]+",""
+$name = $name -replace ".ts",""
+
+$functionsList += $name
+
+}
+
+}
+
+if ($functionsList.Count -eq 0) {
+
 Write-Host "No function changes detected"
+return
+
+}
+
+$uniqueFunctions=$functionsList | Sort-Object -Unique
+
+Write-Host "Changed functions:"
+$uniqueFunctions
 
 }
