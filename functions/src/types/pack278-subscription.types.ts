@@ -26,7 +26,7 @@ export type SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'pending';
  * Subscription perks available to users
  */
 export interface SubscriptionPerks {
-  callDiscount: number;              // 0.30 for VIP, 0.50 for Royal - ONLY for voice/video calls
+  callDiscount: number;              // MONETIZATION_SPLITS.SUBSCRIPTION.avalo for VIP, 0.50 for Royal - ONLY for voice/video calls
   passport: boolean;                 // Location change feature
   incognito: boolean;                // Hide from discovery
   priorityDiscovery: boolean;        // Appear higher in discovery
@@ -161,7 +161,7 @@ export interface SubscriptionMetrics {
  */
 export const DEFAULT_PERKS: Record<'vip' | 'royal', SubscriptionPerks> = {
   vip: {
-    callDiscount: 0.30,                // 30% discount ONLY for voice/video calls
+    callDiscount: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,                // 30% discount ONLY for voice/video calls
     passport: true,
     incognito: true,
     priorityDiscovery: true,
@@ -194,6 +194,7 @@ export const FREE_PERKS: SubscriptionPerks = {
   dailyBoosts: 0,
   earlyAccessFeatures: false,
 };
+
 
 
 

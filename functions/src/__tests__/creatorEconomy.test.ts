@@ -49,7 +49,7 @@ jest.mock('firebase-admin/storage', () => ({
 describe('Revenue Split Calculations', () => {
   it('should correctly calculate 35/65 split', () => {
     const price = 1000;
-    const platformFee = Math.floor(price * 0.35);
+    const platformFee = Math.floor(price * MONETIZATION_SPLITS.CHAT.avalo);
     const creatorEarnings = price - platformFee;
 
     expect(platformFee).toBe(350);
@@ -66,7 +66,7 @@ describe('Revenue Split Calculations', () => {
     ];
 
     testCases.forEach(({ price, expectedPlatform, expectedCreator }) => {
-      const platformFee = Math.floor(price * 0.35);
+      const platformFee = Math.floor(price * MONETIZATION_SPLITS.CHAT.avalo);
       const creatorEarnings = price - platformFee;
 
       expect(platformFee).toBe(expectedPlatform);
@@ -76,8 +76,8 @@ describe('Revenue Split Calculations', () => {
 
   it('should ensure platform fee is always floored', () => {
     // Test prices that would create decimal platform fees
-    const price = 97; // 0.35 * 97 = 33.95
-    const platformFee = Math.floor(price * 0.35);
+    const price = 97; // MONETIZATION_SPLITS.CHAT.avalo * 97 = 33.95
+    const platformFee = Math.floor(price * MONETIZATION_SPLITS.CHAT.avalo);
 
     expect(platformFee).toBe(33);
     expect(Number.isInteger(platformFee)).toBe(true);
@@ -194,9 +194,9 @@ describe('Creator Level System', () => {
 
 describe('Level-Based Commission Rates', () => {
   const COMMISSION_RATES = {
-    bronze: 0.65,
+    bronze: MONETIZATION_SPLITS.CHAT.creator,
     silver: 0.67,
-    gold: 0.70,
+    gold: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
     platinum: 0.72,
     royal: 0.75,
   };
@@ -552,6 +552,7 @@ describe('Creator Analytics', () => {
 });
 
 console.log('✅ Creator Economy Test Suite - 50+ Tests Defined');
+
 
 
 

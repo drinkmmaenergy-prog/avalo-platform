@@ -5,7 +5,7 @@
  * Privacy-safe, no sensitive data logging
  */
 
-import { db, serverTimestamp, generateId } from './init.js';
+import { db, serverTimestamp, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { admin, auth, functions, timestamp } from './runtime';
 

@@ -137,7 +137,7 @@ async function detectHeadRotation(videoUrl: string): Promise<MicroMovementDetect
     timestamp: Date.now(),
     movementType: 'HEAD_ROTATION',
     detected,
-    confidence: detected ? 0.8 + Math.random() * 0.2 : 0.35,
+    confidence: detected ? 0.8 + Math.random() * 0.2 : MONETIZATION_SPLITS.CHAT.avalo,
   };
 }
 
@@ -552,6 +552,7 @@ export default {
   getLatestLivenessSession,
   needsLivenessVerification,
 };
+
 
 
 

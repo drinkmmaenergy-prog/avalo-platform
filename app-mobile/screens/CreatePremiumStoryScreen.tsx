@@ -177,7 +177,7 @@ export default function CreatePremiumStoryScreen({
         {price && !isNaN(parseInt(price, 10)) && (
           <View style={styles.earningsInfo}>
             <Text style={styles.earningsText}>
-              You will earn: {Math.floor(parseInt(price, 10) * 0.65)} tokens per unlock
+              You will earn: {Math.floor(parseInt(price, 10) * MONETIZATION_SPLITS.CHAT.creator)} tokens per unlock
             </Text>
           </View>
         )}
@@ -437,3 +437,4 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+

@@ -178,8 +178,8 @@ export interface GiftNotificationData {
  * Commission split configuration (non-negotiable)
  */
 export const GIFT_COMMISSION = {
-  AVALO_PERCENTAGE: 0.35,
-  RECEIVER_PERCENTAGE: 0.65,
+  AVALO_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
+  RECEIVER_PERCENTAGE: MONETIZATION_SPLITS.CHAT.creator,
 } as const;
 
 /**

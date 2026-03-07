@@ -8,7 +8,7 @@ import type {
   ForbiddenDataType,
   PrivacyFilterResult,
   AllowedPreferenceCategory,
-} from '../types/socialMemory.js';
+} from '../types/socialMemory';
 import { functions, timestamp } from '../runtime';
 
 /**
@@ -317,6 +317,7 @@ export default {
   blockAiGossip,
   validatePreferenceSharing,
 };
+
 
 
 

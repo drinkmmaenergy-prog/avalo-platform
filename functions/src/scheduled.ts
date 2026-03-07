@@ -6,8 +6,8 @@
 ;
 import { Timestamp } from "firebase-admin/firestore";
 ;
-import { CHAT_EXPIRY_MS, ChatStatus, BookingStatus, TransactionType, ROYAL_INSTAGRAM_FOLLOWERS_MIN, ROYAL_MONTHLY_EARNINGS_MIN_TOKENS, ROYAL_QUALITY_SCORE_MIN } from './config.js';
-import { Chat, CalendarBooking, Transaction, UserProfile } from "./types.js";
+import { CHAT_EXPIRY_MS, ChatStatus, BookingStatus, TransactionType, ROYAL_INSTAGRAM_FOLLOWERS_MIN, ROYAL_MONTHLY_EARNINGS_MIN_TOKENS, ROYAL_QUALITY_SCORE_MIN } from './config';
+import { Chat, CalendarBooking, Transaction, UserProfile } from "./types";
 import { admin, db, generateId, increment, onSchedule, serverTimestamp } from './runtime';
 
 /**
@@ -296,6 +296,8 @@ export const updateRoyalEligibility = onSchedule(
 
     return;
   });
+
+
 
 
 

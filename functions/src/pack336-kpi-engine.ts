@@ -12,7 +12,7 @@
  * - PACK 279: AI companions
  */
 
-import { db, serverTimestamp } from './init.js';
+import { db, serverTimestamp } from './init';
 import type {
   NorthStarSnapshot,
   KpiDailyGlobal,
@@ -22,7 +22,7 @@ import type {
   KpiVirality,
   KpiRevenueStreams,
   KpiAggregationOptions,
-} from './pack336-types.js';
+} from './pack336-types';
 import { functions } from './runtime';
 import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 
@@ -494,6 +494,7 @@ export function getDateRange(date: string): { start: Date; end: Date } {
   
   return { start, end };
 }
+
 
 
 

@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": { "noEmit": true },
+  "exclude": [
+    "lib/**",
+    "node_modules/**",
+    "**/*.legacy.ts",
+    "**/*.legacy.tsx",
+    "**/*.bak",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/__tests__/**",
+    "src/__tests__/**",
+    "tests/**"
+  ]
+}

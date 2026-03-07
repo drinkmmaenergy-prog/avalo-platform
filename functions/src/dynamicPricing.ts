@@ -189,7 +189,7 @@ const PPP_ADJUSTMENTS: Record<string, number> = {
   PL: 0.6,   // Lower purchasing power
   BR: 0.5,
   IN: 0.4,
-  NG: 0.35,
+  NG: MONETIZATION_SPLITS.CHAT.avalo,
   // Add more countries as needed
 };
 
@@ -296,8 +296,8 @@ async function calculateLoyaltyDiscount(userId: string): Promise<number> {
     bronze: 0.05,
     silver: 0.10,
     gold: 0.15,
-    platinum: 0.20,
-    diamond: 0.30,
+    platinum: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+    diamond: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
   };
 
   return discounts[tier] || 0;
@@ -466,7 +466,7 @@ async function calculateDynamicPrice(
     adjustmentFactors: factors,
     currency: "USD", // Default
     fxRate: 1.0,
-    localPrice: finalPrice * 0.20, // Token to USD conversion
+    localPrice: finalPrice * MONETIZATION_SPLITS.EVENT_TICKET.avalo, // Token to USD conversion
     validUntil: Timestamp.fromMillis(Date.now() + PRICE_CACHE_TTL_SECONDS * 1000),
     tier: PricingTier.DYNAMIC,
     breakdown: {
@@ -771,6 +771,7 @@ export type {
   MarketConditions,
   PriceAdjustmentFactors,
 };
+
 
 
 

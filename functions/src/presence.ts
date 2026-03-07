@@ -14,7 +14,7 @@ import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 ;
 ;
 ;
-import { RealtimeEventType } from './realtimeEngine.js';
+import { RealtimeEventType } from './realtimeEngine';
 import { admin, arrayRemove, arrayUnion, auth, functions, getFirestore, logger, onCall, z } from './runtime';
 
 import { getFeatureFlag, broadcastToUsers, broadcastToUser } from './lib/stubs';
@@ -507,6 +507,7 @@ export async function cleanupStaleTypingIndicators(): Promise<void> {
     logger.error("Failed to cleanup stale typing indicators:", error);
   }
 }
+
 
 
 

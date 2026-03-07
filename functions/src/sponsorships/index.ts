@@ -427,8 +427,8 @@ async function releaseEscrowForContract(contractId: string): Promise<void> {
     
     if (escrowDoc.exists) {
       const escrowData = escrowDoc.data()!;
-      const creatorAmount = escrowData.amount * 0.65;
-      const platformAmount = escrowData.amount * 0.35;
+      const creatorAmount = escrowData.amount * MONETIZATION_SPLITS.CHAT.creator;
+      const platformAmount = escrowData.amount * MONETIZATION_SPLITS.CHAT.avalo;
 
       await db.collection('users').doc(contract.creatorId).update({
         'wallet.tokenBalance': admin.firestore.FieldValue.increment(creatorAmount)
@@ -691,6 +691,7 @@ export const moderateSponsorship = functions.https.onCall(async (request) => {
 
   return { success: true };
 });
+
 
 
 

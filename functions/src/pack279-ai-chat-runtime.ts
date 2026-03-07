@@ -82,7 +82,7 @@ const TOKENS_PER_BUCKET = 100;
 
 // Revenue splits
 const AVALO_ONLY_SPLIT = { creator: 0, avalo: 1.0 };      // 100% Avalo
-const USER_AI_SPLIT = { creator: 0.65, avalo: 0.35 };     // 65/35 split
+const USER_AI_SPLIT = { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo };     // 65/35 split
 
 const MIN_AGE = 18;
 const MAX_MESSAGE_LENGTH = 2000;
@@ -517,6 +517,7 @@ export const pack279_aiChatSendMessage = https.onCall(
 export default {
   pack279_aiChatSendMessage,
 };
+
 
 
 

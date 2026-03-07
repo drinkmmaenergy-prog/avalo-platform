@@ -352,8 +352,8 @@ async function acceptPremiumOffer(
         entryAtAcceptance: offer.baseChatEntryTokens,
         payoutPerToken: TOKEN_PAYOUT_USD,
         split: {
-          earnerShare: 0.65,
-          platformShare: 0.35,
+          earnerShare: MONETIZATION_SPLITS.CHAT.creator,
+          platformShare: MONETIZATION_SPLITS.CHAT.avalo,
         },
       };
 
@@ -701,6 +701,7 @@ export async function releasePremiumOnChatEnd(chatId: string): Promise<void> {
     }
   });
 }
+
 
 
 

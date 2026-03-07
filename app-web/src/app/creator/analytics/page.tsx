@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * PHASE 3.3 — Creator Analytics Dashboard (READ-ONLY)
  * 
@@ -6,9 +8,6 @@
  * 
  * Backend source: creator_analytics collection (computed by PACK 290)
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getCreatorAnalytics } from '@/lib/services/phase33';
@@ -237,4 +236,5 @@ export default function CreatorAnalyticsPage() {
     </div>
   );
 }
+
 

@@ -19,7 +19,7 @@ import {
   detectMeetingChemistry,
   detectEventAttendance,
   trackMomentumFromMemory
-} from './pack-229-shared-memories.js';
+} from './pack-229-shared-memories';
 import { db, timestamp } from './runtime';
 
 // ============================================================================
@@ -97,7 +97,7 @@ async function checkAfterCallMessage(
 ): Promise<void> {
   try {
     // Get most recent call for this chat
-    const { db } = await import('./init.js');
+    const { db } = await import('./init');
     const callsSnap = await db.collection('calls')
       .where('chatId', '==', chatId)
       .where('state', '==', 'ENDED')
@@ -263,7 +263,7 @@ export async function onEventAttendedTogether(params: {
   
   try {
     // Check if these users have a chat together
-    const { db } = await import('./init.js');
+    const { db } = await import('./init');
     const chatsSnap = await db.collection('chats')
       .where('participants', 'array-contains', userAId)
       .get();
@@ -297,7 +297,7 @@ export async function onEventAttendedTogether(params: {
  */
 async function getChatIdFromCall(callId: string): Promise<string | null> {
   try {
-    const { db } = await import('./init.js');
+    const { db } = await import('./init');
     const callSnap = await db.collection('calls').doc(callId).get();
     
     if (callSnap.exists) {
@@ -316,7 +316,7 @@ async function getChatIdFromCall(callId: string): Promise<string | null> {
  */
 async function getChatParticipants(chatId: string): Promise<[string, string] | null> {
   try {
-    const { db } = await import('./init.js');
+    const { db } = await import('./init');
     const chatSnap = await db.collection('chats').doc(chatId).get();
     
     if (chatSnap.exists) {
@@ -343,8 +343,8 @@ async function getChatParticipants(chatId: string): Promise<[string, string] | n
  * Should be run daily
  */
 export async function detectAnniversaries(): Promise<number> {
-  const { db } = await import('./init.js');
-  const { addAnniversaryMoment } = await import('./pack-229-shared-memories.js');
+  const { db } = await import('./init');
+  const { addAnniversaryMoment } = await import('./pack-229-shared-memories');
   
   let anniversariesCreated = 0;
   
@@ -423,8 +423,8 @@ export async function detectAnniversaries(): Promise<number> {
  * Should be run periodically
  */
 export async function cleanupDeletedMatchMemories(): Promise<number> {
-  const { db } = await import('./init.js');
-  const { deleteAllSharedMemories } = await import('./pack-229-shared-memories.js');
+  const { db } = await import('./init');
+  const { deleteAllSharedMemories } = await import('./pack-229-shared-memories');
   
   let cleaned = 0;
   
@@ -468,6 +468,7 @@ export const sharedMemoryTriggers = {
   detectAnniversaries,
   cleanupDeletedMatchMemories
 };
+
 
 
 

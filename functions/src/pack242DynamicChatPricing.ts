@@ -21,7 +21,7 @@
  * Performance-based chat pricing system (100-500 tokens)
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import type { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, timestamp } from './runtime';
 
@@ -178,8 +178,8 @@ const CONSECUTIVE_DROP_MONTHS_FOR_LOCK = 3;
 const EARNINGS_DROP_THRESHOLD = 0.85; // If earnings < 85% of previous month
 
 // Revenue split (unchanged from base system)
-const EARNER_SHARE = 0.65; // 65%
-const PLATFORM_SHARE = 0.35; // 35%
+const EARNER_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65%
+const PLATFORM_SHARE = MONETIZATION_SPLITS.CHAT.avalo; // 35%
 
 // ============================================================================
 // ELIGIBILITY EVALUATION
@@ -818,6 +818,7 @@ export async function unlockPack242Pricing(
   
   return { success: true, message: 'Pricing unlocked successfully' };
 }
+
 
 
 

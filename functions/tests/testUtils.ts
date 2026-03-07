@@ -91,7 +91,7 @@ export const testData = {
 // Helper to clear Firestore collection
 export async function clearCollection(collectionName: string) {
   const db = getDb();
-  const snapshot = await db.collection(collectionName).limit(500).get();
+  const snapshot = await db.collection(collectionName).get();
 
   if (snapshot.empty) return;
 
@@ -268,3 +268,5 @@ export default {
 };
 
 
+
+import { getDb, setupTestEnvironment, testData, createTestUser, createTestTransaction, now, minutesAgo, hoursAgo, daysAgo } from '../src/testUtils'

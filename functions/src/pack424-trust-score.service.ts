@@ -45,7 +45,7 @@ export class TrustScoreService {
 
     // Weight the components
     const weights = {
-      avgRating: 0.35,
+      avgRating: MONETIZATION_SPLITS.CHAT.avalo,
       sentiment: 0.25,
       velocity: 0.15,
       fakeRatio: 0.15,
@@ -252,7 +252,7 @@ export class TrustScoreService {
    */
   getHealthStatus(score: number): 'excellent' | 'good' | 'fair' | 'poor' | 'critical' {
     if (score >= 0.85) return 'excellent';
-    if (score >= 0.70) return 'good';
+    if (score >= MONETIZATION_SPLITS.SUBSCRIPTION.creator) return 'good';
     if (score >= 0.55) return 'fair';
     if (score >= 0.40) return 'poor';
     return 'critical';
@@ -321,6 +321,7 @@ export const getTrustScore = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', 'Failed to get trust score');
   }
 });
+
 
 
 

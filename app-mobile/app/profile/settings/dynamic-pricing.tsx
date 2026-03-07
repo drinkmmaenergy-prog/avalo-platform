@@ -166,7 +166,7 @@ export default function DynamicPricingScreen() {
           <Text style={styles.currentPriceLabel}>Your Current Chat Price</Text>
           <Text style={styles.currentPriceValue}>{currentPrice} tokens</Text>
           <Text style={styles.currentPriceSubtext}>
-            Earners receive 65% ({Math.floor(currentPrice * 0.65)} tokens)
+            Earners receive 65% ({Math.floor(currentPrice * MONETIZATION_SPLITS.CHAT.creator)} tokens)
           </Text>
         </View>
 
@@ -520,3 +520,4 @@ const styles = StyleSheet.create({
     height: 40,
   },
 });
+

@@ -1,12 +1,11 @@
+'use client';
+
 "use client";
 
 /**
  * PACK 338a - Legal Acceptance Gate (Web)
  * Blocks app access until user accepts all legal documents
  */
-
-'use client';
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { LEGAL_DOCS, getAllLegalDocKeys } from '../../lib/legal/legalRegistry';
 import type { LegalDocKey } from '../../lib/legal/legalRegistry';
@@ -235,5 +234,6 @@ export default function LegalGate({ onAccepted }: LegalGateProps) {
     </div>
   );
 }
+
 
 

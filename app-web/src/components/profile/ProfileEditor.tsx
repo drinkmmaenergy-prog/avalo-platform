@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Profile Editor Component
  * Placeholder for profile customization
  */
-
-'use client';
-
 export default function ProfileEditor() {
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -41,4 +40,5 @@ export default function ProfileEditor() {
     </div>
   );
 }
+
 

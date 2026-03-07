@@ -32,7 +32,7 @@ describe('Calendar Engine - Payment Calculations', () => {
 
     it('should handle odd numbers with floor rounding', () => {
       const result = calculatePaymentSplit(99);
-      expect(result.avaloShare).to.equal(19); // 99 * 0.20 = 19.8 -> 19
+      expect(result.avaloShare).to.equal(19); // 99 * MONETIZATION_SPLITS.EVENT_TICKET.avalo = 19.8 -> 19
       expect(result.hostShare).to.equal(80); // 99 - 19 = 80
     });
 
@@ -260,7 +260,7 @@ describe('Calendar Engine - Refund Scenarios', () => {
 describe('Calendar Engine - Edge Cases', () => {
   it('should handle minimum booking amount (1 token)', () => {
     const result = calculatePaymentSplit(1);
-    expect(result.avaloShare).to.equal(0); // 1 * 0.20 = 0.2 -> 0
+    expect(result.avaloShare).to.equal(0); // 1 * MONETIZATION_SPLITS.EVENT_TICKET.avalo = 0.2 -> 0
     expect(result.hostShare).to.equal(1);
     expect(result.hostShare + result.avaloShare).to.equal(1);
   });
@@ -389,3 +389,6 @@ describe('Calendar Engine - Real-World Scenarios', () => {
     expect(avaloShare).to.equal(160);
   });
 });
+
+import { getDb, setupTestEnvironment, testData, createTestUser, createTestTransaction, now, minutesAgo, hoursAgo, daysAgo } from '../src/testUtils'
+

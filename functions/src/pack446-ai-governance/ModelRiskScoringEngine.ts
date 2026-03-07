@@ -443,7 +443,7 @@ export class ModelRiskScoringEngine {
     // Weighted average of risk scores
     const weights: Record<RiskCategory, number> = {
       [RiskCategory.BIAS]: 0.25,
-      [RiskCategory.DRIFT]: 0.20,
+      [RiskCategory.DRIFT]: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
       [RiskCategory.FALSE_POSITIVE]: 0.15,
       [RiskCategory.FALSE_NEGATIVE]: 0.15,
       [RiskCategory.REVENUE_IMPACT]: 0.15,
@@ -705,6 +705,7 @@ export class ModelRiskScoringEngine {
     }
   }
 }
+
 
 
 

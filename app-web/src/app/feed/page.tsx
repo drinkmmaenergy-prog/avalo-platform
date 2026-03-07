@@ -1,12 +1,11 @@
+'use client';
+
 "use client";
 
 /**
  * PACK 323 - Feed Page (Web)
  * Main feed view with posts, reels, and stories
  */
-
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { 
   collection, 
@@ -300,5 +299,6 @@ export default function FeedPage() {
     </div>
   );
 }
+
 
 

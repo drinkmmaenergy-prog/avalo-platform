@@ -10,7 +10,7 @@
  * 
  * Score Formula:
  * promotionScore =
- *   (engagementRate * 0.35)
+ *   (engagementRate * MONETIZATION_SPLITS.CHAT.avalo)
  * + (earningsVelocity * 0.25)
  * + (lowRefundRateBonus * 0.10)
  * + (ratingScore * 0.15)
@@ -34,7 +34,7 @@ export interface PromotionScore {
   ratingScore: number;
   viralConversion: number;
   breakdown: {
-    engagement: number;      // 0.35 weight
+    engagement: number;      // MONETIZATION_SPLITS.CHAT.avalo weight
     earnings: number;         // 0.25 weight
     refund: number;           // 0.10 weight
     rating: number;           // 0.15 weight
@@ -63,7 +63,7 @@ export interface PromotionConfig {
 
 const DEFAULT_CONFIG: PromotionConfig = {
   weights: {
-    engagement: 0.35,
+    engagement: MONETIZATION_SPLITS.CHAT.avalo,
     earnings: 0.25,
     refund: 0.10,
     rating: 0.15,
@@ -600,6 +600,7 @@ export async function cleanExpiredPromotionScores(
  * - Search result ranking
  * - Integration with discovery feed and featured carousels
  */
+
 
 
 

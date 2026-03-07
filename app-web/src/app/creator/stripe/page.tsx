@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * PHASE 3.3 — Creator Stripe Connect Page
  * 
@@ -8,9 +10,6 @@
  * - getPayoutState (status check)
  * - setupPayoutAccount (onboarding)
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getStripeConnectStatus, initiateStripeOnboarding } from '@/lib/services/phase33';
@@ -224,4 +223,5 @@ export default function CreatorStripePage() {
     </div>
   );
 }
+
 

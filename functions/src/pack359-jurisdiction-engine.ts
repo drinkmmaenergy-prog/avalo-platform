@@ -86,7 +86,7 @@ const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
   },
   'FR': {
     countryCode: 'FR',
-    vatRate: 0.20,
+    vatRate: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
     digitalServiceTaxRate: 0.03,
     payoutAllowed: true,
     kycRequired: true,
@@ -168,7 +168,7 @@ const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
   // United Kingdom
   'GB': {
     countryCode: 'GB',
-    vatRate: 0.20,
+    vatRate: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
     digitalServiceTaxRate: 0.02,
     payoutAllowed: true,
     kycRequired: true,
@@ -627,6 +627,7 @@ export const checkCompliance = functions.https.onCall(async (request) => {
     payoutReason: payoutEligibility.reason,
   };
 });
+
 
 
 

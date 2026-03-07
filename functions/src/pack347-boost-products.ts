@@ -71,8 +71,8 @@ const BOOST_PRICING = {
 };
 
 const REVENUE_SPLIT = {
-  creator: 0.65,
-  avalo: 0.35
+  creator: MONETIZATION_SPLITS.CHAT.creator,
+  avalo: MONETIZATION_SPLITS.CHAT.avalo
 };
 
 const MAX_BOOSTS_PER_DAY = 10;
@@ -580,6 +580,7 @@ export async function cleanupExpiredPack347Boosts(
  * - Integration with promotion algorithm
  * - Royal Club and Fan Economy tracking
  */
+
 
 
 

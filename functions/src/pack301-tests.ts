@@ -87,7 +87,7 @@ export async function testChurnScoreCalculation(): Promise<void> {
     const factors2 = {
       noChatsIn5Days: true,      // +0.15
       noSwipesIn72h: true,        // +0.10
-      noAppOpenRecent: true,      // +0.20
+      noAppOpenRecent: true,      // +MONETIZATION_SPLITS.EVENT_TICKET.avalo
       profileNotUpdated30d: true, // +0.05
       noLikesIn72h: true,         // +0.10
       noPhotosAdded: true,        // +0.15
@@ -589,6 +589,7 @@ async function cleanupTestUser(userId: string): Promise<void> {
 }
 
 console.log('✅ PACK 301B - Test Suite initialized');
+
 
 
 

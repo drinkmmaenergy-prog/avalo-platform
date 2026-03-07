@@ -163,7 +163,7 @@ export const getExpansionDashboard = functions.https.onCall(async (request) => {
     Readiness.listCountriesByReadiness(),
     Readiness.listCountriesByReadiness(0.75, 'AGGRESSIVE'),
     Readiness.listCountriesByReadiness(0.55, 'STEADY'),
-    Readiness.listCountriesByReadiness(0.35, 'CAUTIOUS'),
+    Readiness.listCountriesByReadiness(MONETIZATION_SPLITS.CHAT.avalo, 'CAUTIOUS'),
     Segmentation.getSegmentDistribution(),
     Localization.getCompletenessReport(),
   ]);
@@ -334,7 +334,7 @@ export const validateCountryLaunch = functions.https.onCall(async (request) => {
   if (!profile) {
     issues.push('No readiness profile found');
   } else {
-    if (profile.launchReadiness < 0.35) {
+    if (profile.launchReadiness < MONETIZATION_SPLITS.CHAT.avalo) {
       issues.push(`Launch readiness too low: ${profile.launchReadiness}`);
     }
     if (!profile.paymentProviderReady) {
@@ -387,6 +387,7 @@ export const recomputeAllReadiness = functions.https.onCall(async (request) => {
   const result = await Readiness.recomputeAllReadinessScores();
   return result;
 });
+
 
 
 

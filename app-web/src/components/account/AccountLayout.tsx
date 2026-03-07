@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * PACK 343 — Account Pages Layout
  * Shared navigation and layout for account pages
  */
-
-'use client';
-
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -74,4 +73,5 @@ export function AccountLayout({ children }: AccountLayoutProps) {
     </div>
   );
 }
+
 

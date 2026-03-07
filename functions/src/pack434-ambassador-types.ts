@@ -243,7 +243,7 @@ export const ROLE_DEFINITIONS: Record<AmbassadorRole, RoleDefinition> = {
       minMonthlyReferrals: 60,
       minCreatorsPerMonth: 6,
       minEventsPerQuarter: 3,
-      minConversionRate: 0.35,
+      minConversionRate: MONETIZATION_SPLITS.CHAT.avalo,
       minRetentionRate: 0.55,
     },
     maxRadius: 40,
@@ -475,6 +475,7 @@ export class AmbassadorTypeService {
 // ============================================================================
 
 export const ambassadorTypeService = new AmbassadorTypeService();
+
 
 
 

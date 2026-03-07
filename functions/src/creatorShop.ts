@@ -199,7 +199,7 @@ export interface CreatorStats {
 // CONSTANTS
 // ============================================================================
 
-const PLATFORM_FEE_PERCENTAGE = 0.35; // 35%
+const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo; // 35%
 const MIN_PRODUCT_PRICE = 10;
 const MAX_PRODUCT_PRICE = 50000;
 const DEFAULT_DOWNLOAD_LIMIT = 3;
@@ -1149,6 +1149,7 @@ async function updateCreatorProductStats(
 }
 
 logger.info("✅ Creator Shop module loaded successfully");
+
 
 
 

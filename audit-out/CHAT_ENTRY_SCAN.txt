@@ -1,0 +1,3856 @@
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 39
+CODE: MIN_DEPOSIT_TOKENS,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 62
+CODE: escrowRemainingTokens: overrides.escrowRemainingTokens ?? 65,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 63
+CODE: platformFeeChargedTokens: overrides.platformFeeChargedTokens ?? 35,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 304
+CODE: const state = makeBillingState({ escrowRemainingTokens: 100 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 384
+CODE: const state = makeBillingState({ escrowRemainingTokens: 100 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 410
+CODE: const state1 = makeBillingState({ escrowRemainingTokens: 100 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 425
+CODE: test('deposit 100 tokens → platformFee=35, escrow=65', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 436
+CODE: escrowRemainingTokens: 65,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 437
+CODE: platformFeeChargedTokens: 35,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 441
+CODE: // Refund = escrowRemainingTokens
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 442
+CODE: expect(state.escrowRemainingTokens).toBe(65);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 443
+CODE: expect(state.platformFeeChargedTokens).toBe(35); // Not refundable
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 447
+CODE: const state = makeBillingState({ escrowRemainingTokens: 65 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 454
+CODE: expect(result.updatedBillingState.escrowRemainingTokens).toBe(64);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 459
+CODE: const state = makeBillingState({ escrowRemainingTokens: 3 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 467
+CODE: expect(result.updatedBillingState.escrowRemainingTokens).toBe(0);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 486
+CODE: const state = makeBillingState({ escrowRemainingTokens: 1 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 493
+CODE: expect(result.updatedBillingState.escrowRemainingTokens).toBe(0);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 496
+CODE: expect(result.updatedBillingState.escrowRemainingTokens).toBeGreaterThanOrEqual(0);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 500
+CODE: let state = makeBillingState({ escrowRemainingTokens: 65 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 508
+CODE: expect(state.escrowRemainingTokens).toBeGreaterThanOrEqual(0);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 512
+CODE: expect(state.escrowRemainingTokens).toBe(0);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 519
+CODE: let state = makeBillingState({ escrowRemainingTokens: 10 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 528
+CODE: expect(result1.updatedBillingState.escrowRemainingTokens).toBe(3);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 532
+CODE: expect(result2.updatedBillingState.escrowRemainingTokens).toBe(0);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 540
+CODE: const state = makeBillingState({ escrowRemainingTokens: 1000 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 618
+CODE: test('minimum deposit is 100 tokens', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 619
+CODE: expect(MIN_DEPOSIT_TOKENS).toBe(100);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 624
+CODE: expect(Math.max(MIN_DEPOSIT_TOKENS, 50)).toBe(100);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 626
+CODE: expect(Math.max(MIN_DEPOSIT_TOKENS, 200)).toBe(200);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 628
+CODE: expect(Math.max(MIN_DEPOSIT_TOKENS, 100)).toBe(100);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 718
+CODE: const state = makeBillingState({ escrowRemainingTokens: 0 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 728
+CODE: const state = makeBillingState({ escrowRemainingTokens: 10 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 734
+CODE: expect(result.updatedBillingState.escrowRemainingTokens).toBe(0);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 738
+CODE: const state = makeBillingState({ escrowRemainingTokens: 5 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 745
+CODE: expect(result.updatedBillingState.escrowRemainingTokens).toBe(0);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 750
+CODE: let state = makeBillingState({ escrowRemainingTokens: 100 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 30
+CODE: MIN_DEPOSIT_TOKENS,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 57
+CODE: escrowRemainingTokens: escrow,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 58
+CODE: platformFeeChargedTokens: platformFee,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 140
+CODE: const refundAmount = state.escrowRemainingTokens;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 144
+CODE: expect(state.platformFeeChargedTokens).toBe(35);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 147
+CODE: expect(state.platformFeeChargedTokens + state.escrowRemainingTokens).toBe(deposit);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 225
+CODE: it('MIN_DEPOSIT_TOKENS should be 100', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 226
+CODE: expect(MIN_DEPOSIT_TOKENS).toBe(100);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 262
+CODE: expect(state.platformFeeChargedTokens).toBe(Math.floor(500 * 0.35)); // 175
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 263
+CODE: expect(state.escrowRemainingTokens).toBe(500 - 175); // 325
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 270
+CODE: // Consume 100 tokens from escrow
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 272
+CODE: const refund = state.escrowRemainingTokens - consumed; // 325 - 100 = 225
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 276
+CODE: expect(state.platformFeeChargedTokens + consumed + refund).toBe(deposit);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 285
+CODE: it('refund = escrowRemainingTokens after billing', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 295
+CODE: const refundAmount = result.updatedBillingState.escrowRemainingTokens;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 297
+CODE: const platformFee = result.updatedBillingState.platformFeeChargedTokens;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 316
+CODE: const refund = result.updatedBillingState.escrowRemainingTokens;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 322
+CODE: result.updatedBillingState.platformFeeChargedTokens +
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 376
+CODE: const total = currentState.platformFeeChargedTokens +
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 378
+CODE: currentState.escrowRemainingTokens;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack285FreeWindowFunnel.test.ts
+LINE: 221
+CODE: // This requires database mocking
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack285FreeWindowFunnel.test.ts
+LINE: 272
+CODE: // Next message requires prepaid deposit
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 5
+CODE: * 1. Entry changed from 100 to 300 → new chat requires 300
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 99
+CODE: test('exclusive requires minimum multiplier of 10', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\affiliate\types.ts
+LINE: 280
+CODE: requiresVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\api.ts
+LINE: 240
+CODE: .where('requires_review', '==', true)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\api.ts
+LINE: 296
+CODE: .where('requires_review', '==', true)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\creatorMetrics.ts
+LINE: 25
+CODE: chatPriceEligibility: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\creatorMetrics.ts
+LINE: 249
+CODE: function calculateChatPriceEligibility(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\creatorMetrics.ts
+LINE: 406
+CODE: const currentChatPrice = creatorData.chat_price || 10;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\creatorMetrics.ts
+LINE: 408
+CODE: const chatPriceEligibility = calculateChatPriceEligibility(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\creatorMetrics.ts
+LINE: 409
+CODE: currentChatPrice,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\creatorMetrics.ts
+LINE: 430
+CODE: chatPriceEligibility,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\fraudDetection.ts
+LINE: 136
+CODE: requires_review: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\fraudDetection.ts
+LINE: 240
+CODE: requires_review: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\fraudDetection.ts
+LINE: 362
+CODE: requires_review: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\safetyMonitoring.ts
+LINE: 81
+CODE: requires_review: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\safetyMonitoring.ts
+LINE: 171
+CODE: requires_review: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\safetyMonitoring.ts
+LINE: 233
+CODE: requires_review: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analytics\safetyMonitoring.ts
+LINE: 374
+CODE: requires_review: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\api\configApi.ts
+LINE: 63
+CODE: * Requires admin authentication
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\api\configApi.ts
+LINE: 130
+CODE: * Requires admin authentication
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\api\featureFlags.ts
+LINE: 80
+CODE: * Requires admin authentication
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\callable\team\utils\twoFactorVerification.ts
+LINE: 65
+CODE: const requires2FA =
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\callable\team\utils\twoFactorVerification.ts
+LINE: 71
+CODE: if (requires2FA) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\callable\team\acceptTeamInvite.ts
+LINE: 99
+CODE: const requires2FA = await requireTwoFactorForRole(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\callable\team\acceptTeamInvite.ts
+LINE: 106
+CODE: if (requires2FA) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\callable\team\acceptTeamInvite.ts
+LINE: 123
+CODE: twoFactorEnabled: requires2FA,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\callable\team\grantDmAccess.ts
+LINE: 5
+CODE: * CRITICAL: DM access requires explicit consent and cannot be bulk-exported
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\callable\team\updateTeamMemberRole.ts
+LINE: 97
+CODE: // Check if new role requires 2FA
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\callable\team\updateTeamMemberRole.ts
+LINE: 98
+CODE: const requires2FA = await requireTwoFactorForRole(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\callable\team\updateTeamMemberRole.ts
+LINE: 105
+CODE: if (requires2FA) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\callable\team\updateTeamMemberRole.ts
+LINE: 122
+CODE: twoFactorEnabled: requires2FA,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\callable\team\updateTeamMemberRole.ts
+LINE: 151
+CODE: requires2FA,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\featureFlags.ts
+LINE: 52
+CODE: chatPriceModeration: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\featureFlags.ts
+LINE: 222
+CODE: chatPriceModeration: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\liveMonetization.ts
+LINE: 39
+CODE: REQUIRES_DEPOSIT: false;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\liveMonetization.ts
+LINE: 111
+CODE: displayName: 'Diamond (100 tokens)',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\liveMonetization.ts
+LINE: 184
+CODE: REQUIRES_DEPOSIT: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\liveMonetization.ts
+LINE: 210
+CODE: REQUIRES_18_PLUS: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\liveMonetization.ts
+LINE: 213
+CODE: REQUIRES_VERIFICATION: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\liveMonetization.ts
+LINE: 227
+CODE: REQUIRES_AUTH: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\liveMonetization.ts
+LINE: 230
+CODE: REQUIRES_BALANCE: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\treasury.config.ts
+LINE: 63
+CODE: REQUIRES_KYC: true,                  // KYC required (PACK 84 integration)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\treasury.config.ts
+LINE: 64
+CODE: REQUIRES_PAYOUT_METHOD: true,        // Valid payout method required
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\treasury.config.ts
+LINE: 151
+CODE: payoutRequiresKYC: PAYOUT_POLICY.REQUIRES_KYC,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\treasury.config.ts
+LINE: 220
+CODE: kycRequired: PAYOUT_POLICY.REQUIRES_KYC,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\content\contentUploadProcessor.ts
+LINE: 95
+CODE: 'Content creation requires 18+ verification'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\content\safetyReporting.ts
+LINE: 176
+CODE: * Check if report is critical (requires immediate action)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\engines\insightEngine.ts
+LINE: 251
+CODE: // Note: This requires a birthYear field
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\extortion\detector.ts
+LINE: 52
+CODE: requiresFinancial: true
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\extortion\detector.ts
+LINE: 62
+CODE: requiresFinancial: true
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\extortion\detector.ts
+LINE: 72
+CODE: requiresFinancial: true
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\extortion\detector.ts
+LINE: 82
+CODE: requiresFinancial: false
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\extortion\detector.ts
+LINE: 103
+CODE: requiresImmediateAction: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\extortion\detector.ts
+LINE: 117
+CODE: result.requiresImmediateAction = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\extortion\detector.ts
+LINE: 130
+CODE: result.requiresImmediateAction = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\extortion\detector.ts
+LINE: 223
+CODE: if (category.requiresFinancial) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\extortion\enforcement.ts
+LINE: 341
+CODE: requiresLawEnforcement: true
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\extortion\interceptors.ts
+LINE: 48
+CODE: if (detectionResult.requiresImmediateAction) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\extortion\types.ts
+LINE: 270
+CODE: requiresFinancialContext: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\extortion\types.ts
+LINE: 297
+CODE: requiresImmediateAction: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\integrations\partnerManagement.ts
+LINE: 23
+CODE: * Register a new partner - requires admin approval
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\integrations\stripeConnect.ts
+LINE: 39
+CODE: function requireStripe(): Stripe {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\integrations\stripeConnect.ts
+LINE: 103
+CODE: const stripe = requireStripe();
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\integrations\stripeConnect.ts
+LINE: 143
+CODE: const stripe = requireStripe();
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\integrations\stripeConnect.ts
+LINE: 169
+CODE: const stripe = requireStripe();
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\integrations\stripeConnect.ts
+LINE: 207
+CODE: const stripe = requireStripe();
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\integrations\stripeConnect.ts
+LINE: 237
+CODE: const stripe = requireStripe();
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\media\nsfwClassifier.ts
+LINE: 120
+CODE: // UNKNOWN: Unclear classification, requires manual review
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\media-integrity\consent.ts
+LINE: 21
+CODE: requiresConsent: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\media-integrity\consent.ts
+LINE: 27
+CODE: requiresConsent: false
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\media-integrity\consent.ts
+LINE: 44
+CODE: requiresConsent: false
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\media-integrity\consent.ts
+LINE: 68
+CODE: requiresConsent: false
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\media-integrity\consent.ts
+LINE: 84
+CODE: requiresConsent: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\media-integrity\index.ts
+LINE: 260
+CODE: requiresConsent: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\media-integrity\integrations.ts
+LINE: 332
+CODE: requiresImmediate: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\middleware\countryGuards.ts
+LINE: 44
+CODE: en: "This feature requires identity verification.",
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\middleware\countryGuards.ts
+LINE: 185
+CODE: * @param featureKey - Feature key that requires verification
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\middleware\pack167-affiliate-safety.ts
+LINE: 38
+CODE: /relationship.*requires.*purchase/i,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\middleware\teamPermissions.ts
+LINE: 95
+CODE: * Verify multiple permissions (requires ALL)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\middleware\teamPermissions.ts
+LINE: 121
+CODE: * Verify at least one permission (requires ANY)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\middleware\teamPermissions.ts
+LINE: 149
+CODE: * Check if user can access DMs (requires explicit grant)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\migrations\migrate-chats-to-v2-canonical.ts
+LINE: 234
+CODE: escrowRemainingTokens: Math.max(0, escrowRemaining),
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\migrations\migrate-chats-to-v2-canonical.ts
+LINE: 235
+CODE: platformFeeChargedTokens: platformFee,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\age-verification.ts
+LINE: 26
+CODE: status: 'pending' | 'verified' | 'rejected' | 'requires_human';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\age-verification.ts
+LINE: 42
+CODE: status: 'verified' | 'rejected' | 'requires_human' | 'minor_detected';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\age-verification.ts
+LINE: 136
+CODE: verificationResult.status = 'requires_human';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\age-verification.ts
+LINE: 161
+CODE: verificationResult.status = 'requires_human';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\age-verification.ts
+LINE: 254
+CODE: status: 'requires_human',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\age-verification.ts
+LINE: 315
+CODE: status: 'requires_human',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\age-verification.ts
+LINE: 386
+CODE: requiresReverification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\age-verification.ts
+LINE: 395
+CODE: requiresReverification: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\age-verification.ts
+LINE: 404
+CODE: const requiresReverification = userData.reverificationRequired === true ||
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\age-verification.ts
+LINE: 423
+CODE: requiresReverification: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\age-verification.ts
+LINE: 432
+CODE: requiresReverification,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\grooming-detector.ts
+LINE: 300
+CODE: requiresManualReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\grooming-detector.ts
+LINE: 338
+CODE: requiresLawEnforcement: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\media-scanner.ts
+LINE: 24
+CODE: requiresVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\media-scanner.ts
+LINE: 25
+CODE: requiresLawEnforcement: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\media-scanner.ts
+LINE: 75
+CODE: requiresVerification: scanResult.containsMinor && scanResult.confidence > 70 && scanResult.confidence <= 85,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\media-scanner.ts
+LINE: 76
+CODE: requiresLawEnforcement: scanResult.containsMinor && scanResult.confidence > 95 && scanResult.estimatedAge! < 16,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\media-scanner.ts
+LINE: 94
+CODE: if (result.requiresVerification) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\media-scanner.ts
+LINE: 98
+CODE: if (result.requiresLawEnforcement) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\media-scanner.ts
+LINE: 106
+CODE: severity: result.requiresLawEnforcement ? 'critical' : result.blockedUpload ? 'high' : 'medium',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\media-scanner.ts
+LINE: 111
+CODE: requiresLawEnforcement: result.requiresLawEnforcement
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\minor-protection\media-scanner.ts
+LINE: 283
+CODE: requiresInvestigation: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 113
+CODE: throw new Error('[MonetizationV2] Media unlock requires a counterpartyId (content creator)');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 116
+CODE: throw new Error('[MonetizationV2] Media unlock requires a mediaId');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 145
+CODE: throw new Error('[MonetizationV2] Tip requires a counterpartyId (tip recipient)');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 173
+CODE: throw new Error('[MonetizationV2] Gift requires a counterpartyId (gift recipient)');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 205
+CODE: throw new Error('[MonetizationV2] Call bill requires a counterpartyId (call earner)');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 208
+CODE: throw new Error('[MonetizationV2] Call bill requires a sessionId');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 239
+CODE: throw new Error('[MonetizationV2] Call escrow requires a counterpartyId');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 291
+CODE: throw new Error('[MonetizationV2] Subscription payment requires a counterpartyId (creator)');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 294
+CODE: throw new Error('[MonetizationV2] Subscription payment requires a subscriptionId');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 311
+CODE: // 6. ROYAL MEMBERSHIP — 100 tokens/month, 100% Avalo
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 319
+CODE: * - Always exactly 100 tokens.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 331
+CODE: throw new Error('[MonetizationV2] Royal membership must be exactly 100 tokens');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 366
+CODE: throw new Error('[MonetizationV2] Calendar booking requires a counterpartyId (earner/host)');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 369
+CODE: throw new Error('[MonetizationV2] Calendar booking requires a bookingId');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 401
+CODE: throw new Error('[MonetizationV2] Event ticket requires a counterpartyId (event host)');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 404
+CODE: throw new Error('[MonetizationV2] Event ticket requires an eventId');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.service.ts
+LINE: 469
+CODE: throw new Error('[MonetizationV2] User-created AI requires a counterpartyId (AI owner)');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\monetization\monetizationV2.types.ts
+LINE: 127
+CODE: /** Always 100 tokens. */
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-198-webinars\functions.ts
+LINE: 316
+CODE: return { ticketId: ticket.id, accessCode, requiresPayment: event.price > 0 };
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack174-fraud-shield\emotional-manipulation-detection.ts
+LINE: 43
+CODE: /love.*(?:requires|needs).*(?:financial|money|spending)/i,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack174-fraud-shield\emotional-manipulation-detection.ts
+LINE: 44
+CODE: /relationship.*(?:costs|requires).*money/i,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack174-fraud-shield\message-filtering.ts
+LINE: 29
+CODE: /relationship.*(?:needs|requires).*financial.*support/i,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack337-launch-ops\countryGating.ts
+LINE: 101
+CODE: requiresKYC: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack337-launch-ops\countryGating.ts
+LINE: 102
+CODE: requiresAgeVerification: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack337-launch-ops\countryGating.ts
+LINE: 115
+CODE: requiresKYC: country.kycRequired,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack337-launch-ops\countryGating.ts
+LINE: 116
+CODE: requiresAgeVerification: country.ageVerificationRequired,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack337-launch-ops\countryGating.ts
+LINE: 127
+CODE: requiresKYC: country.kycRequired,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack337-launch-ops\countryGating.ts
+LINE: 128
+CODE: requiresAgeVerification: country.ageVerificationRequired,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack337-launch-ops\countryGating.ts
+LINE: 138
+CODE: requiresKYC: country.kycRequired,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack337-launch-ops\countryGating.ts
+LINE: 139
+CODE: requiresAgeVerification: country.ageVerificationRequired,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack337-launch-ops\countryGating.ts
+LINE: 150
+CODE: requiresKYC: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack337-launch-ops\countryGating.ts
+LINE: 151
+CODE: requiresAgeVerification: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack337-launch-ops\types.ts
+LINE: 105
+CODE: requiresKYC: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack337-launch-ops\types.ts
+LINE: 106
+CODE: requiresAgeVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack440\services\IntelligentPayoutEscrowService.ts
+LINE: 180
+CODE: extensionReason = 'Large payout amount requires additional verification';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack440\services\IntelligentPayoutEscrowService.ts
+LINE: 191
+CODE: extensionReason = 'New account requires extended verification period';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack440\services\IntelligentPayoutEscrowService.ts
+LINE: 200
+CODE: extensionReason = 'Chargebackhistory requires additional review';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack440\services\ProgressiveFreezeController.ts
+LINE: 144
+CODE: publicMessage: 'First large payout requires additional verification',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts
+LINE: 89
+CODE: requiresAction: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts
+LINE: 171
+CODE: const requiresAction = metrics.some(m => m.status === 'CRITICAL');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts
+LINE: 172
+CODE: const actionDeadline = requiresAction ? new Date(Date.now() + 24 * 60 * 60 * 1000) : undefined;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts
+LINE: 185
+CODE: requiresAction,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\payments\stripe\index.ts
+LINE: 7
+CODE: requireStripe,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\payments\stripe\index.ts
+LINE: 8
+CODE: requireStripeForWebhook,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\payments\stripe\stripeClient.ts
+LINE: 128
+CODE: * More lenient than requireStripeForWebhook - allows operations
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\payments\stripe\stripeClient.ts
+LINE: 134
+CODE: export function requireStripe(): Stripe {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\payments\stripe\stripeClient.ts
+LINE: 151
+CODE: export function requireStripeForWebhook(): { stripe: Stripe; webhookSecret: string } {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\compliance-resolver.ts
+LINE: 219
+CODE: if (restriction.requiresLicense && !context.hasLicense) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\marketplace-filter.ts
+LINE: 80
+CODE: if (restriction.requiresLicense && !item.hasLicense) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\marketplace-filter.ts
+LINE: 215
+CODE: if (restriction.requiresLicense && !item.hasLicense) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\marketplace-filter.ts
+LINE: 330
+CODE: requiresLicense: string[];
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\marketplace-filter.ts
+LINE: 339
+CODE: requiresLicense: [],
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\marketplace-filter.ts
+LINE: 345
+CODE: const requiresLicense: string[] = [];
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\marketplace-filter.ts
+LINE: 355
+CODE: if (restriction.requiresLicense) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\marketplace-filter.ts
+LINE: 356
+CODE: requiresLicense.push(`${categoryDesc}: ${restriction.reason}`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\marketplace-filter.ts
+LINE: 372
+CODE: requiresLicense,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\marketplace-filter.ts
+LINE: 462
+CODE: requiresLicense: string[];
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 106
+CODE: requiresLicense: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 110
+CODE: reason: 'EU requires licensed health claims',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 207
+CODE: requiresLicense: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 398
+CODE: requiresLicense: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 498
+CODE: requiresLicense: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 508
+CODE: requiresLicense: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 608
+CODE: requiresLicense: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 618
+CODE: requiresLicense: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 718
+CODE: requiresLicense: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 908
+CODE: requiresLicense: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\safety-protocols.ts
+LINE: 200
+CODE: [`regionalFlags.${regionCode}.requiresReview`]: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\types.ts
+LINE: 11
+CODE: requiresIDVerification: true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\types.ts
+LINE: 24
+CODE: requiresIDVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\types.ts
+LINE: 127
+CODE: requiresLicense: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\aiSupportTriage.ts
+LINE: 282
+CODE: notes.push('⚠️ Safety risk detected - requires immediate human review');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\aiSupportTriage.ts
+LINE: 291
+CODE: notes.push('💰 Financial/compliance topic - requires specialized handling');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\configService.ts
+LINE: 44
+CODE: requiresVerification?: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\configService.ts
+LINE: 500
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\smartSocialGraph\antiFlirtManipulation.ts
+LINE: 105
+CODE: * Detect seductive thumbnail (requires AI/metadata analysis)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\smartSocialGraph\antiFlirtManipulation.ts
+LINE: 138
+CODE: * Detect suggestive clothing angles (requires AI/metadata analysis)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 21
+CODE: requiresVATNumber: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 22
+CODE: requiresBusinessRegistration: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 23
+CODE: requiresEORI: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 32
+CODE: requiresVATNumber: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 33
+CODE: requiresBusinessRegistration: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 34
+CODE: requiresEORI: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 44
+CODE: requiresVATNumber: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 45
+CODE: requiresBusinessRegistration: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 46
+CODE: requiresEORI: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 55
+CODE: requiresVATNumber: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 56
+CODE: requiresBusinessRegistration: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 57
+CODE: requiresEORI: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 67
+CODE: requiresVATNumber: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 68
+CODE: requiresBusinessRegistration: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 69
+CODE: requiresEORI: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 79
+CODE: requiresVATNumber: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 80
+CODE: requiresBusinessRegistration: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 81
+CODE: requiresEORI: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 91
+CODE: requiresVATNumber: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 92
+CODE: requiresBusinessRegistration: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 93
+CODE: requiresEORI: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 102
+CODE: requiresVATNumber: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 103
+CODE: requiresBusinessRegistration: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 104
+CODE: requiresEORI: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 114
+CODE: requiresVATNumber: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 115
+CODE: requiresBusinessRegistration: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 116
+CODE: requiresEORI: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 125
+CODE: requiresVATNumber: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 126
+CODE: requiresBusinessRegistration: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\tax-rules.ts
+LINE: 127
+CODE: requiresEORI: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\types.ts
+LINE: 178
+CODE: requiresVATNumber: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\types.ts
+LINE: 179
+CODE: requiresBusinessRegistration: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-engine\types.ts
+LINE: 180
+CODE: requiresEORI: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\triggers\chemistryLockInTriggers.ts
+LINE: 295
+CODE: 'Chemistry Lock-In requires exactly 2 participants'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 101
+CODE: export const MIN_DEPOSIT_TOKENS = 100;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 271
+CODE: escrowRemainingTokens: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 274
+CODE: platformFeeChargedTokens: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\challenges.types.ts
+LINE: 163
+CODE: requiresPhoto: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\challenges.types.ts
+LINE: 164
+CODE: requiresVideo: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\challenges.types.ts
+LINE: 165
+CODE: requiresTextLog: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\challenges.types.ts
+LINE: 528
+CODE: requiresPhoto: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\challenges.types.ts
+LINE: 529
+CODE: requiresVideo: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\challenges.types.ts
+LINE: 530
+CODE: requiresTextLog: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\cyberstalking.types.ts
+LINE: 200
+CODE: | 'ESCALATED'           // Requires immediate attention
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\events.ts
+LINE: 27
+CODE: requireSelfieCheck: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\events.types.ts
+LINE: 90
+CODE: requiresApproval: boolean;      // Host manually approves attendees
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\leaderboard.types.ts
+LINE: 285
+CODE: requiresCreatorStatus: boolean; // Must be creator/earner to participate
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\legal.types.ts
+LINE: 98
+CODE: * Action that requires legal acceptance
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack126-types.ts
+LINE: 70
+CODE: requiresAction?: 'REQUEST_CONSENT' | 'REACTIVATE_CONSENT';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack126-types.ts
+LINE: 306
+CODE: requiresExplanation: false;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack134-types.ts
+LINE: 259
+CODE: requiresWarning: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack134-types.ts
+LINE: 427
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack141-types.ts
+LINE: 414
+CODE: requiresModeratorReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack142-types.ts
+LINE: 421
+CODE: requiresReVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack157-business-partners.types.ts
+LINE: 258
+CODE: requiresApproval: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack158-legal-evidence.types.ts
+LINE: 154
+CODE: requiresImmediateAction: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack158-legal-evidence.types.ts
+LINE: 221
+CODE: requiresCourtOrder: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack158-legal-evidence.types.ts
+LINE: 462
+CODE: decision: 'STORE_EVIDENCE' | 'PROTECT_PRIVACY' | 'REQUIRES_REVIEW';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack181-independence.types.ts
+LINE: 169
+CODE: requiresContext?: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack201-compliance.types.ts
+LINE: 456
+CODE: requiresUserAcknowledgment: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack201-compliance.types.ts
+LINE: 477
+CODE: requiresExplicitConsent: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack243-creator-dashboard.ts
+LINE: 180
+CODE: currentChatPrice: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack326-ads.types.ts
+LINE: 346
+CODE: requiresManualReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack382-types.ts
+LINE: 618
+CODE: requiresAttention: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\promotion.ts
+LINE: 45
+CODE: requiresMarketingConsent: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\promotion.ts
+LINE: 130
+CODE: requiresMarketingConsent: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\questions.ts
+LINE: 38
+CODE: isPaid: boolean; // True = requires unlock
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\tax.types.ts
+LINE: 77
+CODE: requiresWithholding: boolean;            // Based on country rules
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\tax.types.ts
+LINE: 428
+CODE: requiresVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\tax.types.ts
+LINE: 440
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\tax.types.ts
+LINE: 570
+CODE: MIN_EARNINGS_FOR_DOCUMENT: 100,          // 100 tokens minimum
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\treasury.types.ts
+LINE: 336
+CODE: payoutRequiresKYC: boolean;          // Integration with PACK 84
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\twoFactor.types.ts
+LINE: 99
+CODE: // Requires step-up challenge completed
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\adminSupport.ts
+LINE: 5
+CODE: * Requires admin authentication and appropriate permissions.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiCompanions.ts
+LINE: 103
+CODE: console.log(`[validateTierAccess] User ${userId} has ${subscription.tier}, requires ${requiredTier}`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiCompanions.ts
+LINE: 118
+CODE: error: `This requires ${requiredTier} subscription. You have ${subscription.tier}.`,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiCompanions.ts
+LINE: 404
+CODE: error: "This AI companion requires a paid subscription. Upgrade to Plus, Intimate, or Creator to access.",
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiModeration.ts
+LINE: 748
+CODE: requiresReview: result.action === "review",
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiModerationEngine.ts
+LINE: 244
+CODE: reason: 'Borderline adult content - requires human review',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiModerationEngine.ts
+LINE: 370
+CODE: reason: 'Moderation engine error - requires manual review',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiOversight.ts
+LINE: 132
+CODE: requiresHumanReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiOversight.ts
+LINE: 498
+CODE: const requiresHumanReview =
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiOversight.ts
+LINE: 518
+CODE: requiresHumanReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiOversight.ts
+LINE: 528
+CODE: // If requires review, add to moderation queue
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiOversight.ts
+LINE: 529
+CODE: if (requiresHumanReview) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiOversight.ts
+LINE: 549
+CODE: if (!requiresHumanReview && recommendation !== ModerationAction.ALLOW) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\aiOversight.ts
+LINE: 799
+CODE: if (analysis.requiresHumanReview) humanReviewCount++;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analyticsExport.ts
+LINE: 16
+CODE: //  // Requires @google-cloud/bigquery package
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\analyticsExport.ts
+LINE: 17
+CODE: // BigQuery placeholder - requires package installation
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\arenaMonetization.ts
+LINE: 895
+CODE: requiresDeposit: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\boostEngine.ts
+LINE: 395
+CODE: // This requires an existing notification system
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 46
+CODE: MIN_DEPOSIT_TOKENS,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 394
+CODE: const depositTokens = Math.max(MIN_DEPOSIT_TOKENS, earnerConfigDeposit);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 473
+CODE: escrowRemainingTokens: escrow,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 474
+CODE: platformFeeChargedTokens: platformFee,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 601
+CODE: if (tokensToConsume > currentState.escrowRemainingTokens) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 602
+CODE: tokensToConsume = currentState.escrowRemainingTokens;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 619
+CODE: const escrowExhausted = (currentState.escrowRemainingTokens - tokensToConsume) <= 0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 623
+CODE: escrowRemainingTokens: currentState.escrowRemainingTokens - tokensToConsume,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 624
+CODE: platformFeeChargedTokens: currentState.platformFeeChargedTokens,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 816
+CODE: * Minimum is 100 tokens.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 825
+CODE: if (typeof depositTokens !== 'number' || depositTokens < MIN_DEPOSIT_TOKENS) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 828
+CODE: `Deposit must be at least ${MIN_DEPOSIT_TOKENS} tokens, got ${depositTokens}`
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 879
+CODE: platformFeeRetained: chat.paidSession?.billingState.platformFeeChargedTokens || 0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 889
+CODE: if (chat.paidSession && chat.paidSession.billingState.escrowRemainingTokens > 0) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 890
+CODE: refundedTokens = chat.paidSession.billingState.escrowRemainingTokens;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 891
+CODE: platformFeeRetained = chat.paidSession.billingState.platformFeeChargedTokens;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 923
+CODE: 'paidSession.billingState.escrowRemainingTokens': 0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 981
+CODE: if (freshChat.paidSession && freshChat.paidSession.billingState.escrowRemainingTokens > 0) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 982
+CODE: const refund = freshChat.paidSession.billingState.escrowRemainingTokens;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 1008
+CODE: 'paidSession.billingState.escrowRemainingTokens': 0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-legacy-shim.ts
+LINE: 171
+CODE: export function shimPack242GetChatEntryPrice(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\challenges.ts
+LINE: 188
+CODE: requiresPhoto: data.requiresPhoto,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\challenges.ts
+LINE: 189
+CODE: requiresVideo: data.requiresVideo,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\challenges.ts
+LINE: 190
+CODE: requiresTextLog: data.requiresTextLog,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\challenges.ts
+LINE: 454
+CODE: if (challenge.requiresPhoto && postType !== 'PROGRESS_PHOTO') {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\challenges.ts
+LINE: 455
+CODE: throw new functions.https.HttpsError('invalid-argument', 'Challenge requires photo submissions');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\challenges.ts
+LINE: 458
+CODE: if (challenge.requiresVideo && postType !== 'VIDEO_UPDATE') {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\challenges.ts
+LINE: 459
+CODE: throw new functions.https.HttpsError('invalid-argument', 'Challenge requires video submissions');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\challenges.ts
+LINE: 462
+CODE: if (challenge.requiresTextLog && postType !== 'TEXT_LOG') {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\challenges.ts
+LINE: 463
+CODE: throw new functions.https.HttpsError('invalid-argument', 'Challenge requires text log submissions');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\chatMonetization.ts
+LINE: 35
+CODE: import { getPack242ChatEntryPrice, calculatePack242RevenueSplit } from './pack242DynamicChatPricing';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\chatMonetization.ts
+LINE: 784
+CODE: const pack242Price = await getPack242ChatEntryPrice(chat.roles.earnerId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\chatMonetization.ts
+LINE: 825
+CODE: metadata: { chatId, purpose: 'platform_fee', entryPrice: depositAmount },
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\common.ts
+LINE: 201
+CODE: * Node 20 tightened types for crypto functions - requires Uint8Array<ArrayBuffer>.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\creatorHub.ts
+LINE: 421
+CODE: // Minimum withdrawal: 100 tokens (20 USD at settlement rate)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\creatorHub.ts
+LINE: 423
+CODE: throw new HttpsError("invalid-argument", "Minimum withdrawal is 100 tokens");
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\creatorStore.test.ts
+LINE: 51
+CODE: test("should split 100 tokens as 20/80", () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\csamShield.ts
+LINE: 8
+CODE: * protective actions, but reporting to authorities requires human moderator confirmation.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\csamShield.ts
+LINE: 439
+CODE: logger.warn('PLACEHOLDER: Actual external report not sent - requires API integration');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\csamShield.ts
+LINE: 514
+CODE: logger.warn('PLACEHOLDER: Image CSAM detection not implemented - requires external service integration');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\cyberstalkingDetection.ts
+LINE: 549
+CODE: console.log(`[CyberstalkingDetection] CRITICAL case ${caseId} requires manual review`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\cyberstalkingEndpoints.ts
+LINE: 248
+CODE: requiresConsent: validation.requiresConsent,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\cyberstalkingReporting.ts
+LINE: 494
+CODE: requiresReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\datingFunnel.ts
+LINE: 168
+CODE: SEXY_MODE_REQUIRES_MUTUAL_CONSENT: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\datingFunnel.ts
+LINE: 586
+CODE: * Request or enable sexy mode (requires mutual consent)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dropsEngine.ts
+LINE: 256
+CODE: throw new HttpsError('invalid-argument', 'COOP drop requires at least one co-creator');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dropsEngine.ts
+LINE: 260
+CODE: throw new HttpsError('invalid-argument', 'COOP drop requires share percentages');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dropsEngine.ts
+LINE: 286
+CODE: throw new HttpsError('invalid-argument', 'FLASH drop requires start and end times');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dropsEngine.ts
+LINE: 306
+CODE: throw new HttpsError('invalid-argument', 'LOOTBOX drop requires content items');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicChatPricing.ts
+LINE: 5
+CODE: * from the base 100 tokens to 120-500 tokens based on demand, chemistry, and rank.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicChatPricing.ts
+LINE: 8
+CODE: * - Base price remains 100 tokens
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicChatPricing.ts
+LINE: 595
+CODE: export async function getChatEntryPrice(earnerId: string | null): Promise<number> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicChatPricing.ts
+LINE: 608
+CODE: export function calculateRevenueSplit(entryPrice: number): {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicChatPricing.ts
+LINE: 612
+CODE: const platformAmount = Math.ceil(entryPrice * PLATFORM_SHARE);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicChatPricing.ts
+LINE: 613
+CODE: const earnerAmount = entryPrice - platformAmount;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\enforcementEngine.ts
+LINE: 93
+CODE: // If any flag requires LOW visibility, use that
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\events.ts
+LINE: 134
+CODE: requiresApproval?: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\events.ts
+LINE: 245
+CODE: requiresApproval: data.requiresApproval || false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\eventsEngine.ts
+LINE: 657
+CODE: * Requires 70% check-in rate
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\expertMarketplace.ts
+LINE: 189
+CODE: requiresModeration: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\expertMarketplace.ts
+LINE: 199
+CODE: * Requires KYC verification first
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\liveEngine.ts
+LINE: 223
+CODE: if (HOST_ELIGIBILITY.REQUIRES_18_PLUS) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\liveEngine.ts
+LINE: 233
+CODE: if (HOST_ELIGIBILITY.REQUIRES_VERIFICATION) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\liveEngine.ts
+LINE: 535
+CODE: if (VIEWER_ELIGIBILITY.REQUIRES_AUTH && !senderId) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\locationSafety.ts
+LINE: 371
+CODE: * Mark that user requires education about location safety
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\loyalty.ts
+LINE: 155
+CODE: [UserLevel.SILVER]: 100, // 100 tokens
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\media.ts
+LINE: 414
+CODE: // Verify media requires payment
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\media.ts
+LINE: 584
+CODE: requiresUnlock: media.accessType === MediaAccessType.PAID,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\mediaSafetyBlocking.ts
+LINE: 35
+CODE: requiresImmediate: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\mediaSafetyBlocking.ts
+LINE: 46
+CODE: requiresImmediate: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\mediaSafetyBlocking.ts
+LINE: 57
+CODE: requiresImmediate: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\mediaSafetyBlocking.ts
+LINE: 68
+CODE: requiresImmediate: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\mediaSafetyBlocking.ts
+LINE: 78
+CODE: requiresImmediate: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\mediaSafetyBlocking.ts
+LINE: 209
+CODE: requiresConsent?: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\mediaSafetyBlocking.ts
+LINE: 220
+CODE: requiresConsent: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\mediaSafetyBlocking.ts
+LINE: 252
+CODE: * Check if media request requires immediate response (surveillance indicator)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\meetingMonetization.ts
+LINE: 1049
+CODE: requiresReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\moderationIntegration.ts
+LINE: 33
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\moderationIntegration.ts
+LINE: 60
+CODE: const requiresReview = result.decision === 'REVIEW_REQUIRED';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\moderationIntegration.ts
+LINE: 74
+CODE: requiresReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\moderationIntegration.ts
+LINE: 83
+CODE: requiresReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\moderationIntegration.ts
+LINE: 105
+CODE: requiresReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\moderationIntegration.ts
+LINE: 214
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 34
+CODE: requiresInviteCode: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 35
+CODE: requiresAllowlist: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 60
+CODE: requiresInviteCode?: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 73
+CODE: requiresInviteCode: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 74
+CODE: requiresAllowlist: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 82
+CODE: requiresInviteCode: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 83
+CODE: requiresAllowlist: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 91
+CODE: requiresInviteCode: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 92
+CODE: requiresAllowlist: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 100
+CODE: requiresInviteCode: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 101
+CODE: requiresAllowlist: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 158
+CODE: requiresInviteCode: config.requiresInviteCode,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 281
+CODE: if (config.requiresAllowlist) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 299
+CODE: if (config.requiresInviteCode) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 304
+CODE: requiresInviteCode: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 313
+CODE: requiresInviteCode: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-launch-mode.ts
+LINE: 322
+CODE: requiresInviteCode: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-types.ts
+LINE: 46
+CODE: requiresInviteCode?: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack100-types.ts
+LINE: 120
+CODE: shouldRetry: false, // Requires user action or waiting
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack103-case-management.ts
+LINE: 122
+CODE: if (requiresHumanReview(reasonCodes, confidence.score)) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack103-case-management.ts
+LINE: 578
+CODE: * Check if case requires human review
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack103-case-management.ts
+LINE: 580
+CODE: function requiresHumanReview(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack103-enforcement-integration.ts
+LINE: 156
+CODE: `Automated hard enforcement applied based on confidence score ${confidenceScore.toFixed(3)}. Requires human review.`
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack103-enforcement-integration.ts
+LINE: 206
+CODE: `SUSPENSION RISK: Automated enforcement detected high confidence (${confidenceScore.toFixed(3)}). Requires immediate Level 3 admin review before suspension.`
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack103-rate-limiting.ts
+LINE: 392
+CODE: * Requires multiple Level 3 admins to agree before executing
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack105-finance-cases.ts
+LINE: 10
+CODE: * - Requires human approval for all corrections
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack105-reconciliation.ts
+LINE: 10
+CODE: * - Requires legal order for fraud-backed cancellations
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack106-admin.ts
+LINE: 7
+CODE: * - Set base token price (requires 2-key approval)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack106-admin.ts
+LINE: 180
+CODE: * Requires 2-key approval from different admins
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack106-admin.ts
+LINE: 185
+CODE: async (request): Promise<{ success: boolean; requiresSecondApproval?: boolean }> => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack106-admin.ts
+LINE: 248
+CODE: return { success: true, requiresSecondApproval: false };
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack106-admin.ts
+LINE: 267
+CODE: return { success: true, requiresSecondApproval: true };
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-discovery.ts
+LINE: 71
+CODE: // NSFW_EXPLICIT requires explicit opt-in to segregated feed
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-discovery.ts
+LINE: 78
+CODE: reason: 'Explicit content requires opt-in to adult feed',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-discovery.ts
+LINE: 368
+CODE: requiresSeparation: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-discovery.ts
+LINE: 422
+CODE: updates.requiresSeparation = updates.nsfwContentRatio > 0 && updates.safeContentRatio > 0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-types.ts
+LINE: 354
+CODE: requiresSeparation: boolean;   // True if posts both SAFE and NSFW
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-types.ts
+LINE: 460
+CODE: requiresBlur: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-types.ts
+LINE: 461
+CODE: requiresAgeVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-types.ts
+LINE: 462
+CODE: requiresOptIn: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-types.ts
+LINE: 528
+CODE: requiresAgeGate: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-types.ts
+LINE: 533
+CODE: requiresAgeGate: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack114-safety-enforcement.ts
+LINE: 234
+CODE: * Requires integration with user age verification
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack120-types.ts
+LINE: 42
+CODE: | 'MANUAL'       // Requires manual review
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack122-cultural-safety.ts
+LINE: 509
+CODE: requiresConfirmation: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack122-cultural-safety.ts
+LINE: 525
+CODE: requiresConfirmation: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack122-cultural-safety.ts
+LINE: 533
+CODE: requiresConfirmation: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack122-cultural-safety.ts
+LINE: 544
+CODE: requiresConfirmation: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack122-cultural-safety.ts
+LINE: 551
+CODE: requiresConfirmation: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack122-cultural-safety.ts
+LINE: 559
+CODE: requiresConfirmation: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack122-region-policy.ts
+LINE: 288
+CODE: // Verification requires high confidence and no major inconsistencies
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack126-consent-protocol.ts
+LINE: 216
+CODE: requiresAction: 'REQUEST_CONSENT',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack126-consent-protocol.ts
+LINE: 244
+CODE: requiresAction: 'REACTIVATE_CONSENT',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack126-consent-protocol.ts
+LINE: 259
+CODE: requiresAction: 'REQUEST_CONSENT',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack126-risk-orchestration.ts
+LINE: 525
+CODE: // Pause consent temporarily - requires reconfirmation
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack126-risk-orchestration.ts
+LINE: 526
+CODE: await pauseConsent(userId, counterpartId, 'SYSTEM', 'Risk assessment requires consent reconfirmation');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack127-claims-engine.ts
+LINE: 216
+CODE: // Check for perceptual match (requires manual review)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack127-fingerprint-engine.ts
+LINE: 169
+CODE: // Check if any match requires blocking
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-ban-evasion-hunter.ts
+LINE: 493
+CODE: requiresManualReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-ban-evasion-hunter.ts
+LINE: 517
+CODE: requiresHumanReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-case-prioritization.ts
+LINE: 342
+CODE: requiresManualReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-case-prioritization.ts
+LINE: 367
+CODE: requiresImmediate: priority === 'CRITICAL',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-case-prioritization.ts
+LINE: 525
+CODE: requiresImmediate: newPriority === 'CRITICAL',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 486
+CODE: // Pause each consent (requires revalidation)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 493
+CODE: 'Risk assessment requires consent revalidation'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 535
+CODE: requiresManualReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-safety-filter.ts
+LINE: 249
+CODE: requiresWarning: !allowed && !autoBlock,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack138-vip-access.ts
+LINE: 281
+CODE: 'This theme requires Royal Club membership'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack141-safety-filter.ts
+LINE: 235
+CODE: requiresModeratorReview: riskLevel === 'CRITICAL' || riskLevel === 'HIGH',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack142-endpoints.ts
+LINE: 186
+CODE: requiresReVerification: result.requiresReVerification,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack142-photo-consistency-engine.ts
+LINE: 325
+CODE: const requiresReVerification =
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack142-photo-consistency-engine.ts
+LINE: 337
+CODE: const passed = !requiresReVerification;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack142-photo-consistency-engine.ts
+LINE: 347
+CODE: requiresReVerification,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack142-photo-consistency-engine.ts
+LINE: 359
+CODE: logger.info(`Recurrent authenticity check ${checkId}: passed=${passed}, requiresReVerification=${requiresReVerification}`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack142-photo-consistency-engine.ts
+LINE: 361
+CODE: // If requires re-verification, create identity check
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack142-photo-consistency-engine.ts
+LINE: 362
+CODE: if (requiresReVerification) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack145-ad-engine.ts
+LINE: 105
+CODE: action: safetyValidation.requiresHumanReview ? 'flagged' : 'approved',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack145-ad-engine.ts
+LINE: 116
+CODE: status: safetyValidation.requiresHumanReview ? 'pending_review' : 'draft',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack145-ad-engine.ts
+LINE: 168
+CODE: status: safetyValidation.isValid && !safetyValidation.requiresHumanReview
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack145-ad-engine.ts
+LINE: 188
+CODE: humanReviewRequired: safetyValidation.requiresHumanReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack145-safety-validator.ts
+LINE: 146
+CODE: const requiresHumanReview = (
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack145-safety-validator.ts
+LINE: 159
+CODE: requiresHumanReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack145-safety-validator.ts
+LINE: 178
+CODE: requiresHumanReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack145-safety-validator.ts
+LINE: 199
+CODE: requiresHumanReview: contentValidation.violations.length > 0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack145-types.ts
+LINE: 313
+CODE: requiresHumanReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack146-scheduled.ts
+LINE: 177
+CODE: requiresReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack147-refund-engine.ts
+LINE: 316
+CODE: return { delivered: false, verified: false, reason: 'Transaction type requires manual review' };
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack157-venue-events.ts
+LINE: 357
+CODE: requiresApproval?: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack157-venue-events.ts
+LINE: 512
+CODE: requiresApproval: data.requiresApproval || false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack157-venue-safety.ts
+LINE: 397
+CODE: description: 'Event description mentions filming/photography - requires consent verification',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack158-evidence-classifier.ts
+LINE: 78
+CODE: requiresImmediateAction: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack158-evidence-classifier.ts
+LINE: 91
+CODE: requiresImmediateAction: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack158-evidence-classifier.ts
+LINE: 106
+CODE: requiresImmediateAction: severity === LegalViolationSeverity.FEDERAL_CRIME,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack158-evidence-classifier.ts
+LINE: 472
+CODE: decision: 'REQUIRES_REVIEW',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack158-legal-vault.ts
+LINE: 259
+CODE: requiresCourtOrder: params.requestType !== ExportRequestType.USER_OWN_REQUEST,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack159-safety-engine.ts
+LINE: 173
+CODE: // Note: repeatedAfterRejection requires conversation history analysis
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack160-device-security.ts
+LINE: 92
+CODE: requiresReauth: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack160-device-security.ts
+LINE: 101
+CODE: let requiresReauth = false;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack160-device-security.ts
+LINE: 122
+CODE: requiresReauth = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack160-device-security.ts
+LINE: 194
+CODE: requiresReauth: requiresReauth || status === 'compromised'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack160-device-security.ts
+LINE: 338
+CODE: * Check if device requires reauthorization
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack160-encryption-keys.ts
+LINE: 205
+CODE: requiresReauth: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack160-encryption-keys.ts
+LINE: 208
+CODE: let requiresReauth = false;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack160-encryption-keys.ts
+LINE: 219
+CODE: requiresReauth = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack160-encryption-keys.ts
+LINE: 230
+CODE: requiresReauth = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack160-encryption-keys.ts
+LINE: 242
+CODE: requiresReauth
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack166-safety.ts
+LINE: 510
+CODE: description: 'Discount requires emotional labor or romantic favors',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack168-schedulers.ts
+LINE: 270
+CODE: requiresReview: true
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack173-abuse-detection.ts
+LINE: 262
+CODE: requiresEvidence: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack173-abuse-detection.ts
+LINE: 326
+CODE: requiresEvidence: patterns.length > 0
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack182-events-types.ts
+LINE: 116
+CODE: requiresApproval: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack182-events-types.ts
+LINE: 472
+CODE: requiresBackgroundCheck: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack182-events.ts
+LINE: 173
+CODE: requiresApproval?: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack182-events.ts
+LINE: 320
+CODE: requiresApproval: data.requiresApproval || false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack191-safety-monitor.ts
+LINE: 262
+CODE: requiresReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack193-sexuality-consent-functions.ts
+LINE: 41
+CODE: * Requires age verification
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack193-sexuality-consent-functions.ts
+LINE: 201
+CODE: * Requires both users to have consent enabled
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack193-sexuality-consent-functions.ts
+LINE: 296
+CODE: requiresMutualConsent: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack193-sexuality-consent-functions.ts
+LINE: 519
+CODE: requiresAgeVerification: true
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack193-sexuality-consent.ts
+LINE: 64
+CODE: requiresAgeVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack193-sexuality-consent.ts
+LINE: 87
+CODE: requiresMutualConsent: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack193-sexuality-consent.ts
+LINE: 105
+CODE: requiresAgeVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack193-sexuality-consent.ts
+LINE: 305
+CODE: if (content.requiresAgeVerification !== true) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack193-sexuality-consent.ts
+LINE: 333
+CODE: requiresAgeVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack193-sexuality-consent.ts
+LINE: 358
+CODE: requiresMutualConsent: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack196-marketplace.ts
+LINE: 268
+CODE: status: 'pending', // Requires admin approval
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack201-geoblocking.ts
+LINE: 130
+CODE: reason = `This content requires minimum age ${contentRestriction.minimumAge} in ${regionCode}`;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack201-geoblocking.ts
+LINE: 137
+CODE: reason = 'This content requires identity verification in your region';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack206c-adult-mode.ts
+LINE: 183
+CODE: * Requires mutual consent from both users
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack206c-adult-mode.ts
+LINE: 211
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack206c-types.ts
+LINE: 98
+CODE: requiresVerification?: boolean; // If user needs age verification first
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack206c-types.ts
+LINE: 178
+CODE: requiresAgeVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack209-admin-endpoints.ts
+LINE: 42
+CODE: requiresReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack209-admin-endpoints.ts
+LINE: 52
+CODE: if (requiresReview !== undefined) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack209-admin-endpoints.ts
+LINE: 53
+CODE: query = query.where('manualReview', '==', requiresReview) as any;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack209-admin-endpoints.ts
+LINE: 282
+CODE: requiresReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack209-admin-endpoints.ts
+LINE: 296
+CODE: if (requiresReview !== undefined) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack209-admin-endpoints.ts
+LINE: 297
+CODE: query = query.where('requiresManualReview', '==', requiresReview) as any;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack209-admin-endpoints.ts
+LINE: 346
+CODE: requiresManualReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack209-admin-endpoints.ts
+LINE: 521
+CODE: requiresManualReview: complaints.filter(c => (c as any).manualReview === true).length,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack209-refund-complaint-engine.ts
+LINE: 320
+CODE: requiresManualReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack209-refund-complaint-types.ts
+LINE: 238
+CODE: requiresManualReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-engine.ts
+LINE: 137
+CODE: requiresReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-engine.ts
+LINE: 243
+CODE: requiresReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-engine.ts
+LINE: 334
+CODE: requiresReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-engine.ts
+LINE: 458
+CODE: requiresReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-engine.ts
+LINE: 494
+CODE: requiresReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-engine.ts
+LINE: 686
+CODE: requiresReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-engine.ts
+LINE: 738
+CODE: requiresReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-engine.ts
+LINE: 919
+CODE: requiresReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-engine.ts
+LINE: 949
+CODE: description: `TIER 2 PANIC ALERT - Requires immediate safety team response`,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-engine.ts
+LINE: 951
+CODE: requiresReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-engine.ts
+LINE: 994
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-functions.ts
+LINE: 503
+CODE: if (data.requiresReview !== undefined) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-functions.ts
+LINE: 504
+CODE: query = query.where('requiresReview', '==', data.requiresReview) as any;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack210-safety-tracking-types.ts
+LINE: 399
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-engine.ts
+LINE: 202
+CODE: requiresReview: newScore >= RISK_THRESHOLDS.HIGH,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-engine.ts
+LINE: 357
+CODE: requiresReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-engine.ts
+LINE: 399
+CODE: requiresReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-engine.ts
+LINE: 416
+CODE: requiresReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-engine.ts
+LINE: 515
+CODE: requiresReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-engine.ts
+LINE: 526
+CODE: requiresReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-engine.ts
+LINE: 678
+CODE: requiresReview: meetingBlocked,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-functions.ts
+LINE: 452
+CODE: const { requiresReview, severity, limit = 100 } = data as {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-functions.ts
+LINE: 453
+CODE: requiresReview?: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-functions.ts
+LINE: 461
+CODE: if (requiresReview !== undefined) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-functions.ts
+LINE: 462
+CODE: query = query.where('requiresReview', '==', requiresReview) as any;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-functions.ts
+LINE: 597
+CODE: requiresReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack211-adaptive-safety-types.ts
+LINE: 402
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 518
+CODE: export async function requiresExtraVerification(userId: string): Promise<boolean> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-functions.ts
+LINE: 17
+CODE: requiresExtraVerification,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 401
+CODE: requiresExtraVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 402
+CODE: requiresManualReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 478
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack214-schedulers.ts
+LINE: 26
+CODE: requiresTruthCheck: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack214-schedulers.ts
+LINE: 33
+CODE: requiresTruthCheck: false, // Discovery boost is always available
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack214-schedulers.ts
+LINE: 40
+CODE: requiresTruthCheck: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack214-schedulers.ts
+LINE: 47
+CODE: requiresTruthCheck: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack214-schedulers.ts
+LINE: 54
+CODE: requiresTruthCheck: false, // Accelerator is automatic
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack214-schedulers.ts
+LINE: 61
+CODE: requiresTruthCheck: true, // Only if someone with their type is online
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack214-schedulers.ts
+LINE: 68
+CODE: requiresTruthCheck: false, // Challenge is always available
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack214-schedulers.ts
+LINE: 99
+CODE: if (entry.requiresTruthCheck) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack214-types.ts
+LINE: 142
+CODE: requiresTruthCheck: boolean; // must be backed by real data
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack237-breakup-recovery-engine.ts
+LINE: 47
+CODE: * Requires confirmation from the other user (unless safety override)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack237-breakup-recovery-engine.ts
+LINE: 54
+CODE: ): Promise<{ requestId: string; requiresConfirmation: boolean }> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack237-breakup-recovery-engine.ts
+LINE: 86
+CODE: return { requestId, requiresConfirmation: true };
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack237-breakup-recovery-helpers.ts
+LINE: 283
+CODE: price: 100, // 100 tokens
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack242DynamicChatPricing.ts
+LINE: 15
+CODE: * Earners now freely set their deposit amount (min 100 tokens) via
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack242DynamicChatPricing.ts
+LINE: 459
+CODE: export async function getPack242ChatPrice(userId: string): Promise<number> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack242DynamicChatPricing.ts
+LINE: 612
+CODE: case 0: // 100 tokens - show to everyone equally
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack242DynamicChatPricing.ts
+LINE: 717
+CODE: * Replaces PACK 219's getChatEntryPrice for PACK 242 users
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack242DynamicChatPricing.ts
+LINE: 719
+CODE: export async function getPack242ChatEntryPrice(earnerId: string | null): Promise<number> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack242DynamicChatPricing.ts
+LINE: 724
+CODE: return getPack242ChatPrice(earnerId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack242DynamicChatPricing.ts
+LINE: 730
+CODE: export function calculatePack242RevenueSplit(entryPrice: number): {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack242DynamicChatPricing.ts
+LINE: 734
+CODE: const platformAmount = Math.ceil(entryPrice * PLATFORM_SHARE);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack242DynamicChatPricing.ts
+LINE: 735
+CODE: const earnerAmount = entryPrice - platformAmount;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack242Functions.ts
+LINE: 12
+CODE: getPack242ChatPrice,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack242Functions.ts
+LINE: 81
+CODE: export const getPack242ChatPriceCallable = onCall(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack242Functions.ts
+LINE: 91
+CODE: const price = await getPack242ChatPrice(userId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack243-creator-dashboard.ts
+LINE: 173
+CODE: currentChatPrice: await getCurrentChatPrice(userId),
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack243-creator-dashboard.ts
+LINE: 181
+CODE: currentPrice: await getCurrentChatPrice(userId),
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack243-creator-dashboard.ts
+LINE: 182
+CODE: suggestedPrice: await getCurrentChatPrice(userId) * 0.8, // 20% reduction suggestion
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack243-creator-dashboard.ts
+LINE: 306
+CODE: const currentPrice = await getCurrentChatPrice(userId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack243-creator-dashboard.ts
+LINE: 756
+CODE: async function getCurrentChatPrice(userId: string): Promise<number> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack243-creator-dashboard.ts
+LINE: 759
+CODE: return userData?.chatPrice || 100; // Default 100 tokens
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack246-cloud-functions.ts
+LINE: 413
+CODE: logger.warn('Split violation requires manual review', { violation });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack246-cloud-functions.ts
+LINE: 422
+CODE: logger.warn('Rate violation requires manual review', { violation });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 40
+CODE: export async function getChatEntryPrice(creatorId: string): Promise<number> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 47
+CODE: // Check for custom pricing
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 50
+CODE: return pricingDoc.data()?.chatPrice || 0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 238
+CODE: const entryPrice = await getChatEntryPrice(creatorId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 242
+CODE: if (entryPrice === 0) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 250
+CODE: if (userTokenBalance < entryPrice) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 253
+CODE: requiredTokens: entryPrice,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 255
+CODE: reason: `Insufficient tokens. This Royal creator requires ${entryPrice} tokens to start a chat.`,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 261
+CODE: requiredTokens: entryPrice,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 280
+CODE: const entryPrice = await getChatEntryPrice(creatorId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 282
+CODE: if (entryPrice === 0) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 290
+CODE: if (balance < entryPrice) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 300
+CODE: balance: balance - entryPrice,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 310
+CODE: amount: -entryPrice,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 311
+CODE: balance: balance - entryPrice,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 316
+CODE: const netCreatorTokens = Math.floor(entryPrice * 0.65); // 65% to creator
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 322
+CODE: grossTokens: entryPrice,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 324
+CODE: commissionAvalo: entryPrice - netCreatorTokens,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 336
+CODE: entryPrice,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 339
+CODE: return { success: true, tokensCharged: entryPrice };
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 357
+CODE: canSetChatPrice: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 358
+CODE: chatPriceRange: string;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 366
+CODE: chatPrice: number | null;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 377
+CODE: canSetChatPrice: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 378
+CODE: chatPriceRange: 'N/A',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 389
+CODE: const chatPrice = pricingDoc.exists ? pricingDoc.data()?.chatPrice : null;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 395
+CODE: canSetChatPrice: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 396
+CODE: chatPriceRange: `${ROYAL_BENEFITS.MIN_CHAT_PRICE}-${ROYAL_BENEFITS.MAX_CHAT_PRICE} tokens`,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-benefits.ts
+LINE: 404
+CODE: chatPrice,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-endpoints.ts
+LINE: 120
+CODE: const chatPrice = request.data.chatPrice;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-endpoints.ts
+LINE: 122
+CODE: if (typeof chatPrice !== 'number') {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-endpoints.ts
+LINE: 126
+CODE: if (chatPrice < ROYAL_BENEFITS.MIN_CHAT_PRICE || chatPrice > ROYAL_BENEFITS.MAX_CHAT_PRICE) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-endpoints.ts
+LINE: 142
+CODE: chatPrice,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-endpoints.ts
+LINE: 150
+CODE: logger.info(`Royal user ${userId} set chat price to ${chatPrice}`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-engine.ts
+LINE: 490
+CODE: const customPricingRevenue = pricingDoc.exists ? chatRevenue * 0.3 : 0; // Estimate 30% from custom pricing
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack253-royal-types.ts
+LINE: 137
+CODE: chatPrice: number; // 100-500 tokens
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-admin.ts
+LINE: 155
+CODE: // TODO: Calculate heating effectiveness (requires tracking conversions during heating)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-swipe-heating.ts
+LINE: 378
+CODE: // TODO: Calculate conversions during heating (requires tracking)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack256AiReplySuggestions.ts
+LINE: 11
+CODE: * - Consent-aware NSFW suggestions (requires PACK 249)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack256AiReplySuggestions.ts
+LINE: 32
+CODE: | 'after_sexy'              // After sexy message (requires consent)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack256AiReplySuggestions.ts
+LINE: 404
+CODE: * Generate NSFW suggestions - sexy, intimate tone (requires consent)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack256AiReplySuggestions.ts
+LINE: 668
+CODE: // 3. Seen but not replied (requires read receipts)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack257-creatorDashboard.ts
+LINE: 756
+CODE: L5: ['Elite status', 'Custom pricing'],
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack261-payout-service.ts
+LINE: 298
+CODE: // SEPA payout processing (requires integration with banking partner)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack261-payout-service.ts
+LINE: 324
+CODE: status: 'requires_manual_processing',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack261-payout-service.ts
+LINE: 331
+CODE: // SWIFT payout processing (requires integration with banking partner)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack261-payout-service.ts
+LINE: 352
+CODE: status: 'requires_manual_processing',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack263-missions-integration.ts
+LINE: 139
+CODE: // Track "host live" mission (requires minimum 2 viewers)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack278-perks-service.ts
+LINE: 30
+CODE: error: 'Passport feature requires VIP or Royal subscription',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack278-perks-service.ts
+LINE: 74
+CODE: error: 'Incognito mode requires VIP or Royal subscription',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack282-feed-interactions.ts
+LINE: 273
+CODE: requiresReview: moderation.action === 'review',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack282-feed-interactions.ts
+LINE: 326
+CODE: requiresReview: moderation.action === 'review',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack285FreeWindowFunnel.ts
+LINE: 232
+CODE: requiresDeposit?: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack285FreeWindowFunnel.ts
+LINE: 311
+CODE: requiresDeposit: false
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack285FreeWindowFunnel.ts
+LINE: 335
+CODE: // This requires integration with PACK 273's prepaid bucket system
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack285FreeWindowFunnel.ts
+LINE: 342
+CODE: requiresDeposit: true
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack289-payout-providers.ts
+LINE: 41
+CODE: requiresManualProcessing: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack289-payout-providers.ts
+LINE: 53
+CODE: requiresManualProcessing: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack289-payout-providers.ts
+LINE: 159
+CODE: if (BANK_TRANSFER_CONFIG.requiresManualProcessing) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack296-admin-management.ts
+LINE: 19
+CODE: async function requireSuperAdmin(request: CallableRequest<any>): Promise<string> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack296-admin-management.ts
+LINE: 94
+CODE: const superAdminId = await requireSuperAdmin(request);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack296-admin-management.ts
+LINE: 151
+CODE: const superAdminId = await requireSuperAdmin(request);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack296-admin-management.ts
+LINE: 220
+CODE: const superAdminId = await requireSuperAdmin(request);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack296-admin-management.ts
+LINE: 267
+CODE: await requireSuperAdmin(request);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack297-health-check.ts
+LINE: 118
+CODE: * Detailed health check with more metrics (requires auth)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack297-monitoring.ts
+LINE: 81
+CODE: * Log critical message (requires immediate attention)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack297-rate-limits.ts
+LINE: 182
+CODE: * Check if action requires rate limiting
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack297-rate-limits.ts
+LINE: 184
+CODE: export function requiresRateLimit(action: string): boolean {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack301-tests.ts
+LINE: 378
+CODE: // Real sending requires PACK 293 to be fully initialized
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack304-endpoints.ts
+LINE: 67
+CODE: 'Requires FINANCE or SUPERADMIN role'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack306-verification.ts
+LINE: 575
+CODE: requiresReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack312-panic-integration.ts
+LINE: 77
+CODE: This ticket requires IMMEDIATE attention from the Risk/Safety team.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack312-support-actions.ts
+LINE: 360
+CODE: requiresRefundReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack312-support-actions.ts
+LINE: 641
+CODE: // Ban requires RISK or SUPERADMIN
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack312-support-actions.ts
+LINE: 644
+CODE: // Legal escalation requires RISK, LEGAL, or SUPERADMIN
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack314-feature-guards.ts
+LINE: 76
+CODE: * Example: Events & Calendar guard (requires verification)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack317-mobile-hardening.ts
+LINE: 77
+CODE: * Check if screen requires blur protection
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack317-mobile-hardening.ts
+LINE: 153
+CODE: // Stub implementation - real attestation requires platform-specific SDKs
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack320-moderation-actions.ts
+LINE: 283
+CODE: requiresReverification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack328a-verification-providers.ts
+LINE: 269
+CODE: // DocAI requires at least one document and one selfie
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack328a-verification-providers.ts
+LINE: 349
+CODE: failureReasons: ['REQUIRES_HUMAN_REVIEW'],
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack328a-verification-providers.ts
+LINE: 359
+CODE: // Manual review is always "available" but requires human intervention
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack328b-chat-session-timeouts.ts
+LINE: 57
+CODE: * - Each bucket = 100 tokens entry price (or dynamic price from PACK 242)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack328b-chat-session-timeouts.ts
+LINE: 62
+CODE: * - Paid 100 tokens, 35 platform fee, 65 escrow
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack328c-selfie-verification-functions.ts
+LINE: 216
+CODE: const requiresSelfie = true; // Could be: booking.meetupType === 'OFFLINE'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack328c-selfie-verification-functions.ts
+LINE: 218
+CODE: if (requiresSelfie) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack330-tax-profile.ts
+LINE: 76
+CODE: * Requires: Identity verification + 18+ age
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack331-ai-avatar-marketplace.ts
+LINE: 139
+CODE: * Requires 18+ verification
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack346-abuse-detection.ts
+LINE: 498
+CODE: requiresManualReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack347-analytics-dashboard.ts
+LINE: 108
+CODE: * Admin only - requires elevated permissions
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack347-promotion-algorithm.ts
+LINE: 150
+CODE: // Normalize to 0-100 scale (100 tokens/day = 100 score)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack347-promotion-algorithm.ts
+LINE: 407
+CODE: // Note: This requires geohash indexing in production
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-ad-engine.ts
+LINE: 120
+CODE: } else if (safetyCheck.requiresManualReview) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-ad-engine.ts
+LINE: 130
+CODE: flagReason: 'Requires manual review',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-ad-engine.ts
+LINE: 177
+CODE: if (safetyCheck.requiresManualReview) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-campaign-engine.ts
+LINE: 76
+CODE: if (safetyCheck.requiresManualReview) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-campaign-engine.ts
+LINE: 85
+CODE: flagReason: 'High-budget campaign requires review',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-safety.ts
+LINE: 20
+CODE: requiresManualReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-safety.ts
+LINE: 47
+CODE: result.requiresManualReview = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-safety.ts
+LINE: 54
+CODE: result.requiresManualReview = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-safety.ts
+LINE: 88
+CODE: result.requiresManualReview = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-safety.ts
+LINE: 109
+CODE: requiresManualReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-safety.ts
+LINE: 131
+CODE: result.requiresManualReview = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-safety.ts
+LINE: 132
+CODE: result.violations.push('High-budget campaign requires manual approval');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack349-types.ts
+LINE: 347
+CODE: requiresManualReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack350-chat-pricing.ts
+LINE: 9
+CODE: * - No changes to entry price (100 tokens)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack353-calendar-event-recovery.ts
+LINE: 21
+CODE: requireSelfie: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack353-calendar-event-recovery.ts
+LINE: 104
+CODE: if (event.requireSelfie) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack353-calendar-event-recovery.ts
+LINE: 216
+CODE: selfie: event.requireSelfie,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack353-calendar-event-recovery.ts
+LINE: 248
+CODE: selfie: event.requireSelfie,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack353-calendar-event-recovery.ts
+LINE: 278
+CODE: selfie: event.requireSelfie,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack353-payment-failsafe.ts
+LINE: 283
+CODE: // Note: Requires Stripe SDK
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack353-payment-failsafe.ts
+LINE: 310
+CODE: // Note: Requires Apple IAP verification
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack353-payment-failsafe.ts
+LINE: 332
+CODE: // Note: Requires Google Play verification
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack353-watchdog.ts
+LINE: 277
+CODE: // Note: Requires Slack webhook configuration
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack353-watchdog.ts
+LINE: 319
+CODE: // Note: Requires email service configuration
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack355-kpi-integration.ts
+LINE: 158
+CODE: const REWARD_COST = 0.10; // $0.10 per token, 100 tokens = $10
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack355-referral-service.ts
+LINE: 415
+CODE: // Default reward: 100 tokens
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 35
+CODE: requiresWithholdingTax: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 67
+CODE: requiresWithholdingTax: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 83
+CODE: requiresWithholdingTax: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 99
+CODE: requiresWithholdingTax: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 115
+CODE: requiresWithholdingTax: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 131
+CODE: requiresWithholdingTax: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 147
+CODE: requiresWithholdingTax: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 163
+CODE: requiresWithholdingTax: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 181
+CODE: requiresWithholdingTax: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 199
+CODE: requiresWithholdingTax: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 217
+CODE: requiresWithholdingTax: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 235
+CODE: requiresWithholdingTax: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 253
+CODE: requiresWithholdingTax: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 271
+CODE: requiresWithholdingTax: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 289
+CODE: requiresWithholdingTax: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-jurisdiction-engine.ts
+LINE: 441
+CODE: * Check if user requires KYC for their jurisdiction
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack359-tax-calculator.ts
+LINE: 148
+CODE: const withheldTax = profile.requiresWithholdingTax
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-cultural-safety.ts
+LINE: 28
+CODE: requiresModeration: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-cultural-safety.ts
+LINE: 47
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-cultural-safety.ts
+LINE: 71
+CODE: requiresModeration: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-cultural-safety.ts
+LINE: 124
+CODE: requiresModeration: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-cultural-safety.ts
+LINE: 180
+CODE: requiresModeration: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-cultural-safety.ts
+LINE: 212
+CODE: requiresModeration: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-cultural-safety.ts
+LINE: 245
+CODE: requiresModeration: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-cultural-safety.ts
+LINE: 316
+CODE: requiresModeration: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-cultural-safety.ts
+LINE: 438
+CODE: requiresReview: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-cultural-safety.ts
+LINE: 456
+CODE: result.requiresReview = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-cultural-safety.ts
+LINE: 457
+CODE: result.warnings.push(`Content requires manual review: ${label}`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-cultural-safety.ts
+LINE: 469
+CODE: result.requiresReview = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-legal-text-engine.ts
+LINE: 44
+CODE: requiresAcceptance: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-legal-text-engine.ts
+LINE: 340
+CODE: requiresAcceptance: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-legal-text-engine.ts
+LINE: 494
+CODE: requiresLegalAcceptance: !result.allAccepted,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 39
+CODE: requiresVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 83
+CODE: requiresVerification: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 102
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 122
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 165
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 187
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 213
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 237
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 248
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 262
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 286
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 300
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 316
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 337
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 353
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack360-regional-ux.ts
+LINE: 369
+CODE: requiresVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack365-feature-flags.service.ts
+LINE: 385
+CODE: // Production launch requires all checklist items to pass
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack366-store-readiness.ts
+LINE: 277
+CODE: requiresUpgrade: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack366-store-readiness.ts
+LINE: 291
+CODE: requiresUpgrade: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack366-store-readiness.ts
+LINE: 301
+CODE: requiresUpgrade: config.forceUpgradeModal,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack366-store-readiness.ts
+LINE: 311
+CODE: requiresUpgrade: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack366-store-readiness.ts
+LINE: 319
+CODE: requiresUpgrade: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-engine.ts
+LINE: 469
+CODE: requireSelfieVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-types.ts
+LINE: 117
+CODE: requireSelfieVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack372-global-launch.ts
+LINE: 612
+CODE: requiresKyc: config.kycRequired,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack372-global-launch.ts
+LINE: 613
+CODE: requiresAgeVerification: config.ageVerificationRequired,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 23
+CODE: requiresVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 50
+CODE: requiresDisclaimer: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 87
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 228
+CODE: let requiresReview = false;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 258
+CODE: requiresReview = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 267
+CODE: requiresReview = true;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 286
+CODE: } else if (requiresReview || violations.length > 0) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 296
+CODE: if (rules.moderation.humanReviewRequired || requiresReview) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 297
+CODE: const reviewNeeded = Math.random() * 100 < rules.moderation.humanReviewPercentage || requiresReview;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 310
+CODE: priority: autoBlocked ? 'high' : requiresReview ? 'medium' : 'low',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 325
+CODE: requiresReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 334
+CODE: requiresReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 385
+CODE: requiresVerification: rules.prohibitedContent.adultContent.requiresVerification,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 410
+CODE: requiresDisclaimer: rules.prohibitedContent.political.requiresDisclaimer,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 671
+CODE: requiresReview: 0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-moderation.ts
+LINE: 683
+CODE: if (log.requiresReview) stats.requiresReview++;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-region-config.ts
+LINE: 24
+CODE: requiresKYC: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-region-config.ts
+LINE: 25
+CODE: requiresTaxId: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-regional-risk.ts
+LINE: 272
+CODE: requiresReview: finalScore >= riskProfile.thresholds.suspiciousActivityScore,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-regional-risk.ts
+LINE: 409
+CODE: if (recommendedLimits.requiresReview) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-regional-risk.ts
+LINE: 412
+CODE: reason: 'Account requires verification before monetization',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-burnout-prevention.ts
+LINE: 59
+CODE: requiresAttention: existing.level === 'high' || existing.level === 'critical',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-burnout-prevention.ts
+LINE: 140
+CODE: requiresAttention: level === 'high' || level === 'critical',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-creator-academy.ts
+LINE: 60
+CODE: `Requires ${course.requiredTier} tier`
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack383-kyc-aml.ts
+LINE: 228
+CODE: requiresReview: amlResult.status === 'review',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack383-kyc-aml.ts
+LINE: 316
+CODE: requiresReview: sanctionsResult.status === 'potential_match',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack384-paid-review-detection.ts
+LINE: 203
+CODE: requiresAction: true
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack387-crisis-orchestration.ts
+LINE: 387
+CODE: // Unfreeze influencer payouts (requires manual review)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack387-incidents.ts
+LINE: 373
+CODE: message: `PR Incident "${incident.title}" requires legal review`,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack387-public-statements.ts
+LINE: 165
+CODE: title: 'Public Statement Requires Legal Review',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack387-public-statements.ts
+LINE: 222
+CODE: title: 'Public Statement Requires Executive Approval',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack387-public-statements.ts
+LINE: 309
+CODE: * Publish statement (requires all approvals)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack387-public-statements.ts
+LINE: 331
+CODE: 'Statement requires legal approval'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack387-public-statements.ts
+LINE: 338
+CODE: 'Statement requires executive approval'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack390-aml.ts
+LINE: 133
+CODE: requiresReview: riskLevel !== AMLRiskLevel.LOW
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack397-review-intelligence.ts
+LINE: 1040
+CODE: approved: false, // Requires moderation
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack413-kpi-command-center.ts
+LINE: 614
+CODE: autoApprove: false, // Always requires manual approval
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack417-incident.notifications.ts
+LINE: 230
+CODE: * Notify when incident requires postmortem
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack418-compliance.service.ts
+LINE: 15
+CODE: // @requiresCompliance: ComplianceKey.TOKENOMICS_CORE, ComplianceKey.AGE_RESTRICTION, ComplianceKey.CONTENT_ADULT
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack418-integration-examples.ts
+LINE: 8
+CODE: // @requiresCompliance: ComplianceKey.TOKENOMICS_CORE, ComplianceKey.AGE_RESTRICTION
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack418-integration-examples.ts
+LINE: 120
+CODE: chatPrice: number
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack418-integration-examples.ts
+LINE: 372
+CODE: *    ✓ Add @requiresCompliance tag
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack419-enforcement.service.ts
+LINE: 75
+CODE: 'Underage detection requires PERMA_BAN action'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack419-enforcement.service.ts
+LINE: 81
+CODE: 'Underage detection requires ACCOUNT_FULL scope'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack420-data-deletion.adapter.ts
+LINE: 38
+CODE: *    - Set spendable token balance to zero (if policy requires)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack421-health.controller.ts
+LINE: 227
+CODE: * Authentication: Requires admin/internal role (PACK 296/300A)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack421-health.controller.ts
+LINE: 238
+CODE: message: 'Unauthorized: Internal health endpoint requires authentication',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack421-health.controller.ts
+LINE: 374
+CODE: 'Feature matrix requires authentication'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack421-health.controller.ts
+LINE: 409
+CODE: error: 'Unauthorized: Feature matrix requires authentication',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack421-metrics.adapter.ts
+LINE: 49
+CODE: * Datadog provider (requires datadog-metrics or dd-trace)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-global-router.ts
+LINE: 346
+CODE: throw new Error('Region override requires VIP tier 2+');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-admin-legal-controls.ts
+LINE: 13
+CODE: * - Requires elevated permissions
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-age-gate.ts
+LINE: 93
+CODE: * Check if user requires age verification
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-age-gate.ts
+LINE: 95
+CODE: async requiresAgeVerification(userId: string, action: string): Promise<boolean> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-age-gate.ts
+LINE: 100
+CODE: logger.info(`User ${userId} requires age verification for action: ${action}`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-age-gate.ts
+LINE: 377
+CODE: const requiresVerification = await this.requiresAgeVerification(userId, action);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-age-gate.ts
+LINE: 379
+CODE: if (requiresVerification) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-content-access-engine.ts
+LINE: 171
+CODE: const requiresVerification = await this.ageGate.requiresAgeVerification(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-content-access-engine.ts
+LINE: 176
+CODE: if (requiresVerification) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-content-access-engine.ts
+LINE: 358
+CODE: description: 'This feature requires a premium subscription',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-economy-engine.ts
+LINE: 35
+CODE: import { getPack242ChatEntryPrice, calculatePack242RevenueSplit } from './pack242DynamicChatPricing';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-economy-engine.ts
+LINE: 784
+CODE: const pack242Price = await getPack242ChatEntryPrice(chat.roles.earnerId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-economy-engine.ts
+LINE: 825
+CODE: metadata: { chatId, purpose: 'platform_fee', entryPrice: depositAmount },
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-store-compliance.ts
+LINE: 223
+CODE: // Check if store requires safe mode
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-store-compliance.ts
+LINE: 248
+CODE: * Check if store requires safe mode
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack433-creator-marketplace.ts
+LINE: 168
+CODE: status: 'PENDING', // Requires admin approval
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-onboarding.ts
+LINE: 230
+CODE: if (regionalConfig.requiresBackgroundCheck) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-onboarding.ts
+LINE: 235
+CODE: if (regionalConfig.requiresIdVerification) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-onboarding.ts
+LINE: 326
+CODE: if (regionalConfig.requiresBackgroundCheck) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-onboarding.ts
+LINE: 333
+CODE: if (regionalConfig.requiresIdVerification) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 269
+CODE: requiresBackgroundCheck: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 270
+CODE: requiresIdVerification: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 281
+CODE: requiresBackgroundCheck: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 282
+CODE: requiresIdVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 291
+CODE: requiresBackgroundCheck: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 292
+CODE: requiresIdVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 301
+CODE: requiresBackgroundCheck: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 302
+CODE: requiresIdVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 311
+CODE: requiresBackgroundCheck: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 312
+CODE: requiresIdVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 321
+CODE: requiresBackgroundCheck: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 322
+CODE: requiresIdVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 331
+CODE: requiresBackgroundCheck: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 332
+CODE: requiresIdVerification: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack435-ambassador-events.ts
+LINE: 90
+CODE: requiresQRCheck: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack435-ambassador-events.ts
+LINE: 425
+CODE: requiresQRCheck: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack435-event-safety.ts
+LINE: 722
+CODE: body: 'A critical safety incident requires your immediate attention',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack436-review-boost.ts
+LINE: 137
+CODE: // 2. User monetized and earned >= 100 tokens
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack451-creator-agreement.ts
+LINE: 158
+CODE: * - Requires authenticated user
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-entry-threshold.ts
+LINE: 8
+CODE: * - Minimum = 100 tokens
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 90
+CODE: error: `Exclusive mode requires minimum multiplier of ${EXCLUSIVE_MIN_MULTIPLIER}`,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack90-scheduled.ts
+LINE: 357
+CODE: // Note: This requires user documents to have createdAt field
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack91-policy-engine.ts
+LINE: 430
+CODE: requiresAge: requiredAge,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack91-policy-engine.ts
+LINE: 562
+CODE: requiresAge?: number
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack91-policy-engine.ts
+LINE: 566
+CODE: return `This content is restricted to users ${requiresAge || 18}+ years old.`;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack91-types.ts
+LINE: 112
+CODE: requiresAge?: number; // If age-restricted, minimum age required
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack92-notifications.ts
+LINE: 429
+CODE: * Send legal update notification (requires acceptance)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack93-data-rights.ts
+LINE: 602
+CODE: * Requires explicit confirmation and shows final warning
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack96-twoFactorEndpoints.ts
+LINE: 249
+CODE: *   await requireStepUpVerification(request.auth?.uid, 'PAYOUT_REQUEST_CREATE');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack96-twoFactorEndpoints.ts
+LINE: 253
+CODE: export async function requireStepUpVerification(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack96-twoFactorEngine.ts
+LINE: 45
+CODE: // If user has 2FA enabled, check if this action requires it
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack96-twoFactorEngine.ts
+LINE: 414
+CODE: * Disable 2FA for a user (requires step-up verification)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack96-twoFactorIntegrations.ts
+LINE: 72
+CODE: * const requiresStepUp = await checkIfStepUpRequired(userId, 'PAYOUT_REQUEST_CREATE');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack96-twoFactorIntegrations.ts
+LINE: 73
+CODE: * if (requiresStepUp) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack96-twoFactorIntegrations.ts
+LINE: 74
+CODE: *   return { requiresVerification: true };
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack96-twoFactorIntegrations.ts
+LINE: 215
+CODE: *   const requiresStepUp = await checkIfStepUpRequired(userId, 'PAYOUT_REQUEST_CREATE');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack96-twoFactorIntegrations.ts
+LINE: 219
+CODE: *     requiresAdditionalVerification: requiresStepUp,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\paidMediaMonetization.ts
+LINE: 225
+CODE: throw new Error(`${productType} requires ${limits.min}-${limits.max} items`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\payments.providers.ts
+LINE: 28
+CODE: // Axios placeholder - requires axios package installation
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\paymentsComplete.ts
+LINE: 1607
+CODE: * Process SEPA payout (placeholder - requires Stripe Connect)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\paymentsComplete.ts
+LINE: 1625
+CODE: * Process PayPal payout (placeholder - requires PayPal API)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\paymentsComplete.ts
+LINE: 1643
+CODE: * Process crypto payout (placeholder - requires blockchain integration)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\paymentsV2.legacy.ts
+LINE: 153
+CODE: [Currency.USD]: 100,        // $1 = 100 tokens
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\paymentsV2.legacy.ts
+LINE: 159
+CODE: [Currency.USD]: 100,       // 1 USDC = 100 tokens
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\privacyCenter.ts
+LINE: 81
+CODE: requiresManualReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\privacyCenter.ts
+LINE: 324
+CODE: const requiresManualReview =
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\privacyCenter.ts
+LINE: 329
+CODE: const status: DeletionJobStatus = requiresManualReview
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\privacyCenter.ts
+LINE: 334
+CODE: const scheduledFor = !requiresManualReview
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\privacyCenter.ts
+LINE: 354
+CODE: requiresManualReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\promotionEngine.ts
+LINE: 15
+CODE: * 4. Marketing consent required if campaign requires it
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\promotionEngine.ts
+LINE: 47
+CODE: if (candidate.requiresMarketingConsent && !viewer.marketingAllowed) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\promotions.ts
+LINE: 102
+CODE: requiresMarketingConsent: campaign.requiresMarketingConsent,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\promotions.ts
+LINE: 252
+CODE: requiresMarketingConsent: true, // Always true for CREATOR campaigns
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\reputation-integrations.ts
+LINE: 406
+CODE: * Track trust flag added (requires human verification)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\riskGraph.ts
+LINE: 42
+CODE: // Redis client placeholder - requires redis package installation
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\riskGraph.ts
+LINE: 170
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\riskGraph.ts
+LINE: 944
+CODE: recommendations.push("Account requires immediate review");
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\riskGraph.ts
+LINE: 959
+CODE: const requiresReview =
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\riskGraph.ts
+LINE: 969
+CODE: requiresReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\safetyGamification.ts
+LINE: 654
+CODE: reason: `Requires trust score of ${quest.requirements.minTrustScore} or higher`,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\security.ts
+LINE: 412
+CODE: * Disable 2FA (requires current code)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\sharedMeetingEventLogic.ts
+LINE: 372
+CODE: requiresReview: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-calculation.ts
+LINE: 295
+CODE: if (profile.requiresWithholding && taxRules.withholding.required) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-calculation.ts
+LINE: 454
+CODE: if (profile.requiresWithholding && taxRules.withholding.required) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-profile.ts
+LINE: 97
+CODE: * Determine if profile requires verification
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-profile.ts
+LINE: 99
+CODE: function requiresVerification(entityType: EntityType, country: string): boolean {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-profile.ts
+LINE: 230
+CODE: const needsVerification = requiresVerification(data.entityType, data.country);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-profile.ts
+LINE: 237
+CODE: let requiresWithholding = false;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-profile.ts
+LINE: 248
+CODE: requiresWithholding = rules?.withholding?.required || false;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-profile.ts
+LINE: 268
+CODE: requiresWithholding,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-profile.ts
+LINE: 294
+CODE: requiresVerification: status === 'REVIEW_REQUIRED',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-profile.ts
+LINE: 395
+CODE: requiresReview: newStatus === 'REVIEW_REQUIRED',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-profile.ts
+LINE: 508
+CODE: if (profile.requiresWithholding && !profile.taxId) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-profile.ts
+LINE: 528
+CODE: checks.withholdingRulesApplied = profile.requiresWithholding;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\tax-treasury-integration.ts
+LINE: 59
+CODE: if (profile.requiresWithholding && !profile.taxId) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\trustEngine.ts
+LINE: 570
+CODE: // Check if amount requires manual review
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\trustEngine.ts
+LINE: 584
+CODE: // Check if amount requires KYC
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\trustEngine.ts
+LINE: 634
+CODE: // Check daily limit (requires checking recent events - simplified here)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 40
+CODE: *       status: moderationResult.requiresReview ? 'pending_review' : 'blocked',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 55
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 74
+CODE: requiresReview: result.requiresReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 96
+CODE: *     const hasBlocked = moderationResults.some(r => !r.allowed && !r.requiresReview);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 97
+CODE: *     const allPendingReview = moderationResults.every(r => r.requiresReview);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 125
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 147
+CODE: requiresReview: result.requiresReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 175
+CODE: *       status: moderationResult.requiresReview ? 'pending_review' : 'blocked',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 192
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 209
+CODE: requiresReview: result.requiresReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 234
+CODE: *     moderationResults[index].requiresReview
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 252
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 274
+CODE: requiresReview: result.requiresReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 302
+CODE: *         status: moderationResult.requiresReview ? 'pending_review' : 'blocked',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 317
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 335
+CODE: requiresReview: result.requiresReview,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 482
+CODE: requiresReview: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\uploadFlowIntegrations.ts
+LINE: 502
+CODE: requiresReview: result.requiresReview,
+------------------------------------------------------------

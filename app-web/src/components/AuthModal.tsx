@@ -352,3 +352,4 @@ function AuthModal({ onClose, redirectTo }: AuthModalProps) {
 }
 
 export default AuthModal;
+

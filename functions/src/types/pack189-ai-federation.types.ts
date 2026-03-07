@@ -277,8 +277,9 @@ export const ALLOWED_SEED_ARCHETYPES = [
   'interdimensional trader',
 ];
 
-export const PLATFORM_REVENUE_SHARE = 0.35;
-export const CREATOR_REVENUE_SHARE = 0.65;
+export const PLATFORM_REVENUE_SHARE = MONETIZATION_SPLITS.CHAT.avalo;
+export const CREATOR_REVENUE_SHARE = MONETIZATION_SPLITS.CHAT.creator;
+
 
 
 

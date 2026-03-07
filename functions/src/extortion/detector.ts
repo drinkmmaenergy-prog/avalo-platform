@@ -223,7 +223,7 @@ export class ExtortionDetector {
         if (category.requiresFinancial) {
           const hasFinancialContext = this.hasFinancialContext(content, context);
           if (hasFinancialContext) {
-            maxConfidence = Math.max(maxConfidence, 0.80);
+            maxConfidence = Math.max(maxConfidence, MONETIZATION_SPLITS.EVENT_TICKET.creator);
           } else {
             maxConfidence = Math.max(maxConfidence, 0.60);
           }
@@ -290,7 +290,7 @@ export class ExtortionDetector {
     if (hasThreatWord && hasPersonalRef) {
       detected = true;
       patterns.push('contextual_threat');
-      confidence = 0.70;
+      confidence = MONETIZATION_SPLITS.SUBSCRIPTION.creator;
 
       if (this.hasFinancialContext(content, context)) {
         confidence = 0.85;
@@ -483,6 +483,7 @@ export class ExtortionDetector {
 }
 
 export const extortionDetector = new ExtortionDetector();
+
 
 
 

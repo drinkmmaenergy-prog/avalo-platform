@@ -1,4 +1,6 @@
-"use client";
+'use client';
+
+import { MONETIZATION_SPLITS } from '@constants/monetization';
 
 /**
  * PACK 279E — AI Creator Payout Screen (Web)
@@ -23,7 +25,7 @@ import { getAuth } from 'firebase/auth';
 import { requireDb } from '@/lib/firebase';
 
 const MIN_PAYOUT_TOKENS = 1000;
-const TOKEN_TO_PLN = 0.20;
+const TOKEN_TO_PLN = MONETIZATION_SPLITS.EVENT_TICKET.avalo;
 const MIN_PAYOUT_PLN = MIN_PAYOUT_TOKENS * TOKEN_TO_PLN; // 200 PLN
 
 interface PayoutRequest {
@@ -371,4 +373,7 @@ export default function AIPayoutsWebPage() {
     </div>
   );
 }
+
+
+
 

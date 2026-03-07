@@ -13,7 +13,7 @@ import {
   getEffectiveSubscriptionTier,
   getChatWordBucket,
   SubscriptionTier,
-} from './pack350-subscriptions.js';
+} from './pack350-subscriptions';
 
 /**
  * Get word bucket size for a chat earner based on their subscription tier
@@ -49,7 +49,7 @@ export function calculateChatEarningsSplit(totalTokens: number): {
   earnerReceives: number;
   platformReceives: number;
 } {
-  const earnerReceives = Math.floor(totalTokens * 0.65);  // 65% to earner
+  const earnerReceives = Math.floor(totalTokens * MONETIZATION_SPLITS.CHAT.creator);  // 65% to earner
   const platformReceives = totalTokens - earnerReceives;   // 35% to platform
   
   return {
@@ -63,6 +63,8 @@ export function calculateChatEarningsSplit(totalTokens: number): {
  * IMPORTANT: No changes regardless of subscription tier
  */
 export const CHAT_ENTRY_PRICE = 100;  // tokens
+
+
 
 
 

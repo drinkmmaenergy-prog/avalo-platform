@@ -4,9 +4,9 @@
  * Wraps authentication functions with rate limiting
  */
 
-import { checkAndIncrementRateLimit, hashIpAddress, createRateLimitError } from './rateLimit.js';
-import { trackLoginSession } from './security.js';
-import { RateLimitContext } from './rateLimit.js';
+import { checkAndIncrementRateLimit, hashIpAddress, createRateLimitError } from './rateLimit';
+import { trackLoginSession } from './security';
+import { RateLimitContext } from './rateLimit';
 import { functions } from './runtime';
 
 /**
@@ -85,6 +85,7 @@ export async function checkSignupRateLimit(params: {
 
   return { allowed: true };
 }
+
 
 
 

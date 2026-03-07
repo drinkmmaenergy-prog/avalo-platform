@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Media Upload Component
  * Placeholder for file upload with preview
  */
-
-'use client';
-
 export default function MediaUpload() {
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -20,4 +19,5 @@ export default function MediaUpload() {
     </div>
   );
 }
+
 

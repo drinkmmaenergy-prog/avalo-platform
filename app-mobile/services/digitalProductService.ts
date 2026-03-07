@@ -416,7 +416,7 @@ export function calculateRevenueSplit(priceTokens: number): {
   platformFee: number;
   creatorEarnings: number;
 } {
-  const platformFee = Math.floor(priceTokens * 0.35);
+  const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.avalo);
   const creatorEarnings = priceTokens - platformFee;
   return { platformFee, creatorEarnings };
 }

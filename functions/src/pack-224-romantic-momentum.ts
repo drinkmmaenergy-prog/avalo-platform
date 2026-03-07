@@ -15,7 +15,7 @@
  * - Influencer badge +10% gain boost
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import type { Timestamp } from 'firebase-admin/firestore';
 import { admin, timestamp } from './runtime';
 

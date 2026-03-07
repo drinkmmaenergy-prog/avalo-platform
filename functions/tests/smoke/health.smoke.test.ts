@@ -46,12 +46,12 @@ describe('Smoke Tests - Health Checks', () => {
     it('should have correct call pricing constants', () => {
       const VOICE_BASE_COST = 10;
       const VIDEO_BASE_COST = 20;
-      const VIP_DISCOUNT = 0.30;
+      const VIP_DISCOUNT = MONETIZATION_SPLITS.SUBSCRIPTION.avalo;
       const ROYAL_DISCOUNT = 0.50;
       
       expect(VOICE_BASE_COST).toBe(10);
       expect(VIDEO_BASE_COST).toBe(20);
-      expect(VIP_DISCOUNT).toBe(0.30);
+      expect(VIP_DISCOUNT).toBe(MONETIZATION_SPLITS.SUBSCRIPTION.avalo);
       expect(ROYAL_DISCOUNT).toBe(0.50);
     });
 
@@ -128,7 +128,7 @@ describe('Smoke Tests - Basic Calculations', () => {
 
   it('should calculate event commission split correctly', () => {
     const ticketPrice = 100;
-    const avaloShare = Math.floor(ticketPrice * 0.20);
+    const avaloShare = Math.floor(ticketPrice * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
     const organizerShare = ticketPrice - avaloShare;
     
     expect(avaloShare).toBe(20);
@@ -159,3 +159,6 @@ describe('Smoke Tests - Data Validation', () => {
     expect(data.isTestAccount).toBe(true);
   });
 });
+
+import { getDb, setupTestEnvironment, testData, createTestUser, createTestTransaction, now, minutesAgo, hoursAgo, daysAgo } from '../src/testUtils'
+

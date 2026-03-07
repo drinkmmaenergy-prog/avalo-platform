@@ -300,7 +300,7 @@ export const joinChallenge = functions.https.onCall(async (request) => {
         }
 
         // Calculate split
-        platformFee = Math.floor(challenge.entryTokens * 0.35);
+        platformFee = Math.floor(challenge.entryTokens * MONETIZATION_SPLITS.CHAT.avalo);
         creatorEarnings = challenge.entryTokens - platformFee;
 
         // Process payment in transaction
@@ -1001,6 +1001,7 @@ export const cancelChallenge = functions.https.onCall(async (request) => {
     }
   }
 );
+
 
 
 

@@ -9,7 +9,7 @@ import type {
   AIGenerationResponse,
   StyleConfig,
   PersonaProfile
-} from './aiCompanionTypes.js';
+} from './aiCompanionTypes';
 
 // Configure this via environment variables
 const AI_PROVIDER = process.env.AI_PROVIDER || 'openai'; // 'openai' or 'anthropic'
@@ -328,6 +328,7 @@ export function validateAvatarConfig(
     errors
   };
 }
+
 
 
 

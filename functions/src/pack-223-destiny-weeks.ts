@@ -12,7 +12,7 @@
  * - Full economy compatibility (no price changes)
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import type { Timestamp } from 'firebase-admin/firestore';
 import { admin } from './runtime';
 

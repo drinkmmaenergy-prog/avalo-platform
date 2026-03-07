@@ -69,8 +69,8 @@ interface UnlockPaidMediaResponse {
 // CONSTANTS
 // ============================================================================
 
-const AVALO_COMMISSION = 0.35;
-const CREATOR_SHARE = 0.65;
+const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.avalo;
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator;
 
 const MIN_PRICE = 5;
 const MAX_PRICE = 10000;
@@ -639,6 +639,7 @@ export default {
   unlockPaidMedia,
   cleanupDeletedMedia,
 };
+
 
 
 

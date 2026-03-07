@@ -14,7 +14,7 @@ import {
   unlockPack242Pricing,
   trackMonthlyEarningsForPack242,
   type Pack242PriceTier
-} from './pack242DynamicChatPricing.js';
+} from './pack242DynamicChatPricing';
 import { admin, auth, db, functions, serverTimestamp, timestamp, onSchedule } from './runtime';
 
 // ============================================================================
@@ -111,7 +111,7 @@ export const getPack242AnalyticsCallable = onCall(
     }
 
     // Check if user is admin
-    const { db } = await import('./init.js');
+    const { db } = await import('./init');
     const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const userData = userDoc.data();
     
@@ -150,7 +150,7 @@ export const unlockPack242PricingCallable = onCall(
     }
 
     // Check if user is admin
-    const { db } = await import('./init.js');
+    const { db } = await import('./init');
     const userDoc = await db.collection('users').doc(adminId).get();
     const userData = userDoc.data();
     
@@ -186,7 +186,7 @@ export const pack242WeeklyEligibilityCheck = onSchedule(
     logger.info('Starting PACK 242 weekly eligibility check');
     
     try {
-      const { db } = await import('./init.js');
+      const { db } = await import('./init');
       
       // Get all users with earnFromChat enabled
       const earners = await db.collection('users')
@@ -263,7 +263,7 @@ export const pack242DailyAnalyticsSnapshot = onSchedule(
     
     try {
       const analytics = await getPack242Analytics();
-      const { db, serverTimestamp } = await import('./init.js');
+      const { db, serverTimestamp } = await import('./init');
       
       // Store snapshot in analytics collection
       await db.collection('pack242_analytics_snapshots').add({
@@ -285,6 +285,7 @@ export const pack242DailyAnalyticsSnapshot = onSchedule(
     }
   }
 );
+
 
 
 

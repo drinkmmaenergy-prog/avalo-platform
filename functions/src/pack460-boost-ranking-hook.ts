@@ -91,7 +91,7 @@ export async function applyBoostToFeed(
 ): Promise<RankingHookResult> {
   const items: RankedItem[] = [];
   let sponsoredCount = 0;
-  const maxSponsored = Math.floor(rankedContentIds.length * 0.30);
+  const maxSponsored = Math.floor(rankedContentIds.length * MONETIZATION_SPLITS.SUBSCRIPTION.avalo);
 
   for (const contentId of rankedContentIds) {
     const organicScore = organicScores.get(contentId) ?? 0;
@@ -253,6 +253,7 @@ export async function reportSponsoredView(
 // ============================================================================
 
 export { calculateBoostScore, getBoostedCandidates, confirmImpression };
+
 
 
 

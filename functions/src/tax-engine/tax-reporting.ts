@@ -485,11 +485,11 @@ function isEUCountry(country: string): boolean {
 
 function getVATRateForCountry(country: string): number {
   const rates: Record<string, number> = {
-    'DE': 0.19, 'FR': 0.20, 'ES': 0.21, 'IT': 0.22, 'NL': 0.21,
-    'BE': 0.21, 'AT': 0.20, 'PL': 0.23, 'SE': 0.25, 'DK': 0.25,
+    'DE': 0.19, 'FR': MONETIZATION_SPLITS.EVENT_TICKET.avalo, 'ES': 0.21, 'IT': 0.22, 'NL': 0.21,
+    'BE': 0.21, 'AT': MONETIZATION_SPLITS.EVENT_TICKET.avalo, 'PL': 0.23, 'SE': 0.25, 'DK': 0.25,
     'FI': 0.24, 'PT': 0.23, 'GR': 0.24, 'CZ': 0.21, 'IE': 0.23
   };
-  return rates[country] || 0.20;
+  return rates[country] || MONETIZATION_SPLITS.EVENT_TICKET.avalo;
 }
 
 async function logAuditTrail(data: {
@@ -539,6 +539,7 @@ export async function getTaxReportsForUser(
     return [];
   }
 }
+
 
 
 

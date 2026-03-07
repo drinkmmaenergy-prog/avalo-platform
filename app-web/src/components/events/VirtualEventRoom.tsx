@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Virtual Event Room Component
  * Placeholder for multi-peer WebRTC interface
  */
-
-'use client';
-
 export default function VirtualEventRoom() {
   return (
     <div className="h-full bg-gray-900 text-white rounded-lg flex flex-col">
@@ -20,4 +19,5 @@ export default function VirtualEventRoom() {
     </div>
   );
 }
+
 

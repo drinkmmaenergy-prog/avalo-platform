@@ -7,7 +7,7 @@ describe('Events Engine - Commission Split', () => {
   describe('80/20 Revenue Split', () => {
     it('should split ticket price correctly (80% organizer, 20% Avalo)', () => {
       const ticketPrice = 100;
-      const avaloShare = Math.floor(ticketPrice * 0.20);
+      const avaloShare = Math.floor(ticketPrice * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
       const organizerShare = ticketPrice - avaloShare;
 
       expect(avaloShare).toBe(20);
@@ -16,7 +16,7 @@ describe('Events Engine - Commission Split', () => {
 
     it('should handle odd ticket prices correctly', () => {
       const ticketPrice = 75;
-      const avaloShare = Math.floor(ticketPrice * 0.20);
+      const avaloShare = Math.floor(ticketPrice * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
       const organizerShare = ticketPrice - avaloShare;
 
       expect(avaloShare).toBe(15);
@@ -233,3 +233,6 @@ describe('Events Engine - Selfie Verification', () => {
     expect(checkInCounted).toBe(false);
   });
 });
+
+import { getDb, setupTestEnvironment, testData, createTestUser, createTestTransaction, now, minutesAgo, hoursAgo, daysAgo } from '../src/testUtils'
+

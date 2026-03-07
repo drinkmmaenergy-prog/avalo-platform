@@ -12,9 +12,9 @@ import { registerChallengeProgress } from './fanChallengeService';
 const PPV_STORAGE_KEY = '@avalo_ppv_purchases';
 const PPV_PRICING_KEY = '@avalo_ppv_media_prices';
 const PPV_EARNINGS_KEY = '@avalo_ppv_earnings';
-const AVALO_COMMISSION = 0.35; // 35% commission
-const CREATOR_EARNINGS = 0.65; // 65% to creator
-const VIP_DISCOUNT = 0.20; // 20% discount for VIP subscribers
+const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.avalo; // 35% commission
+const CREATOR_EARNINGS = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
+const VIP_DISCOUNT = MONETIZATION_SPLITS.EVENT_TICKET.avalo; // 20% discount for VIP subscribers
 
 export interface PPVPurchase {
   mediaId: string;

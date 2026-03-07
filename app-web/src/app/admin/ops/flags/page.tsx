@@ -1,3 +1,5 @@
+'use client';
+
 "use client";
 
 /**
@@ -6,9 +8,6 @@
  * View all feature flags and their status.
  * NO write operations — READ-ONLY monitoring.
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { getFeatureFlags } from '@/lib/services/phase33';
 import type { FeatureFlagSummary } from '@/types/phase33.types';
@@ -136,5 +135,6 @@ export default function AdminFlagsPage() {
     </div>
   );
 }
+
 
 

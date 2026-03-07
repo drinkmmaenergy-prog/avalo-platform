@@ -230,7 +230,7 @@ export class ReviewBombingDetector {
     if (newAccountRatio > 0.5 && newAccountReviews.length >= this.MIN_BOMBING_SIZE) {
       return {
         type: 'new_accounts',
-        severity: newAccountRatio > 0.8 ? 'critical' : newAccountRatio > 0.65 ? 'high' : 'medium',
+        severity: newAccountRatio > 0.8 ? 'critical' : newAccountRatio > MONETIZATION_SPLITS.CHAT.creator ? 'high' : 'medium',
         confidence: newAccountRatio,
         affectedCount: newAccountReviews.length,
         details: `${(newAccountRatio * 100).toFixed(1)}% of reviews from accounts < ${this.NEW_ACCOUNT_THRESHOLD} days old`,
@@ -410,3 +410,4 @@ export class ReviewBombingDetector {
 }
 
 export const reviewBombingDetector = new ReviewBombingDetector();
+

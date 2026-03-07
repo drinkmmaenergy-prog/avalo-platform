@@ -12,7 +12,7 @@
  * - Report functionality for media messages
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import type { Timestamp } from 'firebase-admin/firestore';
 import { admin, storage } from './runtime';
 
@@ -326,7 +326,7 @@ export async function processMediaBilling(
   // Track fan/kiss progression (async, non-blocking)
   if (earnerId) {
     try {
-      const { trackTokenSpend } = await import('./fanKissEconomy.js');
+      const { trackTokenSpend } = await import('./fanKissEconomy');
       await trackTokenSpend(payerId, earnerId, priceTokens, 'chat');
     } catch (error) {
       logger.error('Failed to track fan spend:', error);
@@ -336,7 +336,7 @@ export async function processMediaBilling(
   // Track romantic journey (async, non-blocking)
   if (earnerId) {
     try {
-      const { onChatMessageSent } = await import('./romanticJourneysIntegration.js');
+      const { onChatMessageSent } = await import('./romanticJourneysIntegration');
       await onChatMessageSent(payerId, earnerId, priceTokens);
     } catch (error) {
       logger.error('Failed to track journey activity:', error);
@@ -440,7 +440,7 @@ export async function reportMediaMessage(
   
   // Record risk event for trust engine (async, non-blocking)
   try {
-    const { recordRiskEvent } = await import('./trustEngine.js');
+    const { recordRiskEvent } = await import('./trustEngine');
     await recordRiskEvent({
       userId: message.senderId,
       eventType: 'chat' as any,
@@ -460,7 +460,7 @@ export async function reportMediaMessage(
   // If reason is critical (minor_suspicion, illegal), trigger immediate review
   if (reason === 'minor_suspicion' || reason === 'illegal') {
     try {
-      const { createCsamIncident, applyImmediateProtectiveActions } = await import('./csamShield.js');
+      const { createCsamIncident, applyImmediateProtectiveActions } = await import('./csamShield');
       const incidentId = await createCsamIncident({
         userId: message.senderId,
         source: 'manual_report' as any,
@@ -671,6 +671,7 @@ export function validateMediaLimits(
   
   return { valid: true };
 }
+
 
 
 

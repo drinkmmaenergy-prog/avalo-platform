@@ -9,7 +9,7 @@
 import { onCall } from 'firebase-functions/v2/https';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { z } from 'zod';
-import { db, serverTimestamp, increment, admin } from './init.js';
+import { db, serverTimestamp, increment, admin } from './init';
 import { FieldValue, Timestamp, auth, functions } from './runtime';
 
 // ============================================================================

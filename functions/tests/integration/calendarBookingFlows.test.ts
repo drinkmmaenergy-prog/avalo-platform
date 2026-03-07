@@ -12,7 +12,7 @@ describe('Calendar Booking Integration Tests', () => {
   const testHostId = `test_host_${Date.now()}`;
   const testBookingId = `test_booking_${Date.now()}`;
 
-  before(async () => {
+  beforeAll(async () => {
     // Setup test users
     await db.collection('users').doc(testUserId).set({
       displayName: 'Test Guest',
@@ -50,7 +50,7 @@ describe('Calendar Booking Integration Tests', () => {
     });
   });
 
-  after(async () => {
+  afterAll(async () => {
     // Cleanup
     await db.collection('users').doc(testUserId).delete();
     await db.collection('users').doc(testHostId).delete();
@@ -101,7 +101,7 @@ describe('Calendar Booking Integration Tests', () => {
       await db.collection('calendarBookings').doc(testBookingId).set(booking);
 
       // Deduct from guest
-      await db.collection('users').doc(testUserId).update({
+      await db.collection('users').doc(testUserId).set({
         tokens: initialGuestBalance - bookingPrice,
       });
 
@@ -124,7 +124,7 @@ describe('Calendar Booking Integration Tests', () => {
         'timestamps.completedAt': new Date().toISOString(),
       });
 
-      await db.collection('users').doc(testHostId).update({
+      await db.collection('users').doc(testHostId).set({
         tokens: expectedHostShare,
       });
 
@@ -379,7 +379,7 @@ describe('Calendar Booking Integration Tests', () => {
 
       // Host still gets paid
       const currentHostBalance = (await db.collection('users').doc(testHostId).get()).data()?.tokens || 0;
-      await db.collection('users').doc(testHostId).update({
+      await db.collection('users').doc(testHostId).set({
         tokens: currentHostBalance + hostShare,
       });
 
@@ -397,3 +397,7 @@ describe('Calendar Booking Integration Tests', () => {
     });
   });
 });
+
+import { getDb, setupTestEnvironment, testData, createTestUser, createTestTransaction, now, minutesAgo, hoursAgo, daysAgo } from '../src/testUtils'
+
+

@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from "@constants/monetization";
 /**
  * Monetization Configuration for Avalo Web
  * Matches mobile app-mobile/config/monetization.ts
@@ -54,14 +55,14 @@ export const CONTENT_CONFIG = {
   FEED_VIDEO_UNLOCK_COST: 50,
   PREMIUM_STORY_MIN: 50,
   PREMIUM_STORY_MAX: 500,
-  CREATOR_SPLIT: 0.65,
-  AVALO_COMMISSION: 0.35,
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator,
+  AVALO_COMMISSION: MONETIZATION_SPLITS.CHAT.avalo,
 };
 
 export const CALENDAR_CONFIG = {
   MIN_BOOKING_PRICE: 100,
   MAX_BOOKING_PRICE: 100000,
-  HOST_SPLIT: 0.80,
+  HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator,
   AVALO_FEE_PERCENT: 20,
   BOOKING_REQUIRES_VIP_OR_ROYAL: true,
 };
@@ -75,3 +76,5 @@ export const AI_CHAT_CONFIG = {
 export type CallType = 'VOICE' | 'VIDEO';
 export type UserStatus = 'STANDARD' | 'VIP' | 'ROYAL';
 export type AICompanionTier = 'basic' | 'premium' | 'nsfw';
+
+

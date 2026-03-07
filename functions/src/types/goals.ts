@@ -230,8 +230,8 @@ export const GOAL_CONSTRAINTS = {
   MAX_ACTIVE_GOALS: 3,
   SUPPORT_MIN_TOKENS: 10,
   SUPPORT_MAX_TOKENS: 10000,
-  CREATOR_SPLIT: 0.70,              // 70% to creator
-  AVALO_SPLIT: 0.30,                // 30% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator,              // 70% to creator
+  AVALO_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,                // 30% to Avalo
 } as const;
 
 /**
@@ -244,6 +244,7 @@ export const GOAL_CATEGORY_METADATA: Record<GoalCategory, { displayName: string;
   content: { displayName: 'Tworzenie treści', icon: '🎬' },
   other: { displayName: 'Inne', icon: '🎯' },
 };
+
 
 
 

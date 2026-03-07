@@ -82,7 +82,7 @@ export async function recordEarningWithAgencySplit(params: {
   const { creatorId, sourceType, sourceId, fromUserId, grossTokens, metadata } = params;
 
   // Calculate platform share (always 35%)
-  const platformAmount = Math.floor(grossTokens * 0.35);
+  const platformAmount = Math.floor(grossTokens * MONETIZATION_SPLITS.CHAT.avalo);
   const creatorShareGross = grossTokens - platformAmount; // 65% before agency split
 
   // Create earnings ledger entry first
@@ -510,6 +510,7 @@ export async function backfillAgencyEarnings(): Promise<{
     throw error;
   }
 }
+
 
 
 

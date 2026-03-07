@@ -99,3 +99,4 @@ shared/
 
 app-web/.env.local
 app-web/pnpm-lock.yaml
+.env

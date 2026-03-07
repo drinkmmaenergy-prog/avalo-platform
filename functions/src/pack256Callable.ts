@@ -4,7 +4,7 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { db } from './init.js';
+import { db } from './init';
 import {
   generateReplySuggestions,
   shouldShowSuggestions,
@@ -12,7 +12,7 @@ import {
   type SuggestionTone,
   type SuggestionContext,
   type SuggestionTrigger,
-} from './pack256AiReplySuggestions.js';
+} from './pack256AiReplySuggestions';
 import { auth, functions } from './runtime';
 
 // ============================================================================
@@ -359,6 +359,7 @@ export const getAiSuggestionAnalytics = onCall(
     }
   }
 );
+
 
 
 

@@ -30,10 +30,10 @@ export interface LiveGift {
 
 export interface LiveRevenueConfig {
   /** Creator's share of all live revenue (gifts + queue) */
-  CREATOR_SPLIT: number; // 0.70
+  CREATOR_SPLIT: number; // MONETIZATION_SPLITS.SUBSCRIPTION.creator
   
   /** Avalo's share of all live revenue */
-  AVALO_SPLIT: number; // 0.30
+  AVALO_SPLIT: number; // MONETIZATION_SPLITS.SUBSCRIPTION.avalo
   
   /** Whether gifts require deposit (NO for live) */
   REQUIRES_DEPOSIT: false;
@@ -179,8 +179,8 @@ export const LIVE_GIFTS: LiveGift[] = [
  * Applies to ALL live monetization (gifts + queue)
  */
 export const LIVE_REVENUE: LiveRevenueConfig = {
-  CREATOR_SPLIT: 0.70,  // 70% to creator
-  AVALO_SPLIT: 0.30,    // 30% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator,  // 70% to creator
+  AVALO_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,    // 30% to Avalo
   REQUIRES_DEPOSIT: false,
   GIFTS_REFUNDABLE: false,
 };
@@ -321,6 +321,12 @@ export function canAffordGift(userBalance: number, giftId: string): boolean {
 export function canAffordQueue(userBalance: number): boolean {
   return userBalance >= QUEUE_CONFIG.QUEUE_ENTRY_COST_TOKENS;
 }
+
+
+
+
+
+
 
 
 

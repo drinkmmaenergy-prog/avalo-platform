@@ -37,7 +37,7 @@ export interface PlatformFinanceMonthly {
 
   // Gross Merchandise Value (GMV)
   gmvTokens: number;           // Total tokens spent on monetized features
-  gmvFiatUSD: number;           // GMV in USD (gmvTokens * 0.20)
+  gmvFiatUSD: number;           // GMV in USD (gmvTokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo)
 
   // Revenue Split
   totalCreatorShareTokens: number;  // Total tokens going to creators
@@ -259,16 +259,16 @@ export const FINANCE_CONSTANTS = {
   TOKEN_PAYOUT_USD_PER_TOKEN: TOKEN_PAYOUT_USD,
   
   // Revenue Splits (read-only, from existing packs)
-  SPLIT_CHAT_CREATOR: 0.65,
-  SPLIT_CHAT_AVALO: 0.35,
-  SPLIT_CALLS_CREATOR: 0.80,
-  SPLIT_CALLS_AVALO: 0.20,
-  SPLIT_CALENDAR_CREATOR: 0.80,
-  SPLIT_CALENDAR_AVALO: 0.20,
-  SPLIT_EVENTS_CREATOR: 0.80,
-  SPLIT_EVENTS_AVALO: 0.20,
-  SPLIT_OTHER_CREATOR: 0.65,
-  SPLIT_OTHER_AVALO: 0.35,
+  SPLIT_CHAT_CREATOR: MONETIZATION_SPLITS.CHAT.creator,
+  SPLIT_CHAT_AVALO: MONETIZATION_SPLITS.CHAT.avalo,
+  SPLIT_CALLS_CREATOR: MONETIZATION_SPLITS.CHAT.creator,
+  SPLIT_CALLS_AVALO: MONETIZATION_SPLITS.CHAT.avalo,
+  SPLIT_CALENDAR_CREATOR: MONETIZATION_SPLITS.EVENT_TICKET.creator,
+  SPLIT_CALENDAR_AVALO: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  SPLIT_EVENTS_CREATOR: MONETIZATION_SPLITS.EVENT_TICKET.creator,
+  SPLIT_EVENTS_AVALO: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  SPLIT_OTHER_CREATOR: MONETIZATION_SPLITS.CHAT.creator,
+  SPLIT_OTHER_AVALO: MONETIZATION_SPLITS.CHAT.avalo,
   
   // Reconciliation
   BALANCE_DISCREPANCY_THRESHOLD: 0.01, // 0.01 tokens tolerance
@@ -327,6 +327,9 @@ export interface MonthlyFinanceExportData {
     creatorShareTokens: number;
   }[];
 }
+
+
+
 
 
 

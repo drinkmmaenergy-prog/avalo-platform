@@ -160,7 +160,7 @@ export class ReferralFraudDetector {
         referralId: referral.id,
         signalType: 'proxy_vpn',
         riskLevel: 'medium',
-        confidence: 0.70,
+        confidence: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
         details: {
           ipAddress: referral.ipAddress,
         },
@@ -302,7 +302,7 @@ export class ReferralFraudDetector {
         referralId: referral.id,
         signalType: 'emulator',
         riskLevel: 'high',
-        confidence: 0.80,
+        confidence: MONETIZATION_SPLITS.EVENT_TICKET.creator,
         details: {
           userAgent: referral.userAgent,
         },
@@ -459,6 +459,7 @@ export class ReferralFraudDetector {
     return false;
   }
 }
+
 
 
 

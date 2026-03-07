@@ -87,7 +87,7 @@ export default function BookMeetingScreen() {
   };
 
   const calculatePaymentBreakdown = (price: number) => {
-    const avaloFee = Math.floor(price * 0.20);
+    const avaloFee = Math.floor(price * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
     const hostReceives = price - avaloFee;
 
     return {
@@ -517,3 +517,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+

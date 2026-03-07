@@ -100,8 +100,8 @@ export const aggregateInvestorMetrics = onSchedule({ schedule: "0 0 * * *", time
       // Chat/Calls/AI: 35% platform share
       // Calendar/Events: 20% platform share
       const platformShareTokens = Math.round(
-        (tokensSpentChat + tokensSpentCalls + tokensSpentAI) * 0.35 +
-        (tokensSpentCalendar + tokensSpentEvents) * 0.20
+        (tokensSpentChat + tokensSpentCalls + tokensSpentAI) * MONETIZATION_SPLITS.CHAT.avalo +
+        (tokensSpentCalendar + tokensSpentEvents) * MONETIZATION_SPLITS.EVENT_TICKET.avalo
       );
 
       // 4. Safety Metrics
@@ -174,6 +174,7 @@ export const aggregateInvestorMetrics = onSchedule({ schedule: "0 0 * * *", time
       throw error;
     }
   });
+
 
 
 

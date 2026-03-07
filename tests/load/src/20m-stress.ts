@@ -50,8 +50,8 @@ class ProbabilisticUserModel {
     console.log(`🔧 Generating probabilistic profiles for ${totalUsers.toLocaleString()} users...`);
     
     const distributionratios = {
-      low: 0.70,      // 70% low activity
-      medium: 0.20,   // 20% medium activity
+      low: MONETIZATION_SPLITS.SUBSCRIPTION.creator,      // 70% low activity
+      medium: MONETIZATION_SPLITS.EVENT_TICKET.avalo,   // 20% medium activity
       high: 0.095,    // 9.5% high activity
       whale: 0.005,   // 0.5% whales (power users)
     };

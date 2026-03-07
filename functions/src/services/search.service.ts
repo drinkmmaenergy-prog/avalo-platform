@@ -156,7 +156,7 @@ export class SearchService {
     
     // Weighted ranking formula (no attractiveness or spending factors)
     const weights = {
-      interestMatch: 0.35,
+      interestMatch: MONETIZATION_SPLITS.CHAT.avalo,
       qualityScore: 0.25,
       engagement: 0.15,
       recency: 0.10,
@@ -596,6 +596,7 @@ export class SearchService {
 }
 
 export const searchService = SearchService.getInstance();
+
 
 
 

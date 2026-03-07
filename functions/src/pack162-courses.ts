@@ -615,7 +615,7 @@ export const purchaseCourse = onCall(
       priceTokens = course.priceTokens;
     }
 
-    const platformFee = Math.floor(priceTokens * 0.35);
+    const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.avalo);
     const creatorEarnings = priceTokens - platformFee;
 
     const userWalletRef = db.collection('users').doc(uid).collection('wallet').doc('current');
@@ -733,7 +733,7 @@ export const purchaseEpisode = onCall(
     }
 
     const priceTokens = course.episodePriceTokens || 0;
-    const platformFee = Math.floor(priceTokens * 0.35);
+    const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.avalo);
     const creatorEarnings = priceTokens - platformFee;
 
     const userWalletRef = db.collection('users').doc(uid).collection('wallet').doc('current');
@@ -1128,6 +1128,7 @@ export const pack162_reviewCourse = reviewCourse;
 export const pack162_issueCertificate = issueCertificate;
 export const pack162_createCourseBundle = createCourseBundle;
 export const pack162_onCourseProgressUpdate = onCourseProgressUpdate;
+
 
 
 

@@ -300,7 +300,7 @@ export interface CreatorCard {
   
   // Category & expertise
   primaryCategory: DiscoveryCategory;
-  expertise: string[]; // e.g., ['React', 'Node.js', 'TypeScript']
+  expertise: string[]; // e.g., ['React', 'Node', 'TypeScript']
   
   // Content signals (NOT looks)
   contentType: string; // e.g., 'tutorial', 'workshop', 'course'
@@ -394,7 +394,7 @@ export interface FairnessDiversityAudit {
 // ============================================================================
 
 export const DEFAULT_RANKING_WEIGHTS = {
-  topical: 0.35,      // Primary factor
+  topical: MONETIZATION_SPLITS.CHAT.avalo,      // Primary factor
   language: 0.15,
   region: 0.10,
   recency: 0.15,
@@ -406,6 +406,8 @@ export const DEFAULT_RANKING_WEIGHTS = {
 export const SHADOW_DENSITY_THRESHOLD = 2_000_000; // 2M impressions/week
 
 export const GUARANTEED_NEW_CREATOR_SLOTS = 3; // Per feed page
+
+
 
 
 

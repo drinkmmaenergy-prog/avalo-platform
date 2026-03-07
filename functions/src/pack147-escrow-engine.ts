@@ -27,8 +27,8 @@ import { admin, functions } from './runtime';
 // CONSTANTS
 // ============================================================================
 
-const PLATFORM_FEE_PERCENTAGE = 0.35;
-const RECIPIENT_PERCENTAGE = 0.65;
+const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo;
+const RECIPIENT_PERCENTAGE = MONETIZATION_SPLITS.CHAT.creator;
 
 // ============================================================================
 // ESCROW FUNCTIONS
@@ -495,6 +495,7 @@ export async function getUserEscrowBalance(userId: string): Promise<{
     asRecipientCount: recipientSnapshot.size
   };
 }
+
 
 
 

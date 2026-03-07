@@ -241,8 +241,8 @@ const EFFECT_THRESHOLDS = {
 };
 
 const LIVE_REVENUE_SPLIT = {
-  platform: 0.20, // 20%
-  creator: 0.80, // 80%
+  platform: MONETIZATION_SPLITS.EVENT_TICKET.avalo, // 20%
+  creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, // 80%
 };
 
 const VIP_ROOM_DEFAULTS = {
@@ -1044,6 +1044,7 @@ async function convertStreamToProduct(sessionId: string, session: LiveSession): 
 }
 
 logger.info("✅ Live + VIP Room module loaded successfully");
+
 
 
 

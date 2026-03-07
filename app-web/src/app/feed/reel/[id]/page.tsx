@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * PACK 323 - Reel Viewer Page (Web)
  * Full-screen reel player with auto-play
  */
-
-'use client';
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';

@@ -120,3 +120,4 @@ export function IncidentCard({ incident, onClick }: IncidentCardProps) {
     </Link>
   );
 }
+

@@ -26,7 +26,7 @@ describe('Call Monetization - Pricing', () => {
         callType: 'VOICE',
       });
 
-      // 10 * (1 - 0.30) = 7
+      // 10 * (1 - MONETIZATION_SPLITS.SUBSCRIPTION.avalo) = 7
       expect(cost).toBe(7);
     });
 
@@ -57,7 +57,7 @@ describe('Call Monetization - Pricing', () => {
         callType: 'VIDEO',
       });
 
-      // 20 * (1 - 0.30) = 14
+      // 20 * (1 - MONETIZATION_SPLITS.SUBSCRIPTION.avalo) = 14
       expect(cost).toBe(14);
     });
 
@@ -75,7 +75,7 @@ describe('Call Monetization - Pricing', () => {
   describe('Revenue Split (80% Earner, 20% Avalo)', () => {
     it('should calculate correct split for voice call', () => {
       const totalCost = 100; // 10 min * 10 tokens/min
-      const earnerShare = Math.floor(totalCost * 0.80);
+      const earnerShare = Math.floor(totalCost * MONETIZATION_SPLITS.EVENT_TICKET.creator);
       const avaloShare = totalCost - earnerShare;
 
       expect(earnerShare).toBe(80);
@@ -84,7 +84,7 @@ describe('Call Monetization - Pricing', () => {
 
     it('should calculate correct split for video call', () => {
       const totalCost = 200; // 10 min * 20 tokens/min
-      const earnerShare = Math.floor(totalCost * 0.80);
+      const earnerShare = Math.floor(totalCost * MONETIZATION_SPLITS.EVENT_TICKET.creator);
       const avaloShare = totalCost - earnerShare;
 
       expect(earnerShare).toBe(160);
@@ -158,3 +158,6 @@ describe('Call Monetization - Edge Cases', () => {
     expect(totalCost).toBe(1800);
   });
 });
+
+import { getDb, setupTestEnvironment, testData, createTestUser, createTestTransaction, now, minutesAgo, hoursAgo, daysAgo } from '../src/testUtils'
+

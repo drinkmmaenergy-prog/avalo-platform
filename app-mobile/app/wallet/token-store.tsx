@@ -329,7 +329,7 @@ export default function TokenStoreScreen() {
         <View style={styles.infoItem}>
           <Text style={styles.infoIcon}>💰</Text>
           <Text style={styles.infoText}>
-            Creators earn 1 token = 0.20 PLN when withdrawing
+            Creators earn 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN when withdrawing
           </Text>
         </View>
       </View>
@@ -578,3 +578,4 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 });
+

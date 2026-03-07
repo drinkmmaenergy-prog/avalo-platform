@@ -252,10 +252,10 @@ export const BOOST_CAMPAIGN_CONSTANTS = {
   MAX_ACTIVE_CAMPAIGNS_PER_USER: 3,
 
   /** Maximum percentage of sponsored items in feed */
-  MAX_SPONSORED_FEED_DENSITY: 0.30,
+  MAX_SPONSORED_FEED_DENSITY: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
 
   /** Maximum percentage of feed items from one region's campaigns */
-  MAX_REGION_DOMINANCE: 0.20,
+  MAX_REGION_DOMINANCE: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
 
   /** Minimum cost per impression in tokens */
   MIN_COST_PER_IMPRESSION: 1,
@@ -276,6 +276,7 @@ export const BOOST_CAMPAIGN_CONSTANTS = {
   COLLECTION_USER_WALLETS: 'user_token_wallets',
   COLLECTION_AVALO_VAULT: 'treasury_vaults',
 } as const;
+
 
 
 

@@ -23,7 +23,7 @@ import { admin, timestamp } from '../runtime';
  * Total weights must = 1.0
  */
 export interface MatchPriorityWeights {
-  attraction: number;      // 0.35 - like/wishlist history, swipes, dwell time
+  attraction: number;      // MONETIZATION_SPLITS.CHAT.avalo - like/wishlist history, swipes, dwell time
   reputation: number;      // 0.25 - soft reputation from PACK 212
   earningsSynergy: number; // 0.25 - likelihood of paid engagement
   recentActivity: number;  // 0.10 - activity in last 7 days
@@ -31,7 +31,7 @@ export interface MatchPriorityWeights {
 }
 
 export const DEFAULT_MATCH_PRIORITY_WEIGHTS: MatchPriorityWeights = {
-  attraction: 0.35,
+  attraction: MONETIZATION_SPLITS.CHAT.avalo,
   reputation: 0.25,
   earningsSynergy: 0.25,
   recentActivity: 0.10,
@@ -419,6 +419,7 @@ export interface PriorityWeightTest {
   avgEngagementRate?: number;
   avgConversionRate?: number;
 }
+
 
 
 

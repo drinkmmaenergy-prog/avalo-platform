@@ -401,13 +401,13 @@ function getMockMetrics(): PerformanceMetrics {
     p95WarmStartTime: 780,
     batteryModeDistribution: {
       normal: 0.75,
-      lowPower: 0.20,
+      lowPower: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
       ultraLow: 0.05,
     },
     avgBatteryLevel: 0.62,
     networkQualityDistribution: {
       excellent: 0.45,
-      good: 0.30,
+      good: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
       fair: 0.15,
       poor: 0.08,
       offline: 0.02,
@@ -454,7 +454,8 @@ function getMockAlerts(): PerformanceAlert[] {
       timestamp: Date.now() - 600000,
       metric: 'cacheHitRate',
       value: 0.87,
-      threshold: 0.80,
+      threshold: MONETIZATION_SPLITS.EVENT_TICKET.creator,
     },
   ];
 }
+

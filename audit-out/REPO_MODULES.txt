@@ -1,0 +1,175 @@
+===== REPO MODULES (package.json) =====
+Repo: C:\a\avalo
+Timestamp: 2026-03-05 21:52:58
+
+PACKAGE: C:\a\avalo\app-desktop\package.json
+  name: avalo-desktop
+  private: True
+  scripts: build, build:electron, build:web, dev, dev:electron, dev:web, lint, package, package:linux, package:mac, package:win, start, type-check
+  deps: date-fns, electron-store, electron-updater, nanoid, uuid
+  devDeps: @types/node, @types/uuid, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, concurrently, cross-env, electron, electron-builder, electron-vite, eslint, typescript
+
+PACKAGE: C:\a\avalo\app-mobile-OLD-20251111_175303\package.json
+  name: avalo-mobile-temp
+  private: True
+  scripts: android, ios, start, web
+  deps: expo, expo-status-bar, react, react-native
+  (FAILED TO PARSE JSON)
+
+PACKAGE: C:\a\avalo\app-mobile-OLD-20251111_175850\package.json
+  name: avalo-mobile-temp
+  private: True
+  scripts: android, ios, start, web
+  deps: expo, expo-status-bar, react, react-native
+  (FAILED TO PARSE JSON)
+
+PACKAGE: C:\a\avalo\app-mobile\package.json
+  name: app-mobile
+  private: True
+  scripts: android, ios, start, web
+  deps: @anthropic-ai/sdk, @babel/runtime, @expo/vector-icons, @gorhom/bottom-sheet, @react-native-async-storage/async-storage, @react-native-community/datetimepicker, @react-native-community/netinfo, @react-native-community/slider, @react-native-picker/picker, @react-navigation/native, axios, expo-application, expo-asset, expo-av, expo-battery, expo-blur, expo-camera, expo-clipboard, expo-constants, expo-crypto, expo-dev-client, expo-device, expo-document-picker, expo-file-system, expo-font, expo-image-manipulator, expo-image-picker, expo-keep-awake, expo-linear-gradient, expo-linking, expo-localization, expo-location, expo-network, expo-notifications, expo-router, expo-screen-capture, expo-sharing, expo-store-review, expo-task-manager, expo-video-thumbnails, firebase, i18next, lottie-react-native, react, react-dom, react-i18next, react-native, react-native-chart-kit, react-native-gesture-handler, react-native-iap, react-native-maps, react-native-markdown-display, react-native-qrcode-svg, react-native-reanimated, react-native-safe-area-context, react-native-screens, react-native-svg, react-native-worklets, victory-native
+  devDeps: @types/react, babel-plugin-module-resolver, expo, patch-package, typescript
+
+PACKAGE: C:\a\avalo\app-web\package.json
+  name: avalo-web
+  private: True
+  scripts: build, dev, lint, start, type-check
+  deps: @hookform/resolvers, @stripe/stripe-js, @tanstack/react-query, date-fns, firebase, firebase-admin, framer-motion, libphonenumber-js, lucide-react, next, next-intl, next-pwa, next-themes, react, react-dom, react-hook-form, react-intersection-observer, sharp, simple-peer, socket.io-client, stripe, swiper, zod, zustand
+  devDeps: @axe-core/playwright, @playwright/test, @tailwindcss/aspect-ratio, @tailwindcss/forms, @tailwindcss/typography, @types/json5, @types/node, @types/prop-types, @types/react, @types/react-dom, @types/simple-peer, @vitest/ui, autoprefixer, axe-core, chrome-launcher, eslint, eslint-config-next, eslint-plugin-jsx-a11y, lighthouse, postcss, tailwindcss, typescript, vitest
+
+PACKAGE: C:\a\avalo\functions\package.json
+  name: avalo-cloud-functions
+  private: True
+  scripts: build, deploy, logs, serve, shell, smoke:functions, start, test, test:integration, test:smoke, test:unit, test:watch
+  deps: @anthropic-ai/sdk, @google-cloud/pubsub, @google-cloud/secret-manager, @google-cloud/storage, @google-cloud/vision, @sendgrid/mail, @types/express, @types/node-fetch, @types/uuid, axios, ethers, firebase-admin, firebase-functions, node-fetch, qs, sharp, stripe, ulid, uuid, zod
+  devDeps: @firebase/rules-unit-testing, @types/jest, @types/node, @types/qs, firebase-functions-test, jest, ts-jest, ts-node, typescript
+
+PACKAGE: C:\a\avalo\local\package.json
+  name: @avalo/local-dev
+  private: True
+  scripts: debug, start:ai, start:all, start:payments, start:wallet
+  deps: cors, express
+  devDeps: @types/cors, @types/express, @types/node, @vitejs/plugin-react, concurrently, ts-node, typescript, vite
+
+PACKAGE: C:\a\avalo\marketing\screenshots\package.json
+  name: avalo-screenshot-generator
+  private: 
+  scripts: generate, generate:android, generate:en, generate:ios, generate:pl
+  deps: canvas
+  (FAILED TO PARSE JSON)
+
+PACKAGE: C:\a\avalo\migrations\package.json
+  name: @avalo/migrations
+  private: True
+  scripts: migrate, migrate:fix, migrate:types, validate
+  deps: firebase-admin
+  devDeps: @types/node, ts-node, typescript
+
+PACKAGE: C:\a\avalo\monitoring\package.json
+  name: avalo-monitoring
+  private: 
+  scripts: build, dev, monitor, monitor:force
+  deps: node-fetch
+  devDeps: @types/node, ts-node, ts-node-dev, typescript
+
+PACKAGE: C:\a\avalo\ops\package.json
+  name: @avalo/ops
+  private: 
+  scripts: build, dev, lint, test
+  deps: pino, pino-pretty
+  devDeps: @types/node, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, eslint, jest, typescript
+
+PACKAGE: C:\a\avalo\package.json
+  name: avalo-monorepo
+  private: True
+  (FAILED TO PARSE JSON)
+
+PACKAGE: C:\a\avalo\packages\i18n\package.json
+  name: @avalo/i18n
+  private: True
+  scripts: typecheck
+  deps: i18next, react-i18next
+  devDeps: typescript
+
+PACKAGE: C:\a\avalo\packages\ui-ai\package.json
+  name: @avalo/ui-ai
+  private: True
+  scripts: type-check
+  deps: firebase
+  devDeps: typescript
+
+PACKAGE: C:\a\avalo\packages\ui-profile-creator\package.json
+  name: @avalo/ui-profile-creator
+  private: 
+  scripts: test
+  deps: react, react-native
+  devDeps: @types/react, @types/react-native, typescript
+
+PACKAGE: C:\a\avalo\packages\ui\package.json
+  name: @avalo/ui
+  private: True
+  scripts: typecheck
+  (FAILED TO PARSE JSON)
+
+PACKAGE: C:\a\avalo\scripts\package.json
+  name: avalo-backend-optimization
+  private: True
+  scripts: optimize, optimize:legacy, test
+  (FAILED TO PARSE JSON)
+
+PACKAGE: C:\a\avalo\tests\full\package.json
+  name: avalo-full-integration-tests
+  private: 
+  scripts: test, test:emulator, test:production
+  deps: dotenv, firebase
+  devDeps: @types/node, ts-node, typescript
+
+PACKAGE: C:\a\avalo\tests\integration\package.json
+  name: avalo-integration-tests
+  private: 
+  scripts: build, test, test:build, test:quick
+  deps: @types/node, ts-node, typescript
+  (FAILED TO PARSE JSON)
+
+PACKAGE: C:\a\avalo\tests\load\package.json
+  name: @avalo/load-tests
+  private: True
+  scripts: build, ci, report, test:100k, test:1m, test:20m, test:all
+  deps: axios, cli-progress, firebase-admin, pino, statistics
+  devDeps: @types/cli-progress, @types/node, typescript
+
+PACKAGE: C:\a\avalo\tests\system-functions\package.json
+  name: avalo-system-functions-tests
+  private: 
+  scripts: build, report, test, test:watch
+  deps: chalk, dotenv, firebase-admin
+  devDeps: @types/node, nodemon, ts-node, typescript
+
+PACKAGE: C:\a\avalo\tests\verification\package.json
+  name: @avalo/post-deployment-verification
+  private: 
+  scripts: build, clean, verify, verify:watch
+  deps: ts-node, typescript
+  devDeps: @types/node, nodemon
+
+PACKAGE: C:\a\avalo\web-landing\package.json
+  name: avalo-web-landing
+  private: True
+  scripts: build, dev, lint, preview
+  deps: react, react-dom
+  devDeps: @types/react, @types/react-dom, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, @vitejs/plugin-react, eslint, eslint-plugin-react-hooks, eslint-plugin-react-refresh, typescript, vite
+
+PACKAGE: C:\a\avalo\web\admin\package.json
+  name: avalo-admin-panel
+  private: True
+  scripts: build, dev, lint, preview
+  deps: chart.js, clsx, date-fns, firebase, lucide-react, react, react-chartjs-2, react-dom, react-router-dom, tailwindcss
+  devDeps: @types/react, @types/react-dom, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, @vitejs/plugin-react, autoprefixer, eslint, eslint-plugin-react-hooks, eslint-plugin-react-refresh, postcss, typescript, vite
+
+PACKAGE: C:\a\avalo\web\package.json
+  name: @avalo/web
+  private: True
+  scripts: build, dev, lint, start, typecheck
+  deps: @stripe/stripe-js, firebase, firebase-admin, next, react, react-dom, stripe
+  devDeps: @types/node, @types/react, @types/react-dom, autoprefixer, eslint, eslint-config-next, postcss, tailwindcss, typescript
+

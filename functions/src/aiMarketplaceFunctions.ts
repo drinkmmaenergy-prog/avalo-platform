@@ -5,13 +5,13 @@
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 
-import { db, serverTimestamp } from './init.js';
-import { rebuildAllAvatarIndexes, rebuildAvatarIndex } from './aiMarketplaceRanking.js';
+import { db, serverTimestamp } from './init';
+import { rebuildAllAvatarIndexes, rebuildAvatarIndex } from './aiMarketplaceRanking';
 import type {
   MarketplaceQueryParams,
   MarketplaceResponse,
   OwnerAvatarsResponse
-} from './aiMarketplaceTypes.js';
+} from './aiMarketplaceTypes';
 import { admin, auth, functions, timestamp, onSchedule } from './runtime';
 
 /**
@@ -363,6 +363,7 @@ export const cronUpdateTopAvatarsHourly = onSchedule(
     }
   }
 );
+
 
 
 

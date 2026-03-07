@@ -9,8 +9,8 @@
  */
 
 import * as functions from 'firebase-functions';
-import { db, serverTimestamp } from './init.js';
-import type { KpiExperiment, ExperimentResult } from './pack336-types.js';
+import { db, serverTimestamp } from './init';
+import type { KpiExperiment, ExperimentResult } from './pack336-types';
 import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ============================================================================
@@ -275,6 +275,7 @@ export const pack336_getExperimentStatistics = functions.https.onCall(async (req
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
 
 
 

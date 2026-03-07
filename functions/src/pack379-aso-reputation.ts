@@ -949,7 +949,7 @@ async function calculateTrustScore(userId: string): Promise<any> {
   const weights = {
     supportHistory: 0.15,
     fraudHistory: 0.25,
-    paymentBehavior: 0.20,
+    paymentBehavior: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
     reportBehavior: 0.15,
     verificationDepth: 0.15,
     accountAge: 0.10
@@ -1744,6 +1744,7 @@ async function getASOPerformance(since: Date): Promise<any> {
   
   return;
 }
+
 
 
 

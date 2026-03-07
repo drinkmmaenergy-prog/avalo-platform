@@ -385,7 +385,7 @@ describe('Payment System - Core Functions', () => {
 
     test('should calculate fiat amount with settlement rate', () => {
       const tokens = 10000;
-      const settlementRate = 0.20;
+      const settlementRate = MONETIZATION_SPLITS.EVENT_TICKET.avalo;
       const fiatAmount = tokens * settlementRate;
 
       expect(fiatAmount).toBe(2000); // 2000 PLN
@@ -668,7 +668,7 @@ describe('Payment System - Integration Scenarios', () => {
     const creatorEarnings = booking.escrow; // 80 tokens
 
     // 3. Monthly settlement
-    const settlementRate = 0.20;
+    const settlementRate = MONETIZATION_SPLITS.EVENT_TICKET.avalo;
     const fiatAmount = creatorEarnings * settlementRate; // 16 PLN
 
     // 4. VAT calculation (23%)
@@ -689,7 +689,7 @@ describe('Payment System - Integration Scenarios', () => {
     ];
 
     const totalTokens = monthlyEarnings.reduce((sum, e) => sum + e.tokens, 0);
-    const settlementRate = 0.20;
+    const settlementRate = MONETIZATION_SPLITS.EVENT_TICKET.avalo;
     const fiatAmount = totalTokens * settlementRate;
 
     expect(totalTokens).toBe(600);
@@ -757,4 +757,5 @@ export default {
     'Monthly settlement → VAT → payout',
   ],
 };
+
 

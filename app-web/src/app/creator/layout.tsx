@@ -1,12 +1,11 @@
+'use client';
+
 /**
  * PHASE 3.3 — Creator Panel Layout
  * 
  * Layout for creator web panel with role gating.
  * Requires creator role to access.
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -139,4 +138,5 @@ export default function CreatorLayout({
     </div>
   );
 }
+
 

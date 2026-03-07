@@ -14,7 +14,7 @@
  * - Does NOT affect word-to-token ratio (7/11 stays the same)
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import { Timestamp, timestamp } from './runtime';
 
 // ============================================================================
@@ -127,13 +127,13 @@ const ELIGIBILITY_REQUIREMENTS = {
   RECENT_ACTIVITY_DAYS: 14,
   MIN_VERIFIED_SELFIES: 2,
   PRICE_CHANGE_COOLDOWN_DAYS: 7,
-  DEMAND_DROP_THRESHOLD: 0.65, // 65% drop triggers fallback
+  DEMAND_DROP_THRESHOLD: MONETIZATION_SPLITS.CHAT.creator, // 65% drop triggers fallback
   DEMAND_ANALYSIS_DAYS: 14
 };
 
 // Revenue split (same as base system)
-const EARNER_SHARE = 0.65; // 65%
-const PLATFORM_SHARE = 0.35; // 35%
+const EARNER_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65%
+const PLATFORM_SHARE = MONETIZATION_SPLITS.CHAT.avalo; // 35%
 
 // ============================================================================
 // ELIGIBILITY EVALUATION
@@ -662,6 +662,7 @@ export {
   PRICE_TIERS,
   ELIGIBILITY_REQUIREMENTS
 };
+
 
 
 

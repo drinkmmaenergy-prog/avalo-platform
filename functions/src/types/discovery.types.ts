@@ -72,10 +72,10 @@ export interface RankingWeights {
 export const DEFAULT_RANKING_WEIGHTS: RankingWeights = {
   w_profile: 0.15,
   w_active: 0.25,
-  w_engage: 0.20,
+  w_engage: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   w_monet: 0.10,
-  w_match: 0.20,
-  w_risk: 0.30,
+  w_match: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  w_risk: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
 };
 
 // ============================================================================
@@ -244,6 +244,7 @@ export interface FeedGenerationDiagnostics {
   averageScore: number;
   generationTimeMs: number;
 }
+
 
 
 

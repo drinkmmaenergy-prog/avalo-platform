@@ -95,19 +95,19 @@ function applyPolicyThresholds(result: NSFWClassificationResult): NSFWFlag {
   
   // BLOCKED: Explicit sexual content, genitals, sex acts
   // Block if explicit score > 50% or high confidence explicit detection
-  if (scores.explicit > 0.50 || (scores.explicit > 0.30 && result.confidence > 0.80)) {
+  if (scores.explicit > 0.50 || (scores.explicit > MONETIZATION_SPLITS.SUBSCRIPTION.avalo && result.confidence > MONETIZATION_SPLITS.EVENT_TICKET.creator)) {
     return 'blocked';
   }
   
   // EROTIC: Suggestive nudity, artistic nude, lingerie
   // Flag as erotic if erotic score > 40%
-  if (scores.erotic > 0.40 || (scores.soft > 0.50 && scores.erotic > 0.20)) {
+  if (scores.erotic > 0.40 || (scores.soft > 0.50 && scores.erotic > MONETIZATION_SPLITS.EVENT_TICKET.avalo)) {
     return 'erotic';
   }
   
   // SOFT: Mildly suggestive, swimwear, revealing clothing
   // Flag as soft if soft score > 30%
-  if (scores.soft > 0.30) {
+  if (scores.soft > MONETIZATION_SPLITS.SUBSCRIPTION.avalo) {
     return 'soft';
   }
   
@@ -249,6 +249,7 @@ export async function moderateBatch(buffers: Buffer[]): Promise<{
     overallFlag
   };
 }
+
 
 
 

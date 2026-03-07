@@ -1,12 +1,11 @@
+'use client';
+
 /**
  * PHASE 3.3 — Admin System Health Page (READ-ONLY)
  * 
  * View system health metrics and service status.
  * NO write operations — READ-ONLY monitoring.
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { getSystemHealth } from '@/lib/services/phase33';
 import type { SystemHealthMetric } from '@/types/phase33.types';
@@ -189,4 +188,5 @@ export default function AdminHealthPage() {
     </div>
   );
 }
+
 

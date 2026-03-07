@@ -179,10 +179,10 @@ export interface MatchWeightFactors {
 export function calculateWeightedMatchScore(factors: MatchWeightFactors): number {
   // Weights for each factor
   const weights = {
-    intentionCompatibility: 0.35,  // 35% - highest weight
+    intentionCompatibility: MONETIZATION_SPLITS.CHAT.avalo,  // 35% - highest weight
     profileCompleteness: 0.15,     // 15%
-    activityLevel: 0.20,           // 20%
-    mutualInterests: 0.20,         // 20%
+    activityLevel: MONETIZATION_SPLITS.EVENT_TICKET.avalo,           // 20%
+    mutualInterests: MONETIZATION_SPLITS.EVENT_TICKET.avalo,         // 20%
     locationProximity: 0.10,       // 10%
   };
 
@@ -283,6 +283,7 @@ export function getIcebreakerSuggestions(
 
   return suggestions;
 }
+
 
 
 

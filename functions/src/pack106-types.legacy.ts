@@ -403,7 +403,7 @@ export const SUPPORTED_CURRENCIES = {
 export const VAT_RULES_BY_COUNTRY: Record<string, { rate: number; included: boolean; jurisdiction: string }> = {
   // EU countries - VAT must be included for B2C
   DE: { rate: 0.19, included: true, jurisdiction: 'Germany VAT' },
-  FR: { rate: 0.20, included: true, jurisdiction: 'France VAT' },
+  FR: { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, included: true, jurisdiction: 'France VAT' },
   IT: { rate: 0.22, included: true, jurisdiction: 'Italy VAT' },
   ES: { rate: 0.21, included: true, jurisdiction: 'Spain VAT' },
   NL: { rate: 0.21, included: true, jurisdiction: 'Netherlands VAT' },
@@ -411,7 +411,7 @@ export const VAT_RULES_BY_COUNTRY: Record<string, { rate: number; included: bool
   SE: { rate: 0.25, included: true, jurisdiction: 'Sweden VAT' },
   DK: { rate: 0.25, included: true, jurisdiction: 'Denmark VAT' },
   NO: { rate: 0.25, included: true, jurisdiction: 'Norway VAT' },
-  AT: { rate: 0.20, included: true, jurisdiction: 'Austria VAT' },
+  AT: { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, included: true, jurisdiction: 'Austria VAT' },
   BE: { rate: 0.21, included: true, jurisdiction: 'Belgium VAT' },
   FI: { rate: 0.24, included: true, jurisdiction: 'Finland VAT' },
   IE: { rate: 0.23, included: true, jurisdiction: 'Ireland VAT' },
@@ -420,11 +420,11 @@ export const VAT_RULES_BY_COUNTRY: Record<string, { rate: number; included: bool
   CZ: { rate: 0.21, included: true, jurisdiction: 'Czech Republic VAT' },
   HU: { rate: 0.27, included: true, jurisdiction: 'Hungary VAT' },
   RO: { rate: 0.19, included: true, jurisdiction: 'Romania VAT' },
-  BG: { rate: 0.20, included: true, jurisdiction: 'Bulgaria VAT' },
+  BG: { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, included: true, jurisdiction: 'Bulgaria VAT' },
   
   // Other countries - typically tax excluded
   US: { rate: 0.00, included: false, jurisdiction: 'US (varies by state)' },
-  GB: { rate: 0.20, included: true, jurisdiction: 'UK VAT' },
+  GB: { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, included: true, jurisdiction: 'UK VAT' },
   CH: { rate: 0.077, included: true, jurisdiction: 'Switzerland VAT' },
   CA: { rate: 0.05, included: false, jurisdiction: 'Canada GST' },
   AU: { rate: 0.10, included: true, jurisdiction: 'Australia GST' },
@@ -455,6 +455,7 @@ export type Pack106ErrorCode =
   | 'BASE_PRICE_CHANGE_UNAUTHORIZED'
   | 'INSUFFICIENT_APPROVALS'
   | 'CURRENCY_PROFILE_NOT_FOUND';
+
 
 
 

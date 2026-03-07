@@ -8,9 +8,9 @@
  * NO ECONOMIC CHANGES - only throttles API usage.
  */
 
-import { db, serverTimestamp } from './init.js';
+import { db, serverTimestamp } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
-import { logEvent } from './observability.js';
+import { logEvent } from './observability';
 import { admin, functions, increment, storage } from './runtime';
 
 export type RateLimitScope = 'USER' | 'IP' | 'DEVICE';
@@ -464,6 +464,7 @@ export function createRateLimitError(reason?: string): {
     action: 'WAIT'
   };
 }
+
 
 
 

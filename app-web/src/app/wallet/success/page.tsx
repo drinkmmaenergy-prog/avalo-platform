@@ -1,12 +1,11 @@
+'use client';
+
 /**
  * PHASE 3.3 — Token Purchase Success Page
  * 
  * Displayed after successful Stripe checkout.
  * NO balance modification — webhook handles token crediting.
  */
-
-'use client';
-
 import React, { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
@@ -99,4 +98,5 @@ export default function WalletSuccessPage() {
     </Suspense>
   );
 }
+
 

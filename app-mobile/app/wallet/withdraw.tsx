@@ -28,7 +28,7 @@ import { httpsCallable } from 'firebase/functions';
 import { functions, auth } from "@/lib/firebase";
 
 // Constants
-const PAYOUT_RATE = 0.20; // 1 token = 0.20 PLN
+const PAYOUT_RATE = MONETIZATION_SPLITS.EVENT_TICKET.avalo; // 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN
 
 interface WithdrawableData {
   withdrawableTokens: number;
@@ -436,7 +436,7 @@ export default function WithdrawScreen() {
           <View style={styles.infoBox}>
             <Ionicons name="information-circle" size={16} color="#6366f1" />
             <Text style={styles.infoText}>
-              Withdrawals are processed within 3-7 business days. Rate: 1 token = 0.20 PLN
+              Withdrawals are processed within 3-7 business days. Rate: 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN
             </Text>
           </View>
         </View>
@@ -767,3 +767,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+

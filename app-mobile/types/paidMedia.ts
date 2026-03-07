@@ -11,8 +11,8 @@ import { Timestamp } from 'firebase/firestore';
 
 export const PAID_MEDIA_CONFIG = {
   // Commission split
-  AVALO_COMMISSION: 0.35,
-  CREATOR_SHARE: 0.65,
+  AVALO_COMMISSION: MONETIZATION_SPLITS.CHAT.avalo,
+  CREATOR_SHARE: MONETIZATION_SPLITS.CHAT.creator,
   
   // Media limits
   MAX_IMAGE_SIZE_MB: 15,

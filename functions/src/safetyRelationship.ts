@@ -9,8 +9,8 @@
  */
 
 import * as functions from 'firebase-functions';
-import { db, serverTimestamp } from './init.js';
-import { getRelationshipRiskHint, RiskLevel, RiskSignal } from './relationshipRiskEngine.js';
+import { db, serverTimestamp } from './init';
+import { getRelationshipRiskHint, RiskLevel, RiskSignal } from './relationshipRiskEngine';
 import { HttpsError, auth, onCall } from './runtime';
 
 // ============================================================================
@@ -289,6 +289,7 @@ export {
   getRelationshipHint as getRelationshipHintEndpoint,
   logSafetyAction as logSafetyActionEndpoint,
 };
+
 
 
 

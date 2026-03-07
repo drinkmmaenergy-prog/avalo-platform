@@ -184,8 +184,8 @@ export interface TemplateReport {
 // ============================================================================
 
 export const AVATAR_TEMPLATE_REVENUE_SPLIT = {
-  CREATOR_SHARE: 0.65, // 65% to creator
-  AVALO_SHARE: 0.35, // 35% to Avalo
+  CREATOR_SHARE: MONETIZATION_SPLITS.CHAT.creator, // 65% to creator
+  AVALO_SHARE: MONETIZATION_SPLITS.CHAT.avalo, // 35% to Avalo
   OFFICIAL_AVALO_SHARE: 1.0, // 100% to Avalo for official templates
 } as const;
 
@@ -213,6 +213,7 @@ export interface UserAvatarPurchases {
   totalSpent: number;
   purchaseCount: number;
 }
+
 
 
 

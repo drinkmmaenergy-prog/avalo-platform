@@ -5,7 +5,7 @@
  * Provides creators with aggregated audience insights WITHOUT individual labels
  */
 
-import { db } from './init.js';
+import { db } from './init';
 import { computeCreatorAudienceAnalytics } from './pack245-audience-segments-engine';
 import type { 
   CreatorAudienceAnalytics,

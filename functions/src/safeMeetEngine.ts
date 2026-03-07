@@ -10,8 +10,8 @@
  * - Integration with Trust Engine
  */
 
-import { db, serverTimestamp, generateId } from './init.js';
-import { recordRiskEvent, FraudFlagReason } from './trustEngine.js';
+import { db, serverTimestamp, generateId } from './init';
+import { recordRiskEvent, FraudFlagReason } from './trustEngine';
 import { 
   SafeMeetSession,
   SafeMeetStatus,
@@ -26,7 +26,7 @@ import {
   SetTrustedContactInput,
   SafeMeetSessionResponse,
   TrustedContactResponse,
-} from './types/safeMeet.js';
+} from './types/safeMeet';
 import {
   SUPPORTED_EMERGENCY_REGIONS,
   SAFE_MEET_MAX_ACTIVE_SESSIONS_PER_USER,
@@ -34,7 +34,7 @@ import {
   SAFE_MEET_QR_TOKEN_LENGTH,
   SAFE_MEET_MAX_SESSIONS_QUERY,
   isEmergencyRegionSupported,
-} from './config/safeMeet.js';
+} from './config/safeMeet';
 
 
 // Simple logger
@@ -575,7 +575,7 @@ This is an automated safety notification from Avalo.
     
     // Send email using existing sendgrid integration
     try {
-      const sendgridModule = await import('./sendgrid.js');
+      const sendgridModule = await import('./sendgrid');
       
       // Use the security breach alert function as it's suitable for urgent notifications
       if (sendgridModule.sendSecurityBreachAlert) {
@@ -728,6 +728,7 @@ export async function getTrustedContact(
     return null;
   }
 }
+
 
 
 

@@ -17,7 +17,7 @@ describe("Event Engine - Real Tests", () => {
 
   beforeEach(async () => {
     // Clear events before each test
-    const eventsSnapshot = await db.collection("systemEvents").limit(500).get();
+    const eventsSnapshot = await db.collection("systemEvents").get();
     const batch = db.batch();
     eventsSnapshot.docs.forEach((doc: any) => batch.delete(doc.ref));
     await batch.commit();
@@ -489,3 +489,5 @@ describe("Event Engine - Real Tests", () => {
 });
 
 
+
+import { getDb, setupTestEnvironment, testData, createTestUser, createTestTransaction, now, minutesAgo, hoursAgo, daysAgo } from '../src/testUtils'

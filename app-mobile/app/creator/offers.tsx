@@ -228,8 +228,8 @@ export default function CreatorOffersScreen() {
     }
   };
 
-  const creatorEarnings = Math.floor(selectedPrice * 0.65);
-  const avaloFee = Math.floor(selectedPrice * 0.35);
+  const creatorEarnings = Math.floor(selectedPrice * MONETIZATION_SPLITS.CHAT.creator);
+  const avaloFee = Math.floor(selectedPrice * MONETIZATION_SPLITS.CHAT.avalo);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -813,3 +813,4 @@ const styles = StyleSheet.create({
     height: 40,
   },
 });
+

@@ -215,8 +215,8 @@ export const purchaseCourse = functions.https.onCall(async (request) => {
     };
     transaction.set(progressRef, progress);
 
-    const creatorEarnings = courseData.price * 0.65;
-    const avaloRevenue = courseData.price * 0.35;
+    const creatorEarnings = courseData.price * MONETIZATION_SPLITS.CHAT.creator;
+    const avaloRevenue = courseData.price * MONETIZATION_SPLITS.CHAT.avalo;
 
     const earningsRef = db.collection('creator_earnings').doc(courseData.creatorId);
     transaction.set(earningsRef, {
@@ -532,6 +532,7 @@ export const resolveEducationDisputes = functions.https.onCall(async (request) =
     action: data.action
   };
 });
+
 
 
 

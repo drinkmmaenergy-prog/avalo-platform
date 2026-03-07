@@ -13,7 +13,7 @@
  * - Monetization integration for high-value moments
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { functions } from './runtime';
 

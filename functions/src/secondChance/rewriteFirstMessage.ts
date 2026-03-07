@@ -187,7 +187,7 @@ export const rewriteFirstMessage = onCall(
       });
 
       // Add tokens to receiver (65/35 split)
-      const tokensToReceiver = Math.floor(tokensCharged * 0.65);
+      const tokensToReceiver = Math.floor(tokensCharged * MONETIZATION_SPLITS.CHAT.creator);
       const otherUserRef = db.collection('users').doc(otherUserId);
       batch.update(otherUserRef, {
         tokensEarned: FieldValue.increment(tokensToReceiver),
@@ -390,6 +390,7 @@ export const getArchivedConversations = functions
       throw new HttpsError('internal', 'Failed to get archived conversations');
     }
   });
+
 
 
 

@@ -5,7 +5,7 @@
  */
 
 import { onRequest } from 'firebase-functions/v2/https';
-import { db } from './init.js';
+import { db } from './init';
 import Stripe from 'stripe';
 import { admin, auth, functions } from './runtime';
 

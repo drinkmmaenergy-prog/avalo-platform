@@ -12,7 +12,7 @@
  * This module is ADDITIVE ONLY - does not change existing business logic.
  */
 
-import { db, serverTimestamp, increment, generateId, arrayUnion } from './init.js';
+import { db, serverTimestamp, increment, generateId, arrayUnion } from './init';
 import { Timestamp } from './runtime';
 
 // Simple logger (no-op for now, can be replaced with actual logger later)
@@ -703,6 +703,8 @@ export async function checkVelocityAbuse(
   
   return { allowed: true };
 }
+
+
 
 
 

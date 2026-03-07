@@ -226,10 +226,10 @@ export const TIER_CONFIG = {
 
 // Original economy rules — revenue splits UNCHANGED, payout rate from economyConfig
 export const ECONOMY_RULES = {
-  chat: { creatorShare: 0.65, avaloShare: 0.35 },
-  calls: { creatorShare: 0.80, avaloShare: 0.20 },
-  calendar: { creatorShare: 0.80, avaloShare: 0.20 },
-  events: { creatorShare: 0.80, avaloShare: 0.20 },
+  chat: { creatorShare: MONETIZATION_SPLITS.CHAT.creator, avaloShare: MONETIZATION_SPLITS.CHAT.avalo },
+  calls: { creatorShare: MONETIZATION_SPLITS.EVENT_TICKET.creator, avaloShare: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
+  calendar: { creatorShare: MONETIZATION_SPLITS.EVENT_TICKET.creator, avaloShare: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
+  events: { creatorShare: MONETIZATION_SPLITS.EVENT_TICKET.creator, avaloShare: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
   tips: { creatorShare: 0.90, avaloShare: 0.10 },
   tokenPayoutRate: TOKEN_PAYOUT_USD, // derived from TOKEN_PAYOUT_USD (0.03 USD)
 } as const;
@@ -789,6 +789,7 @@ export async function updateCreatorRiskFlags(userId: string): Promise<void> {
 }
 
 logger.info('✅ PACK 354 Influencer Service loaded successfully');
+
 
 
 

@@ -16,8 +16,8 @@ const FieldValue = { serverTimestamp, increment };
 /**
  * Commission split configuration (non-negotiable)
  */
-const AVALO_COMMISSION_PERCENTAGE = 0.35;
-const RECEIVER_COMMISSION_PERCENTAGE = 0.65;
+const AVALO_COMMISSION_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo;
+const RECEIVER_COMMISSION_PERCENTAGE = MONETIZATION_SPLITS.CHAT.creator;
 
 /**
  * Rate limiting configuration
@@ -404,6 +404,7 @@ async function sendGiftNotification(
     throw error;
   }
 }
+
 
 
 

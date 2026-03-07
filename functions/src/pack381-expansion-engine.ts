@@ -488,10 +488,10 @@ export const pack381_expansionReadinessScore = functions.https.onCall(async (req
     // Calculate weighted overall score
     const weights = {
       legal: 0.25,
-      product: 0.20,
+      product: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
       support: 0.15,
-      market: 0.20,
-      infrastructure: 0.20,
+      market: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+      infrastructure: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
     };
 
     const overallScore = Math.round(
@@ -633,6 +633,7 @@ export const pack381_languageAvailabilityMatrix = functions.https.onCall(async (
     return { matrix };
   }
 );
+
 
 
 

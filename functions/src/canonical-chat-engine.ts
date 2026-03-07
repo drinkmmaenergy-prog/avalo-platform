@@ -18,7 +18,7 @@
  * @version 2.0.0
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import type {
   CanonicalChatDocument,
@@ -34,7 +34,7 @@ import type {
   DepositResult,
   RefundResult,
   BurnMultiplier,
-} from './types/canonical-chat.types.js';
+} from './types/canonical-chat.types';
 import {
   CANONICAL_LOGIC_VERSION,
   FREE_MESSAGES_STANDARD,
@@ -49,7 +49,7 @@ import {
   AVALO_REVENUE_SPLIT,
   INACTIVITY_EXPIRY_MS,
   BURN_MULTIPLIER_ENUM,
-} from './types/canonical-chat.types.js';
+} from './types/canonical-chat.types';
 
 // ============================================================================
 // INTERNAL HELPERS
@@ -1079,6 +1079,9 @@ export async function getEarnerConfig(userId: string): Promise<EarnerChatConfig>
     burnMultiplierForNextSession: userData?.chatEarnerConfig?.burnMultiplierForNextSession ?? 1,
   };
 }
+
+
+
 
 
 

@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Creator Dashboard Component
  * Placeholder for analytics and metrics dashboard
  */
-
-'use client';
-
 export default function Dashboard() {
   return (
     <div className="space-y-6">
@@ -26,4 +25,5 @@ export default function Dashboard() {
     </div>
   );
 }
+
 

@@ -107,10 +107,10 @@ async function calculatePreferenceMatch(
   
   // Age matching
   if (viewerPrefs.minAge && candidate.age < viewerPrefs.minAge) {
-    score -= 0.20;
+    score -= MONETIZATION_SPLITS.EVENT_TICKET.avalo;
   }
   if (viewerPrefs.maxAge && candidate.age > viewerPrefs.maxAge) {
-    score -= 0.20;
+    score -= MONETIZATION_SPLITS.EVENT_TICKET.avalo;
   }
   
   // Interest matching (if available)
@@ -451,7 +451,7 @@ export async function searchProfiles(
       // Calculate ranking score (with higher weight on match for search)
       const searchWeights: RankingWeights = {
         ...WEIGHTS,
-        w_match: 0.35, // Increase match weight for search
+        w_match: MONETIZATION_SPLITS.CHAT.avalo, // Increase match weight for search
         w_active: 0.15, // Reduce activity weight
       };
       
@@ -615,6 +615,7 @@ async function getUserPreferences(userId: string): Promise<UserPreferences> {
 }
 
 logger.info('✅ Discovery & Ranking Engine v2 initialized');
+
 
 
 

@@ -89,7 +89,7 @@ const MAX_FILE_SIZES = {
 // ============================================================================
 
 const DANGEROUS_EXTENSIONS = [
-  '.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs', '.js', '.jar',
+  '.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs', '', '.jar',
   '.msi', '.app', '.deb', '.rpm', '.dmg', '.pkg', '.sh', '.bash',
   '.ps1', '.psm1', '.psd1', '.ps1xml', '.psc1', '.msh', '.msh1', '.msh2', '.mshxml',
   '.scf', '.lnk', '.inf', '.reg', '.dll', '.so', '.dylib',
@@ -492,6 +492,7 @@ export function getMaxFileSize(mimeType: string): number {
   const mediaType = getMediaType(mimeType);
   return MAX_FILE_SIZES[mediaType] || 0;
 }
+
 
 
 

@@ -349,7 +349,7 @@ export const joinClub = functions.https.onCall(async (request) => {
         }
 
         // Calculate split (65/35)
-        platformFee = Math.floor(club.entryTokens * 0.35);
+        platformFee = Math.floor(club.entryTokens * MONETIZATION_SPLITS.CHAT.avalo);
         ownerEarnings = club.entryTokens - platformFee;
 
         // Process payment in transaction
@@ -1069,6 +1069,7 @@ export const getClubAnalytics = functions.https.onCall(async (request) => {
     }
   }
 );
+
 
 
 

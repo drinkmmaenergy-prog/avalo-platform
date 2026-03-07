@@ -97,7 +97,7 @@ export default function DashboardPage() {
 
   const isEarner = profile?.earnFromChat || false;
   const isRoyal = profile?.isRoyalEarner || false;
-  const earningsValue = wallet?.earned ? wallet.earned * 0.2 : 0; // 1 token = 0.20 PLN
+  const earningsValue = wallet?.earned ? wallet.earned * 0.2 : 0; // 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -318,3 +318,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

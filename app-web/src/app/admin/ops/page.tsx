@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * PHASE 3.3 — Admin Ops Overview Page (READ-ONLY)
  * 
@@ -9,9 +11,6 @@
  * - trust_signals collection (Firestore read)
  * - getSystemHealth function
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { getAdminOpsView } from '@/lib/services/phase33';
 import type { AdminOpsView } from '@/types/phase33.types';
@@ -240,4 +239,5 @@ export default function AdminOpsOverviewPage() {
     </div>
   );
 }
+
 

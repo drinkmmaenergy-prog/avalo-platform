@@ -15,11 +15,11 @@
  * @version 1.0.0
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
-import type { Pack273ChatParticipant, Pack273ChatRoles } from './pack273ChatEngine.js';
+import { db, serverTimestamp, increment, generateId } from './init';
+import type { Pack273ChatParticipant, Pack273ChatRoles } from './pack273ChatEngine';
 
 // Re-export Pack273ChatParticipant for convenience
-export type { Pack273ChatParticipant, Pack273ChatRoles } from './pack273ChatEngine.js';
+export type { Pack273ChatParticipant, Pack273ChatRoles } from './pack273ChatEngine';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -583,6 +583,7 @@ export function countWords(text: string): number {
   const words = cleaned.trim().split(/\s+/).filter(w => w.length > 0);
   return words.length;
 }
+
 
 
 

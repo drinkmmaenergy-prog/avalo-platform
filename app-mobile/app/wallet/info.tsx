@@ -56,7 +56,7 @@ export default function WalletInfoScreen() {
         <InfoSection
           icon="💵"
           title="Token Rates"
-          content={`Purchase: Prices vary by pack (see Token Store)\nPayout: 1 token = 0.20 PLN (fixed rate)\n\nNote: Purchase and payout rates differ. This is the standard tokenomics model for the platform.`}
+          content={`Purchase: Prices vary by pack (see Token Store)\nPayout: 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN (fixed rate)\n\nNote: Purchase and payout rates differ. This is the standard tokenomics model for the platform.`}
         />
 
         <InfoSection
@@ -74,7 +74,7 @@ export default function WalletInfoScreen() {
         <InfoSection
           icon="🏦"
           title="Payouts"
-          content={`Minimum: 1,000 tokens (200 PLN)\nRate: 0.20 PLN per token\nMethods: Stripe Connect, Bank Transfer\nProcessing: 3-5 business days\n\nKYC verification required before first payout.`}
+          content={`Minimum: 1,000 tokens (200 PLN)\nRate: MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN per token\nMethods: Stripe Connect, Bank Transfer\nProcessing: 3-5 business days\n\nKYC verification required before first payout.`}
         />
 
         <InfoSection
@@ -182,3 +182,4 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 });
+

@@ -4,7 +4,7 @@
  * 
  * IMPORTANT RULES:
  * - Only earned tokens can be withdrawn (NOT purchased tokens)
- * - Fixed rate: 1 token = 0.20 USD (or local equivalent)
+ * - Fixed rate: 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo USD (or local equivalent)
  * - KYC + AML required for all withdrawals
  * - Limits enforced: min/max per withdrawal, monthly caps
  * 
@@ -154,7 +154,7 @@ export interface WithdrawalRequest {
   payoutAmount: number;  // Amount in payoutCurrency
   
   // Exchange rates (for audit)
-  ratePerTokenUSD: number;  // Snapshot, should be 0.20
+  ratePerTokenUSD: number;  // Snapshot, should be MONETIZATION_SPLITS.EVENT_TICKET.avalo
   fxRateToPayoutCurrency: number;  // FX rate if not USD
   
   // Status tracking
@@ -498,6 +498,7 @@ export function isWithdrawalEditable(status: WithdrawalStatus): boolean {
 export function isWithdrawalFinal(status: WithdrawalStatus): boolean {
   return ['PAID', 'REJECTED', 'CANCELLED'].includes(status);
 }
+
 
 
 

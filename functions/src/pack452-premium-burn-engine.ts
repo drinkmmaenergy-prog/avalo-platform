@@ -49,10 +49,10 @@ const WORDS_PER_TOKEN_ROYAL = 7;
 const BASE_BURN_PER_BUCKET = 1;
 
 /** Platform fee — 35% */
-const PLATFORM_FEE_RATE = 0.35;
+const PLATFORM_FEE_RATE = MONETIZATION_SPLITS.CHAT.avalo;
 
 /** Earner share — 65% */
-const EARNER_SHARE_RATE = 0.65;
+const EARNER_SHARE_RATE = MONETIZATION_SPLITS.CHAT.creator;
 
 // ============================================================================
 // PREMIUM BURN CALCULATION
@@ -458,6 +458,7 @@ export async function getChatBurnParameters(chatId: string): Promise<{
     wordsPerToken,
   };
 }
+
 
 
 

@@ -69,7 +69,7 @@ export default function ExpansionDashboard() {
   const getReadinessColor = (score: number) => {
     if (score > 0.75) return 'text-green-600';
     if (score > 0.55) return 'text-blue-600';
-    if (score > 0.35) return 'text-yellow-600';
+    if (score > MONETIZATION_SPLITS.CHAT.avalo) return 'text-yellow-600';
     return 'text-red-600';
   };
 
@@ -263,3 +263,4 @@ function getFlagEmoji(countryCode: string): string {
   };
   return flags[countryCode] ?? '🌍';
 }
+

@@ -24,13 +24,13 @@ import {
   validateCRMAction,
   sanitizeSupporterData,
   calculateBehavioralSignals
-} from './pack266-supporter-crm-engine.js';
+} from './pack266-supporter-crm-engine';
 import {
   CRMActionType,
   AlertType,
   SupporterSegment,
   SmartAlert
-} from './pack266-supporter-crm-types.js';
+} from './pack266-supporter-crm-types';
 import { admin, auth, functions, timestamp, onSchedule } from './runtime';
 
 const db = getFirestore();
@@ -1031,6 +1031,7 @@ async function checkDormantReactivation(creatorId: string) {
     }
   }
 }
+
 
 
 

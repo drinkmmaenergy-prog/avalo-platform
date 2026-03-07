@@ -4,7 +4,7 @@
  */
 
 import * as functions from "firebase-functions";
-import { db, serverTimestamp } from "./init.js";
+import { db, serverTimestamp } from "./init";
 import { Timestamp } from "firebase-admin/firestore";
 import { ChurnRecord, ChurnCause } from "./pack346-types";
 import { HttpsError, admin, auth, onCall, logger, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';

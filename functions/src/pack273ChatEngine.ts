@@ -1,3 +1,19 @@
+/* LEGACY BILLING ENGINE LOCKED */
+/*
+LEGACY BILLING ENGINE
+DO NOT USE
+CANONICAL ENGINE: monetizationEngine.ts
+*/
+/*
+CANONICAL_ENGINE_LOCK
+
+This file is legacy compatibility only.
+
+Source of truth:
+canonical-chat-engine.ts
+
+Do not modify billing logic here.
+*/
 /**
  * @deprecated LEGACY — SUPERSEDED by canonical-chat-engine.ts (v2_canonical)
  *
@@ -20,8 +36,8 @@
  * - Token refunds, expiration, media, copy-paste abuse, safety
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
-import type { UserProfile } from './types.js';
+import { db, serverTimestamp, increment, generateId } from './init';
+import type { UserProfile } from './types';
 import { timestamp } from './runtime';
 
 // Simple error class for compatibility
@@ -940,6 +956,10 @@ export async function getPack273ParticipantContext(
     priceModeration: user.priceModeration || { enabled: false }
   };
 }
+
+
+
+
 
 
 

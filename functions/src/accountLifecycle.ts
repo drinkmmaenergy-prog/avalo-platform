@@ -12,9 +12,9 @@
  * monetization logic, pricing, or Earn-to-Chat rules.
  */
 
-import { db, serverTimestamp, generateId } from './init.js';
-import { canWithdraw, getUserRiskProfile } from './trustEngine.js';
-import { getPendingWithdrawals } from './payouts.js';
+import { db, serverTimestamp, generateId } from './init';
+import { canWithdraw, getUserRiskProfile } from './trustEngine';
+import { getPendingWithdrawals } from './payouts';
 import { Timestamp, timestamp } from './runtime';
 
 // Simple logger (no-op for now, can be replaced with actual logger later)
@@ -644,6 +644,7 @@ export async function applyTemplatePreferences(
 export {
   // Types are exported via export type declarations above
 };
+
 
 
 

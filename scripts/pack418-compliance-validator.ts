@@ -149,14 +149,14 @@ function checkTokenomicsOverrides(filePath: string, content: string): Compliance
   
   // Check for hardcoded revenue splits
   const suspiciousPatterns = [
-    // Look for percentage assignments like: creator: 0.65, avalo: 0.35
+    // Look for percentage assignments like: creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo
     /creator\s*:\s*0\.65/i,
     /avalo\s*:\s*0\.35/i,
     /creator\s*:\s*0\.80/i,
     /avalo\s*:\s*0\.20/i,
     /creator\s*:\s*0\.90/i,
     /avalo\s*:\s*0\.10/i,
-    // Look for percentage calculations: * 0.65, * 0.35, etc.
+    // Look for percentage calculations: * MONETIZATION_SPLITS.CHAT.creator, * MONETIZATION_SPLITS.CHAT.avalo, etc.
     /\*\s*0\.65(?!\d)/,
     /\*\s*0\.35(?!\d)/,
     /\*\s*0\.80(?!\d)/,
@@ -447,3 +447,4 @@ if (require.main === module) {
 
 // Export for testing
 export { runValidation, ValidationResult, ComplianceError };
+

@@ -117,7 +117,7 @@ export class EnterpriseReadinessScorer {
 
     return {
       score,
-      weight: 0.35, // 35% of overall score
+      weight: MONETIZATION_SPLITS.CHAT.avalo, // 35% of overall score
       criteria,
       status
     };
@@ -256,7 +256,7 @@ export class EnterpriseReadinessScorer {
     return {
       name: 'Security Practices',
       score,
-      weight: 0.20,
+      weight: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
       passed: score >= 85,
       evidence: 'Encryption, MFA, regular penetration testing'
     };
@@ -336,7 +336,7 @@ export class EnterpriseReadinessScorer {
     return {
       name: 'GDPR Compliance',
       score: gdpr.compliant ? 100 : 40,
-      weight: 0.20,
+      weight: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
       passed: gdpr.compliant,
       evidence: 'DPO assigned, consent management, data subject rights'
     };
@@ -434,7 +434,7 @@ export class EnterpriseReadinessScorer {
     return {
       name: 'Revenue Growth',
       score,
-      weight: 0.20,
+      weight: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
       passed: score >= 70,
       evidence: `${growth}% MoM growth`
     };
@@ -700,3 +700,4 @@ export class EnterpriseReadinessScorer {
     return impacts[severity];
   }
 }
+

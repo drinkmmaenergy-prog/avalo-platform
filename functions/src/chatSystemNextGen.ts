@@ -518,7 +518,7 @@ export const sendChatMessage = onCall(
       });
 
       const recipientRef = db.collection("users").doc(recipientId);
-      const creatorEarnings = Math.floor(cost * 0.65); // 65% to creator
+      const creatorEarnings = Math.floor(cost * MONETIZATION_SPLITS.CHAT.creator); // 65% to creator
       tx.update(recipientRef, {
         "wallet.earned": FieldValue.increment(creatorEarnings),
         "wallet.balance": FieldValue.increment(creatorEarnings),
@@ -754,6 +754,7 @@ export const updateChatAISettings = onCall(
 );
 
 logger.info("✅ Chat System Next-Gen module loaded successfully");
+
 
 
 

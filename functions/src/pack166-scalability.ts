@@ -63,8 +63,8 @@ import { admin, auth, functions, timestamp } from './runtime';
 // CONSTANTS
 // ============================================================================
 
-const PLATFORM_FEE_PERCENTAGE = 0.35;
-const CREATOR_EARNINGS_PERCENTAGE = 0.65;
+const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo;
+const CREATOR_EARNINGS_PERCENTAGE = MONETIZATION_SPLITS.CHAT.creator;
 const MIN_BUNDLE_PRODUCTS = 2;
 const MAX_BUNDLE_PRODUCTS = 5;
 const MAX_BUNDLE_DISCOUNT = 40;
@@ -894,6 +894,7 @@ export const getCreatorScalabilityMetrics = onCall<GetCreatorMetricsRequest, Pro
 );
 
 logger.info('✅ PACK 166 Scalability Engine (Backend) loaded successfully');
+
 
 
 

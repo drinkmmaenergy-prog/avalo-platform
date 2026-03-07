@@ -216,9 +216,9 @@ export const pack378_applyCreatorIncomeEstimate = functions.https.onCall(async (
   if (!creatorDoc.exists) {
     // Return default estimate
     return {
-      estimatedIncomeTax: amount * 0.20, // Default 20%
+      estimatedIncomeTax: amount * MONETIZATION_SPLITS.EVENT_TICKET.avalo, // Default 20%
       estimatedSocialSecurity: amount * 0.15, // Default 15%
-      estimatedTotal: amount * 0.35,
+      estimatedTotal: amount * MONETIZATION_SPLITS.CHAT.avalo,
       warning: 'Complete tax profile for accurate estimates'
     };
   }
@@ -228,9 +228,9 @@ export const pack378_applyCreatorIncomeEstimate = functions.https.onCall(async (
 
   if (!taxProfile) {
     return {
-      estimatedIncomeTax: amount * 0.20,
+      estimatedIncomeTax: amount * MONETIZATION_SPLITS.EVENT_TICKET.avalo,
       estimatedSocialSecurity: amount * 0.15,
-      estimatedTotal: amount * 0.35,
+      estimatedTotal: amount * MONETIZATION_SPLITS.CHAT.avalo,
       warning: 'Tax profile unavailable for your country'
     };
   }
@@ -287,3 +287,4 @@ export const getVATRecordsForPeriod = async (
     ...doc.data()
   } as VATRecord));
 };
+

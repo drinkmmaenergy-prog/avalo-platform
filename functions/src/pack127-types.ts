@@ -575,7 +575,7 @@ export interface IPProtectionConfig {
   // Detection thresholds
   exactMatchThreshold: number;  // 0.95
   perceptualMatchThreshold: number;  // 0.85
-  derivativeMatchThreshold: number;  // 0.70
+  derivativeMatchThreshold: number;  // MONETIZATION_SPLITS.SUBSCRIPTION.creator
   
   // Auto-resolution
   autoResolveEnabled: boolean;
@@ -654,7 +654,7 @@ export const DEFAULT_IP_CONFIG: Partial<IPProtectionConfig> = {
   autoFingerprintOnUpload: true,
   exactMatchThreshold: 0.95,
   perceptualMatchThreshold: 0.85,
-  derivativeMatchThreshold: 0.70,
+  derivativeMatchThreshold: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
   autoResolveEnabled: true,
   autoResolveConfidenceThreshold: 0.90,
   maxClaimsPerDay: 10,
@@ -689,6 +689,7 @@ export const ECONOMIC_ISOLATION_RULES = {
   NO_PAID_IP_PRIORITY: true,
   ALL_CREATORS_PROTECTED_EQUALLY: true,
 } as const;
+
 
 
 

@@ -218,11 +218,11 @@ function generateMarkdownReport(report: any): string {
 
 ## 📊 Token Pricing Matrix
 
-**Baseline Price:** 0.20 PLN per token
+**Baseline Price:** MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN per token
 
 | Tokens | Price per Token | Total (PLN) | Discount |
 |--------|----------------|-------------|----------|
-| 10 | 0.20 PLN | 2.00 PLN | 0% |
+| 10 | MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN | 2.00 PLN | 0% |
 | 50 | 0.19 PLN | 9.50 PLN | 5% |
 | 100 | 0.18 PLN | 18.00 PLN | 10% |
 | 500 | 0.17 PLN | 85.00 PLN | 15% |

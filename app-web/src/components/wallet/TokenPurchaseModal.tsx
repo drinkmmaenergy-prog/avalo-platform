@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Token Purchase Modal Component
  * Placeholder for Stripe payment flow
  */
-
-'use client';
-
 export default function TokenPurchaseModal() {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -25,4 +24,5 @@ export default function TokenPurchaseModal() {
     </div>
   );
 }
+
 

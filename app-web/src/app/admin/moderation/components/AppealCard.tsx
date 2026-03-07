@@ -121,3 +121,4 @@ export function AppealCard({ appeal, onClick }: AppealCardProps) {
     </Link>
   );
 }
+

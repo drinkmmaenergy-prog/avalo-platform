@@ -427,7 +427,7 @@ async function getTokenEarnings(
     snapshot.forEach((doc) => {
       const data = doc.data();
       // 65% revenue split for creator
-      total += (data.amount || 0) * 0.65;
+      total += (data.amount || 0) * MONETIZATION_SPLITS.CHAT.creator;
     });
     return total;
   };
@@ -979,6 +979,7 @@ export const completeActionSuggestion = functions.https.onCall(async (request) =
 
   return;
 });
+
 
 
 

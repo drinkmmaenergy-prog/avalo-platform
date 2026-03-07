@@ -35,7 +35,7 @@ import {
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width - 40;
-const CARD_HEIGHT = height * 0.65;
+const CARD_HEIGHT = height * MONETIZATION_SPLITS.CHAT.creator;
 
 // Union type for swipe cards (profiles or ads)
 export type SwipeCard =
@@ -743,3 +743,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+

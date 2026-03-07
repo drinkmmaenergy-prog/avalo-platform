@@ -40,9 +40,12 @@ export const auth = admin.auth();
 export const storage = admin.storage();
 
 // Firestore global settings
-db.settings({
-  ignoreUndefinedProperties: true,
-});
+if(!global.__firestore_settings){try { if (!(globalThis as any).__AVALO_FS_SETTINGS_APPLIED) {
+  try {
+    db.settings({ ignoreUndefinedProperties: true })
+  } catch (e) {}
+  ;(globalThis as any).__AVALO_FS_SETTINGS_APPLIED = true
+} } catch(e) {}global.__firestore_settings=true};
 
 // Re-export admin for custom operations (tokens, messaging, etc.)
 export { admin };
@@ -70,6 +73,9 @@ export const generateId = (): string => db.collection("_").doc().id;
 // ✅ Diagnostics log
 // --------------------------
 console.log("🔥 Firebase Admin initialized successfully with Firestore, Auth, and Storage.");
+
+
+
 
 
 

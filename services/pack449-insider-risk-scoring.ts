@@ -242,7 +242,7 @@ export class InsiderRiskScoringService {
     return {
       type: 'unusual_location',
       score,
-      weight: 0.20,
+      weight: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
       description: `${recent.newLocations} new locations detected`,
       evidence: {
         newLocations: recent.newLocations,
@@ -274,7 +274,7 @@ export class InsiderRiskScoringService {
     return {
       type: 'access_drift',
       score,
-      weight: 0.20,
+      weight: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
       description: `${unexpectedAccess.length} unexpected resource accesses`,
       evidence: {
         expected: expectedResources,
@@ -515,3 +515,4 @@ export class InsiderRiskScoringService {
 }
 
 export const insiderRiskScoringService = new InsiderRiskScoringService();
+

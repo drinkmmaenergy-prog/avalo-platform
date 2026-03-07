@@ -117,8 +117,8 @@ export interface ReservationEscrow {
 // CONSTANTS
 // ============================================================================
 
-const PLATFORM_SHARE = 0.35;
-const CREATOR_SHARE = 0.65;
+const PLATFORM_SHARE = MONETIZATION_SPLITS.CHAT.avalo;
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator;
 const CANCELLATION_CUTOFF_HOURS = 24;
 const CONFIRMATION_WINDOW_HOURS = 24;
 const PENDING_PAYMENT_TIMEOUT_MINUTES = 15;
@@ -1363,6 +1363,7 @@ export const sendMeetingReminders = onSchedule("0 * * * *", async (event) => {
     console.log(`Sent reminders for ${upcomingReservations24h.size + upcomingReservations1h.size} meetings`);
     return;
   });
+
 
 
 

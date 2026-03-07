@@ -1,12 +1,11 @@
+'use client';
+
 /**
  * PHASE 3.3 — Admin Trust & Safety Page (READ-ONLY)
  * 
  * View trust signals and safety monitoring.
  * NO write operations — READ-ONLY monitoring.
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { getTrustSignals, getTrustSignalCounts } from '@/lib/services/phase33';
 import type { TrustSignalCounts } from '@/lib/services/phase33';
@@ -173,5 +172,6 @@ export default function AdminTrustPage() {
     </div>
   );
 }
+
 
 

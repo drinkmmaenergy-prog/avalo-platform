@@ -605,7 +605,7 @@ export class ExecutiveRevenueDashboard {
       issues.push(`High churn rate: ${(metrics.churnRate * 100).toFixed(1)}%`);
     }
 
-    if (metrics.highRiskUserPercentage > 0.20) {
+    if (metrics.highRiskUserPercentage > MONETIZATION_SPLITS.EVENT_TICKET.avalo) {
       issues.push(`${(metrics.highRiskUserPercentage * 100).toFixed(1)}% of users are high-risk`);
     }
 
@@ -633,3 +633,4 @@ export class ExecutiveRevenueDashboard {
     logger.info('Automated dashboard updates started');
   }
 }
+

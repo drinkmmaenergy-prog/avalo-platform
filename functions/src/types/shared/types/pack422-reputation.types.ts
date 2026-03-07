@@ -156,9 +156,9 @@ export interface ReputationWeights {
 export const DEFAULT_REPUTATION_WEIGHTS: ReputationWeights = {
   verification: 0.25,
   accountAge: 0.15,
-  activity: 0.20,
-  reports: 0.20,
-  interactions: 0.20,
+  activity: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  reports: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  interactions: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
 };
 
 export interface ReputationHistoryEvent {
@@ -170,6 +170,7 @@ export interface ReputationHistoryEvent {
   module?: string;
   [key: string]: any;
 }
+
 
 
 

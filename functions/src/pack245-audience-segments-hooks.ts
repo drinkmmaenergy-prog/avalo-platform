@@ -3,7 +3,7 @@
  * Integration hooks to trigger segment updates from other systems
  */
 
-import { db, serverTimestamp } from './init.js';
+import { db, serverTimestamp } from './init';
 import { 
   computeAudienceSegment,
   computeBudgetClassification,

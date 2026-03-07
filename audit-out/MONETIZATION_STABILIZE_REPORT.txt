@@ -1,0 +1,1978 @@
+================================
+AVALO ECONOMY STABILIZATION
+================================
+[OK] C:\a\avalo\functions\src\config\economyConfig.ts
+[OK] C:\a\avalo\functions\src\config\economyConfig.ts
+[OK] C:\a\avalo\functions\src\analytics\creatorMetrics.ts
+[OK] C:\a\avalo\functions\src\aiChatEngine.ts
+[LOCK] chatMonetization.ts
+[LOCK] pack273ChatEngine.ts
+[LOCK] pack430-economy-engine.ts
+
+SCAN RESULTS
+ : 11 : * I.6  Refund: unused escrow refunded; platform fee not refunded
+ : 12 : * I.7  Concurrency: 100 parallel earner messages → no negative escrow, no double spends
+ : 35 : WORDS_PER_TOKEN_STANDARD,
+ : 36 : WORDS_PER_TOKEN_ROYAL,
+ : 38 : ESCROW_PCT,
+ : 39 : MIN_DEPOSIT_TOKENS,
+ : 62 : escrowRemainingTokens: overrides.escrowRemainingTokens ?? 65,
+ : 73 : depositTokens: overrides.depositTokens ?? 100,
+ : 74 : wordsPerToken: overrides.wordsPerToken ?? WORDS_PER_TOKEN_STANDARD,
+ : 291 : test('when earnerId=null → 100% of consumed escrow goes to Avalo', () => {
+ : 304 : const state = makeBillingState({ escrowRemainingTokens: 100 });
+ : 313 : // floor(10 * 0.65) = floor(6.5) = 6
+ : 333 : test('WORDS_PER_TOKEN_STANDARD equals 11', () => {
+ : 334 : expect(WORDS_PER_TOKEN_STANDARD).toBe(11);
+ : 337 : test('WORDS_PER_TOKEN_ROYAL equals 7', () => {
+ : 338 : expect(WORDS_PER_TOKEN_ROYAL).toBe(7);
+ : 384 : const state = makeBillingState({ escrowRemainingTokens: 100 });
+ : 410 : const state1 = makeBillingState({ escrowRemainingTokens: 100 });
+ : 421 : // TEST SUITE I.6: REFUND — UNUSED ESCROW REFUNDED / PLATFORM FEE NOT REFUNDED
+ : 424 : describe('I.6 Refund: unused escrow refunded; platform fee not refunded', () => {
+ : 425 : test('deposit 100 tokens → platformFee=35, escrow=65', () => {
+ : 426 : const deposit = 100;
+ : 427 : const platformFee = Math.floor(deposit * PLATFORM_FEE_PCT / 100);
+ : 428 : const escrow = deposit - platformFee;
+ : 431 : expect(escrow).toBe(65);
+ : 434 : test('no tokens consumed → full escrow refundable', () => {
+ : 436 : escrowRemainingTokens: 65,
+ : 441 : // Refund = escrowRemainingTokens
+ : 442 : expect(state.escrowRemainingTokens).toBe(65);
+ : 446 : test('partial consumption → remaining escrow refundable', () => {
+ : 447 : const state = makeBillingState({ escrowRemainingTokens: 65 });
+ : 454 : expect(result.updatedBillingState.escrowRemainingTokens).toBe(64);
+ : 458 : test('full consumption → 0 escrow remaining, 0 refund', () => {
+ : 459 : const state = makeBillingState({ escrowRemainingTokens: 3 });
+ : 465 : // Capped at escrow remaining
+ : 467 : expect(result.updatedBillingState.escrowRemainingTokens).toBe(0);
+ : 468 : expect(result.escrowExhausted).toBe(true);
+ : 475 : test('ESCROW_PCT is 65', () => {
+ : 476 : expect(ESCROW_PCT).toBe(65);
+ : 481 : // TEST SUITE I.7: CONCURRENCY — NO NEGATIVE ESCROW, NO DOUBLE SPENDS
+ : 484 : describe('I.7 Concurrency: no negative escrow, no double spends', () => {
+ : 485 : test('calculateBilling never produces negative escrow', () => {
+ : 486 : const state = makeBillingState({ escrowRemainingTokens: 1 });
+ : 489 : // 11 words = 1 bucket * 20 multiplier = 20 tokens, but only 1 in escrow
+ : 492 : expect(result.tokensConsumed).toBe(1); // Capped at escrow
+ : 493 : expect(result.updatedBillingState.escrowRemainingTokens).toBe(0);
+ : 494 : expect(result.escrowExhausted).toBe(true);
+ : 496 : expect(result.updatedBillingState.escrowRemainingTokens).toBeGreaterThanOrEqual(0);
+ : 499 : test('100 sequential earner messages never create negative escrow', () => {
+ : 500 : let state = makeBillingState({ escrowRemainingTokens: 65 });
+ : 507 : // INVARIANT: escrow never negative
+ : 508 : expect(state.escrowRemainingTokens).toBeGreaterThanOrEqual(0);
+ : 511 : // After 65 buckets consumed (65 * 11 = 715 words), escrow should be 0
+ : 512 : expect(state.escrowRemainingTokens).toBe(0);
+ : 518 : test('high multiplier with limited escrow does not overshoot', () => {
+ : 519 : let state = makeBillingState({ escrowRemainingTokens: 10 });
+ : 528 : expect(result1.updatedBillingState.escrowRemainingTokens).toBe(3);
+ : 532 : expect(result2.updatedBillingState.escrowRemainingTokens).toBe(0);
+ : 533 : expect(result2.escrowExhausted).toBe(true);
+ : 540 : const state = makeBillingState({ escrowRemainingTokens: 1000 });
+ : 590 : // ADDITIONAL TESTS: DEPOSIT MATH
+ : 593 : describe('Deposit math', () => {
+ : 594 : test('deposit 100 → fee=35, escrow=65', () => {
+ : 595 : const deposit = 100;
+ : 596 : const fee = Math.floor(deposit * 35 / 100);
+ : 597 : const escrow = deposit - fee;
+ : 599 : expect(escrow).toBe(65);
+ : 602 : test('deposit 200 → fee=70, escrow=130', () => {
+ : 603 : const deposit = 200;
+ : 604 : const fee = Math.floor(deposit * 35 / 100);
+ : 605 : const escrow = deposit - fee;
+ : 607 : expect(escrow).toBe(130);
+ : 610 : test('deposit 500 → fee=175, escrow=325', () => {
+ : 611 : const deposit = 500;
+ : 612 : const fee = Math.floor(deposit * 35 / 100);
+ : 613 : const escrow = deposit - fee;
+ : 615 : expect(escrow).toBe(325);
+ : 618 : test('minimum deposit is 100 tokens', () => {
+ : 619 : expect(MIN_DEPOSIT_TOKENS).toBe(100);
+ : 622 : test('deposit max(100, earnerConfig) enforced', () => {
+ : 624 : expect(Math.max(MIN_DEPOSIT_TOKENS, 50)).toBe(100);
+ : 626 : expect(Math.max(MIN_DEPOSIT_TOKENS, 200)).toBe(200);
+ : 628 : expect(Math.max(MIN_DEPOSIT_TOKENS, 100)).toBe(100);
+ : 639 : const config = makeSessionConfig({ wordsPerToken: WORDS_PER_TOKEN_ROYAL });
+ : 650 : const config = makeSessionConfig({ wordsPerToken: WORDS_PER_TOKEN_STANDARD });
+ : 660 : const config = makeSessionConfig({ wordsPerToken: WORDS_PER_TOKEN_ROYAL });
+ : 701 : test('earner credit uses floor: floor(10 * 0.65) = 6 (not round to 7)', () => {
+ : 705 : test('avalo gets remainder: 10 - floor(10*0.65) = 4', () => {
+ : 717 : test('0 escrow → no billing even with words', () => {
+ : 718 : const state = makeBillingState({ escrowRemainingTokens: 0 });
+ : 724 : expect(result.escrowExhausted).toBe(true);
+ : 727 : test('very large message (10000 words) capped at escrow', () => {
+ : 728 : const state = makeBillingState({ escrowRemainingTokens: 10 });
+ : 734 : expect(result.updatedBillingState.escrowRemainingTokens).toBe(0);
+ : 737 : test('multiplier=20 with small escrow caps correctly', () => {
+ : 738 : const state = makeBillingState({ escrowRemainingTokens: 5 });
+ : 745 : expect(result.updatedBillingState.escrowRemainingTokens).toBe(0);
+ : 750 : let state = makeBillingState({ escrowRemainingTokens: 100 });
+ : 29 : ESCROW_PCT,
+ : 30 : MIN_DEPOSIT_TOKENS,
+ : 33 : WORDS_PER_TOKEN_STANDARD,
+ : 34 : WORDS_PER_TOKEN_ROYAL,
+ : 52 : function makeBillingState(depositTokens: number): CanonicalBillingState {
+ : 53 : const platformFee = Math.floor(depositTokens * (PLATFORM_FEE_PCT / 100));
+ : 54 : const escrow = depositTokens - platformFee;
+ : 57 : escrowRemainingTokens: escrow,
+ : 68 : depositTokens: 100,
+ : 69 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 79 : describe('T1: User paid 100, creator used 30 tokens, refund 35 tokens of escrow', () => {
+ : 80 : it('should correctly split a 100-token deposit', () => {
+ : 81 : const deposit = 100;
+ : 82 : const platformFee = Math.floor(deposit * (PLATFORM_FEE_PCT / 100)); // floor(100 * 0.35) = 35
+ : 83 : const escrow = deposit - platformFee; // 100 - 35 = 65
+ : 87 : expect(escrow).toBe(65);
+ : 90 : it('should consume 30 tokens from escrow and split 65/35', () => {
+ : 96 : // Simulate consuming 30 tokens from escrow
+ : 97 : const earnerCredit = Math.floor(tokensConsumed * EARNER_REVENUE_SPLIT); // floor(30 * 0.65) = 19
+ : 105 : it('should have 35 tokens remaining in escrow for refund', () => {
+ : 106 : const deposit = 100;
+ : 107 : const platformFee = Math.floor(deposit * (PLATFORM_FEE_PCT / 100)); // 35
+ : 108 : const escrow = deposit - platformFee; // 65
+ : 110 : const escrowRemaining = escrow - tokensConsumed; // 65 - 30 = 35
+ : 112 : expect(escrowRemaining).toBe(35);
+ : 116 : const deposit = 100;
+ : 117 : const platformFee = Math.floor(deposit * (PLATFORM_FEE_PCT / 100)); // 35
+ : 118 : const escrow = deposit - platformFee; // 65
+ : 120 : const refundedTokens = escrow - tokensConsumed; // 35 (only escrow remainder)
+ : 123 : expect(platformFee + tokensConsumed + refundedTokens).toBe(deposit);
+ : 134 : describe('T2: Expiry closes chat, refund unused escrow', () => {
+ : 135 : it('should refund full escrow if no messages sent in paid phase', () => {
+ : 136 : const deposit = 100;
+ : 137 : const state = makeBillingState(deposit);
+ : 140 : const refundAmount = state.escrowRemainingTokens;
+ : 146 : // Double-entry check: deposit = platformFee + escrowRemaining
+ : 147 : expect(state.platformFeeChargedTokens + state.escrowRemainingTokens).toBe(deposit);
+ : 150 : it('should refund partial escrow after some consumption', () => {
+ : 151 : const deposit = 200;
+ : 152 : const platformFee = Math.floor(deposit * (PLATFORM_FEE_PCT / 100)); // 70
+ : 153 : const escrow = deposit - platformFee; // 130
+ : 154 : const tokensConsumedFromEscrow = 50;
+ : 155 : const refund = escrow - tokensConsumedFromEscrow; // 80
+ : 158 : // Invariant: platformFee + consumed + refund = deposit
+ : 159 : expect(platformFee + tokensConsumedFromEscrow + refund).toBe(deposit);
+ : 224 : describe('T4: Minimum deposit enforcement', () => {
+ : 225 : it('MIN_DEPOSIT = Math.max(customDeposit,100)
+ : 226 : expect(MIN_DEPOSIT_TOKENS).toBe(100);
+ : 233 : it('deposit below minimum should be rejected (invariant)', () => {
+ : 234 : // The engine should enforce min deposit. We verify the constant here.
+ : 235 : const attemptedDeposit = 50;
+ : 236 : const chargedTokens = Math.max(MIN_CHAT_CHARGE_TOKENS, attemptedDeposit);
+ : 240 : it('deposit at or above minimum should use actual amount', () => {
+ : 241 : const attemptedDeposit = 200;
+ : 242 : const chargedTokens = Math.max(MIN_CHAT_CHARGE_TOKENS, attemptedDeposit);
+ : 252 : it('platform fee is 35% of deposit', () => {
+ : 254 : expect(ESCROW_PCT).toBe(65);
+ : 255 : expect(PLATFORM_FEE_PCT + ESCROW_PCT).toBe(100);
+ : 258 : it('platform fee is captured at deposit and stored in billingState', () => {
+ : 259 : const deposit = 500;
+ : 260 : const state = makeBillingState(deposit);
+ : 262 : expect(state.platformFeeChargedTokens).toBe(Math.floor(500 * 0.35)); // 175
+ : 263 : expect(state.escrowRemainingTokens).toBe(500 - 175); // 325
+ : 266 : it('refund does NOT include platform fee — only escrow remainder', () => {
+ : 267 : const deposit = 500;
+ : 268 : const state = makeBillingState(deposit);
+ : 270 : // Consume 100 tokens from escrow
+ : 272 : const refund = state.escrowRemainingTokens - consumed; // 325 - 100 = 225
+ : 276 : expect(state.platformFeeChargedTokens + consumed + refund).toBe(deposit);
+ : 284 : describe('T6: Refund = unused escrow only', () => {
+ : 285 : it('refund = escrowRemainingTokens after billing', () => {
+ : 286 : const deposit = 100;
+ : 287 : const state = makeBillingState(deposit);
+ : 288 : const config = makeConfig({ depositTokens: deposit });
+ : 291 : // Send messages until some escrow consumed
+ : 295 : const refundAmount = result.updatedBillingState.escrowRemainingTokens;
+ : 299 : // Invariant: platformFee + consumed + refund = deposit
+ : 300 : expect(platformFee + consumed + refundAmount).toBe(deposit);
+ : 304 : const deposit = 100;
+ : 305 : const state = makeBillingState(deposit);
+ : 306 : const config = makeConfig({ depositTokens: deposit });
+ : 315 : // Refund is from ESCROW, not clawed back from earner
+ : 316 : const refund = result.updatedBillingState.escrowRemainingTokens;
+ : 319 : // Total credits + refund + fee = deposit
+ : 320 : const totalTokensFromEscrow = result.updatedBillingState.totalTokensConsumed;
+ : 323 : totalTokensFromEscrow +
+ : 325 : ).toBe(deposit);
+ : 346 : const config = makeConfig({ depositTokens: 200 });
+ : 362 : it('platformFee + totalConsumed + escrowRemaining = deposit (always)', () => {
+ : 363 : const deposit = 300;
+ : 364 : const state = makeBillingState(deposit);
+ : 365 : const config = makeConfig({ depositTokens: deposit });
+ : 378 : currentState.escrowRemainingTokens;
+ : 379 : expect(total).toBe(deposit);
+ : 419 : expect(SPLITS_BY_SURFACE.CHAT.creator).toBe(0.65);
+ : 420 : expect(SPLITS_BY_SURFACE.CHAT.avalo).toBe(0.35);
+ : 439 : const buckets = Math.floor(words / WORDS_PER_TOKEN_STANDARD);
+ : 445 : const buckets = Math.floor(words / WORDS_PER_TOKEN_STANDARD);
+ : 451 : const buckets = Math.floor(words / WORDS_PER_TOKEN_ROYAL);
+ : 462 : it('floor is used, never round: floor(10 * 0.65) = 6', () => {
+ : 466 : it('remainder to Avalo: 10 - floor(10*0.65) = 4', () => {
+ : 52 : const platformFee = Math.floor(price * 0.35);
+ : 69 : const platformFee = Math.floor(price * 0.35);
+ : 79 : const price = 97; // 0.35 * 97 = 33.95
+ : 80 : const platformFee = Math.floor(price * 0.35);
+ : 197 : bronze: 0.65,
+ : 272 : // Next message requires prepaid deposit
+ : 124 : expect(REVENUE_SPLITS.CHAT).toEqual({ creator: 0.65, avalo: 0.35 });
+ : 125 : expect(REVENUE_SPLITS.CALLS).toEqual({ creator: 0.65, avalo: 0.35 });
+ : 128 : expect(REVENUE_SPLITS.OTHER).toEqual({ creator: 0.65, avalo: 0.35 });
+ : 157 : const chatCreatorShare = Math.floor(chatEarned * 0.65);
+ : 143 : // Platform gets floor(1 * 0.35) = 0 (rounding)
+ : 159 : expect(result.platformReceives).toBe(Math.floor(10 * 0.35)); // 3
+ : 218 : type: 'deposit',
+ : 232 : expect(tx.type).toBe('deposit');
+ : 97 : describe("confirmDepositV1 - On-Chain Verification", () => {
+ : 133 : it("should detect escrow address mismatch", () => {
+ : 134 : const expectedEscrow = "0x1111111111111111111111111111111111111111";
+ : 137 : expect(expectedEscrow.toLowerCase()).not.toBe(actualRecipient.toLowerCase());
+ : 183 : it("should validate escrow address format", () => {
+ : 184 : const escrowAddress = "0x0000000000000000000000000000000000000000";
+ : 185 : expect(escrowAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
+ : 225 : it("should validate deposit amount matches expected", () => {
+ : 256 : it("should detect suspicious deposit patterns", () => {
+ : 257 : const deposits = [
+ : 263 : // Check for structuring (multiple deposits just below threshold)
+ : 264 : const suspiciousDeposits = deposits.filter(d => d.amount >= 900 && d.amount < 1000);
+ : 265 : expect(suspiciousDeposits.length).toBeGreaterThan(2);
+ : 274 : "initiateDepositV1",
+ : 275 : "confirmDepositV1",
+ : 303 : it("should handle complete deposit verification flow", () => {
+ : 304 : const depositData = {
+ : 305 : depositId: "dep_123456",
+ : 310 : escrowAddress: "0x1111111111111111111111111111111111111111",
+ : 318 : to: depositData.escrowAddress,
+ : 325 : // Verify sent to correct escrow
+ : 326 : expect(mockReceipt.to?.toLowerCase()).toBe(depositData.escrowAddress.toLowerCase());
+ : 125 : const creatorEarnings = (payment.tokens || 0) * 0.65;
+ : 396 : const escrowRef = db.collection('token_escrow').doc();
+ : 397 : batch.set(escrowRef, {
+ : 502 : const escrowSnapshot = await db.collection('token_escrow')
+ : 508 : if (escrowSnapshot.empty) {
+ : 512 : const escrowDoc = escrowSnapshot.docs[0];
+ : 513 : const escrowData = escrowDoc.data();
+ : 514 : const totalTokens = escrowData.amount;
+ : 530 : creatorShare = Math.floor(totalTokens * 0.65);
+ : 566 : batch.update(escrowDoc.ref, {
+ : 36 : // PLATFORM LAYOUT FEE (chat deposit fee, non-refundable)
+ : 40 : * Platform fee percentage on chat deposits (0.35 = 35%).
+ : 41 : * Charged at deposit time, non-refundable.
+ : 50 : * Minimum tokens for a chat deposit.
+ : 68 : CHAT:           { creator: 0.65, avalo: 0.35 },
+ : 69 : CALLS_VOICE:    { creator: 0.65, avalo: 0.35 },
+ : 70 : CALLS_VIDEO:    { creator: 0.65, avalo: 0.35 },
+ : 71 : CALENDAR:       { creator: 0.65, avalo: 0.35 },
+ : 72 : EVENTS:         { creator: 0.65, avalo: 0.35 },
+ : 76 : LIVE_VIP:       { creator: 0.65, avalo: 0.35 },
+ : 77 : AI_COMPANIONS:  { creator: 0.65, avalo: 0.35 },
+ : 78 : BOOSTS_CREATOR: { creator: 0.65, avalo: 0.35 },
+ : 80 : DIGITAL_PRODUCTS: { creator: 0.65, avalo: 0.35 },
+ : 82 : MARKETPLACE:    { creator: 0.65, avalo: 0.35 },
+ : 92 : return SPLITS_BY_SURFACE[key] ?? { creator: 0.65, avalo: 0.35 };
+ : 122 : /** Default deposit tokens */
+ : 123 : DEFAULT_DEPOSIT_TOKENS: 100,
+ : 126 : /** Platform fee on deposit (0.35 = 35%, non-refundable) */
+ : 127 : DEPOSIT_PLATFORM_FEE_PCT: 0.35,
+ : 128 : /** Escrow from deposit (0.65 = 65%, refundable unused) */
+ : 129 : DEPOSIT_ESCROW_PCT: 0.65,
+ : 164 : | 'DEPOSIT_CREATED'
+ : 165 : | 'ESCROW_CONSUMED'
+ : 8 : * - NO deposit required (unlike chat monetization)
+ : 38 : /** Whether gifts require deposit (NO for live) */
+ : 39 : REQUIRES_DEPOSIT: false;
+ : 184 : REQUIRES_DEPOSIT: false,
+ : 15 : /** Creator earnings percentage from escrow (as decimal) */
+ : 18 : /** Avalo cut from escrow (as decimal) */
+ : 21 : /** Average words per token for escrow billing */
+ : 22 : WORDS_PER_TOKEN: 11,
+ : 32 : recency: 0.35,
+ : 353 : const recencyScore = Math.exp(-ageHours / 24) * 0.35;
+ : 8 : CREATOR: 0.65,
+ : 9 : PLATFORM: 0.35
+ : 12 : AI_WORDS_PER_TOKEN: 30,
+ : 182 : intentionCompatibility: 0.35,  // 35% - highest weight
+ : 218 : const creatorEarnings = courseData.price * 0.65;
+ : 219 : const avaloRevenue = courseData.price * 0.35;
+ : 238 : // Check for rapid churn (quick deposit and withdrawal)
+ : 411 : let deposits = 0;
+ : 416 : if (amount > 0) deposits += amount;
+ : 420 : // Flag if deposited and withdrawn >1000 tokens in 24h
+ : 421 : if (deposits > 1000 && withdrawals > 1000) {
+ : 428 : details: `Rapid churn: deposited ${deposits}, withdrew ${withdrawals} in 24h`,
+ : 430 : amount: deposits + withdrawals,
+ : 264 : confidence = Math.min(0.9, 0.65 + spamMatches.length * 0.1);
+ : 34 : escrowHeld: number; // Currently in escrow
+ : 76 : escrowAmount?: number;
+ : 107 : escrowAmount: txData.escrowAmount,
+ : 142 : return Math.floor(amount * 0.35);
+ : 254 : // Calculate escrow held (query chats with active escrow)
+ : 257 : .where("escrow", ">", 0)
+ : 260 : let escrowHeld = 0;
+ : 262 : escrowHeld += doc.data().escrow || 0;
+ : 295 : escrowHeld,
+ : 11 : * - chat.deposited, chat.message
+ : 54 : CHAT_DEPOSITED = "chat.deposited",
+ : 285 : case EventType.CHAT_DEPOSITED:
+ : 286 : await handleChatDeposited(event.payload);
+ : 321 : async function handleChatDeposited(payload: any): Promise<void> {
+ : 322 : console.log("Handling chat.deposited:", payload);
+ : 324 : await logEngineEvent("eventEngine", "chat_deposited_handled", payload);
+ : 341 : // Logic: Release escrow, update ratings, etc.
+ : 19 : const AVALO_COMMISSION_PERCENTAGE = 0.35;
+ : 20 : const RECEIVER_COMMISSION_PERCENTAGE = 0.65;
+ : 94 : isDeepfake: confidence > 0.65,
+ : 124 : isCloned: confidence > 0.65,
+ : 154 : isSynthetic: confidence > 0.65,
+ : 202 : const threshold = 0.65;
+ : 9 : * 2. chatMonetization.ts format (FREE_A/FREE_B/PAID, FREE_ACTIVE/AWAITING_DEPOSIT/PAID_ACTIVE/CLOSED)
+ : 36 : WORDS_PER_TOKEN_STANDARD,
+ : 81 : case 'AWAITING_DEPOSIT':
+ : 83 : return 'AWAITING_DEPOSIT';
+ : 101 : // Determine if free or paid based on deposit
+ : 102 : if (legacyData.deposit?.amount > 0) return 'PAID_ACTIVE';
+ : 109 : return 'AWAITING_DEPOSIT';
+ : 220 : // Only create paid session for PAID_ACTIVE or AWAITING_DEPOSIT with existing deposit
+ : 225 : const deposit = data.deposit || {};
+ : 227 : const depositTokens = deposit.amount || billing.totalPrepaid || billing.depositAmount || 100;
+ : 228 : const platformFee = deposit.fee || Math.floor(depositTokens * 35 / 100);
+ : 229 : const escrowRemaining = billing.escrowBalance || billing.remainingTokens ||
+ : 230 : (deposit.escrow || (depositTokens - platformFee));
+ : 234 : escrowRemainingTokens: Math.max(0, escrowRemaining),
+ : 236 : totalBucketsConsumed: Math.floor((billing.wordsSent || billing.usedWords || 0) / (billing.wordsPerToken || WORDS_PER_TOKEN_STANDARD)),
+ : 246 : depositTokens,
+ : 247 : wordsPerToken: billing.wordsPerToken || WORDS_PER_TOKEN_STANDARD,
+ : 250 : startedAt: data.paidStartedAt || data.deposit?.paidAt || Timestamp.now(),
+ : 198 : '1-800-656-4673 (Sexual Assault)'
+ : 9 : *   import { refundCalendarBooking, refundCallEscrow } from '../monetization';
+ : 20 : CallEscrowRequest,
+ : 28 : CallEscrowRefundRequest,
+ : 40 : reserveCallEscrow,
+ : 53 : refundCallEscrow,
+ : 36 : CallEscrowRequest,
+ : 197 : * Pre-authorized escrow is handled separately.
+ : 227 : * Reserve escrow tokens for a pre-authorized call.
+ : 228 : * Tokens are escrowed from the payer's wallet.
+ : 230 : * Unused tokens are refunded via refundCallEscrow().
+ : 232 : * Escrow reservation debits the payer and holds in platform pending.
+ : 234 : * @param request — CallEscrowRequest
+ : 235 : * @returns ChargeResult (using CALL_ESCROW_RESERVE ledger type)
+ : 237 : export async function reserveCallEscrow(request: CallEscrowRequest): Promise<ChargeResult> {
+ : 239 : throw new Error('[MonetizationV2] Call escrow requires a counterpartyId');
+ : 242 : // Escrow: debit payer, 100% held by platform (no creator split yet)
+ : 244 : type: 'CALL_ESCROW_RESERVE',
+ : 246 : counterpartyId: null, // No payout yet — held in escrow by platform
+ : 250 : avaloTokens: request.reserveTokens, // Platform holds entire escrow
+ : 258 : feature: 'CALL_ESCROW_RESERVE',
+ : 272 : ledgerType: 'CALL_ESCROW_RESERVE',
+ : 92 : * Call escrow pre-authorization.
+ : 94 : export interface CallEscrowRequest {
+ : 217 : * Refund request for unused call escrow.
+ : 219 : export interface CallEscrowRefundRequest {
+ : 220 : /** The payer who reserved escrow. */
+ : 14 : * 2. VOICE / VIDEO CALLS — Escrow:
+ : 17 : *    - Only the unused portion of the escrow is returned.
+ : 30 : *   - In call escrow refunds: Unused tokens are fully returned (no split was applied yet).
+ : 41 : CallEscrowRefundRequest,
+ : 122 : // CALL ESCROW REFUND — Unused pre-authorized minutes only
+ : 126 : * Refund unused call escrow tokens.
+ : 129 : *   - Only unused portion of pre-authorized escrow is refunded.
+ : 133 : * @param request — CallEscrowRefundRequest
+ : 136 : export async function refundCallEscrow(
+ : 137 : request: CallEscrowRefundRequest,
+ : 152 : // Credit unused tokens back to payer using CALL_ESCROW_RELEASE type
+ : 156 : type: 'CALL_ESCROW_RELEASE',
+ : 162 : refundType: 'CALL_ESCROW_UNUSED',
+ : 171 : reason: `Call escrow refund: ${request.unusedTokens} unused tokens returned.`,
+ : 216 : * Only CALENDAR_BOOK and call escrow (CALL_BILL) have explicit refund paths.
+ : 377 : const creatorShare = Math.round(totalRevenue * 0.65 * 100) / 100;
+ : 378 : const platformShare = Math.round(totalRevenue * 0.35 * 100) / 100;
+ : 85 : escrowStatus: 'held',
+ : 264 : escrowStatus: 'released_to_buyer',
+ : 277 : escrowStatus: 'released_to_seller',
+ : 292 : escrowStatus: 'split',
+ : 248 : if (transactionData!.escrowStatus === 'held') {
+ : 250 : escrowStatus: 'ready_for_release',
+ : 336 : const confidence = matches > 5 ? 0.85 : matches > 2 ? 0.65 : 0.3;
+ : 319 : const platformFee = grossRevenue * 0.35;
+ : 213 : recencyWeight: 0.35,
+ : 10 : import { IntelligentPayoutEscrowService } from '../services/IntelligentPayoutEscrowService';
+ : 19 : let escrowService: IntelligentPayoutEscrowService;
+ : 40 : escrowService = new IntelligentPayoutEscrowService(db, integrityService);
+ : 59 : 'payout_escrow',
+ : 167 : describe('PACK 440: Intelligent Payout Escrow', () => {
+ : 168 : it('should create escrow with correct period based on score', async () => {
+ : 172 : const escrow = await escrowService.createPayoutEscrow({
+ : 183 : expect(escrow).toBeDefined();
+ : 184 : expect(escrow.creatorId).toBe(TEST_CREATOR_ID);
+ : 185 : expect(escrow.amount).toBe(TEST_PAYOUT_AMOUNT);
+ : 186 : expect(escrow.status).toBe('IN_ESCROW');
+ : 187 : expect(escrow.escrowPeriod.cooldownHours).toBeGreaterThan(0);
+ : 190 : it('should extend escrow for high-risk creators', async () => {
+ : 200 : const escrow = await escrowService.createPayoutEscrow({
+ : 211 : expect(escrow.escrowPeriod.cooldownHours).toBeGreaterThan(48); // Extended period
+ : 212 : expect(escrow.riskFactors.length).toBeGreaterThan(0);
+ : 216 : const escrow = await escrowService.createPayoutEscrow({
+ : 227 : expect(escrow.complianceChecks).toBeDefined();
+ : 228 : expect(escrow.complianceChecks.amlPassed).toBeDefined();
+ : 229 : expect(escrow.complianceChecks.fraudChecked).toBeDefined();
+ : 230 : expect(escrow.complianceChecks.chargebackReview).toBeDefined();
+ : 385 : // 3. Create payout escrow
+ : 386 : const escrow = await escrowService.createPayoutEscrow({
+ : 396 : expect(escrow.status).toBe('IN_ESCROW');
+ : 401 : escrow.payoutId,
+ : 46 : escrowPeriod: {
+ : 94 : .collection('payout_escrow')
+ : 96 : .where('status', 'in', ['PENDING', 'IN_ESCROW', 'FROZEN'])
+ : 107 : estimatedRelease: data.escrowPeriod.plannedReleaseTime,
+ : 124 : // Calculate escrow period info
+ : 125 : const escrowPeriod = this.calculateEscrowPeriodInfo(integrityScore);
+ : 150 : escrowPeriod,
+ : 195 : if (payoutData.escrowPeriod.extensionReason) {
+ : 197 : const reason = payoutData.escrowPeriod.extensionReason.toLowerCase();
+ : 244 : * Calculate escrow period info based on score
+ : 246 : private calculateEscrowPeriodInfo(score: number): {
+ : 3 : * Module: Intelligent Payout Escrow Service
+ : 5 : * Manages risk-adjusted escrowholding periods for creator payouts
+ : 6 : * - Automatic escrow period calculation based on integrity score
+ : 7 : * - Escrow shortening for trusted creators
+ : 8 : * - Escrow extension for high-risk scenarios
+ : 18 : export interface PayoutEscrow {
+ : 23 : status: 'PENDING' | 'IN_ESCROW' | 'RELEASED' | 'FROZEN' | 'DISPUTED';
+ : 24 : escrowPeriod: {
+ : 61 : export class IntelligentPayoutEscrowService {
+ : 65 : // Escrow period thresholds (in hours)
+ : 66 : private readonly ESCROW_PERIODS = {
+ : 89 : * Create payout escrow with intelligent period calculation
+ : 91 : async createPayoutEscrow(request: CreatePayoutRequest): Promise<PayoutEscrow> {
+ : 95 : // Calculate base escrow period
+ : 96 : let cooldownHours = this.calculateBaseEscrowPeriod(integrity.score);
+ : 110 : // Create escrow record
+ : 116 : const payoutEscrow: PayoutEscrow = {
+ : 121 : status: 'IN_ESCROW',
+ : 122 : escrowPeriod: {
+ : 135 : processedBy: 'IntelligentPayoutEscrowService'
+ : 140 : await this.savePayoutEscrow(payoutEscrow);
+ : 143 : await this.logAuditEvent(payoutEscrow, 'ESCROW_CREATED');
+ : 145 : return payoutEscrow;
+ : 149 : * Calculate base escrow period based on integrity score
+ : 151 : private calculateBaseEscrowPeriod(score: number): number {
+ : 152 : if (score >= 800) return this.ESCROW_PERIODS.EXCELLENT;
+ : 153 : if (score >= 700) return this.ESCROW_PERIODS.GOOD;
+ : 154 : if (score >= 600) return this.ESCROW_PERIODS.FAIR;
+ : 155 : if (score >= 500) return this.ESCROW_PERIODS.CONCERNING;
+ : 156 : if (score >= 400) return this.ESCROW_PERIODS.HIGH_RISK;
+ : 157 : return this.ESCROW_PERIODS.CRITICAL;
+ : 161 : * Apply risk-based adjustments to escrow period
+ : 231 : // Cap maximum escrow at 168 hours (7 days)
+ : 234 : // Floor minimum escrow at 12 hours (can't go below this)
+ : 326 : * Release payout from escrow
+ : 329 : const payoutRef = this.db.collection('payout_escrow').doc(payoutId);
+ : 336 : const payout = payoutDoc.data() as PayoutEscrow;
+ : 339 : if (payout.status !== 'IN_ESCROW') {
+ : 343 : // Check if escrow period has elapsed
+ : 345 : const releaseTime = payout.escrowPeriod.plannedReleaseTime.toMillis();
+ : 348 : throw new Error(`Payout ${payoutId} escrow period not yet complete`);
+ : 354 : 'escrowPeriod.actualReleaseTime': Timestamp.now(),
+ : 362 : await this.logAuditEvent(payout, 'ESCROW_RELEASED');
+ : 366 : * Extend escrow period
+ : 368 : async extendEscrow(
+ : 373 : const payoutRef = this.db.collection('payout_escrow').doc(payoutId);
+ : 380 : const payout = payoutDoc.data() as PayoutEscrow;
+ : 382 : const currentReleaseTime = payout.escrowPeriod.plannedReleaseTime.toMillis();
+ : 388 : 'escrowPeriod.plannedReleaseTime': newReleaseTime,
+ : 389 : 'escrowPeriod.cooldownHours': payout.escrowPeriod.cooldownHours + additionalHours,
+ : 390 : 'escrowPeriod.extensionReason': reason,
+ : 395 : await this.logAuditEvent(payout, 'ESCROW_EXTENDED', { additionalHours, reason });
+ : 399 : * Get payout escrow by ID
+ : 401 : async getPayoutEscrow(payoutId: string): Promise<PayoutEscrow | null> {
+ : 402 : const doc = await this.db.collection('payout_escrow').doc(payoutId).get();
+ : 403 : return doc.exists ? (doc.data() as PayoutEscrow) : null;
+ : 409 : async getCreatorPayouts(creatorId: string, limit: number = 10): Promise<PayoutEscrow[]> {
+ : 411 : .collection('payout_escrow')
+ : 417 : return snapshot.docs.map(doc => doc.data() as PayoutEscrow);
+ : 423 : async getPayoutsReadyForRelease(): Promise<PayoutEscrow[]> {
+ : 427 : .collection('payout_escrow')
+ : 428 : .where('status', '==', 'IN_ESCROW')
+ : 429 : .where('escrowPeriod.plannedReleaseTime', '<=', now)
+ : 432 : return snapshot.docs.map(doc => doc.data() as PayoutEscrow);
+ : 436 : * Save payout escrow to Firestore
+ : 438 : private async savePayoutEscrow(payout: PayoutEscrow): Promise<void> {
+ : 439 : await this.db.collection('payout_escrow').doc(payout.payoutId).set(payout);
+ : 445 : private async triggerPayout(payout: PayoutEscrow): Promise<void> {
+ : 452 : source: 'escrow_release',
+ : 469 : payout: PayoutEscrow,
+ : 474 : type: 'PAYOUT_ESCROW',
+ : 259 : // Update payout escrow status if specific payout
+ : 261 : await this.db.collection('payout_escrow').doc(payoutId).update({
+ : 312 : // Update payout escrow if applicable
+ : 314 : await this.db.collection('payout_escrow').doc(freeze.payoutId).update({
+ : 315 : status: 'IN_ESCROW',
+ : 9 : import { IntelligentPayoutEscrowService } from './services/IntelligentPayoutEscrowService';
+ : 20 : const escrowService = new IntelligentPayoutEscrowService(db, integrityService);
+ : 27 : * Creates escrow and evaluates freeze conditions
+ : 35 : // Create escrow
+ : 36 : const escrow = await escrowService.createPayoutEscrow({
+ : 46 : escrow.payoutId,
+ : 51 : await freezeController.createFreeze(data.creatorId, freezeEval, escrow.payoutId);
+ : 57 : console.log(`Payout ${escrow.payoutId} created with ${escrow.escrowPeriod.cooldownHours}h escrow`);
+ : 71 : .collection('payout_escrow')
+ : 99 : * Scheduled: Process escrow releases (every 15 minutes)
+ : 101 : export const processEscrowReleases = onSchedule("every 15 minutes", async (event) => {
+ : 103 : const readyPayouts = await escrowService.getPayoutsReadyForRelease();
+ : 107 : await escrowService.releasePayout(payout.payoutId);
+ : 117 : console.error('Error in processEscrowReleases:', error);
+ : 285 : activeEscrows,
+ : 290 : db.collection('payout_escrow').where('status', '==', 'IN_ESCROW').get(),
+ : 300 : activeEscrows: activeEscrows.size,
+ : 304 : totalEscrowAmount: activeEscrows.docs.reduce((sum, doc) => sum + doc.data().amount, 0)
+ : 7 : export * from './services/IntelligentPayoutEscrowService';
+ : 32 : entropy: 0.35,
+ : 33 : reuse: 0.35,
+ : 346 : const expectedCreatorShare = 0.65;
+ : 347 : const expectedPlatformShare = 0.35;
+ : 103 : (tokensSpentChat + tokensSpentCalls + tokensSpentAI) * 0.35 +
+ : 190 : const tokensToReceiver = Math.floor(tokensCharged * 0.65);
+ : 55 : weight: 0.65
+ : 159 : interestMatch: 0.35,
+ : 240 : const escrowData = {
+ : 250 : const escrowRef = await db.collection('token_escrow').add(escrowData);
+ : 253 : 'compensation.escrowId': escrowRef.id
+ : 414 : await releaseEscrowForContract(deliverable.contractId);
+ : 421 : async function releaseEscrowForContract(contractId: string): Promise<void> {
+ : 425 : if (contract.compensation.useTokens && contract.compensation.escrowId) {
+ : 426 : const escrowDoc = await db.collection('token_escrow').doc(contract.compensation.escrowId).get();
+ : 428 : if (escrowDoc.exists) {
+ : 429 : const escrowData = escrowDoc.data()!;
+ : 430 : const creatorAmount = escrowData.amount * 0.65;
+ : 431 : const platformAmount = escrowData.amount * 0.35;
+ : 437 : await db.collection('token_escrow').doc(contract.compensation.escrowId).update({
+ : 454 : export const releaseEscrowForSponsorship = functions.https.onCall(async (request) => {
+ : 470 : throw new functions.https.HttpsError('permission-denied', 'Only brand can release escrow');
+ : 486 : await releaseEscrowForContract(data.contractId);
+ : 90 : escrowId?: string;
+ : 238 : inEscrow: number;
+ : 40 : const platformFee = grossRevenue * 0.35;
+ : 190 : const depositPaid = i < 20; // 20 chats with deposit
+ : 191 : const escrow = depositPaid ? 65 : 0;
+ : 192 : const platformFee = depositPaid ? 35 : 0;
+ : 198 : depositPaid,
+ : 199 : escrow,
+ : 203 : freeMessagesRemaining: depositPaid ? 0 : 3,
+ : 320 : escrow: Math.floor(amount * 0.8),
+ : 96 : | 'AWAITING_DEPOSIT'   // Free messages used, needs deposit
+ : 97 : | 'PAID_ACTIVE'        // Active with escrow
+ : 103 : escrowBalance: number;
+ : 278 : error?: 'DEPOSIT_REQUIRED' | 'INSUFFICIENT_BALANCE' | 'BOT_UNAVAILABLE';
+ : 703 : creatorSplit: 0.65,           // Creator still gets 65%
+ : 704 : platformSplit: 0.35,          // Avalo takes 35%
+ : 11 : * - pack242DynamicChatPricing.ts (deposit modifiers — REMOVED)
+ : 37 : * MATCHED → AWAITING_EARNER_ACCEPT → FREE_ACTIVE → AWAITING_DEPOSIT → PAID_ACTIVE → CLOSED
+ : 45 : | 'AWAITING_DEPOSIT'       // Free exhausted, payer must deposit to continue
+ : 46 : | 'PAID_ACTIVE'            // Paid session active, escrow funded
+ : 89 : export const WORDS_PER_TOKEN_STANDARD = 11;
+ : 92 : export const WORDS_PER_TOKEN_ROYAL = 7;
+ : 94 : /** Platform fee percentage (non-refundable, taken at deposit time) */
+ : 97 : /** Escrow percentage (refundable unused portion) */
+ : 98 : export const ESCROW_PCT = 65;
+ : 100 : /** Minimum deposit tokens */
+ : 101 : export const MIN_DEPOSIT = Math.max(customDeposit,100)
+ : 103 : /** Default deposit tokens */
+ : 104 : export const DEFAULT_DEPOSIT_TOKENS = 100;
+ : 106 : /** Revenue split: earner portion of consumed escrow */
+ : 107 : export const EARNER_REVENUE_SPLIT = 0.65;
+ : 109 : /** Revenue split: Avalo portion of consumed escrow */
+ : 110 : export const AVALO_REVENUE_SPLIT = 0.35;
+ : 198 : * When BOTH users exhausted → AWAITING_DEPOSIT.
+ : 215 : * A new session is created for each deposit.
+ : 216 : * Session version increments on each new deposit (re-deposit after exhaustion).
+ : 222 : /** Incrementing version (1, 2, 3...) for each new deposit in this chat */
+ : 225 : /** Frozen config at the time of this session's deposit */
+ : 236 : * Configuration snapshot frozen at deposit time.
+ : 240 : /** Tokens deposited by payer */
+ : 241 : depositTokens: number;
+ : 259 : *   Consume from escrow; credit split:
+ : 270 : /** Remaining escrow tokens (starts at 65% of deposit) */
+ : 271 : escrowRemainingTokens: number;
+ : 273 : /** Platform fee already charged (35% of deposit, non-refundable) */
+ : 279 : /** Total tokens consumed from escrow so far */
+ : 285 : /** Total tokens credited to Avalo from escrow consumption so far */
+ : 298 : /** Deposit tokens the earner wants for the NEXT session. min=100 */
+ : 299 : depositTokensForNextSession: number;
+ : 335 : /** Tokens consumed from escrow */
+ : 344 : /** Whether escrow is now exhausted */
+ : 345 : escrowExhausted: boolean;
+ : 352 : // DEPOSIT RESULT
+ : 356 : * Result of processing a deposit.
+ : 358 : export interface DepositResult {
+ : 359 : /** Whether the deposit was successful */
+ : 368 : /** Escrow allocated (refundable unused) */
+ : 369 : escrow: number;
+ : 371 : /** Total deposit amount */
+ : 372 : depositTokens: number;
+ : 380 : * Result of closing a chat and refunding unused escrow.
+ : 230 : platformFeePercentage: 0.35,    // 35%
+ : 231 : creatorEarningsPercentage: 0.65, // 65%
+ : 28 : escrowAmount: number;
+ : 272 : platformFeePercentage: number; // 0.35
+ : 562 : platformFeePercentage: 0.35, // 35% to Avalo
+ : 563 : creatorEarningsPercentage: 0.65, // 65% to creator
+ : 280 : export const PLATFORM_REVENUE_SHARE = 0.35;
+ : 281 : export const CREATOR_REVENUE_SHARE = 0.65;
+ : 26 : attraction: number;      // 0.35 - like/wishlist history, swipes, dwell time
+ : 34 : attraction: 0.35,
+ : 12 : escrowExpected: number;
+ : 13 : escrowBreakdown: EscrowItem[];
+ : 17 : export interface EscrowItem {
+ : 238 : CHAT: { creator: 0.65, avalo: 0.35 },
+ : 239 : CALLS: { creator: 0.65, avalo: 0.35 },
+ : 242 : OTHER: { creator: 0.65, avalo: 0.35 },
+ : 262 : SPLIT_CHAT_CREATOR: 0.65,
+ : 263 : SPLIT_CHAT_AVALO: 0.35,
+ : 264 : SPLIT_CALLS_CREATOR: 0.65,
+ : 265 : SPLIT_CALLS_AVALO: 0.35,
+ : 270 : SPLIT_OTHER_CREATOR: 0.65,
+ : 271 : SPLIT_OTHER_AVALO: 0.35,
+ : 187 : CREATOR_SHARE: 0.65, // 65% to creator
+ : 188 : AVALO_SHARE: 0.35, // 35% to Avalo
+ : 397 : topical: 0.35,      // Primary factor
+ : 181 : lastDepositAt?: Timestamp;
+ : 447 : CREATOR_SPLIT: 0.65,                 // 65%
+ : 448 : AVALO_SPLIT: 0.35,                   // 35%
+ : 333 : const PLATFORM_FEE_PERCENTAGE = 0.35;
+ : 22 : export interface CryptoDeposit {
+ : 23 : depositId: string;
+ : 28 : escrowAddress: string;
+ : 54 : export interface DepositConfirmationRequest {
+ : 55 : depositId: string;
+ : 75 : ESCROW_MISMATCH = "ESCROW_MISMATCH",
+ : 78 : EXPIRED_DEPOSIT = "EXPIRED_DEPOSIT",
+ : 134 : entry.type === 'CALL_ESCROW_RELEASE'
+ : 29 : /** Tokens currently in escrow / pending release. */
+ : 76 : 'escrow_wallets/{escrowId}',
+ : 137 : | 'CHAT_DEPOSIT'
+ : 151 : | 'CALL_ESCROW_RESERVE'
+ : 152 : | 'CALL_ESCROW_RELEASE'
+ : 334 : type: 'PURCHASE' | 'CHAT_REFUND' | 'CALENDAR_REFUND' | 'CALL_ESCROW_RELEASE';
+ : 603 : t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+ : 79 : activeEscrows?: number;
+ : 82 : totalEscrowTokens?: number;
+ : 214 : // Check if can delete (no active escrows, bookings, withdrawals)
+ : 332 : * - No active escrows
+ : 409 : * - Active chat escrows
+ : 420 : // Check active chat escrows
+ : 423 : .where('state', 'in', ['FREE_ACTIVE', 'PAID_ACTIVE', 'AWAITING_DEPOSIT'])
+ : 426 : let totalEscrow = 0;
+ : 430 : totalEscrow += chat.billing?.escrowBalance || 0;
+ : 436 : details.activeEscrows = activeChatsSnap.size;
+ : 437 : details.totalEscrowTokens = totalEscrow;
+ : 135 : const calleeEarnings = Math.floor(tokensCharged * 0.65);
+ : 438 : // This would integrate with existing dispute/escrow/payout modules
+ : 256 : .where('state', 'in', ['FREE_ACTIVE', 'PAID_ACTIVE', 'AWAITING_DEPOSIT'])
+ : 36 : const WORDS_PER_TOKEN_ROYAL = 7;
+ : 37 : const WORDS_PER_TOKEN_STANDARD = 11;
+ : 38 : const CHAT_DEPOSIT_TOKENS = 100;
+ : 114 : .where('state', 'in', ['FREE_ACTIVE', 'PAID_ACTIVE', 'AWAITING_DEPOSIT'])
+ : 127 : const wordsPerToken = isRoyal ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD;
+ : 140 : escrowBalance: 0,
+ : 237 : state: 'AWAITING_DEPOSIT',
+ : 245 : error: 'DEPOSIT_REQUIRED',
+ : 246 : message: `Free welcome messages used. Deposit ${CHAT_DEPOSIT_TOKENS} tokens to continue chatting.`,
+ : 247 : required: CHAT_DEPOSIT_TOKENS,
+ : 271 : // If paid and insufficient escrow, return error
+ : 272 : if (!hasFreeMessages && tokensCost > chat.billing.escrowBalance) {
+ : 278 : message: 'Insufficient escrow balance',
+ : 331 : chatUpdates['billing.escrowBalance'] = increment(-tokensCost);
+ : 412 : * Process deposit for AI chat
+ : 414 : export async function processAiChatDeposit(
+ : 417 : ): Promise<{ success: boolean; escrowAmount: number; platformFee: number }> {
+ : 434 : if (chat.state !== 'AWAITING_DEPOSIT') {
+ : 435 : throw new HttpsError('failed-precondition', 'Chat does not require deposit');
+ : 443 : if (!wallet || wallet.balance < CHAT_DEPOSIT_TOKENS) {
+ : 448 : const platformFee = Math.ceil(CHAT_DEPOSIT_TOKENS * (PLATFORM_FEE_PERCENT / 100));
+ : 449 : const escrowAmount = CHAT_DEPOSIT_TOKENS - platformFee;
+ : 451 : // Process deposit in transaction
+ : 455 : balance: increment(-CHAT_DEPOSIT_TOKENS),
+ : 456 : pending: increment(escrowAmount), // Escrow goes to pending
+ : 462 : 'billing.escrowBalance': escrowAmount,
+ : 463 : 'deposit': {
+ : 464 : amount: CHAT_DEPOSIT_TOKENS,
+ : 466 : escrowAmount,
+ : 485 : escrowAmount,
+ : 491 : * Close AI chat and refund remaining escrow
+ : 512 : const remainingEscrow = chat.billing.escrowBalance || 0;
+ : 516 : // Refund remaining escrow
+ : 517 : if (remainingEscrow > 0) {
+ : 520 : balance: increment(remainingEscrow),
+ : 521 : pending: increment(-remainingEscrow),
+ : 529 : amount: remainingEscrow,
+ : 538 : 'billing.escrowBalance': 0,
+ : 544 : return { refunded: remainingEscrow };
+ : 554 : processAiChatDeposit,
+ : 24 : const AI_WORDS_PER_TOKEN = 7; // AI avatars use Royal rate (owner benefit)
+ : 405 : const creatorShare = Math.floor(tokensCharged * 0.65); // 65%
+ : 340 : * Start AI Chat (No deposit, subscription-based)
+ : 430 : // Create AI chat (no deposit required)
+ : 59 : CHAT_DEPOSIT_TOKENS: 100,    // Required deposit for 1:1 chat
+ : 895 : requiresDeposit: true,
+ : 896 : depositAmount: ARENA_CONFIG.CHAT_DEPOSIT_TOKENS,
+ : 33 : escrowTokens: number;
+ : 117 : const escrowTokens = priceTokens - platformFeeTokens;
+ : 133 : pending: increment(escrowTokens),
+ : 150 : escrowTokens,
+ : 189 : escrowTokens,
+ : 302 : earnerShareTokens: booking.payment.escrowTokens,
+ : 385 : earnerShare: booking.payment.escrowTokens,
+ : 472 : // If any method is verified, release escrow to creator
+ : 477 : // Release escrow to creator
+ : 486 : balance: increment(booking.payment.escrowTokens),
+ : 487 : earned: increment(booking.payment.escrowTokens),
+ : 499 : pending: increment(-booking.payment.escrowTokens),
+ : 509 : amountTokens: booking.payment.escrowTokens,
+ : 512 : creatorTokens: booking.payment.escrowTokens,
+ : 32 : const EARNER_SPLIT = 0.65;  // 65% to callee (creator/earner)
+ : 33 : const AVALO_SPLIT = 0.35;   // 35% to Avalo
+ : 14 : * - pack242 deposit modifiers (REMOVED — use earner config)
+ : 34 : DepositResult,
+ : 42 : WORDS_PER_TOKEN_STANDARD,
+ : 43 : WORDS_PER_TOKEN_ROYAL,
+ : 45 : ESCROW_PCT,
+ : 46 : MIN_DEPOSIT_TOKENS,
+ : 47 : DEFAULT_DEPOSIT_TOKENS,
+ : 286 : * If both users have exhausted their free counters → AWAITING_DEPOSIT.
+ : 293 : * @returns 'allowed' if the message can proceed, 'blocked' if deposit required,
+ : 294 : *          'transition' if this message triggered the transition to AWAITING_DEPOSIT
+ : 311 : if (chat.state === 'AWAITING_DEPOSIT') {
+ : 333 : state: 'AWAITING_DEPOSIT' as CanonicalChatState,
+ : 356 : state: 'AWAITING_DEPOSIT' as CanonicalChatState,
+ : 366 : // D) DEPOSIT + ESCROW
+ : 370 : * Process a deposit from the payer to start a paid session.
+ : 372 : * Deposit = max(100, earnerConfiguredDepositTokensForNextSession)
+ : 374 : * Escrow = 65% (refundable unused portion)
+ : 376 : * Transition: AWAITING_DEPOSIT → PAID_ACTIVE
+ : 379 : * @param payerId - The user making the deposit (must be the payer)
+ : 380 : * @param earnerConfig - The earner's deposit/multiplier config
+ : 382 : * @returns DepositResult with session details
+ : 384 : export async function processDeposit(
+ : 389 : ): Promise<DepositResult> {
+ : 392 : // Calculate deposit amount: max(100, earner configured)
+ : 393 : const earnerConfigDeposit = earnerConfig?.depositTokensForNextSession ?? DEFAULT_DEPOSIT_TOKENS;
+ : 394 : const depositTokens = Math.max(MIN_DEPOSIT_TOKENS, earnerConfigDeposit);
+ : 397 : const platformFee = Math.floor(depositTokens * PLATFORM_FEE_PCT / 100);
+ : 398 : const escrow = depositTokens - platformFee; // Remainder goes to escrow
+ : 411 : const wordsPerToken = earnerIsRoyal ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD;
+ : 423 : if (chat.state !== 'AWAITING_DEPOSIT') {
+ : 424 : throw new ChatEngineError('failed-precondition', `Chat ${chatId} is not in AWAITING_DEPOSIT state (current: ${chat.state})`);
+ : 440 : if (payerBalance < depositTokens) {
+ : 441 : throw new ChatEngineError('failed-precondition', `Insufficient balance: ${payerBalance} < ${depositTokens}`);
+ : 446 : balance: increment(-depositTokens),
+ : 466 : depositTokens,
+ : 473 : escrowRemainingTokens: escrow,
+ : 495 : type: 'CHAT_DEPOSIT',
+ : 496 : amountTokens: -depositTokens,
+ : 499 : escrowTokens: escrow,
+ : 512 : logger.info(`Deposit processed: chat=${chatId}, deposit=${depositTokens}, fee=${platformFee}, escrow=${escrow}, multiplier=${burnMultiplier}`);
+ : 518 : escrow,
+ : 519 : depositTokens,
+ : 588 : escrowExhausted: false,
+ : 600 : // Cap at remaining escrow
+ : 601 : if (tokensToConsume > currentState.escrowRemainingTokens) {
+ : 602 : tokensToConsume = currentState.escrowRemainingTokens;
+ : 610 : // 65% to earner, 35% to Avalo (from consumed escrow)
+ : 619 : const escrowExhausted = (currentState.escrowRemainingTokens - tokensToConsume) <= 0;
+ : 623 : escrowRemainingTokens: currentState.escrowRemainingTokens - tokensToConsume,
+ : 637 : escrowExhausted,
+ : 690 : escrowExhausted: false,
+ : 704 : escrowExhausted: false,
+ : 733 : // Credit Avalo from escrow consumption
+ : 769 : // If escrow exhausted, transition to AWAITING_DEPOSIT (ready for re-deposit)
+ : 770 : if (result.escrowExhausted) {
+ : 772 : state: 'AWAITING_DEPOSIT' as CanonicalChatState,
+ : 774 : logger.info(`Escrow exhausted: chat=${chatId}, transitioning to AWAITING_DEPOSIT`);
+ : 815 : * Earner sets deposit tokens for their NEXT paid session.
+ : 819 : * @param depositTokens - The desired deposit amount
+ : 821 : export async function setDepositForNextSession(
+ : 823 : depositTokens: number
+ : 825 : if (typeof depositTokens !== 'number' || depositTokens < MIN_DEPOSIT_TOKENS) {
+ : 828 : `Deposit must be at least ${MIN_DEPOSIT_TOKENS} tokens, got ${depositTokens}`
+ : 834 : depositTokensForNextSession: depositTokens,
+ : 838 : logger.info(`Deposit set: user=${userId}, depositTokens=${depositTokens} (next session)`);
+ : 847 : * Refunds unused escrow to payer.
+ : 888 : // If there's an active paid session, refund remaining escrow
+ : 889 : if (chat.paidSession && chat.paidSession.billingState.escrowRemainingTokens > 0) {
+ : 890 : refundedTokens = chat.paidSession.billingState.escrowRemainingTokens;
+ : 921 : // Zero out escrow in billing state
+ : 923 : 'paidSession.billingState.escrowRemainingTokens': 0,
+ : 950 : * and expires them with escrow refund.
+ : 958 : // Expire active chats (FREE_ACTIVE, AWAITING_DEPOSIT, PAID_ACTIVE)
+ : 959 : const activeStates: CanonicalChatState[] = ['FREE_ACTIVE', 'AWAITING_DEPOSIT', 'PAID_ACTIVE'];
+ : 980 : // Refund remaining escrow if any
+ : 981 : if (freshChat.paidSession && freshChat.paidSession.billingState.escrowRemainingTokens > 0) {
+ : 982 : const refund = freshChat.paidSession.billingState.escrowRemainingTokens;
+ : 1008 : 'paidSession.billingState.escrowRemainingTokens': 0,
+ : 1078 : depositTokensForNextSession: userData?.chatEarnerConfig?.depositTokensForNextSession ?? DEFAULT_DEPOSIT_TOKENS,
+ : 19 : * 5. pack242DynamicChatPricing.ts deposit modifiers → REMOVED
+ : 160 : // DISABLED: pack242 deposit modifiers
+ : 164 : * @deprecated REMOVED — pack242 deposit modifiers are eliminated.
+ : 166 : * Deposit is now: max(100, earnerConfiguredDepositTokensForNextSession)
+ : 167 : * configured via setDepositForNextSession in canonical-chat-engine.ts.
+ : 177 : 'Deposit is now max(100, earnerConfiguredDepositTokensForNextSession). ' +
+ : 178 : 'Use setDepositForNextSession from canonical-chat-engine.ts.'
+ : 303 : platformFee = Math.floor(challenge.entryTokens * 0.35);
+ : 21 : * - FREE_A/FREE_B modes → REMOVED (use FREE_ACTIVE/AWAITING_DEPOSIT/PAID_ACTIVE)
+ : 22 : * - pack242 pricing imports → REMOVED (deposit = max(100, earnerConfig))
+ : 78 : | 'FREE_ACTIVE'           // Free chat (no escrow, no billing)
+ : 79 : | 'AWAITING_DEPOSIT'      // Waiting for initial deposit
+ : 80 : | 'PAID_ACTIVE'           // Active paid chat with escrow
+ : 90 : needsEscrow: boolean;
+ : 115 : const WORDS_PER_TOKEN_ROYAL = 7;
+ : 116 : const WORDS_PER_TOKEN_STANDARD = 11;
+ : 120 : const CHAT_DEPOSIT_TOKENS = 100;
+ : 121 : const PLATFORM_FEE_PERCENT = 35; // 35% to Avalo, 65% to escrow
+ : 160 : wordsPerToken: userA.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 162 : needsEscrow: true,
+ : 171 : wordsPerToken: userB.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 173 : needsEscrow: true,
+ : 196 : wordsPerToken: woman.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 198 : needsEscrow: true,
+ : 210 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 212 : needsEscrow: false,
+ : 221 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 223 : needsEscrow: false,
+ : 232 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 234 : needsEscrow: true,
+ : 248 : wordsPerToken: userA.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 250 : needsEscrow: true,
+ : 259 : wordsPerToken: userB.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 261 : needsEscrow: true,
+ : 271 : wordsPerToken: receiver.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 273 : needsEscrow: true,
+ : 286 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 288 : needsEscrow: false,
+ : 297 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 299 : needsEscrow: false,
+ : 307 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 309 : needsEscrow: true,
+ : 416 : // Normal split: earner gets tokens directly from escrow
+ : 421 : avaloReceives: 0 // Platform fee already taken at deposit
+ : 486 : escrowBalance: 0,
+ : 491 : needsEscrow: roles.needsEscrow,
+ : 592 : needsEscrow: chat.needsEscrow,
+ : 691 : await chatRef.update({ state: 'AWAITING_DEPOSIT' });
+ : 692 : return { allowed: false, reason: 'Free message limit reached. Deposit required.', tokensCost: 0 };
+ : 703 : if (chat.mode === 'PAID' && chat.needsEscrow) {
+ : 704 : await chatRef.update({ state: 'AWAITING_DEPOSIT' });
+ : 705 : return { allowed: false, reason: 'Deposit required to continue chat', tokensCost: 0 };
+ : 722 : // Check escrow balance
+ : 723 : if (chat.billing.escrowBalance < billing.tokensCost) {
+ : 724 : return { allowed: false, reason: 'Insufficient escrow balance', tokensCost: billing.tokensCost };
+ : 727 : // Deduct from escrow and credit earner
+ : 731 : 'billing.escrowBalance': increment(-billing.tokensCost),
+ : 770 : * Handle chat deposit for PAID mode
+ : 773 : export async function processChatDeposit(
+ : 776 : ): Promise<{ success: boolean; escrowAmount: number; platformFee: number; depositAmount: number }> {
+ : 788 : throw new HttpsError('permission-denied', 'Only payer can make deposit');
+ : 796 : const depositAmount = Math.max(pack452EntryTokens, pack242Price);
+ : 797 : const { earnerAmount, platformAmount } = calculatePack242RevenueSplit(depositAmount);
+ : 798 : const escrowAmount = earnerAmount;
+ : 806 : if (!wallet || wallet.tokens < depositAmount) {
+ : 807 : throw new HttpsError('failed-precondition', `Insufficient tokens (need ${depositAmount})`);
+ : 813 : balance: increment(-depositAmount),
+ : 814 : pending: increment(escrowAmount)
+ : 820 : 'billing.escrowBalance': escrowAmount,
+ : 821 : 'deposit': {
+ : 822 : amount: depositAmount,
+ : 824 : escrowAmount,
+ : 836 : metadata: { chatId, purpose: 'platform_fee', entryPrice: depositAmount },
+ : 841 : return { success: true, escrowAmount, platformFee, depositAmount };
+ : 845 : * Close chat and settle remaining escrow
+ : 863 : const remainingEscrow = chat.billing.escrowBalance || 0;
+ : 866 : // Refund remaining escrow to payer
+ : 867 : if (remainingEscrow > 0) {
+ : 870 : balance: increment(remainingEscrow),
+ : 871 : pending: increment(-remainingEscrow)
+ : 879 : amount: remainingEscrow,
+ : 888 : 'billing.escrowBalance': 0,
+ : 928 : return { refundedToPayerPending: remainingEscrow };
+ : 26 : import { CHAT_INITIAL_DEPOSIT_TOKENS, CHAT_FREE_MESSAGES_PER_USER, CHAT_PLATFORM_FEE_PCT, WORDS_PER_TOKEN_STANDARD, WORDS_PER_TOKEN_ROYAL_EARNER, AUTO_RELOAD_THRESHOLD_TOKENS, Gender, ChatStatus, TransactionType } from './config';
+ : 99 : ? WORDS_PER_TOKEN_ROYAL_EARNER
+ : 100 : : WORDS_PER_TOKEN_STANDARD;
+ : 112 : ): Promise<FunctionResponse<{ chatId: string; deposit: any }>> => {
+ : 141 : if (!wallet || wallet.balance < CHAT_INITIAL_DEPOSIT_TOKENS) {
+ : 150 : CHAT_INITIAL_DEPOSIT_TOKENS * (CHAT_PLATFORM_FEE_PCT / 100)
+ : 152 : const escrow = CHAT_INITIAL_DEPOSIT_TOKENS - platformFee;
+ : 160 : balance: increment(-CHAT_INITIAL_DEPOSIT_TOKENS),
+ : 161 : pending: increment(escrow),
+ : 170 : deposit: {
+ : 171 : amount: CHAT_INITIAL_DEPOSIT_TOKENS,
+ : 173 : escrow: escrow,
+ : 178 : currentBalance: escrow,
+ : 220 : deposit: {
+ : 221 : amount: CHAT_INITIAL_DEPOSIT_TOKENS,
+ : 223 : escrow,
+ : 302 : // Check escrow balance
+ : 318 : "Insufficient escrow balance"
+ : 322 : // Deduct from escrow and credit earner
+ : 426 : * Close chat manually (refund unused escrow)
+ : 462 : // Refund escrow to payer
+ : 352 : platformFee = Math.floor(club.entryTokens * 0.35);
+ : 12 : export const CHAT_INITIAL_DEPOSIT_TOKENS = 100;
+ : 15 : export const CHAT_ESCROW_PCT = 65; // 65% to escrow for receiver
+ : 18 : export const WORDS_PER_TOKEN_STANDARD = 11;
+ : 19 : export const WORDS_PER_TOKEN_ROYAL_EARNER = 7;
+ : 30 : export const CALENDAR_ESCROW_PCT = 80; // 80% to creator
+ : 24 : CREATOR_SHARE: 0.65,    // 65% to creator
+ : 25 : AVALO_COMMISSION: 0.35, // 35% to Avalo
+ : 216 : commissionRate: 0.65,
+ : 45 : chatMessages: { creator: 0.65, platform: 0.35 },
+ : 202 : const PLATFORM_FEE_PERCENTAGE = 0.35; // 35%
+ : 567 : 'Cyberstalking Hotline: 1-800-656-4673',
+ : 149 : escrowAmount: number;
+ : 618 : escrowAmount: hostEarning,
+ : 645 : * Complete paid time booking and release escrow
+ : 701 : const refundAmount = booking.escrowAmount;
+ : 113 : const PLATFORM_FEE_PERCENTAGE = 0.35;
+ : 114 : const CREATOR_EARNINGS_PERCENTAGE = 0.65;
+ : 137 : const significantTypes = ['CHAT_DEPOSIT', 'GIFT_SENT', 'PREMIUM_STORY', 'BOOKING_PAID'];
+ : 454 : w_match: 0.35, // Increase match weight for search
+ : 35 : escrowTokens?: number;
+ : 206 : if (context.escrowTokens) {
+ : 207 : actions.tokensToRefund = Math.floor(context.escrowTokens * 0.5);
+ : 208 : actions.internalNotes = `Partial escrow refund: ${actions.tokensToRefund} tokens.`;
+ : 213 : if (context.escrowTokens) {
+ : 214 : actions.tokensToRefund = context.escrowTokens;
+ : 215 : actions.internalNotes = `Full escrow refund: ${actions.tokensToRefund} tokens.`;
+ : 560 : context.escrowTokens = reservation?.escrowTokens;
+ : 130 : DEMAND_DROP_THRESHOLD: 0.65, // 65% drop triggers fallback
+ : 135 : const EARNER_SHARE = 0.65; // 65%
+ : 136 : const PLATFORM_SHARE = 0.35; // 35%
+ : 192 : NG: 0.35,
+ : 849 : const platformFee = Math.floor(priceTokens * 0.35);
+ : 969 : const platformFee = Math.floor(priceTokens * 0.35);
+ : 990 : // Create session (tokens in escrow until completion)
+ : 872 : depositPaid: false,
+ : 108 : releaseEscrowIncremental,
+ : 109 : autoRefundInactiveEscrows,
+ : 12 : * - NO deposit required (unlike chat)
+ : 293 : const escrowAmount = Math.floor(price * 0.8);
+ : 316 : escrowAmount,
+ : 336 : wallet_locked: admin.firestore.FieldValue.increment(escrowAmount),
+ : 348 : escrowAmount,
+ : 409 : tokens: admin.firestore.FieldValue.increment(booking.escrowAmount),
+ : 417 : wallet_locked: admin.firestore.FieldValue.increment(-booking.escrowAmount),
+ : 605 : tokens: admin.firestore.FieldValue.increment(booking.escrowAmount),
+ : 610 : wallet_locked: admin.firestore.FieldValue.increment(-booking.escrowAmount),
+ : 624 : tokensAmount: booking.escrowAmount,
+ : 5 : * - Token-based booking (35% Avalo fee + 65% escrow)
+ : 30 : ESCROW_PERCENT: 65,                // 65% held in escrow for creator
+ : 94 : escrowAmount: number;       // 65% held in escrow
+ : 95 : escrowStatus: 'HELD' | 'RELEASED' | 'REFUNDED';
+ : 258 : * User books a meeting slot (with payment and escrow)
+ : 304 : // Calculate fees and escrow
+ : 308 : const escrowAmount = meeting.priceTokens - platformFee;
+ : 343 : // Create booking with escrow
+ : 352 : escrowAmount,
+ : 353 : escrowStatus: 'HELD',
+ : 360 : // Record escrow transaction
+ : 361 : const escrowTransactionRef = db.collection('transactions').doc();
+ : 362 : transaction.set(escrowTransactionRef, {
+ : 363 : transactionId: escrowTransactionRef.id,
+ : 364 : type: 'meeting_escrow_hold',
+ : 367 : amount: escrowAmount,
+ : 386 : `Meeting booked: ${meetingId} by ${bookerId}. Escrow: ${escrowAmount} tokens, Fee: ${platformFee} tokens`
+ : 554 : // Release escrow to creator
+ : 555 : await releaseEscrowAfterCompletion(meetingId, transaction);
+ : 572 : * Release escrow to creator after meeting completion
+ : 574 : async function releaseEscrowAfterCompletion(
+ : 582 : .where('escrowStatus', '==', 'HELD')
+ : 587 : logger.warn(`No held escrow found for meeting ${meetingId}`);
+ : 597 : tokenBalance: FieldValue.increment(booking.escrowAmount),
+ : 603 : escrowStatus: 'RELEASED',
+ : 611 : type: 'meeting_escrow_release',
+ : 614 : amount: booking.escrowAmount,
+ : 624 : `Escrow released: ${booking.escrowAmount} tokens to ${booking.creatorId} for meeting ${meetingId}`
+ : 679 : if (booking.escrowStatus === 'RELEASED') {
+ : 682 : 'Cannot refund - escrow already released'
+ : 686 : if (booking.escrowStatus === 'REFUNDED') {
+ : 691 : let refundAmount = booking.escrowAmount;
+ : 777 : escrowStatus: 'REFUNDED',
+ : 56 : DEPOSIT_CONFIRMATION = "deposit_confirmation",
+ : 65 : CHAT_ESCROW_LOW = "chat_escrow_low",
+ : 126 : if (chat.state === 'AWAITING_DEPOSIT') {
+ : 734 : const refundAmount = booking?.escrowAmount || 0; // Full earner share
+ : 781 : const earnerShare = booking?.escrowAmount || 0;
+ : 26 : const CREATOR_SPLIT = 0.65; // 65% to creator
+ : 27 : const PLATFORM_SPLIT = 0.35; // 35% to platform
+ : 619 : const creatorAmount = Math.floor(grossTokens * 0.65);
+ : 630 : const platformAmount = Math.floor(grossTokens * 0.35); // 35% to Avalo (fixed)
+ : 85 : const platformAmount = Math.floor(grossTokens * 0.35);
+ : 402 : device: 0.35,
+ : 338 : (interestMatch * 0.35) +
+ : 110 : const riskScore = Math.min(1.0, relatedUserIds.length * 0.35);
+ : 140 : confidence: detected ? 0.8 + Math.random() * 0.2 : 0.35,
+ : 10 : import { getUserEscrowBalance } from './pack147-escrow-engine';
+ : 188 : * Get user's escrow balance
+ : 190 : export const pack147_getEscrowBalance = onCall(
+ : 199 : const balance = await getUserEscrowBalance(uid);
+ : 207 : logger.error('Get escrow balance failed:', error);
+ : 208 : throw new HttpsError('internal', 'Failed to retrieve escrow balance');
+ : 441 : // Get active escrows count
+ : 442 : const activeEscrows = await db.collection('escrow_wallets')
+ : 467 : escrows: {
+ : 468 : active: activeEscrows.data().count
+ : 2 : * PACK 147 — Escrow Engine
+ : 4 : * Handles payment escrow for all token-based transactions.
+ : 19 : EscrowWallet,
+ : 20 : EscrowStatus,
+ : 30 : const PLATFORM_FEE_PERCENTAGE = 0.35;
+ : 31 : const RECIPIENT_PERCENTAGE = 0.65;
+ : 34 : // ESCROW FUNCTIONS
+ : 38 : * Open escrow wallet for a transaction
+ : 43 : * - Creates escrow record
+ : 44 : * - Deducts tokens from payer (held in escrow)
+ : 46 : export async function openEscrow(params: {
+ : 59 : throw new Error('Invalid escrow amount');
+ : 81 : const escrowId = generateId();
+ : 83 : // Create escrow record
+ : 84 : const escrowWallet: EscrowWallet = {
+ : 85 : escrowId,
+ : 123 : 'wallet.escrow': FieldValue.increment(totalAmount),
+ : 127 : // Create escrow record
+ : 128 : const escrowRef = db.collection('escrow_wallets').doc(escrowId);
+ : 129 : transaction.set(escrowRef, escrowWallet);
+ : 135 : type: 'escrow_opened',
+ : 139 : escrowId,
+ : 148 : logger.info(`Escrow opened: ${escrowId} - ${totalAmount} tokens for ${transactionType}`);
+ : 150 : return escrowId;
+ : 154 : * Release escrow to recipient
+ : 157 : * - Escrow must be in HELD status
+ : 165 : export async function releaseEscrow(
+ : 166 : escrowId: string,
+ : 170 : const escrowRef = db.collection('escrow_wallets').doc(escrowId);
+ : 171 : const escrowSnap = await escrowRef.get();
+ : 173 : if (!escrowSnap.exists) {
+ : 174 : throw new Error('Escrow not found');
+ : 177 : const escrow = escrowSnap.data() as EscrowWallet;
+ : 179 : if (escrow.status !== 'HELD') {
+ : 180 : throw new Error(`Cannot release escrow in status: ${escrow.status}`);
+ : 185 : .where('escrowId', '==', escrowId)
+ : 191 : throw new Error('Cannot release escrow: active dispute exists');
+ : 196 : // Update escrow status
+ : 197 : transaction.update(escrowRef, {
+ : 205 : const recipientRef = db.collection('users').doc(escrow.recipientId);
+ : 207 : 'wallet.balance': FieldValue.increment(escrow.recipientAmount),
+ : 208 : 'wallet.earned': FieldValue.increment(escrow.recipientAmount),
+ : 209 : 'wallet.escrow': FieldValue.increment(-escrow.totalAmount),
+ : 216 : balance: FieldValue.increment(escrow.platformFee),
+ : 224 : type: 'escrow_released',
+ : 225 : uid: escrow.recipientId,
+ : 226 : amount: escrow.recipientAmount,
+ : 228 : escrowId,
+ : 229 : transactionType: escrow.transactionType,
+ : 230 : transactionId: escrow.transactionId,
+ : 241 : amount: escrow.platformFee,
+ : 243 : escrowId,
+ : 244 : transactionType: escrow.transactionType,
+ : 245 : fromUserId: escrow.payerId
+ : 251 : logger.info(`Escrow released: ${escrowId} - ${escrow.recipientAmount} to recipient, ${escrow.platformFee} to platform`);
+ : 255 : * Refund escrow to payer
+ : 262 : export async function refundEscrow(
+ : 263 : escrowId: string,
+ : 268 : const escrowRef = db.collection('escrow_wallets').doc(escrowId);
+ : 269 : const escrowSnap = await escrowRef.get();
+ : 271 : if (!escrowSnap.exists) {
+ : 272 : throw new Error('Escrow not found');
+ : 275 : const escrow = escrowSnap.data() as EscrowWallet;
+ : 277 : if (escrow.status !== 'HELD' && escrow.status !== 'DISPUTED') {
+ : 278 : throw new Error(`Cannot refund escrow in status: ${escrow.status}`);
+ : 281 : if (refundAmount <= 0 || refundAmount > escrow.totalAmount) {
+ : 287 : // Update escrow status
+ : 288 : transaction.update(escrowRef, {
+ : 297 : const payerRef = db.collection('users').doc(escrow.payerId);
+ : 300 : 'wallet.escrow': FieldValue.increment(-escrow.totalAmount),
+ : 305 : if (refundAmount < escrow.totalAmount) {
+ : 306 : const remainingAmount = escrow.totalAmount - refundAmount;
+ : 311 : const recipientRef = db.collection('users').doc(escrow.recipientId);
+ : 330 : type: 'escrow_refunded',
+ : 331 : uid: escrow.payerId,
+ : 334 : escrowId,
+ : 335 : transactionType: escrow.transactionType,
+ : 336 : transactionId: escrow.transactionId,
+ : 343 : logger.info(`Escrow refunded: ${escrowId} - ${refundAmount} tokens returned to payer`);
+ : 347 : * Mark escrow as disputed (freezes it until resolution)
+ : 349 : export async function disputeEscrow(
+ : 350 : escrowId: string,
+ : 354 : const escrowRef = db.collection('escrow_wallets').doc(escrowId);
+ : 355 : const escrowSnap = await escrowRef.get();
+ : 357 : if (!escrowSnap.exists) {
+ : 358 : throw new Error('Escrow not found');
+ : 361 : const escrow = escrowSnap.data() as EscrowWallet;
+ : 363 : if (escrow.status !== 'HELD') {
+ : 364 : throw new Error(`Cannot dispute escrow in status: ${escrow.status}`);
+ : 367 : await escrowRef.update({
+ : 373 : logger.info(`Escrow disputed: ${escrowId}`);
+ : 377 : * Get escrow by transaction ID
+ : 379 : export async function getEscrowByTransaction(
+ : 382 : ): Promise<EscrowWallet | null> {
+ : 384 : const snapshot = await db.collection('escrow_wallets')
+ : 394 : return snapshot.docs[0].data() as EscrowWallet;
+ : 398 : * Check if escrow can be refunded (within refund window)
+ : 400 : export async function canRefundEscrow(escrowId: string): Promise<{
+ : 405 : const escrowRef = db.collection('escrow_wallets').doc(escrowId);
+ : 406 : const escrowSnap = await escrowRef.get();
+ : 408 : if (!escrowSnap.exists) {
+ : 409 : return { canRefund: false, reason: 'Escrow not found' };
+ : 412 : const escrow = escrowSnap.data() as EscrowWallet;
+ : 414 : if (escrow.status !== 'HELD') {
+ : 415 : return { canRefund: false, reason: `Escrow status is ${escrow.status}` };
+ : 419 : const releaseWindowEnd = escrow.releaseWindowEnd.toMillis();
+ : 429 : * Auto-release expired escrows (scheduled job)
+ : 431 : export async function autoReleaseExpiredEscrows(): Promise<number> {
+ : 435 : const snapshot = await db.collection('escrow_wallets')
+ : 445 : await releaseEscrow(doc.id, 'auto_release_timeout');
+ : 448 : logger.error(`Failed to auto-release escrow ${doc.id}:`, error);
+ : 453 : logger.info(`Auto-released ${releasedCount} expired escrows`);
+ : 460 : * Get escrow status for user (total held in escrow)
+ : 462 : export async function getUserEscrowBalance(userId: string): Promise<{
+ : 469 : const payerSnapshot = await db.collection('escrow_wallets')
+ : 481 : const recipientSnapshot = await db.collection('escrow_wallets')
+ : 139 : * Create escrow for paid chat message
+ : 141 : export async function createChatEscrow(params: {
+ : 148 : const { openEscrow } = await import('./pack147-escrow-engine');
+ : 150 : return await openEscrow({
+ : 163 : * Release chat escrow when message delivered
+ : 165 : export async function releaseChatEscrow(messageId: string): Promise<void> {
+ : 167 : const { getEscrowByTransaction, releaseEscrow } = await import('./pack147-escrow-engine');
+ : 169 : const escrow = await getEscrowByTransaction(messageId, 'PAID_CHAT');
+ : 170 : if (escrow && escrow.status === 'HELD') {
+ : 171 : await releaseEscrow(escrow.escrowId, 'message_delivered');
+ : 176 : * Create escrow for paid call
+ : 178 : export async function createCallEscrow(params: {
+ : 185 : const { openEscrow } = await import('./pack147-escrow-engine');
+ : 187 : return await openEscrow({
+ : 200 : * Release call escrow when call completed
+ : 202 : export async function releaseCallEscrow(callId: string): Promise<void> {
+ : 204 : const { getEscrowByTransaction, releaseEscrow } = await import('./pack147-escrow-engine');
+ : 206 : const escrow = await getEscrowByTransaction(callId, 'PAID_CALL');
+ : 207 : if (escrow && escrow.status === 'HELD') {
+ : 208 : await releaseEscrow(escrow.escrowId, 'call_completed');
+ : 217 : * Create escrow for digital product purchase
+ : 219 : export async function createDigitalProductEscrow(params: {
+ : 226 : const { openEscrow } = await import('./pack147-escrow-engine');
+ : 228 : return await openEscrow({
+ : 241 : * Release digital product escrow after download
+ : 243 : export async function releaseDigitalProductEscrow(purchaseId: string): Promise<void> {
+ : 245 : const { getEscrowByTransaction, releaseEscrow } = await import('./pack147-escrow-engine');
+ : 247 : const escrow = await getEscrowByTransaction(purchaseId, 'DIGITAL_PRODUCT');
+ : 248 : if (escrow && escrow.status === 'HELD') {
+ : 249 : await releaseEscrow(escrow.escrowId, 'file_delivered_and_downloaded');
+ : 258 : * Create escrow for mentorship session
+ : 260 : export async function createMentorshipEscrow(params: {
+ : 267 : const { openEscrow } = await import('./pack147-escrow-engine');
+ : 269 : return await openEscrow({
+ : 282 : * Release mentorship escrow when session completed
+ : 284 : export async function releaseMentorshipEscrow(sessionId: string): Promise<void> {
+ : 286 : const { getEscrowByTransaction, releaseEscrow } = await import('./pack147-escrow-engine');
+ : 288 : const escrow = await getEscrowByTransaction(sessionId, 'MENTORSHIP_SESSION');
+ : 289 : if (escrow && escrow.status === 'HELD') {
+ : 290 : await releaseEscrow(escrow.escrowId, 'session_completed');
+ : 299 : * Create escrow for event ticket
+ : 301 : export async function createEventEscrow(params: {
+ : 308 : const { openEscrow } = await import('./pack147-escrow-engine');
+ : 310 : return await openEscrow({
+ : 323 : * Release event escrow when event starts
+ : 325 : export async function releaseEventEscrow(ticketId: string): Promise<void> {
+ : 327 : const { getEscrowByTransaction, releaseEscrow } = await import('./pack147-escrow-engine');
+ : 329 : const escrow = await getEscrowByTransaction(ticketId, 'EVENT_TICKET');
+ : 330 : if (escrow && escrow.status === 'HELD') {
+ : 331 : await releaseEscrow(escrow.escrowId, 'event_started');
+ : 340 : const { getEscrowByTransaction, refundEscrow } = await import('./pack147-escrow-engine');
+ : 342 : const escrow = await getEscrowByTransaction(ticketId, 'EVENT_TICKET');
+ : 343 : if (escrow && escrow.status === 'HELD') {
+ : 344 : await refundEscrow(escrow.escrowId, escrow.totalAmount, 'event_cancelled_by_organizer');
+ : 353 : * Create escrow for gated club access
+ : 355 : export async function createClubEscrow(params: {
+ : 362 : const { openEscrow } = await import('./pack147-escrow-engine');
+ : 364 : return await openEscrow({
+ : 377 : * Release club escrow after 24h access
+ : 379 : export async function releaseClubEscrow(accessId: string): Promise<void> {
+ : 381 : const { getEscrowByTransaction, releaseEscrow } = await import('./pack147-escrow-engine');
+ : 383 : const escrow = await getEscrowByTransaction(accessId, 'GATED_CLUB');
+ : 384 : if (escrow && escrow.status === 'HELD') {
+ : 385 : await releaseEscrow(escrow.escrowId, 'access_granted_24h');
+ : 403 : const { getEscrowByTransaction, refundEscrow } = await import('./pack147-escrow-engine');
+ : 405 : const escrow = await getEscrowByTransaction(params.transactionId, params.transactionType);
+ : 407 : if (escrow && escrow.status === 'HELD') {
+ : 408 : await refundEscrow(
+ : 409 : escrow.escrowId,
+ : 410 : escrow.totalAmount,
+ : 27 : import { getEscrowByTransaction, canRefundEscrow, disputeEscrow, refundEscrow } from './pack147-escrow-engine';
+ : 41 : * - Escrow exists and can be refunded
+ : 62 : // Get escrow
+ : 63 : const escrow = await getEscrowByTransaction(transactionId, transactionType);
+ : 64 : if (!escrow) {
+ : 69 : if (escrow.payerId !== userId) {
+ : 74 : const refundCheck = await canRefundEscrow(escrow.escrowId);
+ : 112 : escrowId: escrow.escrowId,
+ : 116 : recipientId: escrow.recipientId,
+ : 124 : transactionAmount: escrow.totalAmount,
+ : 125 : escrowStatus: escrow.status
+ : 131 : // Mark escrow as disputed
+ : 132 : await disputeEscrow(escrow.escrowId, refundId);
+ : 371 : const escrow = await db.collection('escrow_wallets').doc(refund.escrowId).get();
+ : 372 : const escrowData = escrow.data();
+ : 374 : if (!escrowData) {
+ : 375 : throw new Error('Escrow not found');
+ : 378 : const refundAmount = calculateRefundAmount(escrowData.totalAmount, outcome);
+ : 395 : await refundEscrow(refund.escrowId, refundAmount, `Refund approved: ${outcome}`);
+ : 9 : import { autoReleaseExpiredEscrows } from './pack147-escrow-engine';
+ : 13 : * Auto-release expired escrows
+ : 16 : export const pack147_autoReleaseEscrows = onSchedule(
+ : 24 : const releasedCount = await autoReleaseExpiredEscrows();
+ : 25 : logger.info(`Auto-release job completed: ${releasedCount} escrows released`);
+ : 8 : * - 65/35 split untouched (held in escrow during dispute)
+ : 11 : * - Context-aware escrow windows
+ : 35 : // ESCROW STATUS
+ : 38 : export type EscrowStatus =
+ : 43 : | 'EXPIRED';       // Escrow window expired, auto-released
+ : 115 : * Escrow Wallet - holds payment until conditions met
+ : 117 : export interface EscrowWallet {
+ : 118 : escrowId: string;
+ : 132 : status: EscrowStatus;
+ : 157 : escrowId: string;
+ : 200 : escrowId: string;
+ : 9 : updateLedgerOnEscrowRelease,
+ : 13 : validateLedgerEscrowStatus,
+ : 31 : ValidateLedgerEscrowRequest,
+ : 87 : * Validate ledger entry against escrow status
+ : 89 : export const validateLedgerEscrowStatusEndpoint = functions.https.onCall(async (request) => {
+ : 96 : const result = await validateLedgerEscrowStatus(
+ : 97 : data.escrowId,
+ : 105 : message: result.isValid ? 'Escrow status validated' : 'Escrow status mismatch',
+ : 108 : console.error('Error validating escrow status:', error);
+ : 109 : throw new functions.https.HttpsError('internal', 'Failed to validate escrow status');
+ : 149 : } else if (tx.status === 'pending' || tx.status === 'escrowed') {
+ : 198 : inEscrow: 0,
+ : 492 : * Internal: Update ledger on escrow release (called by payment system)
+ : 494 : export const updateLedgerOnEscrowReleaseEndpoint = functions.https.onCall(async (request) => {
+ : 502 : await updateLedgerOnEscrowRelease(data.transactionId, data.escrowOutcome);
+ : 509 : console.error('Error updating ledger on escrow release:', error);
+ : 209 : let inEscrow = 0;
+ : 240 : case 'escrowed':
+ : 241 : inEscrow += tx.creatorShare;
+ : 270 : inEscrow,
+ : 6 : import { recordLedgerTransaction, updateLedgerOnEscrowRelease, updateLedgerOnDispute } from './pack148-ledger-engine';
+ : 10 : * Integration with PACK 147 (Escrow & Refund System)
+ : 22 : escrowId?: string,
+ : 32 : escrowId,
+ : 46 : escrowId?: string,
+ : 56 : escrowId,
+ : 70 : escrowId?: string,
+ : 80 : escrowId,
+ : 94 : escrowId?: string,
+ : 104 : escrowId,
+ : 118 : escrowId?: string,
+ : 128 : escrowId,
+ : 142 : escrowId?: string,
+ : 152 : escrowId,
+ : 166 : escrowId?: string,
+ : 176 : escrowId,
+ : 212 : escrowId?: string,
+ : 222 : escrowId,
+ : 236 : escrowId?: string,
+ : 246 : escrowId,
+ : 260 : escrowId?: string,
+ : 270 : escrowId,
+ : 298 : * Handle escrow release from PACK 147
+ : 300 : export async function handleEscrowRelease(
+ : 304 : await updateLedgerOnEscrowRelease(
+ : 331 : escrowId?: string,
+ : 341 : escrowId,
+ : 358 : escrowId?: string;
+ : 101 : escrowOutcome: string | undefined,
+ : 116 : escrowOutcome,
+ : 162 : escrowId,
+ : 203 : const payoutEligible = !escrowId; // If no escrow, immediately eligible
+ : 213 : escrowId ? 'escrowed' : undefined,
+ : 232 : escrowId,
+ : 233 : escrowLogicOutcome: escrowId ? 'held' : undefined,
+ : 237 : status: escrowId ? 'escrowed' : 'completed',
+ : 266 : * Update ledger when escrow is released
+ : 268 : export async function updateLedgerOnEscrowRelease(
+ : 270 : escrowOutcome: 'released' | 'refunded'
+ : 288 : escrowOutcome === 'released' ? 'completed' : 'refunded';
+ : 291 : escrowLogicOutcome: escrowOutcome,
+ : 292 : payoutEligible: escrowOutcome === 'released',
+ : 306 : escrowOutcome,
+ : 307 : escrowOutcome === 'released',
+ : 313 : escrowOutcome === 'released' ? 'escrow_released' : 'refund_issued',
+ : 315 : { escrowOutcome, ledgerId: ledgerEntry.id }
+ : 451 : * Validate ledger entry against escrow
+ : 453 : export async function validateLedgerEscrowStatus(
+ : 454 : escrowId: string,
+ : 459 : .where('escrowId', '==', escrowId)
+ : 468 : const isValid = ledgerEntry.escrowLogicOutcome === expectedStatus;
+ : 36 : | 'escrowed'       // Held in escrow
+ : 44 : | 'escrow_created'
+ : 45 : | 'escrow_released'
+ : 72 : // Escrow info (from PACK 147)
+ : 73 : escrowId?: string;
+ : 74 : escrowLogicOutcome?: string;       // 'released' | 'held' | 'refunded'
+ : 113 : escrowOutcome?: string;
+ : 223 : inEscrow: number;
+ : 334 : escrowId?: string;
+ : 345 : export interface ValidateLedgerEscrowRequest {
+ : 346 : escrowId: string;
+ : 350 : export interface ValidateLedgerEscrowResponse {
+ : 441 : export const PLATFORM_FEE_PERCENTAGE = 0.35;  // 35%
+ : 442 : export const CREATOR_SHARE_PERCENTAGE = 0.65; // 65%
+ : 618 : const platformFee = Math.floor(priceTokens * 0.35);
+ : 736 : const platformFee = Math.floor(priceTokens * 0.35);
+ : 66 : const PLATFORM_FEE_PERCENTAGE = 0.35;
+ : 67 : const CREATOR_EARNINGS_PERCENTAGE = 0.65;
+ : 243 : riskScore += 0.35;
+ : 533 : const weight = 0.35;
+ : 567 : escrowProtectionDays: Math.floor(totalScore * 30),
+ : 331 : export const escrowProtectionReview = onSchedule(
+ : 339 : console.log("Starting escrow protection review");
+ : 343 : .where("escrowProtectionDays", ">", 0)
+ : 355 : .where("inEscrow", "==", true)
+ : 360 : const escrowStartDate = earning.escrowStartedAt?.toDate().getTime() || now;
+ : 361 : const daysInEscrow = (now - escrowStartDate) / (1000 * 60 * 60 * 24);
+ : 363 : if (daysInEscrow >= data.escrowProtectionDays) {
+ : 365 : inEscrow: false,
+ : 366 : escrowReleasedAt: Timestamp.now(),
+ : 377 : console.log(`Escrow review complete: ${reviewed} users reviewed, ${released} earnings released`);
+ : 191 : escrowProtectionDays: number;
+ : 464 : platformFeePercentage: 0.35, // 35%
+ : 465 : hostEarningsPercentage: 0.65, // 65%
+ : 331 : const avaloFee = Math.floor(product.priceTokens * 0.35);
+ : 666 : const sellerDeduction = Math.min(refundAmount * 0.65, order.creatorEarnings);
+ : 199 : const earnerShareTokens = booking.payment.escrowTokens;
+ : 493 : const earnerShareTokens = booking.payment.escrowTokens; // 65%
+ : 4 : * Match Priority Score = (Attraction × 0.35)
+ : 505 : // Normalize: 0 overlap = 0.3, 50% overlap = 0.65, 100% overlap = 1.0
+ : 240 : // Score should be 0.3 + (0.5 * 0.7) = 0.65
+ : 241 : expect(score.components.interestProximityScore).toBeCloseTo(0.65, 1);
+ : 368 : // (0.8 * 0.35) + (0.7 * 0.25) + (0.9 * 0.25) + (0.85 * 0.10) + (0.6 * 0.05)
+ : 375 : (mockComponents.attractionScore * 0.35) +
+ : 527 : const earnerShare = 0.65;
+ : 528 : const platformShare = 0.35;
+ : 531 : expect(earnerShare).toBe(0.65);
+ : 532 : expect(platformShare).toBe(0.35);
+ : 852 : const earnerShare = Math.floor((booking?.tokensAmount || 0) * 0.65);
+ : 942 : const earnerShare = Math.floor((booking?.tokensAmount || 0) * 0.65);
+ : 4 : * PACK 242 deposit modifiers are ENTIRELY REMOVED.
+ : 5 : * Deposit is now simply: max(100, earnerConfiguredDepositTokensForNextSession)
+ : 6 : * configured via setDepositForNextSession in canonical-chat-engine.ts.
+ : 15 : * Earners now freely set their deposit amount (min 100 tokens) via
+ : 16 : * setDepositForNextSession. No eligibility gates.
+ : 181 : const EARNER_SHARE = 0.65; // 65%
+ : 182 : const PLATFORM_SHARE = 0.35; // 35%
+ : 430 : total += (data.amount || 0) * 0.65;
+ : 23 : STANDARD_PRICE: 100, // tokens per chat deposit
+ : 26 : WORDS_PER_TOKEN_STANDARD: 11,
+ : 27 : WORDS_PER_TOKEN_ROYAL: 7,
+ : 130 : CHAT_DEPOSIT = 'CHAT_DEPOSIT',
+ : 34 : case TransactionType.CHAT_DEPOSIT:
+ : 35 : validateChatDeposit(request, violations);
+ : 105 : // CHAT DEPOSIT VALIDATION
+ : 108 : function validateChatDeposit(
+ : 119 : message: `Chat deposit below minimum: ${amount} < ${CONTRACT_RULES.CHAT.MIN_PRICE}`,
+ : 131 : message: `Chat deposit above maximum: ${amount} > ${CONTRACT_RULES.CHAT.MAX_PRICE}`,
+ : 167 : ? CONTRACT_RULES.CHAT.WORDS_PER_TOKEN_ROYAL
+ : 168 : : CONTRACT_RULES.CHAT.WORDS_PER_TOKEN_STANDARD;
+ : 604 : corrections.metadata!.wordsPerToken = CONTRACT_RULES.CHAT.WORDS_PER_TOKEN_ROYAL;
+ : 606 : corrections.metadata!.wordsPerToken = CONTRACT_RULES.CHAT.WORDS_PER_TOKEN_STANDARD;
+ : 20 : * Validate chat deposit before processing
+ : 23 : export async function validateChatDeposit(
+ : 29 : transactionType: TransactionType.CHAT_DEPOSIT,
+ : 413 : * Example: Integrate with chat deposit flow
+ : 416 : * await processChatDeposit(chatId, payerId);
+ : 419 : * const validation = await validateChatDeposit(payerId, 100, isRoyal);
+ : 421 : *   await processChatDeposit(chatId, payerId);
+ : 60 : // If message not allowed due to deposit requirement, check if user is in welcome funnel Phase 3
+ : 61 : if (!billingResult.allowed && billingResult.reason?.includes('Deposit required')) {
+ : 139 : * Call this when user makes their first deposit
+ : 141 : export async function onFirstDeposit(
+ : 143 : depositAmount: number,
+ : 144 : depositType: 'chat' | 'general'
+ : 153 : // Only track if this is their first deposit and they haven't converted yet
+ : 155 : await trackFunnelConversion(userId, depositAmount);
+ : 156 : console.log(`User ${userId} converted in welcome funnel: ${depositAmount} tokens`);
+ : 72 : firstDepositAt?: number;
+ : 73 : firstDepositAmount?: number;
+ : 433 : export async function trackFunnelConversion(userId: string, depositAmount: number): Promise<void> {
+ : 446 : 'analytics.firstDepositAt': now,
+ : 447 : 'analytics.firstDepositAmount': depositAmount,
+ : 458 : depositAmount,
+ : 668 : if (funnel.analytics.firstDepositAmount) {
+ : 669 : totalRevenue += funnel.analytics.firstDepositAmount;
+ : 316 : const netCreatorTokens = Math.floor(entryPrice * 0.65); // 65% to creator
+ : 200 : behavior: number;                              // default 0.35
+ : 359 : behavior: 0.35,
+ : 677 : if (chat.mode === 'FREE_B' && chat.state === 'AWAITING_DEPOSIT') {
+ : 68 : event: 'chat_deposit' | 'message_sent' | 'media_unlocked',
+ : 104 : revenueImpact: increment(event === 'chat_deposit' ? 1 : 0.1),
+ : 123 : context: 'free_limit' | 'escrow_low' | 'media_locked'
+ : 141 : escrow_low: "✨ AI can help you write messages that build stronger connections and extend your chats.",
+ : 21 : EscrowItem,
+ : 161 : escrowExpected: 0,
+ : 162 : escrowBreakdown: [],
+ : 205 : // Get escrow (scheduled events, calls, pre-orders)
+ : 206 : const escrowBreakdown = await getEscrowBreakdown(userId);
+ : 207 : const escrowExpected = escrowBreakdown.reduce(
+ : 216 : escrowExpected,
+ : 217 : escrowBreakdown,
+ : 222 : async function getEscrowBreakdown(userId: string): Promise<EscrowItem[]> {
+ : 223 : const escrowItems: EscrowItem[] = [];
+ : 238 : escrowItems.push({
+ : 261 : escrowItems.push({
+ : 271 : return escrowItems.sort(
+ : 8 : const AVALO_COMMISSION = 0.35; // 35% platform commission
+ : 9 : const CREATOR_SHARE = 0.65; // 65% creator earnings
+ : 24 : * - AWAITING_PREPAID state → mapped to AWAITING_DEPOSIT
+ : 60 : | 'AWAITING_PREPAID'      // Waiting for prepaid deposit
+ : 138 : const WORDS_PER_TOKEN_STANDARD = 11;
+ : 139 : const WORDS_PER_TOKEN_ROYAL = 7;
+ : 186 : wordsPerToken: receiver.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 221 : wordsPerToken: female.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 234 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 252 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 265 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 279 : wordsPerToken: participantA.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 292 : wordsPerToken: participantB.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 306 : wordsPerToken: receiver.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 322 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 465 : reason: 'Free messages used. Prepaid deposit required.',
+ : 474 : reason: 'Waiting for prepaid deposit',
+ : 553 : // FUNCTION: Process Prepaid Deposit
+ : 557 : * Handle prepaid bucket deposit
+ : 559 : export async function processPack273Deposit(
+ : 562 : ): Promise<{ success: boolean; escrowAmount: number; platformFee: number }> {
+ : 574 : throw new HttpsError('permission-denied', 'Only payer can make deposit');
+ : 577 : const depositAmount = chat.roles.price;
+ : 578 : const platformFee = Math.floor(depositAmount * (chat.roles.avaloSplit / 100));
+ : 579 : const escrowAmount = depositAmount - platformFee;
+ : 586 : if (!wallet || wallet.balance < depositAmount) {
+ : 587 : throw new HttpsError('failed-precondition', `Insufficient tokens (need ${depositAmount})`);
+ : 592 : const totalWords = escrowAmount * wordsPerToken;
+ : 597 : balance: increment(-depositAmount)
+ : 604 : totalTokens: escrowAmount,
+ : 605 : remainingTokens: escrowAmount,
+ : 610 : deposit: {
+ : 611 : amount: depositAmount,
+ : 613 : escrowAmount,
+ : 632 : return { success: true, escrowAmount, platformFee };
+ : 41 : return { platformShare: 0.35, earnerShare: 0.65 };
+ : 61 : CHAT: { creator: 0.65, avalo: 0.35 },
+ : 66 : MEDIA: { creator: 0.65, avalo: 0.35 },
+ : 67 : DIGITAL_PRODUCT: { creator: 0.65, avalo: 0.35 },
+ : 79 : return REVENUE_SPLIT[source] || { creator: 0.65, avalo: 0.35 };
+ : 85 : const USER_AI_SPLIT = { creator: 0.65, avalo: 0.35 };     // 65/35 split
+ : 232 : requiresDeposit?: boolean;
+ : 311 : requiresDeposit: false
+ : 336 : // For now, return requirement for deposit
+ : 341 : reason: 'Prepaid deposit required',
+ : 342 : requiresDeposit: true
+ : 97 : tokensCreatorShare: Math.floor((earnings?.tokensEarnedChat || 0) * 0.65),
+ : 121 : tokensCreatorShare: Math.floor((earnings?.tokensEarnedOther || 0) * 0.65),
+ : 248 : tokensCreatorShare: Math.floor(earnings.tokensEarnedChat * 0.65),
+ : 272 : tokensCreatorShare: Math.floor(earnings.tokensEarnedOther * 0.65),
+ : 248 : // < 24 hours: No refund (but escrowed amount already held)
+ : 253 : if (refundAmount > 0 && booking.escrowStatus === 'HELD') {
+ : 337 : 'meeting_escrow_hold': 'CALENDAR_BOOKING',
+ : 338 : 'meeting_escrow_release': 'CALENDAR_BOOKING',
+ : 49 : * Refund chat tokens (e.g., unused deposit, early chat end)
+ : 156 : QUALITY: 0.35,      // 35% - Most important for user experience
+ : 57 : state: 'FREE_ACTIVE' | 'AWAITING_DEPOSIT' | 'PAID_ACTIVE' | 'CLOSED';
+ : 69 : escrowBalance: number;
+ : 80 : needsEscrow: boolean;
+ : 82 : deposit?: {
+ : 85 : escrowAmount: number;
+ : 58 : * - Platform fee (35%) is NON-REFUNDABLE (already taken at deposit)
+ : 59 : * - Only refund the unused portion from the 65% escrow
+ : 62 : * - Paid 100 tokens, 35 platform fee, 65 escrow
+ : 65 : * - Refund = (8/11) * bucket_value from escrow
+ : 68 : escrowBalance: number,
+ : 71 : depositAmount: number
+ : 74 : // Calculate how many buckets were implied by the deposit
+ : 75 : // Each bucket costs depositAmount tokens (100 by default)
+ : 76 : const bucketsImplied = 1; // Currently chats are single-deposit model
+ : 88 : // Total unused buckets (what's left in escrow)
+ : 89 : const tokensToRefund = escrowBalance;
+ : 91 : // Platform fee was already retained at deposit (35%)
+ : 92 : const platformFeeRetained = Math.round(depositAmount * 0.35);
+ : 101 : totalUnusedWords: Math.round(escrowBalance * wordsPerToken),
+ : 112 : * Close a chat session and refund any unused escrow.
+ : 121 : * 2. Refund unused escrow to payer
+ : 150 : const remainingEscrow = chat.billing?.escrowBalance || 0;
+ : 153 : const depositAmount = chat.deposit?.amount || 100;
+ : 157 : remainingEscrow,
+ : 160 : depositAmount
+ : 167 : // Refund remaining escrow to payer
+ : 201 : 'billing.escrowBalance': 0,
+ : 224 : * - Paid chat (after deposit): Expire after 72 hours of no messages
+ : 293 : // Also check AWAITING_DEPOSIT state (treat as free for timeout purposes)
+ : 294 : const inactiveAwaitingDepositSnap = await db.collection('chats')
+ : 295 : .where('state', '==', 'AWAITING_DEPOSIT')
+ : 300 : scannedChats += inactiveAwaitingDepositSnap.docs.length;
+ : 302 : for (const chatDoc of inactiveAwaitingDepositSnap.docs) {
+ : 312 : logger.error(`Failed to expire awaiting-deposit chat ${chatDoc.id}:`, error);
+ : 178 : kpi.platformEarnings.chat35 += amountUSD * 0.35;
+ : 74 : creator: 0.65,
+ : 75 : avalo: 0.35
+ : 13 : *   (engagementRate * 0.35)
+ : 37 : engagement: number;      // 0.35 weight
+ : 66 : engagement: 0.35,
+ : 165 : /deposit.*withdraw.*profit/i,
+ : 299 : CREATOR_COMMISSION_RATE: 0.65, // 65% to creator
+ : 300 : AVALO_COMMISSION_RATE: 0.35, // 35% to Avalo
+ : 52 : const earnerReceives = Math.floor(totalTokens * 0.65);  // 65% to earner
+ : 318 : const chatEarnings = tokens * 0.65; // Creator gets 65%
+ : 326 : const voiceEarnings = tokens * 0.65;
+ : 334 : const videoEarnings = tokens * 0.65;
+ : 358 : const aiEarnings = tokens * 0.65;
+ : 289 : totalPlatformRevenueTokens += chatTokens * 0.35;
+ : 297 : totalPlatformRevenueTokens += voiceTokens * 0.35;
+ : 305 : totalPlatformRevenueTokens += videoTokens * 0.35;
+ : 329 : totalPlatformRevenueTokens += aiTokens * 0.35; // Assuming 65/35 split
+ : 597 : const chatEarnings = tokens * 0.65;
+ : 605 : const voiceEarnings = tokens * 0.65;
+ : 613 : const videoEarnings = tokens * 0.65;
+ : 639 : const aiEarnings = tokens * 0.65;
+ : 229 : chat: { creatorShare: 0.65, avaloShare: 0.35 },
+ : 304 : const retentionRateD30 = 0.65; // 65% retention after 30 days
+ : 185 : return { churnRate: 0.05, retentionRate: 0.65 }; // Defaults
+ : 191 : retentionRate: data.day30RetentionRate || 0.65,
+ : 120 : "wallet.deposits.tested": {
+ : 122 : description: "Token deposits tested and functional",
+ : 87 : reviewBombingRisk: 0.65,
+ : 95 : 'CT': 0.0635, // Connecticut
+ : 48 : avgRating: 0.35,
+ : 98 : * 0.35-0.55 CAUTIOUS (A/B limited countries)
+ : 99 : * <0.35     DEFER (Not ready)
+ : 104 : if (readinessScore >= 0.35) return 'CAUTIOUS';
+ : 166 : Readiness.listCountriesByReadiness(0.35, 'CAUTIOUS'),
+ : 337 : if (profile.launchReadiness < 0.35) {
+ : 255 : trustScore: 0.65,
+ : 320 : trustScore: 0.65,
+ : 400 : trustScore: 0.65,
+ : 21 : * - FREE_A/FREE_B modes → REMOVED (use FREE_ACTIVE/AWAITING_DEPOSIT/PAID_ACTIVE)
+ : 22 : * - pack242 pricing imports → REMOVED (deposit = max(100, earnerConfig))
+ : 78 : | 'FREE_ACTIVE'           // Free chat (no escrow, no billing)
+ : 79 : | 'AWAITING_DEPOSIT'      // Waiting for initial deposit
+ : 80 : | 'PAID_ACTIVE'           // Active paid chat with escrow
+ : 90 : needsEscrow: boolean;
+ : 115 : const WORDS_PER_TOKEN_ROYAL = 7;
+ : 116 : const WORDS_PER_TOKEN_STANDARD = 11;
+ : 120 : const CHAT_DEPOSIT_TOKENS = 100;
+ : 121 : const PLATFORM_FEE_PERCENT = 35; // 35% to Avalo, 65% to escrow
+ : 160 : wordsPerToken: userA.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 162 : needsEscrow: true,
+ : 171 : wordsPerToken: userB.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 173 : needsEscrow: true,
+ : 196 : wordsPerToken: woman.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 198 : needsEscrow: true,
+ : 210 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 212 : needsEscrow: false,
+ : 221 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 223 : needsEscrow: false,
+ : 232 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 234 : needsEscrow: true,
+ : 248 : wordsPerToken: userA.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 250 : needsEscrow: true,
+ : 259 : wordsPerToken: userB.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 261 : needsEscrow: true,
+ : 271 : wordsPerToken: receiver.isRoyalMember ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD,
+ : 273 : needsEscrow: true,
+ : 286 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 288 : needsEscrow: false,
+ : 297 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 299 : needsEscrow: false,
+ : 307 : wordsPerToken: WORDS_PER_TOKEN_STANDARD,
+ : 309 : needsEscrow: true,
+ : 416 : // Normal split: earner gets tokens directly from escrow
+ : 421 : avaloReceives: 0 // Platform fee already taken at deposit
+ : 486 : escrowBalance: 0,
+ : 491 : needsEscrow: roles.needsEscrow,
+ : 592 : needsEscrow: chat.needsEscrow,
+ : 691 : await chatRef.update({ state: 'AWAITING_DEPOSIT' });
+ : 692 : return { allowed: false, reason: 'Free message limit reached. Deposit required.', tokensCost: 0 };
+ : 703 : if (chat.mode === 'PAID' && chat.needsEscrow) {
+ : 704 : await chatRef.update({ state: 'AWAITING_DEPOSIT' });
+ : 705 : return { allowed: false, reason: 'Deposit required to continue chat', tokensCost: 0 };
+ : 722 : // Check escrow balance
+ : 723 : if (chat.billing.escrowBalance < billing.tokensCost) {
+ : 724 : return { allowed: false, reason: 'Insufficient escrow balance', tokensCost: billing.tokensCost };
+ : 727 : // Deduct from escrow and credit earner
+ : 731 : 'billing.escrowBalance': increment(-billing.tokensCost),
+ : 770 : * Handle chat deposit for PAID mode
+ : 773 : export async function processChatDeposit(
+ : 776 : ): Promise<{ success: boolean; escrowAmount: number; platformFee: number; depositAmount: number }> {
+ : 788 : throw new HttpsError('permission-denied', 'Only payer can make deposit');
+ : 796 : const depositAmount = Math.max(pack452EntryTokens, pack242Price);
+ : 797 : const { earnerAmount, platformAmount } = calculatePack242RevenueSplit(depositAmount);
+ : 798 : const escrowAmount = earnerAmount;
+ : 806 : if (!wallet || wallet.balance < depositAmount) {
+ : 807 : throw new HttpsError('failed-precondition', `Insufficient tokens (need ${depositAmount})`);
+ : 813 : balance: increment(-depositAmount),
+ : 814 : pending: increment(escrowAmount)
+ : 820 : 'billing.escrowBalance': escrowAmount,
+ : 821 : 'deposit': {
+ : 822 : amount: depositAmount,
+ : 824 : escrowAmount,
+ : 836 : metadata: { chatId, purpose: 'platform_fee', entryPrice: depositAmount },
+ : 841 : return { success: true, escrowAmount, platformFee, depositAmount };
+ : 845 : * Close chat and settle remaining escrow
+ : 863 : const remainingEscrow = chat.billing.escrowBalance || 0;
+ : 866 : // Refund remaining escrow to payer
+ : 867 : if (remainingEscrow > 0) {
+ : 870 : balance: increment(remainingEscrow),
+ : 871 : pending: increment(-remainingEscrow)
+ : 879 : amount: remainingEscrow,
+ : 888 : 'billing.escrowBalance': 0,
+ : 928 : return { refundedToPayerPending: remainingEscrow };
+ : 246 : minConversionRate: 0.35,
+ : 149 : threshold: 0.65,
+ : 4 : * Allows earn_on users to configure how many tokens a payer must deposit
+ : 129 : * Get the effective deposit amount for a new paid chat session.
+ : 132 : * NOTE: This function is called during chat deposit flow.
+ : 137 : * @returns The deposit amount in tokens
+ : 43 : const WORDS_PER_TOKEN_STANDARD = 11;
+ : 46 : const WORDS_PER_TOKEN_ROYAL = 7;
+ : 52 : const PLATFORM_FEE_RATE = 0.35;
+ : 55 : const EARNER_SHARE_RATE = 0.65;
+ : 293 : 'billing.escrowBalance': FieldValue.increment(-totalBurn),
+ : 441 : const wordsPerToken = chatData.billing?.wordsPerToken || WORDS_PER_TOKEN_STANDARD;
+ : 10 : * - acceptPremiumOffer → REMOVED (multiplier applied at next deposit)
+ : 12 : * - Wallet reservation model → REMOVED (deposit handles escrow)
+ : 355 : earnerShare: 0.65,
+ : 356 : platformShare: 0.35,
+ : 156 : .where('state', '==', 'AWAITING_DEPOSIT')
+ : 36 : * Location: After successful escrow deduction in processMessageBilling()
+ : 33 : | 'CHAT_DEPOSIT'
+ : 72 : const AVALO_COMMISSION = 0.35;
+ : 73 : const CREATOR_SHARE = 0.65;
+ : 13 : * - Escrow system for chat & calendar
+ : 92 : type: "deposit" | "earning" | "spending" | "refund" | "settlement" | "escrow_hold" | "escrow_release";
+ : 100 : escrowStatus?: "held" | "released" | "refunded";
+ : 101 : escrowReleaseAt?: Timestamp;
+ : 130 : totalDeposits: number;
+ : 138 : export interface EscrowRecord {
+ : 139 : escrowId: string;
+ : 411 : totalDeposits: 0,
+ : 426 : type: "deposit",
+ : 447 : totalDeposits: FieldValue.increment(tokens),
+ : 557 : totalDeposits: 0,
+ : 572 : type: "deposit",
+ : 590 : totalDeposits: FieldValue.increment(tokens),
+ : 643 : // CHAT ESCROW SYSTEM
+ : 647 : * Initiate chat with deposit and escrow
+ : 666 : const CHAT_DEPOSIT = 100;
+ : 668 : const platformFee = Math.floor(CHAT_DEPOSIT * PLATFORM_FEE_PERCENT / 100);
+ : 669 : const escrowAmount = CHAT_DEPOSIT - platformFee;
+ : 678 : if (currentBalance < CHAT_DEPOSIT) {
+ : 689 : depositAmount: CHAT_DEPOSIT,
+ : 693 : // Create escrow record
+ : 694 : const escrowRef = db.collection("escrow").doc(`esc_${chatRef.id}`);
+ : 695 : const escrow: EscrowRecord = {
+ : 696 : escrowId: `esc_${chatRef.id}`,
+ : 701 : totalTokens: CHAT_DEPOSIT,
+ : 703 : availableTokens: escrowAmount,
+ : 712 : tx.set(escrowRef, escrow);
+ : 716 : balance: FieldValue.increment(-CHAT_DEPOSIT),
+ : 717 : totalSpending: FieldValue.increment(CHAT_DEPOSIT),
+ : 728 : tokens: -CHAT_DEPOSIT,
+ : 733 : balanceAfter: currentBalance - CHAT_DEPOSIT,
+ : 734 : description: "Chat deposit + platform fee",
+ : 752 : creatorAmount: escrowAmount,
+ : 763 : // Create escrow hold transaction
+ : 764 : const escrowTxRef = db.collection("transactions").doc(`tx_chat_escrow_${chatRef.id}`);
+ : 765 : tx.set(escrowTxRef, {
+ : 766 : txId: `tx_chat_escrow_${chatRef.id}`,
+ : 768 : type: "escrow_hold",
+ : 770 : tokens: escrowAmount,
+ : 773 : escrowStatus: "held",
+ : 777 : description: "Tokens held in escrow",
+ : 795 : * Release escrow incrementally (chat messages)
+ : 797 : export const releaseEscrowIncremental = onCall(
+ : 812 : const escrowRef = db.collection("escrow").doc(`esc_${chatId}`);
+ : 813 : const escrowSnap = await tx.get(escrowRef);
+ : 815 : if (!escrowSnap.exists) {
+ : 816 : throw new HttpsError("not-found", "Escrow not found");
+ : 819 : const escrow = escrowSnap.data() as EscrowRecord;
+ : 821 : if (escrow.recipientId !== userId) {
+ : 825 : if (escrow.availableTokens < tokensToRelease) {
+ : 826 : throw new HttpsError("failed-precondition", "Insufficient escrow balance");
+ : 829 : // Update escrow
+ : 830 : tx.update(escrowRef, {
+ : 849 : const txRef = db.collection("transactions").doc(`tx_escrow_rel_${chatId}_${Date.now()}`);
+ : 853 : type: "escrow_release",
+ : 856 : relatedUserId: escrow.payerId,
+ : 858 : escrowStatus: "released",
+ : 873 : logger.error("Error releasing escrow:", error);
+ : 874 : throw new HttpsError("internal", `Failed to release escrow: ${error.message}`);
+ : 880 : * Auto-refund inactive escrows (scheduled function)
+ : 882 : export const autoRefundInactiveEscrows = onSchedule(
+ : 890 : const escrowsSnap = await db.collection("escrow")
+ : 896 : for (const escrowDoc of escrowsSnap.docs) {
+ : 897 : const escrow = escrowDoc.data() as EscrowRecord;
+ : 901 : // Update escrow status
+ : 902 : tx.update(escrowDoc.ref, {
+ : 905 : refundedAmount: escrow.availableTokens,
+ : 909 : const payerWalletRef = db.collection("users").doc(escrow.payerId).collection("wallet").doc("main");
+ : 914 : balance: FieldValue.increment(escrow.availableTokens),
+ : 915 : totalRefunds: FieldValue.increment(escrow.availableTokens),
+ : 920 : const txRef = db.collection("transactions").doc(`tx_refund_${escrow.escrowId}`);
+ : 923 : userId: escrow.payerId,
+ : 926 : tokens: escrow.availableTokens,
+ : 927 : relatedUserId: escrow.recipientId,
+ : 928 : relatedChatId: escrow.relatedId,
+ : 931 : balanceAfter: payerBalance + escrow.availableTokens,
+ : 938 : logger.info(`Refunded escrow: ${escrow.escrowId}`);
+ : 940 : logger.error(`Failed to refund escrow ${escrow.escrowId}:`, error);
+ : 1080 : totalDeposits: 0,
+ : 1092 : totalDeposits: wallet.totalDeposits || 0,
+ : 1139 : // CALENDAR BOOKING ESCROW
+ : 1143 : * Create calendar booking with escrow
+ : 1167 : const escrowAmount = tokens - platformFee;
+ : 1194 : // Create escrow record
+ : 1195 : const escrowRef = db.collection("escrow").doc(`esc_${bookingRef.id}`);
+ : 1196 : const escrow: EscrowRecord = {
+ : 1197 : escrowId: `esc_${bookingRef.id}`,
+ : 1204 : availableTokens: escrowAmount,
+ : 1212 : tx.set(escrowRef, escrow);
+ : 1234 : description: "Calendar booking deposit",
+ : 1252 : creatorAmount: escrowAmount,
+ : 1263 : // Create escrow hold transaction
+ : 1264 : const escrowTxRef = db.collection("transactions").doc(`tx_booking_escrow_${bookingRef.id}`);
+ : 1265 : tx.set(escrowTxRef, {
+ : 1266 : txId: `tx_booking_escrow_${bookingRef.id}`,
+ : 1268 : type: "escrow_hold",
+ : 1270 : tokens: escrowAmount,
+ : 1273 : escrowStatus: "held",
+ : 1277 : description: "Tokens held in escrow for booking",
+ : 1295 : * Complete calendar booking and release escrow
+ : 1329 : // Release full escrow
+ : 1330 : const escrowDoc = await db.collection("escrow").doc(`esc_${bookingId}`).get();
+ : 1332 : if (!escrowDoc.exists) {
+ : 1333 : throw new HttpsError("not-found", "Escrow not found");
+ : 1336 : const escrow = escrowDoc.data() as EscrowRecord;
+ : 1339 : // Update escrow
+ : 1340 : tx.update(escrowDoc.ref, {
+ : 1351 : balance: FieldValue.increment(escrow.availableTokens),
+ : 1352 : earnedBalance: FieldValue.increment(escrow.availableTokens),
+ : 1353 : totalEarnings: FieldValue.increment(escrow.availableTokens),
+ : 1362 : type: "escrow_release",
+ : 1364 : tokens: escrow.availableTokens,
+ : 1365 : relatedUserId: escrow.payerId,
+ : 1369 : balanceAfter: creatorBalance + escrow.availableTokens,
+ : 1370 : description: `Earned ${escrow.availableTokens} tokens from booking`,
+ : 1436 : const escrowDoc = await db.collection("escrow").doc(`esc_${bookingId}`).get();
+ : 1438 : if (!escrowDoc.exists) {
+ : 1439 : throw new HttpsError("not-found", "Escrow not found");
+ : 1442 : const escrow = escrowDoc.data() as EscrowRecord;
+ : 1443 : const refundAmount = Math.floor(escrow.availableTokens * refundPercent / 100);
+ : 1446 : // Update escrow
+ : 1447 : tx.update(escrowDoc.ref, {
+ : 53 : DEPOSIT = "deposit",
+ : 140 : totalDeposits: number;
+ : 164 : dailyDepositLimit: 10000,        // USD equivalent
+ : 165 : monthlyDepositLimit: 50000,
+ : 455 : totalDeposits: 0,
+ : 473 : type: "deposit" | "withdrawal"
+ : 483 : if (type === "deposit") {
+ : 485 : updates.totalDeposits = FieldValue.increment(amount);
+ : 565 : type: TransactionType.DEPOSIT,
+ : 624 : await updateWalletBalance(userId, currency, amount, "deposit");
+ : 24 : CREATOR_SPLIT: 0.65, // 65% to creator
+ : 25 : AVALO_COMMISSION: 0.35, // 35% to Avalo
+ : 2 : * PACK 58 — Calendar Reservations & Escrowed Meetings
+ : 6 : * - Paid meeting reservations with token escrow
+ : 14 : * - Escrow locked until meeting confirmed or dispute resolved
+ : 43 : export type EscrowStatus =
+ : 98 : escrowId?: string | null;
+ : 103 : export interface ReservationEscrow {
+ : 104 : escrowId: string;
+ : 111 : status: EscrowStatus;
+ : 120 : const PLATFORM_SHARE = 0.35;
+ : 121 : const CREATOR_SHARE = 0.65;
+ : 315 : * Lock tokens from client wallet into escrow
+ : 317 : async function lockTokensInEscrow(
+ : 342 : // Create escrow record
+ : 343 : const escrowId = db.collection('reservation_escrow').doc().id;
+ : 344 : const escrowData: ReservationEscrow = {
+ : 345 : escrowId,
+ : 357 : // Atomic transaction: deduct tokens and create escrow
+ : 372 : // Create escrow
+ : 373 : transaction.set(db.collection('reservation_escrow').doc(escrowId), escrowData);
+ : 380 : type: 'RESERVATION_ESCROW_LOCK',
+ : 383 : metadata: { reservationId, escrowId },
+ : 388 : return escrowId;
+ : 392 : * Release escrow to creator (mark as earning)
+ : 394 : async function releaseEscrowToCreator(escrowId: string, reservationId: string): Promise<void> {
+ : 395 : const escrowRef = db.collection('reservation_escrow').doc(escrowId);
+ : 396 : const escrowDoc = await escrowRef.get();
+ : 398 : if (!escrowDoc.exists) {
+ : 399 : throw new Error('Escrow not found');
+ : 402 : const escrow = escrowDoc.data() as ReservationEscrow;
+ : 404 : if (escrow.status !== 'LOCKED') {
+ : 405 : throw new Error(`Escrow already ${escrow.status}`);
+ : 408 : // Update escrow status
+ : 409 : await escrowRef.update({
+ : 418 : userId: escrow.creatorUserId,
+ : 419 : sourceUserId: escrow.clientUserId,
+ : 421 : tokensEarned: escrow.tokensCreatorShare,
+ : 422 : metadata: { reservationId, escrowId },
+ : 427 : const earningsRef = db.collection('creator_earnings').doc(escrow.creatorUserId);
+ : 434 : totalTokensEarned: FieldValue.increment(escrow.tokensCreatorShare),
+ : 435 : withdrawableTokens: FieldValue.increment(escrow.tokensCreatorShare),
+ : 436 : [`channelBreakdown.RESERVATION_MEETING`]: FieldValue.increment(escrow.tokensCreatorShare),
+ : 442 : userId: escrow.creatorUserId,
+ : 443 : totalTokensEarned: escrow.tokensCreatorShare,
+ : 444 : withdrawableTokens: escrow.tokensCreatorShare,
+ : 449 : RESERVATION_MEETING: escrow.tokensCreatorShare
+ : 451 : last30Days: escrow.tokensCreatorShare,
+ : 452 : last90Days: escrow.tokensCreatorShare,
+ : 460 : userId: escrow.creatorUserId,
+ : 463 : body: `You earned ${escrow.tokensCreatorShare} tokens from a meeting`,
+ : 464 : data: { reservationId, escrowId },
+ : 472 : .where('creatorUserId', '==', escrow.creatorUserId)
+ : 482 : userId: escrow.creatorUserId,
+ : 486 : details: { completedCount30d: completedCount, reservationId, escrowId },
+ : 497 : * Refund escrow to client
+ : 499 : async function refundEscrowToClient(escrowId: string, reservationId: string): Promise<void> {
+ : 500 : const escrowRef = db.collection('reservation_escrow').doc(escrowId);
+ : 501 : const escrowDoc = await escrowRef.get();
+ : 503 : if (!escrowDoc.exists) {
+ : 504 : throw new Error('Escrow not found');
+ : 507 : const escrow = escrowDoc.data() as ReservationEscrow;
+ : 509 : if (escrow.status !== 'LOCKED') {
+ : 510 : throw new Error(`Escrow already ${escrow.status}`);
+ : 513 : // Update escrow status
+ : 514 : await escrowRef.update({
+ : 520 : const clientWalletRef = db.collection('wallets').doc(escrow.clientUserId);
+ : 522 : tokenBalance: FieldValue.increment(escrow.tokensLocked),
+ : 530 : userId: escrow.clientUserId,
+ : 531 : type: 'RESERVATION_ESCROW_REFUND',
+ : 532 : amount: escrow.tokensLocked,
+ : 533 : balanceAfter: FieldValue.increment(escrow.tokensLocked),
+ : 534 : metadata: { reservationId, escrowId },
+ : 540 : userId: escrow.clientUserId,
+ : 543 : body: `${escrow.tokensLocked} tokens have been refunded`,
+ : 544 : data: { reservationId, escrowId },
+ : 686 : * Create a new reservation with token escrow
+ : 770 : // Lock tokens in escrow
+ : 772 : const escrowId = await lockTokensInEscrow(clientUserId, creatorUserId, reservationId, priceTokens);
+ : 777 : escrowId,
+ : 824 : escrowId,
+ : 906 : // Handle escrow
+ : 907 : if (reservation.escrowId) {
+ : 909 : await refundEscrowToClient(reservation.escrowId, reservationId);
+ : 911 : await releaseEscrowToCreator(reservation.escrowId, reservationId);
+ : 1018 : if (reservation.escrowId) {
+ : 1019 : await releaseEscrowToCreator(reservation.escrowId, reservationId);
+ : 1094 : if (reservation.escrowId) {
+ : 1118 : // Handle no-show escrow
+ : 1119 : if (reservation.escrowId) {
+ : 1122 : await refundEscrowToClient(reservation.escrowId, reservationId);
+ : 1125 : await releaseEscrowToCreator(reservation.escrowId, reservationId);
+ : 1187 : escrowId: data.escrowId,
+ : 1256 : // If neither side confirmed, mark as dispute and lock escrow
+ : 1264 : if (reservation.escrowId) {
+ : 52 : // Refund escrow to payer
+ : 94 : `Expired ${staleChatsSnap.size} chats, refunded ${refundCount} escrows`
+ : 146 : // Refund policy: booker gets 0%, creator gets 80% (already in escrow)
+ : 148 : // Release escrow to creator
+ : 156 : balance: increment(booking.payment.escrowTokens),
+ : 157 : earned: increment(booking.payment.escrowTokens),
+ : 168 : pending: increment(-booking.payment.escrowTokens),
+ : 177 : amountTokens: booking.payment.escrowTokens,
+ : 180 : creatorTokens: booking.payment.escrowTokens,
+ : 13 : * - Transaction confirmations (deposits/withdrawals)
+ : 70 : DEPOSIT_CONFIRMATION = "deposit_confirmation",
+ : 522 : * Send deposit confirmation email
+ : 524 : export async function sendDepositConfirmationEmail(
+ : 527 : depositDetails: {
+ : 535 : const subject = `✅ Deposit Confirmed - ${depositDetails.amount} ${depositDetails.currency}`;
+ : 538 : Deposit Confirmed
+ : 540 : Your deposit has been successfully processed!
+ : 542 : Amount: ${depositDetails.amount} ${depositDetails.currency}
+ : 543 : Tokens Credited: ${depositDetails.tokens}
+ : 544 : Transaction ID: ${depositDetails.transactionId}
+ : 545 : Date: ${depositDetails.timestamp}
+ : 569 : <h1>✅ Deposit Confirmed</h1>
+ : 572 : <p>Your deposit has been successfully processed!</p>
+ : 574 : <p><strong>Amount:</strong> ${depositDetails.amount} ${depositDetails.currency}</p>
+ : 575 : <p><strong>Tokens Credited:</strong> ${depositDetails.tokens}</p>
+ : 576 : <p><strong>Transaction ID:</strong> ${depositDetails.transactionId}</p>
+ : 577 : <p><strong>Date:</strong> ${depositDetails.timestamp}</p>
+ : 594 : type: EmailType.DEPOSIT_CONFIRMATION,
+ : 596 : metadata: depositDetails,
+ : 49 : escrowAmount: number;
+ : 179 : let refundAmount = context.escrowAmount;
+ : 205 : // Update booking escrow status
+ : 212 : escrowStatus: 'REFUNDED',
+ : 176 : lastDepositAt: serverTimestamp(),
+ : 280 : lastDepositAt: serverTimestamp(),
+ : 356 : lastDeposit: coldWallet.lastDepositAt,
+ : 430 : lastDepositAt: serverTimestamp(),
+ : 83 : deposit?: {
+ : 86 : escrow: number;
+ : 165 : escrowTokens: number;
+ : 232 : export const depositSchema = z.object({
+ : 6 : * Testnet escrow contracts
+ : 117 : * Initiate crypto deposit (convert crypto to in-app tokens)
+ : 119 : export const initiateDepositV1 = onCall(
+ : 141 : const depositId = `dep_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+ : 144 : // Get escrow contract address
+ : 145 : const escrowAddress = getEscrowAddress(blockchain as any);
+ : 147 : // Create pending deposit
+ : 148 : await db.collection("cryptoDeposits").doc(depositId).set({
+ : 149 : depositId,
+ : 154 : escrowAddress,
+ : 159 : logger.info(`Deposit initiated: ${depositId} for ${uid}`);
+ : 162 : depositId,
+ : 163 : escrowAddress,
+ : 169 : logger.error("Failed to initiate deposit:", error);
+ : 170 : throw new HttpsError("internal", "Failed to initiate deposit");
+ : 176 : * Confirm crypto deposit (called after on-chain transaction)
+ : 178 : export const confirmDepositV1 = onCall(
+ : 188 : depositId: z.string(),
+ : 197 : const { depositId, txHash } = validationResult.data;
+ : 200 : const depositRef = db.collection("cryptoDeposits").doc(depositId);
+ : 201 : const depositDoc = await depositRef.get();
+ : 203 : if (!depositDoc.exists) {
+ : 204 : throw new HttpsError("not-found", "Deposit not found");
+ : 207 : const deposit = depositDoc.data();
+ : 209 : if (deposit?.userId !== uid) {
+ : 210 : throw new HttpsError("permission-denied", "Not your deposit");
+ : 213 : if (deposit?.status !== "pending") {
+ : 214 : throw new HttpsError("failed-precondition", "Deposit already processed");
+ : 218 : logger.info(`Verifying on-chain transaction: ${txHash} for deposit ${depositId}`);
+ : 220 : const provider = getBlockchainProvider(deposit.blockchain as Blockchain);
+ : 241 : "Transaction failed on blockchain. Deposit cannot be processed."
+ : 247 : const userWalletAddress = userDoc.data()?.wallets?.[deposit.blockchain]?.address;
+ : 267 : // Verify recipient is the escrow address
+ : 268 : if (receipt.to?.toLowerCase() !== deposit.escrowAddress.toLowerCase()) {
+ : 270 : `Escrow mismatch: tx to ${receipt.to}, expected ${deposit.escrowAddress}`
+ : 274 : "Transaction recipient does not match escrow address"
+ : 284 : tokens: (depositDoc.data()?.tokens || 0) + deposit.tokensToCredit,
+ : 287 : transaction.update(depositRef, {
+ : 295 : type: "crypto_deposit",
+ : 297 : depositId,
+ : 298 : amount: deposit.tokensToCredit,
+ : 299 : sourceBlockchain: deposit.blockchain,
+ : 305 : logger.info(`Deposit confirmed: ${depositId}, txHash: ${txHash}`);
+ : 309 : tokensCredit: deposit.tokensToCredit,
+ : 310 : newBalance: (depositDoc.data()?.tokens || 0) + deposit.tokensToCredit,
+ : 313 : logger.error("Failed to confirm deposit:", error);
+ : 314 : throw new HttpsError("internal", "Failed to confirm deposit");
+ : 413 : * Get escrow contract address for blockchain
+ : 415 : function getEscrowAddress(blockchain: Blockchain): string {
+ : 418 : ethereum: process.env.ETHEREUM_ESCROW_ADDRESS || "0x0000000000000000000000000000000000000000",
+ : 419 : polygon: process.env.POLYGON_ESCROW_ADDRESS || "0x0000000000000000000000000000000000000000",
+ : 420 : bsc: process.env.BSC_ESCROW_ADDRESS || "0x0000000000000000000000000000000000000000",
+ : 764 : platformFees += Math.floor(tx.amount / 0.65 * 0.35); // Reverse calc
+ : 767 : platformFees += Math.floor(tx.amount / 0.65 * 0.35);

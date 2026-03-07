@@ -47,8 +47,8 @@ const MAX_DAILY_MATCHES = 50;
 // Ranking weights
 const RANKING_WEIGHTS = {
   photoQuality: 0.25,
-  profileCompleteness: 0.20,
-  responseRate: 0.20,
+  profileCompleteness: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  responseRate: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   loyaltyTier: 0.15,
   lastActive: 0.10,
   reportCount: -0.10, // Negative weight
@@ -814,6 +814,7 @@ export default {
   getMatchStats,
   updateLastActive,
 };
+
 
 
 

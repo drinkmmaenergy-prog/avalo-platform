@@ -13,9 +13,9 @@
  * - PACK 222 Breakup Recovery integration
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import type { Timestamp } from 'firebase-admin/firestore';
-import { onJourneyEnded } from './pack-222-breakup-recovery-integration.js';
+import { onJourneyEnded } from './pack-222-breakup-recovery-integration';
 import { admin } from './runtime';
 
 // ============================================================================
@@ -970,6 +970,7 @@ export async function initializeDefaultChallenges(): Promise<void> {
     });
   }
 }
+
 
 
 

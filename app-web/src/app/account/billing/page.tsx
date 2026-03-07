@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * PACK 343 — Billing & Subscriptions Page
  * Manage VIP/Royal subscriptions via Stripe
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { AccountLayout } from '../../../components/account/AccountLayout';
 import { ComplianceGate } from '../../../components/account/ComplianceGate';
@@ -350,4 +349,5 @@ export default function BillingPage() {
     </AccountLayout>
   );
 }
+
 

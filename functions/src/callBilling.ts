@@ -7,9 +7,9 @@
  * NO FREE CALLS - all calls are paid, insufficient funds = graceful termination
  */
 
-import { db, serverTimestamp } from './init.js';
+import { db, serverTimestamp } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
-import { logEvent } from './observability.js';
+import { logEvent } from './observability';
 import { admin, functions } from './runtime';
 
 interface CallSession {
@@ -29,8 +29,8 @@ interface CallSession {
  * Revenue split constants (65/35)
  * Matches existing platform split for PPM/chat
  */
-const EARNER_SPLIT = 0.65;  // 65% to callee (creator/earner)
-const AVALO_SPLIT = 0.35;   // 35% to Avalo
+const EARNER_SPLIT = MONETIZATION_SPLITS.CHAT.creator;  // 65% to callee (creator/earner)
+const AVALO_SPLIT = MONETIZATION_SPLITS.CHAT.avalo;   // 35% to Avalo
 
 /**
  * Bill a completed call session
@@ -303,6 +303,8 @@ export async function checkCallBalance(
     };
   }
 }
+
+
 
 
 

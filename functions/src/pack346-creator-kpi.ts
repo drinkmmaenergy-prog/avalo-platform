@@ -4,7 +4,7 @@
  */
 
 import * as functions from "firebase-functions";
-import { db, serverTimestamp, increment } from "./init.js";
+import { db, serverTimestamp, increment } from "./init";
 import { Timestamp } from "firebase-admin/firestore";
 import { CreatorKPI } from "./pack346-types";
 import { HttpsError, admin, auth, onCall, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';

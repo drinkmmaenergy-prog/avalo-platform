@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Language Switcher Component
  *
@@ -8,9 +10,6 @@
  * Usage:
  *   <LanguageSwitcher />
  */
-
-'use client';
-
 import React, { useState, useRef, useEffect } from 'react';
 import {
   SUPPORTED_LOCALES,
@@ -92,4 +91,5 @@ export default function LanguageSwitcher() {
     </div>
   );
 }
+
 

@@ -52,7 +52,7 @@ const ENTITLEMENT_PATTERNS: EntitlementDetectionPattern[] = [
     pattern: /(answer|reply to) me (first|before)|you should prioritize me/i,
     type: 'time_demand',
     severity: 'medium',
-    weight: 0.65
+    weight: MONETIZATION_SPLITS.CHAT.creator
   },
   {
     pattern: /i('ll| will) (pay|spend) more if|if you (act like|be my)|exclusive (relationship|attention)/i,
@@ -700,6 +700,7 @@ export async function checkActiveRestriction(
 
   return { restricted: true, restriction };
 }
+
 
 
 

@@ -197,8 +197,8 @@ export interface MatchCandidate {
  * Match ranking weights (configurable)
  */
 export interface MatchRankingWeights {
-  behavior: number;                              // default 0.35
-  similarity: number;                            // default 0.30
+  behavior: number;                              // default MONETIZATION_SPLITS.CHAT.avalo
+  similarity: number;                            // default MONETIZATION_SPLITS.SUBSCRIPTION.avalo
   recency: number;                               // default 0.15
   popularity: number;                            // default 0.10
   base: number;                                  // default 0.10
@@ -356,8 +356,8 @@ export interface MatchEngineVariant {
 // ============================================================================
 
 export const DEFAULT_RANKING_WEIGHTS: MatchRankingWeights = {
-  behavior: 0.35,
-  similarity: 0.30,
+  behavior: MONETIZATION_SPLITS.CHAT.avalo,
+  similarity: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
   recency: 0.15,
   popularity: 0.10,
   base: 0.10,
@@ -386,6 +386,7 @@ export const DEFAULT_ENGINE_CONFIG: MatchEngineConfig = {
   enabledFilters: ['behavior_based_only'],
   requireBehaviorBased: true,
 };
+
 
 
 

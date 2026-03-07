@@ -511,7 +511,7 @@ export async function getStoryAnalytics(storyId: string): Promise<{
     const story = storySnap.data() as PremiumStory;
     
     // Calculate total earnings
-    const totalEarnings = Math.floor(story.priceTokens * story.unlockCount * 0.65);
+    const totalEarnings = Math.floor(story.priceTokens * story.unlockCount * MONETIZATION_SPLITS.CHAT.creator);
     
     return {
       viewCount: story.viewCount || 0,

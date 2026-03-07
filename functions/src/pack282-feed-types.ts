@@ -268,9 +268,9 @@ export interface RankingConfig {
 
 // Default ranking weights
 export const DEFAULT_RANKING_WEIGHTS: RankingConfig['weights'] = {
-  recency: 0.30,
+  recency: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
   relationship: 0.25,
-  engagement: 0.20,
+  engagement: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   quality: 0.15,
   safety: 0.07,
   diversity: 0.03,
@@ -405,6 +405,7 @@ export interface BulkModerationOperation {
   reason?: string;
   performedBy: string;
 }
+
 
 
 

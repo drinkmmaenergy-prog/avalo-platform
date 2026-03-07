@@ -122,7 +122,7 @@ export const trackCreatorChatEarnings = onDocumentCreated('chats/{chatId}/paymen
       const creatorId = chat.creator_id;
 
       // Calculate creator's share (assuming 70/30 split)
-      const creatorEarnings = (payment.tokens || 0) * 0.7;
+      const creatorEarnings = (payment.tokens || 0) * MONETIZATION_SPLITS.CHAT.creator;
 
       // Update creator daily metrics
       await db.collection('creator_metrics').doc(creatorId).collection('daily').doc(today).set({
@@ -552,6 +552,8 @@ export const calculateCreatorTrends = onSchedule({ schedule: "0 5 * * 1", timeZo
       throw error;
     }
   });
+
+
 
 
 

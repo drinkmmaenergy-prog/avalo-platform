@@ -7,8 +7,8 @@
  * This module is 100% additive and does NOT modify existing systems.
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
-import { getBotInfo, generateAiResponse, updateBotStats } from './aiBotEngine.js';
+import { db, serverTimestamp, increment, generateId } from './init';
+import { getBotInfo, generateAiResponse, updateBotStats } from './aiBotEngine';
 import type {
   AIChat,
   AiMessage,
@@ -17,7 +17,7 @@ import type {
   ProcessAiMessageRequest,
   ProcessAiMessageResponse,
   BotEarningRecord,
-} from './types/aiBot.js';
+} from './types/aiBot';
 import { timestamp } from './runtime';
 
 // Simple error class
@@ -171,7 +171,7 @@ export async function processAiMessage(
   
   // Phase 22: CSAM Shield - Check user message for CSAM risk
   try {
-    const { evaluateTextForCsamRisk, createCsamIncident, applyImmediateProtectiveActions } = await import('./csamShield.js');
+    const { evaluateTextForCsamRisk, createCsamIncident, applyImmediateProtectiveActions } = await import('./csamShield');
     const csamCheck = evaluateTextForCsamRisk(request.message, 'en');
     
     if (csamCheck.isFlagged && (csamCheck.riskLevel === 'HIGH' || csamCheck.riskLevel === 'CRITICAL')) {
@@ -265,7 +265,7 @@ export async function processAiMessage(
   const wordCount = countBillableWords(aiResponse);
   
   // Token cost = base price + word-based billing
-  const wordBasedTokens = hasFreeMessages ? 0 : Math.round(wordCount / chat.billing.wordsPerToken);
+  const wordBasedTokens = hasFreeMessages ? 0 : Math.ceil(wordCount / chat.billing.wordsPerToken);
   const tokensCost = hasFreeMessages ? 0 : (wordBasedTokens + chat.pricePerMessage);
   
   // If paid and insufficient escrow, return error
@@ -386,7 +386,7 @@ export async function processAiMessage(
   if (!hasFreeMessages && tokensCost > 0) {
     try {
       // Import ranking function dynamically to avoid circular dependencies
-      const { recordRankingAction } = await import('./rankingEngine.js');
+      const { recordRankingAction } = await import('./rankingEngine');
       
       await recordRankingAction({
         type: 'paid_chat',
@@ -554,6 +554,13 @@ export default {
   processAiChatDeposit,
   closeAiChat,
 };
+
+
+
+
+
+
+
 
 
 

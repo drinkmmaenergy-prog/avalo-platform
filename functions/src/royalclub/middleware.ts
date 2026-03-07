@@ -343,8 +343,8 @@ export function validateRevenueSplit(
 ): { isValid: boolean; violations: string[] } {
   const violations: string[] = [];
 
-  const expectedCreatorShare = 0.65;
-  const expectedPlatformShare = 0.35;
+  const expectedCreatorShare = MONETIZATION_SPLITS.CHAT.creator;
+  const expectedPlatformShare = MONETIZATION_SPLITS.CHAT.avalo;
 
   if (Math.abs(creatorShare - expectedCreatorShare) > 0.001) {
     violations.push(`Creator share (${creatorShare}) does not match required 65%`);
@@ -378,6 +378,7 @@ export const RoyalClubSafetyMiddleware = {
   validateTokenPricing,
   validateRevenueSplit
 };
+
 
 
 

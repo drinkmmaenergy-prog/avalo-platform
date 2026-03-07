@@ -286,7 +286,7 @@ async function aggregateMonetizationMetrics(
         totalTokensBurned += chatTokens;
         revenueByVertical.chat += chatTokens;
         // Platform takes 35% (from 65/35 split)
-        totalPlatformRevenueTokens += chatTokens * 0.35;
+        totalPlatformRevenueTokens += chatTokens * MONETIZATION_SPLITS.CHAT.avalo;
         break;
 
       case KpiEventType.VOICE_CALL_STARTED:
@@ -294,7 +294,7 @@ async function aggregateMonetizationMetrics(
         const voiceTokens = context.tokensCharged || 0;
         totalTokensBurned += voiceTokens;
         revenueByVertical.voiceCalls += voiceTokens;
-        totalPlatformRevenueTokens += voiceTokens * 0.35;
+        totalPlatformRevenueTokens += voiceTokens * MONETIZATION_SPLITS.CHAT.avalo;
         break;
 
       case KpiEventType.VIDEO_CALL_STARTED:
@@ -302,7 +302,7 @@ async function aggregateMonetizationMetrics(
         const videoTokens = context.tokensCharged || 0;
         totalTokensBurned += videoTokens;
         revenueByVertical.videoCalls += videoTokens;
-        totalPlatformRevenueTokens += videoTokens * 0.35;
+        totalPlatformRevenueTokens += videoTokens * MONETIZATION_SPLITS.CHAT.avalo;
         break;
 
       case KpiEventType.CALENDAR_BOOKING_CREATED:
@@ -311,7 +311,7 @@ async function aggregateMonetizationMetrics(
         totalTokensBurned += calendarTokens;
         revenueByVertical.calendar += calendarTokens;
         // Platform takes 20% (from 80/20 split)
-        totalPlatformRevenueTokens += calendarTokens * 0.20;
+        totalPlatformRevenueTokens += calendarTokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo;
         break;
 
       case KpiEventType.EVENT_TICKET_PURCHASED:
@@ -319,14 +319,14 @@ async function aggregateMonetizationMetrics(
         totalTokensBurned += eventTokens;
         revenueByVertical.events += eventTokens;
         // Platform takes 20%
-        totalPlatformRevenueTokens += eventTokens * 0.20;
+        totalPlatformRevenueTokens += eventTokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo;
         break;
 
       case KpiEventType.AI_COMPANION_PAID_MESSAGE:
         const aiTokens = context.tokensCharged || 0;
         totalTokensBurned += aiTokens;
         revenueByVertical.aiCompanion += aiTokens;
-        totalPlatformRevenueTokens += aiTokens * 0.35; // Assuming 65/35 split
+        totalPlatformRevenueTokens += aiTokens * MONETIZATION_SPLITS.CHAT.avalo; // Assuming 65/35 split
         break;
 
       case KpiEventType.PAYOUT_REQUESTED:
@@ -594,7 +594,7 @@ function computeCreatorMetrics(
       case KpiEventType.CHAT_PAID_ENDED:
         chatSessionsPaid++;
         // Creator gets 65%
-        const chatEarnings = tokens * 0.65;
+        const chatEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
         tokensEarnedChat += chatEarnings;
         tokensEarned += chatEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -602,7 +602,7 @@ function computeCreatorMetrics(
 
       case KpiEventType.VOICE_CALL_ENDED:
         voiceCallsPaid++;
-        const voiceEarnings = tokens * 0.65;
+        const voiceEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
         tokensEarnedVoiceCalls += voiceEarnings;
         tokensEarned += voiceEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -610,7 +610,7 @@ function computeCreatorMetrics(
 
       case KpiEventType.VIDEO_CALL_ENDED:
         videoCallsPaid++;
-        const videoEarnings = tokens * 0.65;
+        const videoEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
         tokensEarnedVideoCalls += videoEarnings;
         tokensEarned += videoEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -619,7 +619,7 @@ function computeCreatorMetrics(
       case KpiEventType.CALENDAR_BOOKING_COMPLETED:
         calendarBookings++;
         // Creator gets 80%
-        const calendarEarnings = tokens * 0.80;
+        const calendarEarnings = tokens * MONETIZATION_SPLITS.EVENT_TICKET.creator;
         tokensEarnedCalendar += calendarEarnings;
         tokensEarned += calendarEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -628,7 +628,7 @@ function computeCreatorMetrics(
       case KpiEventType.EVENT_TICKET_PURCHASED:
         eventTicketsSold++;
         // Organizer gets 80%
-        const eventEarnings = tokens * 0.80;
+        const eventEarnings = tokens * MONETIZATION_SPLITS.EVENT_TICKET.creator;
         tokensEarnedEvents += eventEarnings;
         tokensEarned += eventEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -636,7 +636,7 @@ function computeCreatorMetrics(
 
       case KpiEventType.AI_COMPANION_PAID_MESSAGE:
         aiCompanionSessions++;
-        const aiEarnings = tokens * 0.65;
+        const aiEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
         tokensEarnedAI += aiEarnings;
         tokensEarned += aiEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -724,6 +724,7 @@ function getDateRange(
     endTimestamp: admin.firestore.Timestamp.fromDate(endDate),
   };
 }
+
 
 
 

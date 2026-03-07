@@ -5,7 +5,7 @@
  * NO MUTATING OPERATIONS - read-only for observability
  */
 
-import { db } from './init.js';
+import { db } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { admin } from './runtime';
 
@@ -132,7 +132,7 @@ export async function getCallDetail(callId: string): Promise<{
 
     // Calculate billing breakdown (65/35 split)
     const tokensCharged = callData.totalTokensCharged;
-    const calleeEarnings = Math.floor(tokensCharged * 0.65);
+    const calleeEarnings = Math.floor(tokensCharged * MONETIZATION_SPLITS.CHAT.creator);
     const avaloRevenue = tokensCharged - calleeEarnings;
 
     return {
@@ -219,6 +219,7 @@ export async function getCallStats(params: {
     throw error;
   }
 }
+
 
 
 

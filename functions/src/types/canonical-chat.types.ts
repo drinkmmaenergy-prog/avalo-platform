@@ -98,16 +98,16 @@ export const PLATFORM_FEE_PCT = 35;
 export const ESCROW_PCT = 65;
 
 /** Minimum deposit tokens */
-export const MIN_DEPOSIT_TOKENS = 100;
+export const MIN_DEPOSIT = Math.max(customDeposit,100)
 
 /** Default deposit tokens */
 export const DEFAULT_DEPOSIT_TOKENS = 100;
 
 /** Revenue split: earner portion of consumed escrow */
-export const EARNER_REVENUE_SPLIT = 0.65;
+export const EARNER_REVENUE_SPLIT = MONETIZATION_SPLITS.CHAT.creator;
 
 /** Revenue split: Avalo portion of consumed escrow */
-export const AVALO_REVENUE_SPLIT = 0.35;
+export const AVALO_REVENUE_SPLIT = MONETIZATION_SPLITS.CHAT.avalo;
 
 /** Inactivity expiry duration in milliseconds (48h canonical) */
 export const INACTIVITY_EXPIRY_MS = 48 * 60 * 60 * 1000;
@@ -404,6 +404,9 @@ export type LegacySourceType =
   | 'pack273'              // From pack273ChatEngine.ts (pack273_chats collection)
   | 'pack328b'             // From pack328b (with timeout fields)
   | 'unknown';             // Unrecognized format
+
+
+
 
 
 

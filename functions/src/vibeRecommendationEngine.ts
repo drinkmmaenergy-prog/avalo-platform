@@ -390,17 +390,17 @@ async function calculateVibeMatch(
   
   // Calculate chemistry score (before preferences)
   const chemistryScore = Math.round(
-    (photoEnergyMatch * 0.30) +
+    (photoEnergyMatch * MONETIZATION_SPLITS.SUBSCRIPTION.avalo) +
     (interestMatch * 0.25) +
-    (chatToneMatch * 0.20) +
+    (chatToneMatch * MONETIZATION_SPLITS.EVENT_TICKET.avalo) +
     (locationBonus * 0.15) +
     (successPatternBonus * 0.10)
   );
   
   // Calculate final vibe score (with preferences)
   const vibeScore = Math.round(
-    (chemistryScore * 0.70) +
-    (attractionMatch * 0.30)
+    (chemistryScore * MONETIZATION_SPLITS.SUBSCRIPTION.creator) +
+    (attractionMatch * MONETIZATION_SPLITS.SUBSCRIPTION.avalo)
   );
   
   // Generate reasons
@@ -816,6 +816,7 @@ export const onVibeProfileUpdated = onDocumentCreated(
 );
 
 logger.info('✅ Vibe Recommendation Engine (PACK 197 v2) loaded successfully');
+
 
 
 

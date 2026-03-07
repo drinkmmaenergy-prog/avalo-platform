@@ -121,11 +121,11 @@ describe('PACK 303 — Creator Earnings Dashboard & Monthly Statements', () => {
     it('should have correct revenue splits', () => {
       const { REVENUE_SPLITS } = require('../types/pack303-creator-earnings.types');
       
-      expect(REVENUE_SPLITS.CHAT).toEqual({ creator: 0.65, avalo: 0.35 });
-      expect(REVENUE_SPLITS.CALLS).toEqual({ creator: 0.80, avalo: 0.20 });
-      expect(REVENUE_SPLITS.CALENDAR).toEqual({ creator: 0.80, avalo: 0.20 });
-      expect(REVENUE_SPLITS.EVENTS).toEqual({ creator: 0.80, avalo: 0.20 });
-      expect(REVENUE_SPLITS.OTHER).toEqual({ creator: 0.65, avalo: 0.35 });
+      expect(REVENUE_SPLITS.CHAT).toEqual({ creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo });
+      expect(REVENUE_SPLITS.CALLS).toEqual({ creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo });
+      expect(REVENUE_SPLITS.CALENDAR).toEqual({ creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo });
+      expect(REVENUE_SPLITS.EVENTS).toEqual({ creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo });
+      expect(REVENUE_SPLITS.OTHER).toEqual({ creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo });
     });
   });
   
@@ -154,7 +154,7 @@ describe('PACK 303 — Creator Earnings Dashboard & Monthly Statements', () => {
     it('should calculate creator vs Avalo shares correctly', () => {
       // Chat: 65/35 split
       const chatEarned = 1000;
-      const chatCreatorShare = Math.floor(chatEarned * 0.65);
+      const chatCreatorShare = Math.floor(chatEarned * MONETIZATION_SPLITS.CHAT.creator);
       const chatAvaloShare = chatEarned - chatCreatorShare;
       
       expect(chatCreatorShare).toBe(650);
@@ -162,7 +162,7 @@ describe('PACK 303 — Creator Earnings Dashboard & Monthly Statements', () => {
       
       // Calendar: 80/20 split
       const calendarEarned = 1000;
-      const calendarCreatorShare = Math.floor(calendarEarned * 0.80);
+      const calendarCreatorShare = Math.floor(calendarEarned * MONETIZATION_SPLITS.EVENT_TICKET.creator);
       const calendarAvaloShare = calendarEarned - calendarCreatorShare;
       
       expect(calendarCreatorShare).toBe(800);
@@ -379,6 +379,8 @@ describe('PACK 303 — Export Formats', () => {
     expect(STATEMENT_EXPORT_CONFIG.expirationHours).toBe(24);
   });
 });
+
+
 
 
 

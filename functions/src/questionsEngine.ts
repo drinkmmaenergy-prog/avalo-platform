@@ -138,7 +138,7 @@ export async function createQuestion(
   
   // Phase 22: CSAM Shield - Check question text for CSAM risk
   try {
-    const { evaluateTextForCsamRisk, createCsamIncident, applyImmediateProtectiveActions } = await import('./csamShield.js');
+    const { evaluateTextForCsamRisk, createCsamIncident, applyImmediateProtectiveActions } = await import('./csamShield');
     const csamCheck = evaluateTextForCsamRisk(data.text, 'en');
     
     if (csamCheck.isFlagged && (csamCheck.riskLevel === 'HIGH' || csamCheck.riskLevel === 'CRITICAL')) {
@@ -387,7 +387,7 @@ export async function createAnswer(
   
   // Phase 22: CSAM Shield - Check answer text for CSAM risk
   try {
-    const { evaluateTextForCsamRisk, createCsamIncident, applyImmediateProtectiveActions } = await import('./csamShield.js');
+    const { evaluateTextForCsamRisk, createCsamIncident, applyImmediateProtectiveActions } = await import('./csamShield');
     const csamCheck = evaluateTextForCsamRisk(data.text, 'en');
     
     if (csamCheck.isFlagged && (csamCheck.riskLevel === 'HIGH' || csamCheck.riskLevel === 'CRITICAL')) {
@@ -982,6 +982,7 @@ async function getAnswerPublicInfo(
     snippet,
   };
 }
+
 
 
 

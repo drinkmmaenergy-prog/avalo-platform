@@ -374,8 +374,8 @@ export function shouldAutoModerate(
 export function validateRevenueShare(
   totalRevenue: number
 ): { creatorShare: number; platformShare: number } {
-  const creatorShare = Math.round(totalRevenue * 0.65 * 100) / 100;
-  const platformShare = Math.round(totalRevenue * 0.35 * 100) / 100;
+  const creatorShare = Math.round(totalRevenue * MONETIZATION_SPLITS.CHAT.creator * 100) / 100;
+  const platformShare = Math.round(totalRevenue * MONETIZATION_SPLITS.CHAT.avalo * 100) / 100;
   
   return { creatorShare, platformShare };
 }
@@ -399,6 +399,7 @@ export function canEnableCertificate(
   
   return educationalTypes.includes(eventType);
 }
+
 
 
 

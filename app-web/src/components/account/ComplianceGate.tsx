@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * PACK 343 — Compliance Gate Component
  * Block actions based on age verification, KYC, or legal holds
  */
-
-'use client';
-
 import React from 'react';
 import type { UserComplianceStatus } from '../../../hooks/useCompliance';
 
@@ -89,4 +88,5 @@ export function ComplianceGate({ complianceStatus, requiredFor, children }: Comp
   // All checks passed - render children
   return <>{children}</>;
 }
+
 

@@ -8,7 +8,7 @@
  */
 
 import * as functions from 'firebase-functions';
-import { db } from './init.js';
+import { db } from './init';
 import {
   calculateNorthStarMetric,
   calculateDailyGlobalKpi,
@@ -16,7 +16,7 @@ import {
   calculateRevenueStreams,
   calculateViralityMetrics,
   getYesterdayDate,
-} from './pack336-kpi-engine.js';
+} from './pack336-kpi-engine';
 import { HttpsError, admin, onCall, onSchedule, logger } from './runtime';
 
 /**
@@ -297,6 +297,7 @@ export const pack336_manualAggregation = functions.https.onCall(async (request) 
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
 
 
 

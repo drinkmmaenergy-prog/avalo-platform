@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from "@constants/monetization";
 /**
  * Economy Configuration — Canonical token pricing & payout constants.
  *
@@ -11,10 +12,10 @@
 export const TOKEN_PAYOUT_USD = 0.01;
 
 /** Creator revenue share percentage (0-1 range). */
-export const CREATOR_REVENUE_SHARE = 0.70;
+export const CREATOR_REVENUE_SHARE = MONETIZATION_SPLITS.SUBSCRIPTION.creator;
 
 /** Platform fee percentage (0-1 range). */
-export const PLATFORM_FEE = 0.30;
+export const PLATFORM_FEE = MONETIZATION_SPLITS.SUBSCRIPTION.avalo;
 
 /** Minimum payout threshold in tokens. */
 export const MIN_PAYOUT_TOKENS = 1000;
@@ -59,3 +60,5 @@ export function tokensToCurrency(tokens: number, currency: string): string {
   const value = tokens * TOKEN_PAYOUT_USD * rate;
   return `${value.toFixed(2)} ${currency}`;
 }
+
+

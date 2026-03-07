@@ -176,7 +176,7 @@ export function calculateChurnScore(factors: ChurnRiskFactors): number {
 
   if (factors.noChatsIn5Days) score += 0.15;
   if (factors.noSwipesIn72h) score += 0.10;
-  if (factors.noAppOpenRecent) score += 0.20;
+  if (factors.noAppOpenRecent) score += MONETIZATION_SPLITS.EVENT_TICKET.avalo;
   if (factors.profileNotUpdated30d) score += 0.05;
   if (factors.noLikesIn72h) score += 0.10;
   if (factors.noPhotosAdded) score += 0.15;
@@ -665,6 +665,7 @@ export async function markWinbackCompleted(userId: string): Promise<void> {
     updatedAt: Timestamp.now(),
   });
 }
+
 
 
 

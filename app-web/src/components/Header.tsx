@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * PHASE 5.1 — Web Foundation Header Component
  * 
@@ -6,9 +8,6 @@
  * 
  * @version v2.0 — updated to include Buy Tokens CTA and consistent links
  */
-
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -117,4 +116,5 @@ export default function Header({ showAuthButtons = true }: HeaderProps) {
     </header>
   );
 }
+
 

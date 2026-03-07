@@ -1,12 +1,11 @@
+'use client';
+
 "use client";
 
 /**
  * PACK 279D - AI Discovery Page (Web)
  * Browse and filter AI Companions
  */
-
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, query, getDocs, orderBy } from 'firebase/firestore';
@@ -363,4 +362,5 @@ export default function AIDiscoveryPage() {
     </div>
   );
 }
+
 

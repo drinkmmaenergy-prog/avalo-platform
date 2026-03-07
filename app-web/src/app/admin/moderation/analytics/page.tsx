@@ -532,3 +532,4 @@ function calculateAnalytics(incidents: any[], appeals: any[]) {
     topActionType,
   };
 }
+

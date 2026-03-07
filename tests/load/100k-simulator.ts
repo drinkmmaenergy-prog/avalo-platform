@@ -81,7 +81,7 @@ const DEFAULT_CONFIG: LoadTestConfig = {
   
   operations: {
     feedScroll: 0.40, // 40% of operations
-    profileView: 0.20, // 20%
+    profileView: MONETIZATION_SPLITS.EVENT_TICKET.avalo, // 20%
     likePost: 0.15, // 15%
     sendMessage: 0.15, // 15%
     aiInteraction: 0.05, // 5%

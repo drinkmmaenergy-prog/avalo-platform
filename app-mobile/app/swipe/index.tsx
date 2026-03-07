@@ -20,7 +20,7 @@ import { functions } from "@/lib/firebase";
 
 const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
-const CARD_HEIGHT = height * 0.65;
+const CARD_HEIGHT = height * MONETIZATION_SPLITS.CHAT.creator;
 const SWIPE_THRESHOLD = width * 0.25;
 
 interface SwipeProfile {
@@ -784,3 +784,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+

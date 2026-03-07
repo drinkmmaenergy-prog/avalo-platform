@@ -12,7 +12,7 @@
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 
-import { db, serverTimestamp, generateId, admin } from './init.js';
+import { db, serverTimestamp, generateId, admin } from './init';
 import { logger } from 'firebase-functions/v2';
 import Stripe from 'stripe';
 import { FieldValue, Timestamp, auth, functions, storage, timestamp, onSchedule } from './runtime';

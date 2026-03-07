@@ -849,7 +849,7 @@ export const getMeetingSummary = onCall<{
   const partner = partnerDoc.data();
   
   // Calculate earnings (65% to earner)
-  const earnerShare = Math.floor((booking?.tokensAmount || 0) * 0.65);
+  const earnerShare = Math.floor((booking?.tokensAmount || 0) * MONETIZATION_SPLITS.CHAT.creator);
   
   // Check if feedback already exists
   const feedbackSnapshot = await db.collection('meeting_feedback')
@@ -939,7 +939,7 @@ export const submitMeetingFeedback = onCall<{
   
   // Process voluntary refund if requested
   if (voluntaryRefundPercentage > 0) {
-    const earnerShare = Math.floor((booking?.tokensAmount || 0) * 0.65);
+    const earnerShare = Math.floor((booking?.tokensAmount || 0) * MONETIZATION_SPLITS.CHAT.creator);
     refundAmount = Math.floor(earnerShare * (voluntaryRefundPercentage / 100));
     
     const refundId = generateId();
@@ -1389,6 +1389,7 @@ export const updateScheduleStatuses = onSchedule(
     console.log(`Updated ${upcomingSnapshot.size} items to active`);
   }
 );
+
 
 
 

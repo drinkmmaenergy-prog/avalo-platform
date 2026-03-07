@@ -12,7 +12,7 @@
  */
 
 import * as functions from 'firebase-functions';
-import { db, serverTimestamp } from './init.js';
+import { db, serverTimestamp } from './init';
 import { HttpsError, Timestamp, auth, onCall, timestamp, z, onSchedule } from './runtime';
 
 // Configuration

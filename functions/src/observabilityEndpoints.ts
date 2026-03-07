@@ -6,9 +6,9 @@
 
 import { onRequest } from 'firebase-functions/v2/https';
 
-import { db, serverTimestamp, generateId } from './init.js';
+import { db, serverTimestamp, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
-import { logEvent, LogLevel } from './observability.js';
+import { logEvent, LogLevel } from './observability';
 import { admin, functions, onSchedule } from './runtime';
 
 // ============================================================================
@@ -478,6 +478,7 @@ export const adminHealthSummary = onRequest(
     }
   }
 );
+
 
 
 

@@ -1,3 +1,6 @@
+'use client';
+
+import { MONETIZATION_SPLITS } from "@constants/monetization";
 /**
  * PHASE 3.3 — Creator Earnings Page (READ-ONLY)
  * 
@@ -6,9 +9,6 @@
  * 
  * Backend function consumed: getPayoutState
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getCreatorEarningsSummary, getCreatorAnalytics } from '@/lib/services/phase33';
@@ -66,7 +66,7 @@ export default function CreatorEarningsPage() {
     );
   }
   
-  const PAYOUT_RATE_PLN = 0.20; // 1 token = 0.20 PLN (display only, backend calculates actual)
+  const PAYOUT_RATE_PLN = MONETIZATION_SPLITS.EVENT_TICKET.avalo; // 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN (display only, backend calculates actual)
   
   return (
     <div className="space-y-8">
@@ -174,7 +174,7 @@ export default function CreatorEarningsPage() {
             <h3 className="font-medium text-blue-900">Revenue Split</h3>
             <p className="text-sm text-blue-700 mt-1">
               Avalo operates on a 65/35 revenue split — you keep 65% of all tokens earned.
-              Payout rate: 1 token = 0.20 PLN. Minimum payout: 1,000 tokens (200 PLN).
+              Payout rate: 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN. Minimum payout: 1,000 tokens (200 PLN).
             </p>
           </div>
         </div>
@@ -182,4 +182,7 @@ export default function CreatorEarningsPage() {
     </div>
   );
 }
+
+
+
 

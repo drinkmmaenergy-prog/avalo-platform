@@ -10,7 +10,7 @@ import {
   applyMomentumPenalty,
   detectMomentumAbuse,
   getMomentumState
-} from './pack-224-romantic-momentum.js';
+} from './pack-224-romantic-momentum';
 import { db, functions, timestamp } from './runtime';
 
 // ============================================================================
@@ -303,8 +303,8 @@ export async function onSafetyComplaintVerified(
  * Run this daily via Cloud Scheduler
  */
 export async function checkAllUsersInactivity(): Promise<void> {
-  const { db } = await import('./init.js');
-  const { checkInactivityPenalties } = await import('./pack-224-romantic-momentum.js');
+  const { db } = await import('./init');
+  const { checkInactivityPenalties } = await import('./pack-224-romantic-momentum');
   
   const statesSnap = await db.collection('romantic_momentum_states').get();
   
@@ -329,7 +329,7 @@ export async function checkAllUsersInactivity(): Promise<void> {
  * Run this daily at midnight via Cloud Scheduler
  */
 export async function createDailySnapshot(): Promise<void> {
-  const { createDailyMomentumSnapshot } = await import('./pack-224-romantic-momentum.js');
+  const { createDailyMomentumSnapshot } = await import('./pack-224-romantic-momentum');
   await createDailyMomentumSnapshot();
 }
 
@@ -366,7 +366,7 @@ export async function getMomentumStats(userId: string): Promise<{
   visualIndicator: string;
 }> {
   const state = await getMomentumState(userId);
-  const { getMomentumVisualIndicator } = await import('./pack-224-romantic-momentum.js');
+  const { getMomentumVisualIndicator } = await import('./pack-224-romantic-momentum');
   const visual = await getMomentumVisualIndicator(userId);
   
   return {
@@ -377,6 +377,7 @@ export async function getMomentumStats(userId: string): Promise<{
     visualIndicator: visual?.indicatorLevel || 'none'
   };
 }
+
 
 
 

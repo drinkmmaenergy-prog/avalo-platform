@@ -284,7 +284,7 @@ export default function TaxProfileScreen() {
               </Picker>
             </View>
             <Text style={styles.hint}>
-              Earnings are always calculated at 1 token = 0.20 PLN, but reports can show converted amounts
+              Earnings are always calculated at 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN, but reports can show converted amounts
             </Text>
           </View>
         </View>
@@ -493,3 +493,4 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
+

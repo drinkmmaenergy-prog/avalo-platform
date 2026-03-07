@@ -14,7 +14,7 @@
  * Returns discrete risk levels: NONE, LOW, MEDIUM, HIGH
  */
 
-import { db } from './init.js';
+import { db } from './init';
 
 // ============================================================================
 // TYPES

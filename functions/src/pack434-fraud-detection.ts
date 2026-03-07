@@ -146,7 +146,7 @@ export class FraudDetectionService {
         'vpn_detected',
         'developer_mode',
       ],
-      threshold: 0.65,
+      threshold: MONETIZATION_SPLITS.CHAT.creator,
       weight: 0.7,
     },
   ];
@@ -855,6 +855,7 @@ export function createFraudDetectionService(
 ): FraudDetectionService {
   return new FraudDetectionService(db);
 }
+
 
 
 

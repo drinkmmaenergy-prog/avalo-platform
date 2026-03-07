@@ -15,7 +15,7 @@ import {
   cleanupExpiredData,
   setBreakupCooldown,
   setToxicCooldown,
-} from './pack-227-desire-loop-engine.js';
+} from './pack-227-desire-loop-engine';
 import { HttpsError, admin, auth, db, onCall, logger, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';
 
 // ============================================================================
@@ -30,7 +30,7 @@ export const dailyDesireDecay = onSchedule({ schedule: "0 3 * * *", timeZone: "U
     console.log('Running daily desire decay...');
     
     try {
-      const { db } = await import('./init.js');
+      const { db } = await import('./init');
       const statesSnap = await db.collection('desire_states').limit(1000).get();
       
       let processedCount = 0;
@@ -453,7 +453,7 @@ export const triggerDesireStateCheck = functions.https.onCall(async (request) =>
   
   // Only allow users to check their own state, or admins to check any
   if (userId !== request.auth.uid) {
-    const { db } = await import('./init.js');
+    const { db } = await import('./init');
     const userDoc = await db.collection('users').doc(request.auth.uid).get();
     const isAdmin = userDoc.data()?.role === 'admin';
     
@@ -517,6 +517,7 @@ export const getMyDesireState = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', 'Failed to get desire state');
   }
 });
+
 
 
 

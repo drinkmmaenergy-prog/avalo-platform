@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Analytics Charts Component
  * Placeholder for data visualization
  */
-
-'use client';
-
 export default function AnalyticsCharts() {
   return (
     <div className="space-y-6">
@@ -26,4 +25,5 @@ export default function AnalyticsCharts() {
     </div>
   );
 }
+
 

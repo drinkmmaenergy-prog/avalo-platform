@@ -1,3 +1,5 @@
+'use client';
+
 "use client";
 
 /**
@@ -14,9 +16,6 @@
  * - Creator earnings use PAYOUT_PER_TOKEN_USD = 0.03.
  * - 1 chat = 100 tokens.
  */
-
-'use client';
-
 export const dynamic = 'force-dynamic';
 
 import React, { useEffect, useState } from 'react';
@@ -223,5 +222,6 @@ export default function WalletPage() {
     </div>
   );
 }
+
 
 

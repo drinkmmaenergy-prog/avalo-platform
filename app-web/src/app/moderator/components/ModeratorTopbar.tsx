@@ -62,3 +62,4 @@ export function ModeratorTopbar({ currentUser }: ModeratorTopbarProps) {
     </header>
   );
 }
+

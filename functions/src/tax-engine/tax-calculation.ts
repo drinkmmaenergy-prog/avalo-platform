@@ -37,7 +37,7 @@ export async function calculateTaxLiability(
     }
 
     const grossRevenue = revenueData.reduce((sum, item) => sum + item.amount, 0);
-    const platformFee = grossRevenue * 0.35;
+    const platformFee = grossRevenue * MONETIZATION_SPLITS.CHAT.avalo;
     const netRevenue = grossRevenue - platformFee;
 
     const revenueByCategory: Record<RevenueCategory, number> = {
@@ -309,6 +309,7 @@ export async function recalculateTaxLiabilityForPeriod(
     };
   }
 }
+
 
 
 

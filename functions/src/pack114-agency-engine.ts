@@ -616,7 +616,7 @@ export async function applyAgencyEarningsSplit(params: {
 
   if (linkQuery.empty) {
     // No agency link, creator gets full 65%
-    const creatorAmount = Math.floor(grossTokens * 0.65);
+    const creatorAmount = Math.floor(grossTokens * MONETIZATION_SPLITS.CHAT.creator);
     return {
       agencyAmount: 0,
       creatorAmount,
@@ -627,7 +627,7 @@ export async function applyAgencyEarningsSplit(params: {
   const link = linkQuery.docs[0].data() as CreatorAgencyLink;
 
   // Calculate split
-  const platformAmount = Math.floor(grossTokens * 0.35); // 35% to Avalo (fixed)
+  const platformAmount = Math.floor(grossTokens * MONETIZATION_SPLITS.CHAT.avalo); // 35% to Avalo (fixed)
   const creatorShareBefore = grossTokens - platformAmount; // 65% creator share
 
   // Agency gets percentage of creator's 65%
@@ -808,6 +808,7 @@ async function logAgencyAudit(params: {
     },
   });
 }
+
 
 
 

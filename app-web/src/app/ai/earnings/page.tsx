@@ -1,4 +1,6 @@
-"use client";
+'use client';
+
+import { MONETIZATION_SPLITS } from '@constants/monetization';
 
 /**
  * PACK 279E — AI Creator Earnings Dashboard (Web)
@@ -22,8 +24,8 @@ import { requireDb } from '@/lib/firebase';
 import { TOKEN_PAYOUT_USD, CREATOR_REVENUE_SHARE } from '@/lib/economyConfig';
 
 const TOKEN_TO_USD = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.03 USD)
-const CREATOR_SHARE = 0.65; // 65% to creator (UNCHANGED)
-const AVALO_SHARE = 0.35; // 35% to Avalo (UNCHANGED)
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator (UNCHANGED)
+const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo; // 35% to Avalo (UNCHANGED)
 
 interface EarningTransaction {
   id: string;
@@ -420,4 +422,7 @@ export default function AIEarningsWebPage() {
     </div>
   );
 }
+
+
+
 

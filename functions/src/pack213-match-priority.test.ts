@@ -237,8 +237,8 @@ describe('PACK 213: Match Priority Engine', () => {
       const score = await calculateMatchPriority('user1', 'user2');
       
       // 2 overlapping interests out of 4 = 50% overlap
-      // Score should be 0.3 + (0.5 * 0.7) = 0.65
-      expect(score.components.interestProximityScore).toBeCloseTo(0.65, 1);
+      // Score should be 0.3 + (0.5 * 0.7) = MONETIZATION_SPLITS.CHAT.creator
+      expect(score.components.interestProximityScore).toBeCloseTo(MONETIZATION_SPLITS.CHAT.creator, 1);
     });
   });
 
@@ -365,14 +365,14 @@ describe('PACK 213: Match Priority Engine', () => {
       };
 
       // Expected weighted score:
-      // (0.8 * 0.35) + (0.7 * 0.25) + (0.9 * 0.25) + (0.85 * 0.10) + (0.6 * 0.05)
+      // (0.8 * MONETIZATION_SPLITS.CHAT.avalo) + (0.7 * 0.25) + (0.9 * 0.25) + (0.85 * 0.10) + (0.6 * 0.05)
       // = 0.28 + 0.175 + 0.225 + 0.085 + 0.03 = 0.795
       // On 0-100 scale: 79.5
 
       // For testing, we'd need to mock each component's calculation
       // This is more of an integration test
       expect(
-        (mockComponents.attractionScore * 0.35) +
+        (mockComponents.attractionScore * MONETIZATION_SPLITS.CHAT.avalo) +
         (mockComponents.reputationScore * 0.25) +
         (mockComponents.earningsSynergyScore * 0.25) +
         (mockComponents.recentActivityScore * 0.10) +
@@ -524,12 +524,12 @@ describe('PACK 213: Match Priority Engine', () => {
 
     it('should NOT modify revenue split', () => {
       // PACK 213 doesn't touch the 65/35 split
-      const earnerShare = 0.65;
-      const platformShare = 0.35;
+      const earnerShare = MONETIZATION_SPLITS.CHAT.creator;
+      const platformShare = MONETIZATION_SPLITS.CHAT.avalo;
       
       expect(earnerShare + platformShare).toBe(1.0);
-      expect(earnerShare).toBe(0.65);
-      expect(platformShare).toBe(0.35);
+      expect(earnerShare).toBe(MONETIZATION_SPLITS.CHAT.creator);
+      expect(platformShare).toBe(MONETIZATION_SPLITS.CHAT.avalo);
     });
   });
 });
@@ -553,13 +553,14 @@ describe('PACK 213: Earnings Synergy Scenarios', () => {
 
   it('should rate Both Earners as LOW', () => {
     const expectedLevel = 'LOW';
-    const expectedScore = 0.30;
+    const expectedScore = MONETIZATION_SPLITS.SUBSCRIPTION.avalo;
     
     expect(expectedScore).toBeLessThan(0.4);
   });
 });
 
 console.log('✅ PACK 213: Test suite defined');
+
 
 
 

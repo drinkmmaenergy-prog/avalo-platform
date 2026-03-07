@@ -19,7 +19,7 @@ export declare const MESSAGING_CONFIG: {
     readonly FREE_MESSAGES_COUNT: 3;
     /** Cost per message after free messages (in tokens) */
     readonly MESSAGE_COST: 10;
-    /** Avalo platform fee on message payments (as decimal, e.g., 0.30 = 30%) */
+    /** Avalo platform fee on message payments (as decimal, e.g., MONETIZATION_SPLITS.SUBSCRIPTION.avalo = 30%) */
     readonly MESSAGE_FEE_PERCENTAGE: 0.3;
 };
 export declare const EARN_TO_CHAT_CONFIG: {
@@ -369,7 +369,7 @@ declare const _default: {
         readonly FREE_MESSAGES_COUNT: 3;
         /** Cost per message after free messages (in tokens) */
         readonly MESSAGE_COST: 10;
-        /** Avalo platform fee on message payments (as decimal, e.g., 0.30 = 30%) */
+        /** Avalo platform fee on message payments (as decimal, e.g., MONETIZATION_SPLITS.SUBSCRIPTION.avalo = 30%) */
         readonly MESSAGE_FEE_PERCENTAGE: 0.3;
     };
     EARN_TO_CHAT_CONFIG: {
@@ -640,3 +640,4 @@ declare const _default: {
     splitEscrowTokens: typeof splitEscrowTokens;
 };
 export default _default;
+

@@ -4,13 +4,13 @@
  * Administrative functions for managing Destiny Weeks system
  */
 
-import { db, serverTimestamp, generateId } from './init.js';
+import { db, serverTimestamp, generateId } from './init';
 import { 
   rotateWeeklyTheme, 
   getCurrentWeeklyTheme,
   type WeeklyTheme,
   type WeeklyThemeSlug 
-} from './pack-223-destiny-weeks.js';
+} from './pack-223-destiny-weeks';
 import type { Timestamp } from 'firebase-admin/firestore';
 import { admin, functions } from './runtime';
 
@@ -413,6 +413,7 @@ export async function resetUserDestinyState(userId: string): Promise<void> {
     updatedAt: serverTimestamp()
   });
 }
+
 
 
 

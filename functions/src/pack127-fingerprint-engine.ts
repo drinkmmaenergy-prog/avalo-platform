@@ -429,7 +429,7 @@ export async function detectDerivative(
       const confidence = similarity / 100;
       
       // Derivative threshold: 70-85% similarity
-      if (confidence >= (DEFAULT_IP_CONFIG.derivativeMatchThreshold || 0.70) &&
+      if (confidence >= (DEFAULT_IP_CONFIG.derivativeMatchThreshold || MONETIZATION_SPLITS.SUBSCRIPTION.creator) &&
           confidence < (DEFAULT_IP_CONFIG.perceptualMatchThreshold || 0.85)) {
         
         // Determine derivative type based on metadata differences
@@ -556,6 +556,7 @@ export async function blockUploadDueToMatch(
   
   console.log(`[IP Protection] Blocked upload ${fingerprintId} due to match ${matchId}`);
 }
+
 
 
 

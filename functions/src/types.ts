@@ -8,7 +8,7 @@ import {
   Timestamp,
   FieldValue
 } from "firebase-admin/firestore";
-import { Gender, ChatStatus, TransactionType, VerificationStatus, BookingStatus } from './config.js';
+import { Gender, ChatStatus, TransactionType, VerificationStatus, BookingStatus } from './config';
 import { admin } from './runtime';
 
 // =======================================================
@@ -70,7 +70,7 @@ export interface UserWallet {
   balance: number;
   pending: number;
   earned: number;
-  settlementRate: number; // 0.20 USD per token
+  settlementRate: number; // MONETIZATION_SPLITS.EVENT_TICKET.avalo USD per token
 }
 
 // =======================================================
@@ -311,6 +311,8 @@ export interface ChatRoles {
   initiator: string;
   receiver: string;
 }
+
+
 
 
 

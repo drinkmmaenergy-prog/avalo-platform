@@ -81,7 +81,7 @@ export default function TokenStoreScreen() {
       `Important:\n` +
       `• 18+ only\n` +
       `• No refunds (except where required by law)\n` +
-      `• Payout rate: 0.20 PLN/token`,
+      `• Payout rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN/token`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -138,7 +138,7 @@ export default function TokenStoreScreen() {
         <View style={styles.priceRow}>
           <Text style={styles.valueLabel}>Payout value:</Text>
           <Text style={styles.valueValue}>
-            {(pack.tokens * 0.20).toFixed(2)} PLN
+            {(pack.tokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo).toFixed(2)} PLN
           </Text>
         </View>
 
@@ -215,7 +215,7 @@ export default function TokenStoreScreen() {
             ✓ Secure payment via Stripe{'\n'}
             ✓ Instant token delivery{'\n'}
             ✓ 18+ required{'\n'}
-            ✓ Payout rate: 0.20 PLN/token{'\n'}
+            ✓ Payout rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN/token{'\n'}
             ⚠️ No refunds on token purchases{'\n'}
             ⚠️ Terms &amp; Conditions apply
           </Text>
@@ -371,3 +371,4 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
 });
+

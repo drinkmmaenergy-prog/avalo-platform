@@ -429,7 +429,7 @@ export const pack371_updateTrustScore = functions.https.onCall(async (data, cont
     // Calculate overall score (weighted average)
     const overallScore = (
       profileVerification * 0.25 +
-      creatorEarningsHonesty * 0.20 +
+      creatorEarningsHonesty * MONETIZATION_SPLITS.EVENT_TICKET.avalo +
       appointmentReliability * 0.25 +
       reportHistory * 0.15 +
       identityConfirmation * 0.15
@@ -951,3 +951,4 @@ export {
   detectReputationAttack as pack371_detectReputationAttack,
   updatePlatformTrustMetrics as pack371_updatePlatformTrustMetrics,
 };
+

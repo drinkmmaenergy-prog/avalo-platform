@@ -196,3 +196,5 @@ describe('Chat Integration - Wallet Operations', () => {
     expect(afterClose.payerBalance).toBe(955);
   });
 });
+
+import { getDb, setupTestEnvironment, testData, createTestUser, createTestTransaction, now, minutesAgo, hoursAgo, daysAgo } from '../src/testUtils'

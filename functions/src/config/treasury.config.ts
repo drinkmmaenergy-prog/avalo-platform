@@ -87,7 +87,7 @@ export const SECURITY_POLICY = {
  * Fiat to token conversion
  */
 export const PURCHASE_POLICY = {
-  FIXED_RATE_PER_TOKEN_USD: 0.20,      // 1 token = €0.20 (from PACK 83)
+  FIXED_RATE_PER_TOKEN_USD: MONETIZATION_SPLITS.EVENT_TICKET.avalo,      // 1 token = €MONETIZATION_SPLITS.EVENT_TICKET.avalo (from PACK 83)
   MIN_PURCHASE_TOKENS: 100,            // Minimum purchase
   MAX_PURCHASE_TOKENS: 1000000,        // Maximum single purchase
   SUPPORTED_CURRENCIES: ['USD', 'USD', 'USD', 'USD'],
@@ -101,7 +101,7 @@ export const PURCHASE_POLICY = {
  */
 export const FRAUD_THRESHOLDS = {
   HIGH_VELOCITY_SPENDS_PER_HOUR: 50,   // Unusual spending rate
-  SUSPICIOUS_REFUND_RATE: 0.20,        // 20%+ refund rate
+  SUSPICIOUS_REFUND_RATE: MONETIZATION_SPLITS.EVENT_TICKET.avalo,        // 20%+ refund rate
   RAPID_PAYOUT_REQUESTS: 5,            // Too many payout requests
   GIFTING_LOOP_THRESHOLD: 10,          // Circular gifting detection
   SAME_RECIPIENT_LIMIT_PER_HOUR: 20,   // Anti-farming limit
@@ -225,6 +225,12 @@ export function getTreasuryConfigSummary(): Record<string, any> {
 
 // Validate on module load
 validateTreasuryConfig();
+
+
+
+
+
+
 
 
 

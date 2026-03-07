@@ -334,7 +334,7 @@ export async function calculateEffectiveEarning(
   takeHomePercentage: number;
 }> {
   // Platform fee (e.g., 20%)
-  const platformFee = grossEarning * 0.20;
+  const platformFee = grossEarning * MONETIZATION_SPLITS.EVENT_TICKET.avalo;
   const afterPlatformFee = grossEarning - platformFee;
 
   // Withholding tax
@@ -358,3 +358,4 @@ export async function calculateEffectiveEarning(
     takeHomePercentage
   };
 }
+

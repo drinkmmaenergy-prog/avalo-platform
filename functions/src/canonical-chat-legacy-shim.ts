@@ -29,9 +29,9 @@ import {
   expireInactiveChats,
   countBillableWords,
   isCanonicalChat,
-} from './canonical-chat-engine.js';
-import { CANONICAL_LOGIC_VERSION } from './types/canonical-chat.types.js';
-import { db } from './init.js';
+} from './canonical-chat-engine';
+import { CANONICAL_LOGIC_VERSION } from './types/canonical-chat.types';
+import { db } from './init';
 
 // ============================================================================
 // DEPRECATION LOGGING
@@ -237,6 +237,7 @@ export async function routeMessageBilling(
 ): Promise<any> {
   return processMessage(chatId, senderId, messageText);
 }
+
 
 
 

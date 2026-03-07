@@ -55,9 +55,9 @@ interface EarningsData {
   transactions: EarningTransaction[];
 }
 
-const TOKEN_TO_PLN = 0.20; // 1 Token = 0.20 PLN
-const CREATOR_SHARE = 0.65; // 65% to creator
-const AVALO_SHARE = 0.35; // 35% to Avalo
+const TOKEN_TO_PLN = MONETIZATION_SPLITS.EVENT_TICKET.avalo; // 1 Token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
+const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo; // 35% to Avalo
 
 export default function AIEarningsDashboardScreen() {
   const router = useRouter();
@@ -724,3 +724,4 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+

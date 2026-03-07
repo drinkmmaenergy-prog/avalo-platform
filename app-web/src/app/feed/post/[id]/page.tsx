@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * PACK 323 - Post Viewer Page (Web)
  * Single post view with comments
  */
-
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 

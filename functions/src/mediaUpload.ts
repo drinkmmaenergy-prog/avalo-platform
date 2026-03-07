@@ -6,7 +6,7 @@
  * integration with image CSAM detection services.
  */
 
-import { db, serverTimestamp } from './init.js';
+import { db, serverTimestamp } from './init';
 // Removed: HttpsError import conflicts with local declaration
 
 // Simple error class
@@ -34,7 +34,7 @@ export async function validateMediaUpload(
   
   // Phase 22: CSAM Shield - Check for CSAM risk in uploaded media
   try {
-    const { evaluateImageForCsamRisk, createCsamIncident, applyImmediateProtectiveActions } = await import('./csamShield.js');
+    const { evaluateImageForCsamRisk, createCsamIncident, applyImmediateProtectiveActions } = await import('./csamShield');
     
     // PLACEHOLDER: This currently does not implement real scanning
     // Future implementation should integrate with:
@@ -100,7 +100,7 @@ async function flagMediaForManualReview(
  * @returns True if upload is allowed
  */
 export async function canUploadMedia(userId: string): Promise<boolean> {
-  const { isUserUnderCsamReview } = await import('./csamShield.js');
+  const { isUserUnderCsamReview } = await import('./csamShield');
   return !(await isUserUnderCsamReview(userId));
 }
 
@@ -108,6 +108,7 @@ export default {
   validateMediaUpload,
   canUploadMedia,
 };
+
 
 
 

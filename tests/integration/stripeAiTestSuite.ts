@@ -6,7 +6,7 @@
  * Automated testing for:
  * - Stripe payment integration & webhooks
  * - Token purchase flows (purchaseTokensV2, getTransactionHistoryV2, getUserWalletsV2)
- * - Token pricing logic (0.20 PLN baseline, dynamic tiers)
+ * - Token pricing logic (MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN baseline, dynamic tiers)
  * - AI content moderation (OpenAI & Anthropic)
  * - NSFW detection
  * - API authentication
@@ -60,7 +60,7 @@ export class StripeAiTestSuite {
   private testSessionId: string = '';
   
   // Configuration
-  private baselineTokenPrice: number = 0.20; // PLN
+  private baselineTokenPrice: number = MONETIZATION_SPLITS.EVENT_TICKET.avalo; // PLN
   private testTokenAmounts: number[] = [10, 50, 100, 500, 1000];
   
   // Performance thresholds
@@ -330,7 +330,7 @@ export class StripeAiTestSuite {
     console.log('💰 4. TOKEN PRICING LOGIC');
     console.log('   ──────────────────────\n');
 
-    await this.runTest('Pricing: Baseline token price (0.20 PLN)', async () => {
+    await this.runTest('Pricing: Baseline token price (MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN)', async () => {
       const expectedPrice = this.baselineTokenPrice;
       const tokenAmount = 10;
       const calculatedPrice = tokenAmount * expectedPrice;
@@ -347,7 +347,7 @@ export class StripeAiTestSuite {
 
     await this.runTest('Pricing: Volume discount tiers', async () => {
       const pricingTiers = [
-        { tokens: 10, pricePerToken: 0.20, discount: '0%' },
+        { tokens: 10, pricePerToken: MONETIZATION_SPLITS.EVENT_TICKET.avalo, discount: '0%' },
         { tokens: 50, pricePerToken: 0.19, discount: '5%' },
         { tokens: 100, pricePerToken: 0.18, discount: '10%' },
         { tokens: 500, pricePerToken: 0.17, discount: '15%' },

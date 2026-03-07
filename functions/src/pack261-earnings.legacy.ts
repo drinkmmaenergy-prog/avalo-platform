@@ -5,8 +5,8 @@ import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, 
 const db = admin.firestore();
 
 // Constants
-const AVALO_COMMISSION = 0.35; // 35% platform commission
-const CREATOR_SHARE = 0.65; // 65% creator earnings
+const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.avalo; // 35% platform commission
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65% creator earnings
 const MIN_PAYOUT_USD = 20;
 
 // Token conversion rates per region (example rates)
@@ -605,6 +605,7 @@ export const notifyTopSupporterActive = onDocumentUpdated('users/{userId}/presen
       }
     }
   });
+
 
 
 

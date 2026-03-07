@@ -310,7 +310,7 @@ describe('I.3 Only earner messages billable; payer messages never billed', () =>
     expect(result.billed).toBe(true);
     expect(result.newBuckets).toBe(10);
     expect(result.tokensConsumed).toBe(10);
-    // floor(10 * 0.65) = floor(6.5) = 6
+    // floor(10 * MONETIZATION_SPLITS.CHAT.creator) = floor(6.5) = 6
     expect(result.earnerCredit).toBe(6);
     // Remainder: 10 - 6 = 4
     expect(result.avaloCredit).toBe(4);
@@ -698,11 +698,11 @@ describe('Deterministic floor for buckets (no Math.round)', () => {
     expect(Math.floor(7 / 7)).toBe(1);
   });
 
-  test('earner credit uses floor: floor(10 * 0.65) = 6 (not round to 7)', () => {
+  test('earner credit uses floor: floor(10 * MONETIZATION_SPLITS.CHAT.creator) = 6 (not round to 7)', () => {
     expect(Math.floor(10 * EARNER_REVENUE_SPLIT)).toBe(6);
   });
 
-  test('avalo gets remainder: 10 - floor(10*0.65) = 4', () => {
+  test('avalo gets remainder: 10 - floor(10*MONETIZATION_SPLITS.CHAT.creator) = 4', () => {
     const earner = Math.floor(10 * EARNER_REVENUE_SPLIT);
     const avalo = 10 - earner;
     expect(avalo).toBe(4);
@@ -778,6 +778,9 @@ describe('Edge cases', () => {
     expect(state.totalBucketsConsumed).toBe(2);
   });
 });
+
+
+
 
 
 

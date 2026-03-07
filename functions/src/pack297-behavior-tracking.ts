@@ -6,7 +6,7 @@
  * NO ECONOMIC CHANGES - only tracks behavior for safety
  */
 
-import { db } from './init.js';
+import { db } from './init';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, increment } from './runtime';
 

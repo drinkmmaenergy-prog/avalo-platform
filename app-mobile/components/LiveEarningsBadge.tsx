@@ -283,13 +283,13 @@ export function LiveEarningsSummary({
         <View style={summaryStyles.breakdownRow}>
           <Text style={summaryStyles.breakdownLabel}>Platform fee (35%)</Text>
           <Text style={summaryStyles.breakdownValue}>
-            {Math.round(totalEarnings / 0.65 * 0.35)} tokens
+            {Math.round(totalEarnings / MONETIZATION_SPLITS.CHAT.creator * MONETIZATION_SPLITS.CHAT.avalo)} tokens
           </Text>
         </View>
         <View style={[summaryStyles.breakdownRow, summaryStyles.breakdownTotal]}>
           <Text style={summaryStyles.breakdownLabelBold}>Total Revenue</Text>
           <Text style={summaryStyles.breakdownValueBold}>
-            {Math.round(totalEarnings / 0.65)} tokens
+            {Math.round(totalEarnings / MONETIZATION_SPLITS.CHAT.creator)} tokens
           </Text>
         </View>
       </View>
@@ -384,3 +384,4 @@ const summaryStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+

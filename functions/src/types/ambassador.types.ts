@@ -700,12 +700,13 @@ export const AMBASSADOR_BENEFITS = {
 export const COMMISSION_STRUCTURE = {
   rate: 0.05,                    // 5%
   source: 'platform_share',      // from Avalo's 35%
-  creatorSplit: 0.65,           // Creator still gets 65%
-  platformSplit: 0.35,          // Avalo takes 35%
+  creatorSplit: MONETIZATION_SPLITS.CHAT.creator,           // Creator still gets 65%
+  platformSplit: MONETIZATION_SPLITS.CHAT.avalo,          // Avalo takes 35%
   noInflation: true,            // No token inflation
   noBonuses: true,              // No bonus tokens
   noFreeTokens: true            // No free tokens
 };
+
 
 
 

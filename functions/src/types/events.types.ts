@@ -227,8 +227,8 @@ export const EVENT_CONFIG = {
   maxPrice: 5000,
   
   // Revenue split (NON-NEGOTIABLE)
-  platformFeePercentage: 0.35,    // 35%
-  creatorEarningsPercentage: 0.65, // 65%
+  platformFeePercentage: MONETIZATION_SPLITS.CHAT.avalo,    // 35%
+  creatorEarningsPercentage: MONETIZATION_SPLITS.CHAT.creator, // 65%
   
   // Capacity limits
   minCapacity: 1,
@@ -384,6 +384,7 @@ export function validateEventData(data: Partial<Event>): {
     errors,
   };
 }
+
 
 
 

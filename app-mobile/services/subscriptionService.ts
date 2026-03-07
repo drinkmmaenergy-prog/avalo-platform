@@ -10,8 +10,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SUBSCRIPTION_STORAGE_KEY = '@avalo_subscriptions';
 const CREATOR_PRICING_KEY = '@avalo_creator_subscription_prices';
-const AVALO_COMMISSION = 0.35; // 35% commission
-const CREATOR_EARNINGS = 0.65; // 65% to creator
+const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.avalo; // 35% commission
+const CREATOR_EARNINGS = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
 
 export interface SubscriptionData {
   creatorId: string;

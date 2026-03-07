@@ -10,7 +10,7 @@
  * PACK 85 Integration: Reports and blocks now log to Trust & Risk Engine
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import { onUserReported, onUserBlocked } from './trustRiskIntegrations';
 
 // ============================================================================

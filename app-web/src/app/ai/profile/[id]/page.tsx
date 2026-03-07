@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * PACK 279D - AI Profile Page (Web)
  * Detailed AI Companion profile with pricing and session routing
  */
-
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { doc, getDoc, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';

@@ -29,9 +29,9 @@ interface RankingWeights {
 }
 
 const DEFAULT_WEIGHTS: RankingWeights = {
-  recency: 0.35,
-  relationship: 0.30,
-  engagement: 0.20,
+  recency: MONETIZATION_SPLITS.CHAT.avalo,
+  relationship: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  engagement: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   locality: 0.10,
   tierBoost: 0.03,
   risk: 0.02
@@ -526,6 +526,7 @@ async function hydrateContentItems(items: FeedItem[]): Promise<any[]> {
 
   return results;
 }
+
 
 
 

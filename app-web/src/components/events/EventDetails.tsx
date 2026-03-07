@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Event Details Component
  * Placeholder for event information and tickets
  */
-
-'use client';
-
 export default function EventDetails() {
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -18,4 +17,5 @@ export default function EventDetails() {
     </div>
   );
 }
+
 

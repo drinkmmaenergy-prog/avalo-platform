@@ -240,7 +240,7 @@ export async function detectSpendHarvesting(
 
   if (contextAnalysis.pressureLanguage > 0.5) {
     patterns.push("pressure_tactics_detected");
-    riskScore += 0.35;
+    riskScore += MONETIZATION_SPLITS.CHAT.avalo;
   }
 
   riskScore = Math.min(1.0, riskScore);
@@ -530,7 +530,7 @@ export async function calculateFarmingRiskScore(userId: string): Promise<Farming
     .get();
   
   if (!clustersSnapshot.empty) {
-    const weight = 0.35;
+    const weight = MONETIZATION_SPLITS.CHAT.avalo;
     factors.push({
       factor: "multi_account_clustering",
       weight,
@@ -661,6 +661,7 @@ export async function resolveFarmingCase(
     resolvedBy
   });
 }
+
 
 
 

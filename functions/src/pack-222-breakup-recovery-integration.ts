@@ -4,9 +4,9 @@
  * Integration points with PACK 221 (Romantic Journeys), PACK 223 (Destiny Weeks), and other systems
  */
 
-import { detectBreakupState, trackRecoveryActivity, pauseRecoveryForSafety, markUserSafeForRecovery } from './pack-222-breakup-recovery.js';
-import type { BreakupReason } from './pack-222-breakup-recovery.js';
-import { syncBreakupRecoveryStatus } from './pack-223-destiny-weeks.js';
+import { detectBreakupState, trackRecoveryActivity, pauseRecoveryForSafety, markUserSafeForRecovery } from './pack-222-breakup-recovery';
+import type { BreakupReason } from './pack-222-breakup-recovery';
+import { syncBreakupRecoveryStatus } from './pack-223-destiny-weeks';
 
 /**
  * Hook: Called when a romantic journey ends
@@ -171,6 +171,7 @@ export async function onSafetyIncidentResolved(
     console.error('Error on safety incident resolution:', error);
   }
 }
+
 
 
 

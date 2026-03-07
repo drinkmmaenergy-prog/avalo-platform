@@ -261,7 +261,7 @@ export async function classifyContent(
   const spamMatches = spamKeywords.filter((kw) => lowerContent.includes(kw));
   if (spamMatches.length > 1 && confidence < 0.75) {
     category = ContentCategory.SPAM;
-    confidence = Math.min(0.9, 0.65 + spamMatches.length * 0.1);
+    confidence = Math.min(0.9, MONETIZATION_SPLITS.CHAT.creator + spamMatches.length * 0.1);
     matchedKeywords = spamMatches;
   }
 
@@ -411,6 +411,7 @@ async function logEngineEvent(
     timestamp: FieldValue.serverTimestamp(),
   });
 }
+
 
 
 

@@ -438,8 +438,8 @@ export function isValidExportType(type: string): type is ExportType {
 // Constants
 // ===========================
 
-export const PLATFORM_FEE_PERCENTAGE = 0.35;  // 35%
-export const CREATOR_SHARE_PERCENTAGE = 0.65; // 65%
+export const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo;  // 35%
+export const CREATOR_SHARE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.creator; // 65%
 
 export const EXPORT_EXPIRY_HOURS = 24;
 export const MAX_EXPORT_DOWNLOADS = 3;
@@ -485,6 +485,7 @@ export class ExportError extends Error {
     this.name = 'ExportError';
   }
 }
+
 
 
 

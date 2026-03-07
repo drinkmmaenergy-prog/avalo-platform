@@ -5,7 +5,7 @@
  * NO ECONOMIC CHANGES - only controls feature availability
  */
 
-import { db } from './init.js';
+import { db } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { createHash } from 'crypto';
 import { admin } from './runtime';

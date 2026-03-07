@@ -16,7 +16,7 @@
  * - Must be 18+ verified to host
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import {
   LIVE_COLLECTIONS,
   LIVE_REVENUE,
@@ -29,12 +29,12 @@ import {
   canAffordGift,
   canAffordQueue,
   type LiveGift,
-} from './config/liveMonetization.js';
+} from './config/liveMonetization';
 
 // Trust & Ranking Integration
-import { recordRiskEvent, evaluateUserRisk } from './trustEngine.js';
-import { recordRankingAction } from './rankingEngine.js';
-import { isAccountActive } from './accountLifecycle.js';
+import { recordRiskEvent, evaluateUserRisk } from './trustEngine';
+import { recordRankingAction } from './rankingEngine';
+import { isAccountActive } from './accountLifecycle';
 import { Timestamp, timestamp } from './runtime';
 
 // Simple error class
@@ -1029,6 +1029,7 @@ export async function getHostLiveDashboard(hostId: string): Promise<any> {
     canGoLive: await validateHostEligibility(hostId),
   };
 }
+
 
 
 

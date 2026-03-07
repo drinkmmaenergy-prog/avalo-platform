@@ -301,7 +301,7 @@ export async function calculateReferralKPIs(): Promise<ReferralKPIs> {
     const revenuePerReferral = 5.0; // Placeholder: $5 average revenue per referred user
 
     // Retention rate (placeholder - would need historical data)
-    const retentionRateD30 = 0.65; // 65% retention after 30 days
+    const retentionRateD30 = MONETIZATION_SPLITS.CHAT.creator; // 65% retention after 30 days
 
     const kpis: ReferralKPIs = {
       viralCoefficient,
@@ -364,6 +364,7 @@ export async function scheduleKPICalculation(): Promise<void> {
   logger.info('Scheduled referral KPI calculation triggered');
   await calculateReferralKPIs();
 }
+
 
 
 

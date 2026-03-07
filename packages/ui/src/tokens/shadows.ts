@@ -23,7 +23,7 @@ export const shadows = {
     md: {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.30,
+      shadowOpacity: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
       shadowRadius: 4.65,
       elevation: 8,
     },
@@ -69,4 +69,5 @@ export const shadows = {
 } as const;
 
 export type ShadowToken = typeof shadows;
+
 

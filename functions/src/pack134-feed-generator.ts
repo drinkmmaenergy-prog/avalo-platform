@@ -335,7 +335,7 @@ async function scoreAndRankContent(
     
     // Combine scores with weights
     const relevanceScore = 
-      (interestMatch * 0.35) +
+      (interestMatch * MONETIZATION_SPLITS.CHAT.avalo) +
       (timeRelevance * 0.15) +
       (freshnessScore * 0.25) +
       (qualityScore * 0.25);
@@ -622,6 +622,7 @@ export async function getRecommendationReason(
   
   return reasonDoc.data() as RecommendationReason;
 }
+
 
 
 

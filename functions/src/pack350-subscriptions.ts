@@ -9,7 +9,7 @@
  * - Store compliance (Apple / Google / Stripe)
  */
 
-import { db, serverTimestamp, generateId, timestamp } from './init.js';
+import { db, serverTimestamp, generateId, timestamp } from './init';
 // Removed: HttpsError import conflicts with local declaration
 
 type Timestamp = ReturnType<typeof timestamp.now>;

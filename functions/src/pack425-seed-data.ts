@@ -252,7 +252,7 @@ export const COUNTRY_CONFIGS: CountryConfig[] = [
     languageCodes: ['es'],
     currency: 'MXN',
     asoScore: 70,
-    trustScore: 0.65,
+    trustScore: MONETIZATION_SPLITS.CHAT.creator,
     fraudRiskScore: 50,
     legalRiskLevel: 'MEDIUM',
     primarySegment: 'YOUNG_DIGITAL',
@@ -317,7 +317,7 @@ export const COUNTRY_CONFIGS: CountryConfig[] = [
     languageCodes: ['ar'],
     currency: 'SAR',
     asoScore: 60,
-    trustScore: 0.65,
+    trustScore: MONETIZATION_SPLITS.CHAT.creator,
     fraudRiskScore: 50,
     legalRiskLevel: 'HIGH',
     primarySegment: 'SAFETY_SENSITIVE',
@@ -397,7 +397,7 @@ export const COUNTRY_CONFIGS: CountryConfig[] = [
     languageCodes: ['hi', 'en'],
     currency: 'INR',
     asoScore: 70,
-    trustScore: 0.65,
+    trustScore: MONETIZATION_SPLITS.CHAT.creator,
     fraudRiskScore: 65,
     legalRiskLevel: 'HIGH',
     primarySegment: 'PRICE_SENSITIVE',
@@ -473,6 +473,7 @@ export async function seedCountry(config: CountryConfig): Promise<void> {
     }
   );
 }
+
 
 
 

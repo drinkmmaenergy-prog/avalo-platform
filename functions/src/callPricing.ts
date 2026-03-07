@@ -7,7 +7,7 @@
  * NO TOKEN PRICE CHANGES - uses existing pricing from config
  */
 
-import { db } from './init.js';
+import { db } from './init';
 
 export interface CallPricing {
   tokensPerMinute: number;

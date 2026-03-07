@@ -204,7 +204,7 @@ export default function WalletPage() {
             💡 About Tokens
           </h3>
           <ul className="space-y-2 text-sm text-blue-800">
-            <li>• 1 token = 0.20 PLN settlement rate for creators</li>
+            <li>• 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN settlement rate for creators</li>
             <li>• Tokens are used for chat messages and calendar bookings</li>
             <li>• Larger packages offer better value</li>
             <li>• Unused tokens never expire</li>
@@ -225,3 +225,4 @@ export default function WalletPage() {
     </div>
   );
 }
+

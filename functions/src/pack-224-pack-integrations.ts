@@ -7,9 +7,9 @@
  * - PACK 223: Destiny Weeks
  */
 
-import { db, serverTimestamp } from './init.js';
-import { trackMomentumAction, applyMomentumPenalty, getMomentumState } from './pack-224-romantic-momentum.js';
-import { syncBreakupRecoveryStatus as syncDestinyBreakupStatus } from './pack-223-destiny-weeks.js';
+import { db, serverTimestamp } from './init';
+import { trackMomentumAction, applyMomentumPenalty, getMomentumState } from './pack-224-romantic-momentum';
+import { syncBreakupRecoveryStatus as syncDestinyBreakupStatus } from './pack-223-destiny-weeks';
 import { timestamp } from './runtime';
 
 // ============================================================================
@@ -373,6 +373,7 @@ export const momentumIntegrationHooks = {
   // Scheduled
   checkBreakupRecoveryProgress
 };
+
 
 
 

@@ -176,12 +176,13 @@ export const DISCOVERY_CONSTANTS = {
 // Ranking weight configuration
 export const DEFAULT_RANKING_WEIGHTS: RankingWeights = {
   distance: 0.25,
-  activity: 0.30,
-  popularity: 0.20,
+  activity: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  popularity: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   matchIntent: 0.15,
   tierBoost: 0.05,
   risk: 0.05,
 };
+
 
 
 

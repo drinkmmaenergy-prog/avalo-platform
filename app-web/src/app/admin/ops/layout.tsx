@@ -1,12 +1,11 @@
+'use client';
+
 /**
  * PHASE 3.3 — Admin Ops Layout
  * 
  * Layout for admin ops views with admin role gating.
  * READ-ONLY access — no wallet balance mutations.
  */
-
-'use client';
-
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -126,4 +125,5 @@ export default function AdminOpsLayout({
     </div>
   );
 }
+
 

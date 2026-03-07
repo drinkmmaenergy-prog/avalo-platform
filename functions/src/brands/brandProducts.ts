@@ -527,7 +527,7 @@ async function releaseBrandRoyalties(purchase_id: string) {
       creatorShare = Math.floor(totalTokens * (creatorPercent / 100));
       brandShare = totalTokens - creatorShare;
     } else {
-      creatorShare = Math.floor(totalTokens * 0.35);
+      creatorShare = Math.floor(totalTokens * MONETIZATION_SPLITS.CHAT.creator);
       brandShare = totalTokens - creatorShare;
     }
   }
@@ -696,6 +696,8 @@ export const listBrandProducts = functions.https.onCall(async (request) => {
     };
   }
 );
+
+
 
 
 

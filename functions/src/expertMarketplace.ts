@@ -846,7 +846,7 @@ export const enrollInCurriculum = onCall(
     }
 
     const priceTokens = curriculumData.priceTokens;
-    const platformFee = Math.floor(priceTokens * 0.35);
+    const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.avalo);
     const expertEarnings = priceTokens - platformFee;
 
     await db.runTransaction(async (transaction) => {
@@ -966,7 +966,7 @@ export const scheduleMentorshipSession = onCall(
     }
 
     const priceTokens = offerData.priceTokens;
-    const platformFee = Math.floor(priceTokens * 0.35);
+    const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.avalo);
     const expertEarnings = priceTokens - platformFee;
 
     const sessionId = db.collection("_").doc().id;
@@ -1482,6 +1482,7 @@ export const notifyUserOnExpertApproval = onDocumentCreated(
     });
   }
 );
+
 
 
 

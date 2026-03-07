@@ -8,8 +8,12 @@
     "tsBuildInfoFile": "./lib/.tsbuildinfo",
     "module": "commonjs",
     "target": "ES2020",
-    "lib": ["ES2020"],
-    "types": ["node"],
+    "lib": [
+      "ES2020"
+    ],
+    "types": [
+      "node"
+    ],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": false,
@@ -28,6 +32,7 @@
     "lib",
     "src/__tests__",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "**/*.legacy.ts"
   ]
 }

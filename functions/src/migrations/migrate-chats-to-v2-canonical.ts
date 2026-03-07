@@ -20,7 +20,7 @@
  * @version 1.0.0
  */
 
-import { db, serverTimestamp } from '../init.js';
+import { db, serverTimestamp } from '../init';
 import { Timestamp } from 'firebase-admin/firestore';
 import type {
   CanonicalChatDocument,
@@ -29,12 +29,12 @@ import type {
   CanonicalPaidSession,
   CanonicalBillingState,
   LegacySourceType,
-} from '../types/canonical-chat.types.js';
+} from '../types/canonical-chat.types';
 import {
   CANONICAL_LOGIC_VERSION,
   FREE_MESSAGES_STANDARD,
   WORDS_PER_TOKEN_STANDARD,
-} from '../types/canonical-chat.types.js';
+} from '../types/canonical-chat.types';
 
 // ============================================================================
 // TYPES
@@ -466,6 +466,7 @@ export async function runFullMigration(
 
   return { chats: chatsResult, pack273: pack273Result };
 }
+
 
 
 

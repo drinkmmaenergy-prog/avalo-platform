@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * PHASE 5.1 — Token Pack Card Component
  * 
@@ -7,9 +9,6 @@
  * 
  * @version v1.0
  */
-
-'use client';
-
 import React from 'react';
 import type { CanonicalTokenPack } from '@/types/phase33.types';
 import { formatPackPrice } from '@/lib/services/phase33';
@@ -140,4 +139,5 @@ export default function TokenPackCard({
     </div>
   );
 }
+
 

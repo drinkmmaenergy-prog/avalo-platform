@@ -1,0 +1,1664 @@
+
+functions\src\__tests__\canonical-chat-engine.test.ts:313:    // floor(10 * 0.65) = floor(6.5) = 6
+functions\src\__tests__\canonical-chat-engine.test.ts:701:  test('earner credit uses floor: floor(10 * 0.65) = 6 (not round to 7)', () => {
+functions\src\__tests__\canonical-chat-engine.test.ts:705:  test('avalo gets remainder: 10 - floor(10*0.65) = 4', () => {
+functions\src\__tests__\chat-billing-pipeline.test.ts:82:    const platformFee = Math.floor(deposit * (PLATFORM_FEE_PCT / 100)); // floor(100 * 0.35) = 35
+functions\src\__tests__\chat-billing-pipeline.test.ts:97:    const earnerCredit = Math.floor(tokensConsumed * EARNER_REVENUE_SPLIT); // floor(30 * 0.65) = 19
+functions\src\__tests__\chat-billing-pipeline.test.ts:262:    expect(state.platformFeeChargedTokens).toBe(Math.floor(500 * 0.35)); // 175
+functions\src\__tests__\chat-billing-pipeline.test.ts:419:    expect(SPLITS_BY_SURFACE.CHAT.creator).toBe(0.65);
+functions\src\__tests__\chat-billing-pipeline.test.ts:420:    expect(SPLITS_BY_SURFACE.CHAT.avalo).toBe(0.35);
+functions\src\__tests__\chat-billing-pipeline.test.ts:462:  it('floor is used, never round: floor(10 * 0.65) = 6', () => {
+functions\src\__tests__\chat-billing-pipeline.test.ts:466:  it('remainder to Avalo: 10 - floor(10*0.65) = 4', () => {
+functions\src\__tests__\creatorEconomy.test.ts:52:    const platformFee = Math.floor(price * 0.35);
+functions\src\__tests__\creatorEconomy.test.ts:69:      const platformFee = Math.floor(price * 0.35);
+functions\src\__tests__\creatorEconomy.test.ts:79:    const price = 97; // 0.35 * 97 = 33.95
+functions\src\__tests__\creatorEconomy.test.ts:80:    const platformFee = Math.floor(price * 0.35);
+functions\src\__tests__\creatorEconomy.test.ts:197:    bronze: 0.65,
+functions\src\__tests__\creatorEconomy.test.ts:199:    gold: 0.70,
+functions\src\__tests__\creatorEconomy.test.ts:200:    platinum: 0.72,
+functions\src\__tests__\creatorEconomy.test.ts:201:    royal: 0.75,
+functions\src\__tests__\pack303-creator-earnings.test.ts:124:      expect(REVENUE_SPLITS.CHAT).toEqual({ creator: 0.65, avalo: 0.35 });
+functions\src\__tests__\pack303-creator-earnings.test.ts:125:      expect(REVENUE_SPLITS.CALLS).toEqual({ creator: 0.80, avalo: 0.20 });
+functions\src\__tests__\pack303-creator-earnings.test.ts:126:      expect(REVENUE_SPLITS.CALENDAR).toEqual({ creator: 0.80, avalo: 0.20 });
+functions\src\__tests__\pack303-creator-earnings.test.ts:127:      expect(REVENUE_SPLITS.EVENTS).toEqual({ creator: 0.80, avalo: 0.20 });
+functions\src\__tests__\pack303-creator-earnings.test.ts:128:      expect(REVENUE_SPLITS.OTHER).toEqual({ creator: 0.65, avalo: 0.35 });
+functions\src\__tests__\pack303-creator-earnings.test.ts:157:      const chatCreatorShare = Math.floor(chatEarned * 0.65);
+functions\src\__tests__\pack303-creator-earnings.test.ts:163:      // Calendar: 80/20 split
+functions\src\__tests__\pack303-creator-earnings.test.ts:165:      const calendarCreatorShare = Math.floor(calendarEarned * 0.80);
+functions\src\__tests__\pack399-influencer-engine.test.ts:258:      expect(funnelDoc.data()?.fraudScore).toBeGreaterThan(0.8);
+functions\src\__tests__\pack399-influencer-engine.test.ts:419:        fraudScore: 0.85, // Just over threshold
+functions\src\__tests__\pack399-influencer-engine.test.ts:435:        fraudScore: 0.85,
+functions\src\__tests__\pack452-smoke-tests.ts:143:      // Platform gets floor(1 * 0.35) = 0 (rounding)
+functions\src\__tests__\pack452-smoke-tests.ts:159:      expect(result.platformReceives).toBe(Math.floor(10 * 0.35)); // 3
+functions\src\__tests__\trustSafetyPack46.test.ts:317:      // 80 - (3*3) - (5*5) - (5*4) - (10*2) = 80 - 9 - 25 - 20 - 20 = 6
+functions\src\__tests__\trustSafetyPack46.test.ts:356:      // 80 - (1*3) - (2*5) - (1*4) - (0*2) = 80 - 3 - 10 - 4 = 63
+functions\src\__tests__\walletBridge.security.test.ts:102:        from: "0x1234567890123456789012345678901234567890",
+functions\src\__tests__\walletBridge.security.test.ts:119:        from: "0x1234567890123456789012345678901234567890",
+functions\src\__tests__\walletBridge.security.test.ts:127:      const userWallet = "0x1234567890123456789012345678901234567890";
+functions\src\__tests__\walletBridge.security.test.ts:135:      const actualRecipient = "0x2222222222222222222222222222222222222222";
+functions\src\__tests__\walletBridge.security.test.ts:157:        walletAddress: "0x1234567890123456789012345678901234567890",
+functions\src\__tests__\walletBridge.security.test.ts:208:      const validAddress = "0x1234567890123456789012345678901234567890";
+functions\src\__tests__\walletBridge.security.test.ts:317:      from: "0x2222222222222222222222222222222222222222",
+functions\src\affiliate\functions.ts:32:  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+functions\src\ambassador\nsfw-detection.ts:24:    { pattern: /\b(cam|webcam|onlyfans|fansly)\b/gi, category: 'adult_entertainment_reference' as NSFWCategory, weight: 0.8 },
+functions\src\ambassador\nsfw-detection.ts:28:    { pattern: /\b(erotic|sensual|intimate)\b/gi, category: 'suggestive_content' as NSFWCategory, weight: 0.7 },
+functions\src\ambassador\nsfw-detection.ts:30:    { pattern: /\b(monetize|sell|profit)\s+(beauty|looks|appearance|attraction)\b/gi, category: 'body_focus' as NSFWCategory, weight: 0.8 },
+functions\src\ambassador\nsfw-detection.ts:74:    { pattern: /\b(flirt|flirting|chatting\s+with\s+men|talking\s+to\s+guys)\b/gi, category: 'romantic_language' as NSFWCategory, weight: 0.7 },
+functions\src\ambassador\nsfw-detection.ts:75:    { pattern: /\b(paid|get\s+paid|earn|money)\s+(for\s+)?(attention|chatting|messages|company)\b/gi, category: 'dating_appeal' as NSFWCategory, weight: 0.8 },
+functions\src\ambassador\nsfw-detection.ts:120:    { pattern: /\b(turn\s+on|arousing|provocative)\b/gi, category: 'sexual_innuendo' as NSFWCategory, weight: 0.8 },
+functions\src\analytics\calendarEventKPIs.ts:239:export const aggregateCalendarEventKPIs = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\analytics\calendarEventKPIs.ts:271:      // Calculate 80/20 revenue distribution
+functions\src\analytics\calendarEventKPIs.ts:292:      const top20Count = Math.ceil(creatorRevenues.length * 0.2);
+functions\src\analytics\creatorMetrics.ts:125:      const creatorEarnings = (payment.tokens || 0) * 0.7;
+functions\src\analytics\creatorMetrics.ts:159:      const creatorEarnings = (eventData.tokens || 0) * 0.8; // 80% to creator for calendar
+functions\src\analytics\creatorMetrics.ts:200:    uniqueViewers: 0.25,
+functions\src\analytics\creatorMetrics.ts:201:    swipesReceived: 0.2,
+functions\src\analytics\creatorMetrics.ts:226:    responseRate: 0.25,
+functions\src\analytics\creatorMetrics.ts:227:    responseTime: 0.2,
+functions\src\analytics\creatorMetrics.ts:228:    chatSessions: 0.2,
+functions\src\analytics\creatorMetrics.ts:230:    rating: 0.2
+functions\src\analytics\fraudDetection.ts:390:          deviceFingerprint: 0.25,
+functions\src\analytics\fraudDetection.ts:391:          behaviorAnomaly: 0.25,
+functions\src\analytics\fraudDetection.ts:392:          chargebackRisk: 0.2
+functions\src\analytics\safetyMonitoring.ts:403:        const blockReportWeight = 0.2;
+functions\src\analytics\safetyMonitoring.ts:404:        const anomalyWeight = 0.2;
+functions\src\brands\brandProducts.ts:530:      creatorShare = Math.floor(totalTokens * 0.35);
+functions\src\climate\aiModeration.ts:121:      if (text.includes(keyword)) score += 0.2;
+functions\src\climate\aiModeration.ts:135:      if (text.includes(keyword)) score += 0.2;
+functions\src\climate\aiModeration.ts:139:    if (text.match(/(hate|destroy|defeat) (all )?(men|women)/i)) score += 0.7;
+functions\src\climate\aiModeration.ts:152:    if (text.match(/racial purity/i)) score += 0.8;
+functions\src\climate\aiModeration.ts:153:    if (text.match(/superior (race|nation|ethnicity)/i)) score += 0.7;
+functions\src\climate\aiModeration.ts:175:      if (text.includes(pattern)) score += 0.25;
+functions\src\climate\aiModeration.ts:193:      if (pattern.test(text)) score += 0.2;
+functions\src\climate\aiModeration.ts:215:    if (maxScore >= 0.8) return SeverityLevel.CRITICAL;
+functions\src\climate\aiModeration.ts:257:    if (textLength < 50) confidence *= 0.7;
+functions\src\config\economyConfig.ts:40: * Platform fee percentage on chat deposits (0.35 = 35%).
+functions\src\config\economyConfig.ts:68:  CHAT:           { creator: 0.65, avalo: 0.35 },
+functions\src\config\economyConfig.ts:69:  CALLS_VOICE:    { creator: 0.80, avalo: 0.20 },
+functions\src\config\economyConfig.ts:70:  CALLS_VIDEO:    { creator: 0.80, avalo: 0.20 },
+functions\src\config\economyConfig.ts:71:  CALENDAR:       { creator: 0.80, avalo: 0.20 },
+functions\src\config\economyConfig.ts:72:  EVENTS:         { creator: 0.80, avalo: 0.20 },
+functions\src\config\economyConfig.ts:74:  SUBSCRIPTIONS:  { creator: 0.70, avalo: 0.30 },
+functions\src\config\economyConfig.ts:75:  LIVE_STREAMS:   { creator: 0.70, avalo: 0.30 },
+functions\src\config\economyConfig.ts:76:  LIVE_VIP:       { creator: 0.80, avalo: 0.20 },
+functions\src\config\economyConfig.ts:77:  AI_COMPANIONS:  { creator: 0.80, avalo: 0.20 },
+functions\src\config\economyConfig.ts:78:  BOOSTS_CREATOR: { creator: 0.65, avalo: 0.35 },
+functions\src\config\economyConfig.ts:80:  DIGITAL_PRODUCTS: { creator: 0.65, avalo: 0.35 },
+functions\src\config\economyConfig.ts:81:  DROPS:          { creator: 0.70, avalo: 0.30 },
+functions\src\config\economyConfig.ts:82:  MARKETPLACE:    { creator: 0.65, avalo: 0.35 },
+functions\src\config\economyConfig.ts:92:  return SPLITS_BY_SURFACE[key] ?? { creator: 0.65, avalo: 0.35 };
+functions\src\config\economyConfig.ts:126:  /** Platform fee on deposit (0.35 = 35%, non-refundable) */
+functions\src\config\economyConfig.ts:127:  DEPOSIT_PLATFORM_FEE_PCT: 0.35,
+functions\src\config\economyConfig.ts:128:  /** Escrow from deposit (0.65 = 65%, refundable unused) */
+functions\src\config\economyConfig.ts:129:  DEPOSIT_ESCROW_PCT: 0.65,
+functions\src\config\economyConfig.ts:194:  USD_TO_GBP: 0.79,
+functions\src\config\liveMonetization.ts:33:  CREATOR_SPLIT: number; // 0.70
+functions\src\config\liveMonetization.ts:94:  // Rare gifts (50-200 tokens)
+functions\src\config\liveMonetization.ts:152:  // Legendary gifts (1500-2000 tokens)
+functions\src\config\liveMonetization.ts:182:  CREATOR_SPLIT: 0.70,  // 70% to creator
+functions\src\config\monetization.ts:8:  CREATOR_SPLIT: 0.70, // 70% to creator, 30% to Avalo
+functions\src\config\monetization.ts:16:  CREATOR_SPLIT: 0.80, // 80% to creator
+functions\src\config\monetization.ts:19:  AVALO_CUT: 0.20, // 20% to Avalo
+functions\src\config\monetization.ts:42:  CREATOR_SPLIT: 0.80, // 80% to creator, 20% to Avalo
+functions\src\config\monetization.ts:45:  TIP_FEE_PERCENTAGE: 0.20,
+functions\src\config\treasury.config.ts:90:  FIXED_RATE_PER_TOKEN_USD: 0.20,      // 1 token = €0.20 (from PACK 83)
+functions\src\config\treasury.config.ts:104:  SUSPICIOUS_REFUND_RATE: 0.20,        // 20%+ refund rate
+functions\src\content\rankingEngine.ts:32:  recency: 0.35,
+functions\src\content\rankingEngine.ts:34:  engagement: 0.20,
+functions\src\content\rankingEngine.ts:382:  if (relationships.activeChats.has(authorId)) score += 0.8;
+functions\src\content\rankingEngine.ts:435:    case 'royal': return 0.7;
+functions\src\content\storiesReelsEngine.ts:353:  const recencyScore = Math.exp(-ageHours / 24) * 0.35;
+functions\src\content\storiesReelsEngine.ts:358:    score += 0.25;
+functions\src\core\canonicalEconomy.ts:8:    CREATOR: 0.65,
+functions\src\core\canonicalEconomy.ts:9:    PLATFORM: 0.35
+functions\src\dating-intentions\compatibility.ts:182:    intentionCompatibility: 0.35,  // 35% - highest weight
+functions\src\dating-intentions\compatibility.ts:184:    activityLevel: 0.20,           // 20%
+functions\src\dating-intentions\compatibility.ts:185:    mutualInterests: 0.20,         // 20%
+functions\src\education\education.functions.ts:218:    const creatorEarnings = courseData.price * 0.65;
+functions\src\education\education.functions.ts:219:    const avaloRevenue = courseData.price * 0.35;
+functions\src\engines\chemistryLockIn.ts:516:  return ratio > 0.8;
+functions\src\engines\complianceEngine.ts:212:    schedule: "0 2 * * *", // Daily at 2 AM UTC
+functions\src\engines\contentEngine.ts:88:      if (classification.flagOnly && classification.confidence > 0.7) {
+functions\src\engines\contentEngine.ts:106:        flagged: classification.flagOnly && classification.confidence > 0.7,
+functions\src\engines\contentEngine.ts:142:      if (classification.flagOnly && classification.confidence > 0.7) {
+functions\src\engines\contentEngine.ts:161:        flagged: classification.flagOnly && classification.confidence > 0.7,
+functions\src\engines\contentEngine.ts:255:  if (scamMatches.length > 0 && confidence < 0.8) {
+functions\src\engines\contentEngine.ts:257:    confidence = Math.min(0.95, 0.7 + scamMatches.length * 0.1);
+functions\src\engines\contentEngine.ts:262:  if (spamMatches.length > 1 && confidence < 0.75) {
+functions\src\engines\contentEngine.ts:264:    confidence = Math.min(0.9, 0.65 + spamMatches.length * 0.1);
+functions\src\engines\contentEngine.ts:271:    confidence = 0.85;
+functions\src\engines\contentEngine.ts:276:  if (violenceMatches.length > 0 && confidence < 0.8) {
+functions\src\engines\contentEngine.ts:278:    confidence = Math.min(0.9, 0.7 + violenceMatches.length * 0.1);
+functions\src\engines\economyEngine.ts:142:    return Math.floor(amount * 0.35);
+functions\src\engines\economyEngine.ts:147:    return Math.floor(amount * 0.20);
+functions\src\engines\economyEngine.ts:152:    return Math.floor(amount * 0.20);
+functions\src\engines\economyEngine.ts:162:    return Math.floor(amount * 0.20);
+functions\src\engines\eventEngine.ts:89:  ttlMinutes: z.number().min(1).max(10080).optional().default(60), // Max 1 week
+functions\src\engines\insightEngine.ts:38:  activityHours: number[]; // 0-23, count of activities per hour
+functions\src\extortion\detector.ts:199:      confidence: matches.length > 0 ? 0.85 + (matches.length * 0.05) : 0,
+functions\src\extortion\detector.ts:226:            maxConfidence = Math.max(maxConfidence, 0.80);
+functions\src\extortion\detector.ts:231:          maxConfidence = Math.max(maxConfidence, 0.75);
+functions\src\extortion\detector.ts:293:      confidence = 0.70;
+functions\src\extortion\detector.ts:296:        confidence = 0.85;
+functions\src\extortion\detector.ts:386:      riskScore += 0.2;
+functions\src\extortion\detector.ts:470:            active: newFPRate < 0.2
+functions\src\extortion\interceptors.ts:228:    if (intentAnalysis.suspicious && intentAnalysis.riskScore > 0.7) {
+functions\src\extortion\interceptors.ts:429:      riskScore += 0.2;
+functions\src\gifts\sendGift.ts:19:const AVALO_COMMISSION_PERCENTAGE = 0.35;
+functions\src\gifts\sendGift.ts:20:const RECEIVER_COMMISSION_PERCENTAGE = 0.65;
+functions\src\media\nsfwClassifier.ts:81:      safe: 0.85,
+functions\src\media\nsfwClassifier.ts:86:    confidence: 0.85
+functions\src\media\nsfwClassifier.ts:98:  if (scores.explicit > 0.50 || (scores.explicit > 0.30 && result.confidence > 0.80)) {
+functions\src\media\nsfwClassifier.ts:104:  if (scores.erotic > 0.40 || (scores.soft > 0.50 && scores.erotic > 0.20)) {
+functions\src\media-integrity\detection.ts:88:    if (faceSwapScore > 0.7) artifacts.push('Face boundary inconsistencies detected');
+functions\src\media-integrity\detection.ts:89:    if (compressionScore > 0.7) artifacts.push('Compression signature mismatch');
+functions\src\media-integrity\detection.ts:90:    if (nUSDalTextureScore > 0.7) artifacts.push('AI-generated texture patterns');
+functions\src\media-integrity\detection.ts:91:    if (metadataScore > 0.7) artifacts.push('Metadata inconsistencies');
+functions\src\media-integrity\detection.ts:94:      isDeepfake: confidence > 0.65,
+functions\src\media-integrity\detection.ts:118:    if (spectralScore > 0.7) artifacts.push('Unnatural spectral patterns detected');
+functions\src\media-integrity\detection.ts:119:    if (prosodyScore > 0.7) artifacts.push('Synthetic prosody patterns');
+functions\src\media-integrity\detection.ts:120:    if (breathingScore > 0.7) artifacts.push('Missing or artificial breathing sounds');
+functions\src\media-integrity\detection.ts:121:    if (backgroundScore > 0.7) artifacts.push('Background audio inconsistencies');
+functions\src\media-integrity\detection.ts:124:      isCloned: confidence > 0.65,
+functions\src\media-integrity\detection.ts:148:    if (skinTextureScore > 0.7) artifacts.push('Synthetic skin texture detected');
+functions\src\media-integrity\detection.ts:149:    if (bodyProportionScore > 0.7) artifacts.push('Unnatural body proportions');
+functions\src\media-integrity\detection.ts:150:    if (lightingScore > 0.7) artifacts.push('Lighting inconsistencies');
+functions\src\media-integrity\detection.ts:151:    if (edgeScore > 0.7) artifacts.push('AI generation edge artifacts');
+functions\src\media-integrity\detection.ts:154:      isSynthetic: confidence > 0.65,
+functions\src\media-integrity\detection.ts:202:    const threshold = 0.65;
+functions\src\media-integrity\detection.ts:221:      Object.values(detectionResults).filter(score => score > 0.7).length >= 2;
+functions\src\media-integrity\detection.ts:296:      detectionConfidence: 0.8,
+functions\src\media-integrity\detection.ts:431:    if (avgConfidence > 0.85) return MediaIntegritySeverity.HIGH;
+functions\src\media-integrity\detection.ts:432:    if (avgConfidence > 0.75) return MediaIntegritySeverity.MEDIUM;
+functions\src\media-integrity\detection.ts:459:    if (detectionResults[DetectionMethod.COMPRESSION_SIGNATURE_MISMATCH] > 0.7) {
+functions\src\media-integrity\detection.ts:463:    if (detectionResults[DetectionMethod.METADATA_INCONSISTENCY] > 0.7) {
+functions\src\media-integrity\detection.ts:475:    if (detectionResults[DetectionMethod.NUSDAL_TEXTURE_ANALYSIS] > 0.7) {
+functions\src\media-integrity\detection.ts:479:    if (detectionResults[DetectionMethod.DEEPFAKE_DETECTION] > 0.7) {
+functions\src\middleware\educationCompliance.ts:231:  score -= descriptionCheck.riskScore * 0.7;
+functions\src\middleware\pack167-affiliate-safety.ts:234:    confidence: blockedReasons.length > 0 ? 0.85 : 1.0,
+functions\src\middleware\pack167-affiliate-safety.ts:292:  // Check referral percentage (0-20%)
+functions\src\middleware\pack189-safety-screening.ts:132:      if (similarity > 0.85) {
+functions\src\middleware\pack189-safety-screening.ts:305:    if (severity === 'high') return 0.85;
+functions\src\middleware\pack189-safety-screening.ts:306:    if (severity === 'medium') return 0.70;
+functions\src\middleware\safeSearch.middleware.ts:167:    tagsScore * 0.2;
+functions\src\minor-protection\vulnerable-adults-protection.ts:197:        '1-800-799-7233 (Domestic Violence)',
+functions\src\minor-protection\vulnerable-adults-protection.ts:198:        '1-800-656-4673 (Sexual Assault)'
+functions\src\minor-protection\vulnerable-adults-protection.ts:210:        '0808 2000 247 (Domestic Abuse)',
+functions\src\mystery-shopper\enforcement.ts:25:  ROM_002: 'Platform Monetization Rules',
+functions\src\mystery-shopper\probe-engine.ts:360:    nsfw_solicitation: 'SEX_002',
+functions\src\notifications\functions.ts:361:export const generateDailyDigests = onSchedule({ schedule: "0 8 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\notifications\functions.ts:380:export const generateWeeklyDigests = onSchedule({ schedule: "0 8 * * 1", timeZone: "UTC" }, async (event) => {
+functions\src\notifications\functions.ts:406:export const cleanupOldDigests = onSchedule({ schedule: "0 2 * * 0", timeZone: "UTC" }, async (event) => {
+functions\src\pack-198-webinars\functions.ts:577:      severity: toxicityScore > 0.7 ? 'critical' : toxicityScore > 0.5 ? 'high' : 'medium',
+functions\src\pack-198-webinars\translation.ts:79:    accuracy: 0.85,
+functions\src\pack-198-webinars\translation.ts:100:    accuracy: 0.85,
+functions\src\pack-198-webinars\translation.ts:324:    th: /[\u0e00-\u0e7f]/,
+functions\src\pack-198-webinars\translation.ts:325:    hi: /[\u0900-\u097f]/,
+functions\src\pack-198-webinars\translation.ts:385:    accuracy: approved ? 0.95 : 0.7,
+functions\src\pack-198-webinars\validation.ts:323:    { pattern: /\b(stupid|idiot|dumb)\b/i, weight: 0.2 },
+functions\src\pack-198-webinars\validation.ts:324:    { pattern: /\b(shut up|stfu)\b/i, weight: 0.25 },
+functions\src\pack-198-webinars\validation.ts:325:    { pattern: /\b(ugly|gross)\b/i, weight: 0.2 },
+functions\src\pack-198-webinars\validation.ts:359:  if (toxicityScore >= 0.8) {
+functions\src\pack-198-webinars\validation.ts:377:  const creatorShare = Math.round(totalRevenue * 0.65 * 100) / 100;
+functions\src\pack-198-webinars\validation.ts:378:  const platformShare = Math.round(totalRevenue * 0.35 * 100) / 100;
+functions\src\pack152-ambassadors\safety-middleware.ts:130:      return (code >= 0x1F300 && code <= 0x1F9FF) || (code >= 0x2600 && code <= 0x27BF);
+functions\src\pack174-fraud-shield\schedulers.ts:336:  const confidence = matches > 5 ? 0.85 : matches > 2 ? 0.65 : 0.3;
+functions\src\pack195-legal-tax\index.ts:506:export const quarterlyTaxReportsScheduled = onSchedule({ schedule: "0 2 1 1,4,7,10 *", timeZone: "UTC" }, async (event) => {
+functions\src\pack195-legal-tax\invoicingTax.ts:20:  EU: { rate: 0.20, type: 'VAT' },
+functions\src\pack195-legal-tax\invoicingTax.ts:21:  UK: { rate: 0.20, type: 'VAT' },
+functions\src\pack195-legal-tax\invoicingTax.ts:319:  const platformFee = grossRevenue * 0.35;
+functions\src\pack299\analyticsEngine.ts:106:      return [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+functions\src\pack305-legal-snapshots\types.ts:253:    bucket: string; // e.g., "0-20", "20-40"
+functions\src\pack348-ranking-engine\types.ts:61:  mismatchRateThreshold: number;       // e.g., 0.20 = 20%
+functions\src\pack348-ranking-engine\types.ts:205:    activityWeight: 0.25,
+functions\src\pack348-ranking-engine\types.ts:206:    ratingWeight: 0.20,
+functions\src\pack348-ranking-engine\types.ts:213:    recencyWeight: 0.35,
+functions\src\pack348-ranking-engine\types.ts:215:    viralWeight: 0.25,
+functions\src\pack348-ranking-engine\types.ts:221:    responseTimeWeight: 0.25,
+functions\src\pack348-ranking-engine\types.ts:222:    activityWeight: 0.20,
+functions\src\pack348-ranking-engine\types.ts:228:    voiceUsageWeight: 0.25,
+functions\src\pack348-ranking-engine\types.ts:229:    chatUsageWeight: 0.25,
+functions\src\pack348-ranking-engine\types.ts:243:  mismatchRateThreshold: 0.20,
+functions\src\pack348-ranking-engine\types.ts:244:  mismatchRatePenalty: 0.25,
+functions\src\pack348-ranking-engine\types.ts:250:  blockingRatePenalty: 0.20,
+functions\src\pack348-ranking-engine\types.ts:262:    boostPriceMultiplier: 0.80,        // 20% discount
+functions\src\pack367-store-defense\reviewScanner.ts:149:      return this.textSimilarity(review.text, existingReview.reviewText) > 0.7;
+functions\src\pack367-store-defense\reviewScanner.ts:180:    if (sentimentScore < -0.7) return 'low';
+functions\src\pack440\services\CreatorRevenueIntegrityScore.ts:80:    refundRatio: 0.25,
+functions\src\pack440\services\CreatorRevenueIntegrityScore.ts:184:    // 0-2%: 100 points (excellent)
+functions\src\pack440\services\CreatorRevenueIntegrityScore.ts:187:    // 10-20%: 40 points (concerning)
+functions\src\pack440\services\CreatorRevenueIntegrityScore.ts:194:    if (refundRatio <= 0.20) return 40;
+functions\src\pack440\services\CreatorRevenueIntegrityScore.ts:251:    if (hhi <= 0.25) return 80;  // Good distribution (4+ balanced payers)
+functions\src\pack440\services\CreatorRevenueIntegrityScore.ts:253:    if (hhi <= 0.75) return 25;  // High concentration (1-2 major payers)
+functions\src\pack440\services\CreatorRevenueIntegrityScore.ts:265:    // 0-7 days: 20 points (very new)
+functions\src\pack440\services\IntelligentPayoutEscrowService.ts:304:      return fraudScore < 0.7; // Pass if fraud score is below 70%
+functions\src\pack441\__tests__\pack441.test.ts:114:      const lowEntropy = 0.2;
+functions\src\pack441\__tests__\pack441.test.ts:271:      // d7Retention * 0.3 + d30Retention * 0.3 + (100 - avgRiskScore) * 0.2 + min(avgLTV/10, 100) * 0.2
+functions\src\pack441\__tests__\pack441.test.ts:275:        (100 - abuseMetrics.avgRiskScore) * 0.2 +
+functions\src\pack441\__tests__\pack441.test.ts:276:        Math.min(metrics.avgLTV / 10, 100) * 0.2;
+functions\src\pack441\AbuseRetentionCorrelationModel.ts:260:       (100 - abuseMetrics.avgRiskScore) * 0.2 +
+functions\src\pack441\AbuseRetentionCorrelationModel.ts:261:       Math.min((metrics.avgLTV / 10), 100) * 0.2)
+functions\src\pack441\AbuseRetentionCorrelationModel.ts:288:      correlation.abuseToChurnCorrelation > 0.7 ||
+functions\src\pack441\AbuseRetentionCorrelationModel.ts:289:      correlation.abuseToLTVCorrelation > 0.7
+functions\src\pack441\AbuseRetentionCorrelationModel.ts:485:    medium: number; // 50-74
+functions\src\pack441\AbuseRetentionCorrelationModel.ts:487:    poor: number; // 0-24
+functions\src\pack441\GrowthSafetyDashboard.ts:526:    high: number; // 70-89
+functions\src\pack441\GrowthSafetyDashboard.ts:529:    veryLow: number; // 0-29
+functions\src\pack441\index.ts:32:      entropy: 0.35,
+functions\src\pack441\index.ts:33:      reuse: 0.35,
+functions\src\pack441\ViralLoopRiskScorer.ts:83:      entropy: 0.2,
+functions\src\pack441\ViralLoopRiskScorer.ts:84:      deviceReuse: 0.25,
+functions\src\pack441\ViralLoopRiskScorer.ts:85:      ipReuse: 0.25,
+functions\src\pack441\ViralLoopRiskScorer.ts:100:    if (score >= 0.8) return 'CRITICAL';
+functions\src\pack443\BiasCorrectedAnalytics.ts:204:      if (data.score > 0.7) {
+functions\src\pack443\BiasCorrectedAnalytics.ts:231:      confidence: 0.85,
+functions\src\pack443\BiasCorrectedAnalytics.ts:285:      confidence: 0.75,
+functions\src\pack443\BiasCorrectedAnalytics.ts:316:    const adjustmentFactor = 1 - affectedUsers / totalUsers * 0.2;
+functions\src\pack443\BiasCorrectedAnalytics.ts:423:    const significantAdjustment = biasAdjustments.some((b) => Math.abs(1 - b.adjustmentFactor) > 0.2);
+functions\src\pack443\BiasCorrectedAnalytics.ts:451:      region: Math.random() > 0.8 ? 'EU' : 'US',
+functions\src\pack443\BiasCorrectedAnalytics.ts:480:    return 0.2;
+functions\src\pack443\BiasCorrectedAnalytics.ts:487:    if (effectSize > 0.8 && totalN > 100) return 0.95;
+functions\src\pack443\BiasCorrectedAnalytics.ts:488:    if (effectSize > 0.5 && totalN > 200) return 0.8;
+functions\src\pack443\BiasCorrectedAnalytics.ts:489:    if (effectSize > 0.3 && totalN > 500) return 0.7;
+functions\src\pack446-ai-governance\AIRegulatoryReadinessModule.ts:362:          id: 'EUAI-002',
+functions\src\pack446-ai-governance\AIRegulatoryReadinessModule.ts:391:          id: 'GDPR-002',
+functions\src\pack446-ai-governance\DecisionExplainabilityService.ts:360:    if (confidence >= 0.75) return 'High';
+functions\src\pack446-ai-governance\DecisionExplainabilityService.ts:368:    if (weight >= 0.25) return 'Medium Impact';
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:38:  disparateImpact?: number;      // 0-1, closer to 1 is better (0.8 is legal threshold)
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:218:    const equalOpportunity = 0.88;
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:219:    const predictiveParity = 0.85;
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:220:    const disparateImpact = 0.82; // Legal threshold is 0.8
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:222:    if (disparateImpact < 0.8) {
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:223:      findings.push('Disparate impact below legal threshold (0.8)');
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:225:    } else if (disparateImpact < 0.85) {
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:303:    const recall = 0.89;
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:349:    const userChurn = 0.8;          // 0.8% increase in churn
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:445:      [RiskCategory.BIAS]: 0.25,
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:446:      [RiskCategory.DRIFT]: 0.20,
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:482:    if (value >= threshold * 0.8) return 'WARNING';
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:501:      if (bias.disparateImpact && bias.disparateImpact < 0.8) {
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:504:    } else if (bias.biasScore > this.THRESHOLDS.BIAS * 0.8) {
+functions\src\pack446-ai-governance\ModelRiskScoringEngine.ts:517:    if (performance.accuracy && performance.accuracy < 0.85) {
+functions\src\payoutProviders\stripe.ts:32:      fees: payload.amount * 0.0025,
+functions\src\royalclub\middleware.ts:346:  const expectedCreatorShare = 0.65;
+functions\src\royalclub\middleware.ts:347:  const expectedPlatformShare = 0.35;
+functions\src\scheduled\aggregateInvestorMetrics.ts:103:        (tokensSpentChat + tokensSpentCalls + tokensSpentAI) * 0.35 +
+functions\src\scheduled\aggregateInvestorMetrics.ts:104:        (tokensSpentCalendar + tokensSpentEvents) * 0.20
+functions\src\secondChance\rewriteFirstMessage.ts:190:      const tokensToReceiver = Math.floor(tokensCharged * 0.65);
+functions\src\services\chemistryFeed\rankingModel.ts:65:  score += signals.photoAttractivenessScore * 0.25;
+functions\src\services\chemistryFeed\rankingModel.ts:77:  score += signals.preferencesMatchScore * 0.20;
+functions\src\services\chemistryFeed\types.ts:70:  verifiedBoost: number; // 0-20
+functions\src\services\offline-presence\moderation.ts:133:      if (nsfwScore > 0.7) {
+functions\src\services\aiProvider.service.ts:50:const CLAUDE_MODEL = 'claude-sonnet-3-5-20241022'; // Claude Sonnet 4.5 (latest)
+functions\src\services\aiProvider.service.ts:165:      temperature: 0.8,
+functions\src\services\aiProvider.service.ts:239:      temperature: 0.8,
+functions\src\services\guardianRiskDetection.service.ts:185:          confidence: Math.min(0.7 + (matches.length * 0.1), 0.95),
+functions\src\services\guardianRiskDetection.service.ts:233:      if (lower.includes(keyword)) score -= 0.2;
+functions\src\services\guardianRiskDetection.service.ts:238:      if (lower.includes(keyword)) score += 0.2;
+functions\src\services\guardianRiskDetection.service.ts:268:        confidence: 0.7,
+functions\src\services\guardianRiskDetection.service.ts:290:      if (sentiments[i] < sentiments[i - 1] - 0.2) {
+functions\src\services\guardianRiskDetection.service.ts:330:          confidence: 0.85,
+functions\src\services\guardianRiskDetection.service.ts:391:        confidence: 0.75,
+functions\src\services\guardianRiskDetection.service.ts:469:    if (maxSeverity >= 70 || (maxSeverity >= 60 && avgConfidence > 0.7)) return 'high';
+functions\src\services\pack181-independence.service.ts:31:    weight: 0.8
+functions\src\services\pack181-independence.service.ts:43:    weight: 0.7
+functions\src\services\pack181-independence.service.ts:49:    weight: 0.85
+functions\src\services\pack181-independence.service.ts:55:    weight: 0.65
+functions\src\services\pack181-independence.service.ts:67:    weight: 0.75
+functions\src\services\pack181-independence.service.ts:79:    weight: 0.8
+functions\src\services\pack181-independence.service.ts:137:        confidence: 0.85,
+functions\src\services\pack181-independence.service.ts:195:  const similarityThreshold = 0.7;
+functions\src\services\search.service.ts:159:      interestMatch: 0.35,
+functions\src\services\search.service.ts:160:      qualityScore: 0.25,
+functions\src\smartSocialGraph\backgroundJobs.ts:43:export const dailyDiscoveryRefresh = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\smartSocialGraph\relevanceRanking.ts:54:  const topicalScore = (categoryMatch * 0.7) + ((creatorTopics / 100) * 0.3);
+functions\src\smartSocialGraph\relevanceRanking.ts:78:    return 0.8;
+functions\src\smartSocialGraph\relevanceRanking.ts:101:    return 0.7;
+functions\src\smartSocialGraph\relevanceRanking.ts:126:    return 0.8;
+functions\src\smartSocialGraph\relevanceRanking.ts:135:  return 0.2;
+functions\src\smartSocialGraph\relevanceRanking.ts:281:  if (factors.topicalRelevance > 0.7) {
+functions\src\smartSocialGraph\relevanceRanking.ts:291:  if (factors.regionalRelevance > 0.8) {
+functions\src\smartSocialGraph\relevanceRanking.ts:295:  if (factors.recencyScore > 0.7) {
+functions\src\smartSocialGraph\relevanceRanking.ts:299:  if (factors.retentionScore > 0.7) {
+functions\src\smartSocialGraph\shadowDensityControl.ts:238:    const regularSlots = Math.floor(remainingSlots * 0.7);
+functions\src\sponsorships\index.ts:430:      const creatorAmount = escrowData.amount * 0.65;
+functions\src\sponsorships\index.ts:431:      const platformAmount = escrowData.amount * 0.35;
+functions\src\tax-engine\tax-calculation.ts:40:    const platformFee = grossRevenue * 0.35;
+functions\src\tax-engine\tax-reporting.ts:488:    'DE': 0.19, 'FR': 0.20, 'ES': 0.21, 'IT': 0.22, 'NL': 0.21,
+functions\src\tax-engine\tax-reporting.ts:489:    'BE': 0.21, 'AT': 0.20, 'PL': 0.23, 'SE': 0.25, 'DK': 0.25,
+functions\src\tax-engine\tax-reporting.ts:490:    'FI': 0.24, 'PT': 0.23, 'GR': 0.24, 'CZ': 0.21, 'IE': 0.23
+functions\src\tax-engine\tax-reporting.ts:492:  return rates[country] || 0.20;
+functions\src\tax-engine\tax-rules.ts:136:  'FR': 0.20,
+functions\src\tax-engine\tax-rules.ts:137:  'ES': 0.21,
+functions\src\tax-engine\tax-rules.ts:138:  'IT': 0.22,
+functions\src\tax-engine\tax-rules.ts:139:  'NL': 0.21,
+functions\src\tax-engine\tax-rules.ts:140:  'BE': 0.21,
+functions\src\tax-engine\tax-rules.ts:141:  'AT': 0.20,
+functions\src\tax-engine\tax-rules.ts:142:  'PL': 0.23,
+functions\src\tax-engine\tax-rules.ts:143:  'SE': 0.25,
+functions\src\tax-engine\tax-rules.ts:144:  'DK': 0.25,
+functions\src\tax-engine\tax-rules.ts:145:  'FI': 0.24,
+functions\src\tax-engine\tax-rules.ts:146:  'NO': 0.25,
+functions\src\tax-engine\tax-rules.ts:147:  'CH': 0.077,
+functions\src\tax-engine\tax-rules.ts:148:  'IE': 0.23,
+functions\src\tax-engine\tax-rules.ts:149:  'PT': 0.23,
+functions\src\tax-engine\tax-rules.ts:150:  'GR': 0.24,
+functions\src\tax-engine\tax-rules.ts:151:  'CZ': 0.21,
+functions\src\tax-engine\tax-rules.ts:152:  'GB': 0.20
+functions\src\tools\generateTestData.ts:122:        longitude: 21.0122 + (Math.random() - 0.5) * 0.1,
+functions\src\tools\generateTestData.ts:155:        longitude: 21.0122 + (Math.random() - 0.5) * 0.1,
+functions\src\tools\generateTestData.ts:320:      escrow: Math.floor(amount * 0.8),
+functions\src\tools\generateTestData.ts:321:      platformFee: Math.floor(amount * 0.2),
+functions\src\triggers\chemistryLockInTriggers.ts:189:export const dailyLockInMaintenance = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\types\shared\compliance\pack418-compliance-constants.ts:116:    creatorShare: 0.70,
+functions\src\types\shared\types\pack422-reputation.types.ts:157:  verification: 0.25,
+functions\src\types\shared\types\pack422-reputation.types.ts:159:  activity: 0.20,
+functions\src\types\shared\types\pack422-reputation.types.ts:160:  reports: 0.20,
+functions\src\types\shared\types\pack422-reputation.types.ts:161:  interactions: 0.20,
+functions\src\types\ambassador.types.ts:703:  creatorSplit: 0.65,           // Creator still gets 65%
+functions\src\types\ambassador.types.ts:704:  platformSplit: 0.35,          // Avalo takes 35%
+functions\src\types\boostCampaign.types.ts:258:  MAX_REGION_DOMINANCE: 0.20,
+functions\src\types\canonical-chat.types.ts:107:export const EARNER_REVENUE_SPLIT = 0.65;
+functions\src\types\canonical-chat.types.ts:110:export const AVALO_REVENUE_SPLIT = 0.35;
+functions\src\types\challenges.types.ts:338:  leaderboardScore: number; // (completionRate * 0.7) + (currentStreak * 0.3)
+functions\src\types\challenges.types.ts:423:  const completionScore = completionRate * 0.7;
+functions\src\types\challenges.types.ts:424:  const currentStreakScore = Math.min(currentStreak * 2, 100) * 0.2; // Cap at 50 days
+functions\src\types\discovery.types.ts:74:  w_active: 0.25,
+functions\src\types\discovery.types.ts:75:  w_engage: 0.20,
+functions\src\types\discovery.types.ts:77:  w_match: 0.20,
+functions\src\types\events.types.ts:65:  description: string;             // 20-2000 chars
+functions\src\types\events.types.ts:230:  platformFeePercentage: 0.35,    // 35%
+functions\src\types\events.types.ts:231:  creatorEarningsPercentage: 0.65, // 65%
+functions\src\types\goals.ts:233:  CREATOR_SPLIT: 0.70,              // 70% to creator
+functions\src\types\mystery-shopper.types.ts:301:  SEX_002: 'Sexual content for tokens detected',
+functions\src\types\mystery-shopper.types.ts:305:  ROM_002: 'Love-bombing tied to payments',
+functions\src\types\mystery-shopper.types.ts:309:  EXT_002: 'Direct payment request bypass',
+functions\src\types\mystery-shopper.types.ts:312:  FRD_002: 'Token laundering scheme',
+functions\src\types\mystery-shopper.types.ts:315:  VIS_002: 'Follower exchange scheme',
+functions\src\types\pack130-types.ts:414:  banEvasionConfidenceThreshold: 0.85,
+functions\src\types\pack134-types.ts:92:  hour: number; // 0-23
+functions\src\types\pack134-types.ts:365:  explorationRate: 0.2, // 20% exploration
+functions\src\types\pack141-types.ts:277:  dependencyThreshold: 0.7,                  // Attachment risk threshold
+functions\src\types\pack142-types.ts:515:    deepfakeBlock: 0.7, // Block if deepfake score > 0.7
+functions\src\types\pack142-types.ts:520:    minSimilarity: 0.75, // Require 75% facial match
+functions\src\types\pack142-types.ts:522:    maxBeautyAI: 0.7, // Block if beauty AI > 70%
+functions\src\types\pack142-types.ts:526:    minSimilarity: 0.8, // Require 80% voice match
+functions\src\types\pack142-types.ts:530:    blockThreshold: 0.85, // Block if similarity > 85%
+functions\src\types\pack142-types.ts:531:    reviewThreshold: 0.7, // Review if > 70%
+functions\src\types\pack142-types.ts:534:    blockThreshold: 0.8, // Block if deepfake score > 80%
+functions\src\types\pack142-types.ts:538:    criticalRisk: 0.8, // Lock account if > 80%
+functions\src\types\pack157-business-partners.types.ts:272:  platformFeePercentage: number; // 0.35
+functions\src\types\pack157-business-partners.types.ts:427:      score += matches * 0.2;
+functions\src\types\pack157-business-partners.types.ts:562:  platformFeePercentage: 0.35, // 35% to Avalo
+functions\src\types\pack157-business-partners.types.ts:563:  creatorEarningsPercentage: 0.65, // 65% to creator
+functions\src\types\pack167-affiliates.ts:56:  referralPercentage: number;    // Must be 0-20%
+functions\src\types\pack167-affiliates.ts:247:  referralPercentage: number;  // 0-20
+functions\src\types\pack189-ai-federation.types.ts:280:export const PLATFORM_REVENUE_SHARE = 0.35;
+functions\src\types\pack189-ai-federation.types.ts:281:export const CREATOR_REVENUE_SHARE = 0.65;
+functions\src\types\pack213-types.ts:26:  attraction: number;      // 0.35 - like/wishlist history, swipes, dwell time
+functions\src\types\pack213-types.ts:27:  reputation: number;      // 0.25 - soft reputation from PACK 212
+functions\src\types\pack213-types.ts:28:  earningsSynergy: number; // 0.25 - likelihood of paid engagement
+functions\src\types\pack213-types.ts:34:  attraction: 0.35,
+functions\src\types\pack213-types.ts:35:  reputation: 0.25,
+functions\src\types\pack213-types.ts:36:  earningsSynergy: 0.25,
+functions\src\types\pack238-chat-motivation.ts:56:  | 'very_low'   // 0-2
+functions\src\types\pack277-wallet.types.ts:58:  | 'CALENDAR_BOOKING'       // 1:1 meeting bookings - 80/20
+functions\src\types\pack277-wallet.types.ts:59:  | 'EVENT_TICKET'           // Event tickets - 80/20
+functions\src\types\pack289-withdrawals.types.ts:7: * - Fixed rate: 1 token = 0.20 USD (or local equivalent)
+functions\src\types\pack289-withdrawals.types.ts:157:  ratePerTokenUSD: number;  // Snapshot, should be 0.20
+functions\src\types\pack290-creator-analytics.types.ts:119:    ratePerTokenUSD: number;  // Always 0.20
+functions\src\types\pack290-creator-analytics.types.ts:259:  cronSchedule: string;  // e.g., '0 2 * * *' for 2 AM daily
+functions\src\types\pack290-creator-analytics.types.ts:266:  cronSchedule: '0 2 * * *',  // 2 AM UTC
+functions\src\types\pack291-ai-assist.types.ts:408:  hourlyActivity: Record<number, number>;  // 0-23 hours
+functions\src\types\pack303-creator-earnings.types.ts:134:  tokenPayoutRate: number; // e.g., 0.2 (1 token = 0.20 USD)
+functions\src\types\pack303-creator-earnings.types.ts:238:  CHAT: { creator: 0.65, avalo: 0.35 },
+functions\src\types\pack303-creator-earnings.types.ts:239:  CALLS: { creator: 0.80, avalo: 0.20 },
+functions\src\types\pack303-creator-earnings.types.ts:240:  CALENDAR: { creator: 0.80, avalo: 0.20 },
+functions\src\types\pack303-creator-earnings.types.ts:241:  EVENTS: { creator: 0.80, avalo: 0.20 },
+functions\src\types\pack303-creator-earnings.types.ts:242:  OTHER: { creator: 0.65, avalo: 0.35 },
+functions\src\types\pack304-admin-finance.types.ts:40:  gmvFiatUSD: number;           // GMV in USD (gmvTokens * 0.20)
+functions\src\types\pack304-admin-finance.types.ts:262:  SPLIT_CHAT_CREATOR: 0.65,
+functions\src\types\pack304-admin-finance.types.ts:263:  SPLIT_CHAT_AVALO: 0.35,
+functions\src\types\pack304-admin-finance.types.ts:264:  SPLIT_CALLS_CREATOR: 0.80,
+functions\src\types\pack304-admin-finance.types.ts:265:  SPLIT_CALLS_AVALO: 0.20,
+functions\src\types\pack304-admin-finance.types.ts:266:  SPLIT_CALENDAR_CREATOR: 0.80,
+functions\src\types\pack304-admin-finance.types.ts:267:  SPLIT_CALENDAR_AVALO: 0.20,
+functions\src\types\pack304-admin-finance.types.ts:268:  SPLIT_EVENTS_CREATOR: 0.80,
+functions\src\types\pack304-admin-finance.types.ts:269:  SPLIT_EVENTS_AVALO: 0.20,
+functions\src\types\pack304-admin-finance.types.ts:270:  SPLIT_OTHER_CREATOR: 0.65,
+functions\src\types\pack304-admin-finance.types.ts:271:  SPLIT_OTHER_AVALO: 0.35,
+functions\src\types\pack331-ai-avatar-template.types.ts:33:  priceTokens: number; // one-time unlock price (200-2000 range)
+functions\src\types\pack331-ai-avatar-template.types.ts:187:  CREATOR_SHARE: 0.65, // 65% to creator
+functions\src\types\pack331-ai-avatar-template.types.ts:188:  AVALO_SHARE: 0.35, // 35% to Avalo
+functions\src\types\secondChance.types.ts:217:  preferredTime?: number; // 0-23
+functions\src\types\smartSocialGraph.types.ts:397:  topical: 0.35,      // Primary factor
+functions\src\types\treasury.types.ts:447:  CREATOR_SPLIT: 0.65,                 // 65%
+functions\src\types\treasury.types.ts:448:  AVALO_SPLIT: 0.35,                   // 35%
+functions\src\types\virtualEvents.types.ts:121:  description: string;               // 20-2000 chars
+functions\src\types\virtualEvents.types.ts:260:    errors.push('Description must be 20-2000 characters');
+functions\src\types\virtualEvents.types.ts:333:  const PLATFORM_FEE_PERCENTAGE = 0.35;
+functions\src\utils\referral-utils.ts:43:  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+functions\src\utils\string-similarity.ts:61:  threshold: number = 0.8
+functions\src\wallet\payoutService.ts:46: * Stripe Connect: 0.25% + $0.25 per transfer (Express accounts).
+functions\src\wallet\payoutService.ts:49:export const STRIPE_FEE_FIXED_USD = 0.25;
+functions\src\wallet\payoutService.ts:50:export const STRIPE_FEE_PERCENT = 0.0025; // 0.25%
+functions\src\wallet\payoutService.ts:68: * Fee = 0.25% of amount + $0.25 fixed.
+functions\src\abTesting.ts:597:  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+functions\src\abTesting.ts:603:      t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+functions\src\adminCalls.ts:135:    const calleeEarnings = Math.floor(tokensCharged * 0.65);
+functions\src\aiBotEngine.ts:38:const CLAUDE_MODEL = 'claude-3-5-sonnet-20241022';
+functions\src\aiBotEngine.ts:410:    temperature: 0.8,
+functions\src\aiCharacters.ts:225:const SIMILARITY_THRESHOLD = 0.85; // For duplicate detection
+functions\src\aiCharacters.ts:528:  // Personality match (weight: 0.2)
+functions\src\aiCharacters.ts:530:    similarityScore += 0.2;
+functions\src\aiCharacters.ts:532:  totalFactors += 0.2;
+functions\src\aiCharacters.ts:534:  // Interest overlap (weight: 0.2)
+functions\src\aiCharacters.ts:536:  const interestSimilarity = (commonInterests.length / Math.max(char1.interests.length, char2.interests.length)) * 0.2;
+functions\src\aiCharacters.ts:538:  totalFactors += 0.2;
+functions\src\aiCharacters.ts:540:  // Location similarity (weight: 0.2)
+functions\src\aiCharacters.ts:542:  const locationSimilarity = (commonCountries.length / Math.max(char1.countries.length, char2.countries.length)) * 0.2;
+functions\src\aiCharacters.ts:544:  totalFactors += 0.2;
+functions\src\aiCompanionFunctions.ts:405:  const creatorShare = Math.floor(tokensCharged * 0.65); // 65%
+functions\src\aiCompanions.test.ts:39:      const mockDate = new Date("2025-10-27T10:00:00Z");
+functions\src\aiCompanions.test.ts:56:      const mockDate = new Date("2025-10-27T10:00:00Z");
+functions\src\aiCompanions.test.ts:79:      const now = new Date("2025-10-28T10:00:00Z");
+functions\src\aiCompanions.test.ts:80:      const lastReset = new Date("2025-10-27T09:00:00Z");
+functions\src\aiCompanions.test.ts:90:      const now = new Date("2025-10-28T10:00:00Z");
+functions\src\aiCompanions.test.ts:91:      const lastReset = new Date("2025-10-28T08:00:00Z");
+functions\src\aiCompanions.test.ts:101:      const now = new Date("2025-10-28T10:00:00Z");
+functions\src\aiCompanions.test.ts:102:      const lastReset = new Date("2025-10-25T10:00:00Z");
+functions\src\aiCompanions.test.ts:112:      const now = new Date("2025-10-28T10:00:00Z");
+functions\src\aiCompanions.test.ts:113:      const lastReset = new Date("2025-10-27T10:00:00Z");
+functions\src\aiCompanions.test.ts:180:      const now = new Date("2025-10-27T10:00:00Z");
+functions\src\aiCompanions.test.ts:181:      const lastReset = new Date("2025-10-28T10:00:00Z"); // Future date
+functions\src\aiCompanions.test.ts:193:      const now = new Date("2025-10-28T10:00:00Z");
+functions\src\aiCompanions.test.ts:235:      const now = new Date("2025-10-28T10:00:00Z");
+functions\src\aiCompanions.test.ts:236:      const lastReset = new Date("2025-10-27T09:00:00Z");
+functions\src\aiCompanions.test.ts:254:      const now = new Date("2025-10-28T10:00:00Z");
+functions\src\aiCompanions.test.ts:255:      const lastReset = new Date("2025-10-28T08:00:00Z");
+functions\src\aiExplainability.ts:161:  // Age compatibility (0-20 points)
+functions\src\aiExplainability.ts:172:  // Shared values/looking for (0-20 points)
+functions\src\aiExplainability.ts:751:      lastUpdated: "2025-10-29",
+functions\src\aiGenerationService.ts:110:      temperature: 0.8,
+functions\src\aiGenerationService.ts:153:      temperature: 0.8
+functions\src\aiGenerationService.ts:307:    errors.push('Tagline must be 10-200 characters');
+functions\src\aiMarketplaceFunctions.ts:266:    schedule: '0 2 * * *', // Daily at 2 AM UTC
+functions\src\aiMarketplaceRanking.ts:34:  if (trustLevel === 'HIGH') trustBonus = 0.2;
+functions\src\aiMarketplaceRanking.ts:40:  if (riskLevel === 'MEDIUM') riskPenalty = -0.2;
+functions\src\aiMemory.ts:173:          importance: 0.7,
+functions\src\aiMemory.ts:174:          confidence: 0.8,
+functions\src\aiMemory.ts:185:          importance: 0.7,
+functions\src\aiMemory.ts:186:          confidence: 0.8,
+functions\src\aiMemory.ts:207:        confidence: 0.7,
+functions\src\aiModeration.ts:47:    block: 0.8,      // Auto-block if above
+functions\src\aiModeration.ts:51:    block: 0.7,
+functions\src\aiModeration.ts:59:    block: 0.8,
+functions\src\aiModeration.ts:208:        "LIKELY": 0.7,
+functions\src\aiModeration.ts:524:    confidence: 0.8, // Vision API is generally reliable
+functions\src\aiModeration.ts:583:    confidence: 0.7,
+functions\src\aiModerationEngine.ts:137:        case 'LIKELY': return 0.7;
+functions\src\aiModerationEngine.ts:210:  if (labels.violence > 0.8 || labels.selfHarm > 0.7) {
+functions\src\aiOversight.ts:83:  SAFE = "safe",           // 0-20: No issues detected
+functions\src\aiOversight.ts:134:  model: string;             // e.g., "claude-3-5-sonnet-20241022"
+functions\src\aiOversight.ts:182:const MODEL_VERSION = "claude-3-5-sonnet-20241022";
+functions\src\aiRouter.ts:56:  "claude-3-haiku": { input: 0.00025, output: 0.00125 },
+functions\src\aiRouter.ts:159:      : (health.avgLatencyMs * 0.8 + latencyMs * 0.2);
+functions\src\aiRouter.ts:206:  const temperature = request.temperature ?? 0.7;
+functions\src\aiRouter.ts:258:  const temperature = request.temperature ?? 0.7;
+functions\src\aiRouter.ts:336:  const model = request.model || "claude-3-sonnet-20240229";
+functions\src\aiRouter.ts:337:  const temperature = request.temperature ?? 0.7;
+functions\src\amlMonitoring.ts:138:    highCashoutRatio: 0.8,
+functions\src\amlMonitoring.ts:494:export const aggregateAmlProfiles = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\amlRiskEngine.ts:88:  highCashoutRatio: 0.8, // 80% cashout rate
+functions\src\analyticsExport.ts:342:    schedule: "0 2 * * *", // 2 AM daily
+functions\src\auditFramework.ts:18: * - ISO/IEC 27001:2022 (Information Security Management)
+functions\src\auditFramework.ts:413:      version: "ISO/IEC 27001:2022",
+functions\src\auditFramework.ts:679:          standard: "ISO 27001:2022",
+functions\src\auditFramework.ts:698:          certifiedUntil: wcagScore >= 90 ? "2026-10-25" : undefined,
+functions\src\calendarEngine.ts:4: * Handles booking flow, 80/20 commission, refunds, QR verification, and safety
+functions\src\calendarEngine.ts:64: * Calculate payment split (80/20)
+functions\src\callBilling.ts:32:const EARNER_SPLIT = 0.65;  // 65% to callee (creator/earner)
+functions\src\callBilling.ts:33:const AVALO_SPLIT = 0.35;   // 35% to Avalo
+functions\src\callMonetization.ts:417: * - Applies 80/20 split to earner/Avalo
+functions\src\challenges.ts:303:        platformFee = Math.floor(challenge.entryTokens * 0.35);
+functions\src\chatSecurity.ts:144:  duplicateRate: 0.7, // 70% duplicate messages = spam
+functions\src\chatSecurity.ts:145:  copyPasteRate: 0.8, // 80% copy-paste = spam
+functions\src\chatSecurity.ts:326:    score += 0.2;
+functions\src\chatSecurity.ts:331:  if (urlCount > 1) score += 0.2;
+functions\src\chatSecurity.ts:336:  if (capsRatio > 0.7 && message.length > 10) {
+functions\src\chatSecurity.ts:342:  score += behavior.duplicateRate * 0.2;
+functions\src\chatSecurity.ts:416:      score = Math.max(score, 0.8);
+functions\src\chatSecurity.ts:433:    else if (score >= 0.7) action = "throttle";
+functions\src\chatSecurity.ts:729:    confidence: patterns.length > 2 ? 0.9 : 0.7,
+functions\src\chatSystemNextGen.ts:249:  if (capsRatio > 0.7 && message.length > 10) {
+functions\src\chatSystemNextGen.ts:251:    confidence += 0.2;
+functions\src\chatSystemNextGen.ts:258:    confidence += 0.2;
+functions\src\chatSystemNextGen.ts:268:  const action = confidence >= 0.8 ? "block" : confidence >= 0.6 ? "warn" : "allow";
+functions\src\chatSystemNextGen.ts:321:  const action = maxScore >= 0.8 ? "block" : maxScore >= 0.5 ? "warn" : "allow";
+functions\src\chatSystemNextGen.ts:342:      confidence: 0.8,
+functions\src\chatSystemNextGen.ts:347:      confidence: 0.75,
+functions\src\chatSystemNextGen.ts:352:      confidence: 0.7,
+functions\src\chatSystemNextGen.ts:388:    confidence: 0.75,
+functions\src\chatSystemNextGen.ts:521:      const creatorEarnings = Math.floor(cost * 0.65); // 65% to creator
+functions\src\chemistryMatchingEngine.ts:81:  mutualSwipes: 0.25,           // 25% - Strong signal of mutual interest
+functions\src\chemistryMatchingEngine.ts:83:  photoAttractiveness: 0.20,     // 20% - User engagement with photos
+functions\src\chemistryMatchingEngine.ts:84:  conversationIntensity: 0.20,   // 20% - Reply speed & length
+functions\src\chemistryMatchingEngine.ts:94:  maxSimilarMessagesPercentage: 0.8, // 80% similarity
+functions\src\chemistryMatchingEngine.ts:222:  // 30-60 seconds: high interest (60-85)
+functions\src\chemistryMatchingEngine.ts:230:    return 60 + ((viewDurationSeconds - 30) * 0.83);
+functions\src\chemistryMatchingEngine.ts:232:    return Math.min(85 + ((viewDurationSeconds - 60) * 0.25), 100);
+functions\src\chemistryMatchingEngine.ts:291:  // Under 1 min = 50, 1-5 min = 40-50, 5-30 min = 20-40, 30+ min = 0-20
+functions\src\chemistryMatchingEngine.ts:314:  // Balance score (0-20)
+functions\src\clubIntelligence.ts:539:      subgroupCohesion: 0.8,
+functions\src\clubs.ts:352:        platformFee = Math.floor(club.entryTokens * 0.35);
+functions\src\compliance.ts:817:    schedule: "0 2 * * *", // 2 AM daily
+functions\src\compliancePack55.ts:555:export const amlDailyMonitor = onSchedule("0 2 * * *", async (event) => {
+functions\src\creatorEarnings.ts:24:  CREATOR_SHARE: 0.65,    // 65% to creator
+functions\src\creatorEarnings.ts:25:  AVALO_COMMISSION: 0.35, // 35% to Avalo
+functions\src\creatorEarnings.ts:529:    schedule: '0 2 * * *', // Daily at 2 AM UTC
+functions\src\creatorHub.ts:216:    commissionRate: 0.65,
+functions\src\creatorHub.ts:228:    commissionRate: 0.70,
+functions\src\creatorHub.ts:234:    commissionRate: 0.72,
+functions\src\creatorHub.ts:240:    commissionRate: 0.75,
+functions\src\creatorHub.ts:732:          recommendedPrice = Math.max(product.price * 0.8, medianPrice * 0.9);
+functions\src\creatorMode.ts:45:  chatMessages: { creator: 0.65, platform: 0.35 },
+functions\src\creatorMode.ts:46:  gatedContent: { creator: 0.80, platform: 0.20 },
+functions\src\creatorMode.ts:48:  subscriptions: { creator: 0.70, platform: 0.30 },
+functions\src\creatorShop.ts:202:const PLATFORM_FEE_PERCENTAGE = 0.35; // 35%
+functions\src\creatorStore.test.ts:24:    const PLATFORM_PERCENTAGE = 0.2; // 20%
+functions\src\creatorStore.test.ts:25:    const CREATOR_PERCENTAGE = 0.8; // 80%
+functions\src\creatorStore.test.ts:37:    test("should split 1000 tokens as 200/800", () => {
+functions\src\creatorStore.test.ts:51:    test("should split 100 tokens as 20/80", () => {
+functions\src\creatorStore.test.ts:61:      expect(platformFee).toBe(0); // Floor of 0.2
+functions\src\creatorStore.test.ts:72:    test("should maintain 20/80 split for large amounts", () => {
+functions\src\creatorStore.ts:389:      // Calculate revenue split (20/80 for creator products)
+functions\src\creatorStore.ts:390:      const platformFee = Math.floor(product.price * 0.2); // 20%
+functions\src\csamShield.ts:168:  const agePatterns = /\b([0-9]|1[0-7])\s*(year|yr|yo|age|old|lat)\b/gi;
+functions\src\cyberstalkingDetection.ts:48:  longTermWindow: 10080,                    // 7 days
+functions\src\cyberstalkingReporting.ts:541:        'National Domestic Violence Hotline (US): 1-800-799-7233',
+functions\src\cyberstalkingReporting.ts:566:          'National Domestic Violence Hotline: 1-800-799-7233',
+functions\src\cyberstalkingReporting.ts:567:          'Cyberstalking Hotline: 1-800-656-4673',
+functions\src\cyberstalkingReporting.ts:609:          'Niebieska Linia: 800 120 002',
+functions\src\digitalProducts.ts:113:const PLATFORM_FEE_PERCENTAGE = 0.35;
+functions\src\digitalProducts.ts:114:const CREATOR_EARNINGS_PERCENTAGE = 0.65;
+functions\src\discoveryEngineV2.ts:81:    return 1.0 - ((hoursAgo - 24) / 144) * 0.7; // Down to 0.3 after 7 days
+functions\src\discoveryEngineV2.ts:84:    return 0.3 - ((hoursAgo - 168) / 552) * 0.25; // Down to 0.05 after 30 days
+functions\src\discoveryEngineV2.ts:102:      score += 0.25;
+functions\src\discoveryEngineV2.ts:110:    score -= 0.20;
+functions\src\discoveryEngineV2.ts:113:    score -= 0.20;
+functions\src\discoveryEngineV2.ts:454:        w_match: 0.35, // Increase match weight for search
+functions\src\discoveryFilters.ts:236:    return 0.7; // 30% reduction
+functions\src\discoveryProfileBuilder.ts:514:      const newEngagement = Math.floor(profile.engagementScore * 0.8);
+functions\src\discoveryProfileBuilder.ts:515:      const newMonetization = Math.floor(profile.monetizationScore * 0.8);
+functions\src\dynamicChatPricing.ts:130:  DEMAND_DROP_THRESHOLD: 0.65, // 65% drop triggers fallback
+functions\src\dynamicChatPricing.ts:135:const EARNER_SHARE = 0.65; // 65%
+functions\src\dynamicChatPricing.ts:136:const PLATFORM_SHARE = 0.35; // 35%
+functions\src\dynamicChatPricing.ts:552:  } else if (chatsInitiated < previousCount * 0.8) {
+functions\src\dynamicChatPricing.ts:558:  if (demandTrend === 'rising' && conversionRate > 0.7) {
+functions\src\dynamicPricing.ts:76:  timeOfDayMultiplier: number;   // 0.8 - 1.5
+functions\src\dynamicPricing.ts:77:  popularityMultiplier: number;  // 0.7 - 2.0
+functions\src\dynamicPricing.ts:79:  firstTimeBuyerDiscount: number; // 0 - 0.2
+functions\src\dynamicPricing.ts:178:const DEMAND_THRESHOLD_HIGH = 0.8;       // 80% capacity
+functions\src\dynamicPricing.ts:192:  NG: 0.35,
+functions\src\dynamicPricing.ts:262:    multiplier = 0.8;
+functions\src\dynamicPricing.ts:299:    platinum: 0.20,
+functions\src\dynamicPricing.ts:469:    localPrice: finalPrice * 0.20, // Token to USD conversion
+functions\src\emotionalIntelligence.ts:64:  attachmentRiskHigh: 0.7,
+functions\src\emotionalIntelligence.ts:65:  attachmentRiskCritical: 0.85,
+functions\src\emotionalIntelligence.ts:66:  emotionalIntensityHigh: 0.8
+functions\src\emotionalIntelligence.ts:244:        avgIntensity > 0.75 || 
+functions\src\emotionalIntelligence.ts:251:        if (avgIntensity > 0.85) {
+functions\src\emotionalIntelligence.ts:255:        } else if (intensityTrend > 0.2) {
+functions\src\emotionalIntelligence.ts:318:          playfulIncrease: 0.2,
+functions\src\emotionalIntelligence.ts:335:          romanticToneReduction: 0.7,
+functions\src\eventsEngine.ts:6: * - 80/20 revenue split (Organizer 80%, Avalo 20%)
+functions\src\eventsEngine.ts:46:// TICKET PURCHASE WITH 80/20 SPLIT
+functions\src\expertMarketplace.ts:849:    const platformFee = Math.floor(priceTokens * 0.35);
+functions\src\expertMarketplace.ts:969:    const platformFee = Math.floor(priceTokens * 0.35);
+functions\src\fraudEngine.ts:105:    highRateThreshold: 0.25 // 25% no-show rate
+functions\src\fraudEngine.ts:329:    (multiAccountScore * 0.2)
+functions\src\fraudScheduled.ts:21:export const weeklyFraudRecalculation = onSchedule({ schedule: "0 2 * * 0", timeZone: "UTC" }, async (event) => {
+functions\src\globalFeed.ts:369: * Calculate recency boost (0-20 points)
+functions\src\i18nExtended.ts:571:    confidence: 0.85,
+functions\src\leaderboardEngine.ts:79:  return 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
+functions\src\leaderboardEngine.ts:898:    badgeColor: badgeColors[rank] || '#4A90E2',
+functions\src\live.ts:18: * - 1:1 video: 30/70 split (30% platform, 70% host)
+functions\src\live.ts:19: * - Public stream: Free to watch, tips 80/20 split
+functions\src\live.ts:407:      // Transaction: Deduct from sender, credit to recipient (80/20 split)
+functions\src\live.ts:408:      const platformFee = Math.floor(amount * 0.20); // 20% platform fee
+functions\src\live.ts:568:              const hostAmount = Math.floor(tokensPerTick * 0.70);
+functions\src\liveVipRoom.ts:244:  platform: 0.20, // 20%
+functions\src\liveVipRoom.ts:245:  creator: 0.80, // 80%
+functions\src\loyalty.ts:402:    schedule: "0 2 * * *", // Every day at 2 AM UTC
+functions\src\matchingEngine.ts:49:  photoQuality: 0.25,
+functions\src\matchingEngine.ts:50:  profileCompleteness: 0.20,
+functions\src\matchingEngine.ts:51:  responseRate: 0.20,
+functions\src\matchingEngine.ts:374:    components.photoQuality = Math.min(1, (photoCount / 6) + (hasVideoIntro ? 0.2 : 0));
+functions\src\media.ts:441:        const creatorShare = Math.floor(unlockPrice * 0.8); // 80% to creator
+functions\src\meetEngine.ts:65:      return { success: false, error: 'Real Meet price must be between 1000-25000 tokens' };
+functions\src\meetEngine.ts:69:      return { success: false, error: 'Social Meet price must be between 600-8000 tokens' };
+functions\src\meetEngine.ts:177:      return { success: false, error: 'Real Meet price must be between 1000-25000 tokens' };
+functions\src\meetEngine.ts:181:      return { success: false, error: 'Social Meet price must be between 600-8000 tokens' };
+functions\src\meetEngine.ts:292:    const avaloFee = Math.floor(price * 0.2);
+functions\src\meetEngine.ts:293:    const escrowAmount = Math.floor(price * 0.8);
+functions\src\notifications.ts:185:    .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+functions\src\pack-223-destiny-weeks.ts:352:  if (recoveryRatio > 0.2) {
+functions\src\pack-224-matchmaking-integration.ts:163:    .where('boostLevel', '>=', 1.6) // Trending level (70-84 score)
+functions\src\pack-224-romantic-momentum-integration.ts:175:  const selfieMatch = selfieMatchScore >= 0.7; // 70% match threshold
+functions\src\pack-227-desire-loop-engine.ts:120:  quietHoursStart?: number; // 0-23 (hour)
+functions\src\pack-227-desire-loop-engine.ts:121:  quietHoursEnd?: number; // 0-23 (hour)
+functions\src\pack-227-desire-loop-triggers.ts:63:export const dailyDesireSnapshot = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack103-case-management.ts:565:  if (confidenceScore > 0.8 || reasonCodes.some(r => highRiskReasons.includes(r))) {
+functions\src\pack103-case-management.ts:601:  if (confidenceScore > 0.8) {
+functions\src\pack103-enforcement-integration.ts:124: * Apply hard enforcement (confidence 0.6 - 0.8)
+functions\src\pack103-enforcement-integration.ts:174: * Apply suspension risk enforcement (confidence > 0.8)
+functions\src\pack103-governance-engine.ts:68:    // 1. AI Content Scans (weight: 0.25)
+functions\src\pack103-governance-engine.ts:71:      const weight = 0.25;
+functions\src\pack103-governance-engine.ts:96:    // 3. Trusted Moderator Actions (weight: 0.25)
+functions\src\pack103-governance-engine.ts:99:      const weight = 0.25;
+functions\src\pack103-governance-engine.ts:191:  return Math.min(1.0, aiFlags.length * 0.2);
+functions\src\pack103-governance-engine.ts:226:  return Math.min(1.0, actionsQuery.size * 0.25);
+functions\src\pack103-governance-engine.ts:261:    if (resolution?.outcome === 'TEMPORARY_RESTRICTION') severityScore += 0.2;
+functions\src\pack103-governance-engine.ts:263:    if (resolution?.outcome === 'SUSPENSION') severityScore += 0.8;
+functions\src\pack103-rate-limiting.ts:220:    if (maxHourCount > totalActions * 0.8) {
+functions\src\pack103-rate-limiting.ts:229:    if (restrictiveActionRate > 0.7 && totalActions > 20) {
+functions\src\pack103-types.ts:126:  hard: number; // 0.6 - 0.8
+functions\src\pack103-types.ts:127:  suspensionRisk: number; // > 0.8
+functions\src\pack103-types.ts:133:  hard: 0.8,
+functions\src\pack103-types.ts:134:  suspensionRisk: 0.8,
+functions\src\pack104-caseManagement.ts:165:    coordinatedViolations: cluster.characteristics.bioSimilarityScore > 0.8,
+functions\src\pack104-collusionDetection.ts:243:      severity: Math.min(1.0, sharedIPs / userIds.length * 0.7),
+functions\src\pack104-collusionDetection.ts:251:      severity: Math.min(1.0, internalPayments / (userIds.length * 2) * 0.8),
+functions\src\pack104-collusionDetection.ts:336:    score += Math.min(0.2, (params.isolationScore - CONFIG.isolationThreshold) * 0.5);
+functions\src\pack104-collusionDetection.ts:340:  if (params.avgInternalWeight >= 0.8) {
+functions\src\pack104-fraudGraph.ts:136:  weightThreshold: number = 0.7
+functions\src\pack104-fraudGraph.ts:214:    weight: 0.7,  // Strong but not as definitive as device
+functions\src\pack104-fraudGraph.ts:398:    if (edge.weight >= 0.7) strongEdges++;
+functions\src\pack104-scheduled.ts:41:export const updateFraudGraphEdges = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack104-spamDetection.ts:366:  const uniqueTargets = Math.floor(totalOutbound * 0.7);  // 70% unique targets
+functions\src\pack104-spamDetection.ts:421:  score += Math.min(0.25, Math.max(params.bioSimilarity, params.profileSimilarity) * 0.3);
+functions\src\pack104-spamDetection.ts:425:    score += Math.min(0.2, (params.outboundMessages / (CONFIG.minOutboundMessages * 3)) * 0.25);
+functions\src\pack104-spamDetection.ts:430:    score += Math.min(0.15, (1 - params.replyRate / CONFIG.maxReplyRate) * 0.2);
+functions\src\pack104-spamDetection.ts:464:    score += 0.2;
+functions\src\pack104-spamDetection.ts:469:    score += 0.2;
+functions\src\pack104-types.ts:231:  strongEdges: number;  // weight > 0.7
+functions\src\pack104-types.ts:275:  strongEdgeThreshold: 0.7,
+functions\src\pack104-types.ts:276:  isolationThreshold: 0.8,  // 80% internal transactions
+functions\src\pack104-types.ts:279:  highRiskThreshold: 0.85,
+functions\src\pack104-types.ts:306:  minBioSimilarity: 0.7,
+functions\src\pack104-types.ts:310:  maxKycProgressRate: 0.2,  // 20%
+functions\src\pack104-types.ts:313:  highRiskThreshold: 0.85,
+functions\src\pack105-revenue-export.ts:151:  const settlementRate = 0.2;
+functions\src\pack106-admin.ts:422:          priceUSD: 0.25, // Default from pack106-types
+functions\src\pack106-types.legacy.ts:352: * Example: €0.25 per token
+functions\src\pack106-types.legacy.ts:354:export const BASE_TOKEN_PRICE_USD = 0.25;
+functions\src\pack106-types.legacy.ts:406:  FR: { rate: 0.20, included: true, jurisdiction: 'France VAT' },
+functions\src\pack106-types.legacy.ts:407:  IT: { rate: 0.22, included: true, jurisdiction: 'Italy VAT' },
+functions\src\pack106-types.legacy.ts:408:  ES: { rate: 0.21, included: true, jurisdiction: 'Spain VAT' },
+functions\src\pack106-types.legacy.ts:409:  NL: { rate: 0.21, included: true, jurisdiction: 'Netherlands VAT' },
+functions\src\pack106-types.legacy.ts:410:  PL: { rate: 0.23, included: true, jurisdiction: 'Poland VAT' },
+functions\src\pack106-types.legacy.ts:411:  SE: { rate: 0.25, included: true, jurisdiction: 'Sweden VAT' },
+functions\src\pack106-types.legacy.ts:412:  DK: { rate: 0.25, included: true, jurisdiction: 'Denmark VAT' },
+functions\src\pack106-types.legacy.ts:413:  NO: { rate: 0.25, included: true, jurisdiction: 'Norway VAT' },
+functions\src\pack106-types.legacy.ts:414:  AT: { rate: 0.20, included: true, jurisdiction: 'Austria VAT' },
+functions\src\pack106-types.legacy.ts:415:  BE: { rate: 0.21, included: true, jurisdiction: 'Belgium VAT' },
+functions\src\pack106-types.legacy.ts:416:  FI: { rate: 0.24, included: true, jurisdiction: 'Finland VAT' },
+functions\src\pack106-types.legacy.ts:417:  IE: { rate: 0.23, included: true, jurisdiction: 'Ireland VAT' },
+functions\src\pack106-types.legacy.ts:418:  PT: { rate: 0.23, included: true, jurisdiction: 'Portugal VAT' },
+functions\src\pack106-types.legacy.ts:419:  GR: { rate: 0.24, included: true, jurisdiction: 'Greece VAT' },
+functions\src\pack106-types.legacy.ts:420:  CZ: { rate: 0.21, included: true, jurisdiction: 'Czech Republic VAT' },
+functions\src\pack106-types.legacy.ts:421:  HU: { rate: 0.27, included: true, jurisdiction: 'Hungary VAT' },
+functions\src\pack106-types.legacy.ts:423:  BG: { rate: 0.20, included: true, jurisdiction: 'Bulgaria VAT' },
+functions\src\pack106-types.legacy.ts:427:  GB: { rate: 0.20, included: true, jurisdiction: 'UK VAT' },
+functions\src\pack106-types.legacy.ts:428:  CH: { rate: 0.077, included: true, jurisdiction: 'Switzerland VAT' },
+functions\src\pack107-membership.ts:699:    schedule: '0 2 * * *', // Daily at 2 AM UTC
+functions\src\pack108-classification.ts:62:      if (aiResult.confidence > 0.7) {
+functions\src\pack108-classification.ts:308:  if (confidence > 0.85 && disagreementLevel >= 2) {
+functions\src\pack108-discovery.ts:421:    updates.eligibleForSafeFeed = updates.safeContentRatio >= 0.8; // 80% safe content
+functions\src\pack108-monetization.ts:26:const CREATOR_SPLIT = 0.65; // 65% to creator
+functions\src\pack108-monetization.ts:27:const PLATFORM_SPLIT = 0.35; // 35% to platform
+functions\src\pack110-feedback.ts:121:    spamScore += 0.2;
+functions\src\pack110-feedback.ts:132:    if (upperCaseRatio > 0.7) {
+functions\src\pack110-feedback.ts:134:      spamScore += 0.2;
+functions\src\pack110-scheduled.ts:221:    schedule: '0 2 * * *', // 2 AM UTC daily
+functions\src\pack113-abuse-detection.ts:68:  const confidence = postCount > ABUSIVE_POST_RATE ? 0.95 : 0.7;
+functions\src\pack113-abuse-detection.ts:135:  const repetitiveEndpoint = Math.max(...Array.from(endpointCounts.values())) > logs.length * 0.8;
+functions\src\pack113-abuse-detection.ts:158:    confidence: 0.8,
+functions\src\pack113-abuse-detection.ts:280:    confidence: 0.85,
+functions\src\pack113-abuse-detection.ts:320:    confidence: 0.75,
+functions\src\pack113-abuse-detection.ts:389:  if (pattern.severity >= 90 && pattern.confidence >= 0.85) {
+functions\src\pack113-abuse-detection.ts:555:    schedule: '0 2 * * *', // Daily at 2 AM UTC
+functions\src\pack114-agency-engine.ts:619:    const creatorAmount = Math.floor(grossTokens * 0.65);
+functions\src\pack114-agency-engine.ts:630:  const platformAmount = Math.floor(grossTokens * 0.35); // 35% to Avalo (fixed)
+functions\src\pack114-earnings-integration.ts:85:  const platformAmount = Math.floor(grossTokens * 0.35);
+functions\src\pack114-safety-enforcement.ts:62:  if (rejectionRate > 0.8 && totalRequests > 10) {
+functions\src\pack115-reputation-engine.ts:57:    good: 75,       // 60-80%
+functions\src\pack115-reputation-engine.ts:235:  if (completenessRatio >= 0.8) return SCORE_WEIGHTS.profileCompleteness.complete;
+functions\src\pack115-reputation-engine.ts:243:  if (responseRate >= 0.8) return SCORE_WEIGHTS.responsiveness.excellent;
+functions\src\pack115-reputation-engine.ts:246:  if (responseRate >= 0.2) return SCORE_WEIGHTS.responsiveness.poor;
+functions\src\pack115-reputation-engine.ts:256:  if (positiveRatio >= 0.8) return SCORE_WEIGHTS.conversationQuality.excellent;
+functions\src\pack115-reputation-engine.ts:352:      confidenceScore: 0.8, // High confidence for rapid changes
+functions\src\pack115-types.ts:25:  | 'HIGH'             // 600-799
+functions\src\pack115-types.ts:101:    identityVerification: number;      // 0-200 (KYC, selfie-live)
+functions\src\pack115-types.ts:106:    safetyCompliance: number;          // 0-200 (no violations)
+functions\src\pack115-types.ts:343:  if (change > 300 && timeWindowMinutes < 10080) return true;
+functions\src\pack119-analytics.ts:87:  const reach = Math.floor(impressions * 0.7); // Estimated unique viewers
+functions\src\pack121-safety.ts:81:          confidence: 0.8,
+functions\src\pack121-safety.ts:138:          confidence: 0.7,
+functions\src\pack121-safety.ts:227:      const highConfidenceViolations = scanResult.violations.filter(v => v.confidence >= 0.8);
+functions\src\pack122-cultural-safety.ts:89:  BLUR: 0.7,         // Blur content, require confirmation
+functions\src\pack122-cultural-safety.ts:90:  BLOCK: 0.85,       // Block content immediately
+functions\src\pack122-cultural-safety.ts:261:  if (/[\u0E00-\u0E7F]/.test(text)) return 'th'; // Thai
+functions\src\pack122-cultural-safety.ts:318:    } else if (classification.confidence >= 0.7) {
+functions\src\pack122-region-policy.ts:182:        confidence: 0.8,
+functions\src\pack122-region-policy.ts:192:        confidence: 0.85,
+functions\src\pack122-region-policy.ts:289:  const verified = consensusConfidence >= 0.7 && inconsistencies.length === 0;
+functions\src\pack126-harassment-shield.ts:64:      confidence: 0.8,
+functions\src\pack126-harassment-shield.ts:114:      confidence: 0.7,
+functions\src\pack126-harassment-shield.ts:149:  if (nameSimilarity > 0.8) {
+functions\src\pack126-risk-orchestration.ts:208:      confidence: 0.8,
+functions\src\pack126-risk-orchestration.ts:253:      confidence: 0.7,
+functions\src\pack126-risk-orchestration.ts:288:      confidence: 0.85,
+functions\src\pack127-fingerprint-engine.ts:187:    m.confidenceScore >= (DEFAULT_IP_CONFIG.perceptualMatchThreshold || 0.85)
+functions\src\pack127-fingerprint-engine.ts:283:    if (confidenceScore >= (DEFAULT_IP_CONFIG.perceptualMatchThreshold || 0.85)) {
+functions\src\pack127-fingerprint-engine.ts:299:    if (confidenceScore >= (DEFAULT_IP_CONFIG.perceptualMatchThreshold || 0.85)) {
+functions\src\pack127-fingerprint-engine.ts:431:      // Derivative threshold: 70-85% similarity
+functions\src\pack127-fingerprint-engine.ts:432:      if (confidence >= (DEFAULT_IP_CONFIG.derivativeMatchThreshold || 0.70) &&
+functions\src\pack127-fingerprint-engine.ts:433:          confidence < (DEFAULT_IP_CONFIG.perceptualMatchThreshold || 0.85)) {
+functions\src\pack127-types.ts:577:  perceptualMatchThreshold: number;  // 0.85
+functions\src\pack127-types.ts:578:  derivativeMatchThreshold: number;  // 0.70
+functions\src\pack127-types.ts:656:  perceptualMatchThreshold: 0.85,
+functions\src\pack127-types.ts:657:  derivativeMatchThreshold: 0.70,
+functions\src\pack130-ban-evasion-hunter.ts:318:  const wpmThreshold = Math.max(sig1.averageWPM, sig2.averageWPM) * 0.2;
+functions\src\pack130-ban-evasion-hunter.ts:402:    device: 0.35,
+functions\src\pack130-ban-evasion-hunter.ts:404:    payment: 0.25,
+functions\src\pack130-patrol-engine.ts:115:  else if (totalOccurrences >= 3) confidence = 0.85;
+functions\src\pack130-patrol-engine.ts:116:  else if (totalOccurrences >= 2) confidence = 0.7;
+functions\src\pack130-patrol-engine.ts:190:        else if (recentFreq < olderFreq * 0.7) trend = 'IMPROVING';
+functions\src\pack130-risk-profile.ts:134:    else if (pattern.trend === 'IMPROVING') trendMultiplier = 0.7;
+functions\src\pack130-risk-profile.ts:143:    else if (daysSinceLastOccurrence > 180) recencyMultiplier = 0.8;
+functions\src\pack130-risk-profile.ts:184:    confidence = Math.min(confidence + 0.2, 1.0);
+functions\src\pack132-analytics-cloud.ts:265:    metrics.totalReach = Math.floor(metrics.totalImpressions * 0.7);
+functions\src\pack132-api-endpoints.ts:373:        metrics.totalReach = Math.floor(metrics.totalImpressions * 0.75);
+functions\src\pack132-types.ts:243:    hour: number; // 0-23
+functions\src\pack133-ai-processing-engine.ts:101:      enhancementDetails.lightingCorrection = { applied: true, intensity: 0.7 };
+functions\src\pack133-safety-validator.ts:34:  CONTENT_MANIPULATION: 0.2, // Block if excessive manipulation
+functions\src\pack133-types.ts:291:    contentManipulation: number; // 0-1, blocks if >0.2
+functions\src\pack134-api-endpoints.ts:483:        return 0.8; // Long view
+functions\src\pack134-api-endpoints.ts:488:      return 0.7; // Strong positive signal
+functions\src\pack134-fairness-boost.ts:65:    positiveRatio > 0.7; // Good quality interactions
+functions\src\pack134-feed-generator.ts:338:      (interestMatch * 0.35) +
+functions\src\pack134-feed-generator.ts:340:      (freshnessScore * 0.25) +
+functions\src\pack134-feed-generator.ts:341:      (qualityScore * 0.25);
+functions\src\pack134-feed-generator.ts:407:  return categoryMatch ? 0.8 : 0.3;
+functions\src\pack134-feed-generator.ts:418:  return Math.exp(-0.0578 * ageHours);
+functions\src\pack134-feed-generator.ts:498:    if (explorationCount < explorationThreshold && Math.random() < 0.2) {
+functions\src\pack134-feed-generator.ts:554:    } else if (item.freshnessScore > 0.8) {
+functions\src\pack134-interest-graph.ts:148:  if (dataPoints < 5) return 0.2;
+functions\src\pack134-interest-graph.ts:151:  if (dataPoints < 50) return 0.8;
+functions\src\pack134-interest-graph.ts:489:    confidence += 0.2;
+functions\src\pack134-safety-filter.ts:223:  if (vulnerabilityData?.lonelinessIndicator && vulnerabilityData.lonelinessIndicator > 0.7) {
+functions\src\pack134-time-relevance.ts:144:  if (dataPoints < 5) return 0.2;
+functions\src\pack134-time-relevance.ts:147:  if (dataPoints < 50) return 0.8;
+functions\src\pack134-time-relevance.ts:293: * @param hour - Hour of day (0-23)
+functions\src\pack134-time-relevance.ts:368:  if (prefs.confidenceScore >= 0.8) {
+functions\src\pack141-safety-filter.ts:447:      confidence: riskLevel === 'CRITICAL' ? 0.95 : 0.85,
+functions\src\pack142-identity-fraud-engine.ts:78:    confidence: 0.8,
+functions\src\pack142-identity-fraud-engine.ts:110:  const riskScore = Math.min(1.0, relatedUserIds.length * 0.35);
+functions\src\pack142-identity-fraud-engine.ts:124:    confidence: 0.85,
+functions\src\pack142-identity-fraud-engine.ts:258:  const riskScore = Math.min(1.0, relatedUserIds.length * 0.25);
+functions\src\pack142-identity-fraud-engine.ts:272:    confidence: 0.75,
+functions\src\pack142-identity-fraud-engine.ts:305:  const riskScore = Math.min(1.0, relatedUserIds.length * 0.2);
+functions\src\pack142-identity-fraud-engine.ts:319:    confidence: 0.7,
+functions\src\pack142-liveness-engine.ts:119:  const detected = Math.random() > 0.2; // 80% success rate
+functions\src\pack142-liveness-engine.ts:125:    confidence: detected ? 0.85 + Math.random() * 0.15 : 0.3,
+functions\src\pack142-liveness-engine.ts:134:  const detected = Math.random() > 0.25; // 75% success rate
+functions\src\pack142-liveness-engine.ts:140:    confidence: detected ? 0.8 + Math.random() * 0.2 : 0.35,
+functions\src\pack142-liveness-engine.ts:155:    confidence: detected ? 0.75 + Math.random() * 0.25 : 0.4,
+functions\src\pack142-liveness-engine.ts:176:    blinkDetected: blink.detected && blink.confidence > 0.7,
+functions\src\pack142-liveness-engine.ts:177:    headRotationDetected: headRotation.detected && headRotation.confidence > 0.7,
+functions\src\pack142-liveness-engine.ts:178:    lipMovementDetected: lipMovement.detected && lipMovement.confidence > 0.7,
+functions\src\pack142-liveness-engine.ts:204:  const score = Math.random() * 0.25;
+functions\src\pack142-liveness-engine.ts:226:  const score = Math.random() * 0.2;
+functions\src\pack142-liveness-engine.ts:276:    jpegArtifactScore: 0.25,
+functions\src\pack142-liveness-engine.ts:277:    shadowConsistency: 0.2,
+functions\src\pack142-liveness-engine.ts:278:    lightingReflection: 0.2,
+functions\src\pack142-liveness-engine.ts:279:    ganUpsampling: 0.25,
+functions\src\pack142-photo-consistency-engine.ts:53:  const similarityScore = 0.75 + Math.random() * 0.2; // 75-95% similarity
+functions\src\pack142-photo-consistency-engine.ts:55:  const confidence = 0.85 + Math.random() * 0.1;
+functions\src\pack142-photo-consistency-engine.ts:103:  const filterIntensity = filterApplied ? 0.3 + Math.random() * 0.4 : Math.random() * 0.2;
+functions\src\pack142-photo-consistency-engine.ts:110:    confidence: 0.8 + Math.random() * 0.15,
+functions\src\pack142-photo-consistency-engine.ts:124:  const beautyAIUsed = Math.random() < 0.25; // 25% use beauty AI
+functions\src\pack142-photo-consistency-engine.ts:127:  const faceReshapingScore = beautyAIUsed ? 0.3 + Math.random() * 0.3 : Math.random() * 0.2;
+functions\src\pack142-photo-consistency-engine.ts:128:  const eyeEnlargementScore = beautyAIUsed ? 0.2 + Math.random() * 0.3 : Math.random() * 0.15;
+functions\src\pack142-photo-consistency-engine.ts:135:    confidence: 0.75 + Math.random() * 0.2,
+functions\src\pack142-photo-consistency-engine.ts:153:  const morphIntensity = bodyMorphDetected ? 0.3 + Math.random() * 0.4 : Math.random() * 0.2;
+functions\src\pack142-photo-consistency-engine.ts:159:    confidence: 0.7 + Math.random() * 0.2,
+functions\src\pack142-photo-consistency-engine.ts:208:    confidence: 0.8,
+functions\src\pack142-photo-consistency-engine.ts:216:    confidence: 0.75,
+functions\src\pack142-photo-consistency-engine.ts:223:    confidence: 0.7,
+functions\src\pack142-photo-consistency-engine.ts:248:    (1 - maxFilterIntensity) * 0.2 +
+functions\src\pack142-photo-consistency-engine.ts:249:    (1 - maxBeautyAI) * 0.2 +
+functions\src\pack142-stolen-photo-deepfake-engine.ts:66:    similarityScore: 0.85 + Math.random() * 0.1,
+functions\src\pack142-stolen-photo-deepfake-engine.ts:122:    confidence: 0.88,
+functions\src\pack142-stolen-photo-deepfake-engine.ts:158:    confidence: 0.75 + Math.random() * 0.2,
+functions\src\pack142-stolen-photo-deepfake-engine.ts:271:  return Math.random() * 0.25;
+functions\src\pack142-stolen-photo-deepfake-engine.ts:289:  return Math.random() * 0.2;
+functions\src\pack142-stolen-photo-deepfake-engine.ts:298:  return Math.random() * 0.25;
+functions\src\pack142-stolen-photo-deepfake-engine.ts:307:  return Math.random() * 0.2;
+functions\src\pack142-stolen-photo-deepfake-engine.ts:341:    jpegQuantizationArtifacts * 0.2 +
+functions\src\pack142-stolen-photo-deepfake-engine.ts:343:    hairEdgeAnomalies * 0.2 +
+functions\src\pack142-stolen-photo-deepfake-engine.ts:345:    ganUpsamplingAnomalies * 0.2 +
+functions\src\pack142-voice-signature-engine.ts:141:    timbre: 0.25,
+functions\src\pack142-voice-signature-engine.ts:142:    spectralFingerprint: 0.25,
+functions\src\pack145-safety-validator.ts:135:      if (nsfwScore >= 0.7 || romanceScore >= 0.7 || exploitativeScore >= 0.7) {
+functions\src\pack145-safety-validator.ts:243:    return (nsfwScore * 0.4) + (romanceScore * 0.4) + (exploitativeScore * 0.2);
+functions\src\pack146-copyright.ts:299:  } else if (confidence >= 0.7) {
+functions\src\pack146-hashing.ts:225:      if (thumbnailSimilarity > 0.8) {
+functions\src\pack146-hashing.ts:307:    if (sizeRatio < 0.8) {
+functions\src\pack146-piracy-watchlist.ts:391:        isProfessionalGroup: detectionConfidence > 0.8,
+functions\src\pack146-piracy-watchlist.ts:503:  if (characteristics.coordinatedUploads > 5) confidence += 0.2;
+functions\src\pack146-piracy-watchlist.ts:504:  if (characteristics.contentCirculation > 5) confidence += 0.2;
+functions\src\pack146-piracy-watchlist.ts:518:  if (confidence > 0.7) return 'HIGH';
+functions\src\pack146-scheduled.ts:27:    schedule: '0 2 * * *',
+functions\src\pack146-watermarking.ts:154:      confidence: 0.8,
+functions\src\pack146-watermarking.ts:346:  const width = Math.min(charsPerLine * fontSize * 0.6, imageWidth * 0.8);
+functions\src\pack147-escrow-engine.ts:30:const PLATFORM_FEE_PERCENTAGE = 0.35;
+functions\src\pack147-escrow-engine.ts:31:const RECIPIENT_PERCENTAGE = 0.65;
+functions\src\pack147-fraud-detection.ts:29:    successRate: 0.8,          // >80% success rate suspicious
+functions\src\pack147-fraud-detection.ts:143:    (avgConsumption > FRAUD_THRESHOLDS.REFUND_FARMING.consumptionBeforeRefund ? 0.2 : 0),
+functions\src\pack147-fraud-detection.ts:148:  if (confidence > 0.8) severity = 'CRITICAL';
+functions\src\pack147-fraud-detection.ts:214:        severity: confidence > 0.7 ? 'CRITICAL' : 'HIGH',
+functions\src\pack147-fraud-detection.ts:444:        confidence: 0.7,
+functions\src\pack148-types.ts:441:export const PLATFORM_FEE_PERCENTAGE = 0.35;  // 35%
+functions\src\pack148-types.ts:442:export const CREATOR_SHARE_PERCENTAGE = 0.65; // 65%
+functions\src\pack153-ml-classifiers.ts:59:  if (score < -0.2) label = 'NEGATIVE';
+functions\src\pack153-ml-classifiers.ts:60:  else if (score > 0.2) label = 'POSITIVE';
+functions\src\pack153-ml-classifiers.ts:82:    { name: 'sexual', keywords: ['sex', 'sexy', 'body', 'naked', 'nude'], weight: 0.7 },
+functions\src\pack154-translation-system.ts:57:    { lang: 'el', pattern: /[\u0370-\u03FF]/, script: 'Greek' },
+functions\src\pack154-translation-system.ts:59:    { lang: 'th', pattern: /[\u0E00-\u0E7F]/, script: 'Thai' },
+functions\src\pack154-translation-system.ts:60:    { lang: 'hi', pattern: /[\u0900-\u097F]/, script: 'Devanagari' },
+functions\src\pack154-translation-system.ts:340:    /\b(pay|money|cash|token|coin).{0,20}(love|kiss|date|meet)\b/i,
+functions\src\pack154-translation-system.ts:341:    /\b(love|kiss|date|meet).{0,20}(pay|money|cash|token|coin)\b/i,
+functions\src\pack157-venue-events.ts:477:  } else if (screening.nsfwScore > 0.2 || screening.romanticScore > 0.2) {
+functions\src\pack158-evidence-classifier.ts:107:    confidence: 0.85,
+functions\src\pack158-evidence-classifier.ts:360:    /\b(1[0-7]|[0-9])\s*(years?\s*old|y\.?o\.?)\b/i,
+functions\src\pack158-evidence-classifier.ts:470:  if (classification.confidence < 0.7) {
+functions\src\pack159-safety-engine.ts:136:        confidence: options.userAction ? 1.0 : 0.8,
+functions\src\pack159-safety-engine.ts:513:    const severityWeights = { LOW: 0.2, MEDIUM: 0.5, HIGH: 0.75, CRITICAL: 1.0 };
+functions\src\pack159-safety-engine.ts:568:      manipulation.confidence > 0.8 ? 'CRITICAL' : 'WARNING'
+functions\src\pack162-courses.ts:618:    const platformFee = Math.floor(priceTokens * 0.35);
+functions\src\pack162-courses.ts:736:    const platformFee = Math.floor(priceTokens * 0.35);
+functions\src\pack166-scalability.ts:66:const PLATFORM_FEE_PERCENTAGE = 0.35;
+functions\src\pack166-scalability.ts:67:const CREATOR_EARNINGS_PERCENTAGE = 0.65;
+functions\src\pack168-anti-farming-engine.ts:103:  const confidence = Math.min(0.95, 0.5 + (cycles.length * 0.1) + (involvedAccounts.size > 5 ? 0.2 : 0));
+functions\src\pack168-anti-farming-engine.ts:130:    escalated: confidence > 0.7
+functions\src\pack168-anti-farming-engine.ts:133:  if (confidence > 0.7) {
+functions\src\pack168-anti-farming-engine.ts:201:    riskScore += 0.2;
+functions\src\pack168-anti-farming-engine.ts:218:    riskScore += 0.25;
+functions\src\pack168-anti-farming-engine.ts:243:    riskScore += 0.35;
+functions\src\pack168-anti-farming-engine.ts:260:      escalated: riskScore > 0.8
+functions\src\pack168-anti-farming-engine.ts:263:    if (riskScore > 0.8) {
+functions\src\pack168-anti-farming-engine.ts:403:          confidence: metadata.riskScore || 0.8,
+functions\src\pack168-anti-farming-engine.ts:533:    const weight = 0.35;
+functions\src\pack168-anti-farming-engine.ts:538:      confidence: 0.85
+functions\src\pack168-anti-farming-engine.ts:565:    auditFrequency: totalScore > 0.7 ? 7 : totalScore > 0.4 ? 14 : 30,
+functions\src\pack168-emotional-grooming.ts:162:    if (severity > 0.8) {
+functions\src\pack168-emotional-grooming.ts:258:  if (maxSeverity > 0.8) {
+functions\src\pack168-emotional-grooming.ts:282:    severity: pattern.severity > 0.9 ? "critical" : pattern.severity > 0.7 ? "high" : "medium",
+functions\src\pack168-multi-account-detection.ts:70:    if (cluster.confidence > 0.7) {
+functions\src\pack168-multi-account-detection.ts:73:      if (cluster.confidence > 0.85) {
+functions\src\pack168-multi-account-detection.ts:227:      if (similarity > 0.7) {
+functions\src\pack168-multi-account-detection.ts:365:    const confidence = Math.min(0.9, 0.7 + cycle.length * 0.05);
+functions\src\pack168-multi-account-detection.ts:519:      status: avgConfidence > 0.85 ? "confirmed" : "suspected"
+functions\src\pack168-multi-account-detection.ts:533:    severity: cluster.confidence > 0.95 ? "critical" : cluster.confidence > 0.85 ? "high" : "medium",
+functions\src\pack168-schedulers.ts:217:      if (newScore.score > 0.7 && newScore.score > oldScore) {
+functions\src\pack173-abuse-detection.ts:88:      confidence: 0.85,
+functions\src\pack173-abuse-detection.ts:104:      confidence: 0.8,
+functions\src\pack173-abuse-detection.ts:192:      confidence: 0.85,
+functions\src\pack173-abuse-detection.ts:276:      confidence: 0.8,
+functions\src\pack173-abuse-detection.ts:294:      confidence: 0.85,
+functions\src\pack173-abuse-detection.ts:310:      confidence: 0.75,
+functions\src\pack173-endpoints.ts:544:    confidence: 0.7,
+functions\src\pack182-events-types.ts:464:  platformFeePercentage: 0.35, // 35%
+functions\src\pack182-events-types.ts:465:  hostEarningsPercentage: 0.65, // 65%
+functions\src\pack183-dynamic-scaler.ts:33:    scaleUpAt: 0.75,
+functions\src\pack183-dynamic-scaler.ts:34:    scaleDownAt: 0.25,
+functions\src\pack183-dynamic-scaler.ts:39:    scaleUpAt: 0.80,
+functions\src\pack183-dynamic-scaler.ts:45:    scaleUpAt: 0.70,
+functions\src\pack183-dynamic-scaler.ts:46:    scaleDownAt: 0.20,
+functions\src\pack183-dynamic-scaler.ts:51:    scaleUpAt: 0.85,
+functions\src\pack183-dynamic-scaler.ts:52:    scaleDownAt: 0.25,
+functions\src\pack183-dynamic-scaler.ts:57:    scaleUpAt: 0.75,
+functions\src\pack183-dynamic-scaler.ts:63:    scaleUpAt: 0.70,
+functions\src\pack183-dynamic-scaler.ts:64:    scaleDownAt: 0.25,
+functions\src\pack183-dynamic-scaler.ts:101:      Math.floor(currentCapacity * 0.75),
+functions\src\pack183-endpoints.ts:217:      adjustedLatencies[userRegion] *= 0.7;
+functions\src\pack183-latency-predictor.ts:182:  const timeMultiplier = 1 + (lookaheadMinutes / 60) * 0.2;
+functions\src\pack183-latency-predictor.ts:185:  const confidence = trend.direction === 'STABLE' ? 0.7 : 0.85;
+functions\src\pack188-narrative-engine.ts:199:    const safe = riskLevel < 0.7;
+functions\src\pack191-live-arena.ts:159:  creator: 0.70, // 70% to creator
+functions\src\pack196-marketplace.ts:331:    const avaloFee = Math.floor(product.priceTokens * 0.35);
+functions\src\pack196-marketplace.ts:666:        const sellerDeduction = Math.min(refundAmount * 0.65, order.creatorEarnings);
+functions\src\pack200-auto-heal-runtime.ts:348:  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+functions\src\pack200-auto-scale-traffic.ts:364:    const newCapacity = Math.max(region.maxCapacity * 0.7, 100);
+functions\src\pack212-reputation-types.ts:321:      discoveryRank: 0.8,
+functions\src\pack212-reputation-types.ts:322:      feedVisibility: 0.85,
+functions\src\pack212-reputation-types.ts:323:      suggestionPriority: 0.75,
+functions\src\pack213-match-priority-engine.ts:4: * Match Priority Score = (Attraction × 0.35)
+functions\src\pack213-match-priority-engine.ts:5: *                      + (Reputation × 0.25)
+functions\src\pack213-match-priority-engine.ts:6: *                      + (Earnings Synergy × 0.25)
+functions\src\pack213-match-priority-engine.ts:171:    // Wishlist = very strong signal (+0.2)
+functions\src\pack213-match-priority-engine.ts:173:      score += 0.2;
+functions\src\pack213-match-priority-engine.ts:307:    score = 0.85;
+functions\src\pack213-match-priority-engine.ts:313:    score = 0.75;
+functions\src\pack213-match-priority-engine.ts:465:    if (hoursSinceActive < 48) return 0.7;       // Last 2 days: 70%
+functions\src\pack213-match-priority-engine.ts:505:    // Normalize: 0 overlap = 0.3, 50% overlap = 0.65, 100% overlap = 1.0
+functions\src\pack213-match-priority-engine.ts:506:    return 0.3 + (overlapRatio * 0.7);
+functions\src\pack213-match-priority.test.ts:73:      expect(score.components.attractionScore).toBeGreaterThan(0.8);
+functions\src\pack213-match-priority.test.ts:113:      expect(score.components.reputationScore).toBe(0.85);
+functions\src\pack213-match-priority.test.ts:173:      expect(score.components.earningsSynergyScore).toBeGreaterThan(0.8);
+functions\src\pack213-match-priority.test.ts:203:      expect(score.components.recentActivityScore).toBeGreaterThan(0.8);
+functions\src\pack213-match-priority.test.ts:240:      // Score should be 0.3 + (0.5 * 0.7) = 0.65
+functions\src\pack213-match-priority.test.ts:241:      expect(score.components.interestProximityScore).toBeCloseTo(0.65, 1);
+functions\src\pack213-match-priority.test.ts:360:        attractionScore: 0.8,
+functions\src\pack213-match-priority.test.ts:361:        reputationScore: 0.7,
+functions\src\pack213-match-priority.test.ts:363:        recentActivityScore: 0.85,
+functions\src\pack213-match-priority.test.ts:368:      // (0.8 * 0.35) + (0.7 * 0.25) + (0.9 * 0.25) + (0.85 * 0.10) + (0.6 * 0.05)
+functions\src\pack213-match-priority.test.ts:369:      // = 0.28 + 0.175 + 0.225 + 0.085 + 0.03 = 0.795
+functions\src\pack213-match-priority.test.ts:375:        (mockComponents.attractionScore * 0.35) +
+functions\src\pack213-match-priority.test.ts:376:        (mockComponents.reputationScore * 0.25) +
+functions\src\pack213-match-priority.test.ts:377:        (mockComponents.earningsSynergyScore * 0.25) +
+functions\src\pack213-match-priority.test.ts:380:      ).toBeCloseTo(0.795, 3);
+functions\src\pack213-match-priority.test.ts:510:      // With 25% weight, contributes 0.23 to final score
+functions\src\pack213-match-priority.test.ts:527:      const earnerShare = 0.65;
+functions\src\pack213-match-priority.test.ts:528:      const platformShare = 0.35;
+functions\src\pack213-match-priority.test.ts:531:      expect(earnerShare).toBe(0.65);
+functions\src\pack213-match-priority.test.ts:532:      expect(platformShare).toBe(0.35);
+functions\src\pack213-match-priority.test.ts:549:    const expectedScore = 0.85;
+functions\src\pack213-match-priority.test.ts:551:    expect(expectedScore).toBeGreaterThan(0.8);
+functions\src\pack214-schedulers.ts:18: * Cold-start activation timeline (Day 0-7)
+functions\src\pack214-templates.ts:251:  // COLD START SEQUENCE (Day 0-7)
+functions\src\pack214-types.ts:138:  day: number; // 0-7
+functions\src\pack215-viral-loop.ts:663:export const aggregateViralMetrics = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack218-calendar-events.ts:6: * - Does NOT change economics (65/35 meetings, 80/20 events)
+functions\src\pack218-calendar-events.ts:759:  const organizerShare = Math.floor(attendee?.tokensAmount * 0.8); // 80% to organizer
+functions\src\pack218-calendar-events.ts:852:  const earnerShare = Math.floor((booking?.tokensAmount || 0) * 0.65);
+functions\src\pack218-calendar-events.ts:942:    const earnerShare = Math.floor((booking?.tokensAmount || 0) * 0.65);
+functions\src\pack233-royal-challenges.ts:543:    .where('toxicityScore', '>', 0.7)
+functions\src\pack237-breakup-recovery-engine.ts:431:    'very_low': 0.8,  // Slower progression
+functions\src\pack237-breakup-recovery-scheduled.ts:16:export const dailyRecoveryProgression = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack238-chat-motivation.ts:230:    if (lowerText.includes(word)) score += 0.2;
+functions\src\pack238-chat-motivation.ts:234:    if (lowerText.includes(word)) score -= 0.2;
+functions\src\pack238-chat-motivation.ts:325:  const sentimentWeight = 0.25;
+functions\src\pack238-chat-motivation.ts:326:  const engagementWeight = 0.25;
+functions\src\pack238-chat-motivation.ts:327:  const depthWeight = 0.20;
+functions\src\pack238-chat-motivation.ts:577:    confidence: 0.8
+functions\src\pack242DynamicChatPricing.ts:178:const EARNINGS_DROP_THRESHOLD = 0.85; // If earnings < 85% of previous month
+functions\src\pack242DynamicChatPricing.ts:181:const EARNER_SHARE = 0.65; // 65%
+functions\src\pack242DynamicChatPricing.ts:182:const PLATFORM_SHARE = 0.35; // 35%
+functions\src\pack243-creator-dashboard.ts:31:export const calculateCreatorDashboards = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack243-creator-dashboard.ts:182:      suggestedPrice: await getCurrentChatPrice(userId) * 0.8, // 20% reduction suggestion
+functions\src\pack243-creator-dashboard.ts:430:      total += (data.amount || 0) * 0.65;
+functions\src\pack243-creator-dashboard.ts:749:  return Math.min(100, (interactions * 0.3 + earnings * 0.7) / 10);
+functions\src\pack244-creator-league.ts:9: * - Does NOT modify call pricing (10/20 tokens/min)
+functions\src\pack244-creator-league.ts:381:export const calculateDailyRankings = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack245-audience-segments-engine.ts:825:export const scheduledSegmentUpdate = onSchedule("0 2 * * *", async (event) => {
+functions\src\pack246-contract-validator.ts:233:  // Validate call split (80/20)
+functions\src\pack251WelcomeFunnel.ts:6: * Phase 1 (0-2h): Instant validation - auto-likes, guaranteed match
+functions\src\pack251WelcomeFunnel.ts:32:  // Phase 1: Instant validation (0-2h)
+functions\src\pack251WelcomeFunnel.ts:176:// PHASE 1: INSTANT VALIDATION (0-2h)
+functions\src\pack253-royal-benefits.ts:316:    const netCreatorTokens = Math.floor(entryPrice * 0.65); // 65% to creator
+functions\src\pack253-royal-types.ts:97:  peakEarningHour: number; // hour of day (0-23)
+functions\src\pack255-admin.ts:84:      .where('confidenceLevel', '>', 0.2)
+functions\src\pack255-ai-matchmaker-types.ts:200:  behavior: number;                              // default 0.35
+functions\src\pack255-ai-matchmaker-types.ts:359:  behavior: 0.35,
+functions\src\pack255-behavior-tracker.ts:464:    if (!preferences || preferences.confidenceLevel < 0.2) {
+functions\src\pack255-match-ranker.ts:73:      if (behaviorProfile.messageResponseRate >= 0.7 && behaviorProfile.totalMatches >= 10) {
+functions\src\pack255-match-ranker.ts:182:    // Match conversion rate (0-25 points)
+functions\src\pack255-match-ranker.ts:185:    // Activity level (0-20 points)
+functions\src\pack255-match-ranker.ts:195:    // Engagement history (0-25 points)
+functions\src\pack255-swipe-heating.ts:181:  // Convert heat level (0-100) to multiplier (1.0-2.0)
+functions\src\pack256AiReplySuggestions.ts:606:  let confidence = 0.7; // Base confidence
+functions\src\pack256AiReplySuggestions.ts:613:  if (tone === 'nsfw' && context.conversationHistory.length < 5) confidence -= 0.2;
+functions\src\pack261-earnings.legacy.ts:8:const AVALO_COMMISSION = 0.35; // 35% platform commission
+functions\src\pack261-earnings.legacy.ts:9:const CREATOR_SHARE = 0.65; // 65% creator earnings
+functions\src\pack261-earnings.legacy.ts:15:  'USD': 0.008,
+functions\src\pack261-earnings.legacy.ts:375:export const computeAnalytics = onSchedule("0 2 * * *", async (event) => {
+functions\src\pack262-creator-levels.ts:149:  SUSPICIOUS_PATTERN_THRESHOLD: 0.8,
+functions\src\pack262-creator-levels.ts:777:  if (uniqueTimestamps.size < activities.length * 0.7) {
+functions\src\pack262-creator-levels.ts:786:  if (roundAmounts.length > tokenAmounts.length * 0.8) {
+functions\src\pack265-ai-earn-assist-engine.ts:211:  else if (signals.recentChatActivity.weight === 'high') score += chatWeight * 0.75;
+functions\src\pack265-ai-earn-assist-engine.ts:218:  else if (signals.previousGiftingBehavior.weight === 'high') score += giftWeight * 0.75;
+functions\src\pack266-supporter-crm-engine.ts:334:  // Recent activity (0-7%)
+functions\src\pack266-supporter-crm-types.ts:31:  | 'very_high'       // 70-89%
+functions\src\pack266-supporter-crm-types.ts:94:  preferredContactTimes: number[];   // Hours 0-23
+functions\src\pack266-supporter-crm-types.ts:200:    hourOfDay: number;            // 0-23
+functions\src\pack266-supporter-crm-types.ts:326:      start: number;  // Hour 0-23
+functions\src\pack266-supporter-crm-types.ts:327:      end: number;    // Hour 0-23
+functions\src\pack273ChatEngine.ts:926:  if (leftRate > 0.7 || swipeStats.total < 50) {
+functions\src\pack277-wallet-service.ts:41:      return { platformShare: 0.35, earnerShare: 0.65 };
+functions\src\pack277-wallet-service.ts:45:      return { platformShare: 0.20, earnerShare: 0.80 };
+functions\src\pack277-wallet-service.ts:61:  CHAT: { creator: 0.65, avalo: 0.35 },
+functions\src\pack277-wallet-service.ts:62:  CALL: { creator: 0.80, avalo: 0.20 },
+functions\src\pack277-wallet-service.ts:63:  CALENDAR: { creator: 0.80, avalo: 0.20 },
+functions\src\pack277-wallet-service.ts:64:  EVENT: { creator: 0.80, avalo: 0.20 },
+functions\src\pack277-wallet-service.ts:66:  MEDIA: { creator: 0.65, avalo: 0.35 },
+functions\src\pack277-wallet-service.ts:67:  DIGITAL_PRODUCT: { creator: 0.65, avalo: 0.35 },
+functions\src\pack277-wallet-service.ts:79:  return REVENUE_SPLIT[source] || { creator: 0.65, avalo: 0.35 };
+functions\src\pack278-subscription-service.ts:109: * - VIP: 0.7 (30% discount)
+functions\src\pack279-ai-chat-runtime.ts:85:const USER_AI_SPLIT = { creator: 0.65, avalo: 0.35 };     // 65/35 split
+functions\src\pack282-feed-engine.ts:160:    } else if (sexualScore >= 0.8 || nsfwScore >= 0.8) {
+functions\src\pack282-feed-engine.ts:220:  const safety = context.safetyScore || 0.8;
+functions\src\pack282-feed-engine.ts:227:  if (post.nsfw.flag === 'soft') nsfwMultiplier = 0.8;
+functions\src\pack282-feed-engine.ts:559:      safetyScore: userData?.safetyScore || 0.8,
+functions\src\pack282-feed-types.ts:272:  relationship: 0.25,
+functions\src\pack282-feed-types.ts:273:  engagement: 0.20,
+functions\src\pack283-discovery.ts:156:  score += profile.profileScore * 0.2; // Max 20 points
+functions\src\pack285FreeWindowFunnel.ts:8: * - No changes to core 65/35 and 80/20 economics
+functions\src\pack286-calendar-events-economics.ts:6: * - 80/20 split (80% earner / 20% Avalo) for CALENDAR and EVENT sources
+functions\src\pack286-calendar-events-economics.ts:52: * Calculate 80/20 split
+functions\src\pack286-calendar-events-economics.ts:88: * Create calendar booking with 80/20 split
+functions\src\pack286-calendar-events-economics.ts:619: * Purchase event ticket with 80/20 split
+functions\src\pack291-ai-service.ts:186:      temperature: 0.7,
+functions\src\pack291-ai-service.ts:283:      temperature: 0.7,
+functions\src\pack291-ai-service.ts:306:        tip: `Post during ${data.timing.bestPostingHours[0] ? formatTimeRange(data.timing.bestPostingHours[0]) : '20:00-21:00'} for best results`,
+functions\src\pack294-discovery-types.ts:178:  distance: 0.25,
+functions\src\pack294-discovery-types.ts:180:  popularity: 0.20,
+functions\src\pack298-unified-engine.ts:40:  similarity: 0.25,
+functions\src\pack301-daily-churn.ts:29:export const dailyChurnRecalculation = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack301-retention-service.ts:179:  if (factors.noAppOpenRecent) score += 0.20;
+functions\src\pack301-retention-types.ts:176:  noAppOpenRecent: boolean;      // +0.20
+functions\src\pack301-tests.ts:90:      noAppOpenRecent: true,      // +0.20
+functions\src\pack301-tests.ts:97:    assert(score2 === 0.85, 'All risk factors should give 0.85 score');
+functions\src\pack302-mobile-billing.ts:335:      // If production returns 21007, try sandbox
+functions\src\pack302-mobile-billing.ts:336:      if (status === 21007 && isProduction) {
+functions\src\pack302-types.legacy.ts:132:  callDiscountFactor: number; // 1.0 = no discount, 0.7 = 30% off, 0.5 = 50% off
+functions\src\pack302-types.legacy.ts:242:  USD: { code: 'USD', symbol: '€', conversionRate: 0.23 }, // Approximate
+functions\src\pack302-types.legacy.ts:244:  USD: { code: 'USD', symbol: '$', conversionRate: 0.25 }, // Approximate
+functions\src\pack302-types.legacy.ts:257:export const CALL_DISCOUNT_VIP = 0.7; // 30% off
+functions\src\pack302-types.ts:160:export const CALL_DISCOUNT_ROYAL = 0.8;
+functions\src\pack303-earnings-service.ts:97:          tokensCreatorShare: Math.floor((earnings?.tokensEarnedChat || 0) * 0.65),
+functions\src\pack303-earnings-service.ts:103:          tokensCreatorShare: Math.floor((earnings?.tokensEarnedCalls || 0) * 0.80),
+functions\src\pack303-earnings-service.ts:109:          tokensCreatorShare: Math.floor((earnings?.tokensEarnedCalendar || 0) * 0.80),
+functions\src\pack303-earnings-service.ts:115:          tokensCreatorShare: Math.floor((earnings?.tokensEarnedEvents || 0) * 0.80),
+functions\src\pack303-earnings-service.ts:121:          tokensCreatorShare: Math.floor((earnings?.tokensEarnedOther || 0) * 0.65),
+functions\src\pack303-earnings-service.ts:248:          tokensCreatorShare: Math.floor(earnings.tokensEarnedChat * 0.65),
+functions\src\pack303-earnings-service.ts:254:          tokensCreatorShare: Math.floor(earnings.tokensEarnedCalls * 0.80),
+functions\src\pack303-earnings-service.ts:260:          tokensCreatorShare: Math.floor(earnings.tokensEarnedCalendar * 0.80),
+functions\src\pack303-earnings-service.ts:266:          tokensCreatorShare: Math.floor(earnings.tokensEarnedEvents * 0.80),
+functions\src\pack303-earnings-service.ts:272:          tokensCreatorShare: Math.floor(earnings.tokensEarnedOther * 0.65),
+functions\src\pack303-endpoints.ts:307:export const cronDailyEarningsAggregation = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC", region: "europe-west1" }, async (event) => {
+functions\src\pack304-endpoints.ts:607:    schedule: '0 2 * * *', // 2 AM UTC daily
+functions\src\pack306-verification.ts:77:  LIVENESS_THRESHOLD: 0.85,
+functions\src\pack306-verification.ts:79:  FACE_MATCH_THRESHOLD: 0.75,
+functions\src\pack306-verification.ts:233:  const confidence = 0.85 + Math.random() * 0.15;
+functions\src\pack306-verification.ts:259:      quality: 0.88,
+functions\src\pack307-catfish-risk.ts:86:    HIGH: 0.8,     // 0.6-0.8 = HIGH
+functions\src\pack307-catfish-risk.ts:87:                   // >= 0.8 = CRITICAL
+functions\src\pack307-catfish-risk.ts:92:    AI_FACE: 0.25,
+functions\src\pack307-catfish-risk.ts:94:    PHOTO_CONSISTENCY: 0.20,
+functions\src\pack307-catfish-risk.ts:95:    IDENTITY_MATCH: 0.25,
+functions\src\pack307-catfish-risk.ts:103:    AI_FACE_THRESHOLD: 0.7,
+functions\src\pack307-catfish-risk.ts:104:    FILTER_INTENSITY_THRESHOLD: 0.8,
+functions\src\pack307-catfish-risk.ts:106:    IDENTITY_MATCH_THRESHOLD: 0.7,
+functions\src\pack307-catfish-risk.ts:358:  const mockConsistency = 0.7 + Math.random() * 0.3; // Most real profiles are consistent
+functions\src\pack307-catfish-risk.ts:398:  const mockIdentityScore = 0.8 + Math.random() * 0.2; // Most verified users match
+functions\src\pack312-support-actions.ts:128:    // Check for mismatch (score < 0.7 indicates mismatch)
+functions\src\pack312-support-actions.ts:130:      v.verificationScore !== undefined && v.verificationScore < 0.7
+functions\src\pack312-support-console.ts:6: * - No changes to token packages, prices, or payout rates (0.20 USD/token)
+functions\src\pack312-support-console.ts:7: * - No changes to revenue splits (65/35, 80/20)
+functions\src\pack312-support-context.ts:224:          const allMatch = selfieValidations.every(v => !v.verificationScore || v.verificationScore >= 0.7);
+functions\src\pack312-support-types.ts:7: * - No changes to revenue splits (65/35, 80/20)
+functions\src\pack320-auto-flagging.ts:115:    aiFlags.nudity && aiFlags.nudity > 0.8,
+functions\src\pack320-auto-flagging.ts:116:    aiFlags.violence && aiFlags.violence > 0.7,
+functions\src\pack320-auto-flagging.ts:117:    aiFlags.weapons && aiFlags.weapons > 0.7,
+functions\src\pack320-auto-flagging.ts:118:    aiFlags.deepfake && aiFlags.deepfake > 0.7,
+functions\src\pack320-auto-flagging.ts:119:    aiFlags.faceMismatch && aiFlags.faceMismatch > 0.8,
+functions\src\pack320-auto-flagging.ts:120:    aiFlags.toxicity && aiFlags.toxicity > 0.7,
+functions\src\pack320-auto-flagging.ts:121:    aiFlags.hate && aiFlags.hate > 0.7,
+functions\src\pack320-auto-flagging.ts:264:        moderationResult.scores.violence > 0.7 ||
+functions\src\pack320-auto-flagging.ts:265:        moderationResult.scores.hate > 0.7 ||
+functions\src\pack320-auto-flagging.ts:266:        moderationResult.scores.harassment > 0.8 ||
+functions\src\pack320-auto-flagging.ts:436:          harassment: 0.8 // Multiple reports suggest pattern
+functions\src\pack321-integration-helpers.ts:162: * Uses CALENDAR_BOOKING context with 80/20 split
+functions\src\pack321-integration-helpers.ts:264: * Uses EVENT_TICKET context with 80/20 split
+functions\src\pack323-feed-engine.ts:13: * - NO 65/35, 80/20, 90/10 splits
+functions\src\pack324a-kpi-types.ts:27:  totalTokenRevenueUSD: number; // tokens * 0.20 USD
+functions\src\pack324a-kpi-types.ts:43:  hour: number; // 0-23
+functions\src\pack324a-kpi-types.ts:78:  totalEarnedUSD: number; // tokens * 0.20 USD
+functions\src\pack324b-fraud-signals.ts:320:        const severity: FraudSeverity = refundRate >= 0.9 ? 5 : refundRate >= 0.8 ? 4 : 3;
+functions\src\pack324c-trust-types.ts:156:  QUALITY: 0.35,      // 35% - Most important for user experience
+functions\src\pack324c-trust-types.ts:158:  SAFETY: 0.25,       // 25% - Platform integrity
+functions\src\pack324c-trust-types.ts:182:  EARNINGS: 0.25,             // 25% - Revenue contribution
+functions\src\pack327-types.ts:182:  TOKEN_CONVERSION_RATE: 0.20, // 1 token = 0.20 USD for calculation
+functions\src\pack328a-identity-verification-types.ts:233:  MIN_CONFIDENCE_OVERALL: 0.8,
+functions\src\pack328a-identity-verification-types.ts:235:  MIN_CONFIDENCE_IDENTITY: 0.85,
+functions\src\pack328a-identity-verification-types.ts:268:    condition: (ctx) => ctx.fraudScore >= 0.7,
+functions\src\pack328a-identity-verification.ts:458:    if (signal.severity === 'HIGH' && signal.confidence >= 0.7) {
+functions\src\pack328a-verification-providers.ts:59:      confidence.overall >= 0.8 &&
+functions\src\pack328a-verification-providers.ts:61:      confidence.identityMatch >= 0.85 &&
+functions\src\pack328a-verification-providers.ts:62:      confidence.documentAuthenticity >= 0.8
+functions\src\pack328a-verification-providers.ts:229:        overall: docAIResponse.overallScore || 0.85,
+functions\src\pack328a-verification-providers.ts:231:        identityMatch: docAIResponse.faceMatchScore || 0.85,
+functions\src\pack328a-verification-providers.ts:232:        documentAuthenticity: docAIResponse.documentScore || 0.85,
+functions\src\pack328a-verification-providers.ts:241:        identityMatch: confidence.identityMatch >= 0.85,
+functions\src\pack328a-verification-providers.ts:319:      faceMatchScore: 0.88,
+functions\src\pack328b-chat-session-timeouts.ts:92:  const platformFeeRetained = Math.round(depositAmount * 0.35);
+functions\src\pack330-export-hooks.ts:209:    if (!period || !/^\d{4}-(0[1-9]|1[0-2]|YEAR)$/.test(period)) {
+functions\src\pack330-platform-reports.ts:243:    if (!period || !/^\d{4}-(0[1-9]|1[0-2]|YEAR)$/.test(period)) {
+functions\src\pack330-platform-reports.ts:339:    if (!period || !/^\d{4}-(0[1-9]|1[0-2]|YEAR)$/.test(period)) {
+functions\src\pack330-tax-reports.ts:229:    if (!period || !/^\d{4}-(0[1-9]|1[0-2]|YEAR)$/.test(period)) {
+functions\src\pack330-tax-reports.ts:370:    schedule: '0 2 1 * *', // 02:00 UTC on 1st of each month
+functions\src\pack331-ai-avatar-marketplace.ts:8: * - No tokenomics drift: Uses existing 0.20 USD token price
+functions\src\pack335-support-scheduled.ts:15:export const pack335_autoCloseOldTickets = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack336-aggregation-cron.ts:156:    if (dauDrop > 0.25) {
+functions\src\pack337a-exports.ts:101:      priority: riskScore > 0.7 ? 'HIGH' : 'MEDIUM',
+functions\src\pack344-ai-helpers.ts:374:        temperature: 0.8,
+functions\src\pack344-ai-helpers.ts:469:        temperature: 0.7,
+functions\src\pack344-ai-helpers.ts:587:export const pack344_cleanupOldPatterns = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack345-launch-audit.ts:899:    calendar80_20Verified: monetizationChecks.find(c => c.checkName === 'revenueSplitVerified')?.passed || false,
+functions\src\pack345-types.ts:47:    calendar80_20Verified: boolean;
+functions\src\pack346-churn-engine.ts:173:  // Low session count (0-20 points)
+functions\src\pack346-churn-engine.ts:180:  // Refunds (0-20 points)
+functions\src\pack346-creator-kpi.ts:287:export const refreshCreatorKPIs = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack346-kpi-aggregation.ts:178:        kpi.platformEarnings.chat35 += amountUSD * 0.35;
+functions\src\pack346-kpi-aggregation.ts:188:        kpi.platformEarnings.calendar20 += amountUSD * 0.20;
+functions\src\pack346-kpi-aggregation.ts:192:        kpi.platformEarnings.events20 += amountUSD * 0.20;
+functions\src\pack347-boost-products.ts:74:  creator: 0.65,
+functions\src\pack347-boost-products.ts:75:  avalo: 0.35
+functions\src\pack347-promotion-algorithm.ts:13: *   (engagementRate * 0.35)
+functions\src\pack347-promotion-algorithm.ts:14: * + (earningsVelocity * 0.25)
+functions\src\pack347-promotion-algorithm.ts:37:    engagement: number;      // 0.35 weight
+functions\src\pack347-promotion-algorithm.ts:38:    earnings: number;         // 0.25 weight
+functions\src\pack347-promotion-algorithm.ts:66:    engagement: 0.35,
+functions\src\pack347-promotion-algorithm.ts:67:    earnings: 0.25,
+functions\src\pack349-types.ts:299:  CREATOR_COMMISSION_RATE: 0.65, // 65% to creator
+functions\src\pack349-types.ts:300:  AVALO_COMMISSION_RATE: 0.35, // 35% to Avalo
+functions\src\pack349-types.ts:318:    maxLength: 2048,
+functions\src\pack350-call-pricing.ts:7: * - No changes to revenue splits (80/20)
+functions\src\pack350-call-pricing.ts:59: * Calculate earnings split for calls (80/20)
+functions\src\pack350-call-pricing.ts:66:  const earnerReceives = Math.floor(totalTokens * 0.80);  // 80% to earner
+functions\src\pack350-chat-pricing.ts:52:  const earnerReceives = Math.floor(totalTokens * 0.65);  // 65% to earner
+functions\src\pack352-creator-metrics-sync.ts:318:        const chatEarnings = tokens * 0.65; // Creator gets 65%
+functions\src\pack352-creator-metrics-sync.ts:326:        const voiceEarnings = tokens * 0.65;
+functions\src\pack352-creator-metrics-sync.ts:334:        const videoEarnings = tokens * 0.65;
+functions\src\pack352-creator-metrics-sync.ts:342:        const calendarEarnings = tokens * 0.80; // Creator gets 80%
+functions\src\pack352-creator-metrics-sync.ts:350:        const eventEarnings = tokens * 0.80; // Organizer gets 80%
+functions\src\pack352-creator-metrics-sync.ts:358:        const aiEarnings = tokens * 0.65;
+functions\src\pack352-daily-aggregator.ts:33:export const aggregateDailyKpis = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack352-daily-aggregator.ts:289:        totalPlatformRevenueTokens += chatTokens * 0.35;
+functions\src\pack352-daily-aggregator.ts:297:        totalPlatformRevenueTokens += voiceTokens * 0.35;
+functions\src\pack352-daily-aggregator.ts:305:        totalPlatformRevenueTokens += videoTokens * 0.35;
+functions\src\pack352-daily-aggregator.ts:313:        // Platform takes 20% (from 80/20 split)
+functions\src\pack352-daily-aggregator.ts:314:        totalPlatformRevenueTokens += calendarTokens * 0.20;
+functions\src\pack352-daily-aggregator.ts:322:        totalPlatformRevenueTokens += eventTokens * 0.20;
+functions\src\pack352-daily-aggregator.ts:329:        totalPlatformRevenueTokens += aiTokens * 0.35; // Assuming 65/35 split
+functions\src\pack352-daily-aggregator.ts:597:        const chatEarnings = tokens * 0.65;
+functions\src\pack352-daily-aggregator.ts:605:        const voiceEarnings = tokens * 0.65;
+functions\src\pack352-daily-aggregator.ts:613:        const videoEarnings = tokens * 0.65;
+functions\src\pack352-daily-aggregator.ts:622:        const calendarEarnings = tokens * 0.80;
+functions\src\pack352-daily-aggregator.ts:631:        const eventEarnings = tokens * 0.80;
+functions\src\pack352-daily-aggregator.ts:639:        const aiEarnings = tokens * 0.65;
+functions\src\pack354-influencer-service.ts:229:  chat: { creatorShare: 0.65, avaloShare: 0.35 },
+functions\src\pack354-influencer-service.ts:230:  calls: { creatorShare: 0.80, avaloShare: 0.20 },
+functions\src\pack354-influencer-service.ts:231:  calendar: { creatorShare: 0.80, avaloShare: 0.20 },
+functions\src\pack354-influencer-service.ts:232:  events: { creatorShare: 0.80, avaloShare: 0.20 },
+functions\src\pack354-influencer-service.ts:732:    if (avgRefundRatio > 0.2) {
+functions\src\pack355-kpi-integration.ts:295:    const topReferrerContribution = 0.25; // Assumes top 10% contribute 25% of referrals
+functions\src\pack355-kpi-integration.ts:298:    const regionalDispersion = 0.7; // 0-1 scale, higher = more evenly distributed
+functions\src\pack355-kpi-integration.ts:304:    const retentionRateD30 = 0.65; // 65% retention after 30 days
+functions\src\pack356-ad-attribution.ts:301:export const calculateCPA = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack356-retargeting.ts:195:    .where("churnRiskScore", ">=", 0.7)
+functions\src\pack356-retargeting.ts:206:      minChurnRisk: 0.7,
+functions\src\pack357-aso-optimizer.ts:420:    minStoreCVR: 0.25, // 25% minimum store CVR
+functions\src\pack357-aso-optimizer.ts:421:    minPayRate: 0.012, // 1.2% minimum pay rate
+functions\src\pack357-review-engine.ts:151:  if (fraudScore > 0.7) {
+functions\src\pack358-burnrate-engine.ts:203:    const supportCostPerUser = 0.2; // ~0.2 USD per active user per month
+functions\src\pack358-burnrate-engine.ts:272:      const storeFeePercentage = 0.20;
+functions\src\pack358-financial-forecast.ts:185:      return { churnRate: 0.05, retentionRate: 0.65 }; // Defaults
+functions\src\pack358-financial-forecast.ts:191:      retentionRate: data.day30RetentionRate || 0.65,
+functions\src\pack358-financial-forecast.ts:364:      p75: revenues[Math.floor(n * 0.75)],
+functions\src\pack358-financial-forecast.ts:428:export const forecastRevenueNext30Days = onSchedule({ schedule: "0 2 * * *", timeZone: "USDope/Warsaw", region: "europe-west1" }, async (event) => {
+functions\src\pack358-ltv-model.ts:235:      DORMANT: 0.70,    // 70% churn (very high)
+functions\src\pack358-ltv-model.ts:237:      RETURNING: 0.25,  // 25% churn (medium)
+functions\src\pack358-stress-scenarios.ts:19:  trafficMultiplier: number;    // e.g., 0.7 = -30% traffic
+functions\src\pack358-stress-scenarios.ts:63:    trafficMultiplier: 0.7,
+functions\src\pack358-stress-scenarios.ts:119:    trafficMultiplier: 0.75,
+functions\src\pack359-gdpr-retention.ts:503:export const enforceRetentionPolicies = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack359-jurisdiction-engine.ts:57:    vatRate: 0.23,
+functions\src\pack359-jurisdiction-engine.ts:89:    vatRate: 0.20,
+functions\src\pack359-jurisdiction-engine.ts:105:    vatRate: 0.22,
+functions\src\pack359-jurisdiction-engine.ts:121:    vatRate: 0.21,
+functions\src\pack359-jurisdiction-engine.ts:137:    vatRate: 0.21,
+functions\src\pack359-jurisdiction-engine.ts:153:    vatRate: 0.25,
+functions\src\pack359-jurisdiction-engine.ts:171:    vatRate: 0.20,
+functions\src\pack359-jurisdiction-engine.ts:200:    withholdingTaxRate: 0.24, // Federal backup withholding
+functions\src\pack359-tax-calculator.ts:137:  platformFeeRate: number = 0.20 // Default 20% platform fee
+functions\src\pack359-tax-calculator.ts:245:  const creatorEarnings = await calculateCreatorEarningsTax(creatorId, chatCost, 0.20); // 20% platform fee
+functions\src\pack359-tax-calculator.ts:484:    platformFee || 0.20
+functions\src\pack361-autoscaling.ts:72:      memoryUsage: 0.7,
+functions\src\pack361-autoscaling.ts:88:      memoryUsage: 0.7,
+functions\src\pack361-autoscaling.ts:104:      memoryUsage: 0.8,
+functions\src\pack361-autoscaling.ts:120:      memoryUsage: 0.7,
+functions\src\pack361-autoscaling.ts:136:      memoryUsage: 0.7,
+functions\src\pack361-autoscaling.ts:152:      memoryUsage: 0.7,
+functions\src\pack361-autoscaling.ts:344:    const decrement = Math.max(1, Math.ceil(currentInstances * 0.25));
+functions\src\pack361-cdn-control.ts:97:  videos: 604800, // 7 days
+functions\src\pack361-cost-control.ts:19:  throttleThreshold: number; // 0-1 (e.g., 0.8 = 80% of budget)
+functions\src\pack361-cost-control.ts:70:    throttleThreshold: 0.8,
+functions\src\pack361-cost-control.ts:71:    alertThreshold: 0.7,
+functions\src\pack361-cost-control.ts:78:    throttleThreshold: 0.8,
+functions\src\pack361-cost-control.ts:79:    alertThreshold: 0.7,
+functions\src\pack361-cost-control.ts:86:    throttleThreshold: 0.8,
+functions\src\pack361-cost-control.ts:87:    alertThreshold: 0.7,
+functions\src\pack361-cost-control.ts:94:    throttleThreshold: 0.8,
+functions\src\pack361-cost-control.ts:95:    alertThreshold: 0.7,
+functions\src\pack361-cost-control.ts:103:    alertThreshold: 0.7,
+functions\src\pack361-cost-control.ts:111:    alertThreshold: 0.7,
+functions\src\pack361-cost-control.ts:119:    alertThreshold: 0.7,
+functions\src\pack361-failover.ts:108:export const createDailyBackup = onSchedule("0 2 * * *", async (event) => {
+functions\src\pack361-load-balancer.ts:120:const MAX_CPU_USAGE = 0.85; // 85%
+functions\src\pack361-monitoring.ts:57:  maxWalletFailureRate: 0.002, // 0.2%
+functions\src\pack364-telemetry-types.ts:159:    errorBudgetPercent: 0.2,
+functions\src\pack367-review-defense.ts:90:    if (totalIncrease > 0 && oneStarIncrease / totalIncrease > 0.7) {
+functions\src\pack368-fraud-detection.ts:133:        confidence: 0.75,
+functions\src\pack368-fraud-detection.ts:163:        confidence: 0.70,
+functions\src\pack368-fraud-detection.ts:267:        confidence: 0.85,
+functions\src\pack368-fraud-detection.ts:305:        confidence: 0.80,
+functions\src\pack368-fraud-detection.ts:337:        confidence: 0.75,
+functions\src\pack370-ltv-engine.ts:86:      if (metrics.fraudSafetyScore > 0.25) {
+functions\src\pack370-ltv-engine.ts:262:    'atrisk': 0.8,
+functions\src\pack370-ltv-engine.ts:370:        if (fraudScore <= 0.25) {
+functions\src\pack370-ltv-engine.ts:401:        scaleLevel = 0.7;
+functions\src\pack370-ltv-engine.ts:403:      } else if (avgCPI < avgLTV * 0.2) {
+functions\src\pack370-ltv-engine.ts:577:          if (metrics.fraudSafetyScore > 0.25) {
+functions\src\pack370-ltv-engine.ts:654:      const riskIndex = avgCPI > avgLTV * 0.4 ? 0.8 : 0.2;
+functions\src\pack373-marketing-automation.ts:329:      if (campaign.roas < 0.8) {
+functions\src\pack373-marketing-automation.ts:331:        reason = `Low ROAS: ${campaign.roas.toFixed(2)} < 0.8`;
+functions\src\pack373-marketing-automation.ts:785:  // Check VPN/Proxy (weight: 0.2)
+functions\src\pack373-marketing-automation.ts:787:  fraudScore += vpnProxy ? 0.2 : 0;
+functions\src\pack373-marketing-automation.ts:793:  // Check click farm (weight: 0.2)
+functions\src\pack373-marketing-automation.ts:795:  fraudScore += clickFarm ? 0.2 : 0;
+functions\src\pack374-viral-growth.ts:948:  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+functions\src\pack374-viral-growth.ts:985:      effects.discoveryMultiplier = 2.0 + (strength * 0.2);
+functions\src\pack376-app-store-defense.ts:47:  storeWeightMultiplier: number; // 0.0-2.0
+functions\src\pack379-aso-reputation.ts:194:        if (similarity > 0.8) {
+functions\src\pack379-aso-reputation.ts:554:    suspiciouslyUniform: intervals.every(i => Math.abs(i - avgInterval) < avgInterval * 0.2)
+functions\src\pack379-aso-reputation.ts:678:  if (metrics.conversionRate < 0.25) {
+functions\src\pack379-aso-reputation.ts:702:        expectedImpact: 'Could increase organic installs by 10-20%',
+functions\src\pack379-aso-reputation.ts:818:      if (volatility > 0.2) {
+functions\src\pack379-aso-reputation.ts:951:    fraudHistory: 0.25,
+functions\src\pack379-aso-reputation.ts:952:    paymentBehavior: 0.20,
+functions\src\pack380-brand-engine.ts:299:      success: '#00B894',
+functions\src\pack380-brand-engine.ts:302:      info: '#0984E3'
+functions\src\pack380-pr-engine.ts:623:  if (isCrisis) score -= 0.8;
+functions\src\pack380-pr-engine.ts:631:  } else if (score > 0.2) {
+functions\src\pack380-pr-engine.ts:633:  } else if (score < -0.2) {
+functions\src\pack381-expansion-engine.ts:490:      legal: 0.25,
+functions\src\pack381-expansion-engine.ts:491:      product: 0.20,
+functions\src\pack381-expansion-engine.ts:493:      market: 0.20,
+functions\src\pack381-expansion-engine.ts:494:      infrastructure: 0.20,
+functions\src\pack381-regional-risk.ts:83:    peakFraudHours: number[]; // hours of day (0-23)
+functions\src\pack382-creator-academy.ts:472:      peakHours: ['18:00-22:00'],
+functions\src\pack382-pricing-recommender.ts:240:  if (currentPrice < marketMedian * 0.7) {
+functions\src\pack382-pricing-recommender.ts:254:      weight: 0.2,
+functions\src\pack382-pricing-recommender.ts:267:        weight: 0.25,
+functions\src\pack382-pricing-recommender.ts:302:      weight: 0.2,
+functions\src\pack382-pricing-recommender.ts:366:  let expectedRevenueChange = priceChangePercent * 0.7; // Assumes 30% demand elasticity
+functions\src\pack382-pricing-recommender.ts:371:    expectedRevenueChange = priceChangePercent * 0.85;
+functions\src\pack382-skill-scoring.ts:584:  score += Math.min(activityStats.totalCallsLast30Days * 0.2, 10);
+functions\src\pack382-skill-scoring.ts:621:  const adjustedScore = earningsPotential - burnoutRisk * 0.2;
+functions\src\pack382-skill-scoring.ts:711:export const pack382_dailySkillScoreUpdate = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack383-payout-limits.legacy.ts:470:    'CAD': 0.74,
+functions\src\pack383-payout-router.ts:579:    netAmount: grossAmount * 0.85, // 15% withholding example
+functions\src\pack383-tax-engine.ts:422:    return (rates[country] || 15) * 0.8;
+functions\src\pack384-paid-review-detection.ts:161:        indicators.botSentiments = Math.floor(sentiments.length * 0.7); // Estimate ~70% are bots
+functions\src\pack384-paid-review-detection.ts:169:    if (indicators.deviceEmulation / indicators.totalReviews > 0.2) confidence += 0.25;
+functions\src\pack384-paid-review-detection.ts:170:    if (indicators.copyPastePatterns > 5) confidence += 0.2;
+functions\src\pack384-paid-review-detection.ts:177:    if (indicators.confidenceScore > 0.7) {
+functions\src\pack384-paid-review-detection.ts:368:      // - High sentiment uniformity (>0.8)
+functions\src\pack384-paid-review-detection.ts:373:          (uniformity > 0.8 && reviews.length > 20) || 
+functions\src\pack384-review-defense.ts:70:  if (signal.sentimentPolarity && signal.sentimentPolarity < -0.8 && signal.reviewLength && signal.reviewLength < 50) {
+functions\src\pack385-launch-payout-safety.ts:312:    riskScore += 0.2;
+functions\src\pack386-attribution.ts:122:    const blocked = fraudScore >= 0.8;
+functions\src\pack386-budget-guardian.ts:71:        warningThreshold: 0.8,
+functions\src\pack386-budget-guardian.ts:78:        warningThreshold: 0.8,
+functions\src\pack386-budget-guardian.ts:85:        warningThreshold: 0.8,
+functions\src\pack386-budget-guardian.ts:92:        warningThreshold: 0.8,
+functions\src\pack386-review-trigger.ts:155:    if (fraudData?.riskScore >= 0.7) {
+functions\src\pack386-review-trigger.ts:168:    if (churnData?.churnRisk >= 0.7) {
+functions\src\pack387-reputation-ingest.ts:240:  const weekAgo = new admin.firestore.Timestamp(now.seconds - 604800, now.nanoseconds);
+functions\src\pack387-store-shield.ts:227:      const weekAgo = new admin.firestore.Timestamp(now.seconds - 604800, now.nanoseconds);
+functions\src\pack390-aml.ts:45:    roundNumberPayouts: 0.8,            // % of round number payouts
+functions\src\pack390-aml.ts:47:    vpnUsage: 0.7                       // % of sessions with VPN
+functions\src\pack390-tax.ts:18:  PL: 0.23,   // Poland
+functions\src\pack390-tax.ts:20:  FR: 0.20,   // France
+functions\src\pack390-tax.ts:21:  ES: 0.21,   // Spain
+functions\src\pack390-tax.ts:22:  IT: 0.22,   // Italy
+functions\src\pack390-tax.ts:23:  GB: 0.20,   // UK
+functions\src\pack390-tax.ts:24:  CZ: 0.21,   // Czech Republic
+functions\src\pack390-tax.ts:26:  BG: 0.20,   // Bulgaria
+functions\src\pack390-tax.ts:27:  HR: 0.25,   // Croatia
+functions\src\pack390-tax.ts:28:  UA: 0.20,   // Ukraine
+functions\src\pack390-tax.ts:29:  TR: 0.20,   // Turkey
+functions\src\pack390-tax.ts:31:  DEFAULT: 0.20
+functions\src\pack390-tax.ts:36:  calendarBooking: 0.20,      // 20% on calendar bookings
+functions\src\pack390-tax.ts:432:export const pack390_autoGenerateQuarterlyReports = onSchedule({ schedule: "0 2 5 1,4,7,10 *", timeZone: "UTC" }, async (event) => {
+functions\src\pack392-aso-engine.ts:550:  if (data.conversionMetrics.conversionRate < 0.25) {
+functions\src\pack392-review-intel.ts:214:    if (lowerText.includes(word)) score += 0.2;
+functions\src\pack392-review-intel.ts:217:    if (lowerText.includes(word)) score -= 0.2;
+functions\src\pack392-review-intel.ts:249:      anger: lowerText.includes('angry') || lowerText.includes('frustrated') ? 0.7 : 0,
+functions\src\pack392-review-intel.ts:250:      joy: lowerText.includes('happy') || lowerText.includes('love') ? 0.8 : 0,
+functions\src\pack392-review-intel.ts:274:      authenticityScore -= 0.2;
+functions\src\pack392-review-intel.ts:279:      authenticityScore -= 0.2;
+functions\src\pack392-review-intel.ts:295:    authenticityScore -= 0.2;
+functions\src\pack392-review-intel.ts:341:      confidence: 0.7,
+functions\src\pack392-review-intel.ts:353:      confidence: 0.8,
+functions\src\pack392-review-intel.ts:375:      confidence: 0.7,
+functions\src\pack392-review-intel.ts:392:  if (flags.length === 0 && authenticityScore >= 0.7) {
+functions\src\pack392-review-intel.ts:396:  const highConfidenceFlags = flags.filter(f => f.confidence >= 0.7).length;
+functions\src\pack392-review-intel.ts:694:  if (oneStarPercent > 0.8) {
+functions\src\pack392-store-defense.ts:164:    highOneStarPercent: oneStarPercent > 0.7, // more than 70% 1-star
+functions\src\pack392-store-defense.ts:243:    rapidUninstall: installs.filter(i => i.uninstalledWithin24h).length / installs.length > 0.8,
+functions\src\pack392-store-defense.ts:244:    noEngagement: installs.filter(i => i.sessionCount === 0).length / installs.length > 0.85,
+functions\src\pack392-store-defense.ts:346:  return rapidCount / refunds.length > 0.7;
+functions\src\pack392-store-defense.ts:399:  return maxCount / reports.length > 0.8;
+functions\src\pack392-trust-score.ts:26:  verifiedReviewsScore: number; // 0-25
+functions\src\pack392-trust-score.ts:27:  retentionRateScore: number; // 0-25
+functions\src\pack392-trust-score.ts:28:  payoutSuccessScore: number; // 0-25
+functions\src\pack392-trust-score.ts:141:// COMPONENT: VERIFIED REVIEWS SCORE (0-25 points)
+functions\src\pack392-trust-score.ts:185:// COMPONENT: RETENTION RATE SCORE (0-25 points)
+functions\src\pack392-trust-score.ts:209:// COMPONENT: PAYOUT SUCCESS SCORE (0-25 points)
+functions\src\pack392-trust-score.ts:342:      storeScore += (avgASOScore - 50) * 0.2; // Bonus for above-average ASO
+functions\src\pack393-influencer-engine.ts:354:        fraudScore += 0.20;
+functions\src\pack393-influencer-engine.ts:364:      if (fraudScore > 0.75) {
+functions\src\pack393-influencer-engine.ts:386:  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+functions\src\pack393-marketing-orchestrator.ts:87:  reviewBombingRisk: 0.65,
+functions\src\pack393-marketing-orchestrator.ts:516:  return 0.28; // Default 28% D7 retention
+functions\src\pack395-invoicing.ts:292:  const commissionRate = 0.20;
+functions\src\pack395-tax-engine.ts:15:  'AT': { rate: 0.20, type: 'VAT', country: 'Austria' },
+functions\src\pack395-tax-engine.ts:16:  'BE': { rate: 0.21, type: 'VAT', country: 'Belgium' },
+functions\src\pack395-tax-engine.ts:17:  'BG': { rate: 0.20, type: 'VAT', country: 'Bulgaria' },
+functions\src\pack395-tax-engine.ts:18:  'HR': { rate: 0.25, type: 'VAT', country: 'Croatia' },
+functions\src\pack395-tax-engine.ts:20:  'CZ': { rate: 0.21, type: 'VAT', country: 'Czech Republic' },
+functions\src\pack395-tax-engine.ts:21:  'DK': { rate: 0.25, type: 'VAT', country: 'Denmark' },
+functions\src\pack395-tax-engine.ts:22:  'EE': { rate: 0.20, type: 'VAT', country: 'Estonia' },
+functions\src\pack395-tax-engine.ts:23:  'FI': { rate: 0.24, type: 'VAT', country: 'Finland' },
+functions\src\pack395-tax-engine.ts:24:  'FR': { rate: 0.20, type: 'VAT', country: 'France' },
+functions\src\pack395-tax-engine.ts:26:  'GR': { rate: 0.24, type: 'VAT', country: 'Greece' },
+functions\src\pack395-tax-engine.ts:27:  'HU': { rate: 0.27, type: 'VAT', country: 'Hungary' },
+functions\src\pack395-tax-engine.ts:28:  'IE': { rate: 0.23, type: 'VAT', country: 'Ireland' },
+functions\src\pack395-tax-engine.ts:29:  'IT': { rate: 0.22, type: 'VAT', country: 'Italy' },
+functions\src\pack395-tax-engine.ts:30:  'LV': { rate: 0.21, type: 'VAT', country: 'Latvia' },
+functions\src\pack395-tax-engine.ts:31:  'LT': { rate: 0.21, type: 'VAT', country: 'Lithuania' },
+functions\src\pack395-tax-engine.ts:34:  'NL': { rate: 0.21, type: 'VAT', country: 'Netherlands' },
+functions\src\pack395-tax-engine.ts:35:  'PL': { rate: 0.23, type: 'VAT', country: 'Poland' },
+functions\src\pack395-tax-engine.ts:36:  'PT': { rate: 0.23, type: 'VAT', country: 'Portugal' },
+functions\src\pack395-tax-engine.ts:38:  'SK': { rate: 0.20, type: 'VAT', country: 'Slovakia' },
+functions\src\pack395-tax-engine.ts:39:  'SI': { rate: 0.22, type: 'VAT', country: 'Slovenia' },
+functions\src\pack395-tax-engine.ts:40:  'ES': { rate: 0.21, type: 'VAT', country: 'Spain' },
+functions\src\pack395-tax-engine.ts:41:  'SE': { rate: 0.25, type: 'VAT', country: 'Sweden' },
+functions\src\pack395-tax-engine.ts:44:  'GB': { rate: 0.20, type: 'VAT', country: 'United Kingdom' },
+functions\src\pack395-tax-engine.ts:47:  'NO': { rate: 0.25, type: 'VAT', country: 'Norway' },
+functions\src\pack395-tax-engine.ts:48:  'CH': { rate: 0.077, type: 'VAT', country: 'Switzerland' },
+functions\src\pack395-tax-engine.ts:55:  'AR': { rate: 0.21, type: 'VAT', country: 'Argentina' },
+functions\src\pack395-tax-engine.ts:93:  'CA': 0.0725, // California
+functions\src\pack395-tax-engine.ts:95:  'CT': 0.0635, // Connecticut
+functions\src\pack395-tax-engine.ts:101:  'IL': 0.0625, // Illinois
+functions\src\pack395-tax-engine.ts:109:  'MA': 0.0625, // Massachusetts
+functions\src\pack395-tax-engine.ts:111:  'MN': 0.06875, // Minnesota
+functions\src\pack395-tax-engine.ts:113:  'MO': 0.04225, // Missouri
+functions\src\pack395-tax-engine.ts:116:  'NV': 0.0685, // Nevada
+functions\src\pack395-tax-engine.ts:121:  'NC': 0.0475, // North Carolina
+functions\src\pack395-tax-engine.ts:123:  'OH': 0.0575, // Ohio
+functions\src\pack395-tax-engine.ts:131:  'TX': 0.0625, // Texas
+functions\src\pack395-tax-engine.ts:132:  'UT': 0.0485, // Utah
+functions\src\pack397-review-intelligence.ts:500:      return similarity > 0.8;
+functions\src\pack397-review-intelligence.ts:739:      factors.accountAge * 0.2 +
+functions\src\pack397-review-intelligence.ts:741:      factors.completedInteractions * 0.2 +
+functions\src\pack397-review-intelligence.ts:1261:export const scheduledReputationUpdate = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack398-launch-orchestrator.ts:130:    minRetentionDay7: config.minRetentionDay7 || 0.2,
+functions\src\pack398-launch-orchestrator.ts:370:  if (avgFraudScore > 0.7) return 'high';
+functions\src\pack398-launch-orchestrator.ts:395:  if (day1Retention < 0.4 || day7Retention < 0.2) return 'medium';
+functions\src\pack398-traffic-sync.ts:394:    confidence: factors.purchaseCount > 0 ? 0.8 : 0.3,
+functions\src\pack398-traffic-sync.ts:446:    if (fraudScore > 0.7) {
+functions\src\pack399-influencer-engine.ts:547:    isFraud: fraudScore > 0.8,
+functions\src\pack399-influencer-engine.ts:713:      const isFraud = fraudScore > 0.8;
+functions\src\pack401-fraud-correlation-service.ts:92:      return 0.7;
+functions\src\pack401-fraud-correlation-service.ts:106:      return 0.8;
+functions\src\pack401-fraud-correlation-service.ts:158:  if (score < 0.75) return 'HIGH_RISK';
+functions\src\pack401-fraud-correlation-service.ts:178:    0.2 * fraudTicketsNormalized +
+functions\src\pack401-fraud-correlation-service.ts:179:    0.2 * manyPaymentsFewMessagesScore +
+functions\src\pack402-kpi-functions.ts:43:export const pack402_buildDailyKpis = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack402-kpi-service.ts:293:    const creatorShare = Math.floor(amount * 0.7);
+functions\src\pack402-kpi-types.ts:21:  hour?: number;     // 0–23 when interval = 'hour'
+functions\src\pack411-reputation-defense.ts:361:export const pack411_scanReputationAnomalies = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack413-kpi-command-center.ts:319:      return Math.abs(currentValue - threshold) / threshold > 0.2; // 20% delta
+functions\src\pack415-rate-limiter.ts:132:  HARD: 0.2, // 5× slower
+functions\src\pack418-compliance.service.ts:413:  // Validate tokenomics (must be 80/20 split for meetings)
+functions\src\pack418-compliance.service.ts:428:  // Validate tokenomics (must be 80/20 split for events)
+functions\src\pack418-integration-examples.ts:161: * - Correct revenue split (80/20)
+functions\src\pack421-alerting.config.ts:299:  P4: 10080, // 1 week - best effort
+functions\src\pack421-alerting.config.ts:300:  INFO: 10080, // 1 week - informational
+functions\src\pack422-reputation.policy.ts:65:    feedRankingBoost: 0.7,
+functions\src\pack423-integrations.ts:108:    if (oneStarCount > 10 && oneStarCount / ratings.length > 0.7) {
+functions\src\pack424-reputation-defense.ts:20:  private readonly SIMILARITY_THRESHOLD = 0.7; // 70% text similarity
+functions\src\pack424-reputation-defense.ts:126:        suspiciousScore += unlinkedRatio * 0.2;
+functions\src\pack424-reputation-defense.ts:131:          suspiciousScore += 0.2;
+functions\src\pack424-reputation-defense.ts:141:        if (unlinkedRatio > 0.7) {
+functions\src\pack424-reputation-defense.ts:199:        const suspiciousScore = Math.min(similarReviews.length * 0.25, 1.0);
+functions\src\pack424-reputation-defense.ts:206:          recommendedAction: suspiciousScore > 0.7 ? 'flag' : 'monitor',
+functions\src\pack424-reputation-defense.ts:235:        suspiciousScore += 0.2;
+functions\src\pack424-reputation-defense.ts:250:          suspiciousScore += 0.2;
+functions\src\pack424-reputation-defense.ts:265:            suspiciousScore += 0.2;
+functions\src\pack424-reputation-defense.ts:278:          suspiciousScore += 0.2;
+functions\src\pack424-reputation-defense.ts:290:            suspiciousScore > 0.7 ? 'flag' : suspiciousScore > 0.5 ? 'monitor' : 'ignore',
+functions\src\pack424-review-ai.service.ts:50:        confidence: 0.8, // Can be enhanced with actual ML model
+functions\src\pack424-review-ai.service.ts:251:        confidence: 0.85,
+functions\src\pack424-store-reviews.service.ts:237:        if (text.includes(word)) score += 0.2;
+functions\src\pack424-store-reviews.service.ts:241:        if (text.includes(word)) score -= 0.2;
+functions\src\pack424-trust-score.service.ts:48:      avgRating: 0.35,
+functions\src\pack424-trust-score.service.ts:49:      sentiment: 0.25,
+functions\src\pack424-trust-score.service.ts:215:    return (normalizedRating * 0.7 + normalizedFakeRatio * 0.3);
+functions\src\pack424-trust-score.service.ts:254:    if (score >= 0.85) return 'excellent';
+functions\src\pack424-trust-score.service.ts:255:    if (score >= 0.70) return 'good';
+functions\src\pack425-country-readiness.ts:52: *   (0.25 * asoScoreNorm) +
+functions\src\pack425-country-readiness.ts:53: *   (0.25 * trustScore) +
+functions\src\pack425-country-readiness.ts:83:    (0.25 * asoScoreNorm) +
+functions\src\pack425-country-readiness.ts:84:    (0.25 * trustScore) +
+functions\src\pack425-country-readiness.ts:96: * >0.75     AGGRESSIVE launch
+functions\src\pack425-country-readiness.ts:97: * 0.55-0.75 STEADY rollout
+functions\src\pack425-country-readiness.ts:98: * 0.35-0.55 CAUTIOUS (A/B limited countries)
+functions\src\pack425-country-readiness.ts:99: * <0.35     DEFER (Not ready)
+functions\src\pack425-country-readiness.ts:102:  if (readinessScore > 0.75) return 'AGGRESSIVE';
+functions\src\pack425-country-readiness.ts:104:  if (readinessScore >= 0.35) return 'CAUTIOUS';
+functions\src\pack425-country-readiness.ts:240: * Get launch-ready countries (readiness > 0.75)
+functions\src\pack425-country-readiness.ts:243:  return listCountriesByReadiness(0.75, 'AGGRESSIVE');
+functions\src\pack425-creator-bootstrap.ts:20:    reducedRevenueSplit: boolean;     // e.g., 80/20 instead of 70/30
+functions\src\pack425-functions.ts:164:    Readiness.listCountriesByReadiness(0.75, 'AGGRESSIVE'),
+functions\src\pack425-functions.ts:166:    Readiness.listCountriesByReadiness(0.35, 'CAUTIOUS'),
+functions\src\pack425-functions.ts:337:    if (profile.launchReadiness < 0.35) {
+functions\src\pack425-market-segmentation.ts:450:      weight: 0.25,
+functions\src\pack425-market-segmentation.ts:455:      weight: 0.25,
+functions\src\pack425-market-segmentation.ts:460:      weight: 0.2,
+functions\src\pack425-market-segmentation.ts:467:  if (score > 0.75) {
+functions\src\pack425-seed-data.ts:45:    trustScore: 0.8,
+functions\src\pack425-seed-data.ts:60:    trustScore: 0.85,
+functions\src\pack425-seed-data.ts:75:    trustScore: 0.75,
+functions\src\pack425-seed-data.ts:89:    trustScore: 0.7,
+functions\src\pack425-seed-data.ts:93:    purchasingPowerIndex: 0.85,
+functions\src\pack425-seed-data.ts:105:    trustScore: 0.8,
+functions\src\pack425-seed-data.ts:135:    trustScore: 0.75,
+functions\src\pack425-seed-data.ts:150:    trustScore: 0.7,
+functions\src\pack425-seed-data.ts:195:    trustScore: 0.85,
+functions\src\pack425-seed-data.ts:209:    trustScore: 0.85,
+functions\src\pack425-seed-data.ts:225:    trustScore: 0.85,
+functions\src\pack425-seed-data.ts:240:    trustScore: 0.85,
+functions\src\pack425-seed-data.ts:255:    trustScore: 0.65,
+functions\src\pack425-seed-data.ts:270:    trustScore: 0.7,
+functions\src\pack425-seed-data.ts:302:    trustScore: 0.7,
+functions\src\pack425-seed-data.ts:320:    trustScore: 0.65,
+functions\src\pack425-seed-data.ts:341:    trustScore: 0.8,
+functions\src\pack425-seed-data.ts:356:    trustScore: 0.8,
+functions\src\pack425-seed-data.ts:371:    trustScore: 0.85,
+functions\src\pack425-seed-data.ts:386:    trustScore: 0.85,
+functions\src\pack425-seed-data.ts:400:    trustScore: 0.65,
+functions\src\pack426-ai-regional-engine.ts:349:      temperature: request.temperature || 0.7,
+functions\src\pack426-fraud-throttle.ts:191:      medium: 0.7,
+functions\src\pack426-fraud-throttle.ts:193:      critical: 0.2,
+functions\src\pack426-fraud-throttle.ts:211:      medium: 0.8,
+functions\src\pack426-fraud-throttle.ts:213:      critical: 0.2,
+functions\src\pack426-fraud-throttle.ts:222:      high: 0.2,
+functions\src\pack426-fraud-throttle.ts:231:      medium: 0.7,
+functions\src\pack426-fraud-throttle.ts:241:      medium: 0.8,
+functions\src\pack426-fraud-throttle.ts:243:      critical: 0.2,
+functions\src\pack426-fraud-throttle.ts:251:      medium: 0.7,
+functions\src\pack426-fraud-throttle.ts:271:      medium: 0.8,
+functions\src\pack426-fraud-throttle.ts:273:      critical: 0.2,
+functions\src\pack426-fraud-throttle.ts:291:      medium: 0.7,
+functions\src\pack426-fraud-throttle.ts:301:      medium: 0.7,
+functions\src\pack429-crisis-mode.ts:294:    if (change > 0.2) return 'POSITIVE';
+functions\src\pack429-crisis-mode.ts:295:    if (change < -0.2) return 'NEGATIVE';
+functions\src\pack429-review-defense-engine.ts:115:  } else if (ratingDrop >= 0.5 || oneStarSpike >= 0.2) {
+functions\src\pack429-review-defense-engine.ts:233:      const severity = concentration > 0.7 ? 'HIGH' : 'MEDIUM';
+functions\src\pack429-review-ingestion.ts:113:  const highConfidencePatterns = patterns.filter(p => p.confidence > 0.7);
+functions\src\pack429-trust-score.ts:46:    const safetyScore = (resolutionRate * 0.7 + speedScore * 0.3) * 10;
+functions\src\pack431-aso-metadata.ts:405:    if (features.events > 0.7) {
+functions\src\pack431-aso-metadata.ts:537:        chat: 0.8,
+functions\src\pack431-aso-metadata.ts:562:        day1: 0.7,
+functions\src\pack431-aso-metadata.ts:564:        day30: 0.2
+functions\src\pack431-store-media.ts:152:      "12.9": { width: 2048, height: 2732, name: "iPad Pro 12.9\"" }
+functions\src\pack432-attribution.ts:498:        'budget.scaleBudget': newBudget * 0.85,
+functions\src\pack432-ua-fraud.ts:103:        confidence: 0.85,
+functions\src\pack432-ua-fraud.ts:131:    suspiciousScore += 0.2;
+functions\src\pack432-ua-fraud.ts:156:  if (suspiciousScore > 0.7) {
+functions\src\pack432-ua-fraud.ts:243:            confidence: Math.min(0.85, userIds.length / 20),
+functions\src\pack432-ua-fraud.ts:311:        botScore += 0.2;
+functions\src\pack432-ua-fraud.ts:325:          severity: botScore > 0.8 ? 'critical' : 'high',
+functions\src\pack432-ua-fraud.ts:415:        manipulationScore += 0.2;
+functions\src\pack432-ua-fraud.ts:428:      if (lowEngagement > journeysSnap.size * 0.7) {
+functions\src\pack432-ua-fraud.ts:429:        manipulationScore += 0.2;
+functions\src\pack432-ua-orchestrator.ts:32:    testBudget: number; // 10-20%
+functions\src\pack432-ua-orchestrator.ts:272:      if (performance.fakeInstallRate > 0.25) { // 25% threshold
+functions\src\pack432-ua-orchestrator.ts:406:  const scaleBudget = totalBudget * 0.85;
+functions\src\pack432-ua-orchestrator.ts:510:        'budget.scaleBudget': Math.round(newDailyBudget * 0.85),
+functions\src\pack434-ambassador-types.ts:222:      minConversionRate: 0.25,
+functions\src\pack434-ambassador-types.ts:235:      minRetentionRate: 0.7,
+functions\src\pack434-ambassador-types.ts:246:      minConversionRate: 0.35,
+functions\src\pack434-ambassador-types.ts:318:    multiplier: 0.8,
+functions\src\pack434-fraud-detection.ts:116:      threshold: 0.7,
+functions\src\pack434-fraud-detection.ts:117:      weight: 0.8,
+functions\src\pack434-fraud-detection.ts:127:      threshold: 0.75,
+functions\src\pack434-fraud-detection.ts:138:      threshold: 0.8,
+functions\src\pack434-fraud-detection.ts:149:      threshold: 0.65,
+functions\src\pack434-fraud-detection.ts:150:      weight: 0.7,
+functions\src\pack434-fraud-detection.ts:252:          confidence: 0.8,
+functions\src\pack434-fraud-detection.ts:321:          confidence: 0.85,
+functions\src\pack434-fraud-detection.ts:397:        if (ringScore > 0.8) {
+functions\src\pack434-fraud-detection.ts:467:          confidence: 0.85,
+functions\src\pack434-fraud-detection.ts:516:          confidence: 0.7,
+functions\src\pack434-fraud-detection.ts:545:      score += 0.2;
+functions\src\pack434-fraud-detection.ts:566:    } else if (alert.severity === 'high' && alert.confidence > 0.8) {
+functions\src\pack435-creator-events.ts:453:    const creatorAmount = Math.floor(merch.price * 0.85);
+functions\src\pack436-reputation-engine.ts:117:      components.appStoreRating * 0.25 +
+functions\src\pack436-review-defense.ts:422:      if (similarity > 0.7) { // 70% similarity threshold
+functions\src\pack436-review-defense.ts:430:        similarity: 0.7,
+functions\src\pack448-incident-functions.ts:207:    low: { response: 1440, resolution: 10080 }, // 24hrs, 7days
+functions\src\pack452-premium-burn-engine.ts:52:const PLATFORM_FEE_RATE = 0.35;
+functions\src\pack452-premium-burn-engine.ts:55:const EARNER_SHARE_RATE = 0.65;
+functions\src\pack452-premium-offer-engine.ts:355:          earnerShare: 0.65,
+functions\src\pack452-premium-offer-engine.ts:356:          platformShare: 0.35,
+functions\src\pack452-revenue-coach.ts:50:  LOW_PREMIUM_ACCEPTANCE: 0.2,
+functions\src\pack452-scheduled.ts:134:    schedule: '0 2 * * *', // 02:00 UTC daily
+functions\src\pack90-integrations.ts:643:    if (duration > timeoutMs * 0.8) {
+functions\src\pack90-scheduled.ts:28:export const rebuildDailyMetrics = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\pack96-twoFactorEngine.ts:489:  const digits = '0123456789';
+functions\src\pack99-integrations.ts:44:    ) || 0.8,
+functions\src\paidMedia.ts:72:const AVALO_COMMISSION = 0.35;
+functions\src\paidMedia.ts:73:const CREATOR_SHARE = 0.65;
+functions\src\paidMediaMonetization.ts:34:    UNIQUE_BUYERS: 0.25,
+functions\src\paidMediaMonetization.ts:35:    RECENT_ACTIVITY: 0.2,
+functions\src\payments.providers.ts:399:        "X-CC-Version": "2018-03-22",
+functions\src\paymentsComplete.ts:629:  if (result.status === 21007) {
+functions\src\paymentsComplete.ts:951:  AT: 0.20, BE: 0.21, BG: 0.20, HR: 0.25, CY: 0.19, CZ: 0.21, DK: 0.25, EE: 0.22,
+functions\src\paymentsComplete.ts:952:  FI: 0.255, FR: 0.20, DE: 0.19, GR: 0.24, HU: 0.27, IE: 0.23, IT: 0.22, LV: 0.21,
+functions\src\paymentsComplete.ts:953:  LT: 0.21, LU: 0.17, MT: 0.18, NL: 0.21, PL: 0.23, PT: 0.23, RO: 0.19, SK: 0.20,
+functions\src\paymentsComplete.ts:954:  SI: 0.22, ES: 0.21, SE: 0.25, GB: 0.20, US: 0.00, CA: 0.00, AU: 0.10, NZ: 0.15,
+functions\src\paymentsV2.legacy.ts:789:    schedule: "0 2 * * *", // 2 AM daily
+functions\src\predictiveAnalytics.ts:457:  if (probability >= 0.75) return "critical";
+functions\src\predictiveAnalytics.ts:459:  if (probability >= 0.25) return "medium";
+functions\src\premiumStories.ts:24:  CREATOR_SPLIT: 0.65, // 65% to creator
+functions\src\premiumStories.ts:25:  AVALO_COMMISSION: 0.35, // 35% to Avalo
+functions\src\pubsub.pipelines.ts:547:        status: riskScore > 0.7 ? 'flagged' : 'approved',
+functions\src\pubsub.pipelines.ts:553:      if (riskScore > 0.7) {
+functions\src\pubsub.pipelines.ts:600:  if (amount > 1000) score += 0.2;
+functions\src\recommender.test.ts:25:      else if (hoursSinceActivity < 24) recencyScore = RANKING_WEIGHTS.RECENCY * 0.8;
+functions\src\recommender.test.ts:38:      else if (hoursSinceActivity < 24) recencyScore = RANKING_WEIGHTS.RECENCY * 0.8;
+functions\src\recommender.test.ts:51:      else if (hoursSinceActivity < 24) recencyScore = RANKING_WEIGHTS.RECENCY * 0.8;
+functions\src\recommender.test.ts:85:      const distance = calculateDistance(52.2297, 21.0122, 52.2297, 21.0122);
+functions\src\recommender.test.ts:90:      const distance = calculateDistance(52.2297, 21.0122, 50.0647, 19.945);
+functions\src\recommender.test.ts:100:      else if (distanceKm < 20) distanceScore = RANKING_WEIGHTS.DISTANCE * 0.8;
+functions\src\recommender.test.ts:113:      else if (distanceKm < 20) distanceScore = RANKING_WEIGHTS.DISTANCE * 0.8;
+functions\src\recommender.test.ts:130:        (totalMessages * 0.3 + totalLikes * 0.2 + totalViews * 0.05) / 10
+functions\src\recommender.test.ts:143:        (totalMessages * 0.3 + totalLikes * 0.2 + totalViews * 0.05) / 10
+functions\src\recommender.test.ts:156:        (totalMessages * 0.3 + totalLikes * 0.2 + totalViews * 0.05) / 10
+functions\src\recommender.test.ts:169:      else if (avgReplyMinutes < 30) latencyScore = RANKING_WEIGHTS.REPLY_LATENCY * 0.7;
+functions\src\recommender.test.ts:181:      else if (avgReplyMinutes < 30) latencyScore = RANKING_WEIGHTS.REPLY_LATENCY * 0.7;
+functions\src\recommender.test.ts:228:        dampening *= Math.pow(0.85, reportedCount);
+functions\src\recommender.test.ts:231:        dampening *= Math.pow(0.7, strikeCount);
+functions\src\recommender.test.ts:248:        dampening *= Math.pow(0.85, reportedCount);
+functions\src\recommender.test.ts:251:        dampening *= Math.pow(0.7, strikeCount);
+functions\src\recommender.test.ts:255:      expect(dampening).toBeCloseTo(0.81, 2); // 0.9^2 = 0.81
+functions\src\recommender.test.ts:268:        dampening *= Math.pow(0.85, reportedCount);
+functions\src\recommender.test.ts:271:        dampening *= Math.pow(0.7, strikeCount);
+functions\src\recommender.test.ts:275:      expect(dampening).toBeCloseTo(0.49, 2); // 0.7^2 = 0.49
+functions\src\recommender.test.ts:288:        dampening *= Math.pow(0.85, reportedCount);
+functions\src\recommender.test.ts:291:        dampening *= Math.pow(0.7, strikeCount);
+functions\src\recommender.test.ts:345:      const riskDampening = 0.81; // Some blocks
+functions\src\recommender.ts:257:    const messageResponseRate = messagesSnapshot.size > 0 ? 0.7 : 0; // Placeholder
+functions\src\recommender.ts:433: * Recency score (0-25 points)
+functions\src\recommender.ts:475: * Interaction depth score (0-20 points)
+functions\src\recommender.ts:533:    dampening *= 0.85 ** signals.reportedCount; // 15% reduction per report
+functions\src\recommender.ts:538:    dampening *= 0.7 ** signals.strikeCount; // 30% reduction per strike
+functions\src\reputationEngine.ts:511:    schedule: "0 2 * * *", // 2 AM daily
+functions\src\reservations.ts:120:const PLATFORM_SHARE = 0.35;
+functions\src\reservations.ts:121:const CREATOR_SHARE = 0.65;
+functions\src\riskGraph.ts:59:  SAFE = "safe",           // 0-25: Normal user behavior
+functions\src\riskGraph.ts:182:const SIMILARITY_THRESHOLD = 0.75; // Behavioral similarity threshold
+functions\src\riskGraph.ts:199:  [ConnectionType.IP_MATCH]: 0.8,
+functions\src\riskGraph.ts:200:  [ConnectionType.BEHAVIOR_MATCH]: 0.7,
+functions\src\riskGraph.ts:862:    behavioralSimilarity: 0.85, // Placeholder
+functions\src\riskGraph.ts:864:    temporalCorrelation: 0.75, // Placeholder
+functions\src\securityAI.ts:91:      indicators.velocityScore * 0.25 +
+functions\src\securityAI.ts:92:      indicators.deviceRiskScore * 0.20 +
+functions\src\securityAI.ts:93:      indicators.behavioralScore * 0.25 +
+functions\src\securityLayer.ts:159:  deviceAge: 0.2,
+functions\src\securityLayer.ts:161:  behaviorHistory: 0.25,
+functions\src\securityLayer.ts:206:          confidence: 0.85,
+functions\src\securityLayer.ts:233:          confidence: 0.85,
+functions\src\securityLayer.ts:260:          confidence: 0.75,
+functions\src\seedAICompanions.ts:148:  if (tierRoll < 0.20) {
+functions\src\seedAICompanions.ts:156:  } else if (tierRoll < 0.85) {
+functions\src\sendgrid.ts:639:    .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+functions\src\sendgrid.ts:641:    .details { background: white; padding: 15px; margin: 15px 0; border-left: 4px solid #007bff; }
+functions\src\sharding.ts:6: * Advanced sharding implementation for handling 10-20M concurrent users
+functions\src\socialMemoryHub.ts:136:        confidence: data.confidence || 0.8,
+functions\src\trustEngine.ts:134:    EXCESSIVE_FREE_POOL_RATIO: 0.8, // Free pool > 80% of total chats
+functions\src\trustRiskEndpoints.ts:288:export const trustRisk_scheduledDecay = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
+functions\src\types.ts:73:  settlementRate: number; // 0.20 USD per token
+functions\src\vibeRecommendationEngine.ts:394:    (interestMatch * 0.25) +
+functions\src\vibeRecommendationEngine.ts:395:    (chatToneMatch * 0.20) +
+functions\src\vibeRecommendationEngine.ts:402:    (chemistryScore * 0.70) +
+functions\src\vibeRecommendationEngine.ts:771:      const weight = 0.2; // New match has 20% weight
+functions\src\walletFintech.ts:295:    pricePerToken: 0.25,
+functions\src\walletFintech.ts:307:    pricePerToken: 0.23,
+functions\src\walletFintech.ts:319:    pricePerToken: 0.20,
+functions\src\walletFintech.ts:764:        platformFees += Math.floor(tx.amount / 0.65 * 0.35); // Reverse calc
+functions\src\walletFintech.ts:767:        platformFees += Math.floor(tx.amount / 0.65 * 0.35);
+functions\src\walletFintech.ts:770:        platformFees += Math.floor(tx.amount / 0.80 * 0.20);
+functions\src\walletFintech.ts:774:        platformFees += Math.floor(tx.amount / 0.80 * 0.20);
+functions\src\webOperations.ts:105:            settlementRate: 0.2,
+functions\src\webrtcSignaling.ts:5: * Audio spaces and live billing (30/70 split)
+functions\src\webrtcSignaling.ts:280: * Process call payment (30/70 split)
+

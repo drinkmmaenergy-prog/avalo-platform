@@ -10,7 +10,7 @@
  */
 
 import * as logger from 'firebase-functions/logger';
-import { db, serverTimestamp, increment } from './init.js';
+import { db, serverTimestamp, increment } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import type {
   SharedPreference,
@@ -22,12 +22,12 @@ import type {
   GetSharedPreferencesResponse,
   MemoryAnalytics,
   AllowedPreferenceCategory,
-} from './types/socialMemory.js';
+} from './types/socialMemory';
 import {
   validatePreferenceSharing,
   blockAiGossip,
   detectManipulativeBehavior,
-} from './middleware/socialMemoryPrivacy.js';
+} from './middleware/socialMemoryPrivacy';
 import { HttpsError, admin, auth, onCall } from './runtime';
 
 /**
@@ -699,6 +699,7 @@ export default {
   getMemoryAnalytics,
   wipeUserMemory,
 };
+
 
 
 

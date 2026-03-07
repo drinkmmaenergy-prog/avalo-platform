@@ -41,8 +41,8 @@ export default function CreatorOfferModal({
 
   if (!offer) return null;
 
-  const creatorEarnings = Math.floor(offer.tokenPrice * 0.65);
-  const avaloFee = Math.floor(offer.tokenPrice * 0.35);
+  const creatorEarnings = Math.floor(offer.tokenPrice * MONETIZATION_SPLITS.CHAT.creator);
+  const avaloFee = Math.floor(offer.tokenPrice * MONETIZATION_SPLITS.CHAT.avalo);
 
   const getTimeRemaining = (expiresAt: number): string => {
     const now = Date.now();
@@ -465,3 +465,4 @@ const styles = StyleSheet.create({
     height: 20,
   },
 });
+

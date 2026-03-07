@@ -14,8 +14,8 @@ export const VOICE_PRICING = {
 } as const;
 
 // Revenue split: 65% to creator, 35% to Avalo
-const CREATOR_SHARE = 0.65;
-const AVALO_SHARE = 0.35;
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator;
+const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo;
 
 // VIP discount: 10% off, minimum 1 token, NEVER free
 const VIP_DISCOUNT = 0.10;

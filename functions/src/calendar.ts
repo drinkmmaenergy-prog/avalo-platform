@@ -9,12 +9,12 @@ import { onCall } from 'firebase-functions/v2/https';
 import { HttpsError } from 'firebase-functions/v2/https';
 import type { CallableRequest } from "firebase-functions/v2/https";
 import { Timestamp } from "firebase-admin/firestore";
-import { db, generateId, serverTimestamp, increment } from './init.js';
-import { CALENDAR_MIN_BOOKING_TOKENS, CALENDAR_PLATFORM_FEE_PCT, CALENDAR_CANCEL_EARLY_HOURS, CALENDAR_CANCEL_EARLY_REFUND_PCT, CALENDAR_CANCEL_EARLY_CREATOR_PCT, BookingStatus, TransactionType } from './config.js';
-import { CalendarBooking, UserWallet, Transaction, FunctionResponse } from './types.js';
-import { withErrorLogging, logReservationError } from './observability.js';
-import { calculateMeetingRefund } from './pack209-refund-complaint-engine.js';
-import { RefundTransaction, RefundTrigger } from './pack209-refund-complaint-types.js';
+import { db, generateId, serverTimestamp, increment } from './init';
+import { CALENDAR_MIN_BOOKING_TOKENS, CALENDAR_PLATFORM_FEE_PCT, CALENDAR_CANCEL_EARLY_HOURS, CALENDAR_CANCEL_EARLY_REFUND_PCT, CALENDAR_CANCEL_EARLY_CREATOR_PCT, BookingStatus, TransactionType } from './config';
+import { CalendarBooking, UserWallet, Transaction, FunctionResponse } from './types';
+import { withErrorLogging, logReservationError } from './observability';
+import { calculateMeetingRefund } from './pack209-refund-complaint-engine';
+import { RefundTransaction, RefundTrigger } from './pack209-refund-complaint-types';
 import { admin, auth, functions } from './runtime';
 
 /**
@@ -558,8 +558,8 @@ export const fileAppearanceComplaintCallable = onCall(
       } = request.data;
 
       return withErrorLogging("functions.calendar", "COMPLAINTS", async () => {
-        const { processAppearanceComplaint } = await import('./pack209-refund-complaint-engine.js');
-        const { ComplaintDecision } = await import('./pack209-refund-complaint-types.js');
+        const { processAppearanceComplaint } = await import('./pack209-refund-complaint-engine');
+        const { ComplaintDecision } = await import('./pack209-refund-complaint-types');
 
         // Validate decision
         if (decision !== 'KEEP_COMPLETED' && decision !== 'ISSUE_REFUND') {
@@ -613,7 +613,7 @@ export const issueVoluntaryRefundCallable = onCall(
           throw new HttpsError("invalid-argument", "Refund percent must be between 0 and 100");
         }
 
-        const { processVoluntaryMeetingRefund } = await import('./pack209-refund-complaint-engine.js');
+        const { processVoluntaryMeetingRefund } = await import('./pack209-refund-complaint-engine');
 
         const result = await processVoluntaryMeetingRefund({
           bookingId,
@@ -650,7 +650,7 @@ export const getRefundHistoryCallable = onCall(
       const { limit } = request.data;
 
       return withErrorLogging("functions.calendar", "REFUND_HISTORY", async () => {
-        const { getUserRefundHistory } = await import('./pack209-refund-complaint-engine.js');
+        const { getUserRefundHistory } = await import('./pack209-refund-complaint-engine');
 
         const history = await getUserRefundHistory({
           userId,
@@ -668,6 +668,8 @@ export const getRefundHistoryCallable = onCall(
       });
     }
   );
+
+
 
 
 

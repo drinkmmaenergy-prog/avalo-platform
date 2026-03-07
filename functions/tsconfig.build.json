@@ -1,7 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
   "exclude": [
     "node_modules",
@@ -9,14 +11,11 @@
     "src/__tests__",
     "**/*.test.ts",
     "**/*.spec.ts",
-    "src/index.full.ts"
-  ,
+    "src/index.full.ts",
+    "**/*.legacy.ts",
+    "**/*.legacy.tsx",
+    "**/*.legacy.d.ts",
+    "**/*.legacy.js",
     "**/*.legacy.ts"
-  ,
-    "**/*.legacy.tsx"
-  ,
-    "**/*.legacy.d.ts"
-  ,
-    "**/*.legacy.js"
   ]
 }

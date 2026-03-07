@@ -17,23 +17,23 @@ const db = admin.firestore();
 const VAT_RATES: Record<string, number> = {
   PL: 0.23,   // Poland
   DE: 0.19,   // Germany
-  FR: 0.20,   // France
+  FR: MONETIZATION_SPLITS.EVENT_TICKET.avalo,   // France
   ES: 0.21,   // Spain
   IT: 0.22,   // Italy
-  GB: 0.20,   // UK
+  GB: MONETIZATION_SPLITS.EVENT_TICKET.avalo,   // UK
   CZ: 0.21,   // Czech Republic
   RO: 0.19,   // Romania
-  BG: 0.20,   // Bulgaria
+  BG: MONETIZATION_SPLITS.EVENT_TICKET.avalo,   // Bulgaria
   HR: 0.25,   // Croatia
-  UA: 0.20,   // Ukraine
-  TR: 0.20,   // Turkey
+  UA: MONETIZATION_SPLITS.EVENT_TICKET.avalo,   // Ukraine
+  TR: MONETIZATION_SPLITS.EVENT_TICKET.avalo,   // Turkey
   US: 0.00,   // No federal VAT
-  DEFAULT: 0.20
+  DEFAULT: MONETIZATION_SPLITS.EVENT_TICKET.avalo
 };
 
 // Platform fee structure
 const PLATFORM_FEES = {
-  calendarBooking: 0.20,      // 20% on calendar bookings
+  calendarBooking: MONETIZATION_SPLITS.EVENT_TICKET.avalo,      // 20% on calendar bookings
   tokenPurchase: 0.15,        // 15% on token purchases
   eventTicket: 0.10,          // 10% on event tickets
   subscription: 0.15,         // 15% on subscriptions
@@ -542,6 +542,7 @@ export const pack390_getTaxInfo = functions.https.onCall(async (request) => {
   
   return;
 });
+
 
 
 

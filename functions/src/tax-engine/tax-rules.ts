@@ -133,12 +133,12 @@ export const TAX_COMPLIANCE_REQUIREMENTS: Record<string, TaxComplianceRequiremen
 
 export const VAT_RATES: Record<string, number> = {
   'DE': 0.19,
-  'FR': 0.20,
+  'FR': MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   'ES': 0.21,
   'IT': 0.22,
   'NL': 0.21,
   'BE': 0.21,
-  'AT': 0.20,
+  'AT': MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   'PL': 0.23,
   'SE': 0.25,
   'DK': 0.25,
@@ -149,7 +149,7 @@ export const VAT_RATES: Record<string, number> = {
   'PT': 0.23,
   'GR': 0.24,
   'CZ': 0.21,
-  'GB': 0.20
+  'GB': MONETIZATION_SPLITS.EVENT_TICKET.avalo
 };
 
 export const GST_RATES: Record<string, number> = {
@@ -286,6 +286,7 @@ export function validateTaxProfile(
     missingFields
   };
 }
+
 
 
 

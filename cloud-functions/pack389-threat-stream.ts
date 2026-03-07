@@ -291,11 +291,11 @@ async function analyzeChatSignal(signal: ThreatSignal): Promise<SecurityAlert[]>
   if (signal.signalType === 'harassment_detected') {
     alerts.push({
       type: ThreatType.MARKETPLACE_HARASSMENT,
-      severity: 0.65,
+      severity: MONETIZATION_SPLITS.CHAT.creator,
       source: 'chat',
       userId: signal.userId,
       riskSnapshot: {
-        score: 0.65,
+        score: MONETIZATION_SPLITS.CHAT.creator,
         timestamp: Date.now(),
         signals: ['harassment_content']
       },
@@ -685,3 +685,4 @@ export const runThreatPatternAnalysis = functions.pubsub
     
     console.log('✅ Threat pattern analysis complete');
   });
+

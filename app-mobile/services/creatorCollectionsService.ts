@@ -15,8 +15,8 @@ const COLLECTIONS_STORAGE_KEY = 'creatorCollections_v1';
 const PURCHASES_STORAGE_KEY = 'creatorCollections_v1_purchases';
 const EARNINGS_STORAGE_KEY = 'creatorCollections_v1_earnings';
 
-const AVALO_COMMISSION = 0.35; // 35% commission
-const CREATOR_EARNINGS = 0.65; // 65% to creator
+const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.avalo; // 35% commission
+const CREATOR_EARNINGS = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
 const VIP_DISCOUNT = 0.10; // 10% discount for VIP subscribers
 
 // Price presets (tokens): Bronze → Royal

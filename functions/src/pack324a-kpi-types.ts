@@ -24,7 +24,7 @@ export interface PlatformKpiDaily {
   
   // Revenue Metrics (tokens)
   totalTokensSpent: number;
-  totalTokenRevenueUSD: number; // tokens * 0.20 USD
+  totalTokenRevenueUSD: number; // tokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo USD
   
   // Activity Metrics
   totalChats: number;
@@ -75,7 +75,7 @@ export interface CreatorKpiDaily {
   
   // Totals
   totalEarnedTokens: number;
-  totalEarnedUSD: number; // tokens * 0.20 USD
+  totalEarnedUSD: number; // tokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo USD
   
   // Activity
   sessionsCount: number;
@@ -239,6 +239,7 @@ export const KPI_CONFIG = {
     DAILY: 365,
   },
 } as const;
+
 
 
 

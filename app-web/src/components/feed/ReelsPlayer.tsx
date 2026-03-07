@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Reels Player Component
  * Placeholder for vertical video player
  */
-
-'use client';
-
 export default function ReelsPlayer() {
   return (
     <div className="flex flex-col items-center justify-center h-full bg-black text-white rounded-lg">
@@ -14,4 +13,5 @@ export default function ReelsPlayer() {
     </div>
   );
 }
+
 

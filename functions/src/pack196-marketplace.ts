@@ -328,7 +328,7 @@ export async function purchaseProduct(data: {
     }
     
     // Calculate revenue split (65% creator, 35% Avalo)
-    const avaloFee = Math.floor(product.priceTokens * 0.35);
+    const avaloFee = Math.floor(product.priceTokens * MONETIZATION_SPLITS.CHAT.avalo);
     const creatorEarnings = product.priceTokens - avaloFee;
     
     // Create order in transaction
@@ -663,7 +663,7 @@ export async function resolveMarketplaceDispute(data: {
         const sellerBalance = sellerWallet.data()?.tokens || 0;
         
         // Calculate what to deduct from seller (they received creatorEarnings)
-        const sellerDeduction = Math.min(refundAmount * 0.65, order.creatorEarnings);
+        const sellerDeduction = Math.min(refundAmount * MONETIZATION_SPLITS.CHAT.creator, order.creatorEarnings);
         
         transaction.update(sellerWalletRef, {
           tokens: Math.max(0, sellerBalance - sellerDeduction),
@@ -685,6 +685,7 @@ export async function resolveMarketplaceDispute(data: {
     return { success: false, error: error.message };
   }
 }
+
 
 
 

@@ -200,8 +200,8 @@ const TaxMatrixTab: React.FC = () => {
   const jurisdictions: Partial<JurisdictionProfile>[] = [
     { countryCode: 'PL', vatRate: 0.23, digitalServiceTaxRate: 0.03, kycRequired: true, minimumAge: 18 },
     { countryCode: 'DE', vatRate: 0.19, digitalServiceTaxRate: 0.03, kycRequired: true, minimumAge: 18 },
-    { countryCode: 'FR', vatRate: 0.20, digitalServiceTaxRate: 0.03, kycRequired: true, minimumAge: 18 },
-    { countryCode: 'GB', vatRate: 0.20, digitalServiceTaxRate: 0.02, kycRequired: true, minimumAge: 18 },
+    { countryCode: 'FR', vatRate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, digitalServiceTaxRate: 0.03, kycRequired: true, minimumAge: 18 },
+    { countryCode: 'GB', vatRate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, digitalServiceTaxRate: 0.02, kycRequired: true, minimumAge: 18 },
     { countryCode: 'US', vatRate: 0, digitalServiceTaxRate: 0, kycRequired: true, minimumAge: 18 },
   ];
   
@@ -681,3 +681,4 @@ function getLogColor(type: string): string {
 }
 
 export default LegalDashboard;
+

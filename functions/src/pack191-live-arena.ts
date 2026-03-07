@@ -156,8 +156,8 @@ const REACTION_COSTS = {
 };
 
 const REVENUE_SPLIT = {
-  creator: 0.70, // 70% to creator
-  platform: 0.30, // 30% to Avalo
+  creator: MONETIZATION_SPLITS.SUBSCRIPTION.creator, // 70% to creator
+  platform: MONETIZATION_SPLITS.SUBSCRIPTION.avalo, // 30% to Avalo
 };
 
 const STREAM_LIMITS = {
@@ -1065,6 +1065,7 @@ export const updateViewerActivity = onDocumentCreated(
       });
   }
 );
+
 
 
 

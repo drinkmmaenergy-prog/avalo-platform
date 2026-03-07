@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Call Interface Component
  * Placeholder for WebRTC video/audio calling
  */
-
-'use client';
-
 export default function CallInterface() {
   return (
     <div className="flex flex-col items-center justify-center h-full bg-gray-900 text-white rounded-lg">
@@ -14,4 +13,5 @@ export default function CallInterface() {
     </div>
   );
 }
+
 

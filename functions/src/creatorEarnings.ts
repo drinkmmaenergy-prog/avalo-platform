@@ -21,8 +21,8 @@ import { auth, functions, storage, onSchedule } from './runtime';
 // ============================================================================
 
 const EARNINGS_CONFIG = {
-  CREATOR_SHARE: 0.65,    // 65% to creator
-  AVALO_COMMISSION: 0.35, // 35% to Avalo
+  CREATOR_SHARE: MONETIZATION_SPLITS.CHAT.creator,    // 65% to creator
+  AVALO_COMMISSION: MONETIZATION_SPLITS.CHAT.avalo, // 35% to Avalo
   CSV_EXPORT_EXPIRY_HOURS: 24,
   MAX_LEDGER_PAGE_SIZE: 100,
   DEFAULT_LEDGER_PAGE_SIZE: 50,
@@ -587,6 +587,7 @@ export const aggregateCreatorEarningsDaily = onSchedule(
     }
   }
 );
+
 
 
 

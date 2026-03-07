@@ -110,8 +110,8 @@ export interface DigitalProductPurchase {
 // CONSTANTS
 // ============================================================================
 
-const PLATFORM_FEE_PERCENTAGE = 0.35;
-const CREATOR_EARNINGS_PERCENTAGE = 0.65;
+const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo;
+const CREATOR_EARNINGS_PERCENTAGE = MONETIZATION_SPLITS.CHAT.creator;
 const MIN_PRODUCT_PRICE = 10;
 const MAX_PRODUCT_PRICE = 10000;
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
@@ -725,6 +725,7 @@ export const getProductDownloadUrl = onCall(
 );
 
 logger.info('✅ Digital Products (PACK 116) module loaded successfully');
+
 
 
 

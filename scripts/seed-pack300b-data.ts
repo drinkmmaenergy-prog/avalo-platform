@@ -200,7 +200,7 @@ Tokens are the currency used for paid features on Avalo.
 
 ## Token Value
 
-- 1 token = 0.20 PLN
+- 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN
 - Fixed exchange rate
 - Tokens are non-refundable
 
@@ -345,7 +345,7 @@ const educationCards: EducationCard[] = [
     context: 'TOKENS',
     locale: 'en-US',
     title: 'Understanding Tokens',
-    body: 'Tokens are used for paid features like chat, calls, and events. 1 token = 0.20 PLN. Tokens are non-refundable once purchased.',
+    body: 'Tokens are used for paid features like chat, calls, and events. 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN. Tokens are non-refundable once purchased.',
     ctaLabel: 'Learn More',
     ctaType: 'OPEN_HELP_ARTICLE',
     ctaPayload: { articleSlug: 'tokens-wallet-guide' },

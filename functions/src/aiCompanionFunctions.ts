@@ -4,9 +4,9 @@
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { db, serverTimestamp, increment, generateId } from './init.js';
-import { getUserContext } from './chatMonetization.js';
-import { generateAIResponse, validateAvatarConfig } from './aiGenerationService.js';
+import { db, serverTimestamp, increment, generateId } from './init';
+import { getUserContext } from './chatMonetization';
+import { generateAIResponse, validateAvatarConfig } from './aiGenerationService';
 import type {
   AIAvatar,
   AISession,
@@ -15,7 +15,7 @@ import type {
   AvatarUpdateRequest,
   AIGenerationRequest,
   AIAvatarEvent
-} from './aiCompanionTypes.js';
+} from './aiCompanionTypes';
 import { auth, functions, timestamp } from './runtime';
 
 // Configuration
@@ -402,7 +402,7 @@ export const sendAIMessage = onCall<{
 
   // Calculate billing
   const tokensCharged = aiResponse.tokensCharged;
-  const creatorShare = Math.floor(tokensCharged * 0.65); // 65%
+  const creatorShare = Math.floor(tokensCharged * MONETIZATION_SPLITS.CHAT.creator); // 65%
   const avaloShare = tokensCharged - creatorShare; // 35%
 
   // Check if user has enough tokens
@@ -604,6 +604,8 @@ async function logAvatarEvent(event: AIAvatarEvent): Promise<void> {
     createdAt: serverTimestamp()
   });
 }
+
+
 
 
 

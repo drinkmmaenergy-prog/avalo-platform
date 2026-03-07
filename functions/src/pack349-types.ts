@@ -296,8 +296,8 @@ export const AD_CONSTANTS = {
   VIOLATION_THRESHOLD_SUSPEND: 3,
   VIOLATION_THRESHOLD_BAN: 5,
   REPORT_THRESHOLD_AUTO_PAUSE: 10,
-  CREATOR_COMMISSION_RATE: 0.65, // 65% to creator
-  AVALO_COMMISSION_RATE: 0.35, // 35% to Avalo
+  CREATOR_COMMISSION_RATE: MONETIZATION_SPLITS.CHAT.creator, // 65% to creator
+  AVALO_COMMISSION_RATE: MONETIZATION_SPLITS.CHAT.avalo, // 35% to Avalo
   AD_FEED_FREQUENCY: 10, // show ad every N posts
   AD_DISCOVERY_FREQUENCY: 12,
 } as const;
@@ -356,6 +356,7 @@ export interface AdSafetyCheckResult {
     ageInappropriate: boolean;
   };
 }
+
 
 
 

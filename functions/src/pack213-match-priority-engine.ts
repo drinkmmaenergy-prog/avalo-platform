@@ -1,7 +1,7 @@
 /**
  * PACK 213: Premium Match Priority Engine
  * 
- * Match Priority Score = (Attraction × 0.35)
+ * Match Priority Score = (Attraction × MONETIZATION_SPLITS.CHAT.avalo)
  *                      + (Reputation × 0.25)
  *                      + (Earnings Synergy × 0.25)
  *                      + (Recent Activity × 0.10)
@@ -328,7 +328,7 @@ function evaluateEarningsSynergy(
   // LOW: Both earners (both wait to be paid)
   else if (candidateIsEarner && (viewer.earnOnChat || viewer.earnOnMeetings || viewer.earnOnEvents)) {
     level = 'LOW';
-    score = 0.30;
+    score = MONETIZATION_SPLITS.SUBSCRIPTION.avalo;
     reasoning = 'Both users are earners';
   }
   // VERY LOW: Low engagement spender × high-demand creator
@@ -502,7 +502,7 @@ async function calculateInterestProximityScore(
     
     const overlapRatio = commonInterests.length / Math.max(viewerInterests.length, candidateInterests.length);
     
-    // Normalize: 0 overlap = 0.3, 50% overlap = 0.65, 100% overlap = 1.0
+    // Normalize: 0 overlap = 0.3, 50% overlap = MONETIZATION_SPLITS.CHAT.creator, 100% overlap = 1.0
     return 0.3 + (overlapRatio * 0.7);
   } catch (error) {
     logger.error('Error calculating interest proximity:', error);
@@ -721,6 +721,7 @@ export async function trackAttractionSignal(
 }
 
 logger.info('✅ PACK 213: Premium Match Priority Engine initialized');
+
 
 
 

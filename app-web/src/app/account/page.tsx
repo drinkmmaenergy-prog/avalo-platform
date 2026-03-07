@@ -1,21 +1,24 @@
-/**
- * PACK 343 — Unified Account Panel
- * Overview page showing profile, subscription, wallet, and security status
- */
-
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { MONETIZATION_SPLITS } from "@constants/monetization";
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';/**
+ * PACK 343 — Unified Account Panel
+ * Overview page showing profile, subscription, wallet,
+ */
 import Link from 'next/link';
+
 import { AccountLayout } from '../../components/account/AccountLayout';
+
 import { useWallet } from '../../../hooks/useWallet';
 import { useSubscription } from '../../../hooks/useSubscription';
 import { useCompliance } from '../../../hooks/useCompliance';
+
 import type { WalletBalance } from '../../../hooks/useWallet';
 import type { UserSubscription } from '../../../hooks/useSubscription';
 import type { UserComplianceStatus } from '../../../hooks/useCompliance';
-
 export default function AccountPage() {
+
   const { getBalance } = useWallet();
   const { getCurrentSubscription } = useSubscription();
   const { getComplianceStatus } = useCompliance();
@@ -23,6 +26,7 @@ export default function AccountPage() {
   const [balance, setBalance] = useState<WalletBalance | null>(null);
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [compliance, setCompliance] = useState<UserComplianceStatus | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,26 +36,29 @@ export default function AccountPage() {
 
   const loadData = async () => {
     try {
+
       setLoading(true);
       setError(null);
 
-      const [balanceData, subscriptionData, complianceData] = await Promise.all([
-        getBalance(),
-        getCurrentSubscription(),
-        getComplianceStatus(),
-      ]);
+      const balanceData = await getBalance();
+      const subscriptionData = await getCurrentSubscription();
+      const complianceData = await getComplianceStatus();
 
       setBalance(balanceData);
       setSubscription(subscriptionData);
       setCompliance(complianceData);
-    } catch (err: any) {
-      console.error('Load account error:', err);
-      setError(err.message || 'Failed to load account data');
+
+    } catch (err) {
+
+      console.error('Account load error', err);
+      setError('Failed to load account data');
+
     } finally {
+
       setLoading(false);
+
     }
   };
-
   if (loading) {
     return (
       <AccountLayout>
@@ -84,7 +91,7 @@ export default function AccountPage() {
   }
 
   const getFiatEquivalent = (tokens: number) => {
-    return (tokens * 0.20).toFixed(2);
+    return (tokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo).toFixed(2);
   };
 
   return (
@@ -293,4 +300,7 @@ export default function AccountPage() {
     </AccountLayout>
   );
 }
+
+
+
 

@@ -317,7 +317,7 @@ export default function LanguageAndRegionScreen() {
       <View style={styles.notice}>
         <Ionicons name="information-circle-outline" size={20} color="#666" />
         <Text style={styles.noticeText}>
-          Token prices remain 0.20 PLN per token regardless of region or language. Currency display is for convenience only. The 65/35 and 80/20 splits apply globally.
+          Token prices remain MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN per token regardless of region or language. Currency display is for convenience only. The 65/35 and 80/20 splits apply globally.
         </Text>
       </View>
 
@@ -521,3 +521,4 @@ const styles = StyleSheet.create({
     height: 40,
   },
 });
+

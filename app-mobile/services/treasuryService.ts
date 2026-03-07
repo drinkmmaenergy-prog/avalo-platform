@@ -164,7 +164,7 @@ export function formatTokens(amount: number): string {
 /**
  * Convert tokens to fiat (simplified - use actual rate from config)
  */
-export function tokensToFiat(tokens: number, rate: number = 0.20): string {
+export function tokensToFiat(tokens: number, rate: number = MONETIZATION_SPLITS.EVENT_TICKET.avalo): string {
   const fiatAmount = tokens * rate;
   return new Intl.NumberFormat('en-US', {
     style: 'currency',

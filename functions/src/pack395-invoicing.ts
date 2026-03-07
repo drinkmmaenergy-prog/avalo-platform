@@ -289,7 +289,7 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (requ
   });
   
   // Calculate commission (20% for Avalo)
-  const commissionRate = 0.20;
+  const commissionRate = MONETIZATION_SPLITS.EVENT_TICKET.avalo;
   const avaloCommission = totalEarnings * commissionRate;
   const netTaxableIncome = totalEarnings - avaloCommission;
   
@@ -520,6 +520,7 @@ export const generateMonthlyStatementsForAllCreators = onSchedule({ schedule: "0
     
     console.log(`Generated ${count} statement tasks`);
   });
+
 
 
 

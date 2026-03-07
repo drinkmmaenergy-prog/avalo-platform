@@ -14,7 +14,7 @@
  * - Transition to paid 1:1 chat
  */
 
-import { db, serverTimestamp, increment, arrayUnion } from './init.js';
+import { db, serverTimestamp, increment, arrayUnion } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions';
 import { admin, functions } from './runtime';

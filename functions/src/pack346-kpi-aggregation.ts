@@ -4,7 +4,7 @@
  */
 
 import * as functions from "firebase-functions";
-import { db, serverTimestamp, increment, generateId } from "./init.js";
+import { db, serverTimestamp, increment, generateId } from "./init";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 import { DailyKPI, HourlyMetrics } from "./pack346-types";
 import { HttpsError, admin, auth, onCall, timestamp, logger, onSchedule } from './runtime';
@@ -175,7 +175,7 @@ async function calculateDailyKPIs(dateStr: string): Promise<DailyKPI> {
         break;
       case "chat":
         kpi.revenue.chatRevenueUSD += amountUSD;
-        kpi.platformEarnings.chat35 += amountUSD * 0.35;
+        kpi.platformEarnings.chat35 += amountUSD * MONETIZATION_SPLITS.CHAT.avalo;
         break;
       case "voice_call":
         kpi.revenue.voiceRevenueUSD += amountUSD;
@@ -185,11 +185,11 @@ async function calculateDailyKPIs(dateStr: string): Promise<DailyKPI> {
         break;
       case "calendar_booking":
         kpi.revenue.calendarRevenueUSD += amountUSD;
-        kpi.platformEarnings.calendar20 += amountUSD * 0.20;
+        kpi.platformEarnings.calendar20 += amountUSD * MONETIZATION_SPLITS.EVENT_TICKET.avalo;
         break;
       case "event_ticket":
         kpi.revenue.eventsRevenueUSD += amountUSD;
-        kpi.platformEarnings.events20 += amountUSD * 0.20;
+        kpi.platformEarnings.events20 += amountUSD * MONETIZATION_SPLITS.EVENT_TICKET.avalo;
         break;
       case "tip":
         kpi.revenue.tipsRevenueUSD += amountUSD;
@@ -497,6 +497,7 @@ export const triggerKPIAggregation = functions.https.onCall(async (request) => {
     }
   }
 );
+
 
 
 

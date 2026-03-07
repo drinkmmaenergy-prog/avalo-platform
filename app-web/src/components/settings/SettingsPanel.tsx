@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Settings Panel Component
  * Placeholder for app configuration
  */
-
-'use client';
-
 export default function SettingsPanel() {
   return (
     <div className="bg-white rounded-lg shadow">
@@ -36,4 +35,5 @@ export default function SettingsPanel() {
     </div>
   );
 }
+
 

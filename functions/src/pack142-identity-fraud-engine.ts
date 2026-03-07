@@ -107,7 +107,7 @@ async function detectDeviceReuse(
     return null;
   }
   
-  const riskScore = Math.min(1.0, relatedUserIds.length * 0.35);
+  const riskScore = Math.min(1.0, relatedUserIds.length * MONETIZATION_SPLITS.CHAT.avalo);
   const fraudDetected = relatedUserIds.length >= 2;
   
   const signal: IdentityFraudSignal = {
@@ -591,6 +591,7 @@ async function integratewithPack130BanEvasion(
 export default {
   analyzeSocialGraphFraud,
 };
+
 
 
 

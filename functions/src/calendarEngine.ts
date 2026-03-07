@@ -5,7 +5,7 @@
  */
 
 import { db, FieldValue, Timestamp } from './firebase';
-import { v4 as uuidv4 } from 'uuid';
+const { v4: uuidv4 } = require('uuid');
 import type {
   Calendar,
   CalendarSlot,
@@ -803,6 +803,7 @@ export async function onMismatchReported(
     createdAt: FieldValue.serverTimestamp(),
   });
 }
+
 
 
 

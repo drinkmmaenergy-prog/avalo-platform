@@ -76,8 +76,8 @@ function isOfferExpired(offer: CreatorOffer): boolean {
 }
 
 function calculateEarnings(tokenPrice: number): { creatorEarnings: number; avaloFee: number } {
-  const creatorEarnings = Math.floor(tokenPrice * 0.65);
-  const avaloFee = Math.floor(tokenPrice * 0.35);
+  const creatorEarnings = Math.floor(tokenPrice * MONETIZATION_SPLITS.CHAT.creator);
+  const avaloFee = Math.floor(tokenPrice * MONETIZATION_SPLITS.CHAT.avalo);
   return { creatorEarnings, avaloFee };
 }
 

@@ -31,7 +31,7 @@ import {
   AlertType,
   CRMActionType,
   SAFETY_RULES
-} from './pack266-supporter-crm-types.js';
+} from './pack266-supporter-crm-types';
 import { admin, db, timestamp } from './runtime';
 
 // ============================================================================
@@ -1044,6 +1044,7 @@ export function sanitizeSupporterData(data: any): any {
 
   return sanitized;
 }
+
 
 
 

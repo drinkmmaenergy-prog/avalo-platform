@@ -269,7 +269,7 @@ export interface VenueEvent {
   checkInStartTime?: Timestamp;
   
   // Revenue Split (same as regular events: 65% creator / 35% Avalo)
-  platformFeePercentage: number; // 0.35
+  platformFeePercentage: number; // MONETIZATION_SPLITS.CHAT.avalo
   venueCommission: number; // Optional commission to venue (from creator's 65%)
   
   // Metadata
@@ -559,8 +559,8 @@ export const VENUE_CONFIG = {
   minAdvanceNotice: 24 * 60 * 60 * 1000, // 24 hours
   
   // Fees (aligned with regular events)
-  platformFeePercentage: 0.35, // 35% to Avalo
-  creatorEarningsPercentage: 0.65, // 65% to creator
+  platformFeePercentage: MONETIZATION_SPLITS.CHAT.avalo, // 35% to Avalo
+  creatorEarningsPercentage: MONETIZATION_SPLITS.CHAT.creator, // 65% to creator
   maxVenueCommission: 0.10, // max 10% from creator's share
   
   // Safety thresholds
@@ -604,6 +604,7 @@ export class VenueError extends Error {
     this.name = 'VenueError';
   }
 }
+
 
 
 

@@ -112,7 +112,7 @@ async function getPlatformRevenue(): Promise<number> {
 }
 
 async function cleanupCollection(collection: string): Promise<void> {
-  const snap = await db.collection(collection).limit(500).get();
+  const snap = await db.collection(collection).get();
   if (snap.empty) return;
   const batch = db.batch();
   snap.docs.forEach((doc) => batch.delete(doc.ref));
@@ -1097,3 +1097,5 @@ describe('PACK 460 — Boost Visibility Engine', () => {
     });
   });
 });
+
+import { getDb, setupTestEnvironment, testData, createTestUser, createTestTransaction, now, minutesAgo, hoursAgo, daysAgo } from '../src/testUtils'

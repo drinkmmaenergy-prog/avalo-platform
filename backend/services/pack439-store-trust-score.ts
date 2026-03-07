@@ -76,16 +76,16 @@ export interface TrustScoreHistory {
 export class StoreTrustScoreService {
   // Scoring weights
   private readonly WEIGHTS = {
-    rating: 0.30,
+    rating: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
     technical: 0.25,
     risk: 0.25,
-    responsiveness: 0.20,
+    responsiveness: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   };
 
   // Thresholds
   private readonly CRITICAL_RATING = 3.0;
   private readonly CRITICAL_CRASH_RATE = 0.02; // 2%
-  private readonly CRITICAL_UNINSTALL_RATE = 0.30; // 30%
+  private readonly CRITICAL_UNINSTALL_RATE = MONETIZATION_SPLITS.SUBSCRIPTION.avalo; // 30%
   private readonly HIGH_NEGATIVE_RATIO = 0.40; // 40% negative
 
   /**
@@ -542,3 +542,4 @@ export class StoreTrustScoreService {
 }
 
 export const storeTrustScoreService = new StoreTrustScoreService();
+

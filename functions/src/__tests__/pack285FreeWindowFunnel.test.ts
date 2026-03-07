@@ -22,7 +22,7 @@ import {
   FREE_MESSAGES_STANDARD_PER_USER,
   type FreeWindow,
   type Pack273ChatParticipant
-} from '../pack285FreeWindowFunnel.js';
+} from '../pack285FreeWindowFunnel';
 
 // ============================================================================
 // MOCK DATA
@@ -343,6 +343,7 @@ describe('PACK 285: Edge Cases', () => {
     expect(true).toBe(true);
   });
 });
+
 
 
 

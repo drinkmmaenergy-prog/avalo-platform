@@ -12,8 +12,8 @@ import {
   getVoiceDiscountPercent,
   getVideoDiscountPercent,
   SubscriptionTier,
-} from './pack350-subscriptions.js';
-import type { CallType } from './callMonetization.js';
+} from './pack350-subscriptions';
+import type { CallType } from './callMonetization';
 
 // Base prices (same as in callMonetization.ts)
 const BASE_VOICE_COST = 10;  // tokens per minute
@@ -63,7 +63,7 @@ export function calculateCallEarningsSplit(totalTokens: number): {
   earnerReceives: number;
   avaloReceives: number;
 } {
-  const earnerReceives = Math.floor(totalTokens * 0.80);  // 80% to earner
+  const earnerReceives = Math.floor(totalTokens * MONETIZATION_SPLITS.EVENT_TICKET.creator);  // 80% to earner
   const avaloReceives = totalTokens - earnerReceives;     // 20% to Avalo
   
   return {
@@ -71,6 +71,8 @@ export function calculateCallEarningsSplit(totalTokens: number): {
     avaloReceives,
   };
 }
+
+
 
 
 

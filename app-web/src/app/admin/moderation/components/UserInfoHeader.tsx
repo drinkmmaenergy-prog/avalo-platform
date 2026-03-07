@@ -125,3 +125,4 @@ export function UserInfoHeader({ user }: UserInfoHeaderProps) {
     </div>
   );
 }
+

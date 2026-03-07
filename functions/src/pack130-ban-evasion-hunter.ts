@@ -399,7 +399,7 @@ function calculateEvasionConfidence(matches: {
   content: boolean;
 }): number {
   const weights = {
-    device: 0.35,
+    device: MONETIZATION_SPLITS.CHAT.avalo,
     location: 0.15,
     payment: 0.25,
     typing: 0.15,
@@ -578,6 +578,7 @@ export async function resolveBanEvasionCase(
     }
   }
 }
+
 
 
 

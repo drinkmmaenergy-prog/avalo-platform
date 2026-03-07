@@ -57,7 +57,7 @@ const GEO_TIERS = {
   },
   tier2: {
     countries: ['ES', 'IT', 'FR', 'NL'],
-    budgetWeight: 0.30,
+    budgetWeight: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
     targetCPA: 8.50,
     expectedARPU: 37.50,
     description: 'Core markets - Cultural localization focus'
@@ -84,7 +84,7 @@ type Channel = typeof CHANNELS[number];
 
 // Safety thresholds
 const SAFETY_THRESHOLDS: SafetyThresholds = {
-  reviewBombingRisk: 0.65,
+  reviewBombingRisk: MONETIZATION_SPLITS.CHAT.creator,
   fraudProbability: 0.45,
   retentionRate: 0.12
 };
@@ -626,6 +626,7 @@ export const pack393_getOrchestrationStatus = onCall(async (request) => {
     underperformingGeos: latestReport.underperformingGeos
   };
 });
+
 
 
 

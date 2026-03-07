@@ -315,7 +315,7 @@ async function computeCreatorMetricsForDay(
       case KpiEventType.CHAT_PAID_STARTED:
       case KpiEventType.CHAT_PAID_ENDED:
         chatSessionsPaid++;
-        const chatEarnings = tokens * 0.65; // Creator gets 65%
+        const chatEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator; // Creator gets 65%
         tokensEarnedChat += chatEarnings;
         tokensEarned += chatEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -323,7 +323,7 @@ async function computeCreatorMetricsForDay(
 
       case KpiEventType.VOICE_CALL_ENDED:
         voiceCallsPaid++;
-        const voiceEarnings = tokens * 0.65;
+        const voiceEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
         tokensEarnedVoiceCalls += voiceEarnings;
         tokensEarned += voiceEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -331,7 +331,7 @@ async function computeCreatorMetricsForDay(
 
       case KpiEventType.VIDEO_CALL_ENDED:
         videoCallsPaid++;
-        const videoEarnings = tokens * 0.65;
+        const videoEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
         tokensEarnedVideoCalls += videoEarnings;
         tokensEarned += videoEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -339,7 +339,7 @@ async function computeCreatorMetricsForDay(
 
       case KpiEventType.CALENDAR_BOOKING_COMPLETED:
         calendarBookings++;
-        const calendarEarnings = tokens * 0.80; // Creator gets 80%
+        const calendarEarnings = tokens * MONETIZATION_SPLITS.EVENT_TICKET.creator; // Creator gets 80%
         tokensEarnedCalendar += calendarEarnings;
         tokensEarned += calendarEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -347,7 +347,7 @@ async function computeCreatorMetricsForDay(
 
       case KpiEventType.EVENT_TICKET_PURCHASED:
         eventTicketsSold++;
-        const eventEarnings = tokens * 0.80; // Organizer gets 80%
+        const eventEarnings = tokens * MONETIZATION_SPLITS.EVENT_TICKET.creator; // Organizer gets 80%
         tokensEarnedEvents += eventEarnings;
         tokensEarned += eventEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -355,7 +355,7 @@ async function computeCreatorMetricsForDay(
 
       case KpiEventType.AI_COMPANION_PAID_MESSAGE:
         aiCompanionSessions++;
-        const aiEarnings = tokens * 0.65;
+        const aiEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
         tokensEarnedAI += aiEarnings;
         tokensEarned += aiEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -604,6 +604,7 @@ function getDateRange(
     endTimestamp: admin.firestore.Timestamp.fromDate(endDate),
   };
 }
+
 
 
 

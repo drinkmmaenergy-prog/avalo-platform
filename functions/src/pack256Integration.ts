@@ -3,8 +3,8 @@
  * Connects AI suggestions with existing chat monetization system
  */
 
-import { db, serverTimestamp, increment } from './init.js';
-import { shouldShowSuggestions, type SuggestionTrigger } from './pack256AiReplySuggestions.js';
+import { db, serverTimestamp, increment } from './init';
+import { shouldShowSuggestions, type SuggestionTrigger } from './pack256AiReplySuggestions';
 
 // ============================================================================
 // CHAT MESSAGE HOOK
@@ -312,6 +312,7 @@ export async function cleanupExpiredSessions(): Promise<number> {
     return 0;
   }
 }
+
 
 
 

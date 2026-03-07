@@ -134,8 +134,8 @@ export function calculateRevenueSplit(tokenAmount: number): {
     return { creatorAmount: 0, avaloAmount: 0, total: 0 };
   }
 
-  const CREATOR_SPLIT = 0.65;
-  const AVALO_SPLIT = 0.35;
+  const CREATOR_SPLIT = MONETIZATION_SPLITS.CHAT.creator;
+  const AVALO_SPLIT = MONETIZATION_SPLITS.CHAT.avalo;
 
   const creatorAmount = Math.floor(tokenAmount * CREATOR_SPLIT);
   const avaloAmount = Math.floor(tokenAmount * AVALO_SPLIT);

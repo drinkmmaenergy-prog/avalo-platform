@@ -6,7 +6,7 @@
  * This module is 100% additive and does NOT modify existing systems.
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import type {
   AIBot,
   CreateBotRequest,
@@ -18,7 +18,7 @@ import type {
   GenerateAiResponseRequest,
   ClaudeApiRequest,
   ClaudeApiResponse,
-} from './types/aiBot.js';
+} from './types/aiBot';
 import { functions } from './runtime';
 
 // Simple error class
@@ -351,7 +351,7 @@ export async function generateAiResponse(
   
   // Phase 22: CSAM Shield - Check user message for CSAM risk
   try {
-    const { evaluateTextForCsamRisk } = await import('./csamShield.js');
+    const { evaluateTextForCsamRisk } = await import('./csamShield');
     const csamCheck = evaluateTextForCsamRisk(request.userMessage, 'en');
     
     if (csamCheck.isFlagged && (csamCheck.riskLevel === 'HIGH' || csamCheck.riskLevel === 'CRITICAL')) {
@@ -546,6 +546,7 @@ export default {
   generateAiResponse,
   updateBotStats,
 };
+
 
 
 

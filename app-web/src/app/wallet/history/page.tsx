@@ -1,3 +1,5 @@
+'use client';
+
 "use client";
 
 /**
@@ -12,9 +14,6 @@
  *
  * @version v1.1 — removed redundant Header/Footer since AppShell provides navigation
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -228,5 +227,6 @@ export default function WalletHistoryPage() {
     </div>
   );
 }
+
 
 

@@ -948,10 +948,10 @@ export const autoRefundInactiveEscrows = onSchedule(
 // ============================================================================
 
 const VAT_RATES: Record<string, number> = {
-  AT: 0.20, BE: 0.21, BG: 0.20, HR: 0.25, CY: 0.19, CZ: 0.21, DK: 0.25, EE: 0.22,
-  FI: 0.255, FR: 0.20, DE: 0.19, GR: 0.24, HU: 0.27, IE: 0.23, IT: 0.22, LV: 0.21,
-  LT: 0.21, LU: 0.17, MT: 0.18, NL: 0.21, PL: 0.23, PT: 0.23, RO: 0.19, SK: 0.20,
-  SI: 0.22, ES: 0.21, SE: 0.25, GB: 0.20, US: 0.00, CA: 0.00, AU: 0.10, NZ: 0.15,
+  AT: MONETIZATION_SPLITS.EVENT_TICKET.avalo, BE: 0.21, BG: MONETIZATION_SPLITS.EVENT_TICKET.avalo, HR: 0.25, CY: 0.19, CZ: 0.21, DK: 0.25, EE: 0.22,
+  FI: 0.255, FR: MONETIZATION_SPLITS.EVENT_TICKET.avalo, DE: 0.19, GR: 0.24, HU: 0.27, IE: 0.23, IT: 0.22, LV: 0.21,
+  LT: 0.21, LU: 0.17, MT: 0.18, NL: 0.21, PL: 0.23, PT: 0.23, RO: 0.19, SK: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  SI: 0.22, ES: 0.21, SE: 0.25, GB: MONETIZATION_SPLITS.EVENT_TICKET.avalo, US: 0.00, CA: 0.00, AU: 0.10, NZ: 0.15,
   JP: 0.10, IN: 0.18,
 };
 
@@ -1729,6 +1729,7 @@ export const getPendingSettlements = onCall(
     }
   }
 );
+
 
 
 

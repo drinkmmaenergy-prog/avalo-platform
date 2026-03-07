@@ -131,7 +131,7 @@ export interface MonthlyStatement {
     month: number;
   };
   baseCurrency: string;
-  tokenPayoutRate: number; // e.g., 0.2 (1 token = 0.20 USD)
+  tokenPayoutRate: number; // e.g., 0.2 (1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo USD)
 
   summary: MonthlyStatementSummary;
   bySource: EarningsSourceBreakdown[];
@@ -235,11 +235,11 @@ export interface StatementAuditLog {
  * These values are read-only and MUST NOT be changed
  */
 export const REVENUE_SPLITS = {
-  CHAT: { creator: 0.65, avalo: 0.35 },
-  CALLS: { creator: 0.80, avalo: 0.20 },
-  CALENDAR: { creator: 0.80, avalo: 0.20 },
-  EVENTS: { creator: 0.80, avalo: 0.20 },
-  OTHER: { creator: 0.65, avalo: 0.35 },
+  CHAT: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
+  CALLS: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
+  CALENDAR: { creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
+  EVENTS: { creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
+  OTHER: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
 } as const;
 
 import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
@@ -327,6 +327,8 @@ export function isValidYearMonth(year: number, month: number): boolean {
   const targetDate = new Date(year, month - 1, 1);
   return targetDate <= now;
 }
+
+
 
 
 

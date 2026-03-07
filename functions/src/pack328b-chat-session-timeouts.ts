@@ -19,7 +19,7 @@
  * - Anti-abuse fraud detection for calls
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import type {
   Pack328bChatSession,
   Pack328bChatStatus,
@@ -27,8 +27,8 @@ import type {
   Pack328bExpirationJobResult,
   Pack328bCallSession,
   Pack328bCallFraudSignal,
-} from './pack328b-chat-session-timeouts-types.js';
-import { PACK_328B_TIMEOUTS } from './pack328b-chat-session-timeouts-types.js';
+} from './pack328b-chat-session-timeouts-types';
+import { PACK_328B_TIMEOUTS } from './pack328b-chat-session-timeouts-types';
 // Removed: HttpsError import conflicts with local declaration
 
 // Simple error class
@@ -89,7 +89,7 @@ export function pack328b_calculateUnusedBucketRefund(
   const tokensToRefund = escrowBalance;
   
   // Platform fee was already retained at deposit (35%)
-  const platformFeeRetained = Math.round(depositAmount * 0.35);
+  const platformFeeRetained = Math.round(depositAmount * MONETIZATION_SPLITS.CHAT.avalo);
   
   return {
     totalBucketsPurchased: bucketsImplied,
@@ -463,7 +463,7 @@ export async function pack328b_detectShortCallFraud(
     // Uncomment when pack324b-fraud-detection module is available
     /*
     try {
-      const { reportToFraudSystem } = await import('./pack324b-fraud-detection.js');
+      const { reportToFraudSystem } = await import('./pack324b-fraud-detection');
       await reportToFraudSystem({
         userId,
         signalType: 'TOKEN_DRAIN_PATTERN',
@@ -526,6 +526,8 @@ export async function pack328b_getChatTimeoutInfo(
     isPaid,
   };
 }
+
+
 
 
 

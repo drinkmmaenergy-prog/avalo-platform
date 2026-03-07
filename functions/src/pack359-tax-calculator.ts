@@ -134,7 +134,7 @@ export async function calculateReverseTax(
 export async function calculateCreatorEarningsTax(
   creatorId: string,
   grossEarnings: number,
-  platformFeeRate: number = 0.20 // Default 20% platform fee
+  platformFeeRate: number = MONETIZATION_SPLITS.EVENT_TICKET.avalo // Default 20% platform fee
 ): Promise<CreatorEarningsTax> {
   const { profile } = await getUserJurisdiction(creatorId);
   
@@ -219,7 +219,7 @@ export async function calculateCalendarBookingTax(
   const consumerTax = await calculateConsumerTax(userId, bookingPrice, 'calendar_booking');
   
   // Creator earnings calculation (from the net amount received by platform)
-  const creatorEarnings = await calculateCreatorEarningsTax(creatorId, bookingPrice, 0.30); // 30% platform fee for bookings
+  const creatorEarnings = await calculateCreatorEarningsTax(creatorId, bookingPrice, MONETIZATION_SPLITS.SUBSCRIPTION.avalo); // 30% platform fee for bookings
   
   return {
     consumerTax,
@@ -242,7 +242,7 @@ export async function calculateAIChatTax(
   const chatCost = tokensSpent * tokenValue;
   
   const consumerTax = await calculateConsumerTax(userId, chatCost, 'ai_chat');
-  const creatorEarnings = await calculateCreatorEarningsTax(creatorId, chatCost, 0.20); // 20% platform fee
+  const creatorEarnings = await calculateCreatorEarningsTax(creatorId, chatCost, MONETIZATION_SPLITS.EVENT_TICKET.avalo); // 20% platform fee
   
   return {
     consumerTax,
@@ -265,7 +265,7 @@ export async function calculateVideoCallTax(
   const callCost = callDurationMinutes * pricePerMinute;
   
   const consumerTax = await calculateConsumerTax(userId, callCost, 'video_call');
-  const creatorEarnings = await calculateCreatorEarningsTax(creatorId, callCost, 0.30); // 30% platform fee
+  const creatorEarnings = await calculateCreatorEarningsTax(creatorId, callCost, MONETIZATION_SPLITS.SUBSCRIPTION.avalo); // 30% platform fee
   
   return {
     consumerTax,
@@ -481,7 +481,7 @@ export const calculateCreatorEarnings = functions.https.onCall(async (request) =
   const earningsTax = await calculateCreatorEarningsTax(
     creatorId,
     amount,
-    platformFee || 0.20
+    platformFee || MONETIZATION_SPLITS.EVENT_TICKET.avalo
   );
   
   return earningsTax;
@@ -547,6 +547,7 @@ export const onCalendarBooking = onDocumentCreated('calendar_bookings/{bookingId
       booking.creatorId
     );
   });
+
 
 
 

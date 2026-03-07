@@ -12,8 +12,8 @@
  */
 
 import * as functions from 'firebase-functions';
-import { db, serverTimestamp } from './init.js';
-import type { KpiAlert, AlertSeverity, AlertThresholds } from './pack336-types.js';
+import { db, serverTimestamp } from './init';
+import type { KpiAlert, AlertSeverity, AlertThresholds } from './pack336-types';
 import { HttpsError, auth, onCall } from './runtime';
 
 // Default alert thresholds
@@ -439,6 +439,7 @@ export const pack336_updateAlertThresholds = functions.https.onCall(async (reque
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
 
 
 

@@ -16,7 +16,7 @@ import {
   isVipTier,
   isRoyalTier,
   getTierPerks,
-} from './pack350-subscriptions.js';
+} from './pack350-subscriptions';
 import { HttpsError, auth, onCall, onRequest } from './runtime';
 
 // ============================================================================
@@ -296,6 +296,7 @@ export const pack350_googleWebhook = onRequest({}, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 

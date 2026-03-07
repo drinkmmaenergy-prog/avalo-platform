@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * PHASE 3.3 — Creator Payouts Page (READ-ONLY history + payout request)
  * 
@@ -8,9 +10,6 @@
  * - getPayoutRequests (read history)
  * - requestPayout (submit payout request)
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import {
@@ -284,4 +283,5 @@ export default function CreatorPayoutsPage() {
     </div>
   );
 }
+
 

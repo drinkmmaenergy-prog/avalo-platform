@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * PACK 343 — Security & Verification Page
  * Manage age verification, KYC, and legal compliance
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AccountLayout } from '../../../components/account/AccountLayout';
@@ -359,4 +358,5 @@ export default function SecurityPage() {
     </AccountLayout>
   );
 }
+
 

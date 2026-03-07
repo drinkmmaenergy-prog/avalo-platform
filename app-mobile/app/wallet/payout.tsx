@@ -21,7 +21,7 @@ import { auth, functions } from "@/lib/firebase";
 import { httpsCallable } from 'firebase/functions';
 
 const MIN_PAYOUT_TOKENS = 1000;
-const TOKEN_PAYOUT_RATE = 0.20; // PLN per token
+const TOKEN_PAYOUT_RATE = MONETIZATION_SPLITS.EVENT_TICKET.avalo; // PLN per token
 
 export default function PayoutRequestScreen() {
   const router = useRouter();
@@ -559,3 +559,4 @@ const styles = StyleSheet.create({
     fontWeight: fontWeights.bold,
   },
 });
+

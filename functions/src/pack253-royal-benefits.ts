@@ -313,7 +313,7 @@ export async function processChatEntryPayment(
     });
 
     // Credit creator (via earnings system)
-    const netCreatorTokens = Math.floor(entryPrice * 0.65); // 65% to creator
+    const netCreatorTokens = Math.floor(entryPrice * MONETIZATION_SPLITS.CHAT.creator); // 65% to creator
     await db.collection('earnings_ledger').add({
       creatorId,
       sourceType: 'CHAT_ENTRY',
@@ -405,6 +405,7 @@ export async function getRoyalBenefitsSummary(userId: string): Promise<{
     },
   };
 }
+
 
 
 

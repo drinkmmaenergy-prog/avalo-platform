@@ -113,8 +113,8 @@ export function getRevenueSplit(context: TokenomicsContext | string): RevenueSpl
   // If string is passed, treat it as the type
   const ctx: TokenomicsContext = typeof context === 'string' ? { type: context } : context;
   return {
-    creatorShare: 0.70,
-    platformShare: 0.30,
+    creatorShare: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
+    platformShare: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
     taxWithholding: 0,
   };
 }
@@ -137,6 +137,7 @@ export function validateSplit(
   const total = (revSplit.creatorShare ?? 0) + (revSplit.platformShare ?? 0) + (revSplit.taxWithholding ?? 0);
   return Math.abs(total - 1.0) < 0.001;
 }
+
 
 
 

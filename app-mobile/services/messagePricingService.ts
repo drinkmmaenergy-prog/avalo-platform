@@ -11,7 +11,7 @@ import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { getApp } from 'firebase/app';
 
 const PRICING_STORAGE_KEY = '@avalo_chat_pricing';
-const AVALO_COMMISSION = 0.35; // 35% fixed commission
+const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.avalo; // 35% fixed commission
 
 export interface ChatPricingData {
   [chatId: string]: number; // chatId -> price in tokens

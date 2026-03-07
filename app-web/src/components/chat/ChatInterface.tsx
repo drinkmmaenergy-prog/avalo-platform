@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Chat Interface Component
  * Placeholder for real-time chat functionality
  */
-
-'use client';
-
 export default function ChatInterface() {
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow">
@@ -17,4 +16,5 @@ export default function ChatInterface() {
     </div>
   );
 }
+
 

@@ -11,7 +11,7 @@ import {
   pauseJourneyForSafety,
   resumeJourneyAfterSafety,
   getJourneyBetweenUsers,
-} from './romanticJourneys.js';
+} from './romanticJourneys';
 import { db, serverTimestamp } from './runtime';
 
 // ============================================================================
@@ -219,7 +219,7 @@ export async function onPanicModeResolved(
  * Helper: Pause all journeys for a user
  */
 async function pauseAllUserJourneys(userId: string, reason: string): Promise<void> {
-  const { getUserJourneys } = await import('./romanticJourneys.js');
+  const { getUserJourneys } = await import('./romanticJourneys');
   const journeys = await getUserJourneys(userId, ['active']);
   
   for (const journey of journeys) {
@@ -231,7 +231,7 @@ async function pauseAllUserJourneys(userId: string, reason: string): Promise<voi
  * Helper: Resume all paused journeys for a user
  */
 async function resumeAllUserJourneys(userId: string): Promise<void> {
-  const { getUserJourneys } = await import('./romanticJourneys.js');
+  const { getUserJourneys } = await import('./romanticJourneys');
   const journeys = await getUserJourneys(userId, ['paused']);
   
   for (const journey of journeys) {
@@ -367,7 +367,7 @@ export async function sendChallengeCompletedNotification(
  * Scheduled function: Check stale journey offers (7+ days with no response)
  */
 export async function cleanupStaleJourneyOffers(): Promise<number> {
-  const { db, serverTimestamp } = await import('./init.js');
+  const { db, serverTimestamp } = await import('./init');
   
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   
@@ -396,7 +396,7 @@ export async function cleanupStaleJourneyOffers(): Promise<number> {
  * Scheduled function: Update journey streaks daily
  */
 export async function updateJourneyStreaks(): Promise<number> {
-  const { db } = await import('./init.js');
+  const { db } = await import('./init');
   
   const activeJourneysSnap = await db.collection('romantic_journeys')
     .where('status', '==', 'active')
@@ -422,6 +422,7 @@ export async function updateJourneyStreaks(): Promise<number> {
   
   return updatedCount;
 }
+
 
 
 

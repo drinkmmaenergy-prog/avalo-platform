@@ -23,8 +23,8 @@ import { admin, increment, timestamp } from './runtime';
 
 // Token economy constants (from core system - NEVER CHANGED)
 const TOKEN_PRICE_USD = 0.10; // $0.10 per token
-const CREATOR_SPLIT = 0.65; // 65% to creator
-const PLATFORM_SPLIT = 0.35; // 35% to platform
+const CREATOR_SPLIT = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
+const PLATFORM_SPLIT = MONETIZATION_SPLITS.CHAT.avalo; // 35% to platform
 
 // ============================================================================
 // MONETIZATION CHECKS
@@ -513,6 +513,7 @@ export async function getNSFWMonetizationStats(
     throw error;
   }
 }
+
 
 
 

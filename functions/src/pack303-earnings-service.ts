@@ -94,31 +94,31 @@ export async function getEarningsDashboard(
           source: 'CHAT',
           tokensEarned: earnings?.tokensEarnedChat || 0,
           tokensRefunded: earnings?.tokensRefundedChat || 0,
-          tokensCreatorShare: Math.floor((earnings?.tokensEarnedChat || 0) * 0.65),
+          tokensCreatorShare: Math.floor((earnings?.tokensEarnedChat || 0) * MONETIZATION_SPLITS.CHAT.creator),
         },
         {
           source: 'CALLS',
           tokensEarned: earnings?.tokensEarnedCalls || 0,
           tokensRefunded: 0,
-          tokensCreatorShare: Math.floor((earnings?.tokensEarnedCalls || 0) * 0.80),
+          tokensCreatorShare: Math.floor((earnings?.tokensEarnedCalls || 0) * MONETIZATION_SPLITS.EVENT_TICKET.creator),
         },
         {
           source: 'CALENDAR',
           tokensEarned: earnings?.tokensEarnedCalendar || 0,
           tokensRefunded: earnings?.tokensRefundedCalendar || 0,
-          tokensCreatorShare: Math.floor((earnings?.tokensEarnedCalendar || 0) * 0.80),
+          tokensCreatorShare: Math.floor((earnings?.tokensEarnedCalendar || 0) * MONETIZATION_SPLITS.EVENT_TICKET.creator),
         },
         {
           source: 'EVENTS',
           tokensEarned: earnings?.tokensEarnedEvents || 0,
           tokensRefunded: earnings?.tokensRefundedEvents || 0,
-          tokensCreatorShare: Math.floor((earnings?.tokensEarnedEvents || 0) * 0.80),
+          tokensCreatorShare: Math.floor((earnings?.tokensEarnedEvents || 0) * MONETIZATION_SPLITS.EVENT_TICKET.creator),
         },
         {
           source: 'OTHER',
           tokensEarned: earnings?.tokensEarnedOther || 0,
           tokensRefunded: 0,
-          tokensCreatorShare: Math.floor((earnings?.tokensEarnedOther || 0) * 0.65),
+          tokensCreatorShare: Math.floor((earnings?.tokensEarnedOther || 0) * MONETIZATION_SPLITS.CHAT.creator),
         },
       ],
       totalNetTokens: earnings?.tokensNetEarned || 0,
@@ -245,31 +245,31 @@ export async function getMonthlyStatement(
           source: 'CHAT',
           tokensEarned: earnings.tokensEarnedChat,
           tokensRefunded: earnings.tokensRefundedChat,
-          tokensCreatorShare: Math.floor(earnings.tokensEarnedChat * 0.65),
+          tokensCreatorShare: Math.floor(earnings.tokensEarnedChat * MONETIZATION_SPLITS.CHAT.creator),
         },
         {
           source: 'CALLS',
           tokensEarned: earnings.tokensEarnedCalls,
           tokensRefunded: 0,
-          tokensCreatorShare: Math.floor(earnings.tokensEarnedCalls * 0.80),
+          tokensCreatorShare: Math.floor(earnings.tokensEarnedCalls * MONETIZATION_SPLITS.EVENT_TICKET.creator),
         },
         {
           source: 'CALENDAR',
           tokensEarned: earnings.tokensEarnedCalendar,
           tokensRefunded: earnings.tokensRefundedCalendar,
-          tokensCreatorShare: Math.floor(earnings.tokensEarnedCalendar * 0.80),
+          tokensCreatorShare: Math.floor(earnings.tokensEarnedCalendar * MONETIZATION_SPLITS.EVENT_TICKET.creator),
         },
         {
           source: 'EVENTS',
           tokensEarned: earnings.tokensEarnedEvents,
           tokensRefunded: earnings.tokensRefundedEvents,
-          tokensCreatorShare: Math.floor(earnings.tokensEarnedEvents * 0.80),
+          tokensCreatorShare: Math.floor(earnings.tokensEarnedEvents * MONETIZATION_SPLITS.EVENT_TICKET.creator),
         },
         {
           source: 'OTHER',
           tokensEarned: earnings.tokensEarnedOther,
           tokensRefunded: 0,
-          tokensCreatorShare: Math.floor(earnings.tokensEarnedOther * 0.65),
+          tokensCreatorShare: Math.floor(earnings.tokensEarnedOther * MONETIZATION_SPLITS.CHAT.creator),
         },
       ],
       
@@ -440,6 +440,7 @@ export async function getAvailableEarningsMonths(
     return [];
   }
 }
+
 
 
 

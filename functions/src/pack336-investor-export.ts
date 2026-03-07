@@ -10,8 +10,8 @@
  */
 
 import * as functions from 'firebase-functions';
-import { db, serverTimestamp } from './init.js';
-import type { InvestorReportData, ExportOptions } from './pack336-types.js';
+import { db, serverTimestamp } from './init';
+import type { InvestorReportData, ExportOptions } from './pack336-types';
 import { HttpsError, auth, onCall, storage } from './runtime';
 
 // ============================================================================
@@ -479,6 +479,7 @@ export const pack336_getInvestorSummary = functions.https.onCall(async (request)
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
 
 
 

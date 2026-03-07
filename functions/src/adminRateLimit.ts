@@ -6,8 +6,8 @@
 
 import { onCall } from 'firebase-functions/v2/https';
 import { HttpsError } from 'firebase-functions/v2/https';
-import { getRateLimitStats, getRateLimitConfig } from './rateLimit.js';
-import { db } from './init.js';
+import { getRateLimitStats, getRateLimitConfig } from './rateLimit';
+import { db } from './init';
 import { admin, auth, functions } from './runtime';
 
 /**
@@ -162,6 +162,7 @@ export const admin_getUserRateLimitViolations = onCall(
     }
   }
 );
+
 
 
 

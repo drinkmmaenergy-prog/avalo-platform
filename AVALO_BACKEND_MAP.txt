@@ -1,0 +1,5 @@
+AVALO BACKEND MAP
+Generated: 2026-03-05 22:43:34
+RepoRoot: C:\a\avalo
+Functions: C:\a\avalo\functions
+

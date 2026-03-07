@@ -11,8 +11,8 @@
  * Only increases likelihood users WANT to pay through psychological engagement
  */
 
-import { db, serverTimestamp, increment, generateId, arrayUnion } from './init.js';
-import { getUserContext } from './chatMonetization.js';
+import { db, serverTimestamp, increment, generateId, arrayUnion } from './init';
+import { getUserContext } from './chatMonetization';
 import { admin } from './runtime';
 
 // ============================================================================
@@ -720,7 +720,7 @@ async function sendNotification(
     const fcmTokens = userSnap.exists ? userSnap.data()!.fcmTokens : [];
     
     if (fcmTokens && fcmTokens.length > 0) {
-      const { admin } = await import('./init.js');
+      const { admin } = await import('./init');
       
       await admin.messaging().sendMulticast({
         tokens: fcmTokens,
@@ -784,6 +784,7 @@ export async function advanceFunnelPhases(): Promise<number> {
   
   return advancedCount;
 }
+
 
 
 

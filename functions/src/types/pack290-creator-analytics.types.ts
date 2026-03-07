@@ -116,7 +116,7 @@ export interface EarningsOverview {
   };
   
   fiat: {
-    ratePerTokenUSD: number;  // Always 0.20
+    ratePerTokenUSD: number;  // Always MONETIZATION_SPLITS.EVENT_TICKET.avalo
     totalEarnedUSD: number;
     currentBalanceUSD: number;
     availableToWithdrawUSD: number;
@@ -372,6 +372,7 @@ export function isSpendingTransaction(type: string): boolean {
   ];
   return spendingTypes.includes(type);
 }
+
 
 
 

@@ -91,7 +91,7 @@ export class MediaIntegrityDetection {
     if (metadataScore > 0.7) artifacts.push('Metadata inconsistencies');
 
     return {
-      isDeepfake: confidence > 0.65,
+      isDeepfake: confidence > MONETIZATION_SPLITS.CHAT.creator,
       confidence,
       method: DetectionMethod.DEEPFAKE_DETECTION,
       artifacts
@@ -121,7 +121,7 @@ export class MediaIntegrityDetection {
     if (backgroundScore > 0.7) artifacts.push('Background audio inconsistencies');
 
     return {
-      isCloned: confidence > 0.65,
+      isCloned: confidence > MONETIZATION_SPLITS.CHAT.creator,
       confidence,
       method: DetectionMethod.VOICE_CLONE_FINGERPRINTING,
       artifacts
@@ -151,7 +151,7 @@ export class MediaIntegrityDetection {
     if (edgeScore > 0.7) artifacts.push('AI generation edge artifacts');
 
     return {
-      isSynthetic: confidence > 0.65,
+      isSynthetic: confidence > MONETIZATION_SPLITS.CHAT.creator,
       confidence,
       method: DetectionMethod.NUDITY_SYNTHESIS_DETECTION,
       artifacts
@@ -199,7 +199,7 @@ export class MediaIntegrityDetection {
     detectionResults: Record<DetectionMethod, number>
   ): MediaIntegrityViolationType[] {
     const violations: MediaIntegrityViolationType[] = [];
-    const threshold = 0.65;
+    const threshold = MONETIZATION_SPLITS.CHAT.creator;
 
     if (detectionResults[DetectionMethod.DEEPFAKE_DETECTION] > threshold) {
       violations.push(MediaIntegrityViolationType.DEEPFAKE_FACE);
@@ -499,6 +499,7 @@ export class MediaIntegrityDetection {
 }
 
 export const mediaIntegrityDetection = new MediaIntegrityDetection();
+
 
 
 

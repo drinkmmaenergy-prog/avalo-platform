@@ -5,9 +5,9 @@
  * to boost visibility for users with high romantic activity.
  */
 
-import { db } from './init.js';
-import { getMomentumBoostMultiplier } from './pack-224-romantic-momentum.js';
-import { getDestinyBoostMultiplier } from './pack-223-destiny-weeks.js';
+import { db } from './init';
+import { getMomentumBoostMultiplier } from './pack-224-romantic-momentum';
+import { getDestinyBoostMultiplier } from './pack-223-destiny-weeks';
 
 // ============================================================================
 // TYPES
@@ -361,6 +361,7 @@ export async function getUserMomentumPercentile(userId: string): Promise<number>
   
   return Math.round((lowerCount / totalCount) * 100);
 }
+
 
 
 

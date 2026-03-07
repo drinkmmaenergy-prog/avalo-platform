@@ -28,8 +28,8 @@ const PRICE_PRESETS = {
 };
 
 // Commission split (MUST NOT be changed)
-const AVALO_COMMISSION = 0.35;
-const CREATOR_SHARE = 0.65;
+const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.avalo;
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator;
 
 // Types
 export interface PriceSuggestion {

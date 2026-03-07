@@ -5,7 +5,7 @@
  * Uses segments to improve profile recommendations and matching
  */
 
-import { db } from './init.js';
+import { db } from './init';
 import type { 
   AudienceSegment,
   BudgetTier,

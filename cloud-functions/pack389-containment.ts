@@ -52,7 +52,7 @@ export const pack389_executeAccountContainment = async (
     }
     
     // 2. Lock account (PACK 300A + 388)
-    if (severity >= 0.80) {
+    if (severity >= MONETIZATION_SPLITS.EVENT_TICKET.creator) {
       await lockAccount(userId, reason);
       actions.push('account_locked');
     }
@@ -70,13 +70,13 @@ export const pack389_executeAccountContainment = async (
     }
     
     // 5. Suspend chat access
-    if (threatType.includes('chat') || severity >= 0.70) {
+    if (threatType.includes('chat') || severity >= MONETIZATION_SPLITS.SUBSCRIPTION.creator) {
       await suspendChat(userId, reason);
       actions.push('chat_suspended');
     }
     
     // 6. Suspend store access
-    if (threatType.includes('store') || severity >= 0.70) {
+    if (threatType.includes('store') || severity >= MONETIZATION_SPLITS.SUBSCRIPTION.creator) {
       await suspendStoreAccess(userId, reason);
       actions.push('store_suspended');
     }
@@ -596,3 +596,4 @@ export const autoContainOnCriticalAlert = functions.firestore
       });
     }
   });
+

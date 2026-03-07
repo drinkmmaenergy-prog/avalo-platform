@@ -600,7 +600,7 @@ function normalCDF(z: number): number {
     d *
     t *
     (0.3193815 +
-      t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+      t * (-MONETIZATION_SPLITS.CHAT.avalo65638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
 
   return z > 0 ? 1 - p : p;
 }
@@ -636,6 +636,7 @@ function determineRecommendation(
  * Export types for use in other modules
  */
 export type { ABTest, ABVariant, ABEvent, ABResults, VariantMetrics };
+
 
 
 

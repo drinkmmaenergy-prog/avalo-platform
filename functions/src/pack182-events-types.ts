@@ -461,8 +461,8 @@ export const EVENT_CONFIG = {
   // Pricing
   minPriceTokens: 0,  // Free events allowed
   maxPriceTokens: 50000,
-  platformFeePercentage: 0.35, // 35%
-  hostEarningsPercentage: 0.65, // 65%
+  platformFeePercentage: MONETIZATION_SPLITS.CHAT.avalo, // 35%
+  hostEarningsPercentage: MONETIZATION_SPLITS.CHAT.creator, // 65%
   
   // Capacity
   minCapacity: 1,
@@ -639,6 +639,7 @@ export function calculateRevenueSplit(priceTokens: number): {
 }
 
 console.log('✅ PACK 182 Event Types loaded - Professional Event Hosting System');
+
 
 
 

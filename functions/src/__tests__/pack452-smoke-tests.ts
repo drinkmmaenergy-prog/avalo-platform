@@ -140,7 +140,7 @@ describe('PACK 452 — Smoke Tests', () => {
       );
       // 11 words / 11 = 1 bucket, 1 token
       expect(result.totalTokensBurned).toBe(1);
-      // Platform gets floor(1 * 0.35) = 0 (rounding)
+      // Platform gets floor(1 * MONETIZATION_SPLITS.CHAT.avalo) = 0 (rounding)
       // Earner gets 1 - 0 = 1
       expect(result.earnerReceives + result.platformReceives).toBe(result.totalTokensBurned);
     });
@@ -156,7 +156,7 @@ describe('PACK 452 — Smoke Tests', () => {
       );
       // 11 words / 11 = 1 bucket, 1 * 10 = 10 tokens
       expect(result.totalTokensBurned).toBe(10);
-      expect(result.platformReceives).toBe(Math.floor(10 * 0.35)); // 3
+      expect(result.platformReceives).toBe(Math.floor(10 * MONETIZATION_SPLITS.CHAT.avalo)); // 3
       expect(result.earnerReceives).toBe(10 - 3); // 7
     });
   });
@@ -466,6 +466,7 @@ describe('PACK 452 — Smoke Tests', () => {
     });
   });
 });
+
 
 
 

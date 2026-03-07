@@ -36,14 +36,14 @@ const SCALING_THRESHOLDS = {
     maxInstances: 20,
   },
   AI: {
-    scaleUpAt: 0.80,
-    scaleDownAt: 0.30,
+    scaleUpAt: MONETIZATION_SPLITS.EVENT_TICKET.creator,
+    scaleDownAt: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
     minInstances: 3,
     maxInstances: 30,
   },
   FEED: {
-    scaleUpAt: 0.70,
-    scaleDownAt: 0.20,
+    scaleUpAt: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
+    scaleDownAt: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
     minInstances: 2,
     maxInstances: 15,
   },
@@ -55,12 +55,12 @@ const SCALING_THRESHOLDS = {
   },
   PAYMENTS: {
     scaleUpAt: 0.75,
-    scaleDownAt: 0.30,
+    scaleDownAt: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
     minInstances: 2,
     maxInstances: 10,
   },
   MEDIA: {
-    scaleUpAt: 0.70,
+    scaleUpAt: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
     scaleDownAt: 0.25,
     minInstances: 2,
     maxInstances: 15,
@@ -347,6 +347,7 @@ export const autoScaleSystem = onSchedule("every 5 minutes", async (event) => {
 
     return;
   });
+
 
 
 

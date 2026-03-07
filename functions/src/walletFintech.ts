@@ -281,7 +281,7 @@ const TOKEN_PACKS: TokenPack[] = [
     bonus: 0,
     totalTokens: 100,
     popular: false,
-    pricePerToken: 0.30,
+    pricePerToken: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
   },
   {
     packId: "value",
@@ -316,7 +316,7 @@ const TOKEN_PACKS: TokenPack[] = [
     bonus: 0,
     totalTokens: 5000,
     popular: false,
-    pricePerToken: 0.20,
+    pricePerToken: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
     savings: 33.3,
   },
 ];
@@ -761,17 +761,17 @@ export const generateSettlementReport = onCall(
 
       // Estimate platform fees (would be tracked separately in production)
       if (tx.type === "product_sale") {
-        platformFees += Math.floor(tx.amount / 0.65 * 0.35); // Reverse calc
+        platformFees += Math.floor(tx.amount / MONETIZATION_SPLITS.CHAT.creator * MONETIZATION_SPLITS.CHAT.avalo); // Reverse calc
         breakdown.products += tx.amount;
       } else if (tx.type === "message") {
-        platformFees += Math.floor(tx.amount / 0.65 * 0.35);
+        platformFees += Math.floor(tx.amount / MONETIZATION_SPLITS.CHAT.creator * MONETIZATION_SPLITS.CHAT.avalo);
         breakdown.messages += tx.amount;
       } else if (tx.type === "tip" || tx.type === "live_tip") {
-        platformFees += Math.floor(tx.amount / 0.80 * 0.20);
+        platformFees += Math.floor(tx.amount / MONETIZATION_SPLITS.EVENT_TICKET.creator * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
         if (tx.type === "live_tip") breakdown.live += tx.amount;
         else breakdown.tips += tx.amount;
       } else if (tx.type === "calendar") {
-        platformFees += Math.floor(tx.amount / 0.80 * 0.20);
+        platformFees += Math.floor(tx.amount / MONETIZATION_SPLITS.EVENT_TICKET.creator * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
         breakdown.calendar += tx.amount;
       }
     });
@@ -900,6 +900,7 @@ export const getCashbackStatus = onCall(
 );
 
 logger.info("✅ Wallet 2.0 + Fintech module loaded successfully");
+
 
 
 

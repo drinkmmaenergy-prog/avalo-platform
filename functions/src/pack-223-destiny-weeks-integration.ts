@@ -5,7 +5,7 @@
  * can call to track Destiny actions without needing to know implementation details.
  */
 
-import { trackDestinyAction } from './pack-223-destiny-weeks.js';
+import { trackDestinyAction } from './pack-223-destiny-weeks';
 
 // ============================================================================
 // CHAT INTEGRATION
@@ -281,6 +281,7 @@ export async function checkCallMilestones(
     }
   }
 }
+
 
 
 

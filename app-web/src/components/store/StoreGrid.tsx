@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Store Grid Component
  * Placeholder for digital product store
  */
-
-'use client';
-
 export default function StoreGrid() {
   return (
     <div className="space-y-6">
@@ -23,4 +22,5 @@ export default function StoreGrid() {
     </div>
   );
 }
+
 

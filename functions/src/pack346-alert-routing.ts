@@ -4,7 +4,7 @@
  */
 
 import * as functions from "firebase-functions";
-import { db, serverTimestamp } from "./init.js";
+import { db, serverTimestamp } from "./init";
 import { Alert, AlertType, AlertSeverity, AlertChannel } from "./pack346-types";
 import { HttpsError, admin, auth, onCall, logger, onSchedule } from './runtime';
 

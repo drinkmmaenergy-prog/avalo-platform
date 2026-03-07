@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * Post Scheduler Component
  * Placeholder for content scheduling calendar
  */
-
-'use client';
-
 export default function PostScheduler() {
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -15,4 +14,5 @@ export default function PostScheduler() {
     </div>
   );
 }
+
 

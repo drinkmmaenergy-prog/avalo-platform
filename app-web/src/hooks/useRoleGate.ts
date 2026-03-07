@@ -1,3 +1,5 @@
+'use client';
+
 "use client";
 
 /**
@@ -6,9 +8,6 @@
  * Enforces role-based access (user / creator / admin) for web surfaces.
  * NO business logic — just checks user role from profile.
  */
-
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -165,5 +164,6 @@ export function withRoleGate<P extends object>(
     };
   };
 }
+
 
 

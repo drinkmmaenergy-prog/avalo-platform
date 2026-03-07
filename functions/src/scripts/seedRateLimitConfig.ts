@@ -5,7 +5,7 @@
  * Run this once to set up default rate limits
  */
 
-import { db, serverTimestamp } from '../init.js';
+import { db, serverTimestamp } from '../init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { admin } from '../runtime';
 

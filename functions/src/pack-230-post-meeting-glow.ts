@@ -14,7 +14,7 @@
  * - Integration with existing momentum, journeys, memories systems
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import type { Timestamp } from 'firebase-admin/firestore';
 import { admin } from './runtime';
 
@@ -469,7 +469,7 @@ async function applyGlowEffects(glowState: PostMeetingGlowState): Promise<void> 
   
   // Apply romantic momentum bonus
   try {
-    const { trackMomentumAction } = await import('./pack-224-romantic-momentum.js');
+    const { trackMomentumAction } = await import('./pack-224-romantic-momentum');
     
     await trackMomentumAction(userA, 'meeting_verified', {
       bookingId: glowState.bookingId,
@@ -492,7 +492,7 @@ async function applyGlowEffects(glowState: PostMeetingGlowState): Promise<void> 
   // Create shared memory moment
   if (glowState.chatId) {
     try {
-      const { detectFirstMeeting, detectMeetingChemistry } = await import('./pack-229-shared-memories.js');
+      const { detectFirstMeeting, detectMeetingChemistry } = await import('./pack-229-shared-memories');
       
       // Create first meeting moment
       await detectFirstMeeting(
@@ -630,7 +630,7 @@ async function handleNegativeOutcome(
   if (vibe === 'not_for_me' || (vibe === 'ok_neutral' && meetAgain === 'no')) {
     try {
       // Adjust romantic momentum down slightly
-      const { applyMomentumPenalty } = await import('./pack-224-romantic-momentum.js');
+      const { applyMomentumPenalty } = await import('./pack-224-romantic-momentum');
       await applyMomentumPenalty(userId, 'meeting_no_show', {
         bookingId,
         reason: 'negative_feedback'
@@ -649,7 +649,7 @@ async function handleNegativeOutcome(
           
           // If there was significant interaction, trigger recovery
           if (messageCount > 20) {
-            const { detectBreakupState } = await import('./pack-222-breakup-recovery.js');
+            const { detectBreakupState } = await import('./pack-222-breakup-recovery');
             await detectBreakupState(
               userId,
               partnerId,
@@ -819,7 +819,7 @@ async function processVoluntaryRefund(
     
     // Boost romantic momentum (emotional reasons)
     if (refundPercent >= 50) {
-      const { trackMomentumAction } = await import('./pack-224-romantic-momentum.js');
+      const { trackMomentumAction } = await import('./pack-224-romantic-momentum');
       await trackMomentumAction(earnerId, 'destiny_reward_claimed', {
         reason: 'voluntary_refund_kindness'
       });
@@ -987,6 +987,7 @@ export async function expireOldGlowStates(): Promise<void> {
   
   await batch.commit();
 }
+
 
 
 

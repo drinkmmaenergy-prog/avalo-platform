@@ -13,7 +13,7 @@
  * - Safety-first (respects blocks, safety reports, breakup recovery)
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import type { Timestamp } from 'firebase-admin/firestore';
 import { admin, timestamp } from './runtime';
 
@@ -1146,7 +1146,7 @@ export async function resumeMemoryUpdates(chatId: string): Promise<void> {
  */
 export async function trackMomentumFromMemory(userId: string, momentType: MomentType): Promise<void> {
   try {
-    const { trackMomentumAction } = await import('./pack-224-romantic-momentum.js');
+    const { trackMomentumAction } = await import('./pack-224-romantic-momentum');
     
     // Map moment types to momentum actions
     const momentumActionMap: Partial<Record<MomentType, any>> = {
@@ -1219,6 +1219,7 @@ export async function createDailyMemoryAnalytics(): Promise<void> {
     createdAt: serverTimestamp()
   });
 }
+
 
 
 

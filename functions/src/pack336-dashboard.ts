@@ -19,8 +19,8 @@
  */
 
 import * as functions from 'firebase-functions';
-import { db } from './init.js';
-import type { KpiDashboardData } from './pack336-types.js';
+import { db } from './init';
+import type { KpiDashboardData } from './pack336-types';
 import { HttpsError, admin, auth, onCall } from './runtime';
 
 // ============================================================================
@@ -650,6 +650,7 @@ export const pack336_getPlatformHealth = functions.https.onCall(async (request) 
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
 
 
 

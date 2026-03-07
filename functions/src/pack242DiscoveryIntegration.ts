@@ -3,8 +3,8 @@
  * Adjusts profile visibility based on price tiers to protect conversion rates
  */
 
-import { db } from './init.js';
-import type { Pack242DiscoveryAdjustment } from './pack242DynamicChatPricing.js';
+import { db } from './init';
+import type { Pack242DiscoveryAdjustment } from './pack242DynamicChatPricing';
 
 // ============================================================================
 // USER BUDGET CLASSIFICATION
@@ -251,6 +251,7 @@ export async function getBudgetDistribution(): Promise<{
     total: activeUsers.size
   };
 }
+
 
 
 

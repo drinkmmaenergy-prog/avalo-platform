@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Real Payout Preview Component
  *
@@ -14,9 +16,6 @@
  *
  * Example: 500 tokens → $15.00 USD (500 * 0.03)
  */
-
-'use client';
-
 import React, { useState, useMemo } from 'react';
 import {
   PAYOUT_PER_TOKEN_USD,
@@ -166,4 +165,5 @@ export default function PayoutPreview({
     </div>
   );
 }
+
 

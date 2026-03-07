@@ -182,13 +182,13 @@ class RevenueForecastEngine {
       .get();
 
     if (!snapshot.exists) {
-      return { churnRate: 0.05, retentionRate: 0.65 }; // Defaults
+      return { churnRate: 0.05, retentionRate: MONETIZATION_SPLITS.CHAT.creator }; // Defaults
     }
 
     const data = snapshot.data()!;
     return {
       churnRate: data.monthlyChurnRate || 0.05,
-      retentionRate: data.day30RetentionRate || 0.65,
+      retentionRate: data.day30RetentionRate || MONETIZATION_SPLITS.CHAT.creator,
     };
   }
 
@@ -570,6 +570,7 @@ export const getLatestForecast = onCall(
       throw new HttpsError('internal', 'Failed to fetch forecast');
     }
   });
+
 
 
 

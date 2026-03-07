@@ -13,7 +13,7 @@
  * - Safety overrides for immediate breakup
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import type { Timestamp } from 'firebase-admin/firestore';
 import type {
   BreakupRecoveryState,
@@ -26,8 +26,8 @@ import type {
   BreakupTriggerReason,
   RestartStage,
   BreakupRecoveryStatus
-} from './pack237-breakup-recovery-types.js';
-import { CLOSING_NOTE_MESSAGES, RECOVERY_STAGE_UNLOCKS } from './pack237-breakup-recovery-types.js';
+} from './pack237-breakup-recovery-types';
+import { CLOSING_NOTE_MESSAGES, RECOVERY_STAGE_UNLOCKS } from './pack237-breakup-recovery-types';
 import {
   sendEndConnectionNotification,
   sendStageUnlockNotification,
@@ -35,7 +35,7 @@ import {
   createRecoveryAnalytics,
   completeRecoveryAnalytics,
   generateRestartPathOffers
-} from './pack237-breakup-recovery-helpers.js';
+} from './pack237-breakup-recovery-helpers';
 import { admin } from './runtime';
 
 // ============================================================================
@@ -705,6 +705,7 @@ export async function getRecoveryFeed(
 }
 
 // Continued in next part...
+
 
 
 

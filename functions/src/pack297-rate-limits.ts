@@ -5,7 +5,7 @@
  * NO ECONOMIC CHANGES - only protects against abuse
  */
 
-import { RateLimitRuleConfig } from './rateLimit.js';
+import { RateLimitRuleConfig } from './rateLimit';
 import { auth } from './runtime';
 
 /**
@@ -184,6 +184,7 @@ export function getRateLimitConfig(action: string): RateLimitRuleConfig | undefi
 export function requiresRateLimit(action: string): boolean {
   return action in PACK_297_RATE_LIMITS;
 }
+
 
 
 

@@ -7,7 +7,7 @@
  * IMPORTANT: All notifications are generic and safe (no explicit content).
  */
 
-import { db, serverTimestamp, generateId } from './init.js';
+import { db, serverTimestamp, generateId } from './init';
 import { Timestamp, admin } from './runtime';
 
 // ============================================================================

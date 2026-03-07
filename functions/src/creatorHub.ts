@@ -213,7 +213,7 @@ const LEVEL_REQUIREMENTS = {
 const LEVEL_BENEFITS = {
   [CreatorLevel.BRONZE]: {
     wordRatio: 11,
-    commissionRate: 0.65,
+    commissionRate: MONETIZATION_SPLITS.CHAT.creator,
     maxProducts: 5,
     features: ["basic_analytics", "basic_templates"],
   },
@@ -225,7 +225,7 @@ const LEVEL_BENEFITS = {
   },
   [CreatorLevel.GOLD]: {
     wordRatio: 9,
-    commissionRate: 0.70,
+    commissionRate: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
     maxProducts: 50,
     features: ["premium_analytics", "ai_pricing", "vip_support", "priority_listing"],
   },
@@ -983,6 +983,7 @@ async function createDefaultTemplates(creatorId: string): Promise<MessageTemplat
 }
 
 logger.info("✅ Creator Hub module loaded successfully");
+
 
 
 

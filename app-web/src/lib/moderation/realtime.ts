@@ -1,9 +1,8 @@
+'use client';
+
 /**
  * Moderation Realtime — Hooks for real-time incident/appeal monitoring.
  */
-
-'use client';
-
 import { useState, useEffect } from 'react';
 import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { requireDb } from '@/lib/firebase';
@@ -181,3 +180,4 @@ export function useAlertCounts() {
     totalAlerts: openIncidents + pendingAppeals,
   };
 }
+

@@ -12,7 +12,7 @@
  * - System is gender-neutral
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 import { Timestamp } from './runtime';
 
 // Simple error class for compatibility

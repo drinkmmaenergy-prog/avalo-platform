@@ -25,7 +25,7 @@ describe("Risk Engine - Real Tests", () => {
   beforeEach(async () => {
     // Only clear risk profiles to avoid state contamination
     // Other collections use unique IDs per test so don't need clearing
-    const profiles = await db.collection("userRiskProfiles").limit(500).get();
+    const profiles = await db.collection("userRiskProfiles").get();
     const batch = db.batch();
     profiles.docs.forEach((doc: any) => batch.delete(doc.ref));
     await batch.commit();
@@ -514,3 +514,5 @@ describe("Risk Engine - Real Tests", () => {
 });
 
 
+
+import { getDb, setupTestEnvironment, testData, createTestUser, createTestTransaction, now, minutesAgo, hoursAgo, daysAgo } from '../src/testUtils'

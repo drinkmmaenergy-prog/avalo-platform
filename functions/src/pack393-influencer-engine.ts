@@ -345,13 +345,13 @@ export const pack393_checkInfluencerFraud = onSchedule("every 24 hours", async (
       // Check for device fingerprint issues (would integrate with PACK 302)
       const suspiciousDevices = await countSuspiciousDevices(partnerId);
       if (suspiciousDevices > 10) {
-        fraudScore += 0.30;
+        fraudScore += MONETIZATION_SPLITS.SUBSCRIPTION.avalo;
       }
       
       // Spike pattern detection
       const hasSpike = await detectInstallSpike(partnerId);
       if (hasSpike) {
-        fraudScore += 0.20;
+        fraudScore += MONETIZATION_SPLITS.EVENT_TICKET.avalo;
       }
       
       // Update fraud score
@@ -522,6 +522,7 @@ export const pack393_getInfluencerDashboard = functions.https.onCall(async (requ
     fraudScore: partner?.fraudScore || 0
   };
 });
+
 
 
 

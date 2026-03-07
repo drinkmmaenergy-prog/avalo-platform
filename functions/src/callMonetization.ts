@@ -12,14 +12,14 @@
  * to maintain consistency across chat and call features.
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
-import { getUserContext, ChatParticipantContext } from './chatMonetization.js';
+import { db, serverTimestamp, increment, generateId } from './init';
+import { getUserContext, ChatParticipantContext } from './chatMonetization';
 // Trust Engine Integration (Phase 8)
-import { recordRiskEvent, evaluateUserRisk } from './trustEngine.js';
+import { recordRiskEvent, evaluateUserRisk } from './trustEngine';
 // Account Lifecycle Integration (Phase 9)
-import { isAccountActive } from './accountLifecycle.js';
+import { isAccountActive } from './accountLifecycle';
 // PACK 220: Fan & Kiss Economy
-import { trackTokenSpend } from './fanKissEconomy.js';
+import { trackTokenSpend } from './fanKissEconomy';
 import { Timestamp, timestamp } from './runtime';
 
 // Simple error class for compatibility
@@ -75,14 +75,14 @@ export interface CallRoles {
 const CALL_CONFIG = {
   VOICE: {
     BASE_COST: 10,                    // Base cost for standard users
-    VIP_DISCOUNT: 0.30,               // 30% discount for VIP
+    VIP_DISCOUNT: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,               // 30% discount for VIP
     ROYAL_DISCOUNT: 0.50,             // 50% discount for Royal
     AVALO_CUT_PERCENT: 20,
     EARNER_CUT_PERCENT: 80,
   },
   VIDEO: {
     BASE_COST: 20,                    // Base cost for standard users
-    VIP_DISCOUNT: 0.30,               // 30% discount for VIP
+    VIP_DISCOUNT: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,               // 30% discount for VIP
     ROYAL_DISCOUNT: 0.50,             // 50% discount for Royal
     AVALO_CUT_PERCENT: 20,
     EARNER_CUT_PERCENT: 80,
@@ -414,7 +414,7 @@ export async function updateCallActivity(callId: string): Promise<void> {
  *
  * - Calculates duration in minutes (ceiling)
  * - Deducts tokens from payer
- * - Applies 80/20 split to earner/Avalo
+ * - Applies 65/35 split to earner/Avalo
  *
  * Phase 8: Records risk event and evaluates user risk
  */
@@ -699,6 +699,9 @@ export async function checkCallBalance(params: {
     pricePerMinute
   };
 }
+
+
+
 
 
 

@@ -42,10 +42,10 @@ const db = getFirestore();
 
 // Revenue splits
 const REVENUE_SPLITS = {
-  chatMessages: { creator: 0.65, platform: 0.35 },
-  gatedContent: { creator: 0.80, platform: 0.20 },
+  chatMessages: { creator: MONETIZATION_SPLITS.CHAT.creator, platform: MONETIZATION_SPLITS.CHAT.avalo },
+  gatedContent: { creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, platform: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
   tips: { creator: 0.90, platform: 0.10 },
-  subscriptions: { creator: 0.70, platform: 0.30 },
+  subscriptions: { creator: MONETIZATION_SPLITS.SUBSCRIPTION.creator, platform: MONETIZATION_SPLITS.SUBSCRIPTION.avalo },
 };
 
 // Creator minimums
@@ -1003,6 +1003,7 @@ export default {
   getTopFansV1,
   processReferralReward,
 };
+
 
 
 

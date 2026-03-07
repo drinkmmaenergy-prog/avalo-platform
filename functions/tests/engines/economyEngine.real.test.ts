@@ -18,7 +18,7 @@ describe("Economy Engine - Real Tests", () => {
     // Clear collections before each test
     const collections = ["transactions", "economySnapshots", "ledger", "users", "escrow"];
     for (const collection of collections) {
-      const snapshot = await db.collection(collection).limit(500).get();
+      const snapshot = await db.collection(collection).get();
       const batch = db.batch();
       snapshot.docs.forEach((doc: any) => batch.delete(doc.ref));
       await batch.commit();
@@ -28,7 +28,7 @@ describe("Economy Engine - Real Tests", () => {
   describe("Revenue Split Calculations", () => {
     it("should calculate 35/65 split for chat transactions", () => {
       const chatAmount = 1000;
-      const platformFee = Math.floor(chatAmount * 0.35);
+      const platformFee = Math.floor(chatAmount * MONETIZATION_SPLITS.CHAT.avalo);
       const creatorReceives = chatAmount - platformFee;
 
       expect(platformFee).toBe(350); // 35%
@@ -38,7 +38,7 @@ describe("Economy Engine - Real Tests", () => {
 
     it("should calculate 20/80 split for tip transactions", () => {
       const tipAmount = 500;
-      const platformFee = Math.floor(tipAmount * 0.20);
+      const platformFee = Math.floor(tipAmount * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
       const creatorReceives = tipAmount - platformFee;
 
       expect(platformFee).toBe(100); // 20%
@@ -48,7 +48,7 @@ describe("Economy Engine - Real Tests", () => {
 
     it("should calculate 20/80 split for calendar bookings", () => {
       const bookingAmount = 1000;
-      const platformFee = Math.floor(bookingAmount * 0.20);
+      const platformFee = Math.floor(bookingAmount * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
       const creatorReceives = bookingAmount - platformFee;
 
       expect(platformFee).toBe(200); // 20%
@@ -58,7 +58,7 @@ describe("Economy Engine - Real Tests", () => {
 
     it("should calculate 30/70 split for live 1:1 sessions", () => {
       const liveAmount = 1000;
-      const platformFee = Math.floor(liveAmount * 0.30);
+      const platformFee = Math.floor(liveAmount * MONETIZATION_SPLITS.SUBSCRIPTION.avalo);
       const creatorReceives = liveAmount - platformFee;
 
       expect(platformFee).toBe(300); // 30%
@@ -68,7 +68,7 @@ describe("Economy Engine - Real Tests", () => {
 
     it("should calculate 20/80 split for live tips", () => {
       const liveTipAmount = 200;
-      const platformFee = Math.floor(liveTipAmount * 0.20);
+      const platformFee = Math.floor(liveTipAmount * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
       const creatorReceives = liveTipAmount - platformFee;
 
       expect(platformFee).toBe(40); // 20%
@@ -78,7 +78,7 @@ describe("Economy Engine - Real Tests", () => {
 
     it("should handle high-value Royal booking (3000 tokens)", () => {
       const royalBooking = 3000;
-      const platformFee = Math.floor(royalBooking * 0.20); // Calendar uses 20/80
+      const platformFee = Math.floor(royalBooking * MONETIZATION_SPLITS.EVENT_TICKET.avalo); // Calendar uses 20/80
       const creatorReceives = royalBooking - platformFee;
 
       expect(platformFee).toBe(600); // 20%
@@ -176,11 +176,11 @@ describe("Economy Engine - Real Tests", () => {
     function calculatePlatformFee(amount: number, type: string): number {
       const absAmount = Math.abs(amount);
 
-      if (type.includes("chat")) return Math.floor(absAmount * 0.35);
-      if (type.includes("tip") && !type.includes("live")) return Math.floor(absAmount * 0.20);
-      if (type.includes("calendar")) return Math.floor(absAmount * 0.20);
-      if (type.includes("live_1on1")) return Math.floor(absAmount * 0.30);
-      if (type.includes("live_tip")) return Math.floor(absAmount * 0.20);
+      if (type.includes("chat")) return Math.floor(absAmount * MONETIZATION_SPLITS.CHAT.avalo);
+      if (type.includes("tip") && !type.includes("live")) return Math.floor(absAmount * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
+      if (type.includes("calendar")) return Math.floor(absAmount * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
+      if (type.includes("live_1on1")) return Math.floor(absAmount * MONETIZATION_SPLITS.SUBSCRIPTION.avalo);
+      if (type.includes("live_tip")) return Math.floor(absAmount * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
 
       return 0; // No fee for other types
     }
@@ -303,7 +303,7 @@ describe("Economy Engine - Real Tests", () => {
       await createTestUser(creatorId, { tokens: 0 });
 
       const chatAmount = 100;
-      const platformFee = Math.floor(chatAmount * 0.35); // 35
+      const platformFee = Math.floor(chatAmount * MONETIZATION_SPLITS.CHAT.avalo); // 35
       const creatorReceives = chatAmount - platformFee; // 65
 
       // Sender spends 100
@@ -364,7 +364,7 @@ describe("Economy Engine - Real Tests", () => {
     it("should release escrow after verification", async () => {
       const escrowId = "escrow_123";
       const amount = 3000;
-      const platformFee = Math.floor(amount * 0.20); // 600
+      const platformFee = Math.floor(amount * MONETIZATION_SPLITS.EVENT_TICKET.avalo); // 600
       const creatorReceives = amount - platformFee; // 2400
 
       await db.collection("escrow").doc(escrowId).set({
@@ -445,10 +445,10 @@ describe("Economy Engine - Real Tests", () => {
       expect(liveRevenue).toBe(300);
 
       // Calculate platform fees
-      const chatFees = Math.floor(chatRevenue * 0.35);
-      const tipsFees = Math.floor(tipsRevenue * 0.20);
-      const calendarFees = Math.floor(calendarRevenue * 0.20);
-      const liveFees = Math.floor(liveRevenue * 0.30);
+      const chatFees = Math.floor(chatRevenue * MONETIZATION_SPLITS.CHAT.avalo);
+      const tipsFees = Math.floor(tipsRevenue * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
+      const calendarFees = Math.floor(calendarRevenue * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
+      const liveFees = Math.floor(liveRevenue * MONETIZATION_SPLITS.SUBSCRIPTION.avalo);
 
       expect(chatFees).toBe(350);
       expect(tipsFees).toBe(100);
@@ -489,7 +489,7 @@ describe("Economy Engine - Real Tests", () => {
 
       expect(txAmount).toBe(15000);
 
-      const platformFee = Math.floor(largeAmount * 0.20);
+      const platformFee = Math.floor(largeAmount * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
       expect(platformFee).toBe(3000);
     });
 
@@ -509,4 +509,7 @@ describe("Economy Engine - Real Tests", () => {
   });
 });
 
+
+
+import { getDb, setupTestEnvironment, testData, createTestUser, createTestTransaction, now, minutesAgo, hoursAgo, daysAgo } from '../src/testUtils'
 

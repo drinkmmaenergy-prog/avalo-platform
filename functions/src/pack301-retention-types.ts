@@ -173,7 +173,7 @@ export interface RetentionMetrics {
 export interface ChurnRiskFactors {
   noChatsIn5Days: boolean;       // +0.15
   noSwipesIn72h: boolean;        // +0.10
-  noAppOpenRecent: boolean;      // +0.20
+  noAppOpenRecent: boolean;      // +MONETIZATION_SPLITS.EVENT_TICKET.avalo
   profileNotUpdated30d: boolean; // +0.05
   noLikesIn72h: boolean;         // +0.10
   noPhotosAdded: boolean;        // +0.15
@@ -360,6 +360,7 @@ export const WIN_BACK_MESSAGES: WinBackMessage[] = [
     priority: 'HIGH',
   },
 ];
+
 
 
 

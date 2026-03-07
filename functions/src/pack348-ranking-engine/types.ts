@@ -58,7 +58,7 @@ export interface SafetyPenaltyConfig {
   refundRatioThreshold: number;        // e.g., 0.15 = 15%
   refundRatioPenalty: number;          // Score multiplier (0-1)
   
-  mismatchRateThreshold: number;       // e.g., 0.20 = 20%
+  mismatchRateThreshold: number;       // e.g., MONETIZATION_SPLITS.EVENT_TICKET.avalo = 20%
   mismatchRatePenalty: number;
   
   panicUsageThreshold: number;         // Number of panic events
@@ -201,17 +201,17 @@ export interface RankingMetrics {
 
 export const DEFAULT_RANKING_CONFIG: RankingEngineConfig = {
   discovery: {
-    distanceWeight: 0.30,
+    distanceWeight: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
     activityWeight: 0.25,
-    ratingWeight: 0.20,
+    ratingWeight: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
     earningsWeight: 0.15,
     refundPenaltyWeight: 0.05,
     mismatchPenaltyWeight: 0.05,
   },
   
   feed: {
-    recencyWeight: 0.35,
-    engagementWeight: 0.30,
+    recencyWeight: MONETIZATION_SPLITS.CHAT.avalo,
+    engagementWeight: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
     viralWeight: 0.25,
     boostWeight: 0.10,
   },
@@ -219,7 +219,7 @@ export const DEFAULT_RANKING_CONFIG: RankingEngineConfig = {
   swipe: {
     attractivenessWeight: 0.40,
     responseTimeWeight: 0.25,
-    activityWeight: 0.20,
+    activityWeight: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
     reportPenaltyWeight: 0.15,
   },
   
@@ -238,16 +238,16 @@ export const DEFAULT_RANKING_CONFIG: RankingEngineConfig = {
 
 export const DEFAULT_SAFETY_PENALTIES: SafetyPenaltyConfig = {
   refundRatioThreshold: 0.15,
-  refundRatioPenalty: 0.30,
+  refundRatioPenalty: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
   
-  mismatchRateThreshold: 0.20,
+  mismatchRateThreshold: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   mismatchRatePenalty: 0.25,
   
   panicUsageThreshold: 2,
   panicUsagePenalty: 0.50,
   
   blockingRateThreshold: 0.10,
-  blockingRatePenalty: 0.20,
+  blockingRatePenalty: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   
   reportFrequencyThreshold: 5,
   reportFrequencyPenalty: 0.40,
@@ -259,7 +259,7 @@ export const DEFAULT_TIER_ROUTING: TierRoutingConfig = {
   royal: {
     discoveryPriority: false,          // ❌ No free discovery cheating
     paidSurfacesPriority: true,        // ✅ Only paid surfaces
-    boostPriceMultiplier: 0.80,        // 20% discount
+    boostPriceMultiplier: MONETIZATION_SPLITS.EVENT_TICKET.creator,        // 20% discount
     aiSearchPriority: false,           // ❌ Must earn AI visibility
   },
   
@@ -274,6 +274,7 @@ export const DEFAULT_TIER_ROUTING: TierRoutingConfig = {
     noArtificialBoost: true,           // ✅ Pure meritocracy
   },
 };
+
 
 
 

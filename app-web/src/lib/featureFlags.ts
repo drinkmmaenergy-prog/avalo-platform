@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * PACK 416 — Web Feature Flags Integration
  * 
@@ -8,9 +10,6 @@
  * - Client-side React hooks
  * - Edge runtime compatibility
  */
-
-'use client';
-
 import { useState, useEffect, useCallback } from 'react';
 import { 
   collection, 
@@ -265,4 +264,5 @@ function getUserContext(): FeatureFlagUserContext {
 export function clearFeatureFlagsCache(): void {
   cachedFlags.clear();
 }
+
 

@@ -53,8 +53,8 @@ export default function CreatorDropModal({
   const timeLeft = formatTimeRemaining(drop.expiresAt);
 
   // Calculate earnings breakdown
-  const creatorEarns = Math.floor(finalPrice * 0.65);
-  const avaloFee = Math.floor(finalPrice * 0.35);
+  const creatorEarns = Math.floor(finalPrice * MONETIZATION_SPLITS.CHAT.creator);
+  const avaloFee = Math.floor(finalPrice * MONETIZATION_SPLITS.CHAT.avalo);
 
   const handlePurchase = async () => {
     if (!drop || !viewerId) return;
@@ -529,3 +529,4 @@ const styles = StyleSheet.create({
     height: 20,
   },
 });
+

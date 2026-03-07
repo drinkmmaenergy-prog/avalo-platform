@@ -4,14 +4,14 @@
  * Support functions for notifications, analytics, monetization, and safety.
  */
 
-import { db, serverTimestamp, generateId, increment } from './init.js';
+import { db, serverTimestamp, generateId, increment } from './init';
 import type {
   RecoveryFeedItem,
   RestartPathOffer,
   BreakupRecoveryAnalytics,
   BreakupSafetyIncident,
   RestartStage
-} from './pack237-breakup-recovery-types.js';
+} from './pack237-breakup-recovery-types';
 import { functions } from './runtime';
 
 // ============================================================================
@@ -611,6 +611,7 @@ export async function generateAffirmations(
     });
   }
 }
+
 
 
 

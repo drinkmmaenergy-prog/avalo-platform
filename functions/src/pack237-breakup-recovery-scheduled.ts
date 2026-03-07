@@ -5,8 +5,8 @@
  */
 
 import * as functions from 'firebase-functions';
-import { progressRestartStages } from './pack237-breakup-recovery-engine.js';
-import { db } from './init.js';
+import { progressRestartStages } from './pack237-breakup-recovery-engine';
+import { db } from './init';
 import { onSchedule } from './runtime';
 
 /**
@@ -199,6 +199,7 @@ function generateFeedItemForStage(recovery: any): any {
   // Return random affirmation
   return affirmations[Math.floor(Math.random() * affirmations.length)];
 }
+
 
 
 

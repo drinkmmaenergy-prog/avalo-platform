@@ -14,7 +14,7 @@
 ;
 ;
 import * as admin from "firebase-admin";
-import { AICompanion } from "./types.js";
+import { AICompanion } from "./types";
 import { Timestamp, functions } from './runtime';
 
 // Initialize Firebase Admin if not already initialized
@@ -145,7 +145,7 @@ function generateAICompanion(
   let tierAccess: ("Free" | "Plus" | "Intimate" | "Creator")[];
   let nsfwAvailable = false;
 
-  if (tierRoll < 0.20) {
+  if (tierRoll < MONETIZATION_SPLITS.EVENT_TICKET.avalo) {
     // Free tier - SFW only
     tierAccess = ["Free"];
     nsfwAvailable = false;
@@ -315,6 +315,8 @@ if (require.main === module) {
       process.exit(1);
     });
 }
+
+
 
 
 

@@ -20,8 +20,8 @@ export const RESPONSE_PRICING = {
 export type ResponseType = keyof typeof RESPONSE_PRICING;
 
 // Revenue split: 65% to creator, 35% to Avalo
-const CREATOR_SHARE = 0.65;
-const AVALO_SHARE = 0.35;
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator;
+const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo;
 
 // VIP discount: 5% off, minimum 1 token, NEVER free
 const VIP_DISCOUNT = 0.05;

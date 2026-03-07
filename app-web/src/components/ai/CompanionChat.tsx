@@ -1,10 +1,9 @@
+'use client';
+
 /**
  * AI Companion Chat Component
  * Placeholder for AI conversation interface
  */
-
-'use client';
-
 export default function CompanionChat() {
   return (
     <div className="flex flex-col h-full bg-gradient-to-b from-indigo-600 to-purple-600 text-white rounded-lg">
@@ -20,4 +19,5 @@ export default function CompanionChat() {
     </div>
   );
 }
+
 

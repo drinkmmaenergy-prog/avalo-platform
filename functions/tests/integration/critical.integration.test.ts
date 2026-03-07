@@ -102,7 +102,7 @@ describe("Critical Integration: Chat Monetization Flow", () => {
       currentEscrow -= messagePrice;
 
       // Calculate 35/65 split
-      const platformFee = Math.floor(messagePrice * 0.35); // 3.5 -> 3
+      const platformFee = Math.floor(messagePrice * MONETIZATION_SPLITS.CHAT.avalo); // 3.5 -> 3
       const creatorEarning = messagePrice - platformFee; // 7
 
       platformFeesAccumulated += platformFee;
@@ -288,7 +288,7 @@ describe("Critical Integration: Chat Monetization Flow", () => {
     console.log(`\nBooking created: ${bookingAmount} tokens held in escrow`);
 
     // ===== STEP 2: VERIFY BOOKING (Meeting completed) =====
-    const platformFee = Math.floor(bookingAmount * 0.20); // 600
+    const platformFee = Math.floor(bookingAmount * MONETIZATION_SPLITS.EVENT_TICKET.avalo); // 600
     const creatorReceives = bookingAmount - platformFee; // 2400
 
     console.log(`\nPlatform fee (20%): ${platformFee} tokens`);
@@ -330,4 +330,7 @@ describe("Critical Integration: Chat Monetization Flow", () => {
   });
 });
 
+
+
+import { getDb, setupTestEnvironment, testData, createTestUser, createTestTransaction, now, minutesAgo, hoursAgo, daysAgo } from '../src/testUtils'
 

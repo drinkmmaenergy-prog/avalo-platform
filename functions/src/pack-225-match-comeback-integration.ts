@@ -8,15 +8,15 @@
  * - Romantic Momentum (PACK 224)
  */
 
-import { db, serverTimestamp } from './init.js';
+import { db, serverTimestamp } from './init';
 import {
   createRekindleAttempt,
   markRekindleReplied,
   trackRekindleConversion,
   generateRekindleSuggestions,
   saveRekindleSuggestions,
-} from './pack-225-match-comeback.js';
-import { processMessageBilling } from './chatMonetization.js';
+} from './pack-225-match-comeback';
+import { processMessageBilling } from './chatMonetization';
 
 // ============================================================================
 // MESSAGE SENDING
@@ -104,7 +104,7 @@ export async function onRekindleReply(
     
     // Track momentum boost for successful rekindle (PACK 224)
     try {
-      const momentum = await import('./pack-224-romantic-momentum-integration.js');
+      const momentum = await import('./pack-224-romantic-momentum-integration');
       const initiatorId = attemptsSnap.docs[0].data().initiatorId;
       
       // Boost momentum for both users using onFirstMessageOfDay as proxy
@@ -369,7 +369,7 @@ export async function sendRekindleNotification(
   // For now, this is a placeholder - implement based on your notification system
   try {
     // Dynamic import with error handling - notification service might not exist yet
-    const notificationModule = await import('./notificationService.js' as any).catch(() => null);
+    const notificationModule = await import('./notificationService' as any).catch(() => null);
     
     if (notificationModule && typeof notificationModule.sendMulticast === 'function') {
       await notificationModule.sendMulticast({
@@ -409,7 +409,7 @@ export async function sendRekindleMessageNotification(
   
   try {
     // Dynamic import with error handling
-    const notificationModule = await import('./notificationService.js' as any).catch(() => null);
+    const notificationModule = await import('./notificationService' as any).catch(() => null);
     
     if (notificationModule && typeof notificationModule.sendMulticast === 'function') {
       await notificationModule.sendMulticast({
@@ -429,6 +429,7 @@ export async function sendRekindleMessageNotification(
     console.error('Failed to send rekindle message notification:', error);
   }
 }
+
 
 
 

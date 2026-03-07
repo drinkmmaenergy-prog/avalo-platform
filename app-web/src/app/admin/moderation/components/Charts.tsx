@@ -302,3 +302,4 @@ export function AlertCard({ title, count, color, icon }: AlertCardProps) {
     </div>
   );
 }
+

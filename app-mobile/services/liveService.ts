@@ -52,9 +52,9 @@ const STORAGE_KEYS = {
 };
 
 // Constants
-const CREATOR_SHARE = 0.65; // 65% to creator
-const AVALO_SHARE = 0.35; // 35% to Avalo
-const VIP_DISCOUNT = 0.20; // 20% discount for VIP
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
+const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo; // 35% to Avalo
+const VIP_DISCOUNT = MONETIZATION_SPLITS.EVENT_TICKET.avalo; // 20% discount for VIP
 
 // Types
 export interface LiveSession {

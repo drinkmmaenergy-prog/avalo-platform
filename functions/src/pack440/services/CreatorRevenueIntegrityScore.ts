@@ -78,7 +78,7 @@ export class CreatorRevenueIntegrityScoreService {
   private readonly WEIGHTS = {
     revenueSourceDiversity: 0.15,
     refundRatio: 0.25,
-    chargebackExposure: 0.30,
+    chargebackExposure: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
     payerConcentration: 0.15,
     accountAge: 0.10,
     transactionVelocity: 0.05
@@ -191,8 +191,8 @@ export class CreatorRevenueIntegrityScoreService {
     if (refundRatio <= 0.02) return 100;
     if (refundRatio <= 0.05) return 90;
     if (refundRatio <= 0.10) return 70;
-    if (refundRatio <= 0.20) return 40;
-    if (refundRatio <= 0.30) return 20;
+    if (refundRatio <= MONETIZATION_SPLITS.EVENT_TICKET.avalo) return 40;
+    if (refundRatio <= MONETIZATION_SPLITS.SUBSCRIPTION.avalo) return 20;
     return 0;
   }
   
@@ -497,6 +497,7 @@ export class CreatorRevenueIntegrityScoreService {
     return existing;
   }
 }
+
 
 
 

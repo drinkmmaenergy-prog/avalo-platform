@@ -11,7 +11,7 @@
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onObjectFinalized } from 'firebase-functions/v2/storage';
-import { db, storage, serverTimestamp, generateId } from './init.js';
+import { db, storage, serverTimestamp, generateId } from './init';
 import {
   calculateMediaBilling,
   processMediaBilling,
@@ -25,7 +25,7 @@ import {
   type MediaMetadata,
   type MediaBilling,
   type ReportReason
-} from './chatMediaMonetization.js';
+} from './chatMediaMonetization';
 import { auth, functions } from './runtime';
 
 // ============================================================================
@@ -492,6 +492,7 @@ async function extractMediaDuration(
   
   return 0;
 }
+
 
 
 

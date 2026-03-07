@@ -514,7 +514,7 @@ export function calculateRevenueSplit(totalAmount: number): {
   creatorAmount: number;
   avaloAmount: number;
 } {
-  const creatorAmount = Math.floor(totalAmount * 0.65);
+  const creatorAmount = Math.floor(totalAmount * MONETIZATION_SPLITS.CHAT.creator);
   const avaloAmount = totalAmount - creatorAmount;
   return { creatorAmount, avaloAmount };
 }

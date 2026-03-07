@@ -29,9 +29,9 @@ export const defaultConfig: Pack441Config = {
     reuseThreshold: 5, // Max device/IP reuse before flagging
     velocityThreshold: 10, // Max invites per hour before flagging
     weights: {
-      entropy: 0.35,
-      reuse: 0.35,
-      velocity: 0.30,
+      entropy: MONETIZATION_SPLITS.CHAT.avalo,
+      reuse: MONETIZATION_SPLITS.CHAT.avalo,
+      velocity: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
     },
   },
   fraudDetection: {
@@ -213,6 +213,7 @@ export async function generateWeeklyQualityReport(
 
   return report;
 }
+
 
 
 

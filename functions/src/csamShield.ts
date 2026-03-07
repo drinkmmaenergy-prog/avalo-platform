@@ -10,7 +10,7 @@
  * IMPORTANT: This is 100% ADDITIVE - does not modify existing monetization or business logic.
  */
 
-import { db, serverTimestamp, generateId } from './init.js';
+import { db, serverTimestamp, generateId } from './init';
 import type {
   CsamRiskSource,
   CsamRiskLevel,
@@ -22,7 +22,7 @@ import type {
   CsamReport,
   CreateIncidentRequest,
   CsamShieldConfig,
-} from './types/csam.js';
+} from './types/csam';
 import { arrayUnion, storage } from './runtime';
 
 // Simple logger (matches pattern from other modules)
@@ -293,7 +293,7 @@ export async function applyImmediateProtectiveActions(
     
     // Integration with trust engine - record highest severity risk event
     try {
-      const { recordRiskEvent } = await import('./trustEngine.js');
+      const { recordRiskEvent } = await import('./trustEngine');
       await recordRiskEvent({
         userId,
         eventType: 'chat', // Use existing event type
@@ -536,6 +536,7 @@ export default {
   isUserUnderCsamReview,
   evaluateImageForCsamRisk,
 };
+
 
 
 

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Creator Agreement Gate Component - Web
  * PHASE 4.2 — B2B Creator Agreement Implementation
@@ -12,9 +14,6 @@
  *
  * @version v1.0
  */
-
-'use client';
-
 import React, { useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -226,4 +225,5 @@ export default function CreatorAgreementGate({
     </>
   );
 }
+
 

@@ -142,13 +142,13 @@ export default function CreateLiveScreen() {
             <View style={styles.revenueRow}>
               <Text style={styles.revenueLabel}>Your share (65%):</Text>
               <Text style={styles.revenueValueGold}>
-                {Math.round(selectedFee * 0.65)} tokens
+                {Math.round(selectedFee * MONETIZATION_SPLITS.CHAT.creator)} tokens
               </Text>
             </View>
             <View style={styles.revenueRow}>
               <Text style={styles.revenueLabel}>Platform fee (35%):</Text>
               <Text style={styles.revenueValueMuted}>
-                {Math.round(selectedFee * 0.35)} tokens
+                {Math.round(selectedFee * MONETIZATION_SPLITS.CHAT.avalo)} tokens
               </Text>
             </View>
           </View>
@@ -436,3 +436,4 @@ const styles = StyleSheet.create({
     color: '#0F0F0F',
   },
 });
+

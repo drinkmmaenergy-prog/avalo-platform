@@ -4,7 +4,7 @@
 
 import { onRequest } from 'firebase-functions/v2/https';
 
-import { auth } from './init.js';
+import { auth } from './init';
 import {
   submitPostMeetingFeedback,
   submitEventFeedback,
@@ -13,7 +13,7 @@ import {
   dismissActionSuggestion,
   trackSuggestionInteraction,
   expireOldGlowStates
-} from './pack-230-post-meeting-glow.js';
+} from './pack-230-post-meeting-glow';
 import { functions, onSchedule } from './runtime';
 
 // ============================================================================
@@ -341,6 +341,7 @@ export const expireGlowStates = onSchedule(
     }
   }
 );
+
 
 
 

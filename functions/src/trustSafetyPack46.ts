@@ -12,7 +12,7 @@
  * All thresholds are deterministic and easily tunable.
  */
 
-import { db, serverTimestamp, increment, generateId } from './init.js';
+import { db, serverTimestamp, increment, generateId } from './init';
 
 // ============================================================================
 // TYPES

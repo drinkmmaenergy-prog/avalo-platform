@@ -153,8 +153,8 @@ export const TRUST_LEVEL_THRESHOLDS = {
  * Component weights for overall trust score
  */
 export const TRUST_SCORE_WEIGHTS = {
-  QUALITY: 0.35,      // 35% - Most important for user experience
-  RELIABILITY: 0.30,  // 30% - Consistency matters
+  QUALITY: MONETIZATION_SPLITS.CHAT.avalo,      // 35% - Most important for user experience
+  RELIABILITY: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,  // 30% - Consistency matters
   SAFETY: 0.25,       // 25% - Platform integrity
   PAYOUT: 0.10,       // 10% - Financial integrity
 } as const;
@@ -341,6 +341,7 @@ export const TRUST_LEVEL_BADGES: Record<TrustLevel, string> = {
   HIGH: '⭐',
   ELITE: '👑',
 };
+
 
 
 

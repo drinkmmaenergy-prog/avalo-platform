@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * PHASE 5.1 — Web Token Purchase Page
  * 
@@ -20,9 +22,6 @@
  * 
  * @version v2.1 (PHASE 5.1 — removed redundant Header/Footer since AppShell provides navigation)
  */
-
-'use client';
-
 import React, { Suspense, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -249,4 +248,5 @@ export default function WalletBuyPage() {
     </Suspense>
   );
 }
+
 

@@ -444,8 +444,8 @@ export interface DoubleSpendCheck {
 // ============================================================================
 
 export const TREASURY_CONSTANTS = {
-  CREATOR_SPLIT: 0.65,                 // 65%
-  AVALO_SPLIT: 0.35,                   // 35%
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator,                 // 65%
+  AVALO_SPLIT: MONETIZATION_SPLITS.CHAT.avalo,                   // 35%
   DEFAULT_REFUND_GRACE_MINUTES: 5,
   DEFAULT_HOT_WALLET_MAX: 1000000,     // 1M tokens
   DEFAULT_HOT_WALLET_TARGET: 500000,   // 500K tokens
@@ -492,6 +492,7 @@ export function isValidTransactionType(type: string): type is TransactionType {
     'OTHER',
   ].includes(type);
 }
+
 
 
 

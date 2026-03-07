@@ -7,15 +7,15 @@
  * - Payment processing
  */
 
-import { db, serverTimestamp, increment } from './init.js';
-import { processMessageBilling } from './chatMonetization.js';
+import { db, serverTimestamp, increment } from './init';
+import { processMessageBilling } from './chatMonetization';
 import {
   initializeWelcomeFunnel,
   trackFunnelConversion,
   trackGamificationAction,
   trackProfileView,
   triggerPhase3Conversion
-} from './pack251WelcomeFunnel.js';
+} from './pack251WelcomeFunnel';
 
 // ============================================================================
 // REGISTRATION INTEGRATION
@@ -247,7 +247,7 @@ export async function onInterestsAdded(userId: string): Promise<{ reward?: strin
 /**
  * Export scheduled function for Cloud Functions
  */
-export { advanceFunnelPhases } from './pack251WelcomeFunnel.js';
+export { advanceFunnelPhases } from './pack251WelcomeFunnel';
 
 // ============================================================================
 // ANALYTICS QUERIES
@@ -312,6 +312,7 @@ export async function isInWelcomeFunnel(userId: string): Promise<boolean> {
     return false;
   }
 }
+
 
 
 

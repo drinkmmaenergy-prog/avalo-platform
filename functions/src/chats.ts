@@ -23,8 +23,8 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 import type { CallableRequest } from "firebase-functions/v2/https";
 ;
-import { CHAT_INITIAL_DEPOSIT_TOKENS, CHAT_FREE_MESSAGES_PER_USER, CHAT_PLATFORM_FEE_PCT, WORDS_PER_TOKEN_STANDARD, WORDS_PER_TOKEN_ROYAL_EARNER, AUTO_RELOAD_THRESHOLD_TOKENS, Gender, ChatStatus, TransactionType } from './config.js';
-import { UserProfile, UserWallet, Chat, Message, Transaction, FunctionResponse, ChatRoles } from './types.js';
+import { CHAT_INITIAL_DEPOSIT_TOKENS, CHAT_FREE_MESSAGES_PER_USER, CHAT_PLATFORM_FEE_PCT, WORDS_PER_TOKEN_STANDARD, WORDS_PER_TOKEN_ROYAL_EARNER, AUTO_RELOAD_THRESHOLD_TOKENS, Gender, ChatStatus, TransactionType } from './config';
+import { UserProfile, UserWallet, Chat, Message, Transaction, FunctionResponse, ChatRoles } from './types';
 import { auth, db, functions, generateId, increment, onCall, serverTimestamp } from './runtime';
 
 import { containsBannedTerms } from './lib/stubs';
@@ -594,6 +594,8 @@ export const refundByEarnerCallable = onCall(
       }
     }
   );
+
+
 
 
 

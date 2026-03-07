@@ -17,8 +17,8 @@ import {
 
 const TAX_RATES: Record<TaxRegion, { rate: number; type: TaxType }> = {
   US: { rate: 0, type: 'SALES_TAX' },
-  EU: { rate: 0.20, type: 'VAT' },
-  UK: { rate: 0.20, type: 'VAT' },
+  EU: { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, type: 'VAT' },
+  UK: { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, type: 'VAT' },
   CA: { rate: 0.05, type: 'GST' },
   AU: { rate: 0.10, type: 'GST' },
   JP: { rate: 0.10, type: 'SALES_TAX' },
@@ -316,7 +316,7 @@ export async function generateTaxReport(data: {
       (byRegion[invoice.taxRegion] || 0) + invoice.totalAmount;
   }
 
-  const platformFee = grossRevenue * 0.35;
+  const platformFee = grossRevenue * MONETIZATION_SPLITS.CHAT.avalo;
   const netRevenue = grossRevenue - platformFee;
 
   const report: TaxReport = {
@@ -443,6 +443,7 @@ export async function calculateTax(data: {
     taxType: taxInfo.type,
   };
 }
+
 
 
 

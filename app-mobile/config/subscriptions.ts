@@ -5,7 +5,7 @@
  */
 
 export interface SubscriptionPerks {
-  callDiscount: number;              // 0.30 for VIP, 0.50 for Royal - ONLY for voice/video calls
+  callDiscount: number;              // MONETIZATION_SPLITS.SUBSCRIPTION.avalo for VIP, 0.50 for Royal - ONLY for voice/video calls
   passport: boolean;                 // Location change feature
   incognito: boolean;                // Hide from discovery
   priorityDiscovery: boolean;        // Appear higher in discovery
@@ -29,7 +29,7 @@ export const SUBSCRIPTIONS: Record<'vip' | 'royal', SubscriptionTier> = {
     name: 'VIP',
     monthlyPricePLN: 69.99,
     perks: {
-      callDiscount: 0.30,          // 30% discount ONLY on voice/video calls
+      callDiscount: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,          // 30% discount ONLY on voice/video calls
       passport: true,
       incognito: true,
       priorityDiscovery: true,
@@ -63,7 +63,7 @@ export function convertSubscriptionPrice(pricePLN: number, currency: string): nu
     PLN: 1.0,
     USD: 0.25,
     EUR: 0.23,
-    GBP: 0.20,
+    GBP: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   };
   
   return pricePLN * (rates[currency] || rates.PLN);

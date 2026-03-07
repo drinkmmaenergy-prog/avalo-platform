@@ -9,8 +9,8 @@
  * IMPORTANT: This is additive only - does not change existing discovery logic.
  */
 
-import { db } from './init.js';
-import { isUserVisibleInDiscovery as checkAccountStatus } from './accountLifecycle.js';
+import { db } from './init';
+import { isUserVisibleInDiscovery as checkAccountStatus } from './accountLifecycle';
 
 // ============================================================================
 // TYPES
@@ -306,6 +306,7 @@ export function applyVisibilityWeighting(
     };
   });
 }
+
 
 
 

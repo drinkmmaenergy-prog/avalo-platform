@@ -50,10 +50,10 @@ export interface SmartMatchResult {
 export function calculateSmartMatch(input: SmartMatchInput): SmartMatchResult {
   // Base weights for each factor
   const weights = {
-    interests: 0.35,      // 35% - Most important
+    interests: MONETIZATION_SPLITS.CHAT.avalo,      // 35% - Most important
     age: 0.25,            // 25% - Very important
-    location: 0.20,       // 20% - Important
-    activity: 0.20,       // 20% - Important
+    location: MONETIZATION_SPLITS.EVENT_TICKET.avalo,       // 20% - Important
+    activity: MONETIZATION_SPLITS.EVENT_TICKET.avalo,       // 20% - Important
   };
 
   // Calculate weighted scores

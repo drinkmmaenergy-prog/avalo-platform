@@ -3,7 +3,7 @@
  * Ranking logic and analytics aggregation
  */
 
-import { db } from './init.js';
+import { db } from './init';
 import type {
   AIAvatarIndex,
   AIAvatarIndexStats,
@@ -12,7 +12,7 @@ import type {
   AnalyticsAggregationResult,
   TrustLevel,
   RiskLevel
-} from './aiMarketplaceTypes.js';
+} from './aiMarketplaceTypes';
 import { timestamp } from './runtime';
 
 /**
@@ -368,6 +368,7 @@ export async function rebuildAllAvatarIndexes(): Promise<{
 
   return { processed, skipped, errors };
 }
+
 
 
 

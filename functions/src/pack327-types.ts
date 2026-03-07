@@ -179,9 +179,10 @@ export const DEFAULT_BUNDLES: Omit<PromoBundle, 'id' | 'createdAt'>[] = [
 export const PACK327_CONFIG = {
   MIN_BUNDLE_PRICE_USD: 10.0,
   MAX_BUNDLE_PRICE_USD: 999.99,
-  TOKEN_CONVERSION_RATE: 0.20, // 1 token = 0.20 USD for calculation
+  TOKEN_CONVERSION_RATE: MONETIZATION_SPLITS.EVENT_TICKET.avalo, // 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo USD for calculation
   AVALO_REVENUE_SPLIT: 1.0, // 100% Avalo revenue, no creator split
 } as const;
+
 
 
 

@@ -89,7 +89,7 @@ export async function calculateFraudRisk(
     // Aggregate risk score (weighted average)
     const riskScore =
       indicators.velocityScore * 0.25 +
-      indicators.deviceRiskScore * 0.20 +
+      indicators.deviceRiskScore * MONETIZATION_SPLITS.EVENT_TICKET.avalo +
       indicators.behavioralScore * 0.25 +
       indicators.networkScore * 0.15 +
       indicators.contentScore * 0.15;
@@ -317,6 +317,7 @@ export async function trainFraudDetectionModel(): Promise<void> {
 
   logger.info("Fraud detection model training scheduled");
 }
+
 
 
 

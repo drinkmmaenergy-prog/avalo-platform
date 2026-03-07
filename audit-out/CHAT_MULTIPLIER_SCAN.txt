@@ -1,0 +1,3188 @@
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 10
+CODE: * I.5  Multiplier applies only to next paid session
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 22
+CODE: isValidMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 29
+CODE: BurnMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 42
+CODE: BURN_MULTIPLIER_ENUM,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 75
+CODE: burnMultiplier: overrides.burnMultiplier ?? 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 233
+CODE: expect(result.tokensConsumed).toBe(1); // 1 bucket * 1 multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 343
+CODE: // TEST SUITE I.5: MULTIPLIER APPLIES ONLY TO NEXT PAID SESSION
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 346
+CODE: describe('I.5 Multiplier applies only to next paid session', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 347
+CODE: test('multiplier=1 → 1 token per bucket', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 349
+CODE: const config = makeSessionConfig({ burnMultiplier: 1 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 356
+CODE: test('multiplier=2 → 2 tokens per bucket', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 358
+CODE: const config = makeSessionConfig({ burnMultiplier: 2 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 365
+CODE: test('multiplier=5 → 5 tokens per bucket', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 367
+CODE: const config = makeSessionConfig({ burnMultiplier: 5 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 374
+CODE: test('multiplier=10 → 10 tokens per bucket', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 376
+CODE: const config = makeSessionConfig({ burnMultiplier: 10 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 383
+CODE: test('multiplier=20 → 20 tokens per bucket', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 385
+CODE: const config = makeSessionConfig({ burnMultiplier: 20 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 392
+CODE: test('all allowed multipliers are valid', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 395
+CODE: expect(isValidMultiplier(m)).toBe(true);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 399
+CODE: test('disallowed multipliers are rejected', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 402
+CODE: expect(isValidMultiplier(m)).toBe(false);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 406
+CODE: test('multiplier is frozen in configSnapshot (does not change mid-session)', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 407
+CODE: const config = makeSessionConfig({ burnMultiplier: 5 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 414
+CODE: // Second message — same config, multiplier still 5
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 487
+CODE: const config = makeSessionConfig({ burnMultiplier: 20 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 489
+CODE: // 11 words = 1 bucket * 20 multiplier = 20 tokens, but only 1 in escrow
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 518
+CODE: test('high multiplier with limited escrow does not overshoot', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 520
+CODE: const config = makeSessionConfig({ burnMultiplier: 7 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 537
+CODE: const multipliers: BurnMultiplier[] = [1, 2, 3, 4, 5, 7, 10, 12, 15, 20];
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 539
+CODE: for (const mult of multipliers) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 541
+CODE: const config = makeSessionConfig({ burnMultiplier: mult });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 737
+CODE: test('multiplier=20 with small escrow caps correctly', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\canonical-chat-engine.test.ts
+LINE: 739
+CODE: const config = makeSessionConfig({ burnMultiplier: 20 });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 70
+CODE: burnMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 455
+CODE: it('burn multiplier x3: 1 bucket = 3 tokens consumed', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 457
+CODE: const burnMultiplier = 3;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\chat-billing-pipeline.test.ts
+LINE: 458
+CODE: const cost = buckets * 1 * burnMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 21
+CODE: PREMIUM_MULTIPLIERS,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 24
+CODE: EXCLUSIVE_MIN_MULTIPLIER,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 80
+CODE: expect(result.multiplier).toBe(10);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 99
+CODE: test('exclusive requires minimum multiplier of 10', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 100
+CODE: expect(EXCLUSIVE_MIN_MULTIPLIER).toBe(10);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 107
+CODE: test('exclusive burn uses multiplier correctly', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 181
+CODE: expect(result.ledgerFields.premiumMultiplier).toBe(5);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 197
+CODE: expect(result.ledgerFields.premiumMultiplier).toBe(1);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 213
+CODE: test('multiplier min = 2', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 214
+CODE: expect(PREMIUM_SAFETY_LIMITS.MIN_MULTIPLIER).toBe(2);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 217
+CODE: test('exclusive min multiplier = 10', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 218
+CODE: expect(PREMIUM_SAFETY_LIMITS.EXCLUSIVE_MIN_MULTIPLIER).toBe(10);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 225
+CODE: test('allowed multipliers are [2,3,5,10,15,20]', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 226
+CODE: expect([...PREMIUM_MULTIPLIERS]).toEqual([2, 3, 5, 10, 15, 20]);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 248
+CODE: test('premium multiplier applies per bucket', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 249
+CODE: // 22 words = 2 buckets, x5 multiplier = 10 tokens
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 269
+CODE: avgMultiplier: 0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 286
+CODE: avgMultiplier: 3,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 303
+CODE: avgMultiplier: 2,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 310
+CODE: test('high multiplier + low acceptance → warning', () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 320
+CODE: avgMultiplier: 10,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\pack452-smoke-tests.ts
+LINE: 324
+CODE: expect(suggestions.some(s => s.type === 'HIGH_MULTIPLIER_WARNING')).toBe(true);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\walletBridge.security.test.ts
+LINE: 135
+CODE: const actualRecipient = "0x2222222222222222222222222222222222222222";
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\__tests__\walletBridge.security.test.ts
+LINE: 317
+CODE: from: "0x2222222222222222222222222222222222222222",
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\economyConfig.ts
+LINE: 109
+CODE: * burnMultipliers: allowed multiplier values (from canonical-chat.types)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\economyConfig.ts
+LINE: 120
+CODE: /** Allowed burn multiplier enum values */
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\economyConfig.ts
+LINE: 121
+CODE: BURN_MULTIPLIERS: [1, 2, 3, 4, 5, 7, 10, 12, 15, 20] as const,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\config\liveMonetization.ts
+LINE: 27
+CODE: streakBonus: boolean; // Whether this gift contributes to streak multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\engines\chemistryLockIn.ts
+LINE: 627
+CODE: multiplier: 10,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\engines\chemistryLockIn.ts
+LINE: 642
+CODE: multiplier: 10,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\migrations\migrate-chats-to-v2-canonical.ts
+LINE: 248
+CODE: burnMultiplier: 1, // Legacy did not have multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack152-ambassadors\safety-middleware.ts
+LINE: 130
+CODE: return (code >= 0x1F300 && code <= 0x1F9FF) || (code >= 0x2600 && code <= 0x27BF);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack348-ranking-engine\types.ts
+LINE: 59
+CODE: refundRatioPenalty: number;          // Score multiplier (0-1)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack348-ranking-engine\types.ts
+LINE: 80
+CODE: boostPriceMultiplier: number;      // Price reduction for Royal boosts
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack348-ranking-engine\types.ts
+LINE: 87
+CODE: boostPriceMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack348-ranking-engine\types.ts
+LINE: 160
+CODE: totalPenalty: number;           // Multiplier (0-1)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack348-ranking-engine\types.ts
+LINE: 262
+CODE: boostPriceMultiplier: 0.80,        // 20% discount
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack348-ranking-engine\types.ts
+LINE: 269
+CODE: boostPriceMultiplier: 0.90,        // 10% discount
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\compliance-resolver.ts
+LINE: 301
+CODE: available24x7: authority.available24x7,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 91
+CODE: available24x7: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 192
+CODE: available24x7: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 293
+CODE: available24x7: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 383
+CODE: available24x7: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 483
+CODE: available24x7: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 593
+CODE: available24x7: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 703
+CODE: available24x7: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 803
+CODE: available24x7: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 893
+CODE: available24x7: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\regional-rules.ts
+LINE: 994
+CODE: available24x7: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\safety-protocols.ts
+LINE: 247
+CODE: available24x7: authority.available24x7,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\regional-compliance\types.ts
+LINE: 114
+CODE: available24x7: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\chemistryFeed\rankingModel.ts
+LINE: 14
+CODE: getVisualAppealMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\chemistryFeed\signalsAesthetic.ts
+LINE: 121
+CODE: * Calculate visual appeal multiplier for feed ranking
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\chemistryFeed\signalsAesthetic.ts
+LINE: 122
+CODE: * Returns multiplier 0.5 - 1.5
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\chemistryFeed\signalsAesthetic.ts
+LINE: 124
+CODE: export function getVisualAppealMultiplier(profile: UserProfile): number {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\chemistryFeed\signalsAesthetic.ts
+LINE: 127
+CODE: // Convert score to multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 23
+CODE: * Visibility multipliers for different boost types
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 25
+CODE: const VISIBILITY_MULTIPLIERS = {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 47
+CODE: multiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 54
+CODE: let multiplier = 1;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 72
+CODE: // Add visibility multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 73
+CODE: const boostMultiplier = VISIBILITY_MULTIPLIERS[boost.type] || 1;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 74
+CODE: multiplier = Math.max(multiplier, boostMultiplier);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 113
+CODE: multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 123
+CODE: multiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 145
+CODE: multiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 163
+CODE: // Then by multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 164
+CODE: if (b.multiplier !== a.multiplier) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\services\boosts-ranking.service.ts
+LINE: 165
+CODE: return b.multiplier - a.multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\smartSocialGraph\backgroundJobs.ts
+LINE: 398
+CODE: const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\smartSocialGraph\backgroundJobs.ts
+LINE: 402
+CODE: const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\shared\src\types\creatorLeague.ts
+LINE: 45
+CODE: timeEfficiencyMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\shared\src\types\creatorLeague.ts
+LINE: 46
+CODE: replyQualityMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\shared\src\types\creatorLeague.ts
+LINE: 47
+CODE: conversionMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\shared\src\types\creatorLeague.ts
+LINE: 55
+CODE: multiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\shared\src\types\creatorLeague.ts
+LINE: 62
+CODE: multiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\shared\src\types\creatorLeague.ts
+LINE: 69
+CODE: multiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\boosts.types.ts
+LINE: 45
+CODE: description: 'x3 visibility in search + feed',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\boosts.types.ts
+LINE: 46
+CODE: effect: 'visibility_multiplier',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\boosts.types.ts
+LINE: 158
+CODE: multiplier: number; // For super visibility
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 12
+CODE: * - pack452 premium offer engine (mid-chat multiplier — NEXT SESSION ONLY)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 18
+CODE: * - Base burn = 1 token per bucket * burnMultiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 63
+CODE: // MULTIPLIER ENUM
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 67
+CODE: * Allowed burn multiplier values.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 68
+CODE: * Default = 1 (no multiplier).
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 71
+CODE: export const BURN_MULTIPLIER_ENUM = [1, 2, 3, 4, 5, 7, 10, 12, 15, 20] as const;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 72
+CODE: export type BurnMultiplier = typeof BURN_MULTIPLIER_ENUM[number];
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 246
+CODE: /** Burn multiplier: 1 default, or from earner's configured enum value */
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 247
+CODE: burnMultiplier: BurnMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 258
+CODE: *   tokenCost = newBuckets * 1 * burnMultiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 301
+CODE: /** Burn multiplier for the NEXT session. Default=1. Must be from BURN_MULTIPLIER_ENUM. */
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\canonical-chat.types.ts
+LINE: 302
+CODE: burnMultiplierForNextSession: BurnMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\clubIntelligence.ts
+LINE: 218
+CODE: boostMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack134-types.ts
+LINE: 216
+CODE: boostMultiplier: number; // 1.0-3.0x
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack213-types.ts
+LINE: 61
+CODE: boostMultiplier: number; // 1.0 default, higher if boosted
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack213-types.ts
+LINE: 62
+CODE: effectiveScore: number; // finalScore × boostMultiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack213-types.ts
+LINE: 190
+CODE: multiplier: number; // 1.0 = no boost, 2.0 = double visibility
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack213-types.ts
+LINE: 198
+CODE: multiplier: 1.3,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack213-types.ts
+LINE: 204
+CODE: multiplier: 1.2,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack213-types.ts
+LINE: 210
+CODE: multiplier: 1.6,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack213-types.ts
+LINE: 216
+CODE: multiplier: 1.7,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack213-types.ts
+LINE: 222
+CODE: multiplier: 1.15,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack213-types.ts
+LINE: 228
+CODE: multiplier: 1.4,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack213-types.ts
+LINE: 240
+CODE: multiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack213-types.ts
+LINE: 258
+CODE: totalMultiplier: number; // Product of all active boost multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack213-types.ts
+LINE: 397
+CODE: avgBoostMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 49
+CODE: /** Allowed multiplier values for premium offers */
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 50
+CODE: export const PREMIUM_MULTIPLIERS = [2, 3, 5, 10, 15, 20] as const;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 51
+CODE: export type PremiumMultiplier = typeof PREMIUM_MULTIPLIERS[number];
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 53
+CODE: /** Minimum multiplier required for exclusive mode */
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 54
+CODE: export const EXCLUSIVE_MIN_MULTIPLIER = 10;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 77
+CODE: multiplier: PremiumMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 123
+CODE: /** The multiplier in effect */
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 124
+CODE: multiplier: PremiumMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 181
+CODE: | 'HIGH_MULTIPLIER_WARNING'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 213
+CODE: avgMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 229
+CODE: /** Premium multiplier (1 for standard) */
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 230
+CODE: premiumMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 242
+CODE: multiplier: PremiumMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 262
+CODE: avgMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 277
+CODE: /** Minimum multiplier */
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 278
+CODE: MIN_MULTIPLIER: 2,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 279
+CODE: /** Minimum multiplier for exclusive mode */
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 280
+CODE: EXCLUSIVE_MIN_MULTIPLIER: 10,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\pack452-monetization-vnext.types.ts
+LINE: 291
+CODE: multiplier: PremiumMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\types\treasury.types.ts
+LINE: 6
+CODE: * - No bonuses, discounts, rewards, cashback, or token multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\adRewardsEngine.ts
+LINE: 101
+CODE: RANKING_POINTS_MULTIPLIER: 0.5, // Ads contribute 50% of normal points
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\adRewardsEngine.ts
+LINE: 368
+CODE: const rankingPoints = Math.floor(totalAwarded * AD_REWARDS_CONFIG.RANKING_POINTS_MULTIPLIER);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 36
+CODE: BurnMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 51
+CODE: BURN_MULTIPLIER_ENUM,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 380
+CODE: * @param earnerConfig - The earner's deposit/multiplier config
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 400
+CODE: // Validate and clamp multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 401
+CODE: let burnMultiplier: BurnMultiplier = 1;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 402
+CODE: if (earnerConfig?.burnMultiplierForNextSession) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 403
+CODE: const requestedMultiplier = earnerConfig.burnMultiplierForNextSession;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 404
+CODE: if (BURN_MULTIPLIER_ENUM.includes(requestedMultiplier as any)) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 405
+CODE: burnMultiplier = requestedMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 407
+CODE: // Invalid multiplier silently defaults to 1
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 468
+CODE: burnMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 512
+CODE: logger.info(`Deposit processed: chat=${chatId}, deposit=${depositTokens}, fee=${platformFee}, escrow=${escrow}, multiplier=${burnMultiplier}`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 562
+CODE: *   tokenCost = newBuckets * 1 * burnMultiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 596
+CODE: // Token cost per bucket = 1 * burnMultiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 597
+CODE: const tokenCostPerBucket = 1 * config.burnMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 761
+CODE: burnMultiplier: chat.paidSession.configSnapshot.burnMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 782
+CODE: // F) MULTIPLIER CHANGES (NEXT SESSION ONLY)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 786
+CODE: * Earner sets burn multiplier for their NEXT paid session.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 787
+CODE: * Validates against BURN_MULTIPLIER_ENUM [1,2,3,4,5,7,10,12,15,20].
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 792
+CODE: * @param multiplier - The desired multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 794
+CODE: export async function setMultiplierForNextSession(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 796
+CODE: multiplier: number
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 798
+CODE: if (!BURN_MULTIPLIER_ENUM.includes(multiplier as BurnMultiplier)) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 801
+CODE: `Invalid multiplier ${multiplier}. Allowed: ${BURN_MULTIPLIER_ENUM.join(', ')}`
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 807
+CODE: burnMultiplierForNextSession: multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 811
+CODE: logger.info(`Multiplier set: user=${userId}, multiplier=${multiplier} (next session)`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 1056
+CODE: * Validate that a multiplier is in the allowed enum.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 1058
+CODE: export function isValidMultiplier(multiplier: number): multiplier is BurnMultiplier {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 1059
+CODE: return BURN_MULTIPLIER_ENUM.includes(multiplier as BurnMultiplier);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-engine.ts
+LINE: 1079
+CODE: burnMultiplierForNextSession: userData?.chatEarnerConfig?.burnMultiplierForNextSession ?? 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-legacy-shim.ts
+LINE: 189
+CODE: * Multiplier changes can only apply to the NEXT session via
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-legacy-shim.ts
+LINE: 190
+CODE: * setMultiplierForNextSession in canonical-chat-engine.ts.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-legacy-shim.ts
+LINE: 197
+CODE: _multiplier: number,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-legacy-shim.ts
+LINE: 202
+CODE: 'Multiplier changes can only apply to the NEXT session. ' +
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-legacy-shim.ts
+LINE: 203
+CODE: 'Use setMultiplierForNextSession from canonical-chat-engine.ts.'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\canonical-chat-legacy-shim.ts
+LINE: 214
+CODE: 'Multipliers are set for next session only via setMultiplierForNextSession.'
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\chatMonetization.ts
+LINE: 12
+CODE: * - pack452 premium imports → REMOVED (multiplier = next session only)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\chatMonetization.ts
+LINE: 606
+CODE: if (burnParams.multiplier > 1 && roles.earnerId && senderId === roles.earnerId) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\chatMonetization.ts
+LINE: 612
+CODE: burnParams.multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\clubIntelligence.ts
+LINE: 565
+CODE: boostMultiplier: 2.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\discoveryFilters.ts
+LINE: 209
+CODE: * Reduce visibility multiplier for users based on risk level
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\discoveryFilters.ts
+LINE: 213
+CODE: * @returns Visibility multiplier (0.0 - 1.0)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\discoveryFilters.ts
+LINE: 215
+CODE: export function calculateVisibilityMultiplier(user: UserDiscoveryProfile): number {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\discoveryFilters.ts
+LINE: 300
+CODE: const multiplier = calculateVisibilityMultiplier(user);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\discoveryFilters.ts
+LINE: 303
+CODE: score: user.score * multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\discoveryFilters.ts
+LINE: 305
+CODE: visibilityMultiplier: multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 75
+CODE: demandMultiplier: number;      // 0.5 - 3.0
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 76
+CODE: timeOfDayMultiplier: number;   // 0.8 - 1.5
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 77
+CODE: popularityMultiplier: number;  // 0.7 - 2.0
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 177
+CODE: const SURGE_PRICING_MAX = 3.0;           // Max 3x multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 246
+CODE: * Calculate demand multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 248
+CODE: function calculateDemandMultiplier(conditions: MarketConditions): number {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 251
+CODE: let multiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 256
+CODE: multiplier = 1.5;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 259
+CODE: multiplier = 2.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 262
+CODE: multiplier = 0.8;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 267
+CODE: multiplier *= 1.2;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 270
+CODE: return Math.min(SURGE_PRICING_MAX, Math.max(0.5, multiplier));
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 421
+CODE: // Calculate multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 422
+CODE: const demandMultiplier = calculateDemandMultiplier(conditions);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 423
+CODE: const timeOfDayMultiplier = conditions.peakHourActive ? 1.2 : 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 429
+CODE: demandMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 430
+CODE: timeOfDayMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 431
+CODE: popularityMultiplier: 1.0, // Would calculate from creator data
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 436
+CODE: surgePricing: demandMultiplier > 1.5 ? demandMultiplier : 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 440
+CODE: let finalPrice = basePrice * demandMultiplier * timeOfDayMultiplier * geoAdjustment;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\dynamicPricing.ts
+LINE: 474
+CODE: adjustments: Math.round((finalPrice - basePrice) * demandMultiplier),
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\index.ts
+LINE: 292
+CODE: calculateVisibilityMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\index.ts
+LINE: 807
+CODE: pack385_applyAmbassadorMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\liveEngine.ts
+LINE: 74
+CODE: visibilityBoostMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\liveEngine.ts
+LINE: 183
+CODE: visibilityBoostMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-223-destiny-weeks-admin.ts
+LINE: 380
+CODE: actionMultipliers?: Record<string, number>;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-223-destiny-weeks.ts
+LINE: 94
+CODE: boostMultiplier?: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-223-destiny-weeks.ts
+LINE: 232
+CODE: boostMultiplier?: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-223-destiny-weeks.ts
+LINE: 238
+CODE: boostMultiplier: 2.0
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-223-destiny-weeks.ts
+LINE: 670
+CODE: boostMultiplier: config.boostMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-223-destiny-weeks.ts
+LINE: 730
+CODE: * Returns a multiplier (1.0 = no boost, 2.0 = 2x boost, etc.)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-223-destiny-weeks.ts
+LINE: 732
+CODE: export async function getDestinyBoostMultiplier(userId: string): Promise<number> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-223-destiny-weeks.ts
+LINE: 738
+CODE: if (reward.type === 'discover_boost' && reward.metadata?.boostMultiplier) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-223-destiny-weeks.ts
+LINE: 739
+CODE: maxBoost = Math.max(maxBoost, reward.metadata.boostMultiplier);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-matchmaking-integration.ts
+LINE: 9
+CODE: import { getMomentumBoostMultiplier } from './pack-224-romantic-momentum';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-matchmaking-integration.ts
+LINE: 10
+CODE: import { getDestinyBoostMultiplier } from './pack-223-destiny-weeks';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-matchmaking-integration.ts
+LINE: 42
+CODE: * finalScore = baseScore × (1 + momentumBoost) × (1 + destinyBoost) × tierMultiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-matchmaking-integration.ts
+LINE: 50
+CODE: const momentumBoost = await getMomentumBoostMultiplier(candidateId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-matchmaking-integration.ts
+LINE: 53
+CODE: const destinyBoost = await getDestinyBoostMultiplier(candidateId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-matchmaking-integration.ts
+LINE: 65
+CODE: * Get tier bonus multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-matchmaking-integration.ts
+LINE: 86
+CODE: const momentumBoost = await getMomentumBoostMultiplier(candidate.userId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-matchmaking-integration.ts
+LINE: 87
+CODE: const destinyBoost = await getDestinyBoostMultiplier(candidate.userId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-matchmaking-integration.ts
+LINE: 267
+CODE: const momentumBoost = await getMomentumBoostMultiplier(userId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-matchmaking-integration.ts
+LINE: 291
+CODE: const boost = await getMomentumBoostMultiplier(userId);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-pack-integrations.ts
+LINE: 250
+CODE: * Royal tier gets 1.25x momentum multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 14
+CODE: * - Royal tier 1.25x multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 150
+CODE: // Tier multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 151
+CODE: const ROYAL_TIER_MULTIPLIER = 1.25;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 165
+CODE: low: { min: 0, max: 19, multiplier: 1.0 },
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 166
+CODE: standard: { min: 20, max: 49, multiplier: 1.0 },
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 167
+CODE: good_match: { min: 50, max: 69, multiplier: 1.3 },
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 168
+CODE: trending: { min: 70, max: 84, multiplier: 1.6 },
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 169
+CODE: peak_chemistry: { min: 85, max: 100, multiplier: 2.0 }
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 224
+CODE: // Apply Royal tier multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 226
+CODE: change = Math.round(change * ROYAL_TIER_MULTIPLIER);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 462
+CODE: let boostMultiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 467
+CODE: boostMultiplier = config.multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 481
+CODE: boostLevel: boostMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 494
+CODE: * Get momentum boost multiplier for matchmaking
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-224-romantic-momentum.ts
+LINE: 496
+CODE: export async function getMomentumBoostMultiplier(userId: string): Promise<number> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack-227-desire-loop-engine.ts
+LINE: 469
+CODE: description = 'Special matchmaking multipliers this week';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack102-audience-endpoints.ts
+LINE: 230
+CODE: const qrCodUSDl = `https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(smartLinks.other!)}`;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack107-types.ts
+LINE: 530
+CODE: earningsMultiplier: false;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack107-types.ts
+LINE: 558
+CODE: earningsMultiplier: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack107-types.ts
+LINE: 581
+CODE: earningsMultiplier: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack107-types.ts
+LINE: 604
+CODE: earningsMultiplier: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-discovery.ts
+LINE: 279
+CODE: * Returns multiplier to apply to ranking score (< 1.0 = reduced)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-discovery.ts
+LINE: 281
+CODE: export function getNSFWVisibilityMultiplier(nsfwLevel: NSFWLevel): number {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-discovery.ts
+LINE: 292
+CODE: return rules.penaltyMultiplier; // 90% visibility reduction (0.1)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-discovery.ts
+LINE: 481
+CODE: const multiplier = getNSFWVisibilityMultiplier(nsfwLevel);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-discovery.ts
+LINE: 482
+CODE: return baseScore * multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-monetization.ts
+LINE: 6
+CODE: * - No altering tokenomics (no premium multipliers, no discounts)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-types.ts
+LINE: 192
+CODE: penaltyMultiplier: number;  // < 1.0 = reduced visibility
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack108-types.ts
+LINE: 484
+CODE: penaltyMultiplier: 0.1,  // 90% visibility reduction
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack112-achievements.ts
+LINE: 14
+CODE: * - NO monetization multipliers or earnings accelerators
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack112-types.ts
+LINE: 13
+CODE: * - NO monetization multipliers or earnings accelerators
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack115-types.ts
+LINE: 262
+CODE: weight: number; // multiplier for score impact
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack120-types.ts
+LINE: 285
+CODE: * ❌ Revenue share multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 126
+CODE: let frequencyMultiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 127
+CODE: if (pattern.frequency >= 10) frequencyMultiplier = 2.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 128
+CODE: else if (pattern.frequency >= 5) frequencyMultiplier = 1.5;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 129
+CODE: else if (pattern.frequency >= 3) frequencyMultiplier = 1.2;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 132
+CODE: let trendMultiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 133
+CODE: if (pattern.trend === 'WORSENING') trendMultiplier = 1.5;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 134
+CODE: else if (pattern.trend === 'IMPROVING') trendMultiplier = 0.7;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 140
+CODE: let recencyMultiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 141
+CODE: if (daysSinceLastOccurrence < 7) recencyMultiplier = 1.3;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 142
+CODE: else if (daysSinceLastOccurrence < 30) recencyMultiplier = 1.1;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 143
+CODE: else if (daysSinceLastOccurrence > 180) recencyMultiplier = 0.8;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack130-risk-profile.ts
+LINE: 145
+CODE: const patternScore = baseWeight * frequencyMultiplier * trendMultiplier * recencyMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 25
+CODE: * Calculate boost multiplier for new creator
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 29
+CODE: * @returns Boost profile with multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 67
+CODE: // Calculate boost multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 68
+CODE: let boostMultiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 72
+CODE: boostMultiplier = 1.5;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 76
+CODE: boostMultiplier += 0.5; // Very engaging content
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 81
+CODE: boostMultiplier += 0.5; // First month boost
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 85
+CODE: boostMultiplier = Math.min(3.0, boostMultiplier);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 104
+CODE: boostMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 117
+CODE: boostMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 340
+CODE: relevanceScore *= boost.boostMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 366
+CODE: averageBoostMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 390
+CODE: totalBoost += boost.boostMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 393
+CODE: boost: boost.boostMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 402
+CODE: const averageBoostMultiplier = eligibleForBoost > 0 ? totalBoost / eligibleForBoost : 0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 407
+CODE: averageBoostMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-fairness-boost.ts
+LINE: 413
+CODE: averageBoostMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack134-feed-generator.ts
+LINE: 442
+CODE: item.relevanceScore *= boost.boostMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack142-identity-fraud-engine.ts
+LINE: 402
+CODE: const patternMultiplier =
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack142-identity-fraud-engine.ts
+LINE: 407
+CODE: const fraudProbability = Math.min(1.0, avgRiskScore * patternMultiplier);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack183-latency-predictor.ts
+LINE: 182
+CODE: const timeMultiplier = 1 + (lookaheadMinutes / 60) * 0.2;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack183-latency-predictor.ts
+LINE: 183
+CODE: const predictedLatency = baseLatency * timeMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack200-auto-heal-runtime.ts
+LINE: 64
+CODE: backoffMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack200-auto-heal-runtime.ts
+LINE: 72
+CODE: backoffMultiplier: 2,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack200-auto-heal-runtime.ts
+LINE: 134
+CODE: policy.baseDelayMs * Math.pow(policy.backoffMultiplier, attempt - 1),
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 20
+CODE: GetRankingMultiplierRequest,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 21
+CODE: GetRankingMultiplierResponse,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 28
+CODE: getReputationMultipliers,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 283
+CODE: const multipliers = getReputationMultipliers(score);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 334
+CODE: discoveryRankMultiplier: multipliers.discoveryRank,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 335
+CODE: feedVisibilityMultiplier: multipliers.feedVisibility,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 336
+CODE: suggestionPriorityMultiplier: multipliers.suggestionPriority,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 374
+CODE: // RANKING MULTIPLIERS
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 378
+CODE: * Get ranking multiplier for user in specific context
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 380
+CODE: export async function getRankingMultiplier(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 381
+CODE: request: GetRankingMultiplierRequest
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 382
+CODE: ): Promise<GetRankingMultiplierResponse> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 392
+CODE: multiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 400
+CODE: const multipliers = getReputationMultipliers(profile.reputationScore);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 402
+CODE: // Select appropriate multiplier based on context
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 403
+CODE: let multiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 406
+CODE: multiplier = multipliers.discoveryRank;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 409
+CODE: multiplier = multipliers.feedVisibility;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 414
+CODE: multiplier = multipliers.suggestionPriority;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 420
+CODE: multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 426
+CODE: console.error('Error getting ranking multiplier:', error);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-engine.ts
+LINE: 429
+CODE: multiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-functions.ts
+LINE: 14
+CODE: getRankingMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-functions.ts
+LINE: 25
+CODE: GetRankingMultiplierRequest,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-functions.ts
+LINE: 454
+CODE: * Get ranking multiplier for use in discovery/feed
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-functions.ts
+LINE: 457
+CODE: export const pack212_getRankingMultiplier = functions.https.onCall(async (request) => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-functions.ts
+LINE: 467
+CODE: const multiplier = await getRankingMultiplier(data);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-functions.ts
+LINE: 468
+CODE: return multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-functions.ts
+LINE: 470
+CODE: console.error('Error getting ranking multiplier:', error);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-functions.ts
+LINE: 471
+CODE: throw new functions.https.HttpsError('internal', 'Error getting multiplier');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 269
+CODE: discoveryRankMultiplier: number; // 1.0 = normal, >1.0 = boost, <1.0 = limiter
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 270
+CODE: feedVisibilityMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 271
+CODE: suggestionPriorityMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 290
+CODE: * Calculate boost/limiter multipliers based on score
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 292
+CODE: export function getReputationMultipliers(score: number): {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 533
+CODE: * Request to get ranking multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 535
+CODE: export interface GetRankingMultiplierRequest {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 541
+CODE: * Response with multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 543
+CODE: export interface GetRankingMultiplierResponse {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack212-reputation-types.ts
+LINE: 545
+CODE: multiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-discovery-integration.ts
+LINE: 7
+CODE: * - Applying boost multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-discovery-integration.ts
+LINE: 81
+CODE: boostActive: score.boostMultiplier > 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-discovery-integration.ts
+LINE: 413
+CODE: boostActive: score.boostMultiplier > 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 99
+CODE: // Get boost multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 101
+CODE: const boostMultiplier = boostStatus.totalMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 104
+CODE: const effectiveScore = Math.min(100, finalScore * 100 * boostMultiplier);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 112
+CODE: boostMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 116
+CODE: logger.debug(`Match priority calculated: ${effectiveScore.toFixed(2)}`, { components, boost: boostMultiplier });
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 134
+CODE: boostMultiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 542
+CODE: multiplier: config.multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 555
+CODE: logger.info(`Boost applied: ${config.multiplier}x for ${config.durationHours}h`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 580
+CODE: // Calculate total multiplier (boosts stack multiplicatively)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 581
+CODE: let totalMultiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 583
+CODE: let highestMultiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 586
+CODE: totalMultiplier *= boost.multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 587
+CODE: if (boost.multiplier > highestMultiplier) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 588
+CODE: highestMultiplier = boost.multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 596
+CODE: totalMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority-engine.ts
+LINE: 608
+CODE: totalMultiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority.test.ts
+LINE: 262
+CODE: expect(boost.multiplier).toBe(1.3);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority.test.ts
+LINE: 266
+CODE: it('should apply paid meeting boost with correct multiplier', async () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority.test.ts
+LINE: 279
+CODE: expect(boost.multiplier).toBe(1.6);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority.test.ts
+LINE: 291
+CODE: multiplier: 1.3,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority.test.ts
+LINE: 298
+CODE: multiplier: 1.4,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority.test.ts
+LINE: 313
+CODE: // Total multiplier should be 1.3 × 1.4 = 1.82
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority.test.ts
+LINE: 317
+CODE: expect(activeBoosts[0].multiplier * activeBoosts[1].multiplier).toBeCloseTo(1.82, 2);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority.test.ts
+LINE: 383
+CODE: it('should apply boost multiplier to final score', async () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority.test.ts
+LINE: 385
+CODE: const boostMultiplier = 1.5;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority.test.ts
+LINE: 386
+CODE: const effectiveScore = Math.min(100, baseScore * boostMultiplier);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority.test.ts
+LINE: 393
+CODE: const boostMultiplier = 1.5;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack213-match-priority.test.ts
+LINE: 394
+CODE: const effectiveScore = Math.min(100, baseScore * boostMultiplier);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack237-breakup-recovery-engine.ts
+LINE: 396
+CODE: const speedMultiplier = getProgressionSpeedMultiplier(recovery.emotionalSignals.activityLevel);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack237-breakup-recovery-engine.ts
+LINE: 397
+CODE: const adjustedDays = daysSinceStart * speedMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack237-breakup-recovery-engine.ts
+LINE: 427
+CODE: * Get progression speed multiplier based on activity
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack237-breakup-recovery-engine.ts
+LINE: 429
+CODE: function getProgressionSpeedMultiplier(activityLevel: string): number {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack237-breakup-recovery-engine.ts
+LINE: 430
+CODE: const multipliers: Record<string, number> = {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack237-breakup-recovery-engine.ts
+LINE: 437
+CODE: return multipliers[activityLevel] || 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack238-safety-enforcement.ts
+LINE: 397
+CODE: boosterCooldownMultiplier: 2.0, // Double cooldown time
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack238-safety-enforcement.ts
+LINE: 403
+CODE: boosterCooldownMultiplier: 1.5,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 45
+CODE: // Multiplier ranges (pack specification)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 73
+CODE: // Calculate multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 74
+CODE: const timeEfficiency = await calculateTimeEfficiencyMultiplier(userId, month);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 75
+CODE: const replyQuality = await calculateReplyQualityMultiplier(userId, month);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 76
+CODE: const conversion = await calculateConversionMultiplier(userId, month);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 84
+CODE: timeEfficiencyMultiplier: timeEfficiency,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 85
+CODE: replyQualityMultiplier: replyQuality,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 86
+CODE: conversionMultiplier: conversion,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 137
+CODE: * Calculate time efficiency multiplier (1.0 - 2.0)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 140
+CODE: async function calculateTimeEfficiencyMultiplier(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 203
+CODE: // Calculate multiplier based on fast reply rate
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 205
+CODE: const multiplier = TIME_EFFICIENCY_RANGE.min +
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 208
+CODE: return Math.min(TIME_EFFICIENCY_RANGE.max, Math.max(TIME_EFFICIENCY_RANGE.min, multiplier));
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 216
+CODE: * Calculate reply quality multiplier (1.0 - 1.5)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 219
+CODE: async function calculateReplyQualityMultiplier(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 269
+CODE: // Calculate multiplier based on retention rate
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 271
+CODE: const multiplier = REPLY_QUALITY_RANGE.min +
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 274
+CODE: return Math.min(REPLY_QUALITY_RANGE.max, Math.max(REPLY_QUALITY_RANGE.min, multiplier));
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 282
+CODE: * Calculate conversion multiplier (1.0 - 1.3)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 285
+CODE: async function calculateConversionMultiplier(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 338
+CODE: // Calculate multiplier based on conversion rate
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 343
+CODE: const multiplier = CONVERSION_RANGE.min +
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack244-creator-league.ts
+LINE: 346
+CODE: return Math.min(CONVERSION_RANGE.max, Math.max(CONVERSION_RANGE.min, multiplier));
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack251WelcomeFunnel.ts
+LINE: 334
+CODE: multiplier: 3.0, // 3x visibility
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack251WelcomeFunnel.ts
+LINE: 569
+CODE: multiplier: number = 2.0
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack251WelcomeFunnel.ts
+LINE: 578
+CODE: multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-ai-matchmaker-types.ts
+LINE: 172
+CODE: tierBoost: number;                             // multiplier from user tier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-ai-matchmaker-types.ts
+LINE: 173
+CODE: heatingBoost: number;                          // multiplier from swipe heating
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-ai-matchmaker-types.ts
+LINE: 191
+CODE: tierMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-ai-matchmaker-types.ts
+LINE: 192
+CODE: heatingMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-ai-matchmaker-types.ts
+LINE: 208
+CODE: * Relevance boost multipliers by tier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-match-ranker.ts
+LINE: 20
+CODE: import { getHeatingState, getHeatingMultiplier } from './pack255-swipe-heating';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-match-ranker.ts
+LINE: 103
+CODE: * Get tier boost multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-match-ranker.ts
+LINE: 327
+CODE: tierMultiplier: tierBoost,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-match-ranker.ts
+LINE: 328
+CODE: heatingMultiplier: heatingBoost,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-swipe-heating.ts
+LINE: 172
+CODE: * Get heating multiplier for match ranking
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-swipe-heating.ts
+LINE: 174
+CODE: export async function getHeatingMultiplier(userId: string): Promise<number> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-swipe-heating.ts
+LINE: 181
+CODE: // Convert heat level (0-100) to multiplier (1.0-2.0)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack255-swipe-heating.ts
+LINE: 182
+CODE: // Higher heat = higher multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack261-earnings.legacy.ts
+LINE: 472
+CODE: const multiplier = ((topRegion[1] as number) / avgRegion).toFixed(1);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack261-earnings.legacy.ts
+LINE: 475
+CODE: message: `Your viewers from ${topRegion[0]} convert ${multiplier}× higher than others`,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack262-creator-levels.ts
+LINE: 42
+CODE: giftMultiplierBanner: boolean;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack262-creator-levels.ts
+LINE: 60
+CODE: giftMultiplierBanner: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack262-creator-levels.ts
+LINE: 77
+CODE: giftMultiplierBanner: false,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack262-creator-levels.ts
+LINE: 94
+CODE: giftMultiplierBanner: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack262-creator-levels.ts
+LINE: 111
+CODE: giftMultiplierBanner: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack262-creator-levels.ts
+LINE: 128
+CODE: giftMultiplierBanner: true,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack262-creator-levels.ts
+LINE: 218
+CODE: multiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack262-creator-levels.ts
+LINE: 609
+CODE: multiplier: 2, // 2× visibility
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack278-subscription-service.ts
+LINE: 107
+CODE: * Get call discount multiplier for user's subscription
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack278-subscription-service.ts
+LINE: 122
+CODE: export async function getCallDiscountMultiplier(userId: string): Promise<number> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack278-subscription-service.ts
+LINE: 138
+CODE: discountMultiplier: number
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack278-subscription-service.ts
+LINE: 140
+CODE: return Math.ceil(basePrice * discountMultiplier);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack282-feed-engine.ts
+LINE: 188
+CODE: * PACK 325: Includes boost multiplier for promoted content
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack282-feed-engine.ts
+LINE: 226
+CODE: let nsfwMultiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack282-feed-engine.ts
+LINE: 227
+CODE: if (post.nsfw.flag === 'soft') nsfwMultiplier = 0.8;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack282-feed-engine.ts
+LINE: 228
+CODE: if (post.nsfw.flag === 'erotic') nsfwMultiplier = 0.5;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack282-feed-engine.ts
+LINE: 238
+CODE: ) * nsfwMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack282-feed-engine.ts
+LINE: 242
+CODE: let boostMultiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack282-feed-engine.ts
+LINE: 247
+CODE: // Apply boost multiplier (1.5x - 3x based on boost size)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack282-feed-engine.ts
+LINE: 258
+CODE: boostMultiplier = boostSizes[size] || 1.5;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack282-feed-engine.ts
+LINE: 262
+CODE: logger.info(`Post ${post.postId} has active boost ${boostId} with ${boostMultiplier}x multiplier`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack282-feed-engine.ts
+LINE: 265
+CODE: const finalScore = Math.min(1.0, Math.max(0.0, baseScore * boostMultiplier));
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack294-discovery-search.ts
+LINE: 68
+CODE: // Tier boost multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack298-unified-engine.ts
+LINE: 26
+CODE: royalExposureMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack298-unified-engine.ts
+LINE: 27
+CODE: lowPopularityMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack298-unified-engine.ts
+LINE: 34
+CODE: royalExposureMultiplier: 1.25, // +25%
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack298-unified-engine.ts
+LINE: 35
+CODE: lowPopularityMultiplier: 3.0,  // +200%
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack298-unified-engine.ts
+LINE: 334
+CODE: score *= SWIPE_POOL_CONFIG.royalExposureMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack298-unified-engine.ts
+LINE: 348
+CODE: score *= SWIPE_POOL_CONFIG.lowPopularityMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack327-promo-bundles.ts
+LINE: 176
+CODE: if (bundle.includes.boostDays && bundle.includes.boostMultiplier) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack327-promo-bundles.ts
+LINE: 181
+CODE: bundle.includes.boostMultiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack327-promo-bundles.ts
+LINE: 186
+CODE: multiplier: bundle.includes.boostMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack327-promo-bundles.ts
+LINE: 666
+CODE: multiplier: number
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack327-promo-bundles.ts
+LINE: 684
+CODE: boostMultiplier: Math.max(userData.boostMultiplier || 1, multiplier),
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack327-promo-bundles.ts
+LINE: 690
+CODE: boostMultiplier: multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack327-promo-bundles.ts
+LINE: 694
+CODE: logger.info(`Boost applied: ${multiplier}x for ${durationDays} days to user ${userId}`);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack327-types.ts
+LINE: 29
+CODE: boostMultiplier?: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack327-types.ts
+LINE: 75
+CODE: multiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack327-types.ts
+LINE: 138
+CODE: boostMultiplier: 1.5,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack327-types.ts
+LINE: 152
+CODE: boostMultiplier: 2.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack327-types.ts
+LINE: 166
+CODE: boostMultiplier: 3.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack347-referral-engine.ts
+LINE: 7
+CODE: * - Swipe limit multiplier (temporary)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack347-referral-engine.ts
+LINE: 46
+CODE: type: 'profile_boost_24h' | 'discovery_priority_48h' | 'swipe_multiplier_temp';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack347-referral-engine.ts
+LINE: 48
+CODE: multiplier?: number; // for swipe limit
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack347-referral-engine.ts
+LINE: 79
+CODE: type: 'swipe_multiplier_temp' as const,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack347-referral-engine.ts
+LINE: 81
+CODE: multiplier: 2,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack347-referral-engine.ts
+LINE: 151
+CODE: multiplier: 'multiplier' in reward ? reward.multiplier : undefined,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack347-referral-engine.ts
+LINE: 549
+CODE: * - Non-monetary rewards (boosts, priority, multipliers)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack350-call-pricing.ts
+LINE: 48
+CODE: const discountMultiplier = 1 - (discountPercent / 100);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack350-call-pricing.ts
+LINE: 49
+CODE: const pricePerMinute = Math.ceil(baseCost * discountMultiplier);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack354-influencer-service.ts
+LINE: 114
+CODE: boostMultiplier: number; // 1.0, 1.2, or 1.5
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack354-influencer-service.ts
+LINE: 196
+CODE: boostMultiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack354-influencer-service.ts
+LINE: 206
+CODE: boostMultiplier: 1.2,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack354-influencer-service.ts
+LINE: 216
+CODE: boostMultiplier: 1.5,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack354-influencer-service.ts
+LINE: 409
+CODE: boostMultiplier: tierConfig.boostMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack354-influencer-service.ts
+LINE: 466
+CODE: boostMultiplier: tierConfig.boostMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-financial-forecast.ts
+LINE: 248
+CODE: // Seasonal multipliers (example)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-financial-forecast.ts
+LINE: 338
+CODE: const sumX2 = indices.reduce((sum, x) => sum + x * x, 0);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-financial-forecast.ts
+LINE: 340
+CODE: const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 19
+CODE: trafficMultiplier: number;    // e.g., 0.7 = -30% traffic
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 20
+CODE: churnMultiplier: number;       // e.g., 1.4 = +40% churn
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 21
+CODE: payoutMultiplier: number;      // e.g., 1.25 = +25% payouts
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 63
+CODE: trafficMultiplier: 0.7,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 64
+CODE: churnMultiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 65
+CODE: payoutMultiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 71
+CODE: trafficMultiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 72
+CODE: churnMultiplier: 1.4,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 73
+CODE: payoutMultiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 79
+CODE: trafficMultiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 80
+CODE: churnMultiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 81
+CODE: payoutMultiplier: 1.25,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 87
+CODE: trafficMultiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 88
+CODE: churnMultiplier: 1.2,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 89
+CODE: payoutMultiplier: 1.15,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 95
+CODE: trafficMultiplier: 3.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 96
+CODE: churnMultiplier: 1.3, // New users churn more
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 97
+CODE: payoutMultiplier: 0.9, // Lower payout ratio initially
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 103
+CODE: trafficMultiplier: 0.6,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 104
+CODE: churnMultiplier: 1.5,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 105
+CODE: payoutMultiplier: 1.3,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 111
+CODE: trafficMultiplier: 0.5,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 112
+CODE: churnMultiplier: 1.6,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 113
+CODE: payoutMultiplier: 1.2,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 119
+CODE: trafficMultiplier: 0.75,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 120
+CODE: churnMultiplier: 1.35,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 121
+CODE: payoutMultiplier: 1.1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 297
+CODE: let stressedRevenue = baseline.dailyRevenueUSD * scenario.trafficMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 300
+CODE: const churnImpact = 1 - ((scenario.churnMultiplier - 1) * 0.5); // 50% direct impact
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 304
+CODE: let stressedPayouts = baseline.dailyPayoutsUSD * scenario.payoutMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 307
+CODE: stressedPayouts *= scenario.trafficMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 468
+CODE: if (scenario.trafficMultiplier < 1) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 474
+CODE: if (scenario.churnMultiplier > 1) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack358-stress-scenarios.ts
+LINE: 480
+CODE: if (scenario.payoutMultiplier > 1) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack366-traffic-protection.ts
+LINE: 449
+CODE: const multiplier = (100 - percentage) / 100;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack366-traffic-protection.ts
+LINE: 453
+CODE: config.maxRegistrationsPerHour * multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack366-traffic-protection.ts
+LINE: 455
+CODE: maxChatsPerSecond: Math.floor(config.maxChatsPerSecond * multiplier),
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack366-traffic-protection.ts
+LINE: 457
+CODE: config.maxWalletPurchasesPerMinute * multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack366-traffic-protection.ts
+LINE: 460
+CODE: config.maxProfileViewsPerSecond * multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-admin.ts
+LINE: 236
+CODE: * Bulk update country multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-admin.ts
+LINE: 238
+CODE: export async function updateCountryMultipliers(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-admin.ts
+LINE: 239
+CODE: multipliers: Record<string, number>,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-admin.ts
+LINE: 244
+CODE: countryMultipliers: multipliers,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-admin.ts
+LINE: 251
+CODE: console.error('Update country multipliers error:', error);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-engine.ts
+LINE: 353
+CODE: let multiplier: number | undefined;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-engine.ts
+LINE: 367
+CODE: case 'visibility_multiplier':
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-engine.ts
+LINE: 369
+CODE: multiplier = config.visibilityMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-engine.ts
+LINE: 383
+CODE: multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-engine.ts
+LINE: 410
+CODE: // For boosts/multipliers, just mark as granted
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-engine.ts
+LINE: 464
+CODE: visibilityMultiplier: 2.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-engine.ts
+LINE: 472
+CODE: countryMultipliers: {},
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-types.ts
+LINE: 48
+CODE: rewardType: 'tokens' | 'boost' | 'discovery_exposure' | 'visibility_multiplier';
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-types.ts
+LINE: 51
+CODE: multiplier?: number; // for visibility multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-types.ts
+LINE: 108
+CODE: visibilityMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-types.ts
+LINE: 121
+CODE: // Country-specific multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack368-referral-types.ts
+LINE: 122
+CODE: countryMultipliers: Record<string, number>;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack370-ltv-engine.ts
+LINE: 246
+CODE: // Get category multipliers from config
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack370-ltv-engine.ts
+LINE: 247
+CODE: const config = await db.collection('ltvConfig').doc('multipliers').get();
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack370-ltv-engine.ts
+LINE: 248
+CODE: const multipliers = config.exists ? config.data() : {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack370-ltv-engine.ts
+LINE: 258
+CODE: // Retention multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack370-ltv-engine.ts
+LINE: 259
+CODE: const retentionMultipliers: Record<string, number> = {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack370-ltv-engine.ts
+LINE: 266
+CODE: const retentionMult = retentionMultipliers[metrics.retentionSegment] || 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack370-ltv-engine.ts
+LINE: 268
+CODE: // Engagement multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack374-viral-growth.ts
+LINE: 968
+CODE: discoveryMultiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack374-viral-growth.ts
+LINE: 975
+CODE: effects.discoveryMultiplier = 1.5 + (strength * 0.1);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack374-viral-growth.ts
+LINE: 985
+CODE: effects.discoveryMultiplier = 2.0 + (strength * 0.2);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack376-app-store-defense.ts
+LINE: 47
+CODE: storeWeightMultiplier: number; // 0.0-2.0
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack376-app-store-defense.ts
+LINE: 391
+CODE: // Calculate weight multiplier (0.0 - 2.0)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack376-app-store-defense.ts
+LINE: 392
+CODE: let weightMultiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack376-app-store-defense.ts
+LINE: 393
+CODE: if (trustScore > 80) weightMultiplier = 1.5;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack376-app-store-defense.ts
+LINE: 394
+CODE: else if (trustScore > 90) weightMultiplier = 2.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack376-app-store-defense.ts
+LINE: 395
+CODE: else if (trustScore < 30) weightMultiplier = 0.5;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack376-app-store-defense.ts
+LINE: 396
+CODE: else if (trustScore < 20) weightMultiplier = 0.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack376-app-store-defense.ts
+LINE: 401
+CODE: storeWeightMultiplier: weightMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-region-config.ts
+LINE: 95
+CODE: fraudScoreMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-regional-risk.ts
+LINE: 22
+CODE: fraudMultiplier: number; // multiplies fraud score from PACK 302
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-regional-risk.ts
+LINE: 216
+CODE: // Apply regional multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-regional-risk.ts
+LINE: 217
+CODE: const regionalScore = baseFraudScore * riskProfile.risk.fraudMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-regional-risk.ts
+LINE: 295
+CODE: regionalMultiplier: riskProfile.risk.fraudMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-regional-risk.ts
+LINE: 469
+CODE: // If critical, adjust risk multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack381-regional-risk.ts
+LINE: 472
+CODE: 'risk.fraudMultiplier': admin.firestore.FieldValue.increment(0.1),
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-pricing-recommender.ts
+LINE: 233
+CODE: let priceMultiplier = 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-pricing-recommender.ts
+LINE: 242
+CODE: priceMultiplier *= 1.25;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-pricing-recommender.ts
+LINE: 251
+CODE: priceMultiplier *= 0.9;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-pricing-recommender.ts
+LINE: 264
+CODE: priceMultiplier *= 1.1;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-pricing-recommender.ts
+LINE: 272
+CODE: priceMultiplier *= 0.95;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-pricing-recommender.ts
+LINE: 283
+CODE: priceMultiplier *= 1.05;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-pricing-recommender.ts
+LINE: 293
+CODE: const tierMultipliers = {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-pricing-recommender.ts
+LINE: 299
+CODE: priceMultiplier *= tierMultipliers[profile.skillTier] || 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-pricing-recommender.ts
+LINE: 316
+CODE: const demandMultipliers = {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-pricing-recommender.ts
+LINE: 322
+CODE: priceMultiplier *= demandMultipliers[marketData.demandLevel];
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack382-pricing-recommender.ts
+LINE: 330
+CODE: let recommendedPrice = Math.round(currentPrice * priceMultiplier);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack384-aso-monitor.ts
+LINE: 352
+CODE: multiplier: currentDaily / baselineDaily,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack384-review-defense.ts
+LINE: 38
+CODE: velocitySpike: number; // multiplier vs normal
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack385-ambassadors.ts
+LINE: 3
+CODE: * Manages early access, boosted discovery, and revenue multipliers for launch ambassadors
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack385-ambassadors.ts
+LINE: 34
+CODE: revenueMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack385-ambassadors.ts
+LINE: 54
+CODE: revenueMultiplier: 1.2,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack385-ambassadors.ts
+LINE: 65
+CODE: revenueMultiplier: 1.5,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack385-ambassadors.ts
+LINE: 76
+CODE: revenueMultiplier: 2.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack385-ambassadors.ts
+LINE: 129
+CODE: revenueMultiplier: tierConfig.revenueMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack385-ambassadors.ts
+LINE: 202
+CODE: * Apply revenue multiplier for ambassador
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack385-ambassadors.ts
+LINE: 204
+CODE: export const pack385_applyAmbassadorMultiplier = functions.https.onCall(async (request) => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack385-ambassadors.ts
+LINE: 222
+CODE: multiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack385-ambassadors.ts
+LINE: 228
+CODE: const multiplier = ambassador.benefits.revenueMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack385-ambassadors.ts
+LINE: 229
+CODE: const boostedRevenue = baseRevenue * multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack385-ambassadors.ts
+LINE: 238
+CODE: multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack386-marketing-fraud.ts
+LINE: 239
+CODE: multiplier: actualCPI / targetCPI,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack398-traffic-sync.ts
+LINE: 383
+CODE: predictedLTV = factors.totalSpent * 1.5; // Simple multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack412-growth-integration.ts
+LINE: 80
+CODE: * Returns a multiplier for nudge frequency (0.0 = no nudges, 1.0 = full frequency)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack413-panic-modes.ts
+LINE: 450
+CODE: params: { intensityMultiplier: 0.5 },
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack413-panic-modes.ts
+LINE: 504
+CODE: params: { multiplier: 3 },
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack415-rate-limiter.ts
+LINE: 128
+CODE: // Abuse mode multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack415-rate-limiter.ts
+LINE: 129
+CODE: const ABUSE_MODE_MULTIPLIERS: Record<AbuseMode, number> = {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack415-rate-limiter.ts
+LINE: 269
+CODE: // Apply abuse mode multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack415-rate-limiter.ts
+LINE: 272
+CODE: Math.floor(limitConfig.limit * ABUSE_MODE_MULTIPLIERS[currentAbuseMode])
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack422-exports.ts
+LINE: 41
+CODE: getUserVisibilityMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack422-reputation.policy.ts
+LINE: 35
+CODE: feedRankingBoost: number; // Multiplier: 1.0 = normal, <1 = penalty, >1 = bonus
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack422-reputation.policy.ts
+LINE: 258
+CODE: * Get visibility multiplier for user (for discovery/feed algorithms)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack422-reputation.policy.ts
+LINE: 260
+CODE: export async function getUserVisibilityMultiplier(userId: string): Promise<number> {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack425-creator-bootstrap.ts
+LINE: 61
+CODE: visibilityBoostMultiplier: number; // e.g., 2.0x
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack425-creator-bootstrap.ts
+LINE: 85
+CODE: visibilityBoostMultiplier?: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack425-creator-bootstrap.ts
+LINE: 103
+CODE: visibilityBoostMultiplier: options.visibilityBoostMultiplier ?? 2.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack425-creator-bootstrap.ts
+LINE: 213
+CODE: visibilityBoost: incentives.visibilityBoostMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 39
+CODE: riskMultiplier: Record<string, number>; // risk level → multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 189
+CODE: riskMultiplier: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 199
+CODE: riskMultiplier: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 209
+CODE: riskMultiplier: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 219
+CODE: riskMultiplier: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 229
+CODE: riskMultiplier: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 239
+CODE: riskMultiplier: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 249
+CODE: riskMultiplier: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 259
+CODE: riskMultiplier: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 269
+CODE: riskMultiplier: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 279
+CODE: riskMultiplier: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 289
+CODE: riskMultiplier: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 299
+CODE: riskMultiplier: {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 325
+CODE: const multiplier = config.riskMultiplier[riskProfile.riskLevel];
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 326
+CODE: const adjustedLimit = Math.floor(config.baseLimit * multiplier);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 329
+CODE: if (multiplier === 0) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-fraud-throttle.ts
+LINE: 440
+CODE: * Get regional risk factor multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-rate-limit.ts
+LINE: 114
+CODE: // Multipliers by subscription tier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-rate-limit.ts
+LINE: 115
+CODE: const TIER_MULTIPLIERS = {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-rate-limit.ts
+LINE: 231
+CODE: const multiplier = TIER_MULTIPLIERS[tier];
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack426-rate-limit.ts
+LINE: 235
+CODE: limit: Math.floor(baseConfig.limit * multiplier),
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-economy-engine.ts
+LINE: 12
+CODE: * - pack452 premium imports → REMOVED (multiplier = next session only)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-economy-engine.ts
+LINE: 606
+CODE: if (burnParams.multiplier > 1 && roles.earnerId && senderId === roles.earnerId) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack430-economy-engine.ts
+LINE: 612
+CODE: burnParams.multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 48
+CODE: tierMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 49
+CODE: regionalMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 50
+CODE: customMultiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 192
+CODE: const multiplier = ambassadorTypeService.calculateTotalMultiplier(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 195
+CODE: ambassador.compensation.regionalMultiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 198
+CODE: const amount = ambassador.compensation.cpi * multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 205
+CODE: tierMultiplier: TIER_REQUIREMENTS[ambassador.tier].multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 206
+CODE: regionalMultiplier: ambassador.compensation.regionalMultiplier || 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 207
+CODE: customMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 229
+CODE: const multiplier = ambassadorTypeService.calculateTotalMultiplier(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 232
+CODE: ambassador.compensation.regionalMultiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 235
+CODE: const amount = ambassador.compensation.cpa * multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 242
+CODE: tierMultiplier: TIER_REQUIREMENTS[ambassador.tier].multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 243
+CODE: regionalMultiplier: ambassador.compensation.regionalMultiplier || 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 244
+CODE: customMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 267
+CODE: const multiplier = ambassadorTypeService.calculateTotalMultiplier(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 270
+CODE: ambassador.compensation.regionalMultiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 273
+CODE: const amount = ambassador.compensation.cps * multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 280
+CODE: tierMultiplier: TIER_REQUIREMENTS[ambassador.tier].multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 281
+CODE: regionalMultiplier: ambassador.compensation.regionalMultiplier || 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 282
+CODE: customMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 328
+CODE: tierMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 329
+CODE: regionalMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 330
+CODE: customMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 366
+CODE: const multiplier = ambassadorTypeService.calculateTotalMultiplier(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 369
+CODE: ambassador.compensation.regionalMultiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 372
+CODE: const totalAmount = amount * multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 379
+CODE: tierMultiplier: TIER_REQUIREMENTS[ambassador.tier].multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 380
+CODE: regionalMultiplier: ambassador.compensation.regionalMultiplier || 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 381
+CODE: customMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 509
+CODE: tierMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 510
+CODE: regionalMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 511
+CODE: customMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-compensation.ts
+LINE: 522
+CODE: 'compensation.tierMultiplier': TIER_REQUIREMENTS[toTier].multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-onboarding.ts
+LINE: 439
+CODE: cpi: 2.0 * regionalConfig.multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-onboarding.ts
+LINE: 440
+CODE: cpa: 10.0 * regionalConfig.multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-onboarding.ts
+LINE: 441
+CODE: cps: 50.0 * regionalConfig.multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-onboarding.ts
+LINE: 444
+CODE: tierMultiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-onboarding.ts
+LINE: 445
+CODE: regionalMultiplier: regionalConfig.multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 130
+CODE: tierMultiplier: number; // 1.0 for bronze, up to 3.0 for titan
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 132
+CODE: // Regional multipliers
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 133
+CODE: regionalMultiplier?: number; // High-value markets get higher rates
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 146
+CODE: multiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 153
+CODE: multiplier: 1.3,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 160
+CODE: multiplier: 1.6,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 167
+CODE: multiplier: 2.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 174
+CODE: multiplier: 3.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 183
+CODE: multiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 266
+CODE: multiplier: number; // Payment multiplier based on market
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 278
+CODE: multiplier: 1.5,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 288
+CODE: multiplier: 1.4,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 298
+CODE: multiplier: 1.3,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 308
+CODE: multiplier: 1.0,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 318
+CODE: multiplier: 0.8,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 328
+CODE: multiplier: 0.6,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 457
+CODE: * Calculate total compensation multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 459
+CODE: calculateTotalMultiplier(
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 462
+CODE: customMultiplier?: number
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 464
+CODE: const tierMultiplier = TIER_REQUIREMENTS[tier].multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 466
+CODE: const regionalMultiplier = regionalConfig.multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 467
+CODE: const custom = customMultiplier || 1.0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack434-ambassador-types.ts
+LINE: 469
+CODE: return tierMultiplier * regionalMultiplier * custom;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-endpoints.ts
+LINE: 65
+CODE: if (!data.chatId || !data.multiplier) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-endpoints.ts
+LINE: 66
+CODE: throw new HttpsError('invalid-argument', 'chatId and multiplier are required');
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-endpoints.ts
+LINE: 71
+CODE: multiplier: data.multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-endpoints.ts
+LINE: 118
+CODE: trackPremiumOfferAccepted(offer.exclusive || false, offer.multiplier || 1)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-exclusive-mode.ts
+LINE: 11
+CODE: * Exclusive does NOT change multiplier logic — it changes concurrency availability.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-exclusive-mode.ts
+LINE: 225
+CODE: } else if (premiumContext && premiumContext.multiplier > 1) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-kpi-engine.ts
+LINE: 8
+CODE: * - avgMultiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-kpi-engine.ts
+LINE: 45
+CODE: let totalMultiplier = 0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-kpi-engine.ts
+LINE: 50
+CODE: totalMultiplier += offer.multiplier || 1;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-kpi-engine.ts
+LINE: 64
+CODE: const avgMultiplier = premiumOfferCount > 0
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-kpi-engine.ts
+LINE: 65
+CODE: ? totalMultiplier / premiumOfferCount
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-kpi-engine.ts
+LINE: 129
+CODE: avgMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-kpi-engine.ts
+LINE: 203
+CODE: * @param multiplier - The offer multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-kpi-engine.ts
+LINE: 207
+CODE: multiplier: number
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-kpi-engine.ts
+LINE: 212
+CODE: totalMultiplierSum: FieldValue.increment(multiplier),
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 4
+CODE: * Extends the existing burn logic to support premium multipliers.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 8
+CODE: *     tokensPerBucket = 1 * multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 34
+CODE: PremiumMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 75
+CODE: /** The multiplier applied */
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 76
+CODE: multiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 92
+CODE: * - The premium multiplier (if active)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 97
+CODE: * @param premiumMultiplier - The active premium multiplier (1 if standard)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 106
+CODE: premiumMultiplier: number = 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 123
+CODE: multiplier: premiumMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 128
+CODE: premiumMultiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 135
+CODE: // Determine effective multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 137
+CODE: const effectiveMultiplier = isPremium ? premiumMultiplier : 1;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 140
+CODE: const tokensPerBucket = BASE_BURN_PER_BUCKET * effectiveMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 153
+CODE: multiplier: effectiveMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 158
+CODE: premiumMultiplier: effectiveMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 311
+CODE: multiplier: burnResult.multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 315
+CODE: premiumMultiplier: burnResult.ledgerFields.premiumMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 348
+CODE: premiumMultiplier: burnResult.ledgerFields.premiumMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 377
+CODE: premiumMultiplier: burnResult.ledgerFields.premiumMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 423
+CODE: * @returns Burn parameters including multiplier and monetization state
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 427
+CODE: multiplier: number;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 446
+CODE: multiplier: premiumContext.multiplier || 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-burn-engine.ts
+LINE: 455
+CODE: multiplier: 1,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 5
+CODE: * Multiplier changes can only apply to the NEXT paid session via
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 6
+CODE: * setMultiplierForNextSession in canonical-chat-engine.ts.
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 9
+CODE: * - createPremiumOffer → REMOVED (use setMultiplierForNextSession)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 10
+CODE: * - acceptPremiumOffer → REMOVED (multiplier applied at next deposit)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 29
+CODE: PremiumMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 30
+CODE: PREMIUM_MULTIPLIERS,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 33
+CODE: EXCLUSIVE_MIN_MULTIPLIER,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 54
+CODE: * 1. Validate multiplier and exclusive constraints
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 69
+CODE: const { chatId, multiplier, exclusive } = request;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 71
+CODE: // ---- Validate multiplier ----
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 72
+CODE: if (!PREMIUM_MULTIPLIERS.includes(multiplier)) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 75
+CODE: error: `Invalid multiplier. Allowed values: ${PREMIUM_MULTIPLIERS.join(', ')}`,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 79
+CODE: if (multiplier < PREMIUM_SAFETY_LIMITS.MIN_MULTIPLIER) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 82
+CODE: error: `Minimum multiplier is ${PREMIUM_SAFETY_LIMITS.MIN_MULTIPLIER}`,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 87
+CODE: if (exclusive && multiplier < EXCLUSIVE_MIN_MULTIPLIER) {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 90
+CODE: error: `Exclusive mode requires minimum multiplier of ${EXCLUSIVE_MIN_MULTIPLIER}`,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 151
+CODE: const reserveTokens = baseChatEntryTokens * multiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 214
+CODE: multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 351
+CODE: multiplier: offer.multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 365
+CODE: multiplier: offer.multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 582
+CODE: multiplier: PremiumMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-premium-offer-engine.ts
+LINE: 600
+CODE: multiplier: ctx.multiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 18
+CODE: * 4. Multiplier >= 5 and low acceptance → "High multipliers reduce acceptance rate."
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 48
+CODE: HIGH_ENTRY_MULTIPLIER: 3, // 3x the default (300 tokens)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 51
+CODE: /** Multiplier threshold for warning */
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 52
+CODE: HIGH_MULTIPLIER_WARNING: 5,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 118
+CODE: let totalMultiplier = 0;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 123
+CODE: totalMultiplier += offer.multiplier || 1;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 132
+CODE: const avgMultiplier = premiumOffersTotal > 0
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 133
+CODE: ? totalMultiplier / premiumOffersTotal
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 170
+CODE: avgMultiplier,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 227
+CODE: metrics.currentEntryThreshold > ENTRY_THRESHOLD_LIMITS.DEFAULT * THRESHOLDS.HIGH_ENTRY_MULTIPLIER &&
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 238
+CODE: // ---- HUSDistic 4: High multiplier + low acceptance ----
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 240
+CODE: metrics.avgMultiplier >= THRESHOLDS.HIGH_MULTIPLIER_WARNING &&
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 245
+CODE: type: 'HIGH_MULTIPLIER_WARNING',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack452-revenue-coach.ts
+LINE: 246
+CODE: message: `Your average premium multiplier is ${metrics.avgMultiplier.toFixed(1)}x but acceptance rate is only ${Math.round(metrics.premiumAcceptanceRate * 100)}%. High multipliers tend to reduce acceptance rates.`,
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack99-validation.ts
+LINE: 37
+CODE: 'token_multiplier',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\pack99-validation.ts
+LINE: 38
+CODE: 'price_multiplier',
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\predictiveAnalytics.ts
+LINE: 400
+CODE: return features.totalRevenue * 10; // Simple 10x multiplier
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\predictiveAnalytics.ts
+LINE: 413
+CODE: const decayMultiplier = Math.pow(decayRate, decayPeriods);
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\predictiveAnalytics.ts
+LINE: 415
+CODE: const futureRevenue = dailyRevenue * projectedDays * decayMultiplier;
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\recommender.test.ts
+LINE: 217
+CODE: describe("Risk Dampening Multiplier", () => {
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\recommender.ts
+LINE: 520
+CODE: * Risk dampening (0.0-1.0 multiplier)
+------------------------------------------------------------
+FILE: C:\a\avalo\functions\src\supporterAnalytics.ts
+LINE: 101
+CODE: // Inbox prioritization multipliers
+------------------------------------------------------------

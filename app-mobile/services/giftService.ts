@@ -205,7 +205,7 @@ export function formatGiftPrice(priceTokens: number): string {
  * Calculate earnings for receiver
  */
 export function calculateReceiverEarnings(priceTokens: number): number {
-  const avaloCommission = Math.floor(priceTokens * 0.35);
+  const avaloCommission = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.avalo);
   return priceTokens - avaloCommission;
 }
 

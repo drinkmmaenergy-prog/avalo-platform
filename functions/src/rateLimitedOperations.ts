@@ -4,7 +4,7 @@
  * Wrapper functions that add rate limiting to critical operations
  */
 
-import { checkAndIncrementRateLimit, hashIpAddress, createRateLimitError, RateLimitContext } from './rateLimit.js';
+import { checkAndIncrementRateLimit, hashIpAddress, createRateLimitError, RateLimitContext } from './rateLimit';
 import { functions } from './runtime';
 
 /**
@@ -147,6 +147,7 @@ export function extractIpFromRequest(req: any): string | undefined {
   
   return ip;
 }
+
 
 
 

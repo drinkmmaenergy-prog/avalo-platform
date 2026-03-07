@@ -38,11 +38,11 @@ export function getWalletSplitForContext(
     case 'CALL_VIDEO':
     case 'AI_SESSION':
     case 'MEDIA_PURCHASE':
-      return { platformShare: 0.35, earnerShare: 0.65 };
+      return { platformShare: MONETIZATION_SPLITS.CHAT.avalo, earnerShare: MONETIZATION_SPLITS.CHAT.creator };
     
     case 'CALENDAR_BOOKING':
     case 'EVENT_TICKET':
-      return { platformShare: 0.20, earnerShare: 0.80 };
+      return { platformShare: MONETIZATION_SPLITS.EVENT_TICKET.avalo, earnerShare: MONETIZATION_SPLITS.EVENT_TICKET.creator };
     
     case 'TIP':
       return { platformShare: 0.10, earnerShare: 0.90 };
@@ -58,13 +58,13 @@ export function getWalletSplitForContext(
 
 // Legacy revenue split (deprecated, kept for backward compatibility)
 const REVENUE_SPLIT = {
-  CHAT: { creator: 0.65, avalo: 0.35 },
-  CALL: { creator: 0.80, avalo: 0.20 },
-  CALENDAR: { creator: 0.80, avalo: 0.20 },
-  EVENT: { creator: 0.80, avalo: 0.20 },
+  CHAT: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
+  CALL: { creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
+  CALENDAR: { creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
+  EVENT: { creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
   TIP: { creator: 0.90, avalo: 0.10 },
-  MEDIA: { creator: 0.65, avalo: 0.35 },
-  DIGITAL_PRODUCT: { creator: 0.65, avalo: 0.35 },
+  MEDIA: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
+  DIGITAL_PRODUCT: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
 };
 
 // ============================================================================
@@ -76,7 +76,7 @@ const REVENUE_SPLIT = {
  * Use getWalletSplitForContext for new code
  */
 function getRevenueSplit(source: TransactionSource): { creator: number; avalo: number } {
-  return REVENUE_SPLIT[source] || { creator: 0.65, avalo: 0.35 };
+  return REVENUE_SPLIT[source] || { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo };
 }
 
 /**
@@ -571,6 +571,7 @@ export async function getTransactionHistory(
     return [];
   }
 }
+
 
 
 
