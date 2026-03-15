@@ -1,15 +1,16 @@
 /**
  * Token Purchase API — Client-side helpers for Stripe checkout.
  *
- * Calls /api/stripe/checkout to create a Stripe session,
- * then redirects the user to Stripe Checkout.
+ * Active runtime path:
+ * - Firebase callable `tokens_createCheckoutSession` (backend canonical)
  *
  * INVARIANTS:
- *   - No pricing overrides.
- *   - Backend verifies auth independently.
+ *   - No pricing authority in app-web.
+ *   - App-web sends pack identifiers only; backend validates canonical price.
  */
 
-import { auth } from '@/lib/firebase';
+import { requireFunctions } from '@/lib/firebase';
+import { httpsCallable } from 'firebase/functions';
 
 interface CreateCheckoutParams {
   packageId: string;
@@ -26,41 +27,51 @@ interface CheckoutResult {
   error?: string;
 }
 
+interface CanonicalCheckoutPayload {
+  packageId: string;
+  packId: string;
+  successUrl: string;
+  cancelUrl: string;
+}
+
 /**
- * Create a Stripe checkout session via the /api/stripe/checkout endpoint.
+ * Create a Stripe checkout session via backend canonical callable.
  */
 export async function createCheckoutSession(params: CreateCheckoutParams): Promise<CheckoutResult> {
   try {
-    const idToken = await auth.currentUser?.getIdToken();
+    const normalizedPackId = params.packageId.trim().toLowerCase();
 
-    const response = await fetch('/api/stripe/checkout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-      },
-      body: JSON.stringify(params),
+    const create = httpsCallable<
+      CanonicalCheckoutPayload,
+      { success: boolean; checkoutUrl?: string; sessionId?: string; error?: string }
+    >(requireFunctions(), 'tokens_createCheckoutSession');
+
+    const result = await create({
+      packageId: normalizedPackId,
+      packId: normalizedPackId,
+      successUrl: params.successUrl,
+      cancelUrl: params.cancelUrl,
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return {
-        success: false,
-        error: errorData.error || `HTTP ${response.status}: ${response.statusText}`,
-      };
+    return {
+      success: !!result.data.success,
+      checkoutUrl: result.data.checkoutUrl,
+      sessionId: result.data.sessionId,
+      error: result.data.error,
+    };
+  } catch (error: any) {
+    console.error('[tokens] createCheckoutSession error:', error);
+
+    let errorMessage = 'Failed to create checkout session';
+    if (error?.code === 'unauthenticated') {
+      errorMessage = 'Please sign in to purchase tokens';
+    } else if (error?.message) {
+      errorMessage = error.message;
     }
 
-    const data = await response.json();
-    return {
-      success: true,
-      checkoutUrl: data.url || data.checkoutUrl,
-      sessionId: data.sessionId,
-    };
-  } catch (error) {
-    console.error('[tokens] createCheckoutSession error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to create checkout session',
+      error: errorMessage,
     };
   }
 }
@@ -70,4 +81,73 @@ export async function createCheckoutSession(params: CreateCheckoutParams): Promi
  */
 export function redirectToCheckout(url: string): void {
   window.location.href = url;
+}
+
+// ============================================================================
+// POST-CHECKOUT FULFILLMENT & VERIFICATION
+// ============================================================================
+
+interface FulfillResult {
+  success: boolean;
+  fulfilled?: boolean;
+  error?: string;
+  paymentStatus?: string;
+  purchase?: {
+    tokens: number;
+    packageId: string;
+    status: string;
+  };
+}
+
+/**
+ * Fulfill a Stripe checkout session on-demand.
+ *
+ * Called by the success page after redirect. Retrieves the session from
+ * Stripe server-side and runs the idempotent fulfillment logic to credit
+ * tokens. Safe to call multiple times.
+ */
+export async function fulfillCheckout(sessionId: string): Promise<FulfillResult> {
+  try {
+    const fulfill = httpsCallable<
+      { sessionId: string },
+      FulfillResult
+    >(requireFunctions(), 'tokens_fulfillCheckout');
+
+    const result = await fulfill({ sessionId });
+    return result.data;
+  } catch (error: any) {
+    console.error('[tokens] fulfillCheckout error:', error);
+    return {
+      success: false,
+      error: error?.message || 'Failed to fulfill purchase',
+    };
+  }
+}
+
+interface PurchaseBySessionResult {
+  success: boolean;
+  error?: string;
+  purchase?: Record<string, any>;
+}
+
+/**
+ * Look up a purchase record by Stripe session ID.
+ * Returns { success: false } if the purchase has not been processed yet.
+ */
+export async function getPurchaseBySession(sessionId: string): Promise<PurchaseBySessionResult> {
+  try {
+    const lookup = httpsCallable<
+      { sessionId: string },
+      PurchaseBySessionResult
+    >(requireFunctions(), 'tokens_getPurchaseBySession');
+
+    const result = await lookup({ sessionId });
+    return result.data;
+  } catch (error: any) {
+    console.error('[tokens] getPurchaseBySession error:', error);
+    return {
+      success: false,
+      error: error?.message || 'Failed to look up purchase',
+    };
+  }
 }
