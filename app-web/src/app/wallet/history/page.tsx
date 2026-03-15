@@ -1,24 +1,22 @@
 'use client';
 
-"use client";
-
 /**
  * /wallet/history — Purchase History Page
  *
  * Auth-protected (via wallet layout.tsx / AppShell).
- * Shows all purchase transactions from Firestore purchases collection.
+ * Shows all purchase transactions via backend callable (tokens_getPurchaseHistory).
  *
  * INVARIANTS:
- * - Data is READ-ONLY from Firestore.
+ * - Data is READ-ONLY — loaded from backend callable, NOT direct Firestore.
  * - No balance modification from this page.
  *
- * @version v1.1 — removed redundant Header/Footer since AppShell provides navigation
+ * @version v2.0 — switched from client-side Firestore query to backend callable
  */
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { collection, query, where, orderBy, getDocs, limit } from 'firebase/firestore';
-import { requireDb } from '@/lib/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { requireFunctions } from '@/lib/firebase';
 
 interface PurchaseRecord {
   sessionId: string;
@@ -32,52 +30,72 @@ interface PurchaseRecord {
 }
 
 export default function WalletHistoryPage() {
-  const { firebaseUser } = useAuth();
+  const { firebaseUser, user } = useAuth();
   const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadHistory() {
-      if (!firebaseUser?.uid) {
+      const resolvedUid = firebaseUser?.uid ?? user?.uid;
+      if (!resolvedUid) {
         setLoading(false);
         return;
       }
 
       try {
-        const q = query(
-          collection(requireDb(), 'purchases'),
-          where('userId', '==', firebaseUser.uid),
-          orderBy('createdAt', 'desc'),
-          limit(100),
-        );
+        const getPurchaseHistory = httpsCallable<
+          { limit?: number },
+          { success: boolean; purchases: Array<{
+            sessionId: string;
+            providerOrderId: string | null;
+            packageId: string | null;
+            packId: string | null;
+            tokens: number;
+            amount: number | null;
+            currency: string | null;
+            source: string;
+            platform: string;
+            status: string;
+            createdAt: number | null;
+          }> }
+        >(requireFunctions(), 'tokens_getPurchaseHistory');
 
-        const snap = await getDocs(q);
-        const records: PurchaseRecord[] = snap.docs.map((d) => {
-          const data = d.data();
-          return {
-            sessionId: d.id,
-            packId: data.packId ?? 'Unknown',
-            tokens: data.tokens ?? 0,
-            amountTotal: data.amountTotal ?? null,
-            currency: data.currency ?? null,
-            source: data.source ?? 'web',
-            status: data.status ?? 'UNKNOWN',
-            createdAt: data.createdAt?.toDate?.() ?? new Date(data.createdAt ?? 0),
-          };
-        });
+        const result = await getPurchaseHistory({ limit: 100 });
+        const data = result.data;
+
+        if (!data.success || !data.purchases) {
+          setPurchases([]);
+          return;
+        }
+
+        const records: PurchaseRecord[] = data.purchases.map((p) => ({
+          sessionId: p.sessionId ?? p.providerOrderId ?? 'unknown',
+          packId: p.packageId ?? p.packId ?? 'Unknown',
+          tokens: p.tokens ?? 0,
+          amountTotal: p.amount ?? null,
+          currency: p.currency ?? null,
+          source: p.platform ?? p.source ?? 'web',
+          status: p.status ?? 'UNKNOWN',
+          createdAt: p.createdAt ? new Date(p.createdAt) : new Date(0),
+        }));
 
         setPurchases(records);
       } catch (err) {
         console.error('[WalletHistory] Failed to load purchases:', err);
-        setError('Failed to load purchase history. Please try again.');
+        const code = (err as { code?: string } | null)?.code;
+        if (code === 'unauthenticated') {
+          setError('You must be signed in to view purchase history.');
+        } else {
+          setError('Failed to load purchase history. Please try again.');
+        }
       } finally {
         setLoading(false);
       }
     }
 
     loadHistory();
-  }, [firebaseUser?.uid]);
+  }, [firebaseUser?.uid, user?.uid]);
 
   function formatCurrency(amountCents: number | null, currency: string | null): string {
     if (amountCents === null || currency === null) return '—';
@@ -227,6 +245,3 @@ export default function WalletHistoryPage() {
     </div>
   );
 }
-
-
-

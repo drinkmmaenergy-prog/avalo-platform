@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 288 — Web Stripe Checkout & Webhook Handler
  * 
@@ -22,27 +24,13 @@ import {
   WebPurchaseRequest,
   WebPurchaseResponse,
 } from './types/pack288-token-store.types';
+import { getCanonicalTokenPackById, normalizeTokenPackId } from './pack277-token-packs';
 import { admin, functions, increment, onCall, onRequest, timestamp } from './runtime';
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2023-10-16',
 });
-
-// Token packages configuration
-export const TOKEN_PACKS = [
-  { id: "mini", tokens: 100, priceUSD: 9.99 },
-  { id: "basic", tokens: 300, priceUSD: 26.99 },
-  { id: "standard", tokens: 500, priceUSD: 42.99 },
-  { id: "premium", tokens: 1000, priceUSD: 76.99 },
-  { id: "pro", tokens: 2000, priceUSD: 147.99 },
-  { id: "elite", tokens: 5000, priceUSD: 353.99 },
-  { id: "royal", tokens: 10000, priceUSD: 674.99 }
-]
-
-const getPackageById = (id: string) => {
-  return TOKEN_PACKS.find(p => p.id === id) || null;
-};
 
 // ============================================================================
 // STRIPE CHECKOUT SESSION CREATION
@@ -52,7 +40,7 @@ const getPackageById = (id: string) => {
  * Create Stripe checkout session for token purchase
  */
 export const tokens_createCheckoutSession = https.onCall(
-  { region: 'us-central1', memory: '256MiB', timeoutSeconds: 60 },
+  { region: 'europe-west1', memory: '256MiB', timeoutSeconds: 60 },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -61,17 +49,20 @@ export const tokens_createCheckoutSession = https.onCall(
 
     const {
       packageId,
+      packId,
       successUrl,
       cancelUrl,
-    } = request.data as WebPurchaseRequest;
+    } = request.data as WebPurchaseRequest & { packId?: string };
 
-    if (!packageId) {
+    const canonicalPackId = normalizeTokenPackId(packageId || packId || '');
+
+    if (!canonicalPackId) {
       throw new HttpsError('invalid-argument', 'Package ID is required');
     }
 
     try {
-      // Get package details
-      const pack = getPackageById(packageId);
+      // Get package details from canonical PACK 277 source
+      const pack = getCanonicalTokenPackById(canonicalPackId);
       if (!pack) {
         throw new HttpsError('not-found', 'Package not found');
       }
@@ -129,8 +120,10 @@ export const tokens_createCheckoutSession = https.onCall(
         cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL}/token-store`,
         client_reference_id: auth.uid,
         metadata: {
+          uid: auth.uid,
           userId: auth.uid,
           packageId: pack.id,
+          packId: pack.id,
           tokens: pack.tokens.toString(),
           priceUSD: pack.priceUSD.toString(),
         },
@@ -175,8 +168,7 @@ export const tokens_createCheckoutSession = https.onCall(
  * Handle Stripe webhooks
  * Must be called from Stripe webhook endpoint
  */
-export const tokens_stripeWebhook = https.onRequest(
-  { region: 'us-central1', memory: '256MiB', timeoutSeconds: 60 },
+export const tokens_stripeWebhook = https.onRequest({ region: 'europe-west1', memory: '256MiB', timeoutSeconds: 60 },
   async (req, res) => {
     const sig = req.headers['stripe-signature'];
 
@@ -231,14 +223,37 @@ export const tokens_stripeWebhook = https.onRequest(
  * Handle successful checkout completion
  */
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  const userId = session.metadata?.userId;
-  const packageId = session.metadata?.packageId;
-  const tokens = parseInt(session.metadata?.tokens || '0');
-  const priceUSD = parseFloat(session.metadata?.priceUSD || '0');
+  const userId =
+    session.metadata?.uid ||
+    session.metadata?.userId ||
+    session.client_reference_id ||
+    undefined;
+  const rawPackId = session.metadata?.packId || session.metadata?.packageId;
+  const packageId = normalizeTokenPackId(rawPackId || '');
 
-  if (!userId || !packageId || !tokens) {
+  if (!userId || !packageId) {
     logger.error('Invalid session metadata', { sessionId: session.id });
-    return;
+    throw new Error(`Invalid session metadata: missing userId or packageId for session ${session.id}`);
+  }
+
+  const pack = getCanonicalTokenPackById(packageId);
+  if (!pack) {
+    logger.error('Unknown package ID in metadata', { sessionId: session.id, packageId });
+    throw new Error(`Unknown package ID "${packageId}" in metadata for session ${session.id}`);
+  }
+
+  const tokens = pack.tokens;
+  const priceUSD = pack.priceUSD;
+  const expectedAmountCents = Math.round(priceUSD * 100);
+
+  if ((session.amount_total || 0) !== expectedAmountCents) {
+    logger.error('Amount mismatch for canonical package', {
+      sessionId: session.id,
+      packageId,
+      expectedAmountCents,
+      gotAmountCents: session.amount_total || 0,
+    });
+    throw new Error(`Amount mismatch for session ${session.id}: expected ${expectedAmountCents} cents, got ${session.amount_total || 0} cents`);
   }
 
   try {
@@ -417,7 +432,8 @@ async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent): Promise
   });
 
   const userId = paymentIntent.metadata?.userId;
-  const packageId = paymentIntent.metadata?.packageId;
+  const rawPackId = paymentIntent.metadata?.packId || paymentIntent.metadata?.packageId;
+  const packageId = normalizeTokenPackId(rawPackId || '');
 
   if (!userId || !packageId) {
     return;
@@ -437,7 +453,7 @@ async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent): Promise
  * Get purchase details by session ID (for success page)
  */
 export const tokens_getPurchaseBySession = https.onCall(
-  { region: 'us-central1', memory: '128MiB' },
+  { region: 'europe-west1', memory: '128MiB' },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -477,6 +493,188 @@ export const tokens_getPurchaseBySession = https.onCall(
     }
   }
 );
+
+// ============================================================================
+// STRIPE FULFILLMENT CALLABLE (WEBHOOK FALLBACK)
+// ============================================================================
+
+/**
+ * Fulfill a Stripe checkout session on-demand.
+ *
+ * Called by the success page after redirect. Retrieves the checkout session
+ * directly from Stripe and runs the same idempotent handleCheckoutCompleted
+ * logic. This guarantees token crediting even when the Stripe webhook has
+ * not yet been delivered (localhost, slow delivery, mis-routed webhook).
+ *
+ * Idempotency: safe to call multiple times — the transaction inside
+ * handleCheckoutCompleted checks processedStripeEvents before writing.
+ */
+export const tokens_fulfillCheckout = https.onCall(
+  { region: 'europe-west1', memory: '256MiB', timeoutSeconds: 30 },
+  async (request) => {
+    const auth = request.auth;
+    if (!auth) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    const { sessionId } = request.data as { sessionId?: string };
+
+    if (!sessionId || typeof sessionId !== 'string') {
+      throw new HttpsError('invalid-argument', 'Session ID is required');
+    }
+
+    try {
+      // Retrieve the checkout session directly from Stripe
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+      if (!session) {
+        throw new HttpsError('not-found', 'Stripe session not found');
+      }
+
+      // Verify this session belongs to the authenticated user
+      const sessionUserId =
+        session.metadata?.uid ||
+        session.metadata?.userId ||
+        session.client_reference_id;
+
+      if (sessionUserId !== auth.uid) {
+        logger.warn('Fulfillment attempt for wrong user', {
+          sessionId,
+          sessionUserId,
+          callerUid: auth.uid,
+        });
+        throw new HttpsError('permission-denied', 'Session does not belong to this user');
+      }
+
+      // Only fulfill completed sessions
+      if (session.payment_status !== 'paid') {
+        return {
+          success: false,
+          error: 'Payment not completed',
+          paymentStatus: session.payment_status,
+        };
+      }
+
+      // Run the same idempotent fulfillment logic as the webhook
+      await handleCheckoutCompleted(session);
+
+      // Return the purchase record
+      const purchaseSnapshot = await db
+        .collection('tokenPurchases')
+        .where('providerOrderId', '==', sessionId)
+        .where('userId', '==', auth.uid)
+        .limit(1)
+        .get();
+
+      if (purchaseSnapshot.empty) {
+        // Fulfillment ran but purchase not found — should not happen
+        logger.error('Fulfillment completed but purchase record missing', { sessionId });
+        return { success: false, error: 'Purchase record not found after fulfillment' };
+      }
+
+      const purchase = purchaseSnapshot.docs[0].data();
+
+      logger.info('Fulfillment callable completed', {
+        sessionId,
+        userId: auth.uid,
+        tokens: purchase.tokens,
+      });
+
+      return {
+        success: true,
+        fulfilled: true,
+        purchase: {
+          tokens: purchase.tokens,
+          packageId: purchase.packageId,
+          status: purchase.status,
+        },
+      };
+    } catch (error: any) {
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+      logger.error('Fulfillment callable error:', error);
+      throw new HttpsError('internal', 'Failed to fulfill purchase');
+    }
+  }
+);
+
+// ============================================================================
+// PURCHASE HISTORY CALLABLE
+// ============================================================================
+
+/**
+ * Return the authenticated user's token purchase history from tokenPurchases.
+ *
+ * Called by /wallet/history on the web app to avoid direct client-side
+ * Firestore reads that are blocked by security rules.
+ *
+ * Returns purchases sorted newest-first with fields the UI needs:
+ *   sessionId, providerOrderId, packageId, packId, tokens, amount,
+ *   currency, source/platform, status, createdAt.
+ */
+export const tokens_getPurchaseHistory = https.onCall(
+  { region: 'europe-west1', memory: '256MiB', timeoutSeconds: 30 },
+  async (request) => {
+    const auth = request.auth;
+    if (!auth) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+
+    const { limit: requestedLimit } = (request.data || {}) as { limit?: number };
+    const safeLimit = Math.min(Math.max(requestedLimit || 100, 1), 200);
+
+    try {
+      const snapshot = await db
+        .collection('tokenPurchases')
+        .where('userId', '==', auth.uid)
+        .orderBy('createdAt', 'desc')
+        .limit(safeLimit)
+        .get();
+
+      const purchases = snapshot.docs.map((doc) => {
+        const d = doc.data();
+        return {
+          sessionId: d.providerOrderId ?? doc.id,
+          providerOrderId: d.providerOrderId ?? null,
+          packageId: d.packageId ?? d.packId ?? null,
+          packId: d.packId ?? d.packageId ?? null,
+          tokens: d.tokens ?? 0,
+          amount: typeof d.paidAmount === 'number'
+            ? Math.round(d.paidAmount * 100)
+            : (d.amountTotal ?? null),
+          currency: d.paidCurrency ?? d.currency ?? null,
+          source: d.platform ?? d.source ?? 'web',
+          platform: d.platform ?? d.source ?? 'web',
+          status: d.status ?? 'UNKNOWN',
+          createdAt: d.createdAt?.toMillis?.() ?? null,
+        };
+      });
+
+      return { success: true, purchases };
+    } catch (error: any) {
+      logger.error('Get purchase history error:', error);
+      throw new HttpsError('internal', 'Failed to fetch purchase history');
+    }
+  }
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
