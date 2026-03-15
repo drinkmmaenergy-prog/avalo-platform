@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build && node scripts/fix-app-hosting-next-output.cjs",
+    "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint",
     "type-check": "tsc --noEmit"
